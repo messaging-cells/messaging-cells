@@ -42,6 +42,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/interruptions.c \
 	$(SRC_ECORE_DIR)/global.c \
+	$(SRC_ECORE_DIR)/rrarray.c \
 	$(SRC_ECORE_DIR)/test1.cpp \
 	$(SRC_ECORE_DIR)/trace.c \
 	$(SRC_ECORE_DIR)/e_$(NAME_PRG).c 
