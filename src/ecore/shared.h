@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include "attribute.h"
+#include "rr_array.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -184,6 +185,7 @@ bj_v32_of_p16(uint16_t* p16){
 #define num_ck_lines 7
 
 #define bj_mem_2K   2048
+#define bj_mem_16K   16384
 #define bj_mem_32K   32768
 #define bj_max_core_addr 0x7ff0
 #define bj_max_opcodes_func 16384
@@ -241,16 +243,31 @@ struct bj_align(8) bj_off_core_shared_data_def {
 };
 typedef struct bj_off_core_shared_data_def bj_off_core_st;
 
+
+#define BJ_OUT_BUFF_SZ 	bj_mem_16K
+
+struct bj_align(8) bj_core_out_def { 
+	uint32_t 		magic_id;
+	bj_rrarray_st 	arr;
+	uint8_t 		buff[BJ_OUT_BUFF_SZ];
+};
+typedef struct bj_core_out_def bj_core_out_st;
+
+
 struct bj_align(8) bj_off_sys_shared_data_def { 
 	uint32_t 		magic_id;
 	uint32_t 		dbg_error_code;
 	bj_sys_st 		wrk_sys;
 	bj_off_core_st 	sys_cores[bj_sys_num_cores];
+	bj_core_out_st 	sys_out_buffs[bj_sys_num_cores];
 };
 typedef struct bj_off_sys_shared_data_def bj_off_sys_st;
 
 int 
 bjh_prt_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
+
+void 
+bj_memset(uint8_t* bytes, uint8_t val, uint32_t sz);
 
 #ifdef __cplusplus
 }

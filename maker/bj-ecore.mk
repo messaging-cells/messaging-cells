@@ -8,6 +8,7 @@ E_LDF=bj-ld-script.ldf
 SRC_ECORE_DIR := $(SRC_DIR)/ecore
 
 DBG_FLAG := -DFULL_DEBUG
+# DBG_FLAG := 
 
 # OPTSZ_FLAG := -Os # DOES NOT WORK WITH e-gcc ???? BAD GENERATED CODE ????
 OPTSZ_FLAG := 
@@ -41,8 +42,9 @@ SRC_INCDIRS := $(SRC_ECORE_DIR)
 SOURCES := \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/interruptions.c \
+	$(SRC_ECORE_DIR)/shared.c \
 	$(SRC_ECORE_DIR)/global.c \
-	$(SRC_ECORE_DIR)/rrarray.c \
+	$(SRC_ECORE_DIR)/rr_array.c \
 	$(SRC_ECORE_DIR)/test1.cpp \
 	$(SRC_ECORE_DIR)/trace.c \
 	$(SRC_ECORE_DIR)/e_$(NAME_PRG).c 

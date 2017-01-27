@@ -21,6 +21,10 @@ H_INC_1=${ETOOLS}/host/include
 SRC_HOST_DIR := $(SRC_DIR)/host
 SRC_ECORE_DIR := $(SRC_DIR)/ecore
 
+DBG_FLAG := -DFULL_DEBUG
+# DBG_FLAG := 
+
+
 # =======================================
 
 TARGET := $(NAME_PRG)_elf
@@ -35,11 +39,14 @@ TGT_CC := $(HCOMP)
 
 TGT_LINKER := $(HCOMP)
 
-# SRC_CFLAGS := -Wall -std=c11
+SRC_CFLAGS := -Wall -std=c11 ${DBG_FLAG} 
+SRC_CXXFLAGS := -Wall -std=c++14 ${DBG_FLAG} 
 
 SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_ECORE_DIR) $(H_INC_1) 
 
 SOURCES := \
 	$(SRC_HOST_DIR)/$(NAME_PRG).c \
-	$(SRC_HOST_DIR)/prt_call_stack.c
+	$(SRC_HOST_DIR)/prt_call_stack.c \
+	$(SRC_ECORE_DIR)/shared.c \
+	$(SRC_ECORE_DIR)/rr_array.c 
 

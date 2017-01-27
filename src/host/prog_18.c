@@ -1,4 +1,5 @@
 
+#include <assert.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,10 +12,11 @@
 #include <e-loader.h>
 #include <epiphany-hal-api-local.h>
 
-#include "shared_data.h"
+#include "shared.h"
+#include "booter.h"
 
 #define f_nm_sz   1024
-#define buff_offset (0x01000000)
+#define BJ_SHARED_MEM_START_ADDR (0x01000000)
 
 int	write_file(char* the_pth, char* the_data, long the_sz, int write_once);
 
@@ -22,6 +24,26 @@ char before[bj_mem_32K];
 char after[bj_mem_32K];
 
 bj_sys_st bj_glb_sys;
+
+void 
+bjh_abort_func(long val, const char* msg){
+	fprintf(stderr, "\nABORTING! %s\n", msg); 
+	exit(val);
+}
+
+bool 
+bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
+	
+	if(! vv_ck){
+		fprintf(stderr, "ASSERT '%s' FAILED\n", ck_str);
+		//bj_out << get_stack_trace(file, line) << bj_eol;
+		if(msg != NULL){
+			fprintf(stderr, "MSG=%s\n", msg);
+		}
+	}
+	assert(vv_ck);
+	return vv_ck;
+}
 
 void ck_sys_data(e_mem_t* emem){
 	bj_off_sys_st off_dat_1;
@@ -95,9 +117,11 @@ int main(int argc, char *argv[])
 	e_platform_t platform;
 	e_epiphany_t dev;
 	e_mem_t emem;
-	char f_nm[f_nm_sz];
+	//char f_nm[f_nm_sz];
 	bj_off_sys_st shd_mem;
 
+	//BJH_CK(1 == 3);
+	
 	printf("sizeof(bj_off_sys_st)=%d\n", sizeof(bj_off_sys_st));
 	printf("sizeof(shd_mem)=%d\n", sizeof(shd_mem));
 	printf("sizeof(shd_mem.sys_cores)=%d\n", sizeof(shd_mem.sys_cores));
@@ -110,7 +134,7 @@ int main(int argc, char *argv[])
 	e_reset_system();
 	e_get_platform_info(&platform);
 
-	e_alloc(&emem, buff_offset, sizeof(shd_mem));
+	e_alloc(&emem, BJ_SHARED_MEM_START_ADDR, sizeof(shd_mem));
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 	
@@ -120,14 +144,14 @@ int main(int argc, char *argv[])
 
 	e_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE);
 	
-	uint32_t ck_curr_core = 0xaabbccdd;
-
+	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)emem.base;
+	
 	row = 0;
 	col = 0;
 	max_row = 1;
 	max_col = 1;
-	max_row = platform.rows;
-	max_col = platform.cols;
+	//max_row = platform.rows;
+	//max_col = platform.cols;
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
 			coreid = (row + platform.row) * 64 + col + platform.col;
@@ -141,6 +165,17 @@ int main(int argc, char *argv[])
 			shd_mem.wrk_sys = bj_glb_sys;
 			shd_mem.sys_cores[num_core].magic_id = BJ_MAGIC_ID;
 			e_write(&emem, -1, 0, 0x0, &shd_mem, sizeof(shd_mem));
+
+			if(pt_shd_data->magic_id == BJ_MAGIC_ID){
+				printf("BJ_MAGIC_ID 1 OK\n");
+				printf("sizeof(*pt_shd_data) = %d\n", sizeof(*pt_shd_data));
+			}
+			if(pt_shd_data->sys_cores[num_core].magic_id == BJ_MAGIC_ID){
+				printf("BJ_MAGIC_ID 2 OK\n");
+			}
+			
+			BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
+			BJH_CK(pt_shd_data->sys_cores[num_core].magic_id == BJ_MAGIC_ID);
 
 			ck_sys_data(&emem);
 			
@@ -207,7 +242,6 @@ int main(int argc, char *argv[])
 			void* 	trace[BJ_MAX_CALL_STACK_SZ];
 			
 			// wait for finish
-			uint8_t  finished = BJ_NOT_FINISHED_VAL;
 			while(sh_dat_1.is_finished == BJ_NOT_FINISHED_VAL){
 				e_read(&emem, -1, 0, offset, &sh_dat_1, sizeof(sh_dat_1));
 				if(sh_dat_1.is_waiting){
@@ -227,7 +261,7 @@ int main(int argc, char *argv[])
 					
 					// CONTINUE
 					printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
-					int chr1 = getchar();
+					getchar();
 					
 					int SYNC = (1 << E_SYNC);
 					sh_dat_1.is_waiting = 0;

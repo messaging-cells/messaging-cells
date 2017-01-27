@@ -79,23 +79,23 @@ Disassembly of section .code_dram:
 8e000016:	9fcb 0ff2 	mov r4,0xfffe
 8e00001a:	9e2b 1ff2 	movt r4,0xfff1
 8e00001e:	0152      	jalr r0
-8e000020:	0e0b 00e2 	mov r0,0xe70
+8e000020:	130b 00e2 	mov r0,0xe98
 8e000024:	000b 1002 	movt r0,0x0
 8e000028:	2003      	mov r1,0x0
 8e00002a:	2054      	str r1,[r0]
-8e00002c:	0f0b 00e2 	mov r0,0xe78
+8e00002c:	140b 00e2 	mov r0,0xea0
 8e000030:	000b 1002 	movt r0,0x0
 8e000034:	2403      	mov r1,0x20
 8e000036:	2034      	strh r1,[r0]
-8e000038:	0f0b 00e2 	mov r0,0xe78
+8e000038:	140b 00e2 	mov r0,0xea0
 8e00003c:	000b 1002 	movt r0,0x0
 8e000040:	2103      	mov r1,0x8
 8e000042:	20b4      	strh r1,[r0,0x1]
-8e000044:	0f0b 00e2 	mov r0,0xe78
+8e000044:	140b 00e2 	mov r0,0xea0
 8e000048:	000b 1002 	movt r0,0x0
 8e00004c:	2083      	mov r1,0x4
 8e00004e:	2134      	strh r1,[r0,0x2]
-8e000050:	0f0b 00e2 	mov r0,0xe78
+8e000050:	140b 00e2 	mov r0,0xea0
 8e000054:	000b 1002 	movt r0,0x0
 8e000058:	2083      	mov r1,0x4
 8e00005a:	21b4      	strh r1,[r0,0x3]
@@ -123,14 +123,14 @@ Disassembly of section .code_dram:
 8e0000a2:	1fbc 0500 	strh r0,[fp,-0x7]
 8e0000a6:	4103      	mov r2,0x8
 8e0000a8:	2003      	mov r1,0x0
-8e0000aa:	0f0b 00e2 	mov r0,0xe78
+8e0000aa:	140b 00e2 	mov r0,0xea0
 8e0000ae:	000b 1002 	movt r0,0x0
 8e0000b2:	6a0b 0032 	mov r3,0x350
 8e0000b6:	600b 1002 	movt r3,0x0
 8e0000ba:	9fcb 0ff2 	mov r4,0xfffe
 8e0000be:	9e2b 1ff2 	movt r4,0xfff1
 8e0000c2:	0d52      	jalr r3
-8e0000c4:	4f0b 00e2 	mov r2,0xe78
+8e0000c4:	540b 00e2 	mov r2,0xea0
 8e0000c8:	400b 1002 	movt r2,0x0
 8e0000cc:	000b 0002 	mov r0,0x0
 8e0000d0:	000b 18f2 	movt r0,0x8f00
@@ -142,11 +142,11 @@ Disassembly of section .code_dram:
 8e0000e2:	20e2      	mov r1,r0
 8e0000e4:	07e3      	mov r0,0x3f
 8e0000e6:	045a      	and r0,r1,r0
-8e0000e8:	2f0b 00e2 	mov r1,0xe78
+8e0000e8:	340b 00e2 	mov r1,0xea0
 8e0000ec:	200b 1002 	movt r1,0x0
 8e0000f0:	2424      	ldrh r1,[r1]
 8e0000f2:	20ba      	sub r1,r0,r1
-8e0000f4:	0f0b 00e2 	mov r0,0xe78
+8e0000f4:	140b 00e2 	mov r0,0xea0
 8e0000f8:	000b 1002 	movt r0,0x0
 8e0000fc:	01a4      	ldrh r0,[r0,0x3]
 8e0000fe:	60e2      	mov r3,r0
@@ -169,7 +169,7 @@ Disassembly of section .code_dram:
 8e000138:	5fac 0500 	ldrh r2,[fp,-0x7]
 8e00013c:	07e3      	mov r0,0x3f
 8e00013e:	085a      	and r0,r2,r0
-8e000140:	4f0b 00e2 	mov r2,0xe78
+8e000140:	540b 00e2 	mov r2,0xea0
 8e000144:	400b 1002 	movt r2,0x0
 8e000148:	48a4      	ldrh r2,[r2,0x1]
 8e00014a:	013a      	sub r0,r0,r2
@@ -181,10 +181,10 @@ Disassembly of section .code_dram:
 8e00015a:	000b 0002 	mov r0,0x0
 8e00015e:	000b 18f2 	movt r0,0x8f00
 8e000162:	241a      	add r1,r1,r0
-8e000164:	0e0b 00e2 	mov r0,0xe70
+8e000164:	130b 00e2 	mov r0,0xe98
 8e000168:	000b 1002 	movt r0,0x0
 8e00016c:	2054      	str r1,[r0]
-8e00016e:	0e0b 00e2 	mov r0,0xe70
+8e00016e:	130b 00e2 	mov r0,0xe98
 8e000172:	000b 1002 	movt r0,0x0
 8e000176:	0044      	ldr r0,[r0]
 8e000178:	2044      	ldr r1,[r0]
@@ -234,7 +234,7 @@ Disassembly of section .code_dram:
 8e000208:	4502      	movts status,r2
 8e00020a:	4703      	mov r2,0x38
 8e00020c:	2003      	mov r1,0x0
-8e00020e:	070b 00e2 	mov r0,0xe38
+8e00020e:	0c0b 00e2 	mov r0,0xe60
 8e000212:	000b 1002 	movt r0,0x0
 8e000216:	6a0b 0032 	mov r3,0x350
 8e00021a:	600b 1002 	movt r3,0x0
@@ -243,85 +243,85 @@ Disassembly of section .code_dram:
 8e000226:	0d52      	jalr r3
 8e000228:	4a03      	mov r2,0x50
 8e00022a:	2003      	mov r1,0x0
-8e00022c:	1c0b 00d2 	mov r0,0xde0
+8e00022c:	010b 00e2 	mov r0,0xe08
 8e000230:	000b 1002 	movt r0,0x0
 8e000234:	6a0b 0032 	mov r3,0x350
 8e000238:	600b 1002 	movt r3,0x0
 8e00023c:	9fcb 0ff2 	mov r4,0xfffe
 8e000240:	9e2b 1ff2 	movt r4,0xfff1
 8e000244:	0d52      	jalr r3
-8e000246:	070b 00e2 	mov r0,0xe38
+8e000246:	0c0b 00e2 	mov r0,0xe60
 8e00024a:	000b 1002 	movt r0,0x0
 8e00024e:	3bab 0cc2 	mov r1,0xccdd
 8e000252:	376b 1aa2 	movt r1,0xaabb
 8e000256:	2054      	str r1,[r0]
-8e000258:	070b 00e2 	mov r0,0xe38
+8e000258:	0c0b 00e2 	mov r0,0xe60
 8e00025c:	000b 1002 	movt r0,0x0
-8e000260:	3c0b 00d2 	mov r1,0xde0
+8e000260:	210b 00e2 	mov r1,0xe08
 8e000264:	200b 1002 	movt r1,0x0
 8e000268:	20d4      	str r1,[r0,0x1]
-8e00026a:	070b 00e2 	mov r0,0xe38
+8e00026a:	0c0b 00e2 	mov r0,0xe60
 8e00026e:	000b 1002 	movt r0,0x0
 8e000272:	39ab 0ab2 	mov r1,0xabcd
 8e000276:	312b 1672 	movt r1,0x6789
 8e00027a:	22dc 0001 	str r1,[r0,+0xd]
-8e00027e:	070b 00e2 	mov r0,0xe38
+8e00027e:	0c0b 00e2 	mov r0,0xe60
 8e000282:	000b 1002 	movt r0,0x0
 8e000286:	3fac 0500 	ldrh r1,[fp,-0x7]
 8e00028a:	23bc 0002 	strh r1,[r0,+0x17]
-8e00028e:	0e0b 00e2 	mov r0,0xe70
+8e00028e:	130b 00e2 	mov r0,0xe98
 8e000292:	000b 1002 	movt r0,0x0
 8e000296:	0044      	ldr r0,[r0]
-8e000298:	270b 00e2 	mov r1,0xe38
+8e000298:	2c0b 00e2 	mov r1,0xe60
 8e00029c:	200b 1002 	movt r1,0x0
 8e0002a0:	27ac 0002 	ldrh r1,[r1,+0x17]
 8e0002a4:	2134      	strh r1,[r0,0x2]
 8e0002a6:	01a2      	nop
-8e0002a8:	0e0b 00e2 	mov r0,0xe70
+8e0002a8:	130b 00e2 	mov r0,0xe98
 8e0002ac:	000b 1002 	movt r0,0x0
 8e0002b0:	0044      	ldr r0,[r0]
 8e0002b2:	2124      	ldrh r1,[r0,0x2]
-8e0002b4:	070b 00e2 	mov r0,0xe38
+8e0002b4:	0c0b 00e2 	mov r0,0xe60
 8e0002b8:	000b 1002 	movt r0,0x0
 8e0002bc:	03ac 0002 	ldrh r0,[r0,+0x17]
 8e0002c0:	843f 200a 	sub ip,r1,r0
 8e0002c4:	f210      	bne 8e0002a8 <bjk_init_global+0x2a8>
-8e0002c6:	0e0b 00e2 	mov r0,0xe70
+8e0002c6:	130b 00e2 	mov r0,0xe98
 8e0002ca:	000b 1002 	movt r0,0x0
 8e0002ce:	0044      	ldr r0,[r0]
-8e0002d0:	270b 00e2 	mov r1,0xe38
+8e0002d0:	2c0b 00e2 	mov r1,0xe60
 8e0002d4:	200b 1002 	movt r1,0x0
 8e0002d8:	2154      	str r1,[r0,0x2]
 8e0002da:	01a2      	nop
-8e0002dc:	0e0b 00e2 	mov r0,0xe70
+8e0002dc:	130b 00e2 	mov r0,0xe98
 8e0002e0:	000b 1002 	movt r0,0x0
 8e0002e4:	0044      	ldr r0,[r0]
 8e0002e6:	2144      	ldr r1,[r0,0x2]
-8e0002e8:	070b 00e2 	mov r0,0xe38
+8e0002e8:	0c0b 00e2 	mov r0,0xe60
 8e0002ec:	000b 1002 	movt r0,0x0
 8e0002f0:	043f 400a 	sub r16,r1,r0
 8e0002f4:	f410      	bne 8e0002dc <bjk_init_global+0x2dc>
 8e0002f6:	0423      	mov r0,0x21
 8e0002f8:	1d9c 0501 	strb r0,[fp,-0xb]
-8e0002fc:	0e0b 00e2 	mov r0,0xe70
+8e0002fc:	130b 00e2 	mov r0,0xe98
 8e000300:	000b 1002 	movt r0,0x0
 8e000304:	0044      	ldr r0,[r0]
 8e000306:	3d8c 0501 	ldrb r1,[fp,-0xb]
 8e00030a:	2314      	strb r1,[r0,0x6]
-8e00030c:	0e0b 00e2 	mov r0,0xe70
+8e00030c:	130b 00e2 	mov r0,0xe98
 8e000310:	000b 1002 	movt r0,0x0
 8e000314:	0044      	ldr r0,[r0]
 8e000316:	0304      	ldrb r0,[r0,0x6]
 8e000318:	3d8c 0501 	ldrb r1,[fp,-0xb]
 8e00031c:	243f 400a 	sub r17,r1,r0
 8e000320:	f610      	bne 8e00030c <bjk_init_global+0x30c>
-8e000322:	0e0b 00e2 	mov r0,0xe70
+8e000322:	130b 00e2 	mov r0,0xe98
 8e000326:	000b 1002 	movt r0,0x0
 8e00032a:	0044      	ldr r0,[r0]
 8e00032c:	2003      	mov r1,0x0
 8e00032e:	2394      	strb r1,[r0,0x7]
 8e000330:	01a2      	nop
-8e000332:	0e0b 00e2 	mov r0,0xe70
+8e000332:	130b 00e2 	mov r0,0xe98
 8e000336:	000b 1002 	movt r0,0x0
 8e00033a:	0044      	ldr r0,[r0]
 8e00033c:	0384      	ldrb r0,[r0,0x7]
@@ -344,7 +344,7 @@ Disassembly of section .code_dram:
 8e000368:	a00b f8e2 	movt r61,0x8e00
 8e00036c:	14ef 1c02 	mov r0,r61
 8e000370:	1cdc 0500 	str r0,[fp,-0x1]
-8e000374:	5c0b 00d2 	mov r2,0xde0
+8e000374:	410b 00e2 	mov r2,0xe08
 8e000378:	400b 1002 	movt r2,0x0
 8e00037c:	2283      	mov r1,0x14
 8e00037e:	1ccc 0500 	ldr r0,[fp,-0x1]
@@ -542,7 +542,7 @@ Disassembly of section .code_dram:
 8e0005d8:	01a2      	nop
 8e0005da:	02e0      	b 8e0005de <bjk_get_call_stack_trace+0x206>
 8e0005dc:	01a2      	nop
-8e0005de:	060b 00e2 	mov r0,0xe30
+8e0005de:	0b0b 00e2 	mov r0,0xe58
 8e0005e2:	000b 1002 	movt r0,0x0
 8e0005e6:	0024      	ldrh r0,[r0]
 8e0005e8:	40bb 0008 	sub r2,r0,65
@@ -582,16 +582,16 @@ Disassembly of section .code_dram:
 8e000656:	5b0b 0032 	mov r2,0x3d8
 8e00065a:	400b 18e2 	movt r2,0x8e00
 8e00065e:	0952      	jalr r2
-8e000660:	070b 00e2 	mov r0,0xe38
+8e000660:	0c0b 00e2 	mov r0,0xe60
 8e000664:	000b 1002 	movt r0,0x0
 8e000668:	3ccc 0500 	ldr r1,[fp,-0x1]
 8e00066c:	2154      	str r1,[r0,0x2]
-8e00066e:	0e0b 00e2 	mov r0,0xe70
+8e00066e:	130b 00e2 	mov r0,0xe98
 8e000672:	000b 1002 	movt r0,0x0
 8e000676:	0044      	ldr r0,[r0]
 8e000678:	2033      	sub r1,r0,0
 8e00067a:	1f00      	beq 8e0006b8 <bjk_abort+0x90>
-8e00067c:	0e0b 00e2 	mov r0,0xe70
+8e00067c:	130b 00e2 	mov r0,0xe98
 8e000680:	000b 1002 	movt r0,0x0
 8e000684:	0044      	ldr r0,[r0]
 8e000686:	2044      	ldr r1,[r0]
@@ -599,19 +599,19 @@ Disassembly of section .code_dram:
 8e00068c:	176b 1aa2 	movt r0,0xaabb
 8e000690:	443a      	sub r2,r1,r0
 8e000692:	1310      	bne 8e0006b8 <bjk_abort+0x90>
-8e000694:	0e0b 00e2 	mov r0,0xe70
+8e000694:	130b 00e2 	mov r0,0xe98
 8e000698:	000b 1002 	movt r0,0x0
 8e00069c:	0044      	ldr r0,[r0]
 8e00069e:	3e2b 0ff2 	mov r1,0xfff1
 8e0006a2:	2314      	strb r1,[r0,0x6]
 8e0006a4:	01a2      	nop
-8e0006a6:	0e0b 00e2 	mov r0,0xe70
+8e0006a6:	130b 00e2 	mov r0,0xe98
 8e0006aa:	000b 1002 	movt r0,0x0
 8e0006ae:	0044      	ldr r0,[r0]
 8e0006b0:	0304      	ldrb r0,[r0,0x6]
 8e0006b2:	20bb 001e 	sub r1,r0,241
 8e0006b6:	f810      	bne 8e0006a6 <bjk_abort+0x7e>
-8e0006b8:	070b 00e2 	mov r0,0xe38
+8e0006b8:	0c0b 00e2 	mov r0,0xe60
 8e0006bc:	000b 1002 	movt r0,0x0
 8e0006c0:	c0ef e002 	mov r62,r0
 8e0006c4:	1ccc 0500 	ldr r0,[fp,-0x1]
@@ -633,7 +633,7 @@ Disassembly of section .code_dram:
 8e0006f0:	04e2      	mov r0,r1
 8e0006f2:	5edc 0500 	str r2,[fp,-0x5]
 8e0006f6:	1c3c 0501 	strh r0,[fp,-0x8]
-8e0006fa:	0e0b 00e2 	mov r0,0xe70
+8e0006fa:	130b 00e2 	mov r0,0xe98
 8e0006fe:	000b 1002 	movt r0,0x0
 8e000702:	0044      	ldr r0,[r0]
 8e000704:	2033      	sub r1,r0,0
@@ -663,17 +663,17 @@ Disassembly of section .code_dram:
 8e00074e:	1cbc 0500 	strh r0,[fp,-0x1]
 8e000752:	1fcb 0032 	mov r0,0x3fe
 8e000756:	050f 0402 	movts imask,r0
-8e00075a:	070b 00e2 	mov r0,0xe38
+8e00075a:	0c0b 00e2 	mov r0,0xe60
 8e00075e:	000b 1002 	movt r0,0x0
 8e000762:	3dcc 0500 	ldr r1,[fp,-0x3]
 8e000766:	2254      	str r1,[r0,0x4]
-8e000768:	0e0b 00e2 	mov r0,0xe70
+8e000768:	130b 00e2 	mov r0,0xe98
 8e00076c:	000b 1002 	movt r0,0x0
 8e000770:	0044      	ldr r0,[r0]
 8e000772:	354b 0ff2 	mov r1,0xffaa
 8e000776:	2394      	strb r1,[r0,0x7]
 8e000778:	01a2      	nop
-8e00077a:	0e0b 00e2 	mov r0,0xe70
+8e00077a:	130b 00e2 	mov r0,0xe98
 8e00077e:	000b 1002 	movt r0,0x0
 8e000782:	0044      	ldr r0,[r0]
 8e000784:	0384      	ldrb r0,[r0,0x7]
@@ -684,13 +684,13 @@ Disassembly of section .code_dram:
 8e000790:	0392      	gid
 8e000792:	1cac 0500 	ldrh r0,[fp,-0x1]
 8e000796:	050f 0402 	movts imask,r0
-8e00079a:	0e0b 00e2 	mov r0,0xe70
+8e00079a:	130b 00e2 	mov r0,0xe98
 8e00079e:	000b 1002 	movt r0,0x0
 8e0007a2:	0044      	ldr r0,[r0]
 8e0007a4:	2003      	mov r1,0x0
 8e0007a6:	2394      	strb r1,[r0,0x7]
 8e0007a8:	01a2      	nop
-8e0007aa:	0e0b 00e2 	mov r0,0xe70
+8e0007aa:	130b 00e2 	mov r0,0xe98
 8e0007ae:	000b 1002 	movt r0,0x0
 8e0007b2:	0044      	ldr r0,[r0]
 8e0007b4:	0384      	ldrb r0,[r0,0x7]
@@ -710,7 +710,7 @@ Disassembly of section .code_dram:
 8e0007d8:	3d5c 0400 	str r1,[fp,+0x2]
 8e0007dc:	1dcc 0400 	ldr r0,[fp,+0x3]
 8e0007e0:	1edc 0400 	str r0,[fp,+0x5]
-8e0007e4:	060b 00e2 	mov r0,0xe30
+8e0007e4:	0b0b 00e2 	mov r0,0xe58
 8e0007e8:	000b 1002 	movt r0,0x0
 8e0007ec:	2003      	mov r1,0x0
 8e0007ee:	2034      	strh r1,[r0]
@@ -729,7 +729,7 @@ Disassembly of section .code_dram:
 8e000810:	0024      	ldrh r0,[r0]
 8e000812:	443a      	sub r2,r1,r0
 8e000814:	0910      	bne 8e000826 <find_call+0x5a>
-8e000816:	060b 00e2 	mov r0,0xe30
+8e000816:	0b0b 00e2 	mov r0,0xe58
 8e00081a:	000b 1002 	movt r0,0x0
 8e00081e:	3dcb 01e2 	mov r1,0x1eee
 8e000822:	2034      	strh r1,[r0]
@@ -745,7 +745,7 @@ Disassembly of section .code_dram:
 8e00083c:	004b 0042 	mov r0,0x402
 8e000840:	443a      	sub r2,r1,r0
 8e000842:	0b10      	bne 8e000858 <find_call+0x8c>
-8e000844:	060b 00e2 	mov r0,0xe30
+8e000844:	0b0b 00e2 	mov r0,0xe58
 8e000848:	000b 1002 	movt r0,0x0
 8e00084c:	2223      	mov r1,0x11
 8e00084e:	2034      	strh r1,[r0]
@@ -772,7 +772,7 @@ Disassembly of section .code_dram:
 8e00088c:	000b 0802 	mov r0,0x8000
 8e000890:	041a      	add r0,r1,r0
 8e000892:	1e5c 0400 	str r0,[fp,+0x4]
-8e000896:	060b 00e2 	mov r0,0xe30
+8e000896:	0b0b 00e2 	mov r0,0xe58
 8e00089a:	000b 1002 	movt r0,0x0
 8e00089e:	2003      	mov r1,0x0
 8e0008a0:	2034      	strh r1,[r0]
@@ -790,7 +790,7 @@ Disassembly of section .code_dram:
 8e0008c2:	004b 0042 	mov r0,0x402
 8e0008c6:	443a      	sub r2,r1,r0
 8e0008c8:	0910      	bne 8e0008da <find_rts+0x5e>
-8e0008ca:	060b 00e2 	mov r0,0xe30
+8e0008ca:	0b0b 00e2 	mov r0,0xe58
 8e0008ce:	000b 1002 	movt r0,0x0
 8e0008d2:	3dcb 04e2 	mov r1,0x4eee
 8e0008d6:	2034      	strh r1,[r0]
@@ -817,7 +817,7 @@ Disassembly of section .code_dram:
 8e000914:	004b 0042 	mov r0,0x402
 8e000918:	443a      	sub r2,r1,r0
 8e00091a:	0c10      	bne 8e000932 <find_rts+0xb6>
-8e00091c:	060b 00e2 	mov r0,0xe30
+8e00091c:	0b0b 00e2 	mov r0,0xe58
 8e000920:	000b 1002 	movt r0,0x0
 8e000924:	2823      	mov r1,0x41
 8e000926:	2034      	strh r1,[r0]
@@ -831,7 +831,7 @@ Disassembly of section .code_dram:
 8e000940:	1e4c 0400 	ldr r0,[fp,+0x4]
 8e000944:	443a      	sub r2,r1,r0
 8e000946:	b350      	bltu 8e0008ac <find_rts+0x30>
-8e000948:	060b 00e2 	mov r0,0xe30
+8e000948:	0b0b 00e2 	mov r0,0xe58
 8e00094c:	000b 1002 	movt r0,0x0
 8e000950:	0024      	ldrh r0,[r0]
 8e000952:	20bb 0008 	sub r1,r0,65
@@ -842,7 +842,7 @@ Disassembly of section .code_dram:
 8e000960:	1e4c 0400 	ldr r0,[fp,+0x4]
 8e000964:	443a      	sub r2,r1,r0
 8e000966:	0910      	bne 8e000978 <find_rts+0xfc>
-8e000968:	060b 00e2 	mov r0,0xe30
+8e000968:	0b0b 00e2 	mov r0,0xe58
 8e00096c:	000b 1002 	movt r0,0x0
 8e000970:	2843      	mov r1,0x42
 8e000972:	2034      	strh r1,[r0]
@@ -854,7 +854,7 @@ Disassembly of section .code_dram:
 8e000982:	002e      	asr r0,r0,0x1
 8e000984:	20b3      	sub r1,r0,1
 8e000986:	0920      	bgtu 8e000998 <find_rts+0x11c>
-8e000988:	060b 00e2 	mov r0,0xe30
+8e000988:	0b0b 00e2 	mov r0,0xe58
 8e00098c:	000b 1002 	movt r0,0x0
 8e000990:	2863      	mov r1,0x43
 8e000992:	2034      	strh r1,[r0]
@@ -880,7 +880,7 @@ Disassembly of section .code_dram:
 8e0009d0:	1ccc 0401 	ldr r0,[fp,+0x9]
 8e0009d4:	00a4      	ldrh r0,[r0,0x1]
 8e0009d6:	1c3c 0402 	strh r0,[fp,+0x10]
-8e0009da:	060b 00e2 	mov r0,0xe30
+8e0009da:	0b0b 00e2 	mov r0,0xe58
 8e0009de:	000b 1002 	movt r0,0x0
 8e0009e2:	2003      	mov r1,0x0
 8e0009e4:	2034      	strh r1,[r0]
@@ -890,7 +890,7 @@ Disassembly of section .code_dram:
 8e0009f0:	016b 0b02 	mov r0,0xb00b
 8e0009f4:	443a      	sub r2,r1,r0
 8e0009f6:	0a00      	beq 8e000a0a <get_sp_disp+0x62>
-8e0009f8:	060b 00e2 	mov r0,0xe30
+8e0009f8:	0b0b 00e2 	mov r0,0xe58
 8e0009fc:	000b 1002 	movt r0,0x0
 8e000a00:	2623      	mov r1,0x31
 8e000a02:	2034      	strh r1,[r0]
@@ -902,7 +902,7 @@ Disassembly of section .code_dram:
 8e000a14:	000b 0242 	mov r0,0x2400
 8e000a18:	443a      	sub r2,r1,r0
 8e000a1a:	0a00      	beq 8e000a2e <get_sp_disp+0x86>
-8e000a1c:	060b 00e2 	mov r0,0xe30
+8e000a1c:	0b0b 00e2 	mov r0,0xe58
 8e000a20:	000b 1002 	movt r0,0x0
 8e000a24:	2643      	mov r1,0x32
 8e000a26:	2034      	strh r1,[r0]
@@ -925,7 +925,7 @@ Disassembly of section .code_dram:
 8e000a5e:	018b 0d02 	mov r0,0xd00c
 8e000a62:	443a      	sub r2,r1,r0
 8e000a64:	0900      	beq 8e000a76 <get_sp_disp+0xce>
-8e000a66:	060b 00e2 	mov r0,0xe30
+8e000a66:	0b0b 00e2 	mov r0,0xe58
 8e000a6a:	000b 1002 	movt r0,0x0
 8e000a6e:	2663      	mov r1,0x33
 8e000a70:	2034      	strh r1,[r0]
@@ -937,7 +937,7 @@ Disassembly of section .code_dram:
 8e000a80:	000b 0202 	mov r0,0x2000
 8e000a84:	443a      	sub r2,r1,r0
 8e000a86:	0900      	beq 8e000a98 <get_sp_disp+0xf0>
-8e000a88:	060b 00e2 	mov r0,0xe30
+8e000a88:	0b0b 00e2 	mov r0,0xe58
 8e000a8c:	000b 1002 	movt r0,0x0
 8e000a90:	2683      	mov r1,0x34
 8e000a92:	2034      	strh r1,[r0]
@@ -991,7 +991,7 @@ Disassembly of section .code_dram:
 8e000b18:	1cac 0401 	ldrh r0,[fp,+0x9]
 8e000b1c:	000b 1002 	movt r0,0x0
 8e000b20:	1ebc 0401 	strh r0,[fp,+0xd]
-8e000b24:	060b 00e2 	mov r0,0xe30
+8e000b24:	0b0b 00e2 	mov r0,0xe58
 8e000b28:	000b 1002 	movt r0,0x0
 8e000b2c:	3dcb 03e2 	mov r1,0x3eee
 8e000b30:	2034      	strh r1,[r0]
@@ -1002,6 +1002,27 @@ Disassembly of section .code_dram:
 8e000b3e:	b41b 2405 	add sp,sp,40
 8e000b42:	194f 0402 	rts
 8e000b46:	01a2      	nop
+
+8e000b48 <ck_01>:
+8e000b48:	3ccc 0500 	ldr r1,[fp,-0x1]
+8e000b4c:	1d4c 0500 	ldr r0,[fp,-0x2]
+8e000b50:	443a      	sub r2,r1,r0
+8e000b52:	1210      	bne 8e000b76 <ck_01+0x2e>
+8e000b54:	a90b e0b2 	mov r61,0xb48
+8e000b58:	a00b f8e2 	movt r61,0x8e00
+8e000b5c:	14ef 1c02 	mov r0,r61
+8e000b60:	1ddc 0500 	str r0,[fp,-0x3]
+8e000b64:	4003      	mov r2,0x0
+8e000b66:	2003      	mov r1,0x0
+8e000b68:	1dcc 0500 	ldr r0,[fp,-0x3]
+8e000b6c:	650b 0062 	mov r3,0x628
+8e000b70:	600b 18e2 	movt r3,0x8e00
+8e000b74:	0d52      	jalr r3
+8e000b76:	ab0b e0d2 	mov r61,0xd58
+8e000b7a:	a00b f002 	movt r61,0x0
+8e000b7e:	155f 1c02 	jalr r61
+8e000b82:	0fe2      	trap 0x3
+8e000b84:	194f 0402 	rts
 
 Disassembly of section .shared_dram:
 
@@ -1048,13 +1069,13 @@ Disassembly of section .text:
  158:	157c 0400 	strd r0,[sp,+0x2]
  15c:	f5dc 2400 	str fp,[sp,+0x3]
  160:	f4ef 2402 	mov fp,sp
- 164:	070b 00e2 	mov r0,0xe38
+ 164:	0c0b 00e2 	mov r0,0xe60
  168:	000b 1002 	movt r0,0x0
  16c:	010c 0006 	ldrb r0,[r0,+0x32]
  170:	0093      	add r0,r0,1
  172:	2316      	lsl r1,r0,0x18
  174:	2706      	lsr r1,r1,0x18
- 176:	070b 00e2 	mov r0,0xe38
+ 176:	0c0b 00e2 	mov r0,0xe60
  17a:	000b 1002 	movt r0,0x0
  17e:	211c 0006 	strb r1,[r0,+0x32]
  182:	01a2      	nop
@@ -1930,7 +1951,7 @@ Disassembly of section .text:
  bb4:	f65c 2700 	str fp,[sp],-0x4
  bb8:	f4ef 2402 	mov fp,sp
  bbc:	1ddc 0400 	str r0,[fp,+0x3]
- bc0:	070b 00e2 	mov r0,0xe38
+ bc0:	0c0b 00e2 	mov r0,0xe60
  bc4:	000b 1002 	movt r0,0x0
  bc8:	376b 0ff2 	mov r1,0xffbb
  bcc:	201c 0006 	strb r1,[r0,+0x30]
@@ -1944,7 +1965,7 @@ Disassembly of section .text:
  be0:	f65c 2700 	str fp,[sp],-0x4
  be4:	f4ef 2402 	mov fp,sp
  be8:	1ddc 0400 	str r0,[fp,+0x3]
- bec:	070b 00e2 	mov r0,0xe38
+ bec:	0c0b 00e2 	mov r0,0xe60
  bf0:	000b 1002 	movt r0,0x0
  bf4:	3bab 0ff2 	mov r1,0xffdd
  bf8:	209c 0006 	strb r1,[r0,+0x31]
@@ -1977,7 +1998,7 @@ Disassembly of section .text:
  c48:	1ddc 0400 	str r0,[fp,+0x3]
  c4c:	1dcc 0400 	ldr r0,[fp,+0x3]
  c50:	1edc 0400 	str r0,[fp,+0x5]
- c54:	060b 00e2 	mov r0,0xe30
+ c54:	0b0b 00e2 	mov r0,0xe58
  c58:	000b 1002 	movt r0,0x0
  c5c:	2003      	mov r1,0x0
  c5e:	2034      	strh r1,[r0]
@@ -2011,7 +2032,7 @@ Disassembly of section .text:
  cae:	004b 0042 	mov r0,0x402
  cb2:	443a      	sub r2,r1,r0
  cb4:	0910      	bne cc6 <find_interrupt_call+0x86>
- cb6:	060b 00e2 	mov r0,0xe30
+ cb6:	0b0b 00e2 	mov r0,0xe58
  cba:	000b 1002 	movt r0,0x0
  cbe:	3dcb 02e2 	mov r1,0x2eee
  cc2:	2034      	strh r1,[r0]
@@ -2027,7 +2048,7 @@ Disassembly of section .text:
  cdc:	004b 0042 	mov r0,0x402
  ce0:	443a      	sub r2,r1,r0
  ce2:	0b10      	bne cf8 <find_interrupt_call+0xb8>
- ce4:	060b 00e2 	mov r0,0xe30
+ ce4:	0b0b 00e2 	mov r0,0xe58
  ce8:	000b 1002 	movt r0,0x0
  cec:	2423      	mov r1,0x21
  cee:	2034      	strh r1,[r0]
@@ -2051,79 +2072,93 @@ Disassembly of section .text:
  d20:	194f 0402 	rts
 
 00000d24 <main>:
- d24:	d5fc 2700 	strd lr,[sp],-0x3
- d28:	f41b 2403 	add fp,sp,24
+ d24:	d6fc 2700 	strd lr,[sp],-0x5
+ d28:	f41b 2405 	add fp,sp,40
  d2c:	000b 0002 	mov r0,0x0
  d30:	000b 18e2 	movt r0,0x8e00
  d34:	0152      	jalr r0
- d36:	0003      	mov r0,0x0
- d38:	1fbc 0500 	strh r0,[fp,-0x7]
- d3c:	051f 0032 	movfs r0,coreid
- d40:	1fbc 0500 	strh r0,[fp,-0x7]
- d44:	1fac 0500 	ldrh r0,[fp,-0x7]
- d48:	1cbc 0500 	strh r0,[fp,-0x1]
- d4c:	1cac 0500 	ldrh r0,[fp,-0x1]
- d50:	2296      	lsl r1,r0,0x14
- d52:	1f8b 0002 	mov r0,0xfc
- d56:	01eb 1002 	movt r0,0xf
- d5a:	047a      	orr r0,r1,r0
- d5c:	1d5c 0500 	str r0,[fp,-0x2]
- d60:	1d4c 0500 	ldr r0,[fp,-0x2]
- d64:	1ddc 0500 	str r0,[fp,-0x3]
- d68:	070b 00e2 	mov r0,0xe38
- d6c:	000b 1002 	movt r0,0x0
- d70:	202b 0be2 	mov r1,0xbe01
- d74:	214b 1002 	movt r1,0xa
- d78:	2354      	str r1,[r0,0x6]
- d7a:	070b 00e2 	mov r0,0xe38
- d7e:	000b 1002 	movt r0,0x0
- d82:	204b 0be2 	mov r1,0xbe02
- d86:	214b 1002 	movt r1,0xa
- d8a:	23d4      	str r1,[r0,0x7]
- d8c:	070b 00e2 	mov r0,0xe38
- d90:	000b 1002 	movt r0,0x0
- d94:	3dcb 00e2 	mov r1,0xeee
- d98:	21d4      	str r1,[r0,0x3]
- d9a:	1e2b 0ff2 	mov r0,0xfff1
- d9e:	1f9c 0501 	strb r0,[fp,-0xf]
- da2:	0e0b 00e2 	mov r0,0xe70
+ d36:	1543      	mov r0,0xaa
+ d38:	1cdc 0500 	str r0,[fp,-0x1]
+ d3c:	144b 00a2 	mov r0,0xaa2
+ d40:	1d5c 0500 	str r0,[fp,-0x2]
+ d44:	0392      	gid
+ d46:	d8ef e402 	mov r62,lr
+ d4a:	a90b e0b2 	mov r61,0xb48
+ d4e:	a00b f8e2 	movt r61,0x8e00
+ d52:	155f 1c02 	jalr r61
+ d56:	01a2      	nop
+
+00000d58 <end_ck_01>:
+ d58:	d8ef 3c02 	mov lr,r62
+ d5c:	0192      	gie
+ d5e:	0003      	mov r0,0x0
+ d60:	1ebc 0501 	strh r0,[fp,-0xd]
+ d64:	051f 0032 	movfs r0,coreid
+ d68:	1ebc 0501 	strh r0,[fp,-0xd]
+ d6c:	1eac 0501 	ldrh r0,[fp,-0xd]
+ d70:	1fbc 0500 	strh r0,[fp,-0x7]
+ d74:	1fac 0500 	ldrh r0,[fp,-0x7]
+ d78:	2296      	lsl r1,r0,0x14
+ d7a:	1f8b 0002 	mov r0,0xfc
+ d7e:	01eb 1002 	movt r0,0xf
+ d82:	047a      	orr r0,r1,r0
+ d84:	1edc 0500 	str r0,[fp,-0x5]
+ d88:	1ecc 0500 	ldr r0,[fp,-0x5]
+ d8c:	1f5c 0500 	str r0,[fp,-0x6]
+ d90:	0c0b 00e2 	mov r0,0xe60
+ d94:	000b 1002 	movt r0,0x0
+ d98:	202b 0be2 	mov r1,0xbe01
+ d9c:	214b 1002 	movt r1,0xa
+ da0:	2354      	str r1,[r0,0x6]
+ da2:	0c0b 00e2 	mov r0,0xe60
  da6:	000b 1002 	movt r0,0x0
- daa:	0044      	ldr r0,[r0]
- dac:	3f8c 0501 	ldrb r1,[fp,-0xf]
- db0:	2314      	strb r1,[r0,0x6]
- db2:	0e0b 00e2 	mov r0,0xe70
- db6:	000b 1002 	movt r0,0x0
- dba:	0044      	ldr r0,[r0]
- dbc:	0304      	ldrb r0,[r0,0x6]
- dbe:	3f8c 0501 	ldrb r1,[fp,-0xf]
- dc2:	443a      	sub r2,r1,r0
- dc4:	f710      	bne db2 <main+0x8e>
- dc6:	0003      	mov r0,0x0
- dc8:	d5ec 2400 	ldrd lr,[sp,+0x3]
- dcc:	b41b 2403 	add sp,sp,24
- dd0:	194f 0402 	rts
+ daa:	204b 0be2 	mov r1,0xbe02
+ dae:	214b 1002 	movt r1,0xa
+ db2:	23d4      	str r1,[r0,0x7]
+ db4:	0c0b 00e2 	mov r0,0xe60
+ db8:	000b 1002 	movt r0,0x0
+ dbc:	3dcb 00e2 	mov r1,0xeee
+ dc0:	21d4      	str r1,[r0,0x3]
+ dc2:	1e2b 0ff2 	mov r0,0xfff1
+ dc6:	1d9c 0503 	strb r0,[fp,-0x1b]
+ dca:	130b 00e2 	mov r0,0xe98
+ dce:	000b 1002 	movt r0,0x0
+ dd2:	0044      	ldr r0,[r0]
+ dd4:	3d8c 0503 	ldrb r1,[fp,-0x1b]
+ dd8:	2314      	strb r1,[r0,0x6]
+ dda:	130b 00e2 	mov r0,0xe98
+ dde:	000b 1002 	movt r0,0x0
+ de2:	0044      	ldr r0,[r0]
+ de4:	0304      	ldrb r0,[r0,0x6]
+ de6:	3d8c 0503 	ldrb r1,[fp,-0x1b]
+ dea:	443a      	sub r2,r1,r0
+ dec:	f710      	bne dda <end_ck_01+0x82>
+ dee:	0003      	mov r0,0x0
+ df0:	d6ec 2400 	ldrd lr,[sp,+0x5]
+ df4:	b41b 2405 	add sp,sp,40
+ df8:	194f 0402 	rts
 
 Disassembly of section .bss:
 
-00000dd8 <__FIRST_PROG_VAR__>:
+00000e00 <__FIRST_PROG_VAR__>:
 	...
 
-00000de0 <bjk_dbg_call_stack_trace>:
+00000e08 <bjk_dbg_call_stack_trace>:
 	...
 
-00000e30 <bjk_trace_err>:
+00000e58 <bjk_trace_err>:
 	...
 
-00000e38 <bj_in_core_shd>:
+00000e60 <bj_in_core_shd>:
 	...
 
-00000e70 <bj_off_core_pt>:
+00000e98 <bj_off_core_pt>:
 	...
 
-00000e78 <bj_glb_sys>:
+00000ea0 <bj_glb_sys>:
 	...
 
-00000e80 <aux_val>:
+00000ea8 <aux_val>:
 	...
 
 Disassembly of section .comment:

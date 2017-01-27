@@ -40,14 +40,6 @@ bjk_set_sync_irq(){
 	*ivt = ((((unsigned)sync_interruption) >> 1) << 8) | B_OPCODE;
 }
 
-void 
-bj_memset(uint8_t* bytes, uint8_t val, uint32_t sz){
-	uint32_t idx = 0;
-	for(idx = 0; idx < sz; idx++){
-		bytes[idx] = val;
-	}
-}
-
 void bj_inline_fn
 bjk_set_coreid(void) {
 	bj_asm("movfs %0, coreid" : "=r" (bj_in_core_shd.the_coreid));
@@ -97,7 +89,7 @@ bjk_init_global(void) {
 
 void
 abort(){	// Needed when optimizing for size
-	BJ_CK2(ck2_abort, 0);
+	BJK_CK2(ck2_abort, 0);
 	bjk_abort(0xdead0001, 0, 0x0);
 	while(1);
 }

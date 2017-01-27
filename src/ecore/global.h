@@ -4,7 +4,8 @@
 #ifndef BJ_GLOBAL_H
 #define BJ_GLOBAL_H
 
-#include "shared_data.h"
+#include "debug.h"
+#include "shared.h"
 #include "trace.h"
 
 #ifdef __cplusplus
@@ -29,9 +30,6 @@ extern uint16_t bjk_trace_err;
 #define bj_outlink_global bj_outlink
 //define bj_outlink_global ;
 
-void 
-bj_memset(uint8_t* bytes, uint8_t val, uint32_t sz);
-
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
 	set_off_chip_var(bj_off_core_pt->is_finished, val);
@@ -46,7 +44,8 @@ abort(void) bj_outlink_global;		// Needed when -Os flag is set
 //======================================================================
 // bj_asserts
 
-#define BJ_OFFCHIP_ASSERT(nam, sec, cond) \
+#define BJK_OFFCHIP_ASSERT(nam, sec, cond) \
+	DBG( \
 	{ \
 		bj_asm( \
 			"gid \n\t" \
@@ -82,10 +81,12 @@ abort(void) bj_outlink_global;		// Needed when -Os flag is set
 			"gie \n\t" \
 		); \
 	} \
+	) \
 	
 // end_of_macro
 
-#define BJ_INCORE_ASSERT(nam, cond) \
+#define BJK_INCORE_ASSERT(nam, cond) \
+	DBG( \
 	if(! (cond)){ \
 		bj_addr_t nm_addr; \
 		bj_asm( \
@@ -97,12 +98,13 @@ abort(void) bj_outlink_global;		// Needed when -Os flag is set
 		bj_asm("mov %0, r61" : "=r" (nm_addr)); \
 		bjk_abort(nm_addr, BJ_MAX_CALL_STACK_SZ, bjk_dbg_call_stack_trace); \
 	} \
+	) \
 
 // end_of_macro
 
-#define BJ_CK(nam, cond) BJ_OFFCHIP_ASSERT(nam, code_dram, cond)
+#define BJK_CK(nam, cond) BJK_OFFCHIP_ASSERT(nam, code_dram, cond)
 
-#define BJ_CK2(nam, cond) BJ_INCORE_ASSERT(nam, cond)
+#define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
 
 
 //======================================================================

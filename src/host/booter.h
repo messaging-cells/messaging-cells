@@ -1,0 +1,55 @@
+
+// attribute.h
+
+#ifndef BJ_BOOTER_H
+#define BJ_BOOTER_H
+
+#include <stdio.h>
+
+#include "debug.h"
+#include "stdbool.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define as_pt_char(the_str) (the_str)
+
+void 
+bjh_abort_func(long val, const char* msg);
+
+bool 
+bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg);
+
+#define bjh_assert(vv) bjh_call_assert(vv, as_pt_char(__FILE__), __LINE__, as_pt_char(#vv), NULL)
+	
+#define	BJH_DBG_COND_COMM(cond, comm)	\
+	DBG( \
+		if(cond){ \
+			comm; \
+			printf("\n"); \
+		} \
+	) \
+
+//--end_of_def
+
+#define BJH_CK(prm)	   	DBG(bjh_assert(prm))
+
+#define BJH_CK_2(prm, comms1) \
+	BJH_DBG_COND_COMM((! (prm)), \
+		comms1; \
+		printf("\n"); \
+		bjh_assert(prm); \
+	) \
+	
+//--end_of_def
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // BJ_BOOTER_H
+

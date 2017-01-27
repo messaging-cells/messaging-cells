@@ -66,20 +66,21 @@ static void lookup_sections(const void *file, int addrs_sz, void** stack_addrs)
 {
 	uint16_t ii;
 	uint16_t kk;
-	size_t jj;
+	//size_t jj;
 	Elf32_Ehdr *ehdr;
-	Elf32_Phdr *phdr;
-	Elf32_Shdr *shdr, *sh_strtab;
-	const char *strtab;
+	//Elf32_Phdr *phdr;
+	Elf32_Shdr *shdr;
+	//Elf32_Shdr *sh_strtab;
+	//const char *strtab;
 	uint8_t *src = (uint8_t *) file;
 
 	ehdr = (Elf32_Ehdr *) &src[0];
-	phdr = (Elf32_Phdr *) &src[ehdr->e_phoff];
+	//phdr = (Elf32_Phdr *) &src[ehdr->e_phoff];
 	shdr = (Elf32_Shdr *) &src[ehdr->e_shoff];
 	int shnum = ehdr->e_shnum;
 
-	sh_strtab = &shdr[ehdr->e_shstrndx];
-	strtab = (char *) &src[sh_strtab->sh_offset];
+	//sh_strtab = &shdr[ehdr->e_shstrndx];
+	//strtab = (char *) &src[sh_strtab->sh_offset];
 	
 	memset(stack_names, 0, sizeof(stack_names));
 
@@ -89,7 +90,7 @@ static void lookup_sections(const void *file, int addrs_sz, void** stack_addrs)
 			break;
 		}
 		
-		const char* nm = &strtab[shdr[ii].sh_name];
+		//const char* nm = &strtab[shdr[ii].sh_name];
 		//printf("Section %s  ii=%d offset=%d\n", nm, ii, shdr[ii].sh_offset);
 		if(shdr[ii].sh_type == SHT_SYMTAB){
 			//printf("SHT_SYMTAB\n");

@@ -35,7 +35,9 @@ void fun1() {
 int main(void) {
 	bjk_init_global();
 
-	//BJ_CK(ck_01, (aa != aa2));
+	int aa = 0xaa;
+	int aa2 = 0xaa2;
+	BJK_CK(ck_01, (aa != aa2));
 	
 	bj_id_t koid = bjk_get_coreid();
 	bj_addr_t addr_r63 = bj_addr_with(koid, 0xf00fc);

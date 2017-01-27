@@ -1,6 +1,6 @@
 
-#include "global.h"
-#include "rrarray.h"
+#include "shared.h"
+#include "rr_array.h"
 
 //==============================================================================
 // rrarray funcs
