@@ -45,7 +45,7 @@ SRC_CXXFLAGS := -Wall -std=c++14 ${DBG_FLAG}
 SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_ECORE_DIR) $(H_INC_1) 
 
 SOURCES := \
-	$(SRC_HOST_DIR)/$(NAME_PRG).c \
+	$(SRC_HOST_DIR)/booter.c \
 	$(SRC_HOST_DIR)/prt_call_stack.c \
 	$(SRC_ECORE_DIR)/shared.c \
 	$(SRC_ECORE_DIR)/rr_array.c 
