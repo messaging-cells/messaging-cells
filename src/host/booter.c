@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sched.h>
+#include <ctype.h>
 
 #include <e-hal.h>
 #include <e-loader.h>
@@ -17,6 +18,8 @@
 
 #define f_nm_sz   1024
 #define BJ_SHARED_MEM_START_ADDR (0x01000000)
+
+const char* epiphany_elf_nm = "e_prog_18.elf";
 
 int	write_file(char* the_pth, char* the_data, long the_sz, int write_once);
 
@@ -79,9 +82,74 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	return 0;
 }
 
+void
+get_enter(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
+	bj_in_core_st inco;
+	memset(&inco, 0, sizeof(bj_in_core_st));
+	e_read(dev, row, col, (uint32_t)(sh_dat_1->core_data), &inco, sizeof(inco));
+	int err = prt_inko_shd_dat(&inco);
+	if(err){
+		bjh_abort_func(0, "get_enter failed");
+	}
+	
+	void* 	trace[BJ_MAX_CALL_STACK_SZ];
+	memset(trace, 0, sizeof(trace));
+	e_read(dev, row, col, (uint32_t)(inco.dbg_stack_trace), trace, sizeof(trace));
+	bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
+	
+	// CONTINUE
+	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
+	getchar();
+}
+
+void
+bj_rr_print(bj_rrarray_st* arr){
+	if(arr == bj_null){
+		return;
+	}
+	printf("#####################################\n");
+	printf("data=\t%p\n", arr->data);
+	printf("end_data=\t%p\n", arr->end_data);
+	printf("rd_obj=\t%p\n", arr->rd_obj);
+	printf("wr_obj=\t%p\n", arr->wr_obj);
+	printf("num_wr_errs=\t%d\n", arr->num_wr_errs);
+	printf("wr_err=\t%d\n", arr->wr_err);
+	printf("rd_err=\t%d\n", arr->rd_err);
+	uint8_t* dat = arr->data;
+	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	while(dat != arr->end_data){
+		char cc = (char)(*dat);
+		if(isprint(cc)){
+			printf("%c", cc);
+		} 
+		/*else {
+			printf(".");
+		}*/
+		dat++;
+	}
+	printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+}
+
+void
+print_out_buffer(bj_rrarray_st* arr){
+	char obj[BJ_MAX_OBJ_SZ];
+	while(true){
+		uint16_t obj_sz = bj_rr_read_obj(arr, BJ_MAX_OBJ_SZ, (uint8_t*)obj);
+		if(obj_sz == 0){
+			//bj_rr_print(arr);
+			//printf("TYPE ENTER to continue.");
+			//getchar();
+			if(arr->rd_err != -4){
+				break;
+			}
+		} else {
+			printf("OBJ:%s\n", obj);
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
-	const char* epiphany_elf_nm = "e_prog_18.elf";
 	unsigned row, col, max_row, max_col, coreid;
 	e_platform_t platform;
 	e_epiphany_t dev;
@@ -108,6 +176,15 @@ int main(int argc, char *argv[])
 	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)emem.base;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
 	printf("sizeof(*pt_shd_data)=%d\n", sizeof(*pt_shd_data));
+
+	// init shared data.
+	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
+
+	pt_shd_data->magic_id = BJ_MAGIC_ID;
+	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
+
+	pt_shd_data->wrk_sys = bj_glb_sys;	
+	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
 	
 	row = 0;
 	col = 0;
@@ -122,15 +199,16 @@ int main(int argc, char *argv[])
 			printf("DOING CORE 0x%03x (%2d,%2d) NUM=%d\n", coreid, row, col, num_core);
 			
 			// init shared data.
-			memset(pt_shd_data, 0, sizeof(*pt_shd_data));
-			pt_shd_data->magic_id = BJ_MAGIC_ID;
-			pt_shd_data->wrk_sys = bj_glb_sys;
 			pt_shd_data->sys_cores[num_core].magic_id = BJ_MAGIC_ID;
-			
-			BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
 			BJH_CK(pt_shd_data->sys_cores[num_core].magic_id == BJ_MAGIC_ID);
-			BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
-	
+
+			bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+
+			pt_buff->magic_id = BJ_MAGIC_ID;
+			BJH_CK(pt_buff->magic_id == BJ_MAGIC_ID);
+
+			bj_rr_init(&(pt_buff->rd_arr), BJ_OUT_BUFF_SZ, pt_buff->buff, 1);
+
 			// Start one core
 			e_start(&dev, row, col);
 			
@@ -158,25 +236,17 @@ int main(int argc, char *argv[])
 			
 			// wait for finish
 			while(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
+				print_out_buffer(&(pt_buff->rd_arr));
 				if(sh_dat_1->is_waiting){
-					memset(&inco, 0, sizeof(bj_in_core_st));
-					e_read(&dev, row, col, (uint32_t)(sh_dat_1->core_data), &inco, sizeof(inco));
-					int err = prt_inko_shd_dat(&inco);
-					if(err){
-						break;
+					if(sh_dat_1->is_waiting == BJ_WAITING_ENTER){
+						get_enter(sh_dat_1, &dev, row, col);
+					}
+					if(sh_dat_1->is_waiting == BJ_WAITING_BUFFER){
+						print_out_buffer(&(pt_buff->rd_arr));
 					}
 					
-					memset(trace, 0, sizeof(trace));
-					e_read(&dev, row, col, (uint32_t)(inco.dbg_stack_trace), 
-						   trace, sizeof(trace));
-					bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
-					
-					// CONTINUE
-					printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
-					getchar();
-					
 					int SYNC = (1 << E_SYNC);
-					sh_dat_1->is_waiting = 0;
+					sh_dat_1->is_waiting = BJ_NOT_WAITING;
 					if (ee_write_reg(&dev, row, col, E_REG_ILATST, SYNC) == E_ERR) {
 						printf("ERROR sending SYNC to (%d, %d) \n", row, col);
 						break;
@@ -185,6 +255,10 @@ int main(int argc, char *argv[])
 				sched_yield();				//yield
 			}
 			BJH_CK(sh_dat_1->is_finished == BJ_FINISHED_VAL);
+
+			print_out_buffer(&(pt_buff->rd_arr));
+			bj_rr_print(&(pt_buff->rd_arr));
+
 			printf("Finished\n");
 			memset(&inco, 0, sizeof(bj_in_core_st));
 			e_read(&dev, row, col, (uint32_t)sh_dat_1->core_data, &inco, sizeof(inco));

@@ -22,13 +22,13 @@ static void
 get_call_opcode(uint16_t opcode[2], int16_t disp);
 	
 uint16_t*
-find_call(uint16_t* code_addr, uint16_t opcode[2]) bj_outlink_trace;
+find_call(uint16_t* code_addr, uint16_t opcode[2]) bj_trace_code_dram;
 
 uint16_t*
-find_rts(uint16_t* code_addr) bj_outlink_trace;
+find_rts(uint16_t* code_addr) bj_trace_code_dram;
 	
 int16_t
-get_sp_disp(uint16_t* code_addr) bj_outlink_trace;
+get_sp_disp(uint16_t* code_addr) bj_trace_code_dram;
 
 //=====================================================================
 
@@ -289,8 +289,11 @@ bjk_wait_sync(uint32_t info, uint16_t sz_trace, void** trace){
 		"mov r0, #0x3fe" "\n\t"
 		"movts imask, r0" "\n\t"
 	);
-	bj_in_core_shd.dbg_info_wait = info;
-	set_off_chip_var(bj_off_core_pt->is_waiting, BJ_WATING_VAL);
+	//bj_in_core_shd.dbg_info_wait = info;
+	if(info == BJ_NOT_WAITING){
+		info = BJ_WAITING_ENTER;
+	}
+	set_off_chip_var(bj_off_core_pt->is_waiting, info);
 	bj_asm("gie" "\n\t");
 	
 	// wait for SYNC
@@ -300,7 +303,7 @@ bjk_wait_sync(uint32_t info, uint16_t sz_trace, void** trace){
 	// restore old_mask
 	bj_asm("gid" "\n\t");
 	bj_asm("movts imask, %0" : : "r" (old_mask));
-	set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING_VAL);
+	set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
 	bj_asm("gie" "\n\t");
 }
 

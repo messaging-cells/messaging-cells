@@ -5,6 +5,7 @@
 #include "global.h"
 #include "trace.h"
 #include "test1.h"
+#include "test_logs.h"
 
 //=====================================================================
 
@@ -25,12 +26,20 @@ fun10() {
 	return pt_jj2;
 }
 
-/*
-void fun1() {
-	//bjk_wait_sync(0xfe01);
-	bjk_get_call_stack_trace(BJ_MAX_CALL_STACK_SZ, bjk_dbg_call_stack_trace);
+uint16_t 
+bj_strlen(char* str) bj_code_dram ;
+
+uint16_t 
+bj_strlen(char* str) {
+	uint16_t sln = 0;
+	if(str == NULL){
+		return 0;
+	}
+	while(str[sln] != '\0'){
+		sln++;
+	}
+	return sln;
 }
-*/
 
 int main(void) {
 	bjk_init_global();
@@ -56,6 +65,18 @@ int main(void) {
 	//bj_asm("ldr r21, [r20]");
 	bj_asm("mov %0, r21" : "=r" (bj_in_core_shd.val_reg2));
 	*/
+	bj_consec_t num_core = bj_id_to_nn(koid);
+
+	char** john = (char**)(all_tests[num_core]);
+	long john_sz = all_tests_sz[num_core];
+	long ii;
+	for(ii = 0; ii < john_sz; ii++){
+		uint16_t oln = bj_strlen(john[ii]) + 1;
+		uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln, (uint8_t*)john[ii]);
+		if(ow == 0){
+			bjk_wait_sync(BJ_WAITING_BUFFER, 0, NULL);
+		}
+	}
 	
 	bj_in_core_shd.dbg_progress_flag = 0xeee;
 	
@@ -63,4 +84,3 @@ int main(void) {
 	return 0;
 }
 
-	

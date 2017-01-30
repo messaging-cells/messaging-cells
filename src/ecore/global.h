@@ -18,6 +18,7 @@ extern "C" {
 extern void* 	bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
 
 extern bj_off_core_st* bj_off_core_pt;
+extern bj_rrarray_st* bj_write_rrarray;
 extern bj_in_core_st bj_in_core_shd;
 
 extern uint16_t bjk_trace_err;
@@ -25,10 +26,8 @@ extern uint16_t bjk_trace_err;
 //=====================================================================
 // global funcs
 
-#define bj_outlink bj_section("code_dram")
-
-#define bj_outlink_global bj_outlink
-//define bj_outlink_global ;
+#define bj_global_code_dram bj_code_dram
+//define bj_global_code_dram 
 
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
@@ -36,10 +35,10 @@ bjk_set_finished(uint8_t val) {
 }
 
 void 
-bjk_init_global(void) bj_outlink_global;
+bjk_init_global(void) bj_global_code_dram;
 
 void 
-abort(void) bj_outlink_global;		// Needed when -Os flag is set
+abort(void) bj_global_code_dram;		// Needed when -Os flag is set
 
 //======================================================================
 // bj_asserts

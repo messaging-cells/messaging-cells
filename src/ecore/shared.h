@@ -231,8 +231,9 @@ typedef struct bj_in_core_shared_data_def bj_in_core_st;
 #define BJ_NOT_FINISHED_VAL 0x21
 #define BJ_FINISHED_VAL 	0xf1
 
-#define BJ_NOT_WAITING_VAL 	0x0
-#define BJ_WATING_VAL 		0xaa
+#define BJ_NOT_WAITING	 	0x0
+#define BJ_WAITING_ENTER	0xaa
+#define BJ_WAITING_BUFFER	0xbb
 
 struct bj_align(8) bj_off_core_shared_data_def { 
 	uint32_t 	magic_id;
@@ -245,10 +246,12 @@ typedef struct bj_off_core_shared_data_def bj_off_core_st;
 
 
 #define BJ_OUT_BUFF_SZ 	bj_mem_16K
+#define BJ_MAX_OBJ_SZ 500
 
 struct bj_align(8) bj_core_out_def { 
 	uint32_t 		magic_id;
-	bj_rrarray_st 	arr;
+	bj_rrarray_st 	wr_arr;
+	bj_rrarray_st 	rd_arr;
 	uint8_t 		buff[BJ_OUT_BUFF_SZ];
 };
 typedef struct bj_core_out_def bj_core_out_st;

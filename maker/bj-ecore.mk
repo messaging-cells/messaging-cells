@@ -1,4 +1,6 @@
 
+IS_CORE_FLAG := -DIS_CORE_CODE
+
 E_LIBS_1=${ETOOLS}/e-gnu/epiphany-elf/lib
 E_LIBS_2=${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
 
@@ -30,12 +32,13 @@ TGT_CXX := e-g++
 TGT_LINKER := e-ld
 
 # -Wall -std=c11 -nostdlib -nostartfiles
-SRC_CFLAGS := ${OPTSZ_FLAG} ${DBG_FLAG} -Wall -std=gnu11 -nostdlib -nostartfiles -fno-default-inline 
+C_FLAGS_1 := -Wall -std=gnu11 -nostdlib -nostartfiles -fno-default-inline 
+SRC_CFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${C_FLAGS_1}
 
 # -std=c++11 -nostdlib -fno-exceptions -fno-unwind-tables -fno-rtti -Os
 CXX_FLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables 
 CXX_FLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics 
-SRC_CXXFLAGS := ${OPTSZ_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1} ${CXX_FLAGS_2}
+SRC_CXXFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1} ${CXX_FLAGS_2}
 
 SRC_INCDIRS := $(SRC_ECORE_DIR) 
 
@@ -47,6 +50,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/rr_array.c \
 	$(SRC_ECORE_DIR)/test1.cpp \
 	$(SRC_ECORE_DIR)/trace.c \
+	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/e_$(NAME_PRG).c 
 
 

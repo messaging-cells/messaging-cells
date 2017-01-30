@@ -19,6 +19,7 @@ void* 	bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
 bj_sys_st bj_glb_sys;
 
 bj_off_core_st* bj_off_core_pt;
+bj_rrarray_st* bj_write_rrarray;
 bj_in_core_st bj_in_core_shd;
 
 uint16_t bjk_trace_err;
@@ -32,7 +33,7 @@ void
 sync_interruption(void);
 
 void 
-bjk_set_sync_irq() bj_outlink_global;
+bjk_set_sync_irq() bj_global_code_dram;
 	
 void 
 bjk_set_sync_irq(){
@@ -50,6 +51,7 @@ bjk_init_global(void) {
 	// basic init
 	bjk_set_sync_irq();
 	bj_off_core_pt = 0x0;
+	bj_write_rrarray = 0x0;
 	bj_init_glb_sys();
 	
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
@@ -64,9 +66,17 @@ bjk_init_global(void) {
 	// num_core init
 	bj_consec_t num_core = bj_id_to_nn(koid);
 	bj_off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
+
+	if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
+		bjk_abort(0xdeadeb02, 0, 0x0);
+	}
+
+	bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
+	bj_write_rrarray = &(out_st->wr_arr);
+	bj_rr_init(bj_write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
 	
 	if(bj_off_core_pt->magic_id != BJ_MAGIC_ID){
-		bjk_abort(0xdeadeb02, 0, 0x0);
+		bjk_abort(0xdeadeb03, 0, 0x0);
 	}
 	
 	// bj_in_core_shd init
@@ -84,7 +94,7 @@ bjk_init_global(void) {
 	set_off_chip_var(bj_off_core_pt->core_data, &(bj_in_core_shd));
 	
 	bjk_set_finished(BJ_NOT_FINISHED_VAL);
-	set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING_VAL);
+	set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
 }
 
 void

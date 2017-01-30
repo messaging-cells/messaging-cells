@@ -5,11 +5,11 @@
 
 #include <inttypes.h>
 
+#include "attribute.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define bj_align(aa)	__attribute__ ((aligned (aa)))
 
 struct bj_align(8) bj_rrarray_def { 
 	uint32_t magic_id;
@@ -25,13 +25,13 @@ struct bj_align(8) bj_rrarray_def {
 typedef struct bj_rrarray_def bj_rrarray_st;
 
 void
-bj_rr_init(bj_rrarray_st* arr, uint32_t size, uint8_t* data);
+bj_rr_init(bj_rrarray_st* arr, uint32_t size, uint8_t* data, uint8_t reset) bj_code_dram;
 
 uint16_t
-bj_rr_read_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj);
+bj_rr_read_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj) bj_code_dram;
 
 uint16_t
-bj_rr_write_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj);
+bj_rr_write_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj) bj_code_dram;
 
 #ifdef __cplusplus
 }

@@ -8,6 +8,21 @@
 #define BJ_CRC16_POLY 0x8408
 
 uint16_t 
+bj_crc16(uint8_t *data_p, uint16_t length) bj_code_dram;
+
+uint16_t 
+bj_get_v16_of_p8(uint8_t* p8) bj_code_dram;
+
+void
+bj_set_v16_of_p8(uint8_t* p8, uint16_t v16) bj_code_dram;
+
+uint16_t
+bj_rr_get_v16(bj_rrarray_st* arr, uint8_t** pt_dat) bj_code_dram;
+
+void
+bj_rr_set_v16(bj_rrarray_st* arr, uint8_t** pt_dat, uint16_t v16) bj_code_dram;
+
+uint16_t 
 bj_crc16(uint8_t *data_p, uint16_t length){
 	uint8_t ii;
 	uint16_t data;
@@ -55,21 +70,23 @@ bj_set_v16_of_p8(uint8_t* p8, uint16_t v16){
 }
 
 void
-bj_rr_init(bj_rrarray_st* arr, uint32_t sz, uint8_t* dat){
+bj_rr_init(bj_rrarray_st* arr, uint32_t sz, uint8_t* dat, uint8_t reset){
 	if(arr == bj_null){
 		return;
 	}
-	arr->magic_id = BJ_MAGIC_ID;
-	arr->data = dat;
-	bj_memset(arr->data, 0, sz);
+	set_off_chip_var(arr->magic_id, BJ_MAGIC_ID);
+	set_off_chip_var(arr->data, dat);
+	if(reset){
+		bj_memset(arr->data, 0, sz);
+	}
 	
-	arr->end_data = dat + sz;
-	arr->wr_obj = arr->data;
-	arr->rd_obj = arr->data;
+	set_off_chip_var(arr->end_data, (dat + sz));
+	set_off_chip_var(arr->wr_obj, arr->data);
+	set_off_chip_var(arr->rd_obj, arr->data);
 	
-	arr->num_wr_errs = 0;
-	arr->wr_err = 0;
-	arr->rd_err = 0;
+	set_off_chip_var(arr->num_wr_errs, 0);
+	set_off_chip_var(arr->wr_err, 0);
+	set_off_chip_var(arr->rd_err, 0);
 }
 
 uint16_t
