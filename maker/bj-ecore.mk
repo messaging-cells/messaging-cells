@@ -17,7 +17,7 @@ OPTSZ_FLAG :=
 
 # =======================================
 
-TARGET := e_$(NAME_PRG).elf
+TARGET := bj-core-actor.elf
 
 TGT_LDFLAGS := -T ${E_LDF} -L${E_LIBS_1} -L${E_LIBS_2} --strip-debug 
 
@@ -51,6 +51,6 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/test1.cpp \
 	$(SRC_ECORE_DIR)/trace.c \
 	$(SRC_ECORE_DIR)/test_logs.c \
-	$(SRC_ECORE_DIR)/e_$(NAME_PRG).c 
+	$(SRC_ECORE_DIR)/core_main.c 
 
 

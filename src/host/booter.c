@@ -20,7 +20,7 @@
 #define f_nm_sz   1024
 #define BJ_SHARED_MEM_START_ADDR (0x01000000)
 
-const char* epiphany_elf_nm = "e_prog_18.elf";
+const char* epiphany_elf_nm = "bj-core-actor.elf";
 
 int	write_file(char* the_pth, char* the_data, long the_sz, int write_once);
 
@@ -83,12 +83,7 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	
 	printf("dbg_error_code=0x%08x \n", sh_dat->dbg_error_code);
 	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
-	printf("dbg_info_wait=0x%08x \n", sh_dat->dbg_info_wait);
 
-	printf("val_reg1=0x%08x \n", sh_dat->val_reg1);
-	printf("val_reg2=0x%08x \n", sh_dat->val_reg2);
-	
-	
 	printf("got_irq0=0x%02x \n", sh_dat->got_irq0);
 	
 	printf("\n");

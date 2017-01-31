@@ -289,7 +289,6 @@ bjk_wait_sync(uint32_t info, uint16_t sz_trace, void** trace){
 		"mov r0, #0x3fe" "\n\t"
 		"movts imask, r0" "\n\t"
 	);
-	//bj_in_core_shd.dbg_info_wait = info;
 	if(info == BJ_NOT_WAITING){
 		info = BJ_WAITING_ENTER;
 	}

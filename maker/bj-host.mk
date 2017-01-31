@@ -27,7 +27,7 @@ DBG_FLAG := -DFULL_DEBUG
 
 # =======================================
 
-TARGET := $(NAME_PRG)_elf
+TARGET := bj-actor-booter.elf
 
 TGT_LDFLAGS := -L${H_LIB_1}
 

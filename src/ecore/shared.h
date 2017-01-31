@@ -196,25 +196,16 @@ bj_v32_of_p16(uint16_t* p16){
 
 #define BJ_MAX_CALL_STACK_SZ	20
 
-struct bj_align(8) bj_in_core_shared_data_def { // CAREFUL !! sometimes aligment(ekore) != aligment(host)
+struct bj_align(8) bj_in_core_shared_data_def { 
+	// CAREFUL !! sometimes aligment(ekore) != aligment(host). bj_align(8) SHOULD SOLVE that.
 	uint32_t 	magic_id;
 	void** 		dbg_stack_trace;
 	
 	uint32_t 	dbg_error_code;
 	uint32_t 	dbg_progress_flag;
-	uint32_t 	dbg_info_wait;
-	
-	bj_sys_st* 	curr_sys;
-	
-	uint32_t 	val_reg1;
-	uint32_t 	val_reg2;
 
-	uint16_t* pc_val;
-	uint16_t* rts_addr;
-	uint16_t* call_addr;
-	uint16_t disp; 
-	
 	bj_id_t 	the_coreid;
+	
 	uint8_t 	cpp_fun1;
 	uint8_t 	cpp_dcla1;
 	uint8_t 	got_irq0;
