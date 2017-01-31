@@ -1,13 +1,13 @@
 
 #include <assert.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sched.h>
 #include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sched.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <e-hal.h>
 #include <e-loader.h>
@@ -46,6 +46,19 @@ bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, cons
 	}
 	assert(vv_ck);
 	return vv_ck;
+}
+
+bool
+bjh_file_append(char* the_pth, char* the_data, long the_sz){
+	int fd = 0;
+	
+	if((fd = open(the_pth, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
+		return false;
+	}
+	write(fd, the_data, the_sz);
+	close(fd);
+
+	return true;
 }
 
 bool ck_sys_data(bj_sys_st* sys1){

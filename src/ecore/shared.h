@@ -272,6 +272,9 @@ bjh_prt_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
 void 
 bj_memset(uint8_t* bytes, uint8_t val, uint32_t sz);
 
+uint16_t 
+bj_strlen(char* str) bj_code_dram;
+
 #ifdef __cplusplus
 }
 #endif

@@ -26,45 +26,12 @@ fun10() {
 	return pt_jj2;
 }
 
-uint16_t 
-bj_strlen(char* str) bj_code_dram ;
-
-uint16_t 
-bj_strlen(char* str) {
-	uint16_t sln = 0;
-	if(str == NULL){
-		return 0;
-	}
-	while(str[sln] != '\0'){
-		sln++;
-	}
-	return sln;
-}
-
 int main(void) {
 	bjk_init_global();
 
-	int aa = 0xaa;
-	int aa2 = 0xaa2;
-	BJK_CK(ck_01, (aa != aa2));
+	//BJK_CK(ck_01, (aa != aa2));
 	
 	bj_id_t koid = bjk_get_coreid();
-	bj_addr_t addr_r63 = bj_addr_with(koid, 0xf00fc);
-	uint32_t* pt_reg = (uint32_t*)addr_r63;
-	
-	bj_in_core_shd.val_reg1 = 0xabe01;
-	bj_in_core_shd.val_reg2 = 0xabe02;
-	/*
-	//uint32_t vreg = *pt_reg;
-	//bj_in_core_shd.val_reg2 = vreg;
-
-	bj_asm("mov r21, 0xaaaa");
-	bj_asm("movt r21, 0xbbbb");
-	bj_asm("mov r20, 0x00fc");
-	bj_asm("movt r20, 0x000f");
-	//bj_asm("ldr r21, [r20]");
-	bj_asm("mov %0, r21" : "=r" (bj_in_core_shd.val_reg2));
-	*/
 	bj_consec_t num_core = bj_id_to_nn(koid);
 
 	char** john = (char**)(all_tests[num_core]);

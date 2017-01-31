@@ -22,6 +22,10 @@ bjh_abort_func(long val, const char* msg);
 bool 
 bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg);
 
+bool
+bjh_file_append(char* the_pth, char* the_data, long the_sz);
+
+
 #define bjh_assert(vv) bjh_call_assert(vv, as_pt_char(__FILE__), __LINE__, as_pt_char(#vv), NULL)
 	
 #define	BJH_DBG_COND_COMM(cond, comm)	\
