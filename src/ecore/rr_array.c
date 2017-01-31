@@ -74,19 +74,19 @@ bj_rr_init(bj_rrarray_st* arr, uint32_t sz, uint8_t* dat, uint8_t reset){
 	if(arr == bj_null){
 		return;
 	}
-	set_off_chip_var(arr->magic_id, BJ_MAGIC_ID);
-	set_off_chip_var(arr->data, dat);
+	bj_set_off_chip_var(arr->magic_id, BJ_MAGIC_ID);
+	bj_set_off_chip_var(arr->data, dat);
 	if(reset){
 		bj_memset(arr->data, 0, sz);
 	}
 	
-	set_off_chip_var(arr->end_data, (dat + sz));
-	set_off_chip_var(arr->wr_obj, arr->data);
-	set_off_chip_var(arr->rd_obj, arr->data);
+	bj_set_off_chip_var(arr->end_data, (dat + sz));
+	bj_set_off_chip_var(arr->wr_obj, arr->data);
+	bj_set_off_chip_var(arr->rd_obj, arr->data);
 	
-	set_off_chip_var(arr->num_wr_errs, 0);
-	set_off_chip_var(arr->wr_err, 0);
-	set_off_chip_var(arr->rd_err, 0);
+	bj_set_off_chip_var(arr->num_wr_errs, 0);
+	bj_set_off_chip_var(arr->wr_err, 0);
+	bj_set_off_chip_var(arr->rd_err, 0);
 }
 
 uint16_t
@@ -136,15 +136,15 @@ bj_rr_read_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 	uint8_t* dat = arr->rd_obj;
 	uint16_t osz = bj_rr_get_v16(arr, &dat);
 	if(osz == 0){
-		set_off_chip_var(arr->rd_err, -1);
+		bj_set_off_chip_var(arr->rd_err, -1);
 		return 0;
 	}
 	if(osz > obj_sz){
-		set_off_chip_var(arr->rd_err, -2);
+		bj_set_off_chip_var(arr->rd_err, -2);
 		return 0;
 	}
 	if(osz > (arr->end_data - arr->data)){
-		set_off_chip_var(arr->rd_err, -3);
+		bj_set_off_chip_var(arr->rd_err, -3);
 		return 0;
 	}
 	uint16_t ii;
@@ -158,7 +158,7 @@ bj_rr_read_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 	uint16_t tcrc16 = bj_rr_get_v16(arr, &dat);
 	uint16_t rcrc16 = bj_crc16(obj, osz);
 	if(tcrc16 != rcrc16){
-		set_off_chip_var(arr->rd_err, -4);
+		bj_set_off_chip_var(arr->rd_err, -4);
 		return 0;
 	}
 	uint8_t* dat2 = arr->rd_obj;
@@ -169,7 +169,7 @@ bj_rr_read_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 		(*dat2) = 0;
 		dat2++;
 	}
-	set_off_chip_var(arr->rd_obj, dat2);
+	bj_set_off_chip_var(arr->rd_obj, dat2);
 	return osz;
 }
 
@@ -181,15 +181,15 @@ bj_rr_write_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 	uint32_t nme = arr->num_wr_errs;
 	uint16_t osz = obj_sz;
 	if(osz > ((arr->end_data - arr->data) - (2 * sizeof(uint16_t)))){
-		set_off_chip_var(arr->wr_err, -1);
+		bj_set_off_chip_var(arr->wr_err, -1);
 		nme++;
-		set_off_chip_var(arr->num_wr_errs, nme);
+		bj_set_off_chip_var(arr->num_wr_errs, nme);
 		return 0;
 	}
 	if(osz <= 0){
-		set_off_chip_var(arr->wr_err, -2);
+		bj_set_off_chip_var(arr->wr_err, -2);
 		nme++;
-		set_off_chip_var(arr->num_wr_errs, nme);
+		bj_set_off_chip_var(arr->num_wr_errs, nme);
 		return 0;
 	}
 	uint16_t w_sz = obj_sz + (3 * sizeof(uint16_t));
@@ -205,9 +205,9 @@ bj_rr_write_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 		dat2++;
 	}
 	if(dat2 == 0){
-		set_off_chip_var(arr->wr_err, -3);
+		bj_set_off_chip_var(arr->wr_err, -3);
 		nme++;
-		set_off_chip_var(arr->num_wr_errs, nme);
+		bj_set_off_chip_var(arr->num_wr_errs, nme);
 		return 0;
 	}
 	uint8_t* dat = arr->wr_obj;
@@ -222,7 +222,7 @@ bj_rr_write_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 	}
 	uint16_t rcrc16 = bj_crc16(obj, osz);
 	bj_rr_set_v16(arr, &dat, rcrc16);
-	set_off_chip_var(arr->wr_obj, dat); 
+	bj_set_off_chip_var(arr->wr_obj, dat); 
 	return osz;
 }
 

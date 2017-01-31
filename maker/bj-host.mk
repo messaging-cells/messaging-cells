@@ -39,7 +39,7 @@ TGT_CC := $(HCOMP)
 
 TGT_LINKER := $(HCOMP)
 
-SRC_CFLAGS := -Wall -std=c11 ${DBG_FLAG} 
+SRC_CFLAGS := -Wall -std=gnu11 ${DBG_FLAG} 
 SRC_CXXFLAGS := -Wall -std=c++14 ${DBG_FLAG} 
 
 SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_ECORE_DIR) $(H_INC_1) 

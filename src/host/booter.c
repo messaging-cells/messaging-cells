@@ -16,6 +16,7 @@
 #include "shared.h"
 #include "booter.h"
 
+
 #define f_nm_sz   1024
 #define BJ_SHARED_MEM_START_ADDR (0x01000000)
 
@@ -144,7 +145,13 @@ bj_rr_print(bj_rrarray_st* arr){
 }
 
 void
-print_out_buffer(bj_rrarray_st* arr){
+print_out_buffer(bj_rrarray_st* arr, char* f_nm){
+	int fd = 0;
+	if((fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
+		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
+		return;
+	}
+
 	char obj[BJ_MAX_OBJ_SZ];
 	while(true){
 		uint16_t obj_sz = bj_rr_read_obj(arr, BJ_MAX_OBJ_SZ, (uint8_t*)obj);
@@ -156,9 +163,12 @@ print_out_buffer(bj_rrarray_st* arr){
 				break;
 			}
 		} else {
-			printf("OBJ:%s\n", obj);
+			//printf("OBJ:%s\n", obj);
+			obj[obj_sz - 1] = '\n';
+			write(fd, obj, obj_sz);
 		}
 	}
+	close(fd);
 }
 
 int main(int argc, char *argv[])
@@ -167,6 +177,12 @@ int main(int argc, char *argv[])
 	e_platform_t platform;
 	e_epiphany_t dev;
 	e_mem_t emem;
+	char f_nm[200];
+	char* all_f_nam[bj_sys_max_cores];
+	int num_wrk_cores;
+
+	memset(&all_f_nam, 0, sizeof(all_f_nam));
+	num_wrk_cores = 0;
 
 	printf("sizeof(bj_off_sys_st)=%d\n", sizeof(bj_off_sys_st));
 	
@@ -198,18 +214,23 @@ int main(int argc, char *argv[])
 
 	pt_shd_data->wrk_sys = bj_glb_sys;	
 	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
-	
-	row = 0;
-	col = 0;
+
 	max_row = 1;
 	max_col = 1;
-	max_row = platform.rows;
-	max_col = platform.cols;
+	max_row = dev.rows;
+	max_col = dev.cols;
+
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
 			coreid = (row + platform.row) * 64 + col + platform.col;
 			bj_consec_t num_core = bj_id_to_nn(coreid);
-			printf("DOING CORE 0x%03x (%2d,%2d) NUM=%d\n", coreid, row, col, num_core);
+			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", coreid, row, col, num_core);
+			memset(&f_nm, 0, sizeof(f_nm));
+			sprintf(f_nm, "log_core_%02d.txt", num_core);
+
+			BJH_CK(num_core < bj_sys_max_cores);
+			all_f_nam[num_core] = strdup((const char*)f_nm);
+			num_wrk_cores++;
 			
 			// init shared data.
 			pt_shd_data->sys_cores[num_core].magic_id = BJ_MAGIC_ID;
@@ -224,65 +245,82 @@ int main(int argc, char *argv[])
 
 			// Start one core
 			e_start(&dev, row, col);
-			
-			// Wait for core program execution to finish.
-			bj_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
-			
-			while((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
-				BJH_CK(sh_dat_1->magic_id == BJ_MAGIC_ID);
-				if(sh_dat_1->magic_id == BJ_MAGIC_ID){ printf("."); }
-				sched_yield();				//yield
-			}
-			printf("\n");
-			
-			BJH_CK(sh_dat_1->magic_id == BJ_MAGIC_ID);
-			BJH_CK(	(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL) ||
-					(sh_dat_1->is_finished == BJ_FINISHED_VAL)
-			);
-			BJH_CK(sh_dat_1->the_coreid == coreid);
-			if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){ 
-				printf("Waiting for finish.\n");
-			}
+		}
+	}
 
-			bj_in_core_st inco;
-			void* 	trace[BJ_MAX_CALL_STACK_SZ];
-			
-			// wait for finish
-			while(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
-				print_out_buffer(&(pt_buff->rd_arr));
-				if(sh_dat_1->is_waiting){
-					if(sh_dat_1->is_waiting == BJ_WAITING_ENTER){
-						get_enter(sh_dat_1, &dev, row, col);
+	bool has_work = true;	
+	while(has_work){
+		sched_yield();				//yield
+		has_work = false;
+		for (row=0; row < max_row; row++){
+			for (col=0; col < max_col; col++){
+				coreid = (row + platform.row) * 64 + col + platform.col;
+				bj_consec_t num_core = bj_id_to_nn(coreid);
+				bj_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
+				bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+				
+				// Wait for core program execution to finish.
+				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
+					has_work = true;
+					BJH_CK(sh_dat_1->magic_id == BJ_MAGIC_ID);
+					//if(sh_dat_1->magic_id == BJ_MAGIC_ID){ printf("."); }
+					//sched_yield();				//yield
+					continue;
+				}
+				
+				BJH_CK(sh_dat_1->magic_id == BJ_MAGIC_ID);
+				BJH_CK(	(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL) ||
+						(sh_dat_1->is_finished == BJ_FINISHED_VAL)
+				);
+				BJH_CK(sh_dat_1->the_coreid == coreid);
+				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){ 
+					printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
+								coreid, row, col, num_core);
+				}
+
+				bj_in_core_st inco;
+				void* 	trace[BJ_MAX_CALL_STACK_SZ];
+				
+				// wait for finish
+				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
+					has_work = true;
+					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core]);
+					if(sh_dat_1->is_waiting){
+						if(sh_dat_1->is_waiting == BJ_WAITING_ENTER){
+							get_enter(sh_dat_1, &dev, row, col);
+						}
+						if(sh_dat_1->is_waiting == BJ_WAITING_BUFFER){
+							print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core]);
+						}
+						
+						int SYNC = (1 << E_SYNC);
+						sh_dat_1->is_waiting = BJ_NOT_WAITING;
+						if (ee_write_reg(&dev, row, col, E_REG_ILATST, SYNC) == E_ERR) {
+							printf("ERROR sending SYNC to (%d, %d) \n", row, col);
+							break;
+						}
 					}
-					if(sh_dat_1->is_waiting == BJ_WAITING_BUFFER){
-						print_out_buffer(&(pt_buff->rd_arr));
-					}
-					
-					int SYNC = (1 << E_SYNC);
-					sh_dat_1->is_waiting = BJ_NOT_WAITING;
-					if (ee_write_reg(&dev, row, col, E_REG_ILATST, SYNC) == E_ERR) {
-						printf("ERROR sending SYNC to (%d, %d) \n", row, col);
+				} else {
+					BJH_CK(sh_dat_1->is_finished == BJ_FINISHED_VAL);
+
+					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core]);
+					bj_rr_print(&(pt_buff->rd_arr));
+
+					printf("Finished\n");
+					memset(&inco, 0, sizeof(bj_in_core_st));
+					e_read(&dev, row, col, (uint32_t)sh_dat_1->core_data, 
+								&inco, sizeof(inco));
+					int err2 = prt_inko_shd_dat(&inco);
+					if(err2){
 						break;
 					}
+
+					memset(trace, 0, sizeof(trace));
+					e_read(&dev, row, col, (uint32_t)inco.dbg_stack_trace, 
+								trace, sizeof(trace));
+					bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 				}
-				sched_yield();				//yield
 			}
-			BJH_CK(sh_dat_1->is_finished == BJ_FINISHED_VAL);
-
-			print_out_buffer(&(pt_buff->rd_arr));
-			bj_rr_print(&(pt_buff->rd_arr));
-
-			printf("Finished\n");
-			memset(&inco, 0, sizeof(bj_in_core_st));
-			e_read(&dev, row, col, (uint32_t)sh_dat_1->core_data, &inco, sizeof(inco));
-			int err2 = prt_inko_shd_dat(&inco);
-			if(err2){
-				break;
-			}
-
-			memset(trace, 0, sizeof(trace));
-			e_read(&dev, row, col, (uint32_t)inco.dbg_stack_trace, trace, sizeof(trace));
-			bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 		}
 	}
 	
@@ -303,6 +341,13 @@ int main(int argc, char *argv[])
 	// e-platform connection.
 	e_free(&emem);
 	e_finalize();
+
+	int nn;
+	for (nn=0; nn < num_wrk_cores; nn++){
+		if(all_f_nam[nn] != bj_null){
+			free(all_f_nam[nn]);
+		}
+	}
 
 	return 0;
 }

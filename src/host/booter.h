@@ -14,7 +14,7 @@ extern "C"
 {
 #endif
 
-#define as_pt_char(the_str) (the_str)
+#define bj_as_pt_char(the_str) (the_str)
 
 void 
 bjh_abort_func(long val, const char* msg);
@@ -26,10 +26,12 @@ bool
 bjh_file_append(char* the_pth, char* the_data, long the_sz);
 
 
-#define bjh_assert(vv) bjh_call_assert(vv, as_pt_char(__FILE__), __LINE__, as_pt_char(#vv), NULL)
+#define bjh_assert(vv) \
+	bjh_call_assert(vv, bj_as_pt_char(__FILE__), __LINE__, bj_as_pt_char(#vv), NULL)
+
 	
 #define	BJH_DBG_COND_COMM(cond, comm)	\
-	DBG( \
+	BJ_DBG( \
 		if(cond){ \
 			comm; \
 			printf("\n"); \
@@ -38,7 +40,7 @@ bjh_file_append(char* the_pth, char* the_data, long the_sz);
 
 //--end_of_def
 
-#define BJH_CK(prm)	   	DBG(bjh_assert(prm))
+#define BJH_CK(prm) BJ_DBG(bjh_assert(prm))
 
 #define BJH_CK_2(prm, comms1) \
 	BJH_DBG_COND_COMM((! (prm)), \

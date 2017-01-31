@@ -27,7 +27,7 @@ uint16_t bjk_trace_err;
 //=====================================================================
 // global funcs
 
-#define B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
+#define BJ_B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
 
 void 
 sync_interruption(void);
@@ -38,7 +38,7 @@ bjk_set_sync_irq() bj_global_code_dram;
 void 
 bjk_set_sync_irq(){
 	unsigned * ivt = 0x0;
-	*ivt = ((((unsigned)sync_interruption) >> 1) << 8) | B_OPCODE;
+	*ivt = ((((unsigned)sync_interruption) >> 1) << 8) | BJ_B_OPCODE;
 }
 
 void bj_inline_fn
@@ -89,12 +89,12 @@ bjk_init_global(void) {
 	bj_in_core_shd.the_coreid = koid;
 	
 	// bj_off_core_pt init	
-	//set_off_chip_var(bj_off_core_pt->magic_id, BJ_MAGIC_ID);
-	set_off_chip_var(bj_off_core_pt->the_coreid, bj_in_core_shd.the_coreid);
-	set_off_chip_var(bj_off_core_pt->core_data, &(bj_in_core_shd));
+	//bj_set_off_chip_var(bj_off_core_pt->magic_id, BJ_MAGIC_ID);
+	bj_set_off_chip_var(bj_off_core_pt->the_coreid, bj_in_core_shd.the_coreid);
+	bj_set_off_chip_var(bj_off_core_pt->core_data, &(bj_in_core_shd));
 	
 	bjk_set_finished(BJ_NOT_FINISHED_VAL);
-	set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
+	bj_set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
 }
 
 void

@@ -196,7 +196,7 @@ bjk_abort(uint32_t err, uint16_t sz_trace, void** trace) {
 	bj_in_core_shd.dbg_error_code = err;
 	
 	if((bj_off_core_pt != bj_null) && (bj_off_core_pt->magic_id == BJ_MAGIC_ID)){
-		set_off_chip_var(bj_off_core_pt->is_finished, BJ_FINISHED_VAL);
+		bj_set_off_chip_var(bj_off_core_pt->is_finished, BJ_FINISHED_VAL);
 	}
 	
 	bj_asm("mov r62, %0" : : "r" (&bj_in_core_shd));
@@ -293,7 +293,7 @@ bjk_wait_sync(uint32_t info, uint16_t sz_trace, void** trace){
 	if(info == BJ_NOT_WAITING){
 		info = BJ_WAITING_ENTER;
 	}
-	set_off_chip_var(bj_off_core_pt->is_waiting, info);
+	bj_set_off_chip_var(bj_off_core_pt->is_waiting, info);
 	bj_asm("gie" "\n\t");
 	
 	// wait for SYNC
@@ -303,7 +303,7 @@ bjk_wait_sync(uint32_t info, uint16_t sz_trace, void** trace){
 	// restore old_mask
 	bj_asm("gid" "\n\t");
 	bj_asm("movts imask, %0" : : "r" (old_mask));
-	set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
+	bj_set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
 	bj_asm("gie" "\n\t");
 }
 

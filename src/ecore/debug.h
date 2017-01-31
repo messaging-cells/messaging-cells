@@ -10,12 +10,12 @@ extern "C"
 #endif
 
 #ifdef FULL_DEBUG
-#	define DBG(prm) prm
+#	define BJ_DBG(prm) prm
 #else
-#	define DBG(prm) /**/ 
+#	define BJ_DBG(prm) /**/ 
 #endif
 
-#define MARK_USED(X)  ((void)(&(X)))
+#define BJ_MARK_USED(X)  ((void)(&(X)))
 
 #ifdef __cplusplus
 }

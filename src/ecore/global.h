@@ -31,7 +31,7 @@ extern uint16_t bjk_trace_err;
 
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
-	set_off_chip_var(bj_off_core_pt->is_finished, val);
+	bj_set_off_chip_var(bj_off_core_pt->is_finished, val);
 }
 
 void 
@@ -44,7 +44,7 @@ abort(void) bj_global_code_dram;		// Needed when -Os flag is set
 // bj_asserts
 
 #define BJK_OFFCHIP_ASSERT(nam, sec, cond) \
-	DBG( \
+	BJ_DBG( \
 	{ \
 		bj_asm( \
 			"gid \n\t" \
@@ -85,7 +85,7 @@ abort(void) bj_global_code_dram;		// Needed when -Os flag is set
 // end_of_macro
 
 #define BJK_INCORE_ASSERT(nam, cond) \
-	DBG( \
+	BJ_DBG( \
 	if(! (cond)){ \
 		bj_addr_t nm_addr; \
 		bj_asm( \
@@ -109,7 +109,7 @@ abort(void) bj_global_code_dram;		// Needed when -Os flag is set
 //======================================================================
 // naked inside normal func (insted of naked attribute)
 
-#define START_NAKED_FUNC(nam) \
+#define BJ_START_NAKED_FUNC(nam) \
 	bj_asm( \
 		".section .text \n\t" \
 		".balign 4 \n\t" \
@@ -119,7 +119,7 @@ abort(void) bj_global_code_dram;		// Needed when -Os flag is set
 
 // end_of_macro
 
-#define END_NAKED_FUNC() \
+#define BJ_END_NAKED_FUNC() \
 	bj_asm( \
 		"trap 0x3 \n\t" \
 		".previous \n\t" \

@@ -48,7 +48,7 @@ typedef uint32_t bj_addr_t;
 #define bj_null 0x0
 #define bj_align(aa)	__attribute__ ((aligned (aa)))
 
-#define bj_sys_num_cores bj_e3_num_cores
+#define bj_sys_max_cores bj_e3_num_cores
 
 struct bj_align(8) bj_sys_def { 
 	bj_coor_t 	xx;		// absolute xx epiphany space coordinates
@@ -159,7 +159,7 @@ bj_v32_of_p16(uint16_t* p16){
 	return v32;
 }
 
-#define set_off_chip_var(var, val) \
+#define bj_set_off_chip_var(var, val) \
 	(var) = (val); \
 	while((var) != (val)); \
 		
@@ -182,16 +182,11 @@ bj_v32_of_p16(uint16_t* p16){
 #define bj_to_bytes(num_bits)	(bj_div8(num_bits) + (bj_mod8(num_bits) > 0))
 #define bj_to_bits(num_bytes)	(num_bytes * k_num_bits_byte)
 
-#define num_ck_lines 7
-
 #define bj_mem_2K   2048
 #define bj_mem_16K   16384
 #define bj_mem_32K   32768
 #define bj_max_core_addr 0x7ff0
 #define bj_max_opcodes_func 16384
-
-#define max_ptrs 16
-#define max_16bit_idx   8192
 
 #define BJ_MAGIC_ID 0xaabbccdd
 #define BJ_MAGIC_END 0x6789abcd
@@ -261,8 +256,8 @@ struct bj_align(8) bj_off_sys_shared_data_def {
 	uint32_t 		magic_id;
 	uint32_t 		dbg_error_code;
 	bj_sys_st 		wrk_sys;
-	bj_off_core_st 	sys_cores[bj_sys_num_cores];
-	bj_core_out_st 	sys_out_buffs[bj_sys_num_cores];
+	bj_off_core_st 	sys_cores[bj_sys_max_cores];
+	bj_core_out_st 	sys_out_buffs[bj_sys_max_cores];
 };
 typedef struct bj_off_sys_shared_data_def bj_off_sys_st;
 
