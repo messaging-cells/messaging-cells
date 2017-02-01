@@ -42,6 +42,8 @@ SRC_CXXFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1} ${CXX_F
 
 SRC_INCDIRS := $(SRC_ECORE_DIR) 
 
+#	$(SRC_ECORE_DIR)/umm_malloc.c \
+
 SOURCES := \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/interruptions.c \
