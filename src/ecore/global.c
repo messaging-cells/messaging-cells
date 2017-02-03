@@ -9,10 +9,7 @@ bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_section("shared_dram");
 
 
 //=====================================================================
-// in ekore shared memory
-
-// seems like a bug but this first var does not always gets into .bss
-uint8_t __FIRST_PROG_VAR__ bj_section(".bss");
+// incore memory
 
 void* 	bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
 
@@ -102,5 +99,36 @@ abort(){	// Needed when optimizing for size
 	BJK_CK2(ck2_abort, 0);
 	bjk_abort(0xdead0001, 0, 0x0);
 	while(1);
+}
+
+void
+bjk_aux_slog(char* msg){ 
+	uint16_t oln = bj_strlen(msg);
+	if(oln < 2){
+		bjk_abort((uint32_t)bjk_aux_slog, 0, bj_null);
+	}
+	msg[0] = BJ_OUT_LOG;
+	msg[1] = BJ_CHR;
+	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln, (uint8_t*)msg);
+	if(ow == 0){
+		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
+	}
+}
+
+void
+bjk_aux_ilog(uint32_t vv, bj_type_t tt){
+	uint16_t oln = 2 + sizeof(uint32_t);
+	uint8_t msg[oln];
+	msg[0] = BJ_OUT_LOG;
+	msg[1] = tt;
+	uint8_t* pt = (uint8_t*)(&vv);
+	msg[2] = pt[0];
+	msg[3] = pt[1];
+	msg[4] = pt[2];
+	msg[5] = pt[3];
+	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln, (uint8_t*)msg);
+	if(ow == 0){
+		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
+	}
 }
 

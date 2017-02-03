@@ -23,6 +23,10 @@ extern bj_in_core_st bj_in_core_shd;
 
 extern uint16_t bjk_trace_err;
 
+#define BJ_LOG_MSG_MAX_SZ 100
+
+extern char bj_log_msg[BJ_LOG_MSG_MAX_SZ];
+
 //=====================================================================
 // global funcs
 
@@ -39,6 +43,33 @@ bjk_init_global(void) bj_global_code_dram;
 
 void 
 abort(void) bj_global_code_dram;		// Needed when -Os flag is set
+
+//======================================================================
+// log messages
+
+bj_code_dram void
+bjk_aux_slog(char* msg);
+
+#define bjk_slog(str) bjk_aux_slog("01" str)
+
+bj_code_dram void
+bjk_aux_ilog(uint32_t vv, bj_type_t tt);
+
+bj_inline_fn void
+bjk_ilog(int32_t vv){
+	bjk_aux_ilog(vv, BJ_I32);
+}
+
+bj_inline_fn void
+bjk_ulog(uint32_t vv){
+	bjk_aux_ilog(vv, BJ_UI32);
+}
+
+bj_inline_fn void
+bjk_xlog(uint32_t vv){
+	bjk_aux_ilog(vv, BJ_X32);
+}
+
 
 //======================================================================
 // bj_asserts

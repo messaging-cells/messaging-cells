@@ -15,13 +15,20 @@ DBG_FLAG := -DFULL_DEBUG
 # OPTSZ_FLAG := -Os # DOES NOT WORK WITH e-gcc ???? BAD GENERATED CODE ????
 OPTSZ_FLAG := 
 
+# STDLIBS := -lc -lepiphany -lgcc -lg 
+STDLIBS := 
+
+SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
+
+LD_IN_SECTIONS := --gc-sections
+
 # =======================================
 
 TARGET := bj-core-actor.elf
 
-TGT_LDFLAGS := -T ${E_LDF} -L${E_LIBS_1} -L${E_LIBS_2} --strip-debug 
+TGT_LDFLAGS := -T ${E_LDF} -L${E_LIBS_1} -L${E_LIBS_2} --strip-debug ${LD_IN_SECTIONS}
 
-TGT_LDLIBS  := -le-lib 
+TGT_LDLIBS  := ${STDLIBS} -le-lib 
 
 TGT_POSTMAKE := echo "Finished building "$(TARGET)
 
@@ -32,19 +39,20 @@ TGT_CXX := e-g++
 TGT_LINKER := e-ld
 
 # -Wall -std=c11 -nostdlib -nostartfiles
-C_FLAGS_1 := -Wall -std=gnu11 -nostdlib -nostartfiles -fno-default-inline 
+C_FLAGS_1 := -Wall -std=gnu11 -nostdlib -nostartfiles -fno-default-inline ${SRC_IN_SECTIONS}
 SRC_CFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${C_FLAGS_1}
 
 # -std=c++11 -nostdlib -fno-exceptions -fno-unwind-tables -fno-rtti -Os
-CXX_FLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables 
+CXX_FLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables ${SRC_IN_SECTIONS}
 CXX_FLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics 
 SRC_CXXFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1} ${CXX_FLAGS_2}
 
 SRC_INCDIRS := $(SRC_ECORE_DIR) 
 
-#	$(SRC_ECORE_DIR)/umm_malloc.c \
+#	$(SRC_ECORE_DIR)/test_logs.c \
 
 SOURCES := \
+	$(SRC_ECORE_DIR)/umm_malloc.c \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/interruptions.c \
 	$(SRC_ECORE_DIR)/shared.c \
@@ -52,7 +60,6 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/rr_array.c \
 	$(SRC_ECORE_DIR)/test1.cpp \
 	$(SRC_ECORE_DIR)/trace.c \
-	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/core_main.c 
 
 

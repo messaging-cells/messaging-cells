@@ -159,11 +159,21 @@ SECTIONS
 
 	/* the newlib  (libc and libm) library is mapped to the dedicated section */
 	/* create offset with location counter                                    */
+	/*
 	. = (ORIGIN(EXTERNAL_DRAM_0) + _PROG_SIZE_FOR_CORE_ * _CORE_NUM_);
 
 	NEW_LIB_RO           . : {lib_a-*.o(.text  .rodata)  *.o(libgloss_epiphany) } > EXTERNAL_DRAM_0
 	NEW_LIB_WR           . : {lib_a-*.o(.data)                                  } > EXTERNAL_DRAM_0
 	GNU_C_BUILTIN_LIB_RO . :
+	{
+		*mulsi3.o(.text  .rodata)   *modsi3.o(.text  .rodata)
+		*divsi3.o(.text  .rodata)   *udivsi3.o(.text .rodata)
+		*umodsi3.o(.text .rodata)  _*.o(.text  .rodata)
+	} > EXTERNAL_DRAM_0
+	*/
+	NEW_LIB_RO            : {lib_a-*.o(.text  .rodata)  *.o(libgloss_epiphany) } > EXTERNAL_DRAM_0
+	NEW_LIB_WR            : {lib_a-*.o(.data)                                  } > EXTERNAL_DRAM_0
+	GNU_C_BUILTIN_LIB_RO  :
 	{
 		*mulsi3.o(.text  .rodata)   *modsi3.o(.text  .rodata)
 		*divsi3.o(.text  .rodata)   *udivsi3.o(.text .rodata)

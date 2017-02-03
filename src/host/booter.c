@@ -1,4 +1,5 @@
 
+
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -8,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 #include <e-hal.h>
 #include <e-loader.h>
@@ -139,6 +141,30 @@ bj_rr_print(bj_rrarray_st* arr){
 	printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 }
 
+int
+bj_type_sz(bj_type_t tt){
+	int sz = 0;
+	switch(tt){
+		case BJ_CHR:
+		case BJ_I8:
+		case BJ_UI8:
+		case BJ_X8:
+			sz = 1;
+			break;
+		case BJ_I16:
+		case BJ_UI16:
+		case BJ_X16:
+			sz = 2;
+			break;
+		case BJ_I32:
+		case BJ_UI32:
+		case BJ_X32:
+			sz = 4;
+			break;
+	}
+	return sz;
+}
+
 void
 print_out_buffer(bj_rrarray_st* arr, char* f_nm){
 	int fd = 0;
@@ -147,20 +173,68 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm){
 		return;
 	}
 
-	char obj[BJ_MAX_OBJ_SZ];
+	uint8_t obj[BJ_OUT_BUFF_MAX_OBJ_SZ];
 	while(true){
-		uint16_t obj_sz = bj_rr_read_obj(arr, BJ_MAX_OBJ_SZ, (uint8_t*)obj);
+		uint16_t obj_sz = bj_rr_read_obj(arr, BJ_OUT_BUFF_MAX_OBJ_SZ, obj);
 		if(obj_sz == 0){
-			//bj_rr_print(arr);
-			//printf("TYPE ENTER to continue.");
-			//getchar();
 			if(arr->rd_err != -4){
 				break;
 			}
 		} else {
-			//printf("OBJ:%s\n", obj);
-			obj[obj_sz - 1] = '\n';
-			write(fd, obj, obj_sz);
+			if(obj[0] != BJ_OUT_LOG){
+				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
+				continue;
+			}
+			bj_type_t ot = obj[1];
+			if(ot == BJ_CHR){
+				write(fd, obj + 2, obj_sz - 2);
+				continue;
+			}
+			int osz = bj_type_sz(ot);
+			int tot = (obj_sz - 2) / osz;
+			int aa;
+			uint8_t* pt_num = obj + 2;
+			if(ot == BJ_I32){
+				printf("GOT BJ_I32 for core %s, tot %d, osz %d, obj_sz %d\n", 
+					f_nm, tot, osz, obj_sz);
+			}
+			for(aa = 0; aa < tot; aa++, pt_num += osz){
+				int istrsz = 50;
+				char istr[istrsz];
+				switch(ot){
+					case BJ_CHR:
+						break;
+					case BJ_I8:
+						snprintf(istr, istrsz, "%" PRId8 , *((int8_t*)pt_num));
+						break;
+					case BJ_I16:
+						snprintf(istr, istrsz, "%" PRId16 , *((int16_t*)pt_num));
+						break;
+					case BJ_I32:
+						snprintf(istr, istrsz, "%" PRId32 , *((int32_t*)pt_num));
+						break;
+					case BJ_UI8:
+						snprintf(istr, istrsz, "%" PRIu8 , *((uint8_t*)pt_num));
+						break;
+					case BJ_UI16:
+						snprintf(istr, istrsz, "%" PRIu16 , *((uint16_t*)pt_num));
+						break;
+					case BJ_UI32:
+						snprintf(istr, istrsz, "%" PRIu32 , *((uint32_t*)pt_num));
+						break;
+					case BJ_X8:
+						snprintf(istr, istrsz, "0x%02x", *((uint8_t*)pt_num));
+						break;
+					case BJ_X16:
+						snprintf(istr, istrsz, "0x%04x", *((uint16_t*)pt_num));
+						break;
+					case BJ_X32:
+						snprintf(istr, istrsz, "0x%08x", *((uint32_t*)pt_num));
+						break;
+				}
+				int sz2 = strlen(istr);
+				write(fd, istr, sz2);
+			}
 		}
 	}
 	close(fd);
@@ -243,6 +317,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	bool fst_time = true;
+
 	bool has_work = true;	
 	while(has_work){
 		sched_yield();				//yield
@@ -268,7 +344,7 @@ int main(int argc, char *argv[])
 						(sh_dat_1->is_finished == BJ_FINISHED_VAL)
 				);
 				BJH_CK(sh_dat_1->the_coreid == coreid);
-				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){ 
+				if(fst_time && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
 					printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
 								coreid, row, col, num_core);
 				}
@@ -317,7 +393,8 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
-	}
+		fst_time = false;
+	} // while
 	
 	printf("PLATFORM row=%2d col=%2d \n", platform.row, platform.col);
 	printf("bj_glb_sys.xx=%d\n", bj_glb_sys.xx);
