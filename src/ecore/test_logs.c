@@ -1880,7 +1880,7 @@ cad_473, cad_474, cad_475, cad_476, cad_477, cad_478, cad_479
 #define john_10_sz (sizeof(john_10)/sizeof(john_10[0]))
 
 char* john_11[] bj_code_dram = {
-cad_473, cad_474, cad_475, cad_476, cad_477, cad_478, cad_479, cad_480,
+cad_480,
 cad_481, cad_482, cad_483, cad_484, cad_485, cad_486, cad_487, cad_488,
 cad_489, cad_490, cad_491, cad_492, cad_493, cad_494, cad_495, cad_496,
 cad_497, cad_498, cad_499, cad_500, cad_501, cad_502, cad_503, cad_504,

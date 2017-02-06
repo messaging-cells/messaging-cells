@@ -21,6 +21,8 @@ bj_in_core_st bj_in_core_shd;
 
 uint16_t bjk_trace_err;
 
+uint8_t bj_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
+
 //=====================================================================
 // global funcs
 
@@ -52,7 +54,7 @@ bjk_init_global(void) {
 	bj_init_glb_sys();
 	
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
-		bjk_abort(0xdeadeb01, 0, 0x0);
+		bjk_abort((uint32_t)bjk_init_global, 0, 0x0);
 	}
 	
 	// bj_glb_sys init
@@ -65,7 +67,7 @@ bjk_init_global(void) {
 	bj_off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
 
 	if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
-		bjk_abort(0xdeadeb02, 0, 0x0);
+		bjk_abort((uint32_t)bjk_init_global, 0, 0x0);
 	}
 
 	bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
@@ -73,7 +75,7 @@ bjk_init_global(void) {
 	bj_rr_init(bj_write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
 	
 	if(bj_off_core_pt->magic_id != BJ_MAGIC_ID){
-		bjk_abort(0xdeadeb03, 0, 0x0);
+		bjk_abort((uint32_t)bjk_init_global, 0, 0x0);
 	}
 	
 	// bj_in_core_shd init
@@ -97,19 +99,20 @@ bjk_init_global(void) {
 void
 abort(){	// Needed when optimizing for size
 	BJK_CK2(ck2_abort, 0);
-	bjk_abort(0xdead0001, 0, 0x0);
+	bjk_abort((uint32_t)abort, 0, 0x0);
 	while(1);
 }
 
 void
-bjk_aux_slog(char* msg){ 
+bjk_slog(char* msg){ 
 	uint16_t oln = bj_strlen(msg);
-	if(oln < 2){
-		bjk_abort((uint32_t)bjk_aux_slog, 0, bj_null);
+	if(oln > (BJ_OUT_BUFF_MAX_OBJ_SZ - 2)){
+		oln = (BJ_OUT_BUFF_MAX_OBJ_SZ - 2);
 	}
-	msg[0] = BJ_OUT_LOG;
-	msg[1] = BJ_CHR;
-	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln, (uint8_t*)msg);
+	bj_memcpy(bj_out_str + 2, (uint8_t*)msg, oln);
+	bj_out_str[0] = BJ_OUT_LOG;
+	bj_out_str[1] = BJ_CHR;
+	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln + 2, (uint8_t*)bj_out_str);
 	if(ow == 0){
 		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
 	}

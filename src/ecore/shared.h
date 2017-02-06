@@ -152,6 +152,14 @@ bj_addr_in_sys(bj_addr_t addr) {
 //======================================================================
 // sane alignment/access functions
 
+#define BJ_IS_ALIGNED_16(ptr) ((((uintptr_t)ptr) & 0x1) == 0)
+#define BJ_IS_ALIGNED_32(ptr) ((((uintptr_t)ptr) & 0x3) == 0)
+#define BJ_IS_ALIGNED_64(ptr) ((((uintptr_t)ptr) & 0x7) == 0)
+//define BJ_IS_ALIGNED(ptr, agn) ((((uintptr_t)ptr) & (agn - 1)) == 0)
+
+bj_opt_sz_fn uint8_t 
+bj_get_aligment(void* ptr);
+
 uint32_t bj_inline_fn
 bj_v32_of_p16(uint16_t* p16){
 	uint32_t v32 = p16[1];
@@ -288,6 +296,11 @@ bj_memmove(uint8_t* dest, const uint8_t* src, bj_size_t sz);
 
 uint16_t 
 bj_strlen(char* str) bj_code_dram;
+
+bj_inline_fn bool
+bj_isprint(char cc){
+	return ((cc >= ' ' && cc <= '~') ? true : false);
+}
 
 #ifdef __cplusplus
 }

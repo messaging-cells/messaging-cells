@@ -18,6 +18,8 @@
 #include "shared.h"
 #include "booter.h"
 
+#include "test1.h"
+
 
 #define f_nm_sz   1024
 #define BJ_SHARED_MEM_START_ADDR (0x01000000)
@@ -30,6 +32,32 @@ char before[bj_mem_32K];
 char after[bj_mem_32K];
 
 bj_sys_st bj_glb_sys;
+
+int8_t val01;
+pru_st	arr[tot_objs];
+
+void 
+prt_aligns(void* ptr){
+	int8_t alg = bj_get_aligment(ptr);
+	printf("%d", alg); 
+}
+
+void 
+prt_host_aligns(){
+	int kk;
+	for(kk = 0; kk < tot_objs; kk++){
+		pru_st* obj1 = &(arr[kk]);
+
+		prt_aligns((void*)(obj1)); printf(".pt_obj1\n"); 
+		prt_aligns((void*)(&(obj1->aa))); printf(".pt_aa\n"); 
+		prt_aligns((void*)(&(obj1->bb))); printf(".pt_bb\n"); 
+		prt_aligns((void*)(&(obj1->cc))); printf(".pt_cc\n"); 
+
+		printf(">>>>>>>>>>>>\n");
+
+	}
+	printf("sizeof(pru_st) = %d\n", sizeof(pru_st));
+}
 
 void 
 bjh_abort_func(long val, const char* msg){
@@ -181,6 +209,10 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm){
 				break;
 			}
 		} else {
+			if(obj_sz < 2){
+				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
+				continue;
+			}
 			if(obj[0] != BJ_OUT_LOG){
 				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
 				continue;
@@ -194,10 +226,6 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm){
 			int tot = (obj_sz - 2) / osz;
 			int aa;
 			uint8_t* pt_num = obj + 2;
-			if(ot == BJ_I32){
-				printf("GOT BJ_I32 for core %s, tot %d, osz %d, obj_sz %d\n", 
-					f_nm, tot, osz, obj_sz);
-			}
 			for(aa = 0; aa < tot; aa++, pt_num += osz){
 				int istrsz = 50;
 				char istr[istrsz];
@@ -420,6 +448,8 @@ int main(int argc, char *argv[])
 			free(all_f_nam[nn]);
 		}
 	}
+
+	prt_host_aligns();
 
 	return 0;
 }

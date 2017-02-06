@@ -1,5 +1,6 @@
 
 #include "shared.h"
+#include "global.h"
 #include "rr_array.h"
 
 //==============================================================================
@@ -21,6 +22,8 @@ bj_rr_get_v16(bj_rrarray_st* arr, uint8_t** pt_dat) bj_code_dram;
 
 void
 bj_rr_set_v16(bj_rrarray_st* arr, uint8_t** pt_dat, uint16_t v16) bj_code_dram;
+
+
 
 uint16_t 
 bj_crc16(uint8_t *data_p, uint16_t length){
@@ -173,6 +176,7 @@ bj_rr_read_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 	return osz;
 }
 
+
 uint16_t
 bj_rr_write_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 	if(arr == bj_null){
@@ -225,4 +229,5 @@ bj_rr_write_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj){
 	bj_set_off_chip_var(arr->wr_obj, dat); 
 	return osz;
 }
+
 

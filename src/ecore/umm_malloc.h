@@ -15,6 +15,8 @@
 typedef uint32_t umm_size_t;
 typedef uint16_t umm_idx_t;
 
+#define umm_align(aa) bj_align(aa) 
+
 #define umm_inline_fn inline __attribute__((always_inline)) 
 
 #define umm_opt_sz_fn bj_opt_sz_fn
@@ -171,7 +173,7 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 
 #define UMM_HEAP_NUM_BLOCKS (UMM_MALLOC_CFG__HEAP_SIZE / sizeof(umm_block))
 
-extern umm_block umm_heap[UMM_HEAP_NUM_BLOCKS];
+extern umm_block umm_align(8) umm_heap[UMM_HEAP_NUM_BLOCKS];
 
 #endif // UMM_MALLOC_H
 

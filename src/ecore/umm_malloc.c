@@ -1,51 +1,10 @@
 // ----------------------------------------------------------------------------
 // umm_malloc.c - a memory allocator for embedded systems (microcontrollers)
 //
-// See copyright notice below
 // ----------------------------------------------------------------------------
-//
-// R.Hempel 2007-09-22 - Original
-// R.Hempel 2008-12-11 - Added MIT License biolerplate
-//                     - realloc() now looks to see if previous block is free
-//                     - made common operations functions            
-// R.Hempel 2009-03-02 - Added macros to disable tasking
-//                     - Added function to dump heap and check for valid free
-//                        pointer
-// R.Hempel 2009-03-09 - Changed name to umm_malloc to avoid conflicts with
-//                        the mm_malloc() library functions
-//                     - Added some test code to assimilate a free block
-//                        with the very block if possible. Complicated and
-//                        not worth the grief.
-// D.Frank 2014-04-02  - Fixed heap configuration when UMM_TEST_MAIN is NOT set,
-//                        added user-dependent configuration file umm_malloc_cfg.h
-// ----------------------------------------------------------------------------
-//
-// This is a memory management library specifically designed to work with the
-// ARM7 embedded processor, but it should work on many other 32 bit processors,
-// as well as 16 and 8 bit devices.
-//
-// ACKNOWLEDGEMENTS
-//
-// Joerg Wunsch and the avr-libc provided the first malloc() implementation
-// that I examined in detail.
-//
-// http://www.nongnu.org/avr-libc
-//
-// Doug Lea's paper on malloc() was another excellent reference and provides
-// a lot of detail on advanced memory management techniques such as binning.
-// 
-// http://g.oswego.edu/dl/html/malloc.html
-//
-// Bill Dittman provided excellent suggestions, including macros to support
-// using these functions in critical sections, and for optimizing realloc()
-// further by checking to see if the previous block was free and could be 
-// used for the new block size. This can help to reduce heap fragmentation
-// significantly. 
-//
-// Yaniv Ankin suggested that a way to dump the current heap condition
-// might be useful. I combined this with an idea from plarroy to also
-// allow checking a free pointer to make sure it's valid.
-//
+// Sources:
+// https://github.com/rhempel/umm_malloc
+// https://github.com/dimonomid/umm_malloc
 // ----------------------------------------------------------------------------
 // Copyright (c) 2007-2008 Ralph Hempel
 // 

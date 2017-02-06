@@ -25,6 +25,9 @@ uint16_t*
 find_call(uint16_t* code_addr, uint16_t opcode[2]) bj_trace_code_dram;
 
 uint16_t*
+find_interrupt_call(uint16_t* code_addr) bj_trace_code_dram;
+
+uint16_t*
 find_rts(uint16_t* code_addr) bj_trace_code_dram;
 	
 int16_t
@@ -190,7 +193,11 @@ find_rts(uint16_t* code_addr){
 
 void 
 bjk_abort(uint32_t err, uint16_t sz_trace, void** trace) {
-	if(err != BJ_CALL_STACK_TRACE_ERR){
+	if(trace == bj_null){
+		sz_trace = BJ_MAX_CALL_STACK_SZ;
+		trace = bjk_dbg_call_stack_trace;
+	}
+	if(err != (uint32_t)bjk_get_call_stack_trace){
 		bjk_get_call_stack_trace(sz_trace, trace);
 	}
 	bj_in_core_shd.dbg_error_code = err;
@@ -242,7 +249,7 @@ bjk_get_call_stack_trace(uint16_t sz, void** trace) {
 			break;
 		} 
 		if((disp % 2) != 0){ // Is disp ever odd?. If so: bad align access ...
-			bjk_abort(BJ_CALL_STACK_TRACE_ERR, sz, trace);
+			bjk_abort((uint32_t)bjk_get_call_stack_trace, sz, trace);
 		}
 		uint8_t* aux_sp = (uint8_t*)(sp_val);
 		aux_sp += disp;
@@ -276,7 +283,7 @@ bjk_get_call_stack_trace(uint16_t sz, void** trace) {
 void 
 bjk_wait_sync(uint32_t info, uint16_t sz_trace, void** trace){
 	if(bj_off_core_pt == bj_null){
-		bjk_abort(0xbad, sz_trace, trace);
+		bjk_abort((uint32_t)bjk_wait_sync, sz_trace, trace);
 	}
 	if((sz_trace != 0) && (trace != bj_null)){
 		bjk_get_call_stack_trace(sz_trace, trace);

@@ -48,9 +48,7 @@ abort(void) bj_global_code_dram;		// Needed when -Os flag is set
 // log messages
 
 bj_code_dram void
-bjk_aux_slog(char* msg);
-
-#define bjk_slog(str) bjk_aux_slog("01" str)
+bjk_slog(char* msg);
 
 bj_code_dram void
 bjk_aux_ilog(uint32_t vv, bj_type_t tt);

@@ -48,3 +48,17 @@ bj_strlen(char* str) {
 	return sln;
 }
 
+uint8_t 
+bj_get_aligment(void* ptr){
+	if(BJ_IS_ALIGNED_64(ptr)){
+		return 64;
+	}
+	if(BJ_IS_ALIGNED_32(ptr)){
+		return 32;
+	}
+	if(BJ_IS_ALIGNED_16(ptr)){
+		return 16;
+	}
+	return 8;
+}
+

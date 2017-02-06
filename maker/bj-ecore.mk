@@ -18,9 +18,11 @@ OPTSZ_FLAG :=
 # STDLIBS := -lc -lepiphany -lgcc -lg 
 STDLIBS := 
 
-SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
+# SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
+SRC_IN_SECTIONS := 
 
-LD_IN_SECTIONS := --gc-sections
+# LD_IN_SECTIONS := --gc-sections
+LD_IN_SECTIONS := 
 
 # =======================================
 
@@ -52,6 +54,7 @@ SRC_INCDIRS := $(SRC_ECORE_DIR)
 #	$(SRC_ECORE_DIR)/test_logs.c \
 
 SOURCES := \
+	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/umm_malloc.c \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/interruptions.c \
