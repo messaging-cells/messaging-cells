@@ -18,7 +18,7 @@
 #include "shared.h"
 #include "booter.h"
 
-#include "test1.h"
+#include "test_align.h"
 
 
 #define f_nm_sz   1024
@@ -114,6 +114,8 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	printf("dbg_error_code=0x%08x \n", sh_dat->dbg_error_code);
 	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
+	printf("cpp_fun1=0x%04x \n", sh_dat->cpp_fun1);
+
 	printf("got_irq0=0x%02x \n", sh_dat->got_irq0);
 	
 	printf("\n");
@@ -139,6 +141,21 @@ get_enter(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned co
 	// CONTINUE
 	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
 	getchar();
+}
+
+bool
+bj_rr_ck_zero(bj_rrarray_st* arr){
+	if(arr == bj_null){
+		return true;
+	}
+	uint8_t* dat = arr->data;
+	while(dat != arr->end_data){
+		uint8_t cc = (uint8_t)(*dat);
+		BJH_CK(cc == 0);
+		BJH_CK(! isprint(cc));
+		dat++;
+	}
+	return true;
 }
 
 void
@@ -194,9 +211,9 @@ bj_type_sz(bj_type_t tt){
 }
 
 void
-print_out_buffer(bj_rrarray_st* arr, char* f_nm){
-	int fd = 0;
-	if((fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
+print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_consec_t num_core){
+	int log_fd = 0;
+	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
 		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
 		return;
 	}
@@ -213,10 +230,10 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm){
 				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
 				continue;
 			}
-			if(obj[0] != BJ_OUT_LOG){
-				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
-				continue;
-			}
+			int fd = STDOUT_FILENO;
+			if(obj[0] == BJ_OUT_LOG){
+				fd = log_fd;
+			} 
 			bj_type_t ot = obj[1];
 			if(ot == BJ_CHR){
 				write(fd, obj + 2, obj_sz - 2);
@@ -265,7 +282,7 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm){
 			}
 		}
 	}
-	close(fd);
+	close(log_fd);
 }
 
 int main(int argc, char *argv[])
@@ -383,13 +400,13 @@ int main(int argc, char *argv[])
 				// wait for finish
 				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
 					has_work = true;
-					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core]);
+					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == BJ_WAITING_ENTER){
 							get_enter(sh_dat_1, &dev, row, col);
 						}
 						if(sh_dat_1->is_waiting == BJ_WAITING_BUFFER){
-							print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core]);
+							print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						}
 						
 						int SYNC = (1 << E_SYNC);
@@ -402,8 +419,9 @@ int main(int argc, char *argv[])
 				} else {
 					BJH_CK(sh_dat_1->is_finished == BJ_FINISHED_VAL);
 
-					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core]);
-					bj_rr_print(&(pt_buff->rd_arr));
+					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+					BJH_CK(bj_rr_ck_zero(&(pt_buff->rd_arr)));
+					//bj_rr_print(&(pt_buff->rd_arr));
 
 					printf("Finished\n");
 					memset(&inco, 0, sizeof(bj_in_core_st));
@@ -449,7 +467,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	prt_host_aligns();
+	//prt_host_aligns();
 
 	return 0;
 }

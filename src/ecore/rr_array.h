@@ -25,7 +25,7 @@ struct bj_align(8) bj_rrarray_def {
 typedef struct bj_rrarray_def bj_rrarray_st;
 
 void
-bj_rr_init(bj_rrarray_st* arr, uint32_t size, uint8_t* data, uint8_t reset) bj_code_dram;
+bj_rr_init(bj_rrarray_st* arr, uint16_t size, uint8_t* data, uint8_t reset) bj_code_dram;
 
 uint16_t
 bj_rr_read_obj(bj_rrarray_st* arr, uint16_t obj_sz, uint8_t* obj) bj_code_dram;

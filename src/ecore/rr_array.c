@@ -73,7 +73,7 @@ bj_set_v16_of_p8(uint8_t* p8, uint16_t v16){
 }
 
 void
-bj_rr_init(bj_rrarray_st* arr, uint32_t sz, uint8_t* dat, uint8_t reset){
+bj_rr_init(bj_rrarray_st* arr, uint16_t sz, uint8_t* dat, uint8_t reset){
 	if(arr == bj_null){
 		return;
 	}

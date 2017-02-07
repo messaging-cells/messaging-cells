@@ -1,8 +1,8 @@
 
-// test1.h
+// test_align.h
 
-#ifndef TEST1_H
-#define TEST1_H
+#ifndef TEST_ALIGN_H
+#define TEST_ALIGN_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,13 +18,9 @@ typedef struct pru_def pru_st;
 
 #define tot_objs 5
 
-void 
-cpp_main();
-	
-	
 #ifdef __cplusplus
 }
 #endif
 
-#endif // TEST1_H
+#endif // TEST_ALIGN_H
 

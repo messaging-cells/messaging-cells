@@ -11,13 +11,13 @@
 
 #include "shared.h"
 
-#define umm_null 0x0
-typedef uint32_t umm_size_t;
+#define umm_null bj_null
+typedef bj_size_t umm_size_t;
 typedef uint16_t umm_idx_t;
 
 #define umm_align(aa) bj_align(aa) 
 
-#define umm_inline_fn inline __attribute__((always_inline)) 
+#define umm_inline_fn bj_inline_fn
 
 #define umm_opt_sz_fn bj_opt_sz_fn
 

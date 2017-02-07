@@ -15,8 +15,8 @@ DBG_FLAG := -DFULL_DEBUG
 # OPTSZ_FLAG := -Os # DOES NOT WORK WITH e-gcc ???? BAD GENERATED CODE ????
 OPTSZ_FLAG := 
 
-# STDLIBS := -lc -lepiphany -lgcc -lg 
-STDLIBS := 
+STDLIBS := -lc -lepiphany -lgcc -lg 
+# STDLIBS := 
 
 # SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
 SRC_IN_SECTIONS := 
@@ -54,14 +54,13 @@ SRC_INCDIRS := $(SRC_ECORE_DIR)
 #	$(SRC_ECORE_DIR)/test_logs.c \
 
 SOURCES := \
-	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/umm_malloc.c \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/interruptions.c \
 	$(SRC_ECORE_DIR)/shared.c \
 	$(SRC_ECORE_DIR)/global.c \
 	$(SRC_ECORE_DIR)/rr_array.c \
-	$(SRC_ECORE_DIR)/test1.cpp \
+	$(SRC_ECORE_DIR)/actor.cpp \
 	$(SRC_ECORE_DIR)/trace.c \
 	$(SRC_ECORE_DIR)/core_main.c 
 

@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "global.h"
 #include "umm_malloc.h"
 
 #define TOT_OBJS 256
@@ -103,6 +104,14 @@ int main() {
 	}
 
 	umm_info( umm_null, 1 );
+
+	bj_id_t koid = bjk_get_coreid();
+	bj_consec_t num_core = bj_id_to_nn(koid);
+	bjk_slog("TEST_UMM OK CORE ID=");
+	bjk_xlog(koid);
+	bjk_slog(" NUM=");
+	bjk_ilog(num_core);
+	bjk_slog("\n");
 
 	bj_in_core_shd.dbg_progress_flag = 0xeee;
 	

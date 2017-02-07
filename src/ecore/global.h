@@ -48,24 +48,49 @@ abort(void) bj_global_code_dram;		// Needed when -Os flag is set
 // log messages
 
 bj_code_dram void
-bjk_slog(char* msg);
+bjk_aux_sout(char* msg, bj_out_type_t outt);
+
+bj_inline_fn void
+bjk_slog(char* msg){
+	bjk_aux_sout(msg, BJ_OUT_LOG);
+}
+
+bj_inline_fn void
+bjk_sprt(char* msg){
+	bjk_aux_sout(msg, BJ_OUT_PRT);
+}
 
 bj_code_dram void
-bjk_aux_ilog(uint32_t vv, bj_type_t tt);
+bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt);
 
 bj_inline_fn void
 bjk_ilog(int32_t vv){
-	bjk_aux_ilog(vv, BJ_I32);
+	bjk_aux_iout(vv, BJ_OUT_LOG, BJ_I32);
 }
 
 bj_inline_fn void
 bjk_ulog(uint32_t vv){
-	bjk_aux_ilog(vv, BJ_UI32);
+	bjk_aux_iout(vv, BJ_OUT_LOG, BJ_UI32);
 }
 
 bj_inline_fn void
 bjk_xlog(uint32_t vv){
-	bjk_aux_ilog(vv, BJ_X32);
+	bjk_aux_iout(vv, BJ_OUT_LOG, BJ_X32);
+}
+
+bj_inline_fn void
+bjk_iprt(int32_t vv){
+	bjk_aux_iout(vv, BJ_OUT_PRT, BJ_I32);
+}
+
+bj_inline_fn void
+bjk_uprt(uint32_t vv){
+	bjk_aux_iout(vv, BJ_OUT_PRT, BJ_UI32);
+}
+
+bj_inline_fn void
+bjk_xprt(uint32_t vv){
+	bjk_aux_iout(vv, BJ_OUT_PRT, BJ_X32);
 }
 
 
