@@ -307,5 +307,7 @@ bj_isprint(char cc){
 }
 #endif
 
+#define as_pt_char(the_str) (const_cast<char *>(the_str))
+
 #endif // BJ_SHARED_DATA_H
 

@@ -1,8 +1,8 @@
 
-// test_align.h
+// cpp_main.h
 
-#ifndef TEST_ALIGN_H
-#define TEST_ALIGN_H
+#ifndef CPP_MAIN_H
+#define CPP_MAIN_H
 
 
 #ifdef __cplusplus
@@ -16,5 +16,5 @@ cpp_main();
 }
 #endif
 
-#endif // TEST_ALIGN_H
+#endif // CPP_MAIN_H
 

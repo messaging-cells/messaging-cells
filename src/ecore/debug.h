@@ -1,5 +1,5 @@
 
-// attribute.h
+// debug.h
 
 #ifndef BJ_DEBUG_H
 #define BJ_DEBUG_H

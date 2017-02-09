@@ -6,7 +6,7 @@
 #include "trace.h"
 #include "test_align.h"
 //include "test_logs.h"
-#include "actor.h"
+#include "cpp_main.h"
 
 //	register uint16_t pt_jj asm("r40");
 
