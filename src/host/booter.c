@@ -331,8 +331,8 @@ int main(int argc, char *argv[])
 
 	max_row = 1;
 	max_col = 1;
-	max_row = dev.rows;
-	max_col = dev.cols;
+	//max_row = dev.rows;
+	//max_col = dev.cols;
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){

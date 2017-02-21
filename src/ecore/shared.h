@@ -15,6 +15,8 @@ extern "C"
 {
 #endif
 
+// bj_in_core_st the IN_CORE shared data
+
 //======================================================================
 // epiphany version dependant definitions
 	
@@ -48,7 +50,6 @@ typedef uint16_t bj_size_t;
 // working system struct
 	
 #define bj_null 0x0
-#define bj_align(aa)	__attribute__ ((aligned (aa)))
 
 #define bj_sys_max_cores bj_e3_num_cores
 
@@ -128,6 +129,9 @@ bj_init_glb_sys_with(bj_coor_t xx_val, bj_coor_t yy_val, bj_coor_t xx_sz_val, bj
 #define bj_addr_get_coreid(addr) ((bj_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
 #define bj_addr_with(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
 
+#define bjk_addr_is_local(addr) \
+	(! bj_addr_is_global(addr) || (bj_addr_get_coreid(addr) == bj_in_core_shd.the_coreid))
+
 bj_id_t bj_inline_fn
 bjk_get_coreid(void) {
 	bj_id_t koid = 0x0; 
@@ -159,7 +163,7 @@ bj_addr_in_sys(bj_addr_t addr) {
 //define BJ_IS_ALIGNED(ptr, agn) ((((uintptr_t)ptr) & (agn - 1)) == 0)
 
 bj_opt_sz_fn uint8_t 
-bj_get_aligment(void* ptr);
+bj_get_aligment(void* ptr) bj_code_dram;
 
 uint32_t bj_inline_fn
 bj_v32_of_p16(uint16_t* p16){
@@ -286,14 +290,14 @@ typedef enum bj_type_def bj_type_t;
 int 
 bjh_prt_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
 
-uint8_t*
-bj_memset(uint8_t* dest, uint8_t val, bj_size_t sz);
+bj_opt_sz_fn uint8_t*
+bj_memset(uint8_t* dest, uint8_t val, bj_size_t sz) bj_code_dram;
 
-uint8_t*
-bj_memcpy(uint8_t* dest, const uint8_t* src, bj_size_t sz);
+bj_opt_sz_fn uint8_t*
+bj_memcpy(uint8_t* dest, const uint8_t* src, bj_size_t sz) bj_code_dram;
 
-uint8_t*
-bj_memmove(uint8_t* dest, const uint8_t* src, bj_size_t sz);
+bj_opt_sz_fn uint8_t*
+bj_memmove(uint8_t* dest, const uint8_t* src, bj_size_t sz) bj_code_dram;
 
 uint16_t 
 bj_strlen(char* str) bj_code_dram;
@@ -302,6 +306,21 @@ bj_inline_fn bool
 bj_isprint(char cc){
 	return ((cc >= ' ' && cc <= '~') ? true : false);
 }
+
+#define bj_init_arr_objs(sz, arr, cls) \
+	for(int aa = 0; aa < sz; aa++){ \
+		new (&(arr[aa])) cls(); \
+	} \
+
+// end_macro
+
+#define bj_init_arr_vals(sz, arr, val) \
+	for(int aa = 0; aa < sz; aa++){ \
+		arr[aa] = (val); \
+	} \
+
+// end_macro
+
 
 #ifdef __cplusplus
 }

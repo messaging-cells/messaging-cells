@@ -11,6 +11,8 @@ Some usefult abstract template classes and others.
 #ifndef ROW_TEMPLATE_H
 #define ROW_TEMPLATE_H
 
+#include <new>
+
 #include "shared.h"
 
 template <bool> struct ILLEGAL_USE_OF_OBJECT;
@@ -294,8 +296,9 @@ public:
 		if(is_full()){ 
 			grow(sz + 2); 
 		}
-		pos(sz) = elem;
+		//pos(sz) = elem;
 		//pos(sz) = obj_t(elem);
+		new (&pos(sz)) obj_t(elem); 
 		sz++; 
 	}
 
@@ -303,7 +306,8 @@ public:
 		if(is_full()){ 
 			grow(sz + 2);
 		}
-		pos(sz) = obj_t();
+		//pos(sz) = obj_t();
+		new (&pos(sz)) obj_t(); 
 		sz++; 
 		return last();
 	}

@@ -192,12 +192,12 @@ find_rts(uint16_t* code_addr){
 }
 
 void 
-bjk_abort(uint32_t err, uint16_t sz_trace, void** trace) {
-	if(trace == bj_null){
+bjk_abort(uint32_t err, int16_t sz_trace, void** trace) {
+	if((trace == bj_null) && (sz_trace >= 0)){
 		sz_trace = BJ_MAX_CALL_STACK_SZ;
 		trace = bjk_dbg_call_stack_trace;
 	}
-	if(err != (uint32_t)bjk_get_call_stack_trace){
+	if((trace != bj_null) && (sz_trace > 0)){
 		bjk_get_call_stack_trace(sz_trace, trace);
 	}
 	bj_in_core_shd.dbg_error_code = err;
@@ -215,11 +215,14 @@ bjk_abort(uint32_t err, uint16_t sz_trace, void** trace) {
 }
 
 uint16_t
-bjk_get_call_stack_trace(uint16_t sz, void** trace) {
+bjk_get_call_stack_trace(int16_t sz, void** trace) {
 	// WARNING
 	// This function dissasembles to find RTS calls, next SP disp, and call addrs.
 	// If e-gcc changes the generated code this function MUST be updated.
 	if(trace == bj_null){
+		return 0;
+	}
+	if(sz <= 0){
 		return 0;
 	}
 	
@@ -249,7 +252,7 @@ bjk_get_call_stack_trace(uint16_t sz, void** trace) {
 			break;
 		} 
 		if((disp % 2) != 0){ // Is disp ever odd?. If so: bad align access ...
-			bjk_abort((uint32_t)bjk_get_call_stack_trace, sz, trace);
+			bjk_abort((uint32_t)bjk_get_call_stack_trace, -1, bj_null);
 		}
 		uint8_t* aux_sp = (uint8_t*)(sp_val);
 		aux_sp += disp;
@@ -281,11 +284,11 @@ bjk_get_call_stack_trace(uint16_t sz, void** trace) {
 }
 
 void 
-bjk_wait_sync(uint32_t info, uint16_t sz_trace, void** trace){
+bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	if(bj_off_core_pt == bj_null){
-		bjk_abort((uint32_t)bjk_wait_sync, sz_trace, trace);
+		bjk_abort((uint32_t)bjk_wait_sync, 0, bj_null);
 	}
-	if((sz_trace != 0) && (trace != bj_null)){
+	if((sz_trace > 0) && (trace != bj_null)){
 		bjk_get_call_stack_trace(sz_trace, trace);
 	}
 	// save old_mask

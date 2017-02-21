@@ -15,6 +15,8 @@ int main(void) {
 
 	cpp_main();
 
+	bjk_slog("FINISHED !!\n");
+
 	bj_in_core_shd.dbg_progress_flag = 0xeee;	
 	bjk_set_finished(BJ_FINISHED_VAL);
 	return 0;

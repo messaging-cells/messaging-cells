@@ -7,6 +7,10 @@
 #ifndef UMM_MALLOC_H
 #define UMM_MALLOC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <inttypes.h>
 
 #include "shared.h"
@@ -46,7 +50,9 @@ umm_memmove(uint8_t* dest, const uint8_t* src, umm_size_t sz){
 
 // ----------------------------------------------------------------------------
 // Size of the heap in bytes
+
 #define UMM_MALLOC_CFG__HEAP_SIZE 8192
+//define UMM_MALLOC_CFG__HEAP_SIZE 12288
 
 // ----------------------------------------------------------------------------
 // A couple of macros to make packing structures less compiler dependent
@@ -146,10 +152,10 @@ UMM_HEAP_INFO;
 
 extern UMM_HEAP_INFO heapInfo;
 
-umm_opt_sz_fn void *umm_info( void *ptr, int force );
-umm_opt_sz_fn void *umm_malloc( umm_size_t size );
-umm_opt_sz_fn void *umm_realloc( void *ptr, umm_size_t size );
-umm_opt_sz_fn void umm_free( void *ptr );
+void *umm_info( void *ptr, int force ) bj_code_dram;
+umm_opt_sz_fn void *umm_malloc( umm_size_t size ) bj_code_dram;
+umm_opt_sz_fn void *umm_realloc( void *ptr, umm_size_t size ) bj_code_dram;
+umm_opt_sz_fn void umm_free( void *ptr ) bj_code_dram;
 
 
 UMM_H_ATTPACKPRE typedef struct umm_ptr_t {
@@ -174,6 +180,10 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 #define UMM_HEAP_NUM_BLOCKS (UMM_MALLOC_CFG__HEAP_SIZE / sizeof(umm_block))
 
 extern umm_block umm_align(8) umm_heap[UMM_HEAP_NUM_BLOCKS];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // UMM_MALLOC_H
 

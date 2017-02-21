@@ -24,14 +24,14 @@ sync_interruption(void){
 
 void bj_isr_fn 
 soft_exception_interruption(void){
-	bjk_abort((uint32_t)soft_exception_interruption, 0, 0x0);
+	bjk_abort((uint32_t)soft_exception_interruption, 0, bj_null);
 	//bj_asm("rti" "\n\t");
 	//bj_asm("rti" "\n\t");
 }
 
 void bj_isr_fn 
 mem_fault_interruption(void){
-	bjk_abort((uint32_t)mem_fault_interruption, 0, 0x0);
+	bjk_abort((uint32_t)mem_fault_interruption, 0, bj_null);
 	//bj_asm("rti" "\n\t");
 	//bj_asm("rti" "\n\t");
 }

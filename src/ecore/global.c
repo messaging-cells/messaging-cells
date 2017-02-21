@@ -21,7 +21,7 @@ bj_in_core_st bj_in_core_shd;
 
 uint16_t bjk_trace_err;
 
-uint8_t bj_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
+uint8_t bjk_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
 
 //=====================================================================
 // global funcs
@@ -40,11 +40,6 @@ bjk_set_sync_irq(){
 	*ivt = ((((unsigned)sync_interruption) >> 1) << 8) | BJ_B_OPCODE;
 }
 
-void bj_inline_fn
-bjk_set_coreid(void) {
-	bj_asm("movfs %0, coreid" : "=r" (bj_in_core_shd.the_coreid));
-}
-
 void 
 bjk_init_global(void) {
 	// basic init
@@ -54,7 +49,7 @@ bjk_init_global(void) {
 	bj_init_glb_sys();
 	
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
-		bjk_abort((uint32_t)bjk_init_global, 0, 0x0);
+		bjk_abort((uint32_t)bjk_init_global, 0, bj_null);
 	}
 	
 	// bj_glb_sys init
@@ -67,7 +62,7 @@ bjk_init_global(void) {
 	bj_off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
 
 	if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
-		bjk_abort((uint32_t)bjk_init_global, 0, 0x0);
+		bjk_abort((uint32_t)bjk_init_global, 0, bj_null);
 	}
 
 	bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
@@ -75,7 +70,7 @@ bjk_init_global(void) {
 	bj_rr_init(bj_write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
 	
 	if(bj_off_core_pt->magic_id != BJ_MAGIC_ID){
-		bjk_abort((uint32_t)bjk_init_global, 0, 0x0);
+		bjk_abort((uint32_t)bjk_init_global, 0, bj_null);
 	}
 	
 	// bj_in_core_shd init
@@ -99,7 +94,7 @@ bjk_init_global(void) {
 void
 abort(){	// Needed when optimizing for size
 	BJK_CK2(ck2_abort, 0);
-	bjk_abort((uint32_t)abort, 0, 0x0);
+	bjk_abort((uint32_t)abort, 0, bj_null);
 	while(1);
 }
 
@@ -110,10 +105,10 @@ bjk_aux_sout(char* msg, bj_out_type_t outt){
 	if(oln > (BJ_OUT_BUFF_MAX_OBJ_SZ - extra)){
 		oln = (BJ_OUT_BUFF_MAX_OBJ_SZ - extra);
 	}
-	bj_memcpy(bj_out_str + extra, (uint8_t*)msg, oln);
-	bj_out_str[0] = outt;
-	bj_out_str[1] = BJ_CHR;
-	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln + extra, (uint8_t*)bj_out_str);
+	bj_memcpy(bjk_out_str + extra, (uint8_t*)msg, oln);
+	bjk_out_str[0] = outt;
+	bjk_out_str[1] = BJ_CHR;
+	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln + extra, (uint8_t*)bjk_out_str);
 	if(ow == 0){
 		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
 	}

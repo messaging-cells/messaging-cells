@@ -33,9 +33,10 @@
 
 // ----------------------------------------------------------------------------
 
-umm_block umm_heap[UMM_HEAP_NUM_BLOCKS];
+umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_section(".data_bank2");
 
-const umm_idx_t umm_numblocks = (sizeof(umm_heap) / sizeof(umm_block));
+//const umm_idx_t umm_numblocks = (sizeof(umm_heap) / sizeof(umm_block));
+umm_idx_t umm_numblocks = (sizeof(umm_heap) / sizeof(umm_block));
 
 #define UMM_NUMBLOCKS (umm_numblocks)
 
@@ -69,19 +70,19 @@ UMM_HEAP_INFO heapInfo;
 // local declarations
 
 umm_opt_sz_fn static umm_idx_t 
-umm_blocks( umm_size_t size );
+umm_blocks( umm_size_t size ) bj_code_dram;
 
 umm_opt_sz_fn static void 
-umm_make_new_block( umm_idx_t c, umm_idx_t blocks, umm_idx_t freemask );
+umm_make_new_block( umm_idx_t c, umm_idx_t blocks, umm_idx_t freemask ) bj_code_dram;
 
 umm_opt_sz_fn static void 
-umm_disconnect_from_free_list( umm_idx_t c );
+umm_disconnect_from_free_list( umm_idx_t c ) bj_code_dram;
 
 umm_opt_sz_fn static void 
-umm_assimilate_up( umm_idx_t c );
+umm_assimilate_up( umm_idx_t c ) bj_code_dram;
 
 umm_opt_sz_fn static umm_idx_t 
-umm_assimilate_down( umm_idx_t c, umm_idx_t freemask );
+umm_assimilate_down( umm_idx_t c, umm_idx_t freemask ) bj_code_dram;
 
 // ----------------------------------------------------------------------------
 

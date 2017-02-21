@@ -55,10 +55,14 @@ bjk_slog(char* msg){
 	bjk_aux_sout(msg, BJ_OUT_LOG);
 }
 
+#define	bjk_slog2(msg) bjk_slog(as_pt_char(msg))
+
 bj_inline_fn void
 bjk_sprt(char* msg){
 	bjk_aux_sout(msg, BJ_OUT_PRT);
 }
+
+#define	bjk_sprt2(msg) bjk_sprt(as_pt_char(msg))
 
 bj_code_dram void
 bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt);
@@ -118,7 +122,7 @@ bjk_xprt(uint32_t vv){
 				"movt r61, %high(" #nam ") \n\t" \
 			); \
 			bj_asm("mov %0, r61" : "=r" (nm_addr)); \
-			bjk_abort(nm_addr, 0, 0x0); \
+			bjk_abort(nm_addr, 0, bj_null); \
 		} \
 		bj_asm( \
 			"mov r61, %low(end_" #nam ") \n\t" \
@@ -149,7 +153,7 @@ bjk_xprt(uint32_t vv){
 			"movt r61, %high(" #nam ") \n\t" \
 		); \
 		bj_asm("mov %0, r61" : "=r" (nm_addr)); \
-		bjk_abort(nm_addr, BJ_MAX_CALL_STACK_SZ, bjk_dbg_call_stack_trace); \
+		bjk_abort(nm_addr, 0, bj_null); \
 	} \
 	) \
 
@@ -180,6 +184,10 @@ bjk_xprt(uint32_t vv){
 	); \
 
 // end_of_macro
+
+
+void
+_Z41__static_initialization_and_destruction_0ii(int, int) bj_code_dram;
 
 #ifdef __cplusplus
 }
