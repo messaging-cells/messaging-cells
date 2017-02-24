@@ -17,7 +17,7 @@ can recognize such ending
 
 void bj_isr_fn 
 sync_interruption(void){
-	bj_in_core_shd.got_irq0++;
+	//bj_in_core_shd.got_irq0++;
 	//bj_asm("rti" "\n\t");
 	//bj_asm("rti" "\n\t");
 }

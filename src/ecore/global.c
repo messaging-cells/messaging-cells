@@ -53,12 +53,12 @@ bjk_init_global(void) {
 	}
 	
 	// bj_glb_sys init
-	bj_id_t koid = bjk_get_coreid();
+	bj_core_id_t koid = bjk_get_core_id();
 	bj_memset((uint8_t*)&bj_glb_sys, 0, sizeof(bj_glb_sys));
 	bj_glb_sys = BJK_OFF_CHIP_SHARED_MEM.wrk_sys;
 
 	// num_core init
-	bj_consec_t num_core = bj_id_to_nn(koid);
+	bj_core_nn_t num_core = bj_id_to_nn(koid);
 	bj_off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
 
 	if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
@@ -80,11 +80,14 @@ bjk_init_global(void) {
 	bj_in_core_shd.magic_id = BJ_MAGIC_ID;
 	bj_in_core_shd.dbg_stack_trace = bjk_dbg_call_stack_trace;
 	bj_in_core_shd.magic_end = BJ_MAGIC_END;	
-	bj_in_core_shd.the_coreid = koid;
+	bj_in_core_shd.the_core_id = koid;
+	bj_in_core_shd.the_core_ro = bj_id_to_ro(koid);
+	bj_in_core_shd.the_core_co = bj_id_to_co(koid);
+	bj_in_core_shd.the_core_nn = num_core;
 	
 	// bj_off_core_pt init	
 	//bj_set_off_chip_var(bj_off_core_pt->magic_id, BJ_MAGIC_ID);
-	bj_set_off_chip_var(bj_off_core_pt->the_coreid, bj_in_core_shd.the_coreid);
+	bj_set_off_chip_var(bj_off_core_pt->the_core_id, bj_in_core_shd.the_core_id);
 	bj_set_off_chip_var(bj_off_core_pt->core_data, &(bj_in_core_shd));
 	
 	bjk_set_finished(BJ_NOT_FINISHED_VAL);

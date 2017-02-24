@@ -25,9 +25,9 @@ extern "C"
 #define bj_axis_bits	6
 #define bj_axis_mask	0x3f
 	
-typedef uint16_t bj_id_t;	// e_coreid_t
-typedef uint16_t bj_coor_t;
-typedef uint32_t bj_consec_t;
+typedef uint16_t bj_core_id_t;	// e_coreid_t
+typedef uint16_t bj_core_co_t;
+typedef uint16_t bj_core_nn_t;
 
 typedef uint32_t bj_addr_t;
 typedef uint16_t bj_core_addr_t;
@@ -54,10 +54,10 @@ typedef uint16_t bj_size_t;
 #define bj_sys_max_cores bj_e3_num_cores
 
 struct bj_align(8) bj_sys_def { 
-	bj_coor_t 	xx;		// absolute xx epiphany space coordinates
-	bj_coor_t 	yy;		// absolute yy epiphany space coordinates
-	bj_coor_t 	xx_sz;		// this running sys number of ekores in xx axis (sys length)
-	bj_coor_t 	yy_sz;		// this running sys number of ekores in yy axis (sys witdh)
+	bj_core_co_t 	xx;		// absolute xx epiphany space coordinates
+	bj_core_co_t 	yy;		// absolute yy epiphany space coordinates
+	bj_core_co_t 	xx_sz;		// this running sys number of ekores in xx axis (sys length)
+	bj_core_co_t 	yy_sz;		// this running sys number of ekores in yy axis (sys witdh)
 };
 typedef struct bj_sys_def bj_sys_st;
 
@@ -72,7 +72,9 @@ bj_init_glb_sys() {
 }
 
 void bj_inline_fn
-bj_init_glb_sys_with(bj_coor_t xx_val, bj_coor_t yy_val, bj_coor_t xx_sz_val, bj_coor_t yy_sz_val){
+bj_init_glb_sys_with(bj_core_co_t xx_val, bj_core_co_t yy_val, 
+				bj_core_co_t xx_sz_val, bj_core_co_t yy_sz_val)
+{
 	bj_glb_sys.xx = xx_val;
 	bj_glb_sys.yy = yy_val;
 	bj_glb_sys.xx_sz = xx_sz_val;
@@ -90,7 +92,7 @@ bj_init_glb_sys_with(bj_coor_t xx_val, bj_coor_t yy_val, bj_coor_t xx_sz_val, bj
 // xx and yy are absolute epiphany space coordinates
 // ro and co are relative epiphany space coordinates with respect to the 
 // 		allocated running cores (bj_glb_sys)
-// id is the coreid absolute in epiphany space 
+// id is the core id absolute in epiphany space 
 // nn is a consec with respect to the allocated running cores (bj_glb_sys)
 
 #define bj_min_xx_sys (bj_glb_sys.xx)
@@ -126,34 +128,39 @@ bj_init_glb_sys_with(bj_coor_t xx_val, bj_coor_t yy_val, bj_coor_t xx_sz_val, bj
 #define bj_addr_mask_ad(addr) (((bj_addr_t)(addr)) & bj_glb_addr_mask)
 
 #define bj_addr_is_global(addr) bj_addr_mask_id(addr)
-#define bj_addr_get_coreid(addr) ((bj_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
+#define bj_addr_get_core_id(addr) ((bj_core_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
 #define bj_addr_with(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
 
 #define bjk_addr_is_local(addr) \
-	(! bj_addr_is_global(addr) || (bj_addr_get_coreid(addr) == bj_in_core_shd.the_coreid))
+	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == bj_in_core_shd.the_core_id))
 
-bj_id_t bj_inline_fn
-bjk_get_coreid(void) {
-	bj_id_t koid = 0x0; 
+#define bjk_is_core(row, col) ((bj_in_core_shd.the_core_ro == (row)) && (bj_in_core_shd.the_core_co == (col)))
+
+#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bj_in_core_shd.the_core_co, (pt)))
+#define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
+#define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
+
+bj_core_id_t bj_inline_fn
+bjk_get_core_id(void) {
+	bj_core_id_t koid = 0x0; 
 	bj_asm("movfs %0, coreid" : "=r" (koid));
 	return koid;
 }
 
 bool bj_inline_fn
-bj_addr_in_core(bj_addr_t addr, bj_id_t koid) {
-	bj_id_t addr_koid = bj_addr_get_coreid(addr);
+bj_addr_in_core(bj_addr_t addr, bj_core_id_t koid) {
+	bj_core_id_t addr_koid = bj_addr_get_core_id(addr);
 	return ((addr_koid == 0) || (addr_koid == koid));
 }
 
 bool bj_inline_fn
 bj_addr_in_sys(bj_addr_t addr) {
-	bj_id_t addr_koid = bj_addr_get_coreid(addr);
-	bj_coor_t xx = bj_id_to_xx(addr_koid);
-	bj_coor_t yy = bj_id_to_yy(addr_koid);
+	bj_core_id_t addr_koid = bj_addr_get_core_id(addr);
+	bj_core_co_t xx = bj_id_to_xx(addr_koid);
+	bj_core_co_t yy = bj_id_to_yy(addr_koid);
 	return bj_xx_yy_in_sys(xx, yy);
 }
 
-	
 //======================================================================
 // sane alignment/access functions
 
@@ -218,11 +225,16 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	uint32_t 	dbg_error_code;
 	uint32_t 	dbg_progress_flag;
 
-	bj_id_t 	the_coreid;
+	bj_core_id_t the_core_id;
+	bj_core_nn_t the_core_nn;
+	bj_core_co_t the_core_ro;
+	bj_core_co_t the_core_co;
+	uint8_t 	the_core_state;
 	
-	uint8_t 	cpp_fun1;
-	uint8_t 	cpp_dcla1;
-	uint8_t 	got_irq0;
+	uint8_t 	binder_sz;
+	uint8_t 	receptor_sz;
+	uint8_t 	actor_sz;
+	uint8_t 	missive_sz;
 	
 	uint32_t 	magic_end;
 };
@@ -236,11 +248,11 @@ typedef struct bj_in_core_shared_data_def bj_in_core_st;
 #define BJ_WAITING_BUFFER	0xbb
 
 struct bj_align(8) bj_off_core_shared_data_def { 
-	uint32_t 	magic_id;
-	bj_id_t		the_coreid;
-	uint8_t 	is_finished;
-	uint8_t 	is_waiting;
-	bj_in_core_st* core_data;
+	uint32_t 		magic_id;
+	bj_core_id_t	the_core_id;
+	uint8_t 		is_finished;
+	uint8_t 		is_waiting;
+	bj_in_core_st* 	core_data;
 };
 typedef struct bj_off_core_shared_data_def bj_off_core_st;
 

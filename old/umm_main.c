@@ -105,7 +105,7 @@ int main() {
 
 	umm_info( umm_null, 1 );
 
-	bj_id_t koid = bjk_get_coreid();
+	bj_id_t koid = bjk_get_core_id();
 	bj_consec_t num_core = bj_id_to_nn(koid);
 	bjk_slog("TEST_UMM OK CORE ID=");
 	bjk_xlog(koid);

@@ -186,9 +186,6 @@ bjk_xprt(uint32_t vv){
 // end_of_macro
 
 
-void
-_Z41__static_initialization_and_destruction_0ii(int, int) bj_code_dram;
-
 #ifdef __cplusplus
 }
 #endif

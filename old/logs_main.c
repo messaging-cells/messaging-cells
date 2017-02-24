@@ -13,7 +13,7 @@
 int main(void) {
 	bjk_init_global();
 
-	bj_id_t koid = bjk_get_coreid();
+	bj_id_t koid = bjk_get_core_id();
 	bj_consec_t num_core = bj_id_to_nn(koid);
 
 	char** john = (char**)(all_tests[num_core]);

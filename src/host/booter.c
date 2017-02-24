@@ -109,15 +109,16 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 		printf("ERROR with inco.magic_end (0x%08x)\n", sh_dat->magic_end);
 		return 1;
 	}
-	printf("InCORE 0x%03x \n", sh_dat->the_coreid);
+	printf("InCORE 0x%03x \n", sh_dat->the_core_id);
 	
 	printf("dbg_error_code=0x%08x \n", sh_dat->dbg_error_code);
 	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
-	printf("cpp_fun1=0x%04x \n", sh_dat->cpp_fun1);
+	printf("binder_sz=%d \n", sh_dat->binder_sz);
+	printf("receptor_sz=%d \n", sh_dat->receptor_sz);
+	printf("actor_sz=%d \n", sh_dat->actor_sz);
+	printf("missive_sz=%d \n", sh_dat->missive_sz);
 
-	printf("got_irq0=0x%02x \n", sh_dat->got_irq0);
-	
 	printf("\n");
 	
 	return 0;
@@ -211,7 +212,7 @@ bj_type_sz(bj_type_t tt){
 }
 
 void
-print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_consec_t num_core){
+print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
 	int log_fd = 0;
 	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
 		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
@@ -287,7 +288,7 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_consec_t num_core){
 
 int main(int argc, char *argv[])
 {
-	unsigned row, col, max_row, max_col, coreid;
+	unsigned row, col, max_row, max_col, core_id;
 	e_platform_t platform;
 	e_epiphany_t dev;
 	e_mem_t emem;
@@ -330,15 +331,15 @@ int main(int argc, char *argv[])
 	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	max_row = 1;
-	max_col = 1;
+	max_col = 2;
 	//max_row = dev.rows;
 	//max_col = dev.cols;
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
-			coreid = (row + platform.row) * 64 + col + platform.col;
-			bj_consec_t num_core = bj_id_to_nn(coreid);
-			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", coreid, row, col, num_core);
+			core_id = (row + platform.row) * 64 + col + platform.col;
+			bj_core_nn_t num_core = bj_id_to_nn(core_id);
+			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 			memset(&f_nm, 0, sizeof(f_nm));
 			sprintf(f_nm, "log_core_%02d.txt", num_core);
 
@@ -370,8 +371,8 @@ int main(int argc, char *argv[])
 		has_work = false;
 		for (row=0; row < max_row; row++){
 			for (col=0; col < max_col; col++){
-				coreid = (row + platform.row) * 64 + col + platform.col;
-				bj_consec_t num_core = bj_id_to_nn(coreid);
+				core_id = (row + platform.row) * 64 + col + platform.col;
+				bj_core_nn_t num_core = bj_id_to_nn(core_id);
 				bj_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
 				bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 				
@@ -388,10 +389,10 @@ int main(int argc, char *argv[])
 				BJH_CK(	(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL) ||
 						(sh_dat_1->is_finished == BJ_FINISHED_VAL)
 				);
-				BJH_CK(sh_dat_1->the_coreid == coreid);
+				BJH_CK(sh_dat_1->the_core_id == core_id);
 				if(fst_time && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
 					printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
-								coreid, row, col, num_core);
+								core_id, row, col, num_core);
 				}
 
 				bj_in_core_st inco;
