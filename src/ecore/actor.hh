@@ -10,6 +10,23 @@
 class actor;
 class missive;
 class missive_ref;
+class missive_grp;
+
+//-------------------------------------------------------------------------
+// actor ids
+
+#define bjk_actor_id(cls) BJ_ACTOR_ID_##cls
+
+enum bjk_actor_id_t : uint8_t {
+	bjk_invalid_actor = 0,
+
+	bjk_actor_id(actor),
+	bjk_actor_id(missive),
+	bjk_actor_id(missive_ref),
+	bjk_actor_id(missive_grp),
+
+	bjk_tot_actor_ids
+};
 
 //-------------------------------------------------------------------------
 // dyn mem
@@ -23,13 +40,25 @@ class missive_ref;
 
 // end_macro
 
-#define DEFINE_ACQUIRE(nam) \
+#define bjk_separate(nam, sz) \
+	nam* obj = nam::acquire(sz); \
+	for(int bb = 0; bb < sz; bb++){ \
+		obj[bb].let_go(); \
+		nam::AVAILABLE.bind_to_my_left(obj[bb]); \
+	} \
+
+// end_macro
+
+#define BJK_DEFINE_ACQUIRE(nam) \
 nam* \
 nam::acquire(uint16_t sz){ \
 	if(sz == 1){ \
 		bjk_get_available(nam); \
 	} \
 	nam* obj = bjk_malloc32(nam, sz); \
+	for(int bb = 0; bb < sz; bb++){ \
+		new (&(obj[bb])) nam(); \
+	} \
 	return obj; \
 } \
 
@@ -62,10 +91,11 @@ typedef void (*missive_handler_t)(missive* msg);
 #define kernel_handlers_arr_sz bjk_tot_handler_ids
 extern missive_handler_t kernel_handlers_arr[kernel_handlers_arr_sz];
 
-#define bjk_is_valid_handler_idx(idx) ((idx >= 0) && (idx < kernel_handlers_arr_sz))
+#define bjk_is_valid_handler_idx(idx) \
+	((idx >= 0) && (idx < kernel_handlers_arr_sz) && (kernel_handlers_arr[idx] != bj_null))
 
 #define kernel_received_arr_sz bj_sys_max_cores
-extern missive* kernel_received_arr[kernel_received_arr_sz];
+extern missive_grp* kernel_received_arr[kernel_received_arr_sz];
 
 #define kernel_confirmed_arr_sz bj_sys_max_cores
 extern uint8_t kernel_confirmed_arr[kernel_confirmed_arr_sz];
@@ -73,28 +103,20 @@ extern uint8_t kernel_confirmed_arr[kernel_confirmed_arr_sz];
 extern grip kernel_in_work;
 extern grip kernel_local_work;
 extern grip kernel_out_work;
-
+extern grip kernel_sent_work;
 
 //-------------------------------------------------------------------------
 // kernel funcs
 
 bj_opt_sz_fn void 
+add_out_missive(missive& msv);
+
+bj_opt_sz_fn void 
+call_handlers_of_group(missive_grp& mgrp);
+
+bj_opt_sz_fn void 
 actors_main_loop();
 
-//-------------------------------------------------------------------------
-// actor ids
-
-#define bjk_actor_id(cls) BJ_ACTOR_ID_##cls
-
-enum bjk_actor_id_t : uint8_t {
-	bjk_invalid_actor = 0,
-
-	bjk_actor_id(actor),
-	bjk_actor_id(missive),
-	bjk_actor_id(missive_ref),
-
-	bjk_tot_actor_ids
-};
 
 //-------------------------------------------------------------------------
 // actor class names
@@ -125,26 +147,31 @@ public:
 	bjk_handler_idx_t 	id_idx;
 	bjk_flags_t 		flags;
 
+	bj_opt_sz_fn 
 	actor(){
 		init_actor();
 	}
+
+	bj_opt_sz_fn 
 	~actor(){}
 
+	bj_opt_sz_fn 
 	void init_actor(){
 		id_idx = bjk_invalid_handler;
 		flags = 0;
 	}
 
 	virtual
-	bjk_actor_id_t	get_actor_id(){
+	bj_opt_sz_fn bjk_actor_id_t	get_actor_id(){
 		return actor::THE_ACTOR_ID;
 	}
 
 	virtual
-	grip&	get_available(){
+	bj_opt_sz_fn grip&	get_available(){
 		return actor::AVAILABLE;
 	}
 
+	bj_opt_sz_fn 
 	void	release(){
 		let_go();
 		grip& ava = get_available();
@@ -152,7 +179,7 @@ public:
 	}
 
 	virtual
-	char* 	get_class_name(){
+	bj_opt_sz_fn char* 	get_class_name(){
 		bjk_actor_id_t id = get_actor_id();
 		if(bjk_is_valid_class_name_idx(id)){
 			return kernel_class_names_arr[id];
@@ -176,24 +203,65 @@ public:
 	actor*	dst;
 	actor*	src;
 
+	bj_opt_sz_fn 
 	missive(){
 		init_missive();
 	}
+
+	bj_opt_sz_fn 
 	~missive(){}
 
+	bj_opt_sz_fn 
 	void init_missive(){
 		dst = bj_null;
 		src = bj_null;
 	}
 
 	virtual
-	bjk_actor_id_t	get_actor_id(){
+	bj_opt_sz_fn bjk_actor_id_t	get_actor_id(){
 		return missive::THE_ACTOR_ID;
 	}
 
 	virtual
-	grip&	get_available(){
+	bj_opt_sz_fn grip&	get_available(){
 		return missive::AVAILABLE;
+	}
+};
+
+//-------------------------------------------------------------------------
+// missive_grp class 
+
+class missive_grp : public missive {
+public:
+	static
+	grip 			AVAILABLE;
+	static
+	bjk_actor_id_t 	THE_ACTOR_ID;
+	static
+	missive_grp*	acquire(uint16_t sz = 1);
+
+	grip			all_msv;
+
+	bj_opt_sz_fn 
+	missive_grp(){
+		init_missive_grp();
+	}
+
+	bj_opt_sz_fn 
+	~missive_grp(){}
+
+	bj_opt_sz_fn 
+	void init_missive_grp(){
+	}
+
+	virtual
+	bj_opt_sz_fn bjk_actor_id_t	get_actor_id(){
+		return missive_grp::THE_ACTOR_ID;
+	}
+
+	virtual
+	bj_opt_sz_fn grip&	get_available(){
+		return missive_grp::AVAILABLE;
 	}
 };
 
@@ -209,24 +277,28 @@ public:
 	static
 	missive_ref*		acquire(uint16_t sz = 1);
 
-	missive*	remote_msv;
+	missive_grp*	remote_grp;
 
+	bj_opt_sz_fn 
 	missive_ref(){
 		init_missive_ref();
 	}
+
+	bj_opt_sz_fn 
 	~missive_ref(){}
 
+	bj_opt_sz_fn 
 	void init_missive_ref(){
-		remote_msv = bj_null;
+		remote_grp = bj_null;
 	}
 
 	virtual
-	bjk_actor_id_t	get_actor_id(){
+	bj_opt_sz_fn bjk_actor_id_t	get_actor_id(){
 		return missive_ref::THE_ACTOR_ID;
 	}
 
 	virtual
-	grip&	get_available(){
+	bj_opt_sz_fn grip&	get_available(){
 		return missive_ref::AVAILABLE;
 	}
 };
@@ -234,6 +306,9 @@ public:
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void bj_opt_sz_fn
+bjk_send_irq(bj_core_id_t koid, uint16_t num_irq);
 
 void
 wait_inited_state(bj_core_id_t dst) bj_code_dram;

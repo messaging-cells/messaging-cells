@@ -58,10 +58,31 @@ public:
 		bn_right = this;
 	}
 
+	bj_opt_sz_fn
 	bool	ck_binder(){
 		BINDER_CK(bn_right->bn_left == this);
 		BINDER_CK(bn_left->bn_right == this);
 		return true;
+	}
+
+	bj_opt_sz_fn
+	binder&	get_right(){
+		return *bn_right;
+	}
+
+	bj_opt_sz_fn
+	binder&	get_left(){
+		return *bn_left;
+	}
+
+	bj_opt_sz_fn
+	binder*	get_right_pt(){
+		return bn_right;
+	}
+
+	bj_opt_sz_fn
+	binder*	get_left_pt(){
+		return bn_left;
 	}
 
 	bj_opt_sz_fn
@@ -185,22 +206,27 @@ public:
 	~receptor(){
 	}
 
+	bj_opt_sz_fn
 	void	init_receptor(){
 		re_me = bj_null;
 	}
 
+	bj_opt_sz_fn
 	receptor(obj_t1& tgt){
 		re_me = &tgt;
 	}
 
+	bj_opt_sz_fn
 	receptor(obj_t1* tgt){
 		re_me = tgt;
 	}
 
+	bj_opt_sz_fn
 	operator obj_t1* () {
 		return re_me;
 	}
 
+	bj_opt_sz_fn
 	operator obj_t1& () {
 		BINDER_CK(re_me != bj_null);
 		return *re_me;

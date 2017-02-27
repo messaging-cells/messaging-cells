@@ -1,93 +1,90 @@
 
-#include "attribute.h"
+#include "interruptions.h"
 #include "shared.h"
 #include "global.h"
 
 #pragma GCC diagnostic error "-Wattributes"
 
-/* OBSERVATIONS:
-
-1) To get "naked" attibute support look at:
-https://github.com/adapteva/epiphany-gcc/pull/7
-
-2) Keep the pattern rti rti at the end of handlers so that get call stack function 
-can recognize such ending
-
-*/
-
-void bj_isr_fn 
-sync_interruption(void){
-	//bj_in_core_shd.got_irq0++;
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq0_handler(){	// must be set afer normal start in glb init // IVT_RESET
+	if(bjk_irq_act[0]){
+		bjk_irq_act[0] = bj_false;
+		bj_in_core_shd.got_irq0++;
+	}
 }
 
-void bj_isr_fn 
-soft_exception_interruption(void){
-	bjk_abort((uint32_t)soft_exception_interruption, 0, bj_null);
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq1_handler(){ 	// ivt_entry_software_exception
+	if(bjk_irq_act[1]){
+		bjk_irq_act[1] = bj_false;
+		bj_in_core_shd.got_irq1++;
+	} else {
+		bjk_abort((uint32_t)bjk_irq1_handler, 0, bj_null);
+	}
 }
 
-void bj_isr_fn 
-mem_fault_interruption(void){
-	bjk_abort((uint32_t)mem_fault_interruption, 0, bj_null);
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq2_handler(){ 	// ivt_entry_page_miss
+	if(bjk_irq_act[2]){
+		bjk_irq_act[2] = bj_false;
+		bj_in_core_shd.got_irq2++;
+	}
+	//bjk_abort((uint32_t)bjk_irq2_handler, 0, bj_null);
 }
 
-void bj_isr_fn 
-timer0_interruption(void){
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq3_handler(){ 	// ivt_entry_timer0
+	if(bjk_irq_act[3]){
+		bjk_irq_act[3] = bj_false;
+		bj_in_core_shd.got_irq3++;
+	}
 }
 
-void bj_isr_fn 
-timer1_interruption(void){
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq4_handler(){ 	// ivt_entry_timer1
+	if(bjk_irq_act[4]){
+		bjk_irq_act[4] = bj_false;
+		bj_in_core_shd.got_irq4++;
+	}
 }
 
-void bj_isr_fn 
-message_interruption(void){
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq5_handler(){ 	// ivt_entry_message
+	if(bjk_irq_act[5]){
+		bjk_irq_act[5] = bj_false;
+		bj_in_core_shd.got_irq5++;
+	}
 }
 
-void bj_isr_fn 
-dma0_interruption(void){
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq6_handler(){ 	// ivt_entry_dma0
+	if(bjk_irq_act[6]){
+		bjk_irq_act[6] = bj_false;
+		bj_in_core_shd.got_irq6++;
+	}
 }
 
-void bj_isr_fn 
-dma1_interruption(void){
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq7_handler(){ 	// ivt_entry_dma1
+	if(bjk_irq_act[7]){
+		bjk_irq_act[7] = bj_false;
+		bj_in_core_shd.got_irq7++;
+	}
 }
 
-void bj_isr_fn 
-wand_interruption(void){
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq8_handler(){ 	// ivt_entry_wand
+	if(bjk_irq_act[8]){
+		bjk_irq_act[8] = bj_false;
+		bj_in_core_shd.got_irq8++;
+	}
 }
 
-void bj_isr_fn
-user_interruption(void){
-	//bj_asm("rti" "\n\t");
-	//bj_asm("rti" "\n\t");
+void
+bjk_irq9_handler(){ 	// ivt_entry_user
+	if(bjk_irq_act[9]){
+		bjk_irq_act[9] = bj_false;
+		bj_in_core_shd.got_irq9++;
+	}
 }
-
-/*
-void 
-f_int(int bb){
-}
-
-void bj_isr_fn
-test_interruption(){
-	int aa = 0xaaa;
-	aa ++;
-	f_int(aa);
-}
-*/
 

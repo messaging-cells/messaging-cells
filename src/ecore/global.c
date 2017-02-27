@@ -23,27 +23,31 @@ uint16_t bjk_trace_err;
 
 uint8_t bjk_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
 
+bj_bool_t bjk_irq_act[bjk_num_irq];
+
 //=====================================================================
 // global funcs
 
 #define BJ_B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
 
 void 
-sync_interruption(void);
+bjk_irq0_handler(void);
 
 void 
-bjk_set_sync_irq() bj_global_code_dram;
+bjk_set_irq0_handler() bj_global_code_dram;
 	
 void 
-bjk_set_sync_irq(){
+bjk_set_irq0_handler(){
 	unsigned * ivt = 0x0;
-	*ivt = ((((unsigned)sync_interruption) >> 1) << 8) | BJ_B_OPCODE;
+	*ivt = ((((unsigned)bjk_irq0_handler) >> 1) << 8) | BJ_B_OPCODE;
 }
 
 void 
 bjk_init_global(void) {
 	// basic init
-	bjk_set_sync_irq();
+	bj_init_arr_vals(bjk_num_irq, bjk_irq_act, bj_false);
+	bjk_set_irq0_handler();
+
 	bj_off_core_pt = 0x0;
 	bj_write_rrarray = 0x0;
 	bj_init_glb_sys();

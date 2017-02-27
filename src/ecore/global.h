@@ -23,9 +23,8 @@ extern bj_in_core_st bj_in_core_shd;
 
 extern uint16_t bjk_trace_err;
 
-#define BJ_LOG_MSG_MAX_SZ 100
-
-extern char bj_log_msg[BJ_LOG_MSG_MAX_SZ];
+#define bjk_num_irq 10
+extern bj_bool_t bjk_irq_act[bjk_num_irq];
 
 //=====================================================================
 // global funcs

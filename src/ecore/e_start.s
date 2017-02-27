@@ -9,55 +9,55 @@ _start:
 	.balign 4
 	.global	irq1_entry
 irq1_entry:
-	b soft_exception_interruption
+	b bjk_irq1_handler
 ;
 	.section ivt_entry_page_miss, "ax",@progbits
 	.balign 4
 	.global	irq2_entry
 irq2_entry:
-	b mem_fault_interruption
+	b bjk_irq2_handler
 ;
 	.section ivt_entry_timer0, "ax",@progbits
 	.balign 4
 	.global	irq3_entry
 irq3_entry:
-	b timer0_interruption
+	b bjk_irq3_handler
 ;
 	.section ivt_entry_timer1, "ax",@progbits
 	.balign 4
 	.global	irq4_entry
 irq4_entry:
-	b timer1_interruption
+	b bjk_irq4_handler
 ;
 	.section ivt_entry_message, "ax",@progbits
 	.balign 4
 	.global	irq5_entry
 irq5_entry:
-	b message_interruption
+	b bjk_irq5_handler
 ;
 	.section ivt_entry_dma0, "ax",@progbits
 	.balign 4
 	.global	irq6_entry
 irq6_entry:
-	b dma0_interruption
+	b bjk_irq6_handler
 ;
 	.section ivt_entry_dma1, "ax",@progbits
 	.balign 4
 	.global	irq7_entry
 irq7_entry:
-	b dma1_interruption
+	b bjk_irq7_handler
 ;
 	.section ivt_entry_wand, "ax",@progbits
 	.balign 4
 	.global	irq8_entry
 irq8_entry:
-	b wand_interruption
+	b bjk_irq8_handler
 ;
 	.section ivt_entry_user, "ax",@progbits
 	.balign 4
 	.global	irq9_entry
 irq9_entry:
-	b user_interruption
+	b bjk_irq9_handler
 ;
 	.section .text
 	.balign 4

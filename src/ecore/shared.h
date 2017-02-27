@@ -15,7 +15,12 @@ extern "C"
 {
 #endif
 
-// bj_in_core_st the IN_CORE shared data
+#define bj_false 0x00
+#define bj_true 0xff
+
+typedef uint8_t bj_bool_t;
+
+// bj_in_core_st the IN_CORE shared with host data
 
 //======================================================================
 // epiphany version dependant definitions
@@ -140,6 +145,11 @@ bj_init_glb_sys_with(bj_core_co_t xx_val, bj_core_co_t yy_val,
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
 #define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
 
+#define bj_addr_same_id(addr1, addr2) (bj_addr_mask_id(addr1) == bj_addr_mask_id(addr2))
+
+//define bj_addr_with_same_id(addr_id, addr) ((bj_addr_t)(bj_addr_mask_id(addr_id) | bj_addr_mask_ad(addr)))
+	
+
 bj_core_id_t bj_inline_fn
 bjk_get_core_id(void) {
 	bj_core_id_t koid = 0x0; 
@@ -235,6 +245,18 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	uint8_t 	receptor_sz;
 	uint8_t 	actor_sz;
 	uint8_t 	missive_sz;
+	uint8_t 	missive_grp_sz;
+
+	uint32_t	got_irq0;
+	uint32_t	got_irq1;
+	uint32_t	got_irq2;
+	uint32_t	got_irq3;
+	uint32_t	got_irq4;
+	uint32_t	got_irq5;
+	uint32_t	got_irq6;
+	uint32_t	got_irq7;
+	uint32_t	got_irq8;
+	uint32_t	got_irq9;
 	
 	uint32_t 	magic_end;
 };

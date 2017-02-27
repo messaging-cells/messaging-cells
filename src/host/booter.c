@@ -118,6 +118,18 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	printf("receptor_sz=%d \n", sh_dat->receptor_sz);
 	printf("actor_sz=%d \n", sh_dat->actor_sz);
 	printf("missive_sz=%d \n", sh_dat->missive_sz);
+	printf("missive_grp_sz=%d \n", sh_dat->missive_grp_sz);
+
+	printf("got_irq0=%d \n", sh_dat->got_irq0);
+	printf("got_irq1=%d \n", sh_dat->got_irq1);
+	printf("got_irq2=%d \n", sh_dat->got_irq2);
+	printf("got_irq3=%d \n", sh_dat->got_irq3);
+	printf("got_irq4=%d \n", sh_dat->got_irq4);
+	printf("got_irq5=%d \n", sh_dat->got_irq5);
+	printf("got_irq6=%d \n", sh_dat->got_irq6);
+	printf("got_irq7=%d \n", sh_dat->got_irq7);
+	printf("got_irq8=%d \n", sh_dat->got_irq8);
+	printf("got_irq9=%d \n", sh_dat->got_irq9);
 
 	printf("\n");
 	
