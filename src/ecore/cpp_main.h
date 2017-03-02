@@ -9,10 +9,11 @@
 extern "C" {
 #endif
 
-bj_opt_sz_fn void 
+void 
 init_cpp_main() bj_code_dram;
 
-bj_opt_sz_fn void
+bj_opt_sz_fn 
+void
 cpp_main() bj_code_dram;
 
 #ifdef __cplusplus

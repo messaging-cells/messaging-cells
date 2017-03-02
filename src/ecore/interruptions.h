@@ -6,37 +6,20 @@
 extern "C" {
 #endif
 
+#include <inttypes.h>
 #include "attribute.h"
 
 void bj_opt_sz_fn bj_isr_fn 
-bjk_irq0_handler(void); // IVT_RESET
+bjk_sync_handler(void); // IVT_RESET
 
 void bj_opt_sz_fn bj_isr_fn 
-bjk_irq1_handler(void); // ivt_entry_software_exception
+bjk_software_exception_handler(void); // ivt_entry_software_exception
 
 void bj_opt_sz_fn bj_isr_fn 
-bjk_irq2_handler(void); // ivt_entry_page_miss
+bjk_page_miss_handler(void); // ivt_entry_page_miss
 
 void bj_opt_sz_fn bj_isr_fn 
-bjk_irq3_handler(void); // ivt_entry_timer0
-
-void bj_opt_sz_fn bj_isr_fn 
-bjk_irq4_handler(void); // ivt_entry_timer1
-
-void bj_opt_sz_fn bj_isr_fn 
-bjk_irq5_handler(void); // ivt_entry_message
-
-void bj_opt_sz_fn bj_isr_fn 
-bjk_irq6_handler(void); // ivt_entry_dma0
-
-void bj_opt_sz_fn bj_isr_fn 
-bjk_irq7_handler(void); // ivt_entry_dma1
-
-void bj_opt_sz_fn bj_isr_fn 
-bjk_irq8_handler(void); // ivt_entry_wand
-
-void bj_opt_sz_fn bj_isr_fn
-bjk_irq9_handler(void); // ivt_entry_user
+bjk_timer0_handler(void); // ivt_entry_timer0
 
 void bj_inline_fn
 bjk_enable_all_irq() {
@@ -59,6 +42,8 @@ void bj_inline_fn
 bjk_global_irq_enable() {
 	bj_asm("gie"); 
 }
+
+extern uint32_t test_send_irq2;
 
 #ifdef __cplusplus
 }

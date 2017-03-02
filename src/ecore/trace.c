@@ -306,8 +306,10 @@ bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	bj_asm("gie" "\n\t");
 	
 	// wait for SYNC
-	bj_asm("idle" "\n\t");
-	
+	bjk_waiting_host_sync = bj_true;
+	while(bjk_waiting_host_sync){
+		bj_asm("idle" "\n\t");
+	}
 	
 	// restore old_mask
 	bj_asm("gid" "\n\t");

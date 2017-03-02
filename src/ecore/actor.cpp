@@ -11,6 +11,67 @@
 #include "dyn_mem.hh"
 #include "actor.hh"
 
+#include "e-lib.h"
+
+	/*
+	bj_core_id_t dst1 = bj_ro_co_to_id(0, 0);
+	bj_core_id_t dst2 = bj_ro_co_to_id(0, 1);
+
+	bjk_slog2("ID 0 ="); bjk_xlog(dst1); bjk_slog2("\n");
+	bjk_slog2("ID 1 ="); bjk_xlog(dst2); bjk_slog2("\n");
+
+	dst1 = bj_ro_co_to_id(0, 2);
+	dst2 = bj_ro_co_to_id(0, 3);
+
+	bjk_slog2("ID 2 ="); bjk_xlog(dst1); bjk_slog2("\n");
+	bjk_slog2("ID 3 ="); bjk_xlog(dst2); bjk_slog2("\n");
+
+	*/
+
+/*
+		//e_reg_write(E_REG_ILATST, (unsigned)0x00000002);
+		e_irq_set(po[0] ,po[1], name_irq[0]);
+
+		//e_reg_write(E_REG_ILATCL, (unsigned)0x00000002);
+		e_irq_clear(po[0], po[1], name_irq[0]);		
+		e_irq_mask(name_irq[0], E_TRUE);
+		e_irq_global_mask(E_TRUE);
+
+
+	ivt_entry_user
+
+	e_asm("mov r0, #0x1ff"); 
+	e_asm("movts imask, r0");
+	e_asm("gie");
+	//e_asm("movts ilatst, r0");
+
+void e_irq_set(unsigned row, unsigned col, e_irq_type_t irq)
+{
+	unsigned *ilatst;
+
+//	if ((row == E_SELF) || (col == E_SELF))
+//		ilatst = (unsigned *) E_ILATST;
+//	else
+	ilatst = (unsigned *) e_get_global_address(row, col, (void *) E_REG_ILATST);
+
+	*ilatst = 1 << (irq - E_SYNC);
+
+	return;
+}
+
+E_SYNC         = 0,
+E_SW_EXCEPTION = 1,
+E_MEM_FAULT    = 2,
+E_TIMER0_INT   = 3,
+E_TIMER1_INT   = 4,
+E_MESSAGE_INT  = 5,
+E_DMA0_INT     = 6,
+E_DMA1_INT     = 7,
+E_USER_INT     = 9,
+
+*/
+
+
 //----------------------------------------------------------------------------
 // To FAKE std c++ lib initialization and destructions of global objects
 // DO NOT FORGET to call initializers explicitly.
@@ -30,6 +91,12 @@ void* __dso_handle = bj_null;
 
 //----------------------------------------------------------------------------
 
+bjk_actor_id_t 	agent::THE_ACTOR_ID = bjk_actor_id(agent);
+bjk_actor_id_t 	actor::THE_ACTOR_ID = bjk_actor_id(actor);
+bjk_actor_id_t 	missive::THE_ACTOR_ID = bjk_actor_id(missive);
+bjk_actor_id_t 	missive_ref::THE_ACTOR_ID = bjk_actor_id(missive_ref);
+bjk_actor_id_t 	missive_grp::THE_ACTOR_ID = bjk_actor_id(missive_grp);
+
 grip 			actor::AVAILABLE;
 grip 			missive::AVAILABLE;
 grip 			missive_ref::AVAILABLE;
@@ -40,15 +107,10 @@ BJK_DEFINE_ACQUIRE(missive)
 BJK_DEFINE_ACQUIRE(missive_ref)
 BJK_DEFINE_ACQUIRE(missive_grp)
 
-bjk_actor_id_t 	actor::THE_ACTOR_ID = bjk_actor_id(actor);
-bjk_actor_id_t 	missive::THE_ACTOR_ID = bjk_actor_id(missive);
-bjk_actor_id_t 	missive_ref::THE_ACTOR_ID = bjk_actor_id(missive_ref);
-bjk_actor_id_t 	missive_grp::THE_ACTOR_ID = bjk_actor_id(missive_grp);
-
 char* kernel_class_names_arr[kernel_class_names_arr_sz];
+bj_bool_t kernel_signals_arr[kernel_signals_arr_sz];
 missive_handler_t kernel_handlers_arr[kernel_handlers_arr_sz];
-missive_grp* kernel_received_arr[kernel_received_arr_sz];
-uint8_t kernel_confirmed_arr[kernel_confirmed_arr_sz];
+missive_grp* kernel_pw0_routed_arr[kernel_pw0_routed_arr_sz];
 
 grip kernel_in_work;
 grip kernel_local_work;
@@ -69,9 +131,9 @@ init_cpp_main(){
 	new (&missive_ref::AVAILABLE) grip(); 
 
 	bj_init_arr_vals(kernel_class_names_arr_sz, kernel_class_names_arr, bj_null);
+	bj_init_arr_vals(kernel_signals_arr_sz, kernel_signals_arr, bj_false);
 	bj_init_arr_vals(kernel_handlers_arr_sz, kernel_handlers_arr, bj_null);
-	bj_init_arr_vals(kernel_received_arr_sz, kernel_received_arr, bj_null);
-	bj_init_arr_objs(kernel_confirmed_arr_sz, kernel_confirmed_arr, uint8_t);
+	bj_init_arr_vals(kernel_pw0_routed_arr_sz, kernel_pw0_routed_arr, bj_null);
 
 	new (&kernel_in_work) grip(); 
 	new (&kernel_local_work) grip(); 
@@ -127,15 +189,6 @@ call_handlers_of_group(missive_grp& mgrp){
 }
 
 void 
-bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) {
-	bj_bool_t* irq_act = (bj_bool_t*)bj_addr_with(koid, (bj_bool_t*)(&(bjk_irq_act[num_irq])));
-	*irq_act = bj_true;
-
-	uint32_t* ilatst = (uint32_t*)bj_addr_with(koid, (void*) BJ_REG_ILATST);
-	*ilatst = 1 << num_irq;
-}
-
-void 
 actors_main_loop(){
 	
 	while(true){
@@ -180,12 +233,12 @@ actors_main_loop(){
 			missive* msv = (missive*)(mgrp->all_msv.get_right_pt());
 			bj_core_id_t dst_id = bj_addr_get_core_id(msv->dst);
 			bj_core_nn_t idx = bj_id_to_nn(dst_id);
-			void* loc_pt = &(kernel_received_arr[idx]);
+			void* loc_pt = &(kernel_pw0_routed_arr[idx]);
 			missive_grp** rmt_pt = (missive_grp**)bj_addr_with(dst_id, loc_pt);
 
 			*rmt_pt = mgrp;
 
-			// send interrupt
+			// send signal
 		}
 	}
 }
@@ -197,24 +250,57 @@ wait_inited_state(bj_core_id_t dst_id){
 	while(*rmt_st != bjk_inited_state);
 }
 
+//bj_opt_sz_fn
+void
+wait_value(uint32_t& var, uint32_t val){
+	while(var < val);
+}
+
+bj_opt_sz_fn
+uint32_t
+wait_time(uint32_t max){
+	uint32_t aa;
+	for(aa = 0; aa < max; aa++){
+		aa++;
+	}
+	return aa;
+}
+
+void
+ck_sizes(){
+	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(bj_addr_t)));
+	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(unsigned)));
+	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(uint32_t)));
+}
+
+
+uint32_t test_send_irq2 = 0;
+
 void
 cpp_main(){
 	init_cpp_main();
-
-	bjk_slog2("sizeof(bjk_handler_idx_t)");
-	bjk_ilog(sizeof(bjk_handler_idx_t));
-	bjk_slog2("\n");
+	ck_sizes();
 
 	bj_in_core_shd.the_core_state = bjk_inited_state;
 
+	test_send_irq2 = 0;
+	//agent aa;
+	
 	if(bjk_is_core(0,0)){
 		bjk_slog2("CORE (0,0) started\n");
 		bj_core_id_t dst = bj_ro_co_to_id(0, 1);
 		wait_inited_state(dst);
 		bjk_slog2("CORE (0,0) SAW core (0,1) INITED\n");
 
-		bjk_send_irq(dst, 1);
-		bjk_slog2("CORE (0,0) SENT IRQ\n");
+		BJK_MARK_PLACE(START_UGLY_WAIT);
+		//while(test_send_irq2 < 1){ bj_asm("nop"); }	
+		//while(test_send_irq2 < 1);	
+		//for(uint32_t aa = 0; aa < 1234567; aa++){ bj_asm("nop"); }
+		//wait_time(123456789);
+		wait_value(test_send_irq2, 4);
+		BJK_MARK_PLACE(END_UGLY_WAIT);
+
+		bjk_slog2("got_irq2="); bjk_ilog(test_send_irq2); bjk_slog2("\n");
 	}
 	if(bjk_is_core(0,1)){
 		bjk_slog2("CORE (0,1) started\n");
@@ -222,39 +308,27 @@ cpp_main(){
 		wait_inited_state(dst);
 		bjk_slog2("CORE (0,1) SAW core (0,0) INITED\n");
 
-		while(bj_in_core_shd.got_irq1 == 0);
-		bjk_slog2("CORE (0,1) RECEIVED IRQ\n");
+		bjk_send_irq(dst, 2);
+		bjk_send_irq(dst, 2);
+		bjk_send_irq(dst, 2);
+		bjk_send_irq(dst, 2);
+
+		bjk_slog2("CORE (0,1) sent 2 irq2\n");
 	}
+	
 }
 
-/*
-		//e_reg_write(E_REG_ILATST, (unsigned)0x00000002);
-		e_irq_set(po[0] ,po[1], name_irq[0]);
-
-		//e_reg_write(E_REG_ILATCL, (unsigned)0x00000002);
-		e_irq_clear(po[0], po[1], name_irq[0]);		
-		e_irq_mask(name_irq[0], E_TRUE);
-		e_irq_global_mask(E_TRUE);
-
-
-	ivt_entry_user
-
-	e_asm("mov r0, #0x1ff"); 
-	e_asm("movts imask, r0");
-	e_asm("gie");
-	//e_asm("movts ilatst, r0");
-
-void e_irq_set(unsigned row, unsigned col, e_irq_type_t irq)
-{
-	unsigned *ilatst;
-
-//	if ((row == E_SELF) || (col == E_SELF))
-//		ilatst = (unsigned *) E_ILATST;
-//	else
-	ilatst = (unsigned *) e_get_global_address(row, col, (void *) E_REG_ILATST);
-
-	*ilatst = 1 << (irq - E_SYNC);
-
-	return;
+void 
+bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) {
+	unsigned* ilatst = (unsigned*)bj_addr_with(koid, (void*) BJ_REG_ILATST);
+	*ilatst = 1 << num_irq;
 }
-*/
+
+grip&	
+agent::get_available(){
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wpmf-conversions"
+	bjk_abort((uint32_t)(void*)&agent::get_available, 0, bj_null);
+	#pragma GCC diagnostic pop
+	return *((grip*)bj_null);
+}

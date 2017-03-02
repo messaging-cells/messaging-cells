@@ -1,4 +1,5 @@
 
+// bj_in_core_st the IN_CORE shared with host data
 
 // bj_shared_data.h
 
@@ -20,8 +21,6 @@ extern "C"
 
 typedef uint8_t bj_bool_t;
 
-// bj_in_core_st the IN_CORE shared with host data
-
 //======================================================================
 // epiphany version dependant definitions
 	
@@ -29,13 +28,13 @@ typedef uint8_t bj_bool_t;
 	
 #define bj_axis_bits	6
 #define bj_axis_mask	0x3f
+
+typedef uint32_t bj_addr_t;
 	
 typedef uint16_t bj_core_id_t;	// e_coreid_t
 typedef uint16_t bj_core_co_t;
 typedef uint16_t bj_core_nn_t;
 
-typedef uint32_t bj_addr_t;
-typedef uint16_t bj_core_addr_t;
 typedef uint16_t bj_size_t;
 
 #define bj_addr_val_in_p16(p16) ((bj_addr_t)(bj_v32_of_p16(p16)))
@@ -247,17 +246,6 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	uint8_t 	missive_sz;
 	uint8_t 	missive_grp_sz;
 
-	uint32_t	got_irq0;
-	uint32_t	got_irq1;
-	uint32_t	got_irq2;
-	uint32_t	got_irq3;
-	uint32_t	got_irq4;
-	uint32_t	got_irq5;
-	uint32_t	got_irq6;
-	uint32_t	got_irq7;
-	uint32_t	got_irq8;
-	uint32_t	got_irq9;
-	
 	uint32_t 	magic_end;
 };
 typedef struct bj_in_core_shared_data_def bj_in_core_st;
@@ -279,6 +267,7 @@ struct bj_align(8) bj_off_core_shared_data_def {
 typedef struct bj_off_core_shared_data_def bj_off_core_st;
 
 
+//define BJ_OUT_BUFF_SZ 	800 	// for debugging purposes
 #define BJ_OUT_BUFF_SZ 	bj_mem_16K
 #define BJ_OUT_BUFF_MAX_OBJ_SZ 500
 
@@ -352,6 +341,15 @@ bj_isprint(char cc){
 	for(int aa = 0; aa < sz; aa++){ \
 		arr[aa] = (val); \
 	} \
+
+// end_macro
+
+#define bjk_simple_abort(func) \
+	bj_in_core_shd.dbg_error_code = (uint32_t)(func); \
+	if((bj_off_core_pt != bj_null) && (bj_off_core_pt->magic_id == BJ_MAGIC_ID)){ \
+		bj_off_core_pt->is_finished = BJ_FINISHED_VAL; \
+	} \
+	bj_asm("trap 0x3"); \
 
 // end_macro
 

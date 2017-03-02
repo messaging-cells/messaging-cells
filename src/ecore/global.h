@@ -23,8 +23,7 @@ extern bj_in_core_st bj_in_core_shd;
 
 extern uint16_t bjk_trace_err;
 
-#define bjk_num_irq 10
-extern bj_bool_t bjk_irq_act[bjk_num_irq];
+extern bj_bool_t bjk_waiting_host_sync;
 
 //=====================================================================
 // global funcs
@@ -162,6 +161,7 @@ bjk_xprt(uint32_t vv){
 
 #define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
 
+#define BJK_MARK_PLACE(nam) BJ_DBG(bj_asm(#nam ":")) 
 
 //======================================================================
 // naked inside normal func (insted of naked attribute)

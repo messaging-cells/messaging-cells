@@ -18,10 +18,10 @@ OPTSZ_FLAG :=
 # STDLIBS := -lc -lepiphany -lgcc -lg 
 STDLIBS := 
 
-# SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
+#SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
 SRC_IN_SECTIONS := 
 
-# LD_IN_SECTIONS := --gc-sections
+#LD_IN_SECTIONS := --gc-sections
 LD_IN_SECTIONS := 
 
 # =======================================

@@ -7,6 +7,7 @@
 
 #include "binder.hh"
 
+class agent;
 class actor;
 class missive;
 class missive_ref;
@@ -20,6 +21,7 @@ class missive_grp;
 enum bjk_actor_id_t : uint8_t {
 	bjk_invalid_actor = 0,
 
+	bjk_actor_id(agent),
 	bjk_actor_id(actor),
 	bjk_actor_id(missive),
 	bjk_actor_id(missive_ref),
@@ -88,17 +90,46 @@ typedef void (*missive_handler_t)(missive* msg);
 //-------------------------------------------------------------------------
 // kernel data
 
+enum bjk_route_t : uint8_t {
+	bjk_up_route = 0,
+	bjk_down_route,
+	bjk_left_route,
+	bjk_right_route,
+	bjk_tot_routes
+};
+
+enum bjk_signal_t : uint8_t {
+	bjk_do_pw0_routes_sgnl = 0,
+	bjk_do_pw2_routes_sgnl,
+	bjk_do_pw4_routes_sgnl,
+	bjk_do_pw6_routes_sgnl,
+	bjk_do_pw8_routes_sgnl,
+	bjk_do_direct_routes_sgnl,
+	bjk_tot_signals
+};
+
+#define kernel_signals_arr_sz bjk_tot_signals
+extern bj_bool_t kernel_signals_arr[kernel_signals_arr_sz];
+
 #define kernel_handlers_arr_sz bjk_tot_handler_ids
 extern missive_handler_t kernel_handlers_arr[kernel_handlers_arr_sz];
 
 #define bjk_is_valid_handler_idx(idx) \
 	((idx >= 0) && (idx < kernel_handlers_arr_sz) && (kernel_handlers_arr[idx] != bj_null))
 
-#define kernel_received_arr_sz bj_sys_max_cores
-extern missive_grp* kernel_received_arr[kernel_received_arr_sz];
+#define kernel_pw0_routed_arr_sz bj_sys_max_cores
+extern missive_grp* kernel_pw0_routed_arr[kernel_pw0_routed_arr_sz];
 
-#define kernel_confirmed_arr_sz bj_sys_max_cores
-extern uint8_t kernel_confirmed_arr[kernel_confirmed_arr_sz];
+#define kernel_pw2_routed_arr_sz bjk_tot_routes
+extern missive_grp* kernel_pw2_routed_arr[kernel_pw2_routed_arr_sz];
+
+#define kernel_pw4_routed_arr_sz bjk_tot_routes
+extern missive_grp* kernel_pw4_routed_arr[kernel_pw4_routed_arr_sz];
+
+#define kernel_pw6_routed_arr_sz bjk_tot_routes
+extern missive_grp* kernel_pw6_routed_arr[kernel_pw6_routed_arr_sz];
+
+extern grip kernel_direct_routed;
 
 extern grip kernel_in_work;
 extern grip kernel_local_work;
@@ -131,16 +162,53 @@ extern char* kernel_class_names_arr[kernel_class_names_arr_sz];
 #define bjk_set_class_name(cls) kernel_class_names_arr[bjk_actor_id(cls)] = bj_class_name(cls)
 
 //-------------------------------------------------------------------------
+// agent class 
+
+class agent: public binder{
+public:
+	static
+	bjk_actor_id_t	THE_ACTOR_ID;
+
+	bj_opt_sz_fn 
+	agent(){}
+
+	bj_opt_sz_fn 
+	~agent(){}
+
+	virtual bj_opt_sz_fn 
+	bjk_actor_id_t	get_actor_id(){
+		return agent::THE_ACTOR_ID;
+	}
+
+	virtual bj_opt_sz_fn 
+	grip&	get_available() bj_code_dram;
+
+	bj_opt_sz_fn 
+	void	release(){
+		let_go();
+		grip& ava = get_available();
+		ava.bind_to_my_left(*this);
+	}
+
+	virtual
+	bj_opt_sz_fn char* 	get_class_name(){
+		bjk_actor_id_t id = get_actor_id();
+		if(bjk_is_valid_class_name_idx(id)){
+			return kernel_class_names_arr[id];
+		}
+		return bj_null;
+	}
+};
+
+//-------------------------------------------------------------------------
 // actor class 
 
-class actor: public binder{
+class actor: public agent {
 public:
 	static
 	grip 			AVAILABLE;
 	static
 	bjk_actor_id_t	THE_ACTOR_ID;
-	//static
-	//void init_statics();
 	static
 	actor*			acquire(uint16_t sz = 1);
 
@@ -171,7 +239,7 @@ public:
 		return actor::AVAILABLE;
 	}
 
-	bj_opt_sz_fn 
+	bj_opt_sz_fn
 	void	release(){
 		let_go();
 		grip& ava = get_available();
@@ -191,7 +259,7 @@ public:
 //-------------------------------------------------------------------------
 // missive class 
 
-class missive : public actor {
+class missive : public agent {
 public:
 	static
 	grip 			AVAILABLE;
@@ -231,7 +299,7 @@ public:
 //-------------------------------------------------------------------------
 // missive_grp class 
 
-class missive_grp : public missive {
+class missive_grp : public agent {
 public:
 	static
 	grip 			AVAILABLE;
@@ -240,7 +308,8 @@ public:
 	static
 	missive_grp*	acquire(uint16_t sz = 1);
 
-	grip			all_msv;
+	grip		all_msv;
+	uint8_t 	num;
 
 	bj_opt_sz_fn 
 	missive_grp(){
@@ -252,6 +321,7 @@ public:
 
 	bj_opt_sz_fn 
 	void init_missive_grp(){
+		num = 0;
 	}
 
 	virtual
@@ -268,14 +338,14 @@ public:
 //-------------------------------------------------------------------------
 // missive_ref class 
 
-class missive_ref : public actor {
+class missive_ref : public agent {
 public:
 	static
 	grip 			AVAILABLE;
 	static
 	bjk_actor_id_t 	THE_ACTOR_ID;
 	static
-	missive_ref*		acquire(uint16_t sz = 1);
+	missive_ref*	acquire(uint16_t sz = 1);
 
 	missive_grp*	remote_grp;
 
@@ -307,7 +377,8 @@ public:
 extern "C" {
 #endif
 
-void bj_opt_sz_fn
+bj_opt_sz_fn 
+void 
 bjk_send_irq(bj_core_id_t koid, uint16_t num_irq);
 
 void
@@ -315,6 +386,9 @@ wait_inited_state(bj_core_id_t dst) bj_code_dram;
 
 void
 init_class_names() bj_code_dram;
+
+void
+ck_sizes() bj_code_dram;
 
 #ifdef __cplusplus
 }

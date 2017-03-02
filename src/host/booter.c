@@ -120,17 +120,6 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	printf("missive_sz=%d \n", sh_dat->missive_sz);
 	printf("missive_grp_sz=%d \n", sh_dat->missive_grp_sz);
 
-	printf("got_irq0=%d \n", sh_dat->got_irq0);
-	printf("got_irq1=%d \n", sh_dat->got_irq1);
-	printf("got_irq2=%d \n", sh_dat->got_irq2);
-	printf("got_irq3=%d \n", sh_dat->got_irq3);
-	printf("got_irq4=%d \n", sh_dat->got_irq4);
-	printf("got_irq5=%d \n", sh_dat->got_irq5);
-	printf("got_irq6=%d \n", sh_dat->got_irq6);
-	printf("got_irq7=%d \n", sh_dat->got_irq7);
-	printf("got_irq8=%d \n", sh_dat->got_irq8);
-	printf("got_irq9=%d \n", sh_dat->got_irq9);
-
 	printf("\n");
 	
 	return 0;
@@ -375,7 +364,11 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	bool fst_time = true;
+	bool core_started[max_row][max_col];
+	memset(core_started, 0, sizeof(core_started));
+
+	bool core_finished[max_row][max_col];
+	memset(core_finished, 0, sizeof(core_finished));
 
 	bool has_work = true;	
 	while(has_work){
@@ -387,6 +380,10 @@ int main(int argc, char *argv[])
 				bj_core_nn_t num_core = bj_id_to_nn(core_id);
 				bj_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
 				bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+
+				/*if(sh_dat_1->is_finished == BJ_FINISHED_VAL){
+					continue;
+				}*/
 				
 				// Wait for core program execution to finish.
 				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
@@ -402,7 +399,8 @@ int main(int argc, char *argv[])
 						(sh_dat_1->is_finished == BJ_FINISHED_VAL)
 				);
 				BJH_CK(sh_dat_1->the_core_id == core_id);
-				if(fst_time && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
+				if(! core_started[row][col] && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
+					core_started[row][col] = true;
 					printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
 								core_id, row, col, num_core);
 				}
@@ -431,28 +429,32 @@ int main(int argc, char *argv[])
 					}
 				} else {
 					BJH_CK(sh_dat_1->is_finished == BJ_FINISHED_VAL);
+	
+					if(! core_finished[row][col]){
+						core_finished[row][col] = true;
 
-					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
-					BJH_CK(bj_rr_ck_zero(&(pt_buff->rd_arr)));
-					//bj_rr_print(&(pt_buff->rd_arr));
+						print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+						BJH_CK(bj_rr_ck_zero(&(pt_buff->rd_arr)));
+						//bj_rr_print(&(pt_buff->rd_arr));
 
-					printf("Finished\n");
-					memset(&inco, 0, sizeof(bj_in_core_st));
-					e_read(&dev, row, col, (uint32_t)sh_dat_1->core_data, 
-								&inco, sizeof(inco));
-					int err2 = prt_inko_shd_dat(&inco);
-					if(err2){
-						break;
+						printf("Finished\n");
+						memset(&inco, 0, sizeof(bj_in_core_st));
+						e_read(&dev, row, col, (uint32_t)sh_dat_1->core_data, 
+									&inco, sizeof(inco));
+						int err2 = prt_inko_shd_dat(&inco);
+						if(err2){
+							break;
+						}
+
+						memset(trace, 0, sizeof(trace));
+						e_read(&dev, row, col, (uint32_t)inco.dbg_stack_trace, 
+									trace, sizeof(trace));
+						bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 					}
 
-					memset(trace, 0, sizeof(trace));
-					e_read(&dev, row, col, (uint32_t)inco.dbg_stack_trace, 
-								trace, sizeof(trace));
-					bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 				}
 			}
 		}
-		fst_time = false;
 	} // while
 	
 	printf("PLATFORM row=%2d col=%2d \n", platform.row, platform.col);

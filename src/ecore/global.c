@@ -1,4 +1,5 @@
 
+#include "interruptions.h"
 #include "global.h"
 
 //======================================================================
@@ -23,7 +24,7 @@ uint16_t bjk_trace_err;
 
 uint8_t bjk_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
 
-bj_bool_t bjk_irq_act[bjk_num_irq];
+bj_bool_t bjk_waiting_host_sync;
 
 //=====================================================================
 // global funcs
@@ -31,21 +32,18 @@ bj_bool_t bjk_irq_act[bjk_num_irq];
 #define BJ_B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
 
 void 
-bjk_irq0_handler(void);
-
-void 
 bjk_set_irq0_handler() bj_global_code_dram;
 	
 void 
 bjk_set_irq0_handler(){
 	unsigned * ivt = 0x0;
-	*ivt = ((((unsigned)bjk_irq0_handler) >> 1) << 8) | BJ_B_OPCODE;
+	*ivt = ((((unsigned)bjk_sync_handler) >> 1) << 8) | BJ_B_OPCODE;
 }
 
 void 
 bjk_init_global(void) {
 	// basic init
-	bj_init_arr_vals(bjk_num_irq, bjk_irq_act, bj_false);
+	bjk_waiting_host_sync = 0;
 	bjk_set_irq0_handler();
 
 	bj_off_core_pt = 0x0;
@@ -116,8 +114,9 @@ bjk_aux_sout(char* msg, bj_out_type_t outt){
 	bjk_out_str[0] = outt;
 	bjk_out_str[1] = BJ_CHR;
 	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln + extra, (uint8_t*)bjk_out_str);
-	if(ow == 0){
+	while(ow == 0){
 		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
+		ow = bj_rr_write_obj(bj_write_rrarray, oln + extra, (uint8_t*)bjk_out_str);
 	}
 }
 
@@ -133,8 +132,9 @@ bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt){
 	msg[4] = pt[2];
 	msg[5] = pt[3];
 	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln, (uint8_t*)msg);
-	if(ow == 0){
+	while(ow == 0){
 		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
+		ow = bj_rr_write_obj(bj_write_rrarray, oln, (uint8_t*)msg);
 	}
 }
 
