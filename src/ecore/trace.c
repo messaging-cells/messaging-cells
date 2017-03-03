@@ -15,10 +15,10 @@
 //=====================================================================
 
 
-static int16_t 
+int16_t 
 get_add_simm11(uint16_t* add_cod);
 	
-static void 
+void 
 get_call_opcode(uint16_t opcode[2], int16_t disp);
 	
 uint16_t*
@@ -36,7 +36,7 @@ get_sp_disp(uint16_t* code_addr) bj_trace_code_dram;
 //=====================================================================
 
 
-static int16_t bj_inline_fn
+int16_t bj_inline_fn
 get_add_simm11(uint16_t* add_cod){
 	int16_t val_simm11 = 0;
 
@@ -45,7 +45,7 @@ get_add_simm11(uint16_t* add_cod){
 	return val_simm11;
 }
 
-static void bj_inline_fn
+void bj_inline_fn
 get_call_opcode(uint16_t opcode[2], int16_t disp){
 	opcode[0] = 0xd47c;
 	opcode[1] = 0x2700;
@@ -306,10 +306,7 @@ bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	bj_asm("gie" "\n\t");
 	
 	// wait for SYNC
-	bjk_waiting_host_sync = bj_true;
-	while(bjk_waiting_host_sync){
-		bj_asm("idle" "\n\t");
-	}
+	bj_asm("idle" "\n\t");
 	
 	// restore old_mask
 	bj_asm("gid" "\n\t");

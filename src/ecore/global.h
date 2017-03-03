@@ -9,7 +9,7 @@
 #include "trace.h"
 
 #ifdef __cplusplus
-extern "C" {
+bj_c_decl {
 #endif
 
 //=====================================================================
@@ -23,13 +23,8 @@ extern bj_in_core_st bj_in_core_shd;
 
 extern uint16_t bjk_trace_err;
 
-extern bj_bool_t bjk_waiting_host_sync;
-
 //=====================================================================
 // global funcs
-
-#define bj_global_code_dram bj_code_dram
-//define bj_global_code_dram 
 
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
@@ -37,10 +32,10 @@ bjk_set_finished(uint8_t val) {
 }
 
 void 
-bjk_init_global(void) bj_global_code_dram;
+bjk_init_global(void) bj_code_dram;
 
 void 
-abort(void) bj_global_code_dram;		// Needed when -Os flag is set
+abort(void) bj_code_dram;		// Needed when -Os flag is set
 
 //======================================================================
 // log messages

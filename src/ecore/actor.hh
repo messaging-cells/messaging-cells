@@ -374,7 +374,7 @@ public:
 };
 
 #ifdef __cplusplus
-extern "C" {
+bj_c_decl {
 #endif
 
 bj_opt_sz_fn 

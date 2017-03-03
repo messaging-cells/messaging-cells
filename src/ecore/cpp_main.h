@@ -4,9 +4,10 @@
 #ifndef CPP_MAIN_H
 #define CPP_MAIN_H
 
+#include "attribute.h"
 
 #ifdef __cplusplus
-extern "C" {
+bj_c_decl {
 #endif
 
 void 

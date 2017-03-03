@@ -18,7 +18,7 @@
 #include "shared.h"
 #include "booter.h"
 
-#include "test_align.h"
+//include "test_align.h"
 
 
 #define f_nm_sz   1024
@@ -31,32 +31,17 @@ int	write_file(char* the_pth, char* the_data, long the_sz, int write_once);
 char before[bj_mem_32K];
 char after[bj_mem_32K];
 
-bj_sys_st bj_glb_sys;
+bj_sys_sz_st bj_glb_sys;
 
-int8_t val01;
-pru_st	arr[tot_objs];
+bj_sys_sz_st*
+bj_get_glb_sys_sz(){
+	return &bj_glb_sys;
+}
 
 void 
 prt_aligns(void* ptr){
 	int8_t alg = bj_get_aligment(ptr);
 	printf("%d", alg); 
-}
-
-void 
-prt_host_aligns(){
-	int kk;
-	for(kk = 0; kk < tot_objs; kk++){
-		pru_st* obj1 = &(arr[kk]);
-
-		prt_aligns((void*)(obj1)); printf(".pt_obj1\n"); 
-		prt_aligns((void*)(&(obj1->aa))); printf(".pt_aa\n"); 
-		prt_aligns((void*)(&(obj1->bb))); printf(".pt_bb\n"); 
-		prt_aligns((void*)(&(obj1->cc))); printf(".pt_cc\n"); 
-
-		printf(">>>>>>>>>>>>\n");
-
-	}
-	printf("sizeof(pru_st) = %d\n", sizeof(pru_st));
 }
 
 void 
@@ -92,11 +77,12 @@ bjh_file_append(char* the_pth, char* the_data, long the_sz){
 	return true;
 }
 
-bool ck_sys_data(bj_sys_st* sys1){
-	BJH_CK(sys1->xx == bj_glb_sys.xx);
-	BJH_CK(sys1->yy == bj_glb_sys.yy);
-	BJH_CK(sys1->xx_sz == bj_glb_sys.xx_sz);
-	BJH_CK(sys1->yy_sz == bj_glb_sys.yy_sz);
+bool ck_sys_data(bj_sys_sz_st* sys1){
+	bj_sys_sz_st* sys0 = bj_get_glb_sys_sz();
+	BJH_CK(sys1->xx == sys0->xx);
+	BJH_CK(sys1->yy == sys0->yy);
+	BJH_CK(sys1->xx_sz == sys0->xx_sz);
+	BJH_CK(sys1->yy_sz == sys0->yy_sz);
 	return true;
 }
 
@@ -312,7 +298,7 @@ int main(int argc, char *argv[])
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 	
-	bjh_init_glb_sys_with_dev(&dev);
+	bjh_init_glb_sys_sz_with_dev(bj_get_glb_sys_sz(), &dev);
 
 	e_reset_group(&dev);
 
@@ -328,13 +314,15 @@ int main(int argc, char *argv[])
 	pt_shd_data->magic_id = BJ_MAGIC_ID;
 	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
 
-	pt_shd_data->wrk_sys = bj_glb_sys;	
+	bj_sys_sz_st* sys_sz = bj_get_glb_sys_sz();
+
+	pt_shd_data->wrk_sys = *sys_sz;
 	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	max_row = 1;
 	max_col = 2;
-	//max_row = dev.rows;
-	//max_col = dev.cols;
+	max_row = dev.rows;
+	max_col = dev.cols;
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
@@ -458,10 +446,10 @@ int main(int argc, char *argv[])
 	} // while
 	
 	printf("PLATFORM row=%2d col=%2d \n", platform.row, platform.col);
-	printf("bj_glb_sys.xx=%d\n", bj_glb_sys.xx);
-	printf("bj_glb_sys.yy=%d\n", bj_glb_sys.yy);
-	printf("bj_glb_sys.xx_sz=%d\n", bj_glb_sys.xx_sz);
-	printf("bj_glb_sys.yy_sz=%d\n", bj_glb_sys.yy_sz);
+	printf("sys_sz->xx=%d\n", sys_sz->xx);
+	printf("sys_sz->yy=%d\n", sys_sz->yy);
+	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
+	printf("sys_sz->yy_sz=%d\n", sys_sz->yy_sz);
 	
 	// Reset the workgroup
 	e_reset_group(&dev); // FAILS. Why?

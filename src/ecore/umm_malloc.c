@@ -69,19 +69,19 @@ UMM_HEAP_INFO heapInfo;
 // ----------------------------------------------------------------------------
 // local declarations
 
-umm_opt_sz_fn static umm_idx_t 
+umm_opt_sz_fn umm_idx_t 
 umm_blocks( umm_size_t size ) bj_code_dram;
 
-umm_opt_sz_fn static void 
+umm_opt_sz_fn void 
 umm_make_new_block( umm_idx_t c, umm_idx_t blocks, umm_idx_t freemask ) bj_code_dram;
 
-umm_opt_sz_fn static void 
+umm_opt_sz_fn void 
 umm_disconnect_from_free_list( umm_idx_t c ) bj_code_dram;
 
-umm_opt_sz_fn static void 
+umm_opt_sz_fn void 
 umm_assimilate_up( umm_idx_t c ) bj_code_dram;
 
-umm_opt_sz_fn static umm_idx_t 
+umm_opt_sz_fn umm_idx_t 
 umm_assimilate_down( umm_idx_t c, umm_idx_t freemask ) bj_code_dram;
 
 // ----------------------------------------------------------------------------
@@ -195,7 +195,7 @@ umm_info( void *ptr, int force ) {
 
 // ----------------------------------------------------------------------------
 
-static umm_idx_t 
+umm_idx_t 
 umm_blocks( umm_size_t size ) {
 
    // The calculation of the block size is not too difficult, but there are
@@ -218,7 +218,7 @@ umm_blocks( umm_size_t size ) {
 
 // ----------------------------------------------------------------------------
 
-static void 
+void 
 umm_make_new_block( umm_idx_t c, umm_idx_t blocks, umm_idx_t freemask ) {
 
    UMM_NBLOCK(c+blocks) = UMM_NBLOCK(c) & UMM_BLOCKNO_MASK;
@@ -230,7 +230,7 @@ umm_make_new_block( umm_idx_t c, umm_idx_t blocks, umm_idx_t freemask ) {
 
 // ----------------------------------------------------------------------------
 
-static void 
+void 
 umm_disconnect_from_free_list( umm_idx_t c ) {
    // Disconnect this block from the FREE list
 
@@ -244,7 +244,7 @@ umm_disconnect_from_free_list( umm_idx_t c ) {
 
 // ----------------------------------------------------------------------------
 
-static void 
+void 
 umm_assimilate_up( umm_idx_t c ) {
 
    if( UMM_NBLOCK(UMM_NBLOCK(c)) & UMM_FREELIST_MASK ) {
@@ -266,7 +266,7 @@ umm_assimilate_up( umm_idx_t c ) {
 
 // ----------------------------------------------------------------------------
 
-static umm_idx_t 
+umm_idx_t 
 umm_assimilate_down( umm_idx_t c, umm_idx_t freemask ) {
 
    UMM_NBLOCK(UMM_PBLOCK(c)) = UMM_NBLOCK(c) | freemask;

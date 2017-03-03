@@ -13,8 +13,7 @@
 #include "rr_array.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+bj_c_decl {
 #endif
 
 #define bj_false 0x00
@@ -68,30 +67,33 @@ struct bj_align(8) bj_sys_def {
 	bj_core_co_t 	xx_sz;		// this running sys number of ekores in xx axis (sys length)
 	bj_core_co_t 	yy_sz;		// this running sys number of ekores in yy axis (sys witdh)
 };
-typedef struct bj_sys_def bj_sys_st;
+typedef struct bj_sys_def bj_sys_sz_st;
 
-extern bj_sys_st bj_glb_sys;
+extern bj_sys_sz_st bj_glb_sys;
+
+bj_sys_sz_st*
+bj_get_glb_sys_sz();
 
 void bj_inline_fn
-bj_init_glb_sys() {
-	bj_glb_sys.xx = bj_e3_xx;
-	bj_glb_sys.yy = bj_e3_yy;
-	bj_glb_sys.xx_sz = bj_e3_xx_sz;
-	bj_glb_sys.yy_sz = bj_e3_yy_sz;
+bj_init_glb_sys_sz(bj_sys_sz_st* sys_sz) {
+	sys_sz->xx = bj_e3_xx;
+	sys_sz->yy = bj_e3_yy;
+	sys_sz->xx_sz = bj_e3_xx_sz;
+	sys_sz->yy_sz = bj_e3_yy_sz;
 }
 
 void bj_inline_fn
-bj_init_glb_sys_with(bj_core_co_t xx_val, bj_core_co_t yy_val, 
+bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t yy_val, 
 				bj_core_co_t xx_sz_val, bj_core_co_t yy_sz_val)
 {
-	bj_glb_sys.xx = xx_val;
-	bj_glb_sys.yy = yy_val;
-	bj_glb_sys.xx_sz = xx_sz_val;
-	bj_glb_sys.yy_sz = yy_sz_val;
+	sys_sz->xx = xx_val;
+	sys_sz->yy = yy_val;
+	sys_sz->xx_sz = xx_sz_val;
+	sys_sz->yy_sz = yy_sz_val;
 }
 
-#define bjh_init_glb_sys_with_dev(dev) \
-	bj_init_glb_sys_with((dev)->row, (dev)->col, (dev)->rows, (dev)->cols)
+#define bjh_init_glb_sys_sz_with_dev(sys_sz, dev) \
+	bj_init_glb_sys_sz_with((sys_sz), (dev)->row, (dev)->col, (dev)->rows, (dev)->cols)
 	
 // end_of_macro
 	
@@ -100,14 +102,14 @@ bj_init_glb_sys_with(bj_core_co_t xx_val, bj_core_co_t yy_val,
 	
 // xx and yy are absolute epiphany space coordinates
 // ro and co are relative epiphany space coordinates with respect to the 
-// 		allocated running cores (bj_glb_sys)
+// 		allocated running cores (bj_get_glb_sys_sz())
 // id is the core id absolute in epiphany space 
-// nn is a consec with respect to the allocated running cores (bj_glb_sys)
+// nn is a consec with respect to the allocated running cores (bj_get_glb_sys_sz())
 
-#define bj_min_xx_sys (bj_glb_sys.xx)
-#define bj_max_xx_sys (bj_min_xx_sys + (bj_glb_sys.xx_sz))
-#define bj_min_yy_sys (bj_glb_sys.yy)
-#define bj_max_yy_sys (bj_min_yy_sys + (bj_glb_sys.yy_sz))
+#define bj_min_xx_sys (bj_get_glb_sys_sz()->xx)
+#define bj_max_xx_sys (bj_min_xx_sys + (bj_get_glb_sys_sz()->xx_sz))
+#define bj_min_yy_sys (bj_get_glb_sys_sz()->yy)
+#define bj_max_yy_sys (bj_min_yy_sys + (bj_get_glb_sys_sz()->yy_sz))
 
 
 #define bj_id_to_xx(id)	(((id) >> bj_axis_bits) & bj_axis_mask)
@@ -118,11 +120,11 @@ bj_init_glb_sys_with(bj_core_co_t xx_val, bj_core_co_t yy_val,
 #define bj_id_to_co(id)	bj_yy_to_co(bj_id_to_yy(id))
 #define bj_ro_to_xx(ro)	((ro) + bj_min_xx_sys)
 #define bj_co_to_yy(co)	((co) + bj_min_yy_sys)
-#define bj_ro_co_to_nn(ro, co) (((ro) * (bj_glb_sys.yy_sz)) + (co))
+#define bj_ro_co_to_nn(ro, co) (((ro) * (bj_get_glb_sys_sz()->yy_sz)) + (co))
 #define bj_xx_yy_to_id(xx, yy) (((xx) << bj_axis_bits) + (yy))
 #define bj_ro_co_to_id(ro, co) ((bj_ro_to_xx(ro) << bj_axis_bits) + bj_co_to_yy(co))
-#define bj_nn_to_ro(nn)	((nn) / (bj_glb_sys.yy_sz))
-#define bj_nn_to_co(nn)	((nn) % (bj_glb_sys.yy_sz))
+#define bj_nn_to_ro(nn)	((nn) / (bj_get_glb_sys_sz()->yy_sz))
+#define bj_nn_to_co(nn)	((nn) % (bj_get_glb_sys_sz()->yy_sz))
 #define bj_id_to_nn(id) (bj_ro_co_to_nn(bj_id_to_ro(id), bj_id_to_co(id)))
 #define bj_nn_to_id(nn) (bj_ro_co_to_id(bj_nn_to_ro(nn), bj_nn_to_co(nn)))
 
@@ -272,8 +274,8 @@ struct bj_align(8) bj_off_core_shared_data_def {
 typedef struct bj_off_core_shared_data_def bj_off_core_st;
 
 
-//define BJ_OUT_BUFF_SZ 	800 	// for debugging purposes
-#define BJ_OUT_BUFF_SZ 	bj_mem_16K
+//define BJ_OUT_BUFF_SZ 	bj_mem_16K
+#define BJ_OUT_BUFF_SZ 	300
 #define BJ_OUT_BUFF_MAX_OBJ_SZ 500
 
 struct bj_align(8) bj_core_out_def { 
@@ -288,7 +290,7 @@ typedef struct bj_core_out_def bj_core_out_st;
 struct bj_align(8) bj_off_sys_shared_data_def { 
 	uint32_t 		magic_id;
 	uint32_t 		dbg_error_code;
-	bj_sys_st 		wrk_sys;
+	bj_sys_sz_st 	wrk_sys;
 	bj_off_core_st 	sys_cores[bj_sys_max_cores];
 	bj_core_out_st 	sys_out_buffs[bj_sys_max_cores];
 };

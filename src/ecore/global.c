@@ -5,7 +5,7 @@
 //======================================================================
 // off chip shared memory
 
-bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_section("shared_dram");
+bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_shared_dram;
 
 
 
@@ -14,7 +14,7 @@ bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_section("shared_dram");
 
 void* 	bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
 
-bj_sys_st bj_glb_sys;
+bj_sys_sz_st bj_glb_sys;
 
 bj_off_core_st* bj_off_core_pt;
 bj_rrarray_st* bj_write_rrarray;
@@ -23,8 +23,6 @@ bj_in_core_st bj_in_core_shd;
 uint16_t bjk_trace_err;
 
 uint8_t bjk_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
-
-bj_bool_t bjk_waiting_host_sync;
 
 //=====================================================================
 // global funcs
@@ -40,9 +38,13 @@ abort(){	// Needed when optimizing for size
 }
 #endif	//IS_EMU_CODE
 
+bj_sys_sz_st*
+bj_get_glb_sys_sz(){
+	return &bj_glb_sys;
+}
 
 void 
-bjk_set_irq0_handler() bj_global_code_dram;
+bjk_set_irq0_handler() bj_code_dram;
 	
 void 
 bjk_set_irq0_handler(){
@@ -53,21 +55,22 @@ bjk_set_irq0_handler(){
 void 
 bjk_init_global(void) {
 	// basic init
-	bjk_waiting_host_sync = 0;
 	bjk_set_irq0_handler();
 
 	bj_off_core_pt = 0x0;
 	bj_write_rrarray = 0x0;
-	bj_init_glb_sys();
+
+	bj_sys_sz_st* sys_sz = bj_get_glb_sys_sz();
+	bj_init_glb_sys_sz(sys_sz);
 	
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
 		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
 	}
 	
-	// bj_glb_sys init
+	// glb_sys_sz init
 	bj_core_id_t koid = bjk_get_core_id();
-	bj_memset((uint8_t*)&bj_glb_sys, 0, sizeof(bj_glb_sys));
-	bj_glb_sys = BJK_OFF_CHIP_SHARED_MEM.wrk_sys;
+	bj_memset((uint8_t*)sys_sz, 0, sizeof(bj_sys_sz_st));
+	*sys_sz = BJK_OFF_CHIP_SHARED_MEM.wrk_sys;
 
 	// num_core init
 	bj_core_nn_t num_core = bj_id_to_nn(koid);

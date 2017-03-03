@@ -2,12 +2,12 @@
 #ifndef BJ_INTERRUPTIONS_H
 #define BJ_INTERRUPTIONS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <inttypes.h>
 #include "attribute.h"
+
+#ifdef __cplusplus
+bj_c_decl {
+#endif
 
 void bj_opt_sz_fn bj_isr_fn 
 bjk_sync_handler(void); // IVT_RESET

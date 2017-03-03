@@ -10,11 +10,11 @@ Declaration of dynamic mem funcs.
 #ifndef BJ_DYN_MEM_HH
 #define BJ_DYN_MEM_HH
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "umm_malloc.h"
+
+#ifdef __cplusplus
+bj_c_decl {
+#endif
 
 //======================================================================
 // aligned umm_malloc memory allocation 

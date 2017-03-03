@@ -9,9 +9,10 @@
 #include "debug.h"
 #include "stdbool.h"
 
+#include "shared.h"
+
 #ifdef __cplusplus
-extern "C"
-{
+bj_c_decl {
 #endif
 
 #define bj_as_pt_char(the_str) (the_str)

@@ -331,16 +331,6 @@ public:
 	void 	operator -- (int aa) { --(*this); }
 };
 
-/*
-#pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-fpermissive"
-
-static void
-__static_initialization_and_destruction_0(int, int) bj_code_dram;
-
-#pragma GCC diagnostic pop
-*/
-
 #endif		// BINDER_H
 
 

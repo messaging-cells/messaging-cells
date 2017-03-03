@@ -76,8 +76,7 @@ E_USER_INT     = 9,
 // To FAKE std c++ lib initialization and destructions of global objects
 // DO NOT FORGET to call initializers explicitly.
 
-extern "C" int 
-__cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl) bj_code_dram;
+bj_c_decl int __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl) bj_code_dram;
 
 int 
 __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl){
@@ -99,10 +98,10 @@ bjk_actor_id_t 	missive::THE_ACTOR_ID = bjk_actor_id(missive);
 bjk_actor_id_t 	missive_ref::THE_ACTOR_ID = bjk_actor_id(missive_ref);
 bjk_actor_id_t 	missive_grp::THE_ACTOR_ID = bjk_actor_id(missive_grp);
 
-grip 			actor::AVAILABLE;
-grip 			missive::AVAILABLE;
-grip 			missive_ref::AVAILABLE;
-grip 			missive_grp::AVAILABLE;
+grip 	actor::AVAILABLE;
+grip 	missive::AVAILABLE;
+grip 	missive_ref::AVAILABLE;
+grip 	missive_grp::AVAILABLE;
 
 BJK_DEFINE_ACQUIRE(actor)
 BJK_DEFINE_ACQUIRE(missive)

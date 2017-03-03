@@ -8,7 +8,7 @@
 #include "attribute.h"
 
 #ifdef __cplusplus
-extern "C" {
+bj_c_decl {
 #endif
 
 struct bj_align(8) bj_rrarray_def { 

@@ -4,9 +4,10 @@
 #ifndef BJ_DEBUG_H
 #define BJ_DEBUG_H
 
+#include "attribute.h"
+
 #ifdef __cplusplus
-extern "C"
-{
+bj_c_decl {
 #endif
 
 #ifdef FULL_DEBUG

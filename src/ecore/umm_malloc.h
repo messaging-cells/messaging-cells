@@ -7,13 +7,12 @@
 #ifndef UMM_MALLOC_H
 #define UMM_MALLOC_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <inttypes.h>
-
 #include "shared.h"
+
+#ifdef __cplusplus
+bj_c_decl {
+#endif
 
 #define umm_null bj_null
 typedef bj_size_t umm_size_t;

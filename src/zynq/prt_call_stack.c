@@ -8,7 +8,7 @@
 #include <string.h>
 #include <elf.h>
 
-static void lookup_sections(const void *file, int addrs_sz, void** stack_addrs);
+void lookup_sections(const void *file, int addrs_sz, void** stack_addrs);
 
 #define MAX_CALL_STACK_SZ 100	// should be >= BJ_MAX_CALL_STACK_SZ
 
@@ -48,7 +48,8 @@ int bjh_prt_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs)
 	return 0;
 }
 
-static int16_t find_addr(int addrs_sz, void** stack_addrs, void* addr){
+int16_t 
+find_addr(int addrs_sz, void** stack_addrs, void* addr){
 	int16_t aa = -1;
 	for(aa = 0; aa < addrs_sz; aa++){
 		if(stack_addrs[aa] == NULL){
@@ -62,7 +63,8 @@ static int16_t find_addr(int addrs_sz, void** stack_addrs, void* addr){
 	return aa;
 }
 
-static void lookup_sections(const void *file, int addrs_sz, void** stack_addrs)
+void 
+lookup_sections(const void *file, int addrs_sz, void** stack_addrs)
 {
 	uint16_t ii;
 	uint16_t kk;

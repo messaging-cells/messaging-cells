@@ -4,15 +4,14 @@
 #ifndef BJ_ATTRIBUTE_H
 #define BJ_ATTRIBUTE_H
 
+#define bj_c_decl extern "C"
+
 #ifdef __cplusplus
-extern "C"
-{
+bj_c_decl {
 #endif
 
 //======================================================================
 // function attibutes
-
-// Use with static when needed
 
 #ifdef IS_EMU_CODE
 	#define bj_opt_sz_fn 
@@ -24,6 +23,7 @@ extern "C"
 	#define bj_section(sec)
 	#define bj_align(aa)
 	#define bj_code_dram 
+	#define bj_shared_dram
 #else //IS_EMU_CODE
 
 #define bj_opt_sz_fn __attribute__((optimize("Os")))
@@ -45,6 +45,12 @@ extern "C"
 	#define bj_code_dram bj_section("code_dram")
 #else
 	#define bj_code_dram 
+#endif
+
+#ifdef IS_CORE_CODE
+	#define bj_shared_dram bj_section("shared_dram")
+#else
+	#define bj_shared_dram
 #endif
 
 #endif	//IS_EMU_CODE

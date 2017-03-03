@@ -4,8 +4,10 @@
 #ifndef BJ_ALL_REGS_H
 #define BJ_ALL_REGS_H
 
+#include "attribute.h"
+
 #ifdef __cplusplus
-extern "C" {
+bj_c_decl {
 #endif
 
 // eCore General Purpose Registers
