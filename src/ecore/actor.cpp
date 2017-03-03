@@ -11,7 +11,7 @@
 #include "dyn_mem.hh"
 #include "actor.hh"
 
-#include "e-lib.h"
+//include "e-lib.h"
 
 	/*
 	bj_core_id_t dst1 = bj_ro_co_to_id(0, 0);
@@ -40,10 +40,10 @@
 
 	ivt_entry_user
 
-	e_asm("mov r0, #0x1ff"); 
-	e_asm("movts imask, r0");
-	e_asm("gie");
-	//e_asm("movts ilatst, r0");
+	bj_asm("mov r0, #0x1ff"); 
+	bj_asm("movts imask, r0");
+	bj_asm("gie");
+	//bj_asm("movts ilatst, r0");
 
 void e_irq_set(unsigned row, unsigned col, e_irq_type_t irq)
 {
@@ -87,7 +87,9 @@ __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl){
 	return 0;
 }
 
+#ifndef IS_EMU_CODE
 void* __dso_handle = bj_null;
+#endif	//IS_EMU_CODE
 
 //----------------------------------------------------------------------------
 
@@ -328,7 +330,7 @@ grip&
 agent::get_available(){
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpmf-conversions"
-	bjk_abort((uint32_t)(void*)&agent::get_available, 0, bj_null);
+	bjk_abort((bj_addr_t)(void*)&agent::get_available, 0, bj_null);
 	#pragma GCC diagnostic pop
 	return *((grip*)bj_null);
 }

@@ -18,7 +18,7 @@ H_DIR=${ESDK}/tools/host
 H_LIB_1=${ETOOLS}/host/lib
 H_INC_1=${ETOOLS}/host/include
 
-SRC_HOST_DIR := $(SRC_DIR)/host
+SRC_ZYNQ_DIR := $(SRC_DIR)/zynq
 SRC_ECORE_DIR := $(SRC_DIR)/ecore
 
 DBG_FLAG := -DFULL_DEBUG
@@ -42,11 +42,11 @@ TGT_LINKER := $(HCOMP)
 SRC_CFLAGS := -Wall -std=gnu11 ${DBG_FLAG} 
 SRC_CXXFLAGS := -Wall -std=c++14 ${DBG_FLAG} 
 
-SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_ECORE_DIR) $(H_INC_1) 
+SRC_INCDIRS := $(SRC_ZYNQ_DIR) $(SRC_ECORE_DIR) $(H_INC_1) 
 
 SOURCES := \
-	$(SRC_HOST_DIR)/booter.c \
-	$(SRC_HOST_DIR)/prt_call_stack.c \
+	$(SRC_ZYNQ_DIR)/booter.c \
+	$(SRC_ZYNQ_DIR)/prt_call_stack.c \
 	$(SRC_ECORE_DIR)/shared.c \
 	$(SRC_ECORE_DIR)/rr_array.c 
 

@@ -31,6 +31,16 @@ bj_bool_t bjk_waiting_host_sync;
 
 #define BJ_B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
 
+#ifndef IS_EMU_CODE
+void
+abort(){	// Needed when optimizing for size
+	BJK_CK2(ck2_abort, 0);
+	bjk_abort((bj_addr_t)abort, 0, bj_null);
+	while(1);
+}
+#endif	//IS_EMU_CODE
+
+
 void 
 bjk_set_irq0_handler() bj_global_code_dram;
 	
@@ -51,7 +61,7 @@ bjk_init_global(void) {
 	bj_init_glb_sys();
 	
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
-		bjk_abort((uint32_t)bjk_init_global, 0, bj_null);
+		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
 	}
 	
 	// bj_glb_sys init
@@ -64,7 +74,7 @@ bjk_init_global(void) {
 	bj_off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
 
 	if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
-		bjk_abort((uint32_t)bjk_init_global, 0, bj_null);
+		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
 	}
 
 	bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
@@ -72,7 +82,7 @@ bjk_init_global(void) {
 	bj_rr_init(bj_write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
 	
 	if(bj_off_core_pt->magic_id != BJ_MAGIC_ID){
-		bjk_abort((uint32_t)bjk_init_global, 0, bj_null);
+		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
 	}
 	
 	// bj_in_core_shd init
@@ -94,13 +104,6 @@ bjk_init_global(void) {
 	
 	bjk_set_finished(BJ_NOT_FINISHED_VAL);
 	bj_set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
-}
-
-void
-abort(){	// Needed when optimizing for size
-	BJK_CK2(ck2_abort, 0);
-	bjk_abort((uint32_t)abort, 0, bj_null);
-	while(1);
 }
 
 void

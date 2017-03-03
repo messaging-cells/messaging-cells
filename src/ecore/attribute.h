@@ -14,12 +14,30 @@ extern "C"
 
 // Use with static when needed
 
+#ifdef IS_EMU_CODE
+	#define bj_opt_sz_fn 
+	#define bj_no_opt_fn 
+	// define bj_inline_fn inline 
+	#define bj_inline_fn inline __attribute__((always_inline)) 
+	#define bj_isr_fn 
+	#define bj_asm(code) 
+	#define bj_section(sec)
+	#define bj_align(aa)
+	#define bj_code_dram 
+#else //IS_EMU_CODE
+
 #define bj_opt_sz_fn __attribute__((optimize("Os")))
 #define bj_no_opt_fn __attribute__((optimize("O0")))
 #define bj_inline_fn inline __attribute__((always_inline)) 
-//define bj_naked_fn __attribute__((naked)) 
-#define bj_isr_fn __attribute__((interrupt)) 
+
+#ifdef IS_CORE_CODE
+	#define bj_isr_fn __attribute__((interrupt)) 
+#else
+	#define bj_isr_fn 
+#endif
+
 #define bj_asm __asm__ __volatile__
+
 #define bj_section(sec) __attribute__ ((section (sec)))
 #define bj_align(aa)	__attribute__ ((aligned (aa)))
 	
@@ -29,6 +47,7 @@ extern "C"
 	#define bj_code_dram 
 #endif
 
+#endif	//IS_EMU_CODE
 	
 #ifdef __cplusplus
 }

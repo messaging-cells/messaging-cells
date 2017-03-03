@@ -157,9 +157,13 @@ bjk_xprt(uint32_t vv){
 
 // end_of_macro
 
+#ifdef IS_EMU_CODE
+#define BJK_CK(nam, cond) 
+#define BJK_CK2(nam, cond) 
+#else 
 #define BJK_CK(nam, cond) BJK_OFFCHIP_ASSERT(nam, code_dram, cond)
-
 #define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
+#endif
 
 #define BJK_MARK_PLACE(nam) BJ_DBG(bj_asm(#nam ":")) 
 

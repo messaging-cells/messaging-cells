@@ -6,6 +6,7 @@
 #ifndef BJ_SHARED_DATA_H
 #define BJ_SHARED_DATA_H
 
+#include <stdint.h>
 #include <stdbool.h>
 #include <inttypes.h>
 #include "attribute.h"
@@ -29,7 +30,11 @@ typedef uint8_t bj_bool_t;
 #define bj_axis_bits	6
 #define bj_axis_mask	0x3f
 
-typedef uint32_t bj_addr_t;
+#ifdef IS_CORE_CODE
+	typedef uint32_t bj_addr_t;
+#else
+	typedef uintptr_t bj_addr_t;
+#endif
 	
 typedef uint16_t bj_core_id_t;	// e_coreid_t
 typedef uint16_t bj_core_co_t;
@@ -231,7 +236,7 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	uint32_t 	magic_id;
 	void** 		dbg_stack_trace;
 	
-	uint32_t 	dbg_error_code;
+	bj_addr_t 	dbg_error_code;
 	uint32_t 	dbg_progress_flag;
 
 	bj_core_id_t the_core_id;
@@ -345,7 +350,7 @@ bj_isprint(char cc){
 // end_macro
 
 #define bjk_simple_abort(func) \
-	bj_in_core_shd.dbg_error_code = (uint32_t)(func); \
+	bj_in_core_shd.dbg_error_code = (bj_addr_t)(func); \
 	if((bj_off_core_pt != bj_null) && (bj_off_core_pt->magic_id == BJ_MAGIC_ID)){ \
 		bj_off_core_pt->is_finished = BJ_FINISHED_VAL; \
 	} \

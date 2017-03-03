@@ -10,7 +10,9 @@ ETOOLS=${ESDK}/tools
 
 SRC_DIR := ../src
 
-SUBMAKEFILES := bj-host.mk bj-ecore.mk 
+SUBMAKEFILES := bj-zynq.mk bj-ecore.mk bj-emu.mk 
+# SUBMAKEFILES := bj-zynq.mk bj-ecore.mk 
+# SUBMAKEFILES := bj-emu.mk 
 
 default: all
 

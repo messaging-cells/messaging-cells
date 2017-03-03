@@ -17,7 +17,7 @@ uint16_t
 bjk_get_call_stack_trace(int16_t sz_trace, void** trace) bj_trace_code_dram;
 
 void 
-bjk_abort(uint32_t err, int16_t sz_trace, void** trace) bj_trace_code_dram;
+bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) bj_trace_code_dram;
 	
 void 
 bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace) bj_trace_code_dram;
