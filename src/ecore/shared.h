@@ -352,6 +352,7 @@ bj_isprint(char cc){
 
 #define bjk_simple_abort(func) \
 	bjk_get_glb_in_core_shd()->dbg_error_code = (bj_addr_t)(func); \
+	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt; \
 	if((off_core_pt != bj_null) && (off_core_pt->magic_id == BJ_MAGIC_ID)){ \
 		off_core_pt->is_finished = BJ_FINISHED_VAL; \
 	} \

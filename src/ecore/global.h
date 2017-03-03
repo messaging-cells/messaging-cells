@@ -16,6 +16,7 @@ bj_c_decl {
 // in ekore shared memory
 
 struct bjk_glb_sys_def { 
+	bj_sys_sz_st 	sys_sz;
 	bj_off_core_st* off_core_pt;
 	bj_rrarray_st* 	write_rrarray;
 	bj_in_core_st 	in_core_shd;
@@ -29,14 +30,12 @@ bjk_get_glb_sys();
 bj_in_core_st*
 bjk_get_glb_in_core_shd();
 
-extern bj_off_core_st* off_core_pt;
-extern bj_rrarray_st* write_rrarray;
-
 //=====================================================================
 // global funcs
 
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
+	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt; \
 	bj_set_off_chip_var(off_core_pt->is_finished, val);
 }
 

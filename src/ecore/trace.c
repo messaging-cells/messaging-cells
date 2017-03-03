@@ -204,7 +204,8 @@ bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
 	}
 	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
 	in_shd->dbg_error_code = err;
-	
+
+	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt;
 	if((off_core_pt != bj_null) && (off_core_pt->magic_id == BJ_MAGIC_ID)){
 		bj_set_off_chip_var(off_core_pt->is_finished, BJ_FINISHED_VAL);
 	}
@@ -290,6 +291,7 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 
 void 
 bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
+	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt;
 	if(off_core_pt == bj_null){
 		bjk_abort((bj_addr_t)bjk_wait_sync, 0, bj_null);
 	}
