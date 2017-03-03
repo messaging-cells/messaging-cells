@@ -15,20 +15,29 @@ bj_c_decl {
 //=====================================================================
 // in ekore shared memory
 
-extern void* 	bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
+struct bjk_glb_sys_def { 
+	bj_off_core_st* off_core_pt;
+	bj_rrarray_st* 	write_rrarray;
+	bj_in_core_st 	in_core_shd;
+	uint8_t 		dbg_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
+};
+typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 
-extern bj_off_core_st* bj_off_core_pt;
-extern bj_rrarray_st* bj_write_rrarray;
-extern bj_in_core_st bj_in_core_shd;
+bjk_glb_sys_st*
+bjk_get_glb_sys();
 
-extern uint16_t bjk_trace_err;
+bj_in_core_st*
+bjk_get_glb_in_core_shd();
+
+extern bj_off_core_st* off_core_pt;
+extern bj_rrarray_st* write_rrarray;
 
 //=====================================================================
 // global funcs
 
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
-	bj_set_off_chip_var(bj_off_core_pt->is_finished, val);
+	bj_set_off_chip_var(off_core_pt->is_finished, val);
 }
 
 void 

@@ -2,6 +2,8 @@
 #include "global.h"
 #include "trace.h"
 
+void* 		bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
+uint16_t 	bjk_trace_err;
 
 #define bjk_simm11_up(pt_i16)	(((pt_i16)[1] & 0x00FF) << 3)
 #define bjk_simm11_low(pt_i16)	(((pt_i16)[0] & 0x0380) >> 7)
@@ -200,13 +202,14 @@ bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
 	if((trace != bj_null) && (sz_trace > 0)){
 		bjk_get_call_stack_trace(sz_trace, trace);
 	}
-	bj_in_core_shd.dbg_error_code = err;
+	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+	in_shd->dbg_error_code = err;
 	
-	if((bj_off_core_pt != bj_null) && (bj_off_core_pt->magic_id == BJ_MAGIC_ID)){
-		bj_set_off_chip_var(bj_off_core_pt->is_finished, BJ_FINISHED_VAL);
+	if((off_core_pt != bj_null) && (off_core_pt->magic_id == BJ_MAGIC_ID)){
+		bj_set_off_chip_var(off_core_pt->is_finished, BJ_FINISHED_VAL);
 	}
 	
-	bj_asm("mov r62, %0" : : "r" (&bj_in_core_shd));
+	bj_asm("mov r62, %0" : : "r" (in_shd));
 	bj_asm("mov r63, %0" : : "r" (err));
 	bj_asm("gid");
 	bj_asm("trap 0x3");
@@ -225,6 +228,8 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 	if(sz <= 0){
 		return 0;
 	}
+	bj_memset((uint8_t*)trace, 0, sizeof(void*) * sz);
+	bjk_get_glb_in_core_shd()->dbg_stack_trace = trace;
 	
 	//bj_memset((uint8_t*)trace, 0, sz * sizeof(void*));
 	
@@ -285,7 +290,7 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 
 void 
 bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
-	if(bj_off_core_pt == bj_null){
+	if(off_core_pt == bj_null){
 		bjk_abort((bj_addr_t)bjk_wait_sync, 0, bj_null);
 	}
 	if((sz_trace > 0) && (trace != bj_null)){
@@ -302,7 +307,7 @@ bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	if(info == BJ_NOT_WAITING){
 		info = BJ_WAITING_ENTER;
 	}
-	bj_set_off_chip_var(bj_off_core_pt->is_waiting, info);
+	bj_set_off_chip_var(off_core_pt->is_waiting, info);
 	bj_asm("gie" "\n\t");
 	
 	// wait for SYNC
@@ -311,7 +316,7 @@ bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	// restore old_mask
 	bj_asm("gid" "\n\t");
 	bj_asm("movts imask, %0" : : "r" (old_mask));
-	bj_set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
+	bj_set_off_chip_var(off_core_pt->is_waiting, BJ_NOT_WAITING);
 	bj_asm("gie" "\n\t");
 }
 

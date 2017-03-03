@@ -12,17 +12,14 @@ bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_shared_dram;
 //=====================================================================
 // incore memory
 
-void* 	bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
 
 bj_sys_sz_st bj_glb_sys;
 
-bj_off_core_st* bj_off_core_pt;
-bj_rrarray_st* bj_write_rrarray;
+bj_off_core_st* off_core_pt;
+bj_rrarray_st* write_rrarray;
 bj_in_core_st bj_in_core_shd;
 
-uint16_t bjk_trace_err;
-
-uint8_t bjk_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
+uint8_t dbg_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
 
 //=====================================================================
 // global funcs
@@ -43,6 +40,11 @@ bj_get_glb_sys_sz(){
 	return &bj_glb_sys;
 }
 
+bj_in_core_st*
+bjk_get_glb_in_core_shd(){
+	return &bj_in_core_shd;
+}
+
 void 
 bjk_set_irq0_handler() bj_code_dram;
 	
@@ -57,8 +59,8 @@ bjk_init_global(void) {
 	// basic init
 	bjk_set_irq0_handler();
 
-	bj_off_core_pt = 0x0;
-	bj_write_rrarray = 0x0;
+	off_core_pt = 0x0;
+	write_rrarray = 0x0;
 
 	bj_sys_sz_st* sys_sz = bj_get_glb_sys_sz();
 	bj_init_glb_sys_sz(sys_sz);
@@ -74,39 +76,40 @@ bjk_init_global(void) {
 
 	// num_core init
 	bj_core_nn_t num_core = bj_id_to_nn(koid);
-	bj_off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
+	off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
 
 	if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
 		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
 	}
 
 	bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
-	bj_write_rrarray = &(out_st->wr_arr);
-	bj_rr_init(bj_write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
+	write_rrarray = &(out_st->wr_arr);
+	bj_rr_init(write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
 	
-	if(bj_off_core_pt->magic_id != BJ_MAGIC_ID){
+	if(off_core_pt->magic_id != BJ_MAGIC_ID){
 		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
 	}
 	
-	// bj_in_core_shd init
-	bj_memset((uint8_t*)&bj_in_core_shd, 0, sizeof(bj_in_core_shd));
-	bj_memset((uint8_t*)bjk_dbg_call_stack_trace, 0, sizeof(bjk_dbg_call_stack_trace));
+
+	// in_shd init 
+	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+	bj_memset((uint8_t*)in_shd, 0, sizeof(bj_in_core_st));
+
+	in_shd->magic_id = BJ_MAGIC_ID;
+	in_shd->dbg_stack_trace = bj_null;
+	in_shd->magic_end = BJ_MAGIC_END;	
+	in_shd->the_core_id = koid;
+	in_shd->the_core_ro = bj_id_to_ro(koid);
+	in_shd->the_core_co = bj_id_to_co(koid);
+	in_shd->the_core_nn = num_core;
 	
-	bj_in_core_shd.magic_id = BJ_MAGIC_ID;
-	bj_in_core_shd.dbg_stack_trace = bjk_dbg_call_stack_trace;
-	bj_in_core_shd.magic_end = BJ_MAGIC_END;	
-	bj_in_core_shd.the_core_id = koid;
-	bj_in_core_shd.the_core_ro = bj_id_to_ro(koid);
-	bj_in_core_shd.the_core_co = bj_id_to_co(koid);
-	bj_in_core_shd.the_core_nn = num_core;
-	
-	// bj_off_core_pt init	
-	//bj_set_off_chip_var(bj_off_core_pt->magic_id, BJ_MAGIC_ID);
-	bj_set_off_chip_var(bj_off_core_pt->the_core_id, bj_in_core_shd.the_core_id);
-	bj_set_off_chip_var(bj_off_core_pt->core_data, &(bj_in_core_shd));
+	// off_core_pt init	
+	//bj_set_off_chip_var(off_core_pt->magic_id, BJ_MAGIC_ID);
+	bj_set_off_chip_var(off_core_pt->the_core_id, in_shd->the_core_id);
+	bj_set_off_chip_var(off_core_pt->core_data, in_shd);
 	
 	bjk_set_finished(BJ_NOT_FINISHED_VAL);
-	bj_set_off_chip_var(bj_off_core_pt->is_waiting, BJ_NOT_WAITING);
+	bj_set_off_chip_var(off_core_pt->is_waiting, BJ_NOT_WAITING);
 }
 
 void
@@ -116,13 +119,13 @@ bjk_aux_sout(char* msg, bj_out_type_t outt){
 	if(oln > (BJ_OUT_BUFF_MAX_OBJ_SZ - extra)){
 		oln = (BJ_OUT_BUFF_MAX_OBJ_SZ - extra);
 	}
-	bj_memcpy(bjk_out_str + extra, (uint8_t*)msg, oln);
-	bjk_out_str[0] = outt;
-	bjk_out_str[1] = BJ_CHR;
-	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln + extra, (uint8_t*)bjk_out_str);
+	bj_memcpy(dbg_out_str + extra, (uint8_t*)msg, oln);
+	dbg_out_str[0] = outt;
+	dbg_out_str[1] = BJ_CHR;
+	uint16_t ow = bj_rr_write_obj(write_rrarray, oln + extra, (uint8_t*)dbg_out_str);
 	while(ow == 0){
 		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
-		ow = bj_rr_write_obj(bj_write_rrarray, oln + extra, (uint8_t*)bjk_out_str);
+		ow = bj_rr_write_obj(write_rrarray, oln + extra, (uint8_t*)dbg_out_str);
 	}
 }
 
@@ -137,10 +140,10 @@ bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt){
 	msg[3] = pt[1];
 	msg[4] = pt[2];
 	msg[5] = pt[3];
-	uint16_t ow = bj_rr_write_obj(bj_write_rrarray, oln, (uint8_t*)msg);
+	uint16_t ow = bj_rr_write_obj(write_rrarray, oln, (uint8_t*)msg);
 	while(ow == 0){
 		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
-		ow = bj_rr_write_obj(bj_write_rrarray, oln, (uint8_t*)msg);
+		ow = bj_rr_write_obj(write_rrarray, oln, (uint8_t*)msg);
 	}
 }
 

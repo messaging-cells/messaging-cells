@@ -17,7 +17,7 @@ int main2(void) {
 
 	bjk_slog("FINISHED !!\n");
 
-	bj_in_core_shd.dbg_progress_flag = 0xeee;	
+	bjk_get_glb_in_core_shd()->dbg_progress_flag = 0xeee;	
 	bjk_set_finished(BJ_FINISHED_VAL);
 	return 0;
 }
@@ -35,7 +35,7 @@ int main(void) {
 		bjk_slog(john[ii]);
 	}
 
-	bj_in_core_shd.dbg_progress_flag = 0xeee;	
+	bjk_get_glb_in_core_shd()->dbg_progress_flag = 0xeee;	
 	bjk_set_finished(BJ_FINISHED_VAL);
 	return 0;
 }

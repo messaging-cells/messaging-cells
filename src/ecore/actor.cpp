@@ -141,11 +141,13 @@ init_cpp_main(){
 	new (&kernel_out_work) grip(); 
 	new (&kernel_sent_work) grip(); 
 
-	bj_in_core_shd.binder_sz = sizeof(binder);
-	bj_in_core_shd.receptor_sz = sizeof(receptor<actor>);
-	bj_in_core_shd.actor_sz = sizeof(actor);
-	bj_in_core_shd.missive_sz = sizeof(missive);
-	bj_in_core_shd.missive_grp_sz = sizeof(missive_grp);
+	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+
+	in_shd->binder_sz = sizeof(binder);
+	in_shd->receptor_sz = sizeof(receptor<actor>);
+	in_shd->actor_sz = sizeof(actor);
+	in_shd->missive_sz = sizeof(missive);
+	in_shd->missive_grp_sz = sizeof(missive_grp);
 
 	init_class_names();
 
@@ -246,7 +248,8 @@ actors_main_loop(){
 
 void
 wait_inited_state(bj_core_id_t dst_id){
-	uint8_t* loc_st = &(bj_in_core_shd.the_core_state);
+	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+	uint8_t* loc_st = &(in_shd->the_core_state);
 	uint8_t* rmt_st = (uint8_t*)bj_addr_with(dst_id, loc_st);
 	while(*rmt_st != bjk_inited_state);
 }
@@ -282,7 +285,8 @@ cpp_main(){
 	init_cpp_main();
 	ck_sizes();
 
-	bj_in_core_shd.the_core_state = bjk_inited_state;
+	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+	in_shd->the_core_state = bjk_inited_state;
 
 	test_send_irq2 = 0;
 	//agent aa;

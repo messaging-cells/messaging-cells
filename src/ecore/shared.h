@@ -69,8 +69,6 @@ struct bj_align(8) bj_sys_def {
 };
 typedef struct bj_sys_def bj_sys_sz_st;
 
-extern bj_sys_sz_st bj_glb_sys;
-
 bj_sys_sz_st*
 bj_get_glb_sys_sz();
 
@@ -143,11 +141,12 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 #define bj_addr_with(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
 
 #define bjk_addr_is_local(addr) \
-	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == bj_in_core_shd.the_core_id))
+	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == bjk_get_glb_in_core_shd()->the_core_id))
 
-#define bjk_is_core(row, col) ((bj_in_core_shd.the_core_ro == (row)) && (bj_in_core_shd.the_core_co == (col)))
+#define bjk_is_core(row, col) \
+	((bjk_get_glb_in_core_shd()->the_core_ro == (row)) && (bjk_get_glb_in_core_shd()->the_core_co == (col)))
 
-#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bj_in_core_shd.the_core_co, (pt)))
+#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bjk_get_glb_in_core_shd()->the_core_co, (pt)))
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
 #define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
 
@@ -352,9 +351,9 @@ bj_isprint(char cc){
 // end_macro
 
 #define bjk_simple_abort(func) \
-	bj_in_core_shd.dbg_error_code = (bj_addr_t)(func); \
-	if((bj_off_core_pt != bj_null) && (bj_off_core_pt->magic_id == BJ_MAGIC_ID)){ \
-		bj_off_core_pt->is_finished = BJ_FINISHED_VAL; \
+	bjk_get_glb_in_core_shd()->dbg_error_code = (bj_addr_t)(func); \
+	if((off_core_pt != bj_null) && (off_core_pt->magic_id == BJ_MAGIC_ID)){ \
+		off_core_pt->is_finished = BJ_FINISHED_VAL; \
 	} \
 	bj_asm("trap 0x3"); \
 
