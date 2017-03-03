@@ -109,32 +109,46 @@ enum bjk_signal_t : uint8_t {
 };
 
 #define kernel_signals_arr_sz bjk_tot_signals
-extern bj_bool_t kernel_signals_arr[kernel_signals_arr_sz];
-
 #define kernel_handlers_arr_sz bjk_tot_handler_ids
-extern missive_handler_t kernel_handlers_arr[kernel_handlers_arr_sz];
+#define kernel_pw0_routed_arr_sz bj_sys_max_cores
+#define kernel_pw2_routed_arr_sz bjk_tot_routes
+#define kernel_pw4_routed_arr_sz bjk_tot_routes
+#define kernel_pw6_routed_arr_sz bjk_tot_routes
+
+#define kernel_class_names_arr_sz bjk_tot_actor_ids
+
+struct bjk_kernel_dat_def { 
+	bj_bool_t signals_arr[kernel_signals_arr_sz];
+	missive_handler_t handlers_arr[kernel_handlers_arr_sz];
+	missive_grp* pw0_routed_arr[kernel_pw0_routed_arr_sz];
+	missive_grp* pw2_routed_arr[kernel_pw2_routed_arr_sz];
+	missive_grp* pw4_routed_arr[kernel_pw4_routed_arr_sz];
+	missive_grp* pw6_routed_arr[kernel_pw6_routed_arr_sz];
+
+	grip direct_routed;
+
+	grip in_work;
+	grip local_work;
+	grip out_work;
+	grip sent_work;
+
+	char* class_names_arr[kernel_class_names_arr_sz];
+};
+typedef struct bjk_kernel_dat_def bjk_kernel_dat_st;
+
+bjk_kernel_dat_st*
+bjk_get_kernel_dat();
 
 #define bjk_is_valid_handler_idx(idx) \
-	((idx >= 0) && (idx < kernel_handlers_arr_sz) && (kernel_handlers_arr[idx] != bj_null))
+	((idx >= 0) && (idx < kernel_handlers_arr_sz) && ((bjk_get_kernel_dat()->handlers_arr)[idx] != bj_null))
 
-#define kernel_pw0_routed_arr_sz bj_sys_max_cores
-extern missive_grp* kernel_pw0_routed_arr[kernel_pw0_routed_arr_sz];
+#define bj_class_name(cls) const_cast<char*>("{" #cls "}");
 
-#define kernel_pw2_routed_arr_sz bjk_tot_routes
-extern missive_grp* kernel_pw2_routed_arr[kernel_pw2_routed_arr_sz];
+#define bjk_is_valid_class_name_idx(id) ((id >= 0) && (id < kernel_class_names_arr_sz))
 
-#define kernel_pw4_routed_arr_sz bjk_tot_routes
-extern missive_grp* kernel_pw4_routed_arr[kernel_pw4_routed_arr_sz];
+#define bjk_set_class_name(cls) \
+	(bjk_get_kernel_dat()->class_names_arr)[bjk_actor_id(cls)] = bj_class_name(cls)
 
-#define kernel_pw6_routed_arr_sz bjk_tot_routes
-extern missive_grp* kernel_pw6_routed_arr[kernel_pw6_routed_arr_sz];
-
-extern grip kernel_direct_routed;
-
-extern grip kernel_in_work;
-extern grip kernel_local_work;
-extern grip kernel_out_work;
-extern grip kernel_sent_work;
 
 //-------------------------------------------------------------------------
 // kernel funcs
@@ -148,18 +162,6 @@ call_handlers_of_group(missive_grp& mgrp);
 bj_opt_sz_fn void 
 actors_main_loop();
 
-
-//-------------------------------------------------------------------------
-// actor class names
-
-#define bj_class_name(cls) const_cast<char*>("{" #cls "}");
-
-#define kernel_class_names_arr_sz bjk_tot_actor_ids
-extern char* kernel_class_names_arr[kernel_class_names_arr_sz];
-
-#define bjk_is_valid_class_name_idx(id) ((id >= 0) && (id < kernel_class_names_arr_sz))
-
-#define bjk_set_class_name(cls) kernel_class_names_arr[bjk_actor_id(cls)] = bj_class_name(cls)
 
 //-------------------------------------------------------------------------
 // agent class 
@@ -192,9 +194,10 @@ public:
 
 	virtual
 	bj_opt_sz_fn char* 	get_class_name(){
+		bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
 		bjk_actor_id_t id = get_actor_id();
 		if(bjk_is_valid_class_name_idx(id)){
-			return kernel_class_names_arr[id];
+			return (ker->class_names_arr)[id];
 		}
 		return bj_null;
 	}
@@ -244,15 +247,6 @@ public:
 		let_go();
 		grip& ava = get_available();
 		ava.bind_to_my_left(*this);
-	}
-
-	virtual
-	bj_opt_sz_fn char* 	get_class_name(){
-		bjk_actor_id_t id = get_actor_id();
-		if(bjk_is_valid_class_name_idx(id)){
-			return kernel_class_names_arr[id];
-		}
-		return bj_null;
 	}
 };
 

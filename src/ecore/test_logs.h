@@ -7,8 +7,7 @@
 #include "attribute.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+bj_c_decl {
 #endif
 
 extern void* all_tests[];

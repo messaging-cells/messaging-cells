@@ -108,15 +108,12 @@ BJK_DEFINE_ACQUIRE(missive)
 BJK_DEFINE_ACQUIRE(missive_ref)
 BJK_DEFINE_ACQUIRE(missive_grp)
 
-char* kernel_class_names_arr[kernel_class_names_arr_sz];
-bj_bool_t kernel_signals_arr[kernel_signals_arr_sz];
-missive_handler_t kernel_handlers_arr[kernel_handlers_arr_sz];
-missive_grp* kernel_pw0_routed_arr[kernel_pw0_routed_arr_sz];
+bjk_kernel_dat_st bjk_KERNEL_DAT;
 
-grip kernel_in_work;
-grip kernel_local_work;
-grip kernel_out_work;
-grip kernel_sent_work;
+bjk_kernel_dat_st*
+bjk_get_kernel_dat(){
+	return &bjk_KERNEL_DAT;
+}
 
 void
 init_class_names(){
@@ -131,15 +128,17 @@ init_cpp_main(){
 	new (&missive::AVAILABLE) grip(); 
 	new (&missive_ref::AVAILABLE) grip(); 
 
-	bj_init_arr_vals(kernel_class_names_arr_sz, kernel_class_names_arr, bj_null);
-	bj_init_arr_vals(kernel_signals_arr_sz, kernel_signals_arr, bj_false);
-	bj_init_arr_vals(kernel_handlers_arr_sz, kernel_handlers_arr, bj_null);
-	bj_init_arr_vals(kernel_pw0_routed_arr_sz, kernel_pw0_routed_arr, bj_null);
+	bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
 
-	new (&kernel_in_work) grip(); 
-	new (&kernel_local_work) grip(); 
-	new (&kernel_out_work) grip(); 
-	new (&kernel_sent_work) grip(); 
+	bj_init_arr_vals(kernel_class_names_arr_sz, ker->class_names_arr, bj_null);
+	bj_init_arr_vals(kernel_signals_arr_sz, ker->signals_arr, bj_false);
+	bj_init_arr_vals(kernel_handlers_arr_sz, ker->handlers_arr, bj_null);
+	bj_init_arr_vals(kernel_pw0_routed_arr_sz, ker->pw0_routed_arr, bj_null);
+
+	new (&(ker->in_work)) grip(); 
+	new (&(ker->local_work)) grip(); 
+	new (&(ker->out_work)) grip(); 
+	new (&(ker->sent_work)) grip(); 
 
 	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
 
@@ -160,9 +159,10 @@ init_cpp_main(){
 void 
 add_out_missive(missive& msv1){
 	binder * fst, * lst, * wrk;
+	bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
 
-	fst = kernel_out_work.bn_right;
-	lst = &kernel_out_work;
+	fst = ker->out_work.bn_right;
+	lst = &(ker->out_work);
 	for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
 		missive_grp* mgrp = (missive_grp*)wrk;
 		missive* msv2 = (missive*)(mgrp->all_msv.get_right_pt());
@@ -172,12 +172,13 @@ add_out_missive(missive& msv1){
 	}
 	missive_grp* mgrp2 = missive_grp::acquire();
 	mgrp2->bind_to_my_left(msv1);
-	kernel_out_work.bind_to_my_left(*mgrp2);
+	ker->out_work.bind_to_my_left(*mgrp2);
 }
 
 void 
 call_handlers_of_group(missive_grp& mgrp){
 	binder * fst, * lst, * wrk;
+	bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
 
 	fst = mgrp.bn_right;
 	lst = &mgrp;
@@ -186,19 +187,20 @@ call_handlers_of_group(missive_grp& mgrp){
 		actor* dst = remote_msv->dst;
 		bjk_handler_idx_t idx = dst->id_idx;
 		if(bjk_is_valid_handler_idx(idx)){
-			(*(kernel_handlers_arr[idx]))(remote_msv);
+			(*((ker->handlers_arr)[idx]))(remote_msv);
 		}
 	}
 }
 
 void 
 actors_main_loop(){
+	bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
 	
 	while(true){
 		binder * fst, * lst, * wrk, * nxt;
 
-		fst = kernel_in_work.bn_right;
-		lst = &kernel_in_work;
+		fst = ker->in_work.bn_right;
+		lst = &(ker->in_work);
 		for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
 			missive_ref* fst_ref = (missive_ref*)wrk;
 			nxt = wrk->bn_right;
@@ -209,8 +211,8 @@ actors_main_loop(){
 			fst_ref->release();
 		}
 
-		fst = kernel_local_work.bn_right;
-		lst = &kernel_local_work;
+		fst = ker->local_work.bn_right;
+		lst = &(ker->local_work);
 		for(wrk = fst; wrk != lst; wrk = nxt){
 			missive* fst_msg = (missive*)wrk;
 			nxt = wrk->bn_right;
@@ -218,7 +220,7 @@ actors_main_loop(){
 			actor* dst = fst_msg->dst;
 			if(bjk_addr_is_local(dst)){
 				if(bjk_is_valid_handler_idx(dst->id_idx)){
-					(*(kernel_handlers_arr[dst->id_idx]))(fst_msg);
+					(*((ker->handlers_arr)[dst->id_idx]))(fst_msg);
 				}
 				fst_msg->release();
 			} else {
@@ -227,8 +229,8 @@ actors_main_loop(){
 			}
 		}
 
-		fst = kernel_out_work.bn_right;
-		lst = &kernel_out_work;
+		fst = ker->out_work.bn_right;
+		lst = &(ker->out_work);
 		for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
 			missive_grp* mgrp = (missive_grp*)wrk;
 			nxt = wrk->bn_right;
@@ -236,7 +238,7 @@ actors_main_loop(){
 			missive* msv = (missive*)(mgrp->all_msv.get_right_pt());
 			bj_core_id_t dst_id = bj_addr_get_core_id(msv->dst);
 			bj_core_nn_t idx = bj_id_to_nn(dst_id);
-			void* loc_pt = &(kernel_pw0_routed_arr[idx]);
+			void* loc_pt = &((ker->pw0_routed_arr)[idx]);
 			missive_grp** rmt_pt = (missive_grp**)bj_addr_with(dst_id, loc_pt);
 
 			*rmt_pt = mgrp;
