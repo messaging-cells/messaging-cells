@@ -23,7 +23,11 @@ class binder;
 
 extern const uint8_t* BINDER_BASE_POINTER;
 
-typedef kptr<binder, BINDER_BASE_POINTER> bjk_pt_t;
+#ifdef IS_CORE_CODE
+	typedef kptr<binder, BINDER_BASE_POINTER> bjk_pt_t;
+#else
+	typedef binder* bjk_pt_t;
+#endif
 
 typedef uint8_t bjk_flags_t;
 

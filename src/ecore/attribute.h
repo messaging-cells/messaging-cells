@@ -24,6 +24,7 @@ bj_c_decl {
 	#define bj_align(aa)
 	#define bj_code_dram 
 	#define bj_shared_dram
+	#define bj_data_bank2
 #else //IS_EMU_CODE
 
 #define bj_opt_sz_fn __attribute__((optimize("Os")))
@@ -51,6 +52,12 @@ bj_c_decl {
 	#define bj_shared_dram bj_section("shared_dram")
 #else
 	#define bj_shared_dram
+#endif
+
+#ifdef IS_CORE_CODE
+	#define bj_data_bank2 bj_section(".data_bank2")
+#else
+	#define bj_data_bank2
 #endif
 
 #endif	//IS_EMU_CODE

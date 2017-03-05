@@ -149,7 +149,6 @@ typedef struct UMM_HEAP_INFO_t {
 }
 UMM_HEAP_INFO;
 
-extern UMM_HEAP_INFO heapInfo;
 
 void *umm_info( void *ptr, int force ) bj_code_dram;
 umm_opt_sz_fn void *umm_malloc( umm_size_t size ) bj_code_dram;
@@ -178,7 +177,13 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 
 #define UMM_HEAP_NUM_BLOCKS (UMM_MALLOC_CFG__HEAP_SIZE / sizeof(umm_block))
 
-extern umm_block umm_align(8) umm_heap[UMM_HEAP_NUM_BLOCKS];
+#ifdef IS_EMU_CODE
+	#define UMM_THE_INFO (*umm_get_info())
+	#define UMM_THE_HEAP umm_get_heap()
+#else
+	#define UMM_THE_INFO heapInfo
+	#define UMM_THE_HEAP umm_heap
+#endif
 
 #ifdef __cplusplus
 }

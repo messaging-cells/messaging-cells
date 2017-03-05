@@ -98,21 +98,16 @@ bjk_actor_id_t 	missive::THE_ACTOR_ID = bjk_actor_id(missive);
 bjk_actor_id_t 	missive_ref::THE_ACTOR_ID = bjk_actor_id(missive_ref);
 bjk_actor_id_t 	missive_grp::THE_ACTOR_ID = bjk_actor_id(missive_grp);
 
-grip 	actor::AVAILABLE;
-grip 	missive::AVAILABLE;
-grip 	missive_ref::AVAILABLE;
-grip 	missive_grp::AVAILABLE;
-
 BJK_DEFINE_ACQUIRE(actor)
 BJK_DEFINE_ACQUIRE(missive)
 BJK_DEFINE_ACQUIRE(missive_ref)
 BJK_DEFINE_ACQUIRE(missive_grp)
 
-bjk_kernel_dat_st bjk_KERNEL_DAT;
+kernel bjk_THE_KERNEL;
 
-bjk_kernel_dat_st*
-bjk_get_kernel_dat(){
-	return &bjk_KERNEL_DAT;
+kernel*
+bjk_get_the_kernel(){
+	return &bjk_THE_KERNEL;
 }
 
 void
@@ -124,21 +119,11 @@ init_class_names(){
 
 void 
 init_cpp_main(){
-	new (&actor::AVAILABLE) grip(); 
-	new (&missive::AVAILABLE) grip(); 
-	new (&missive_ref::AVAILABLE) grip(); 
+	kernel* ker = bjk_get_the_kernel();
 
-	bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
+	new (ker) kernel(); 
 
-	bj_init_arr_vals(kernel_class_names_arr_sz, ker->class_names_arr, bj_null);
-	bj_init_arr_vals(kernel_signals_arr_sz, ker->signals_arr, bj_false);
-	bj_init_arr_vals(kernel_handlers_arr_sz, ker->handlers_arr, bj_null);
-	bj_init_arr_vals(kernel_pw0_routed_arr_sz, ker->pw0_routed_arr, bj_null);
-
-	new (&(ker->in_work)) grip(); 
-	new (&(ker->local_work)) grip(); 
-	new (&(ker->out_work)) grip(); 
-	new (&(ker->sent_work)) grip(); 
+	init_class_names();
 
 	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
 
@@ -147,8 +132,6 @@ init_cpp_main(){
 	in_shd->actor_sz = sizeof(actor);
 	in_shd->missive_sz = sizeof(missive);
 	in_shd->missive_grp_sz = sizeof(missive_grp);
-
-	init_class_names();
 
 	bjk_separate(missive_grp, bj_sys_max_cores);
 
@@ -159,7 +142,7 @@ init_cpp_main(){
 void 
 add_out_missive(missive& msv1){
 	binder * fst, * lst, * wrk;
-	bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
+	kernel* ker = bjk_get_the_kernel();
 
 	fst = ker->out_work.bn_right;
 	lst = &(ker->out_work);
@@ -178,7 +161,7 @@ add_out_missive(missive& msv1){
 void 
 call_handlers_of_group(missive_grp& mgrp){
 	binder * fst, * lst, * wrk;
-	bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
+	kernel* ker = bjk_get_the_kernel();
 
 	fst = mgrp.bn_right;
 	lst = &mgrp;
@@ -194,7 +177,7 @@ call_handlers_of_group(missive_grp& mgrp){
 
 void 
 actors_main_loop(){
-	bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
+	kernel* ker = bjk_get_the_kernel();
 	
 	while(true){
 		binder * fst, * lst, * wrk, * nxt;
@@ -287,6 +270,10 @@ cpp_main(){
 	init_cpp_main();
 	ck_sizes();
 
+	if(bjk_get_the_kernel()->direct_routed.is_alone()){
+		bjk_slog2("direct_routed ALONE\n");
+	}
+
 	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
 	in_shd->the_core_state = bjk_inited_state;
 
@@ -339,3 +326,16 @@ agent::get_available(){
 	#pragma GCC diagnostic pop
 	return *((grip*)bj_null);
 }
+
+void
+kernel::init_kernel(){
+	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
+	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
+	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_null);
+
+	bj_init_arr_vals(kernel_class_names_arr_sz, class_names_arr, bj_null);
+}
+

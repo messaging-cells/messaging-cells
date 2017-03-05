@@ -32,25 +32,6 @@
 #include "umm_malloc.h"
 
 // ----------------------------------------------------------------------------
-
-umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_section(".data_bank2");
-
-//const umm_idx_t umm_numblocks = (sizeof(umm_heap) / sizeof(umm_block));
-umm_idx_t umm_numblocks = (sizeof(umm_heap) / sizeof(umm_block));
-
-#define UMM_NUMBLOCKS (umm_numblocks)
-
-// ----------------------------------------------------------------------------
-
-#define UMM_BLOCK(b)  (umm_heap[b])
-
-#define UMM_NBLOCK(b) (UMM_BLOCK(b).header.used.next)
-#define UMM_PBLOCK(b) (UMM_BLOCK(b).header.used.prev)
-#define UMM_NFREE(b)  (UMM_BLOCK(b).body.free.next)
-#define UMM_PFREE(b)  (UMM_BLOCK(b).body.free.prev)
-#define UMM_DATA(b)   (UMM_BLOCK(b).body.data)
-
-// ----------------------------------------------------------------------------
 // One of the coolest things about this little library is that it's VERY
 // easy to get debug information about the memory heap by simply iterating
 // through all of the memory blocks.
@@ -61,10 +42,40 @@ umm_idx_t umm_numblocks = (sizeof(umm_heap) / sizeof(umm_block));
 // the current block number.
 //
 // The umm_info function does all of that and makes the results available
-// in the heapInfo structure.
+// in the UMM_THE_INFO structure.
 // ----------------------------------------------------------------------------
 
+
 UMM_HEAP_INFO heapInfo;
+umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_data_bank2;
+
+umm_idx_t umm_numblocks = (sizeof(umm_heap) / sizeof(umm_block));
+#define UMM_NUMBLOCKS (umm_numblocks)
+
+#ifdef IS_EMU_CODE
+
+umm_block*
+umm_get_heap(){
+	return umm_heap;
+}
+
+UMM_HEAP_INFO*
+umm_get_info(){
+	return &heapInfo;
+}
+
+#endif
+
+// ----------------------------------------------------------------------------
+
+
+#define UMM_BLOCK(b)  (UMM_THE_HEAP[b])
+
+#define UMM_NBLOCK(b) (UMM_BLOCK(b).header.used.next)
+#define UMM_PBLOCK(b) (UMM_BLOCK(b).header.used.prev)
+#define UMM_NFREE(b)  (UMM_BLOCK(b).body.free.next)
+#define UMM_PFREE(b)  (UMM_BLOCK(b).body.free.prev)
+#define UMM_DATA(b)   (UMM_BLOCK(b).body.data)
 
 // ----------------------------------------------------------------------------
 // local declarations
@@ -95,12 +106,12 @@ umm_info( void *ptr, int force ) {
    //
    UMM_CRITICAL_ENTRY();
 
-   // Clear out all of the entries in the heapInfo structure before doing
+   // Clear out all of the entries in the UMM_THE_INFO structure before doing
    // any calculations..
    //
-   umm_memset( (void*)(&heapInfo), 0, sizeof( heapInfo ) );
+   umm_memset( (void*)(&UMM_THE_INFO), 0, sizeof( UMM_HEAP_INFO ) );
 
-   UMM_DBG_LOG_FORCE( force, "\n\nDumping the umm_heap...\n" );
+   UMM_DBG_LOG_FORCE( force, "\n\nDumping the UMM_THE_HEAP...\n" );
 
    UMM_DBG_LOG_FORCE( force, "|0x%p|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
          (&UMM_BLOCK(blockNo)),
@@ -118,14 +129,14 @@ umm_info( void *ptr, int force ) {
    blockNo = UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK;
 
    while( UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK ) {
-      ++heapInfo.totalEntries;
-      heapInfo.totalBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+      ++UMM_THE_INFO.totalEntries;
+      UMM_THE_INFO.totalBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
       // Is this a free block?
 
       if( UMM_NBLOCK(blockNo) & UMM_FREELIST_MASK ) {
-         ++heapInfo.freeEntries;
-         heapInfo.freeBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+         ++UMM_THE_INFO.freeEntries;
+         UMM_THE_INFO.freeBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
          UMM_DBG_LOG_FORCE( force, "|0x%p|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
                (&UMM_BLOCK(blockNo)),
@@ -147,8 +158,8 @@ umm_info( void *ptr, int force ) {
             return( ptr );
          }
       } else {
-         ++heapInfo.usedEntries;
-         heapInfo.usedBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+         ++UMM_THE_INFO.usedEntries;
+         UMM_THE_INFO.usedBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
          UMM_DBG_LOG_FORCE( force, "|0x%p|B %5i|NB %5i|PB %5i|Z %5i|\n",
                (&UMM_BLOCK(blockNo)),
@@ -164,8 +175,8 @@ umm_info( void *ptr, int force ) {
    // Update the accounting totals with information from the last block, the
    // rest must be free!
 
-   heapInfo.freeBlocks  += UMM_NUMBLOCKS-blockNo;
-   heapInfo.totalBlocks += UMM_NUMBLOCKS-blockNo;
+   UMM_THE_INFO.freeBlocks  += UMM_NUMBLOCKS-blockNo;
+   UMM_THE_INFO.totalBlocks += UMM_NUMBLOCKS-blockNo;
 
    UMM_DBG_LOG_FORCE( force, "|0x%p|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
          (&UMM_BLOCK(blockNo)),
@@ -177,14 +188,14 @@ umm_info( void *ptr, int force ) {
          UMM_PFREE(blockNo) );
 
    UMM_DBG_LOG_FORCE( force, "Total Entries %5i    Used Entries %5i    Free Entries %5i\n",
-         heapInfo.totalEntries,
-         heapInfo.usedEntries,
-         heapInfo.freeEntries );
+         UMM_THE_INFO.totalEntries,
+         UMM_THE_INFO.usedEntries,
+         UMM_THE_INFO.freeEntries );
 
    UMM_DBG_LOG_FORCE( force, "Total Blocks  %5i    Used Blocks  %5i    Free Blocks  %5i\n",
-         heapInfo.totalBlocks,
-         heapInfo.usedBlocks,
-         heapInfo.freeBlocks  );
+         UMM_THE_INFO.totalBlocks,
+         UMM_THE_INFO.usedBlocks,
+         UMM_THE_INFO.freeBlocks  );
 
    // Release the critical section...
    //
@@ -292,7 +303,7 @@ umm_free( void *ptr ) {
 
    // FIXME: At some point it might be a good idea to add a check to make sure
    //        that the pointer we're being asked to free up is actually within
-   //        the umm_heap!
+   //        the UMM_THE_HEAP!
    //
    // NOTE:  See the new umm_info() function that you can use to see if a ptr is
    //        on the free list!
@@ -303,7 +314,7 @@ umm_free( void *ptr ) {
 
    // Figure out which block we're in. Note the use of truncated division...
 
-   c = (ptr-(void *)(&(umm_heap[0])))/sizeof(umm_block);
+   c = (ptr-(void *)(&(UMM_THE_HEAP[0])))/sizeof(umm_block);
 
    UMM_DBG_LOG_DEBUG( "Freeing block %6i\n", c );
 
@@ -428,7 +439,7 @@ umm_malloc( umm_size_t size ) {
    } else {
       // We're at the end of the heap - allocate a new block, but check to see if
       // there's enough memory left for the requested block! Actually, we may need
-      // one more than that if we're initializing the umm_heap for the first
+      // one more than that if we're initializing the UMM_THE_HEAP for the first
       // time, which happens in the next conditional...
 
       if( UMM_NUMBLOCKS <= cf+blocks+1 ) {
@@ -520,7 +531,7 @@ umm_realloc( void *ptr, umm_size_t size ) {
 
    // Figure out which block we're in. Note the use of truncated division...
 
-   c = (ptr-(void *)(&(umm_heap[0])))/sizeof(umm_block);
+   c = (ptr-(void *)(&(UMM_THE_HEAP[0])))/sizeof(umm_block);
 
    // Figure out how big this block is...
 

@@ -33,9 +33,12 @@ enum bjk_actor_id_t : uint8_t {
 //-------------------------------------------------------------------------
 // dyn mem
 
+#define bjk_all_available(nam) bjk_get_the_kernel()->cls_available_##nam
+
 #define bjk_get_available(nam) \
-	if(! nam::AVAILABLE.is_alone()){ \
-		binder* fst = nam::AVAILABLE.bn_right; \
+	grip& ava = bjk_all_available(nam); \
+	if(! ava.is_alone()){ \
+		binder* fst = ava.bn_right; \
 		fst->let_go(); \
 		return (nam *)fst; \
 	} \
@@ -43,10 +46,11 @@ enum bjk_actor_id_t : uint8_t {
 // end_macro
 
 #define bjk_separate(nam, sz) \
+	grip& ava = bjk_all_available(nam); \
 	nam* obj = nam::acquire(sz); \
 	for(int bb = 0; bb < sz; bb++){ \
 		obj[bb].let_go(); \
-		nam::AVAILABLE.bind_to_my_left(obj[bb]); \
+		ava.bind_to_my_left(obj[bb]); \
 	} \
 
 // end_macro
@@ -117,7 +121,8 @@ enum bjk_signal_t : uint8_t {
 
 #define kernel_class_names_arr_sz bjk_tot_actor_ids
 
-struct bjk_kernel_dat_def { 
+class kernel { 
+public:
 	bj_bool_t signals_arr[kernel_signals_arr_sz];
 	missive_handler_t handlers_arr[kernel_handlers_arr_sz];
 	missive_grp* pw0_routed_arr[kernel_pw0_routed_arr_sz];
@@ -133,21 +138,41 @@ struct bjk_kernel_dat_def {
 	grip sent_work;
 
 	char* class_names_arr[kernel_class_names_arr_sz];
-};
-typedef struct bjk_kernel_dat_def bjk_kernel_dat_st;
 
-bjk_kernel_dat_st*
-bjk_get_kernel_dat();
+	grip 	cls_available_actor;
+	grip 	cls_available_missive;
+	grip 	cls_available_missive_ref;
+	grip 	cls_available_missive_grp;
+
+	/*
+	bjk_actor_id_t 	cls_id_agent;
+	bjk_actor_id_t 	cls_id_actor;
+	bjk_actor_id_t 	cls_id_missive;
+	bjk_actor_id_t 	cls_id_missive_ref;
+	bjk_actor_id_t 	cls_id_missive_grp;
+	*/
+
+	kernel(){
+		init_kernel();
+	}
+
+	~kernel(){}
+
+	void init_kernel();
+};
+
+kernel*
+bjk_get_the_kernel();
 
 #define bjk_is_valid_handler_idx(idx) \
-	((idx >= 0) && (idx < kernel_handlers_arr_sz) && ((bjk_get_kernel_dat()->handlers_arr)[idx] != bj_null))
+	((idx >= 0) && (idx < kernel_handlers_arr_sz) && ((bjk_get_the_kernel()->handlers_arr)[idx] != bj_null))
 
 #define bj_class_name(cls) const_cast<char*>("{" #cls "}");
 
 #define bjk_is_valid_class_name_idx(id) ((id >= 0) && (id < kernel_class_names_arr_sz))
 
 #define bjk_set_class_name(cls) \
-	(bjk_get_kernel_dat()->class_names_arr)[bjk_actor_id(cls)] = bj_class_name(cls)
+	(bjk_get_the_kernel()->class_names_arr)[bjk_actor_id(cls)] = bj_class_name(cls)
 
 
 //-------------------------------------------------------------------------
@@ -194,7 +219,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn char* 	get_class_name(){
-		bjk_kernel_dat_st* ker = bjk_get_kernel_dat();
+		kernel* ker = bjk_get_the_kernel();
 		bjk_actor_id_t id = get_actor_id();
 		if(bjk_is_valid_class_name_idx(id)){
 			return (ker->class_names_arr)[id];
@@ -208,8 +233,6 @@ public:
 
 class actor: public agent {
 public:
-	static
-	grip 			AVAILABLE;
 	static
 	bjk_actor_id_t	THE_ACTOR_ID;
 	static
@@ -239,7 +262,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn grip&	get_available(){
-		return actor::AVAILABLE;
+		return bjk_all_available(actor);
 	}
 
 	bj_opt_sz_fn
@@ -255,8 +278,6 @@ public:
 
 class missive : public agent {
 public:
-	static
-	grip 			AVAILABLE;
 	static
 	bjk_actor_id_t 	THE_ACTOR_ID;
 	static
@@ -286,7 +307,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn grip&	get_available(){
-		return missive::AVAILABLE;
+		return bjk_all_available(missive);
 	}
 };
 
@@ -295,8 +316,6 @@ public:
 
 class missive_grp : public agent {
 public:
-	static
-	grip 			AVAILABLE;
 	static
 	bjk_actor_id_t 	THE_ACTOR_ID;
 	static
@@ -325,7 +344,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn grip&	get_available(){
-		return missive_grp::AVAILABLE;
+		return bjk_all_available(missive_grp);
 	}
 };
 
@@ -334,8 +353,6 @@ public:
 
 class missive_ref : public agent {
 public:
-	static
-	grip 			AVAILABLE;
 	static
 	bjk_actor_id_t 	THE_ACTOR_ID;
 	static
@@ -363,7 +380,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn grip&	get_available(){
-		return missive_ref::AVAILABLE;
+		return bjk_all_available(missive_ref);
 	}
 };
 
