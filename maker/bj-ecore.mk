@@ -59,6 +59,7 @@ SRC_INCDIRS := $(SRC_ECORE_DIR)
 
 #	$(SRC_ECORE_DIR)/test_logs.c \
 #	$(SRC_ECORE_DIR)/umm_malloc.c \
+#	$(SRC_ECORE_DIR)/log.c \
 #	$(SRC_ECORE_DIR)/dyn_mem.cpp \
 #	$(SRC_ECORE_DIR)/actor.cpp \
 #	$(SRC_ECORE_DIR)/std2.c \
@@ -66,10 +67,13 @@ SRC_INCDIRS := $(SRC_ECORE_DIR)
 SOURCES := \
 	$(SRC_ECORE_DIR)/interruptions.c \
 	$(SRC_ECORE_DIR)/umm_malloc.c \
+	$(SRC_ECORE_DIR)/umm_malloc_eph.c \
+	$(SRC_ECORE_DIR)/log.c \
 	$(SRC_ECORE_DIR)/shared.c \
 	$(SRC_ECORE_DIR)/global.c \
+	$(SRC_ECORE_DIR)/global_eph.c \
 	$(SRC_ECORE_DIR)/rr_array.c \
-	$(SRC_ECORE_DIR)/trace.c \
+	$(SRC_ECORE_DIR)/trace_eph.c \
 	$(SRC_ECORE_DIR)/core_main.c \
 	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/e_start.s \

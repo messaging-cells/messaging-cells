@@ -7,48 +7,9 @@
 
 bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_shared_dram;
 
-//=====================================================================
-// global data
 
-bjk_glb_sys_st	bj_glb_sys_data;
-
-//=====================================================================
+//======================================================================
 // global funcs
-
-#define BJ_B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
-
-#ifndef IS_EMU_CODE
-void
-abort(){	// Needed when optimizing for size
-	BJK_CK2(ck2_abort, 0);
-	bjk_abort((bj_addr_t)abort, 0, bj_null);
-	while(1);
-}
-#endif	//IS_EMU_CODE
-
-bjk_glb_sys_st*
-bjk_get_glb_sys(){
-	return &bj_glb_sys_data;
-}
-
-bj_sys_sz_st*
-bj_get_glb_sys_sz(){
-	return &(bjk_get_glb_sys()->sys_sz);
-}
-
-bj_in_core_st*
-bjk_get_glb_in_core_shd(){
-	return &(bjk_get_glb_sys()->in_core_shd);
-}
-
-void 
-bjk_set_irq0_handler() bj_code_dram;
-	
-void 
-bjk_set_irq0_handler(){
-	unsigned * ivt = 0x0;
-	*ivt = ((((unsigned)bjk_sync_handler) >> 1) << 8) | BJ_B_OPCODE;
-}
 
 void 
 bjk_init_global(void) {
@@ -108,44 +69,5 @@ bjk_init_global(void) {
 	
 	bjk_set_finished(BJ_NOT_FINISHED_VAL);
 	bj_set_off_chip_var(glb_dat->off_core_pt->is_waiting, BJ_NOT_WAITING);
-}
-
-void
-bjk_aux_sout(char* msg, bj_out_type_t outt){ 
-	uint8_t extra = 2;
-	uint16_t oln = bj_strlen(msg);
-	if(oln > (BJ_OUT_BUFF_MAX_OBJ_SZ - extra)){
-		oln = (BJ_OUT_BUFF_MAX_OBJ_SZ - extra);
-	}
-
-	uint8_t* out_str = bjk_get_glb_sys()->dbg_out_str;
-	bj_memcpy(out_str + extra, (uint8_t*)msg, oln);
-	out_str[0] = outt;
-	out_str[1] = BJ_CHR;
-	bjk_glb_sys_st* glb_dat = bjk_get_glb_sys();
-	uint16_t ow = bj_rr_write_obj(glb_dat->write_rrarray, oln + extra, out_str);
-	while(ow == 0){
-		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
-		ow = bj_rr_write_obj(glb_dat->write_rrarray, oln + extra, out_str);
-	}
-}
-
-void
-bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt){
-	uint16_t oln = 2 + sizeof(uint32_t);
-	uint8_t msg[oln];
-	msg[0] = outt;
-	msg[1] = tt;
-	uint8_t* pt = (uint8_t*)(&vv);
-	msg[2] = pt[0];
-	msg[3] = pt[1];
-	msg[4] = pt[2];
-	msg[5] = pt[3];
-	bjk_glb_sys_st* glb_dat = bjk_get_glb_sys();
-	uint16_t ow = bj_rr_write_obj(glb_dat->write_rrarray, oln, (uint8_t*)msg);
-	while(ow == 0){
-		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
-		ow = bj_rr_write_obj(glb_dat->write_rrarray, oln, (uint8_t*)msg);
-	}
 }
 

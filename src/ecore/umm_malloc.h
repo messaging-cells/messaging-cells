@@ -177,10 +177,21 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 
 #define UMM_HEAP_NUM_BLOCKS (UMM_MALLOC_CFG__HEAP_SIZE / sizeof(umm_block))
 
+extern umm_idx_t umm_numblocks;
+
 #ifdef IS_EMU_CODE
+	umm_block*
+	umm_get_heap();
+
+	UMM_HEAP_INFO*
+	umm_get_info();
+
 	#define UMM_THE_INFO (*umm_get_info())
 	#define UMM_THE_HEAP umm_get_heap()
 #else
+	extern UMM_HEAP_INFO heapInfo;
+	extern umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_data_bank2;
+
 	#define UMM_THE_INFO heapInfo
 	#define UMM_THE_HEAP umm_heap
 #endif

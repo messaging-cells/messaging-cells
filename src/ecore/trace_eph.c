@@ -24,16 +24,16 @@ void
 get_call_opcode(uint16_t opcode[2], int16_t disp);
 	
 uint16_t*
-find_call(uint16_t* code_addr, uint16_t opcode[2]) bj_trace_code_dram;
+find_call(uint16_t* code_addr, uint16_t opcode[2]) bj_code_dram;
 
 uint16_t*
-find_interrupt_call(uint16_t* code_addr) bj_trace_code_dram;
+find_interrupt_call(uint16_t* code_addr) bj_code_dram;
 
 uint16_t*
-find_rts(uint16_t* code_addr) bj_trace_code_dram;
+find_rts(uint16_t* code_addr) bj_code_dram;
 	
 int16_t
-get_sp_disp(uint16_t* code_addr) bj_trace_code_dram;
+get_sp_disp(uint16_t* code_addr) bj_code_dram;
 
 //=====================================================================
 

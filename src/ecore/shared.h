@@ -9,7 +9,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <inttypes.h>
+
 #include "attribute.h"
+#include "log.h"
 #include "rr_array.h"
 
 #ifdef __cplusplus
@@ -251,6 +253,8 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	uint8_t 	actor_sz;
 	uint8_t 	missive_sz;
 	uint8_t 	missive_grp_sz;
+	uint16_t 	kernel_sz;
+	uint16_t 	bjk_glb_sys_st_sz;
 
 	uint32_t 	magic_end;
 };
@@ -294,27 +298,6 @@ struct bj_align(8) bj_off_sys_shared_data_def {
 	bj_core_out_st 	sys_out_buffs[bj_sys_max_cores];
 };
 typedef struct bj_off_sys_shared_data_def bj_off_sys_st;
-
-enum bj_out_obj_type_def {
-	BJ_OUT_LOG,
-	BJ_OUT_PRT,
-	BJ_OUT_MSG
-};
-typedef enum bj_out_obj_type_def bj_out_type_t;
-
-enum bj_type_def {
-	BJ_CHR,
-	BJ_I8,
-	BJ_I16,
-	BJ_I32,
-	BJ_UI8,
-	BJ_UI16,
-	BJ_UI32,
-	BJ_X8,
-	BJ_X16,
-	BJ_X32
-};
-typedef enum bj_type_def bj_type_t;
 
 int 
 bjh_prt_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);

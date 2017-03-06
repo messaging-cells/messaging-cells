@@ -45,29 +45,7 @@
 // in the UMM_THE_INFO structure.
 // ----------------------------------------------------------------------------
 
-
-UMM_HEAP_INFO heapInfo;
-umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_data_bank2;
-
-umm_idx_t umm_numblocks = (sizeof(umm_heap) / sizeof(umm_block));
 #define UMM_NUMBLOCKS (umm_numblocks)
-
-#ifdef IS_EMU_CODE
-
-umm_block*
-umm_get_heap(){
-	return umm_heap;
-}
-
-UMM_HEAP_INFO*
-umm_get_info(){
-	return &heapInfo;
-}
-
-#endif
-
-// ----------------------------------------------------------------------------
-
 
 #define UMM_BLOCK(b)  (UMM_THE_HEAP[b])
 

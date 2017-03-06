@@ -132,6 +132,8 @@ init_cpp_main(){
 	in_shd->actor_sz = sizeof(actor);
 	in_shd->missive_sz = sizeof(missive);
 	in_shd->missive_grp_sz = sizeof(missive_grp);
+	in_shd->kernel_sz = sizeof(kernel);
+	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
 
 	bjk_separate(missive_grp, bj_sys_max_cores);
 

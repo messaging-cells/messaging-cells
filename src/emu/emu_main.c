@@ -42,8 +42,8 @@ int test_logs_main() {
 
 int main() {
 	//test_logs_main();
-	core_main();
-	return 0;
+	//core_main();
+	printf("HOLA JOSE LUIS\n");
 }
 
 

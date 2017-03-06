@@ -27,8 +27,10 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 bjk_glb_sys_st*
 bjk_get_glb_sys();
 
-bj_in_core_st*
-bjk_get_glb_in_core_shd();
+bj_inline_fn bj_in_core_st* 
+bjk_get_glb_in_core_shd(){
+	return &(bjk_get_glb_sys()->in_core_shd);
+}
 
 //=====================================================================
 // global funcs
@@ -40,64 +42,17 @@ bjk_set_finished(uint8_t val) {
 }
 
 void 
-bjk_init_global(void) bj_code_dram;
+bjk_init_global() bj_code_dram;
 
+#ifndef IS_EMU_CODE
 void 
 abort(void) bj_code_dram;		// Needed when -Os flag is set
+#endif
 
-//======================================================================
-// log messages
+#define BJ_B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
 
-bj_code_dram void
-bjk_aux_sout(char* msg, bj_out_type_t outt);
-
-bj_inline_fn void
-bjk_slog(char* msg){
-	bjk_aux_sout(msg, BJ_OUT_LOG);
-}
-
-#define	bjk_slog2(msg) bjk_slog(as_pt_char(msg))
-
-bj_inline_fn void
-bjk_sprt(char* msg){
-	bjk_aux_sout(msg, BJ_OUT_PRT);
-}
-
-#define	bjk_sprt2(msg) bjk_sprt(as_pt_char(msg))
-
-bj_code_dram void
-bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt);
-
-bj_inline_fn void
-bjk_ilog(int32_t vv){
-	bjk_aux_iout(vv, BJ_OUT_LOG, BJ_I32);
-}
-
-bj_inline_fn void
-bjk_ulog(uint32_t vv){
-	bjk_aux_iout(vv, BJ_OUT_LOG, BJ_UI32);
-}
-
-bj_inline_fn void
-bjk_xlog(uint32_t vv){
-	bjk_aux_iout(vv, BJ_OUT_LOG, BJ_X32);
-}
-
-bj_inline_fn void
-bjk_iprt(int32_t vv){
-	bjk_aux_iout(vv, BJ_OUT_PRT, BJ_I32);
-}
-
-bj_inline_fn void
-bjk_uprt(uint32_t vv){
-	bjk_aux_iout(vv, BJ_OUT_PRT, BJ_UI32);
-}
-
-bj_inline_fn void
-bjk_xprt(uint32_t vv){
-	bjk_aux_iout(vv, BJ_OUT_PRT, BJ_X32);
-}
-
+void 
+bjk_set_irq0_handler() bj_code_dram;
 
 //======================================================================
 // bj_asserts
@@ -173,7 +128,7 @@ bjk_xprt(uint32_t vv){
 //======================================================================
 // naked inside normal func (insted of naked attribute)
 
-#define BJ_START_NAKED_FUNC(nam) \
+#define BJK_START_NAKED_FUNC(nam) \
 	bj_asm( \
 		".section .text \n\t" \
 		".balign 4 \n\t" \
@@ -183,7 +138,7 @@ bjk_xprt(uint32_t vv){
 
 // end_of_macro
 
-#define BJ_END_NAKED_FUNC() \
+#define BJK_END_NAKED_FUNC() \
 	bj_asm( \
 		"trap 0x3 \n\t" \
 		".previous \n\t" \
