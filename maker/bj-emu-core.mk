@@ -60,5 +60,6 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/dyn_mem.cpp \
 	$(SRC_ECORE_DIR)/binder.cpp \
-	$(SRC_ECORE_DIR)/actor.cpp 
+	$(SRC_ECORE_DIR)/actor.cpp \
+	$(SRC_ECORE_DIR)/actor_emu.cpp 
 

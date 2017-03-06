@@ -103,13 +103,6 @@ BJK_DEFINE_ACQUIRE(missive)
 BJK_DEFINE_ACQUIRE(missive_ref)
 BJK_DEFINE_ACQUIRE(missive_grp)
 
-kernel bjk_THE_KERNEL;
-
-kernel*
-bjk_get_the_kernel(){
-	return &bjk_THE_KERNEL;
-}
-
 void
 init_class_names(){
 	bjk_set_class_name(actor);
@@ -119,7 +112,7 @@ init_class_names(){
 
 void 
 init_cpp_main(){
-	kernel* ker = bjk_get_the_kernel();
+	kernel* ker = kernel::get_sys();
 
 	new (ker) kernel(); 
 
@@ -144,7 +137,7 @@ init_cpp_main(){
 void 
 add_out_missive(missive& msv1){
 	binder * fst, * lst, * wrk;
-	kernel* ker = bjk_get_the_kernel();
+	kernel* ker = kernel::get_sys();
 
 	fst = ker->out_work.bn_right;
 	lst = &(ker->out_work);
@@ -163,7 +156,7 @@ add_out_missive(missive& msv1){
 void 
 call_handlers_of_group(missive_grp& mgrp){
 	binder * fst, * lst, * wrk;
-	kernel* ker = bjk_get_the_kernel();
+	kernel* ker = kernel::get_sys();
 
 	fst = mgrp.bn_right;
 	lst = &mgrp;
@@ -179,7 +172,7 @@ call_handlers_of_group(missive_grp& mgrp){
 
 void 
 actors_main_loop(){
-	kernel* ker = bjk_get_the_kernel();
+	kernel* ker = kernel::get_sys();
 	
 	while(true){
 		binder * fst, * lst, * wrk, * nxt;
@@ -272,7 +265,7 @@ cpp_main(){
 	init_cpp_main();
 	ck_sizes();
 
-	if(bjk_get_the_kernel()->direct_routed.is_alone()){
+	if(kernel::get_sys()->direct_routed.is_alone()){
 		bjk_slog2("direct_routed ALONE\n");
 	}
 
@@ -309,7 +302,7 @@ cpp_main(){
 		bjk_send_irq(dst, 2);
 		bjk_send_irq(dst, 2);
 
-		bjk_slog2("CORE (0,1) sent 2 irq2\n");
+		bjk_slog2("CORE (0,1) sent 4 irq2\n");
 	}
 	
 }

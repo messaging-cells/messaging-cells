@@ -12,7 +12,7 @@ bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_shared_dram;
 // global funcs
 
 void 
-bjk_init_global(void) {
+bjk_glb_init(void) {
 	// basic init
 	bjk_set_irq0_handler();
 
@@ -25,7 +25,7 @@ bjk_init_global(void) {
 	bj_init_glb_sys_sz(sys_sz);
 	
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
-		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
+		bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
 	}
 	
 	// glb_sys_sz init
@@ -38,7 +38,7 @@ bjk_init_global(void) {
 	glb_dat->off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
 
 	if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
-		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
+		bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
 	}
 
 	bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
@@ -46,7 +46,7 @@ bjk_init_global(void) {
 	bj_rr_init(glb_dat->write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
 	
 	if(glb_dat->off_core_pt->magic_id != BJ_MAGIC_ID){
-		bjk_abort((bj_addr_t)bjk_init_global, 0, bj_null);
+		bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
 	}
 	
 
@@ -69,5 +69,11 @@ bjk_init_global(void) {
 	
 	bjk_set_finished(BJ_NOT_FINISHED_VAL);
 	bj_set_off_chip_var(glb_dat->off_core_pt->is_waiting, BJ_NOT_WAITING);
+}
+
+void 
+bjk_glb_finish(){
+	bjk_get_glb_in_core_shd()->dbg_progress_flag = 0xeee;	
+	bjk_set_finished(BJ_FINISHED_VAL);
 }
 

@@ -79,6 +79,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/dyn_mem.cpp \
 	$(SRC_ECORE_DIR)/binder.cpp \
-	$(SRC_ECORE_DIR)/actor.cpp 
+	$(SRC_ECORE_DIR)/actor.cpp \
+	$(SRC_ECORE_DIR)/actor_eph.cpp 
 
 

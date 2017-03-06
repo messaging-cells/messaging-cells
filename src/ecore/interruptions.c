@@ -17,8 +17,8 @@ bjk_software_exception_handler(){ 	// ivt_entry_software_exception
 
 void
 bjk_page_miss_handler(){ 	// ivt_entry_page_miss
-	//test_send_irq2++;
-	bjk_simple_abort(bjk_page_miss_handler);
+	test_send_irq2++;
+	//bjk_simple_abort(bjk_page_miss_handler);
 }
 
 void

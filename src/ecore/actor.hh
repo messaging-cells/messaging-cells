@@ -33,7 +33,7 @@ enum bjk_actor_id_t : uint8_t {
 //-------------------------------------------------------------------------
 // dyn mem
 
-#define bjk_all_available(nam) bjk_get_the_kernel()->cls_available_##nam
+#define bjk_all_available(nam) kernel::get_sys()->cls_available_##nam
 
 #define bjk_get_available(nam) \
 	grip& ava = bjk_all_available(nam); \
@@ -144,35 +144,34 @@ public:
 	grip 	cls_available_missive_ref;
 	grip 	cls_available_missive_grp;
 
-	/*
-	bjk_actor_id_t 	cls_id_agent;
-	bjk_actor_id_t 	cls_id_actor;
-	bjk_actor_id_t 	cls_id_missive;
-	bjk_actor_id_t 	cls_id_missive_ref;
-	bjk_actor_id_t 	cls_id_missive_grp;
-	*/
-
 	kernel(){
 		init_kernel();
 	}
 
 	~kernel(){}
 
-	void init_kernel();
+	void init_kernel() bj_code_dram;
+
+	static void
+	init_sys() bj_code_dram;
+
+	static kernel*
+	get_sys();
+
+	static void
+	finish_sys() bj_code_dram;
 };
 
-kernel*
-bjk_get_the_kernel();
 
 #define bjk_is_valid_handler_idx(idx) \
-	((idx >= 0) && (idx < kernel_handlers_arr_sz) && ((bjk_get_the_kernel()->handlers_arr)[idx] != bj_null))
+	((idx >= 0) && (idx < kernel_handlers_arr_sz) && ((kernel::get_sys()->handlers_arr)[idx] != bj_null))
 
 #define bj_class_name(cls) const_cast<char*>("{" #cls "}");
 
 #define bjk_is_valid_class_name_idx(id) ((id >= 0) && (id < kernel_class_names_arr_sz))
 
 #define bjk_set_class_name(cls) \
-	(bjk_get_the_kernel()->class_names_arr)[bjk_actor_id(cls)] = bj_class_name(cls)
+	(kernel::get_sys()->class_names_arr)[bjk_actor_id(cls)] = bj_class_name(cls)
 
 
 //-------------------------------------------------------------------------
@@ -219,7 +218,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn char* 	get_class_name(){
-		kernel* ker = bjk_get_the_kernel();
+		kernel* ker = kernel::get_sys();
 		bjk_actor_id_t id = get_actor_id();
 		if(bjk_is_valid_class_name_idx(id)){
 			return (ker->class_names_arr)[id];

@@ -42,7 +42,10 @@ bjk_set_finished(uint8_t val) {
 }
 
 void 
-bjk_init_global() bj_code_dram;
+bjk_glb_init() bj_code_dram;
+
+void 
+bjk_glb_finish() bj_code_dram;
 
 #ifndef IS_EMU_CODE
 void 

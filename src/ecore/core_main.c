@@ -10,20 +10,18 @@
 
 //	register uint16_t pt_jj asm("r40");
 
-int core_main() {
-	bjk_init_global();
+void core_main() {
+	bjk_glb_init();
 
 	cpp_main();
 
 	bjk_slog("FINISHED !!\n");
 
-	bjk_get_glb_in_core_shd()->dbg_progress_flag = 0xeee;	
-	bjk_set_finished(BJ_FINISHED_VAL);
-	return 0;
+	bjk_glb_finish();
 }
 
-int test_logs_main() {
-	bjk_init_global();
+void test_logs_main() {
+	bjk_glb_init();
 
 	bj_core_id_t koid = bjk_get_core_id();
 	bj_core_nn_t num_core = bj_id_to_nn(koid);
@@ -35,9 +33,7 @@ int test_logs_main() {
 		bjk_slog(john[ii]);
 	}
 
-	bjk_get_glb_in_core_shd()->dbg_progress_flag = 0xeee;	
-	bjk_set_finished(BJ_FINISHED_VAL);
-	return 0;
+	bjk_glb_finish();
 }
 
 int main() {
