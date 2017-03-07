@@ -1,5 +1,5 @@
 
-// cpp_main.h
+// core_main.h
 
 #ifndef CPP_MAIN_H
 #define CPP_MAIN_H
@@ -11,11 +11,11 @@ bj_c_decl {
 #endif
 
 void 
-init_cpp_main() bj_code_dram;
+test_logs_main() bj_code_dram;
 
-bj_opt_sz_fn 
-void
-cpp_main() bj_code_dram;
+void 
+core_main() bj_code_dram;
+
 
 #ifdef __cplusplus
 }

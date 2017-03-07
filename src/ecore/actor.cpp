@@ -6,10 +6,14 @@
 #include "all_regs.h"
 #include "global.h"
 #include "trace.h"
-#include "cpp_main.h"
+#include "test_logs.h"
+
+#include "core_main.h"
 //include "row.hh"
 #include "dyn_mem.hh"
 #include "actor.hh"
+
+//	register uint16_t pt_jj asm("r40");
 
 //include "e-lib.h"
 
@@ -108,30 +112,6 @@ init_class_names(){
 	bjk_set_class_name(actor);
 	bjk_set_class_name(missive);
 	bjk_set_class_name(missive_ref);
-}
-
-void 
-init_cpp_main(){
-	kernel* ker = kernel::get_sys();
-
-	new (ker) kernel(); 
-
-	init_class_names();
-
-	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
-
-	in_shd->binder_sz = sizeof(binder);
-	in_shd->receptor_sz = sizeof(receptor<actor>);
-	in_shd->actor_sz = sizeof(actor);
-	in_shd->missive_sz = sizeof(missive);
-	in_shd->missive_grp_sz = sizeof(missive_grp);
-	in_shd->kernel_sz = sizeof(kernel);
-	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
-
-	bjk_separate(missive_grp, bj_sys_max_cores);
-
-	bjk_enable_all_irq();
-	bjk_global_irq_enable();
 }
 
 void 
@@ -257,12 +237,68 @@ ck_sizes(){
 	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(uint32_t)));
 }
 
+void 
+bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) {
+	unsigned* ilatst = (unsigned*)bj_addr_with(koid, (void*) BJ_REG_ILATST);
+	*ilatst = 1 << num_irq;
+}
+
+grip&	
+agent::get_available(){
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wpmf-conversions"
+	bjk_abort((bj_addr_t)(void*)&agent::get_available, 0, bj_null);
+	#pragma GCC diagnostic pop
+	return *((grip*)bj_null);
+}
+
+void
+kernel::init_kernel(){
+	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
+	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
+	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_null);
+
+	bj_init_arr_vals(kernel_class_names_arr_sz, class_names_arr, bj_null);
+}
+
+void	// is static
+kernel::init_sys(){
+	bjk_glb_init();
+
+	kernel* ker = kernel::get_sys();
+
+	new (ker) kernel(); 
+
+	init_class_names();
+
+	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+
+	in_shd->binder_sz = sizeof(binder);
+	in_shd->receptor_sz = sizeof(receptor<actor>);
+	in_shd->actor_sz = sizeof(actor);
+	in_shd->missive_sz = sizeof(missive);
+	in_shd->missive_grp_sz = sizeof(missive_grp);
+	in_shd->kernel_sz = sizeof(kernel);
+	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
+
+	bjk_separate(missive_grp, bj_sys_max_cores);
+
+	bjk_enable_all_irq();
+	bjk_global_irq_enable();
+}
+
+void	// is static
+kernel::finish_sys(){
+	bjk_glb_finish();
+}
 
 uint32_t test_send_irq2 = 0;
 
-void
-cpp_main(){
-	init_cpp_main();
+void core_main() {
+	kernel::init_sys();
 	ck_sizes();
 
 	if(kernel::get_sys()->direct_routed.is_alone()){
@@ -304,33 +340,26 @@ cpp_main(){
 
 		bjk_slog2("CORE (0,1) sent 4 irq2\n");
 	}
+
+	bjk_slog2("FINISHED !!\n");
 	
+	kernel::finish_sys();
 }
 
-void 
-bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) {
-	unsigned* ilatst = (unsigned*)bj_addr_with(koid, (void*) BJ_REG_ILATST);
-	*ilatst = 1 << num_irq;
+void test_logs_main() {
+	bjk_glb_init();
+
+	bj_core_id_t koid = bjk_get_core_id();
+	bj_core_nn_t num_core = bj_id_to_nn(koid);
+
+	char** john = (char**)(all_tests[num_core]);
+	long john_sz = all_tests_sz[num_core];
+	long ii;
+	for(ii = 0; ii < john_sz; ii++){
+		bjk_slog(john[ii]);
+	}
+
+	bjk_glb_finish();
 }
 
-grip&	
-agent::get_available(){
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wpmf-conversions"
-	bjk_abort((bj_addr_t)(void*)&agent::get_available, 0, bj_null);
-	#pragma GCC diagnostic pop
-	return *((grip*)bj_null);
-}
-
-void
-kernel::init_kernel(){
-	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
-	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
-	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_null);
-
-	bj_init_arr_vals(kernel_class_names_arr_sz, class_names_arr, bj_null);
-}
 

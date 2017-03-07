@@ -20,6 +20,6 @@ SRC_CXXFLAGS := ${IS_EMU_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1}
 SRC_INCDIRS := $(SRC_EMU_DIR) ${SRC_ECORE_DIR}
 
 SOURCES := \
-	$(SRC_EMU_DIR)/emu_booter.c \
-	$(SRC_EMU_DIR)/emu_main.c
+	$(SRC_ECORE_DIR)/core_main_emu.c \
+	$(SRC_EMU_DIR)/emu_booter.c 
 

@@ -74,7 +74,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/global_eph.c \
 	$(SRC_ECORE_DIR)/rr_array.c \
 	$(SRC_ECORE_DIR)/trace_eph.c \
-	$(SRC_ECORE_DIR)/core_main.c \
+	$(SRC_ECORE_DIR)/core_main_eph.c \
 	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/dyn_mem.cpp \
