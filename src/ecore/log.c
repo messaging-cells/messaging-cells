@@ -7,8 +7,8 @@ void
 bjk_aux_sout(char* msg, bj_out_type_t outt){ 
 	uint8_t extra = 2;
 	uint16_t oln = bj_strlen(msg);
-	if(oln > (BJ_OUT_BUFF_MAX_OBJ_SZ - extra)){
-		oln = (BJ_OUT_BUFF_MAX_OBJ_SZ - extra);
+	if(oln > (BJ_MAX_STR_SZ - extra)){
+		oln = (BJ_MAX_STR_SZ - extra);
 	}
 
 	uint8_t* out_str = bjk_get_glb_sys()->dbg_out_str;

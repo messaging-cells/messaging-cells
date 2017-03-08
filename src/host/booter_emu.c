@@ -1,24 +1,131 @@
 
+#define _GNU_SOURCE
 
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
+#include <pthread.h>
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <inttypes.h>
-
-//include <e-hal.h>
-//include <e-loader.h>
-//include <epiphany-hal-api-local.h>
 
 #include "shared.h"
-#include "emu_booter.h"
+#include "booter.h"
+
 
 //include "test_align.h"
+
+// =====================================================================================
+
+uint8_t
+bj_hex_to_int(uint8_t in) {
+	uint8_t out = 0;
+	if((in >= '0') && (in <= '9')){
+		out = in - '0';
+	}
+	if((in >= 'a') && (in <= 'f')){
+		out = (in - 'a') + 10;
+	}
+	if((in >= 'A') && (in <= 'F')){
+		out = (in - 'A') + 10;
+	}
+	return out;
+}
+
+uint8_t
+bj_int_to_hex(uint8_t in) {
+	uint8_t out = 0;
+	if((in >= 0) && (in <= 9)){
+		out = '0' + in;
+	}
+	if((in >= 10) && (in <= 15)){
+		out = 'a' + (in - 10);
+	}
+	return out;
+}
+
+#define bj_lo_mask	0x0f
+#define bj_hi_lo_to_byte(hi, lo) (((hi) << 4) | (lo))
+#define bj_byte_to_hi(bb) (((bb) >> 4) & bj_lo_mask)
+#define bj_byte_to_lo(bb) ((bb) & bj_lo_mask)
+
+uint16_t
+bj_hex_bytes_to_uint16(uint8_t* hex_str) {
+	uint8_t hi = bj_hi_lo_to_byte(bj_hex_to_int(hex_str[3]), bj_hex_to_int(hex_str[2]));
+	uint8_t lo = bj_hi_lo_to_byte(bj_hex_to_int(hex_str[1]), bj_hex_to_int(hex_str[0]));
+	uint16_t out = ((((uint16_t)hi) << 8) | ((uint16_t)lo));
+	return out;
+}
+
+void
+bj_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str) {
+	uint8_t* ibytes = (uint8_t*)(&ival);
+	hex_str[0] = bj_int_to_hex(bj_byte_to_lo(ibytes[0]));
+	hex_str[1] = bj_int_to_hex(bj_byte_to_hi(ibytes[0]));
+	hex_str[2] = bj_int_to_hex(bj_byte_to_lo(ibytes[1]));
+	hex_str[3] = bj_int_to_hex(bj_byte_to_hi(ibytes[1]));
+	hex_str[4] = '\0';
+}
+
+// =====================================================================================
+
+#define NAMELEN 16
+
+#define handle_error_en(en, msg) \
+		do { errno = en; perror(msg); exit(EXIT_FAILURE); } while (0)
+
+#define handle_error(msg) \
+		do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+struct thread_info {    /* Used as argument to thread_start() */
+	pthread_t 	thread_id;        /* ID returned by pthread_create() */
+	uint16_t 	thread_num;       /* Application-defined thread # */
+	char 		thread_name[NAMELEN];
+	char 		*argv_string;      /* From command-line argument */
+};
+
+/* Thread start function: display address near top of our stack,
+	and return upper-cased copy of argv_string */
+
+static void *
+thread_start(void *arg)
+{
+	struct thread_info *tinfo = arg;
+	char *uargv, *p;
+	char thd_name[NAMELEN];
+
+	printf("Thread %d: top of stack near %p; argv_string=%s\n",
+			tinfo->thread_num, &p, tinfo->argv_string);
+
+	pthread_t slf = pthread_self();
+
+	printf("SELF = %ld \nINFO = %ld \nIN_NAME = %s \n", slf, tinfo->thread_id, tinfo->thread_name);
+
+	pthread_setname_np(slf, tinfo->thread_name);
+	//pthread_setname_np(slf, tinfo->argv_string);
+
+	int rc = pthread_getname_np(slf, thd_name, NAMELEN);
+	if(rc == 0){
+		uint16_t idx = bj_hex_bytes_to_uint16((uint8_t*)thd_name);
+		printf("%ld OUT_NAME = %s \n", slf, thd_name);
+		printf("%ld IDX = %d \n", slf, idx);
+	}
+
+	uargv = strdup(tinfo->argv_string);
+	if (uargv == NULL)
+		handle_error("strdup");
+
+	for (p = uargv; *p != '\0'; p++)
+		*p = toupper(*p);
+
+	return uargv;
+}
+
+// =====================================================================================
 
 
 #define f_nm_sz   1024
@@ -46,220 +153,12 @@ prt_aligns(void* ptr){
 	printf("%d", alg); 
 }
 
-void 
-bjh_abort_func(long val, const char* msg){
-	fprintf(stderr, "\nABORTING! %s\n", msg); 
-	exit(val);
-}
-
-bool 
-bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
-	
-	if(! vv_ck){
-		fprintf(stderr, "ASSERT '%s' FAILED\n", ck_str);
-		//bj_out << get_stack_trace(file, line) << bj_eol;
-		if(msg != NULL){
-			fprintf(stderr, "MSG=%s\n", msg);
-		}
-	}
-	assert(vv_ck);
-	return vv_ck;
-}
-
-bool
-bjh_file_append(char* the_pth, char* the_data, long the_sz){
-	int fd = 0;
-	
-	if((fd = open(the_pth, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
-		return false;
-	}
-	write(fd, the_data, the_sz);
-	close(fd);
-
-	return true;
-}
-
-bool ck_sys_data(bj_sys_sz_st* sys1){
-	bj_sys_sz_st* sys0 = bj_get_glb_sys_sz();
-	BJH_CK(sys1->xx == sys0->xx);
-	BJH_CK(sys1->yy == sys0->yy);
-	BJH_CK(sys1->xx_sz == sys0->xx_sz);
-	BJH_CK(sys1->yy_sz == sys0->yy_sz);
-	return true;
-}
-
-int prt_inko_shd_dat(bj_in_core_st* sh_dat){
-	if(sh_dat->magic_id != BJ_MAGIC_ID){
-		printf("ERROR with inco.magic_id (0x%08x)\n", sh_dat->magic_id);
-		return 1;
-	}
-	if(sh_dat->magic_end != BJ_MAGIC_END){
-		printf("ERROR with inco.magic_end (0x%08x)\n", sh_dat->magic_end);
-		return 1;
-	}
-	printf("InCORE 0x%03x \n", sh_dat->the_core_id);
-	
-	printf("dbg_error_code=0x%08lx \n", sh_dat->dbg_error_code);
-	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
-
-	printf("binder_sz=%d \n", sh_dat->binder_sz);
-	printf("receptor_sz=%d \n", sh_dat->receptor_sz);
-	printf("actor_sz=%d \n", sh_dat->actor_sz);
-	printf("missive_sz=%d \n", sh_dat->missive_sz);
-	printf("missive_grp_sz=%d \n", sh_dat->missive_grp_sz);
-
-	printf("\n");
-	
-	return 0;
-}
 
 void
 get_enter(bj_off_core_st* sh_dat_1, unsigned row, unsigned col){
 	// CONTINUE
 	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
 	getchar();
-}
-
-bool
-bj_rr_ck_zero(bj_rrarray_st* arr){
-	if(arr == bj_null){
-		return true;
-	}
-	uint8_t* dat = arr->data;
-	while(dat != arr->end_data){
-		uint8_t cc = (uint8_t)(*dat);
-		BJH_CK(cc == 0);
-		BJH_CK(! isprint(cc));
-		dat++;
-	}
-	return true;
-}
-
-void
-bj_rr_print(bj_rrarray_st* arr){
-	if(arr == bj_null){
-		return;
-	}
-	printf("#####################################\n");
-	printf("data=\t%p\n", arr->data);
-	printf("end_data=\t%p\n", arr->end_data);
-	printf("rd_obj=\t%p\n", arr->rd_obj);
-	printf("wr_obj=\t%p\n", arr->wr_obj);
-	printf("num_wr_errs=\t%d\n", arr->num_wr_errs);
-	printf("wr_err=\t%d\n", arr->wr_err);
-	printf("rd_err=\t%d\n", arr->rd_err);
-	uint8_t* dat = arr->data;
-	printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-	while(dat != arr->end_data){
-		char cc = (char)(*dat);
-		if(isprint(cc)){
-			printf("%c", cc);
-		} 
-		/*else {
-			printf(".");
-		}*/
-		dat++;
-	}
-	printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-}
-
-int
-bj_type_sz(bj_type_t tt){
-	int sz = 0;
-	switch(tt){
-		case BJ_CHR:
-		case BJ_I8:
-		case BJ_UI8:
-		case BJ_X8:
-			sz = 1;
-			break;
-		case BJ_I16:
-		case BJ_UI16:
-		case BJ_X16:
-			sz = 2;
-			break;
-		case BJ_I32:
-		case BJ_UI32:
-		case BJ_X32:
-			sz = 4;
-			break;
-	}
-	return sz;
-}
-
-void
-print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
-	int log_fd = 0;
-	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
-		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
-		return;
-	}
-
-	uint8_t obj[BJ_OUT_BUFF_MAX_OBJ_SZ];
-	while(true){
-		uint16_t obj_sz = bj_rr_read_obj(arr, BJ_OUT_BUFF_MAX_OBJ_SZ, obj);
-		if(obj_sz == 0){
-			if(arr->rd_err != -4){
-				break;
-			}
-		} else {
-			if(obj_sz < 2){
-				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
-				continue;
-			}
-			int fd = STDOUT_FILENO;
-			if(obj[0] == BJ_OUT_LOG){
-				fd = log_fd;
-			} 
-			bj_type_t ot = obj[1];
-			if(ot == BJ_CHR){
-				write(fd, obj + 2, obj_sz - 2);
-				continue;
-			}
-			int osz = bj_type_sz(ot);
-			int tot = (obj_sz - 2) / osz;
-			int aa;
-			uint8_t* pt_num = obj + 2;
-			for(aa = 0; aa < tot; aa++, pt_num += osz){
-				int istrsz = 50;
-				char istr[istrsz];
-				switch(ot){
-					case BJ_CHR:
-						break;
-					case BJ_I8:
-						snprintf(istr, istrsz, "%" PRId8 , *((int8_t*)pt_num));
-						break;
-					case BJ_I16:
-						snprintf(istr, istrsz, "%" PRId16 , *((int16_t*)pt_num));
-						break;
-					case BJ_I32:
-						snprintf(istr, istrsz, "%" PRId32 , *((int32_t*)pt_num));
-						break;
-					case BJ_UI8:
-						snprintf(istr, istrsz, "%" PRIu8 , *((uint8_t*)pt_num));
-						break;
-					case BJ_UI16:
-						snprintf(istr, istrsz, "%" PRIu16 , *((uint16_t*)pt_num));
-						break;
-					case BJ_UI32:
-						snprintf(istr, istrsz, "%" PRIu32 , *((uint32_t*)pt_num));
-						break;
-					case BJ_X8:
-						snprintf(istr, istrsz, "0x%02x", *((uint8_t*)pt_num));
-						break;
-					case BJ_X16:
-						snprintf(istr, istrsz, "0x%04x", *((uint16_t*)pt_num));
-						break;
-					case BJ_X32:
-						snprintf(istr, istrsz, "0x%08x", *((uint32_t*)pt_num));
-						break;
-				}
-				int sz2 = strlen(istr);
-				write(fd, istr, sz2);
-			}
-		}
-	}
-	close(log_fd);
 }
 
 int 
@@ -471,24 +370,96 @@ host_main(int argc, char *argv[])
 	return 0;
 }
 
+// ===============================================================================
+
 int
-write_file(char* the_pth, char* the_data, long the_sz, int write_once){
-	int fd = 0;
-	
-	if(write_once){
-		// old perm 0444
-		if((fd = open(the_pth, O_RDWR|O_CREAT|O_EXCL, 0777)) == -1){
-			return 0;
-		}
-	} else {
-		if((fd = creat(the_pth, 0777)) == -1){
-			return 0;
+threads_main(int argc, char *argv[])
+{
+	int s, tnum, opt, num_threads;
+	struct thread_info *tinfo;
+	pthread_attr_t attr;
+	int stack_size;
+	void *res;
+
+	/* The "-s" option specifies a stack size for our threads */
+	printf("THREADS FLAG1\n");
+
+	stack_size = -1;
+	while ((opt = getopt(argc, argv, "s:")) != -1) {
+		switch (opt) {
+		case 's':
+			stack_size = strtoul(optarg, NULL, 0);
+			break;
+
+		default:
+			fprintf(stderr, "Usage: %s [-s stack-size] arg...\n",
+					argv[0]);
+			exit(EXIT_FAILURE);
 		}
 	}
 
-	write(fd, the_data, the_sz);
-	close(fd);
+	num_threads = argc - optind;
 
-	return 1;
+	printf("num_threads = %d\n", num_threads);
+
+
+	/* Initialize thread creation attributes */
+
+	s = pthread_attr_init(&attr);
+	if (s != 0)
+		handle_error_en(s, "pthread_attr_init");
+
+	if (stack_size > 0) {
+		s = pthread_attr_setstacksize(&attr, stack_size);
+		if (s != 0)
+			handle_error_en(s, "pthread_attr_setstacksize");
+	}
+
+	/* Allocate memory for pthread_create() arguments */
+
+	tinfo = calloc(num_threads, sizeof(struct thread_info));
+	if (tinfo == NULL)
+		handle_error("calloc");
+
+	/* Create one thread for each command-line argument */
+
+	for (tnum = 0; tnum < num_threads; tnum++) {
+		tinfo[tnum].thread_num = tnum + 1;
+		tinfo[tnum].argv_string = argv[optind + tnum];
+
+		bj_uint16_to_hex_bytes(tinfo[tnum].thread_num, (uint8_t*)(tinfo[tnum].thread_name));
+
+		/* The pthread_create() call stores the thread ID into
+			corresponding element of tinfo[] */
+
+		//s = pthread_create(&tinfo[tnum].thread_id, &attr,
+		//					&thread_start, &tinfo[tnum]);
+		s = pthread_create(&tinfo[tnum].thread_id, NULL,
+							&thread_start, &tinfo[tnum]);
+		if (s != 0)
+			handle_error_en(s, "pthread_create");
+	}
+
+	/* Destroy the thread attributes object, since it is no
+		longer needed */
+
+	s = pthread_attr_destroy(&attr);
+	if (s != 0)
+		handle_error_en(s, "pthread_attr_destroy");
+
+	/* Now join with each thread, and display its returned value */
+
+	for (tnum = 0; tnum < num_threads; tnum++) {
+		s = pthread_join(tinfo[tnum].thread_id, &res);
+		if (s != 0)
+			handle_error_en(s, "pthread_join");
+
+		printf("Joined with thread %d; returned value was %s\n",
+				tinfo[tnum].thread_num, (char *) res);
+		free(res);      /* Free memory allocated by thread */
+	}
+
+	free(tinfo);
+	exit(EXIT_SUCCESS);
 }
 

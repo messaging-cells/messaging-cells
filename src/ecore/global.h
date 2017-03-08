@@ -15,12 +15,16 @@ bj_c_decl {
 //=====================================================================
 // in ekore shared memory
 
+//define BJ_MAX_STR_SZ 80
+// WHEN TESTING LOGS USE
+#define BJ_MAX_STR_SZ BJ_OUT_BUFF_SZ	
+
 struct bjk_glb_sys_def { 
 	bj_sys_sz_st 	sys_sz;
 	bj_off_core_st* off_core_pt;
 	bj_rrarray_st* 	write_rrarray;
 	bj_in_core_st 	in_core_shd;
-	uint8_t 		dbg_out_str[BJ_OUT_BUFF_MAX_OBJ_SZ];
+	uint8_t 		dbg_out_str[BJ_MAX_STR_SZ];
 };
 typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 

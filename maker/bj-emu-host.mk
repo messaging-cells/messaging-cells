@@ -1,7 +1,7 @@
 
 IS_EMU_FLAG := -DIS_EMU_CODE
 
-SRC_EMU_DIR := $(SRC_DIR)/emu
+SRC_HOST_DIR := $(SRC_DIR)/host
 
 SRC_ECORE_DIR := $(SRC_DIR)/ecore
 
@@ -17,9 +17,10 @@ SRC_CFLAGS := ${IS_EMU_FLAG} ${DBG_FLAG} ${C_FLAGS_1}
 CXX_FLAGS_1 := -Wall -std=c++14 -pthread
 SRC_CXXFLAGS := ${IS_EMU_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1}
 
-SRC_INCDIRS := $(SRC_EMU_DIR) ${SRC_ECORE_DIR}
+SRC_INCDIRS := $(SRC_HOST_DIR) ${SRC_ECORE_DIR}
 
 SOURCES := \
 	$(SRC_ECORE_DIR)/core_main_emu.c \
-	$(SRC_EMU_DIR)/emu_booter.c 
+	$(SRC_HOST_DIR)/booter.c \
+	$(SRC_HOST_DIR)/booter_emu.c 
 
