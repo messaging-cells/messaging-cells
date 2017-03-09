@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 	e_epiphany_t dev;
 	e_mem_t emem;
 	char f_nm[200];
-	char* all_f_nam[bj_sys_max_cores];
+	char* all_f_nam[bj_out_num_cores];
 	int num_wrk_cores;
 
 	memset(&all_f_nam, 0, sizeof(all_f_nam));
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 			memset(&f_nm, 0, sizeof(f_nm));
 			sprintf(f_nm, "log_core_%02d.txt", num_core);
 
-			BJH_CK(num_core < bj_sys_max_cores);
+			BJH_CK(num_core < bj_out_num_cores);
 			all_f_nam[num_core] = strdup((const char*)f_nm);
 			num_wrk_cores++;
 			
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 					continue;
 				}*/
 				
-				// Wait for core program execution to finish.
+				// Wait for core program execution to start
 				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
 					has_work = true;
 					BJH_CK(sh_dat_1->magic_id == BJ_MAGIC_ID);

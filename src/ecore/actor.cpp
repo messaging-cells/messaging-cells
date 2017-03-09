@@ -284,7 +284,7 @@ kernel::init_sys(){
 	in_shd->kernel_sz = sizeof(kernel);
 	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
 
-	bjk_separate(missive_grp, bj_sys_max_cores);
+	bjk_separate(missive_grp, bj_out_num_cores);
 
 	bjk_enable_all_irq();
 	bjk_global_irq_enable();

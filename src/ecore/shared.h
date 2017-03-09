@@ -61,7 +61,7 @@ typedef uint16_t bj_size_t;
 	
 #define bj_null 0x0
 
-#define bj_sys_max_cores bj_e3_num_cores
+#define bj_out_num_cores bj_e3_num_cores
 
 struct bj_align(8) bj_sys_def { 
 	bj_core_co_t 	xx;		// absolute xx epiphany space coordinates
@@ -294,8 +294,8 @@ struct bj_align(8) bj_off_sys_shared_data_def {
 	uint32_t 		magic_id;
 	uint32_t 		dbg_error_code;
 	bj_sys_sz_st 	wrk_sys;
-	bj_off_core_st 	sys_cores[bj_sys_max_cores];
-	bj_core_out_st 	sys_out_buffs[bj_sys_max_cores];
+	bj_off_core_st 	sys_cores[bj_out_num_cores];
+	bj_core_out_st 	sys_out_buffs[bj_out_num_cores];
 };
 typedef struct bj_off_sys_shared_data_def bj_off_sys_st;
 
@@ -342,6 +342,8 @@ bj_isprint(char cc){
 	bj_asm("trap 0x3"); \
 
 // end_macro
+
+#define bjk_has_off_core (bjk_get_glb_sys()->off_core_pt != bj_null)
 
 
 #ifdef __cplusplus

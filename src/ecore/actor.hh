@@ -114,7 +114,7 @@ enum bjk_signal_t : uint8_t {
 
 #define kernel_signals_arr_sz bjk_tot_signals
 #define kernel_handlers_arr_sz bjk_tot_handler_ids
-#define kernel_pw0_routed_arr_sz bj_sys_max_cores
+#define kernel_pw0_routed_arr_sz bj_out_num_cores
 #define kernel_pw2_routed_arr_sz bjk_tot_routes
 #define kernel_pw4_routed_arr_sz bjk_tot_routes
 #define kernel_pw6_routed_arr_sz bjk_tot_routes

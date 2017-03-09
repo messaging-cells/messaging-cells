@@ -293,7 +293,7 @@ void
 bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt;
 	if(off_core_pt == bj_null){
-		bjk_abort((bj_addr_t)bjk_wait_sync, 0, bj_null);
+		return;
 	}
 	if((sz_trace > 0) && (trace != bj_null)){
 		bjk_get_call_stack_trace(sz_trace, trace);

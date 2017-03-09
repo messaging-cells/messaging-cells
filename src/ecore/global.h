@@ -41,8 +41,10 @@ bjk_get_glb_in_core_shd(){
 
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
-	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt; \
-	bj_set_off_chip_var(off_core_pt->is_finished, val);
+	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt; 
+	if(off_core_pt != bj_null){
+		bj_set_off_chip_var(off_core_pt->is_finished, val);
+	}
 }
 
 void 

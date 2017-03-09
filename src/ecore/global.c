@@ -18,7 +18,7 @@ bjk_glb_init(void) {
 
 	bjk_glb_sys_st* glb_dat = bjk_get_glb_sys();
 
-	glb_dat->off_core_pt = 0x0;
+	glb_dat->off_core_pt = bj_null;
 	glb_dat->write_rrarray = 0x0;
 
 	bj_sys_sz_st* sys_sz = bj_get_glb_sys_sz();
@@ -35,20 +35,6 @@ bjk_glb_init(void) {
 
 	// num_core init
 	bj_core_nn_t num_core = bj_id_to_nn(koid);
-	glb_dat->off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
-
-	if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
-		bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
-	}
-
-	bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
-	glb_dat->write_rrarray = &(out_st->wr_arr);
-	bj_rr_init(glb_dat->write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
-	
-	if(glb_dat->off_core_pt->magic_id != BJ_MAGIC_ID){
-		bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
-	}
-	
 
 	// in_shd init 
 	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
@@ -61,14 +47,30 @@ bjk_glb_init(void) {
 	in_shd->the_core_ro = bj_id_to_ro(koid);
 	in_shd->the_core_co = bj_id_to_co(koid);
 	in_shd->the_core_nn = num_core;
-	
-	// glb_dat->off_core_pt init	
-	//bj_set_off_chip_var(glb_dat->off_core_pt->magic_id, BJ_MAGIC_ID);
-	bj_set_off_chip_var(glb_dat->off_core_pt->the_core_id, in_shd->the_core_id);
-	bj_set_off_chip_var(glb_dat->off_core_pt->core_data, in_shd);
-	
-	bjk_set_finished(BJ_NOT_FINISHED_VAL);
-	bj_set_off_chip_var(glb_dat->off_core_pt->is_waiting, BJ_NOT_WAITING);
+
+	if(num_core < bj_out_num_cores){
+		glb_dat->off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
+		if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
+			bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
+		}
+
+		bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
+		glb_dat->write_rrarray = &(out_st->wr_arr);
+		bj_rr_init(glb_dat->write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
+
+		if(glb_dat->off_core_pt->magic_id != BJ_MAGIC_ID){
+			bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
+		}
+
+		// glb_dat->off_core_pt init	
+		//bj_set_off_chip_var(glb_dat->off_core_pt->magic_id, BJ_MAGIC_ID);
+		bj_set_off_chip_var(glb_dat->off_core_pt->the_core_id, koid);
+		bj_set_off_chip_var(glb_dat->off_core_pt->core_data, in_shd);
+		
+		bjk_set_finished(BJ_NOT_FINISHED_VAL);
+		bj_set_off_chip_var(glb_dat->off_core_pt->is_waiting, BJ_NOT_WAITING);
+	}
+
 }
 
 void 
