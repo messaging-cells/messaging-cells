@@ -13,6 +13,9 @@ bj_c_decl {
 //======================================================================
 // function attibutes
 
+	//define bj_asm(code) 
+	//define bj_asm	123
+
 #ifdef IS_EMU_CODE
 	#define bj_opt_sz_fn 
 	#define bj_no_opt_fn 

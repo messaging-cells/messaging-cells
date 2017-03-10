@@ -157,12 +157,17 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 //define bj_addr_with_same_id(addr_id, addr) ((bj_addr_t)(bj_addr_mask_id(addr_id) | bj_addr_mask_ad(addr)))
 	
 
+#ifdef IS_CORE_CODE
 bj_core_id_t bj_inline_fn
-bjk_get_core_id(void) {
+bjk_get_core_id() {
 	bj_core_id_t koid = 0x0; 
 	bj_asm("movfs %0, coreid" : "=r" (koid));
 	return koid;
 }
+#else
+bj_core_id_t 
+bjk_get_core_id();
+#endif
 
 bool bj_inline_fn
 bj_addr_in_core(bj_addr_t addr, bj_core_id_t koid) {
@@ -330,16 +335,6 @@ bj_isprint(char cc){
 	for(int aa = 0; aa < sz; aa++){ \
 		arr[aa] = (val); \
 	} \
-
-// end_macro
-
-#define bjk_simple_abort(func) \
-	bjk_get_glb_in_core_shd()->dbg_error_code = (bj_addr_t)(func); \
-	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt; \
-	if((off_core_pt != bj_null) && (off_core_pt->magic_id == BJ_MAGIC_ID)){ \
-		off_core_pt->is_finished = BJ_FINISHED_VAL; \
-	} \
-	bj_asm("trap 0x3"); \
 
 // end_macro
 

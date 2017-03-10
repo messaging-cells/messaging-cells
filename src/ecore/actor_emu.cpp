@@ -3,10 +3,10 @@
 
 #include "actor.hh"
 
-kernel bjk_THE_KERNEL;
+#include "thread_emu.hh"
 
 kernel*
 kernel::get_sys(){
-	return &bjk_THE_KERNEL;
+	return &(bjk_get_thread_info()->bjk_THE_KERNEL);
 }
 

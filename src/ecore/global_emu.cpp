@@ -1,17 +1,14 @@
 
 #include "global.h"
 
-//=====================================================================
-// global data
-
-bjk_glb_sys_st	bj_glb_sys_data;
+#include "thread_emu.hh"
 
 //=====================================================================
 // global funcs
 
 bjk_glb_sys_st*
 bjk_get_glb_sys(){
-	return &bj_glb_sys_data;
+	return &(bjk_get_thread_info()->bj_glb_sys_data);
 }
 
 bj_sys_sz_st*

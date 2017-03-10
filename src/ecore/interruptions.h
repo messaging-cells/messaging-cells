@@ -21,29 +21,63 @@ bjk_page_miss_handler(void); // ivt_entry_page_miss
 void bj_opt_sz_fn bj_isr_fn 
 bjk_timer0_handler(void); // ivt_entry_timer0
 
-void bj_inline_fn
-bjk_enable_all_irq() {
-	bj_asm("mov r0, #0x0"); 
-	bj_asm("movts imask, r0");
-}
+#ifdef IS_CORE_CODE
 
-void bj_inline_fn
-bjk_disable_all_irq() {
-	bj_asm("mov r0, #0x3ff"); 
-	bj_asm("movts imask, r0");
-}
+	void bj_inline_fn
+	bjk_enable_all_irq() {
+		bj_asm("mov r0, #0x0"); 
+		bj_asm("movts imask, r0");
+	}
 
-void bj_inline_fn
-bjk_global_irq_disable() {
-	bj_asm("gid"); 
-}
+	void bj_inline_fn
+	bjk_disable_all_irq() {
+		bj_asm("mov r0, #0x3ff"); 
+		bj_asm("movts imask, r0");
+	}
 
-void bj_inline_fn
-bjk_global_irq_enable() {
-	bj_asm("gie"); 
-}
+	void bj_inline_fn
+	bjk_global_irq_disable() {
+		bj_asm("gid"); 
+	}
 
-extern uint32_t test_send_irq2;
+	void bj_inline_fn
+	bjk_global_irq_enable() {
+		bj_asm("gie"); 
+	}
+
+	#define bjk_simple_abort(func) \
+		bjk_get_glb_in_core_shd()->dbg_error_code = (bj_addr_t)(func); \
+		bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt; \
+		if((off_core_pt != bj_null) && (off_core_pt->magic_id == BJ_MAGIC_ID)){ \
+			off_core_pt->is_finished = BJ_FINISHED_VAL; \
+		} \
+		bj_asm("trap 0x3"); \
+
+	// end_macro
+
+	extern uint32_t test_send_irq2;
+
+#endif	// IS_CORE_CODE
+
+#ifdef IS_EMU_CODE
+
+	void bj_inline_fn
+	bjk_enable_all_irq() {
+	}
+
+	void bj_inline_fn
+	bjk_disable_all_irq() {
+	}
+
+	void bj_inline_fn
+	bjk_global_irq_disable() {
+	}
+
+	void bj_inline_fn
+	bjk_global_irq_enable() {
+	}
+
+#endif	// IS_EMU_CODE
 
 #ifdef __cplusplus
 }

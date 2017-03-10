@@ -50,8 +50,15 @@ umm_memmove(uint8_t* dest, const uint8_t* src, umm_size_t sz){
 // ----------------------------------------------------------------------------
 // Size of the heap in bytes
 
-#define UMM_MALLOC_CFG__HEAP_SIZE 8192
-//define UMM_MALLOC_CFG__HEAP_SIZE 12288
+// 0xFFFF == 65535 because sizeof(umm_idx_t) is 2 bytes (16 bits)
+#define UMM_MAX_NUM_BLOCKS 0xFFFF
+#define UMM_MAX_HEAP_SIZE (UMM_MAX_NUM_BLOCKS * sizeof(umm_block))
+
+#ifdef IS_EMU_CODE
+	#define UMM_MALLOC_CFG__HEAP_SIZE 131064
+#else
+	#define UMM_MALLOC_CFG__HEAP_SIZE 8192
+#endif
 
 // ----------------------------------------------------------------------------
 // A couple of macros to make packing structures less compiler dependent
