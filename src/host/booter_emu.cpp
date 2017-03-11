@@ -272,6 +272,9 @@ int main() {
 	printf("sizeof(umm_heap)= %ld\n", sizeof(umm_heap)); 
 	printf("sizeof(umm_heap)= %ld\n", sizeof(umm_heap)); 
 	printf("sizeof(thread_info_t)= %ld\n", sizeof(thread_info_t)); 
+
+	pthread_t slf = pthread_self();
+	printf("SELF= %ld\n", slf); 
 }
 
 

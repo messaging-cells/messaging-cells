@@ -18,6 +18,8 @@ struct thread_info_st {    /* Used as argument to thread_start() */
 	char 		thread_name[NAMELEN];
 	char 		*argv_string;      /* From command-line argument */
 
+	bj_core_id_t 	bjk_core_id;
+
 	bjk_glb_sys_st	bj_glb_sys_data;
 
 	kernel 			bjk_THE_KERNEL;
@@ -28,8 +30,17 @@ struct thread_info_st {    /* Used as argument to thread_start() */
 
 typedef struct thread_info_st thread_info_t;
 
+uint16_t
+bjk_get_thread_idx();
+
 thread_info_t*
 bjk_get_thread_info();
+
+uint16_t
+bjk_get_addr_idx(void*);
+
+bool
+bj_is_host_thread();
 
 #ifdef __cplusplus
 bj_c_decl {

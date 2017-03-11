@@ -14,6 +14,7 @@
 
 thread_info_t* ALL_THREADS_INFO = bj_null;
 int TOT_THREADS = 0;
+pthread_t HOST_THREAD_ID = 0;
 
 // =====================================================================================
 
@@ -78,24 +79,35 @@ bj_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str) {
 /* Thread start function: display address near top of our stack,
 	and return upper-cased copy of argv_string */
 
-thread_info_t*
-bjk_get_thread_info(){
+uint16_t
+bjk_get_thread_idx(){
 	if(ALL_THREADS_INFO == bj_null){
 		bjh_abort_func(2, "bjk_get_thread_info. NULL ALL_THREADS_INFO \n");
-		return bj_null;
+		return 0;
 	}
 	pthread_t slf = pthread_self();
+	if(slf == HOST_THREAD_ID){
+		bjh_abort_func(2, "bjk_get_thread_info. Host thread. \n");
+		return 0;
+	}
+
 	char thd_name[NAMELEN];
 	int rc = pthread_getname_np(slf, thd_name, NAMELEN);
 	if(rc != 0){
 		bjh_abort_func(1, "bjk_get_thread_info. INVALID THREAD NAME \n");
-		return bj_null;
+		return 0;
 	}
 	uint16_t thd_idx = bj_hex_bytes_to_uint16((uint8_t*)thd_name);
 	if((thd_idx < 0) || (thd_idx >= TOT_THREADS)){
 		bjh_abort_func(1, "bjk_get_thread_info. INVALID thd_idx \n");
-		return bj_null;
+		return 0;
 	}
+	return thd_idx;
+}
+
+thread_info_t*
+bjk_get_thread_info(){
+	uint16_t thd_idx = bjk_get_thread_idx();
 	thread_info_t* info = &(ALL_THREADS_INFO[thd_idx]);
 	return info;
 }
@@ -145,6 +157,8 @@ threads_main(int argc, char *argv[])
 	void *res;
 
 	ALL_THREADS_INFO = bj_null;
+
+	HOST_THREAD_ID = pthread_self();
 
 	/* The "-s" option specifies a stack size for our threads */
 	printf("THREADS FLAG1\n");
@@ -233,3 +247,31 @@ threads_main(int argc, char *argv[])
 	exit(EXIT_SUCCESS);
 }
 
+uint16_t
+bjk_get_addr_idx(void* addr){
+	if(ALL_THREADS_INFO == bj_null){
+		bjh_abort_func(5, "bjk_get_addr_idx. NULL ALL_THREADS_INFO \n");
+		return 0;
+	}
+	if((uintptr_t)addr < (uintptr_t)ALL_THREADS_INFO){
+		bjh_abort_func(6, "bjk_get_addr_idx. Invalid addr. Too small. \n");
+		return 0;
+	}
+	if((uintptr_t)addr >= ((uintptr_t)(&(ALL_THREADS_INFO[TOT_THREADS])))){
+		bjh_abort_func(6, "bjk_get_addr_idx. Invalid addr. Too big. \n");
+		return 0;
+	}
+	uint16_t idx = ((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t);
+	return idx;
+}
+
+//bj_sys_sz_st bj_glb_host_sys;
+bool
+bj_is_host_thread(){
+	return (pthread_self() == HOST_THREAD_ID);
+}
+
+void
+fill_core_ids(){
+	//bj_glb_host_sys
+}

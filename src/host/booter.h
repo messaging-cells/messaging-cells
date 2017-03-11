@@ -15,6 +15,8 @@
 bj_c_decl {
 #endif
 
+extern bj_sys_sz_st bj_glb_host_sys;
+
 #define bj_as_pt_char(the_str) (the_str)
 
 void 
