@@ -42,15 +42,12 @@ typedef uint16_t bj_size_t;
 //======================================================================
 // address macros
 
-bj_core_id_t
-bjk_get_addr_core_id_fn(void*);
+#define bj_addr_mask_id(addr) (((bj_addr_t)(addr)) & bj_glb_id_mask)
+#define bj_addr_mask_ad(addr) (((bj_addr_t)(addr)) & bj_glb_addr_mask)
 
-void*
-bjk_addr_with_fn(bj_core_id_t id, void* addr);
-
-#define bj_addr_is_global(addr) true
-#define bj_addr_get_core_id(addr) bjk_get_addr_core_id_fn((void*)(addr))
-#define bj_addr_with(id, addr) bjk_addr_with_fn(id, (void*)addr)
+#define bj_addr_is_global(addr) bj_addr_mask_id(addr)
+#define bj_addr_get_core_id(addr) ((bj_core_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
+#define bj_addr_with(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
 
 #define bjk_addr_is_local(addr) \
 	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == bjk_get_glb_in_core_shd()->the_core_id))
@@ -58,15 +55,13 @@ bjk_addr_with_fn(bj_core_id_t id, void* addr);
 #define bjk_is_core(row, col) \
 	((bjk_get_glb_in_core_shd()->the_core_ro == (row)) && (bjk_get_glb_in_core_shd()->the_core_co == (col)))
 
-#define bj_addr_same_id(addr1, addr2) (bj_addr_get_core_id(addr1) == bj_addr_get_core_id(addr2))
-
-/*
-
 #define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bjk_get_glb_in_core_shd()->the_core_co, (pt)))
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
 #define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
 
-*/
+#define bj_addr_same_id(addr1, addr2) (bj_addr_mask_id(addr1) == bj_addr_mask_id(addr2))
+
+//define bj_addr_with_same_id(addr_id, addr) ((bj_addr_t)(bj_addr_mask_id(addr_id) | bj_addr_mask_ad(addr)))
 
 #ifdef __cplusplus
 }

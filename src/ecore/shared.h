@@ -23,45 +23,19 @@ bj_c_decl {
 
 typedef uint8_t bj_bool_t;
 
-//======================================================================
-// epiphany version dependant definitions
-	
-// epiphany III
-	
-#define bj_axis_bits	6
-#define bj_axis_mask	0x3f
-
-#ifdef IS_CORE_CODE
-	typedef uint32_t bj_addr_t;
+#ifdef IS_EMU_CODE
+	#include "shared_emu.h"
 #else
-	typedef uintptr_t bj_addr_t;
+	#include "shared_eph.h"
 #endif
+
 	
-typedef uint16_t bj_core_id_t;	// e_coreid_t
-typedef uint16_t bj_core_co_t;
-typedef uint16_t bj_core_nn_t;
-
-typedef uint16_t bj_size_t;
-
-#define bj_addr_val_in_p16(p16) ((bj_addr_t)(bj_v32_of_p16(p16)))
-
-#define bj_e3_xx 32
-#define bj_e3_yy 8
-#define bj_e3_xx_sz 4
-#define bj_e3_yy_sz 4
-
-#define bj_e3_num_cores 16
-
-#define bj_glb_id_mask		0xfff00000
-#define bj_glb_addr_mask	0x000fffff
-#define bj_glb_addr_sz	20
-
 //======================================================================
 // working system struct
 	
 #define bj_null 0x0
 
-#define bj_out_num_cores bj_e3_num_cores
+#define bj_out_num_cores bj_e3_num_chip_cores
 
 struct bj_align(8) bj_sys_def { 
 	bj_core_co_t 	xx;		// absolute xx epiphany space coordinates
@@ -106,11 +80,14 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 // id is the core id absolute in epiphany space 
 // nn is a consec with respect to the allocated running cores (bj_get_glb_sys_sz())
 
-#define bj_min_xx_sys (bj_get_glb_sys_sz()->xx)
-#define bj_max_xx_sys (bj_min_xx_sys + (bj_get_glb_sys_sz()->xx_sz))
-#define bj_min_yy_sys (bj_get_glb_sys_sz()->yy)
-#define bj_max_yy_sys (bj_min_yy_sys + (bj_get_glb_sys_sz()->yy_sz))
+#define bj_tot_xx_sys (bj_get_glb_sys_sz()->xx_sz)
+#define bj_tot_yy_sys (bj_get_glb_sys_sz()->yy_sz)
+#define bj_tot_nn_sys (bj_tot_xx_sys * bj_tot_yy_sys)
 
+#define bj_min_xx_sys (bj_get_glb_sys_sz()->xx)
+#define bj_max_xx_sys (bj_min_xx_sys + bj_tot_xx_sys)
+#define bj_min_yy_sys (bj_get_glb_sys_sz()->yy)
+#define bj_max_yy_sys (bj_min_yy_sys + bj_tot_yy_sys)
 
 #define bj_id_to_xx(id)	(((id) >> bj_axis_bits) & bj_axis_mask)
 #define bj_id_to_yy(id)	((id) & bj_axis_mask)
@@ -120,11 +97,11 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 #define bj_id_to_co(id)	bj_yy_to_co(bj_id_to_yy(id))
 #define bj_ro_to_xx(ro)	((ro) + bj_min_xx_sys)
 #define bj_co_to_yy(co)	((co) + bj_min_yy_sys)
-#define bj_ro_co_to_nn(ro, co) (((ro) * (bj_get_glb_sys_sz()->yy_sz)) + (co))
+#define bj_ro_co_to_nn(ro, co) (((ro) * bj_tot_yy_sys) + (co))
 #define bj_xx_yy_to_id(xx, yy) (((xx) << bj_axis_bits) + (yy))
 #define bj_ro_co_to_id(ro, co) ((bj_ro_to_xx(ro) << bj_axis_bits) + bj_co_to_yy(co))
-#define bj_nn_to_ro(nn)	((nn) / (bj_get_glb_sys_sz()->yy_sz))
-#define bj_nn_to_co(nn)	((nn) % (bj_get_glb_sys_sz()->yy_sz))
+#define bj_nn_to_ro(nn)	((nn) / bj_tot_yy_sys)
+#define bj_nn_to_co(nn)	((nn) % bj_tot_yy_sys)
 #define bj_id_to_nn(id) (bj_ro_co_to_nn(bj_id_to_ro(id), bj_id_to_co(id)))
 #define bj_nn_to_id(nn) (bj_ro_co_to_id(bj_nn_to_ro(nn), bj_nn_to_co(nn)))
 
@@ -133,29 +110,7 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 #define bj_xx_yy_in_sys(xx, yy) (bj_xx_in_sys(xx) && bj_yy_in_sys(yy))
 
 //======================================================================
-// address functions
-
-#define bj_addr_mask_id(addr) (((bj_addr_t)(addr)) & bj_glb_id_mask)
-#define bj_addr_mask_ad(addr) (((bj_addr_t)(addr)) & bj_glb_addr_mask)
-
-#define bj_addr_is_global(addr) bj_addr_mask_id(addr)
-#define bj_addr_get_core_id(addr) ((bj_core_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
-#define bj_addr_with(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
-
-#define bjk_addr_is_local(addr) \
-	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == bjk_get_glb_in_core_shd()->the_core_id))
-
-#define bjk_is_core(row, col) \
-	((bjk_get_glb_in_core_shd()->the_core_ro == (row)) && (bjk_get_glb_in_core_shd()->the_core_co == (col)))
-
-#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bjk_get_glb_in_core_shd()->the_core_co, (pt)))
-#define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
-#define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
-
-#define bj_addr_same_id(addr1, addr2) (bj_addr_mask_id(addr1) == bj_addr_mask_id(addr2))
-
-//define bj_addr_with_same_id(addr_id, addr) ((bj_addr_t)(bj_addr_mask_id(addr_id) | bj_addr_mask_ad(addr)))
-	
+// address functions 2
 
 #ifdef IS_CORE_CODE
 bj_core_id_t bj_inline_fn
@@ -340,6 +295,9 @@ bj_isprint(char cc){
 
 #define bjk_has_off_core (bjk_get_glb_sys()->off_core_pt != bj_null)
 
+#ifdef IS_EMU_CODE
+	extern bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM;
+#endif
 
 #ifdef __cplusplus
 }

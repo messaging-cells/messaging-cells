@@ -30,17 +30,44 @@ struct thread_info_st {    /* Used as argument to thread_start() */
 
 typedef struct thread_info_st thread_info_t;
 
+extern thread_info_t* ALL_THREADS_INFO;
+extern int TOT_THREADS;
+extern pthread_t HOST_THREAD_ID;
+
 uint16_t
 bjk_get_thread_idx();
 
 thread_info_t*
 bjk_get_thread_info();
 
-uint16_t
-bjk_get_addr_idx(void*);
+bj_inline_fn bj_core_nn_t
+bjk_get_addr_idx(void* addr){
+	bj_core_nn_t idx = (bj_core_nn_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t));
+	return idx;
+}
 
-bool
-bj_is_host_thread();
+bj_inline_fn uintptr_t
+bjk_get_addr_offset(void* addr){
+	uintptr_t ofs = (uintptr_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) % sizeof(thread_info_t));
+	return ofs;
+}
+
+bj_core_id_t
+bjk_get_addr_core_id_fn(void* addr);
+
+void*
+bjk_addr_with_fn(bj_core_id_t id, void* addr);
+
+bj_inline_fn bool
+bj_is_host_thread(){
+	return (pthread_self() == HOST_THREAD_ID);
+}
+
+void
+bj_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str);
+
+void *
+thread_start(void *arg);
 
 #ifdef __cplusplus
 bj_c_decl {

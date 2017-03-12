@@ -22,13 +22,6 @@ char after[bj_mem_32K];
 
 bj_sys_sz_st bj_glb_host_sys;
 
-/*
-bj_sys_sz_st*
-bj_get_glb_sys_sz(){
-	return &bj_glb_sys;
-}
-*/
-
 void 
 prt_aligns(void* ptr){
 	int8_t alg = bj_get_aligment(ptr);
@@ -43,6 +36,20 @@ get_enter(bj_off_core_st* sh_dat_1, unsigned row, unsigned col){
 	getchar();
 }
 
+bool
+ck_all_core_ids(){
+	if (ALL_THREADS_INFO == NULL){
+		bjh_abort_func(0, "ck_all_core_ids. NULL ALL_THREADS_INFO \n");
+	}
+	for(int aa = 0; aa < TOT_THREADS; aa++){
+		bj_core_id_t koid = bj_nn_to_id(aa);
+		if(ALL_THREADS_INFO[aa].bjk_core_id != koid){
+			bjh_abort_func(0, "ck_all_core_ids. BAD CORE ID \n");
+		}
+	}
+	return true;
+}
+
 int 
 host_main(int argc, char *argv[])
 {
@@ -52,13 +59,29 @@ host_main(int argc, char *argv[])
 	//e_mem_t emem;
 	char f_nm[200];
 	char* all_f_nam[bj_out_num_cores];
-	int num_wrk_cores;
+	int ss, tnum;
+	void *res;
+	/*
+	int opt, num_threads;
+	pthread_attr_t attr;
+	int stack_size;*/
+
+	bj_init_glb_sys_sz(&bj_glb_host_sys);
 
 	memset(&all_f_nam, 0, sizeof(all_f_nam));
-	num_wrk_cores = 0;
 
-	printf("sizeof(bj_off_sys_st)=%ld\n", sizeof(bj_off_sys_st));
-	
+	ALL_THREADS_INFO = bj_null;
+
+	HOST_THREAD_ID = pthread_self();
+
+	TOT_THREADS = bj_tot_nn_sys;
+	ALL_THREADS_INFO = (thread_info_t *)calloc(TOT_THREADS, sizeof(thread_info_t));
+	if (ALL_THREADS_INFO == NULL){
+		bjh_abort_func(0, "host_main. NULL ALL_THREADS_INFO \n");
+	}
+
+	printf("TOT_THREADS = %d\n", TOT_THREADS);
+
 	/*
 	e_set_loader_verbosity(H_D0);
 
@@ -77,8 +100,7 @@ host_main(int argc, char *argv[])
 	e_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE);
 	*/
 	
-	//bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)emem.base;
-	bj_off_sys_st* pt_shd_data = bj_null;
+	bj_off_sys_st* pt_shd_data = &BJK_OFF_CHIP_SHARED_MEM;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
 	printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data));
 
@@ -102,29 +124,44 @@ host_main(int argc, char *argv[])
 		for (col=0; col < max_col; col++){
 			core_id = bj_ro_co_to_id(row, col);
 			bj_core_nn_t num_core = bj_id_to_nn(core_id);
+
+			thread_info_t& thd_inf = ALL_THREADS_INFO[num_core];
+			thd_inf.thread_num = num_core;
+			thd_inf.argv_string = bj_null;
+			bj_uint16_to_hex_bytes(thd_inf.thread_num, (uint8_t*)(thd_inf.thread_name));
+			thd_inf.bjk_core_id = core_id;
+
 			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
-			memset(&f_nm, 0, sizeof(f_nm));
-			sprintf(f_nm, "log_core_%02d.txt", num_core);
 
-			BJH_CK(num_core < bj_out_num_cores);
-			all_f_nam[num_core] = strdup((const char*)f_nm);
-			num_wrk_cores++;
+			if(num_core < bj_out_num_cores){
+				memset(&f_nm, 0, sizeof(f_nm));
+				sprintf(f_nm, "log_core_%02d.txt", num_core);
+				all_f_nam[num_core] = strdup((const char*)f_nm);
+
+				// init shared data.
+				pt_shd_data->sys_cores[num_core].magic_id = BJ_MAGIC_ID;
+				BJH_CK(pt_shd_data->sys_cores[num_core].magic_id == BJ_MAGIC_ID);
+
+				bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+
+				pt_buff->magic_id = BJ_MAGIC_ID;
+				BJH_CK(pt_buff->magic_id == BJ_MAGIC_ID);
+
+				bj_rr_init(&(pt_buff->rd_arr), BJ_OUT_BUFF_SZ, pt_buff->buff, 1);
+			}
 			
-			// init shared data.
-			pt_shd_data->sys_cores[num_core].magic_id = BJ_MAGIC_ID;
-			BJH_CK(pt_shd_data->sys_cores[num_core].magic_id == BJ_MAGIC_ID);
-
-			bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
-
-			pt_buff->magic_id = BJ_MAGIC_ID;
-			BJH_CK(pt_buff->magic_id == BJ_MAGIC_ID);
-
-			bj_rr_init(&(pt_buff->rd_arr), BJ_OUT_BUFF_SZ, pt_buff->buff, 1);
-
 			// Start one core
 			//e_start(&dev, row, col);
+
+			ss = pthread_create(&thd_inf.thread_id, NULL,
+								&thread_start, &thd_inf);
+			if (ss != 0){
+				bjh_abort_func(ss, "host_main. Cannot pthread_create");
+			}
 		}
 	}
+
+	BJH_CK(ck_all_core_ids());
 
 	bool core_started[max_row][max_col];
 	memset(core_started, 0, sizeof(core_started));
@@ -143,16 +180,10 @@ host_main(int argc, char *argv[])
 				bj_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
 				bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
-				/*if(sh_dat_1->is_finished == BJ_FINISHED_VAL){
-					continue;
-				}*/
-				
 				// Wait for core program execution to finish.
 				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
 					has_work = true;
 					BJH_CK(sh_dat_1->magic_id == BJ_MAGIC_ID);
-					//if(sh_dat_1->magic_id == BJ_MAGIC_ID){ printf("."); }
-					//sched_yield();				//yield
 					continue;
 				}
 				
@@ -198,7 +229,6 @@ host_main(int argc, char *argv[])
 
 						print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						BJH_CK(bj_rr_ck_zero(&(pt_buff->rd_arr)));
-						//bj_rr_print(&(pt_buff->rd_arr));
 
 						printf("Finished\n");
 						memset(&inco, 0, sizeof(bj_in_core_st));
@@ -226,6 +256,19 @@ host_main(int argc, char *argv[])
 	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
 	printf("sys_sz->yy_sz=%d\n", sys_sz->yy_sz);
 	
+	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
+		ss = pthread_join(ALL_THREADS_INFO[tnum].thread_id, &res);
+		if(ss != 0){
+			bjh_abort_func(ss, "host_main. Cannot join thread.");
+		}
+
+		printf("Joined with thread %d; returned value was %s\n",
+				ALL_THREADS_INFO[tnum].thread_num, (char *) res);
+		free(res);      /* Free memory allocated by thread */
+	}
+
+	free(ALL_THREADS_INFO);
+
 	/*
 	// Reset the workgroup
 	e_reset_group(&dev); // FAILS. Why?
@@ -241,7 +284,7 @@ host_main(int argc, char *argv[])
 	*/
 
 	int nn;
-	for (nn=0; nn < num_wrk_cores; nn++){
+	for (nn=0; nn < bj_out_num_cores; nn++){
 		if(all_f_nam[nn] != bj_null){
 			free(all_f_nam[nn]);
 		}

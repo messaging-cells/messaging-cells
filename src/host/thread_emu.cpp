@@ -70,15 +70,6 @@ bj_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str) {
 
 // =====================================================================================
 
-#define handle_error_en(en, msg) \
-		do { errno = en; perror(msg); exit(EXIT_FAILURE); } while (0)
-
-#define handle_error(msg) \
-		do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
-/* Thread start function: display address near top of our stack,
-	and return upper-cased copy of argv_string */
-
 uint16_t
 bjk_get_thread_idx(){
 	if(ALL_THREADS_INFO == bj_null){
@@ -112,7 +103,16 @@ bjk_get_thread_info(){
 	return info;
 }
 
-static void *
+// =====================================================================================
+
+#define handle_error_en(en, msg) \
+		do { errno = en; perror(msg); exit(EXIT_FAILURE); } while (0)
+
+#define handle_error(msg) \
+		do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+
+void *
 thread_start(void *arg)
 {
 	thread_info_t *tinfo = (thread_info_t *)arg;
@@ -146,12 +146,11 @@ thread_start(void *arg)
 	return uargv;
 }
 
-// =====================================================================================
 
 int
 threads_main(int argc, char *argv[])
 {
-	int s, tnum, opt, num_threads;
+	int ss, tnum, opt, num_threads;
 	pthread_attr_t attr;
 	int stack_size;
 	void *res;
@@ -179,33 +178,33 @@ threads_main(int argc, char *argv[])
 
 	num_threads = argc - optind;
 
-	printf("num_threads = %d\n", num_threads);
-
 
 	/* Initialize thread creation attributes */
 
-	s = pthread_attr_init(&attr);
-	if (s != 0){
-		handle_error_en(s, "pthread_attr_init");
+	ss = pthread_attr_init(&attr);
+	if (ss != 0){
+		handle_error_en(ss, "pthread_attr_init");
 	}
 
 	if (stack_size > 0) {
-		s = pthread_attr_setstacksize(&attr, stack_size);
-		if (s != 0)
-			handle_error_en(s, "pthread_attr_setstacksize");
+		ss = pthread_attr_setstacksize(&attr, stack_size);
+		if (ss != 0)
+			handle_error_en(ss, "pthread_attr_setstacksize");
 	}
 
 	/* Allocate memory for pthread_create() arguments */
 
 	TOT_THREADS = num_threads;
-	ALL_THREADS_INFO = (thread_info_t *)calloc(num_threads, sizeof(thread_info_t));
+	ALL_THREADS_INFO = (thread_info_t *)calloc(TOT_THREADS, sizeof(thread_info_t));
 	if (ALL_THREADS_INFO == NULL){
 		handle_error("calloc");
 	}
 
+	printf("TOT_THREADS = %d\n", TOT_THREADS);
+
 	/* Create one thread for each command-line argument */
 
-	for (tnum = 0; tnum < num_threads; tnum++) {
+	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
 		ALL_THREADS_INFO[tnum].thread_num = tnum + 1;
 		ALL_THREADS_INFO[tnum].argv_string = argv[optind + tnum];
 
@@ -214,29 +213,29 @@ threads_main(int argc, char *argv[])
 		/* The pthread_create() call stores the thread ID into
 			corresponding element of ALL_THREADS_INFO[] */
 
-		//s = pthread_create(&ALL_THREADS_INFO[tnum].thread_id, &attr,
+		//ss = pthread_create(&ALL_THREADS_INFO[tnum].thread_id, &attr,
 		//					&thread_start, &ALL_THREADS_INFO[tnum]);
-		s = pthread_create(&ALL_THREADS_INFO[tnum].thread_id, NULL,
+		ss = pthread_create(&ALL_THREADS_INFO[tnum].thread_id, NULL,
 							&thread_start, &ALL_THREADS_INFO[tnum]);
-		if (s != 0){
-			handle_error_en(s, "pthread_create");
+		if (ss != 0){
+			handle_error_en(ss, "pthread_create");
 		}
 	}
 
 	/* Destroy the thread attributes object, since it is no
 		longer needed */
 
-	s = pthread_attr_destroy(&attr);
-	if (s != 0){
-		handle_error_en(s, "pthread_attr_destroy");
+	ss = pthread_attr_destroy(&attr);
+	if (ss != 0){
+		handle_error_en(ss, "pthread_attr_destroy");
 	}
 
 	/* Now join with each thread, and display its returned value */
 
-	for (tnum = 0; tnum < num_threads; tnum++) {
-		s = pthread_join(ALL_THREADS_INFO[tnum].thread_id, &res);
-		if (s != 0)
-			handle_error_en(s, "pthread_join");
+	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
+		ss = pthread_join(ALL_THREADS_INFO[tnum].thread_id, &res);
+		if (ss != 0)
+			handle_error_en(ss, "pthread_join");
 
 		printf("Joined with thread %d; returned value was %s\n",
 				ALL_THREADS_INFO[tnum].thread_num, (char *) res);
@@ -247,7 +246,8 @@ threads_main(int argc, char *argv[])
 	exit(EXIT_SUCCESS);
 }
 
-uint16_t
+/*
+bj_core_nn_t
 bjk_get_addr_idx(void* addr){
 	if(ALL_THREADS_INFO == bj_null){
 		bjh_abort_func(5, "bjk_get_addr_idx. NULL ALL_THREADS_INFO \n");
@@ -261,17 +261,28 @@ bjk_get_addr_idx(void* addr){
 		bjh_abort_func(6, "bjk_get_addr_idx. Invalid addr. Too big. \n");
 		return 0;
 	}
-	uint16_t idx = ((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t);
+	bj_core_nn_t idx = ((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t);
 	return idx;
 }
 
-//bj_sys_sz_st bj_glb_host_sys;
 bool
 bj_is_host_thread(){
 	return (pthread_self() == HOST_THREAD_ID);
 }
 
-void
-fill_core_ids(){
-	//bj_glb_host_sys
+
+*/
+
+bj_core_id_t
+bjk_get_addr_core_id_fn(void* addr){
+	bj_core_nn_t idx = bjk_get_addr_idx(addr);
+	thread_info_t* info = &(ALL_THREADS_INFO[idx]);
+	return info->bjk_core_id;
+}
+
+void*
+bjk_addr_with_fn(bj_core_id_t core_id, void* addr){
+	bj_core_nn_t idx = bj_id_to_nn(core_id);
+	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + bjk_get_addr_offset(addr));
+	return addr2;
 }

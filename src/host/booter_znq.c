@@ -160,16 +160,10 @@ int main(int argc, char *argv[])
 				bj_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
 				bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
-				/*if(sh_dat_1->is_finished == BJ_FINISHED_VAL){
-					continue;
-				}*/
-				
 				// Wait for core program execution to start
 				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
 					has_work = true;
 					BJH_CK(sh_dat_1->magic_id == BJ_MAGIC_ID);
-					//if(sh_dat_1->magic_id == BJ_MAGIC_ID){ printf("."); }
-					//sched_yield();				//yield
 					continue;
 				}
 				
@@ -214,7 +208,6 @@ int main(int argc, char *argv[])
 
 						print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						BJH_CK(bj_rr_ck_zero(&(pt_buff->rd_arr)));
-						//bj_rr_print(&(pt_buff->rd_arr));
 
 						printf("Finished\n");
 						memset(&inco, 0, sizeof(bj_in_core_st));
