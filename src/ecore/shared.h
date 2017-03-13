@@ -259,9 +259,6 @@ struct bj_align(8) bj_off_sys_shared_data_def {
 };
 typedef struct bj_off_sys_shared_data_def bj_off_sys_st;
 
-int 
-bjh_prt_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
-
 bj_opt_sz_fn uint8_t*
 bj_memset(uint8_t* dest, uint8_t val, bj_size_t sz) bj_code_dram;
 

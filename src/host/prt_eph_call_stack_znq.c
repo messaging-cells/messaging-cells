@@ -14,7 +14,7 @@ void lookup_sections(const void *file, int addrs_sz, void** stack_addrs);
 
 const char* stack_names[MAX_CALL_STACK_SZ];
 
-int bjh_prt_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs)
+int bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs)
 {
 	int          fd;
 	struct stat  st;

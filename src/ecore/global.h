@@ -25,6 +25,11 @@ struct bjk_glb_sys_def {
 	bj_rrarray_st* 	write_rrarray;
 	bj_in_core_st 	in_core_shd;
 	uint8_t 		dbg_out_str[BJ_MAX_STR_SZ];
+
+	EMU_CODE(
+		uint8_t 		bjk_sync_signal;
+		char* 			bjk_dbg_call_nams_stack_trace[BJ_MAX_CALL_STACK_SZ];
+	)
 };
 typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 

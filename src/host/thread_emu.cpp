@@ -112,41 +112,6 @@ bjk_get_thread_info(){
 		do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
 
-void *
-thread_start(void *arg)
-{
-	thread_info_t *tinfo = (thread_info_t *)arg;
-	char *uargv, *p;
-	char thd_name[NAMELEN];
-
-	printf("Thread %d: top of stack near %p; argv_string=%s\n",
-			tinfo->thread_num, &p, tinfo->argv_string);
-
-	pthread_t slf = pthread_self();
-
-	printf("SELF = %ld \nINFO = %ld \nIN_NAME = %s \n", slf, tinfo->thread_id, tinfo->thread_name);
-
-	pthread_setname_np(slf, tinfo->thread_name);
-	//pthread_setname_np(slf, tinfo->argv_string);
-
-	int rc = pthread_getname_np(slf, thd_name, NAMELEN);
-	if(rc == 0){
-		uint16_t idx = bj_hex_bytes_to_uint16((uint8_t*)thd_name);
-		printf("%ld OUT_NAME = %s \n", slf, thd_name);
-		printf("%ld IDX = %d \n", slf, idx);
-	}
-
-	uargv = strdup(tinfo->argv_string);
-	if (uargv == NULL)
-		handle_error("strdup");
-
-	for (p = uargv; *p != '\0'; p++)
-		*p = toupper(*p);
-
-	return uargv;
-}
-
-
 int
 threads_main(int argc, char *argv[])
 {
@@ -286,3 +251,18 @@ bjk_addr_with_fn(bj_core_id_t core_id, void* addr){
 	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + bjk_get_addr_offset(addr));
 	return addr2;
 }
+
+void *
+thread_start(void *arg){
+
+	thread_info_t *tinfo = (thread_info_t *)arg;
+	pthread_t slf = pthread_self();
+
+	printf("SELF = %ld \tCORE_ID = %ld \tNAME = %s \n", slf, tinfo->thread_id, tinfo->thread_name);
+
+	pthread_setname_np(slf, tinfo->thread_name);
+
+	return bj_null;
+}
+
+

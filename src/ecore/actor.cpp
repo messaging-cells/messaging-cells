@@ -246,6 +246,9 @@ void core_main() {
 	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
 	in_shd->the_core_state = bjk_inited_state;
 
+	//bjk_glb_sys_st* glb = bjk_get_glb_sys();
+	//BJ_MARK_USED(glb);
+
 	test_send_irq2 = 0;
 	//agent aa;
 	

@@ -17,6 +17,7 @@ bj_c_decl {
 	//define bj_asm	123
 
 #ifdef IS_EMU_CODE
+//---------------------------------------------------------------------------------------
 	#define bj_opt_sz_fn 
 	#define bj_no_opt_fn 
 	// define bj_inline_fn inline 
@@ -28,7 +29,9 @@ bj_c_decl {
 	#define bj_code_dram 
 	#define bj_shared_dram
 	#define bj_data_bank2
-#else //IS_EMU_CODE
+
+#else //NOT  IS_EMU_CODE :
+//---------------------------------------------------------------------------------------
 
 #define bj_opt_sz_fn __attribute__((optimize("Os")))
 #define bj_no_opt_fn __attribute__((optimize("O0")))
@@ -63,7 +66,17 @@ bj_c_decl {
 	#define bj_data_bank2
 #endif
 
-#endif	//IS_EMU_CODE
+//---------------------------------------------------------------------------------------
+#endif	//NOT IS_EMU_CODE
+
+#ifdef IS_EMU_CODE
+	#define EMU_CODE(cod) cod
+	#define ZNQ_CODE(cod) 
+#else
+	#define EMU_CODE(cod) 
+	#define ZNQ_CODE(cod) cod
+#endif
+
 	
 #ifdef __cplusplus
 }

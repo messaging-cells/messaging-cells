@@ -9,6 +9,7 @@
 
 #include "thread_emu.hh"
 #include "booter.h"
+#include "string_hst.hh"
 
 // =====================================================================================
 
@@ -28,6 +29,18 @@ prt_aligns(void* ptr){
 	printf("%d", alg); 
 }
 
+void 
+bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
+	char** trace = thd_inf.bj_glb_sys_data.bjk_dbg_call_nams_stack_trace;
+	bjh_out << "---------------------------------------------------\n";
+	bjh_out << "STACK_TRACE for core num " << thd_inf.thread_num;
+	bjh_out << " with core_id = " << thd_inf.bjk_core_id << "\n";
+	for(int aa = 0; aa < BJ_MAX_CALL_STACK_SZ; aa++){
+		if(trace[aa] == bj_null){ break; }
+		bjh_out << trace[aa] << "\n";
+	}
+	bjh_out << "---------------------------------------------------\n";
+}
 
 void
 get_enter(bj_off_core_st* sh_dat_1, unsigned row, unsigned col){
@@ -60,7 +73,6 @@ host_main(int argc, char *argv[])
 	char f_nm[200];
 	char* all_f_nam[bj_out_num_cores];
 	int ss, tnum;
-	void *res;
 	/*
 	int opt, num_threads;
 	pthread_attr_t attr;
@@ -180,6 +192,8 @@ host_main(int argc, char *argv[])
 				bj_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
 				bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
+				thread_info_t& thd_inf = ALL_THREADS_INFO[num_core];
+
 				// Wait for core program execution to finish.
 				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
 					has_work = true;
@@ -199,7 +213,6 @@ host_main(int argc, char *argv[])
 				}
 
 				bj_in_core_st inco;
-				void* 	trace[BJ_MAX_CALL_STACK_SZ];
 				
 				// wait for finish
 				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
@@ -214,17 +227,14 @@ host_main(int argc, char *argv[])
 						}
 						
 						sh_dat_1->is_waiting = BJ_NOT_WAITING;
-						/*
-						int SYNC = (1 << E_SYNC);
-						if (ee_write_reg(&dev, row, col, E_REG_ILATST, SYNC) == E_ERR) {
-							printf("ERROR sending SYNC to (%d, %d) \n", row, col);
-							break;
-						}*/
+
+						thd_inf.bj_glb_sys_data.bjk_sync_signal = 1;	// SEND signal
 					}
 				} else {
 					BJH_CK(sh_dat_1->is_finished == BJ_FINISHED_VAL);
 	
 					if(! core_finished[row][col]){
+
 						core_finished[row][col] = true;
 
 						print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
@@ -232,17 +242,13 @@ host_main(int argc, char *argv[])
 
 						printf("Finished\n");
 						memset(&inco, 0, sizeof(bj_in_core_st));
-						//e_read(&dev, row, col, (uint32_t)sh_dat_1->core_data, 
-						//			&inco, sizeof(inco));
+						memcpy(&inco, &thd_inf.bj_glb_sys_data.in_core_shd, sizeof(bj_in_core_st));
 						int err2 = prt_inko_shd_dat(&inco);
 						if(err2){
 							break;
 						}
 
-						memset(trace, 0, sizeof(trace));
-						//e_read(&dev, row, col, (uint32_t)inco.dbg_stack_trace, 
-						//			trace, sizeof(trace));
-						//bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
+						bjh_prt_core_call_stack_emu(thd_inf);
 					}
 
 				}
@@ -257,14 +263,11 @@ host_main(int argc, char *argv[])
 	printf("sys_sz->yy_sz=%d\n", sys_sz->yy_sz);
 	
 	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
+		void *res;
 		ss = pthread_join(ALL_THREADS_INFO[tnum].thread_id, &res);
 		if(ss != 0){
 			bjh_abort_func(ss, "host_main. Cannot join thread.");
 		}
-
-		printf("Joined with thread %d; returned value was %s\n",
-				ALL_THREADS_INFO[tnum].thread_num, (char *) res);
-		free(res);      /* Free memory allocated by thread */
 	}
 
 	free(ALL_THREADS_INFO);

@@ -57,7 +57,7 @@ get_enter(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned co
 	void* 	trace[BJ_MAX_CALL_STACK_SZ];
 	memset(trace, 0, sizeof(trace));
 	e_read(dev, row, col, (uint32_t)(inco.dbg_stack_trace), trace, sizeof(trace));
-	bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
+	bjh_prt_core_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 	
 	// CONTINUE
 	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 						memset(trace, 0, sizeof(trace));
 						e_read(&dev, row, col, (uint32_t)inco.dbg_stack_trace, 
 									trace, sizeof(trace));
-						bjh_prt_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
+						bjh_prt_core_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 					}
 
 				}
