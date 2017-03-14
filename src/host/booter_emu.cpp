@@ -33,8 +33,8 @@ void
 bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
 	char** trace = thd_inf.bj_glb_sys_data.bjk_dbg_call_nams_stack_trace;
 	bjh_out << "---------------------------------------------------\n";
-	bjh_out << "STACK_TRACE for core num " << thd_inf.thread_num;
-	bjh_out << " with core_id = " << thd_inf.bjk_core_id << "\n";
+	bjh_out << "STACK_TRACE for core num " << std::dec << thd_inf.thread_num;
+	bjh_out << " with core_id = 0x" << std::hex << thd_inf.bjk_core_id << "\n";
 	for(int aa = 0; aa < BJ_MAX_CALL_STACK_SZ; aa++){
 		if(trace[aa] == bj_null){ break; }
 		bjh_out << trace[aa] << "\n";
@@ -298,29 +298,23 @@ host_main(int argc, char *argv[])
 	return 0;
 }
 
-// ===============================================================================
-
-#include "umm_malloc.h"
-
-extern umm_block umm_heap[UMM_HEAP_NUM_BLOCKS];
-
-int main() {
-	//test_logs_main();
-	//core_main();
-	BJH_CK(umm_numblocks == UMM_HEAP_NUM_BLOCKS);
+void
+show_sizes() {
 	printf("HOLA JOSE LUIS\n");
-	printf("umm_numblocks= %d\n", umm_numblocks);
-	printf("sizeof(umm_numblocks)= %ld\n", sizeof(umm_numblocks));
-	printf("sizeof(umm_idx_t)= %ld\n", sizeof(umm_idx_t));
-	printf("sizeof(umm_block)= %ld\n", sizeof(umm_block)); 
-	printf("UMM_MAX_HEAP_SIZE= %ld\n", UMM_MAX_HEAP_SIZE);
-	printf("UMM_HEAP_NUM_BLOCKS= %ld\n", UMM_HEAP_NUM_BLOCKS); 
-	printf("sizeof(umm_heap)= %ld\n", sizeof(umm_heap)); 
-	printf("sizeof(umm_heap)= %ld\n", sizeof(umm_heap)); 
 	printf("sizeof(thread_info_t)= %ld\n", sizeof(thread_info_t)); 
 
 	pthread_t slf = pthread_self();
 	printf("SELF= %ld\n", slf); 
+
+}
+
+// ===============================================================================
+
+
+int main(int argc, char *argv[]) {
+	//test_logs_main();
+	//core_main();
+	host_main(argc, argv);
 }
 
 

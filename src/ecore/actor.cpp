@@ -3,7 +3,6 @@
 #include <new>
 
 #include "interruptions.h"
-#include "all_regs.h"
 #include "global.h"
 #include "trace.h"
 #include "test_logs.h"
@@ -173,12 +172,6 @@ ck_sizes(){
 	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(bj_addr_t)));
 	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(unsigned)));
 	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(uint32_t)));
-}
-
-void 
-bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) {
-	unsigned* ilatst = (unsigned*)bj_addr_with(koid, (void*) BJ_REG_ILATST);
-	*ilatst = 1 << num_irq;
 }
 
 grip&	

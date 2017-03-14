@@ -10,6 +10,8 @@
 bj_c_decl {
 #endif
 
+#ifdef IS_CORE_CODE
+
 // eCore General Purpose Registers
 typedef enum {
 	BJ_CORE_GP_REG_BASE     = 0xf0000,
@@ -143,6 +145,8 @@ typedef enum {
 	BJ_REG_IO_LINK_DEBUG    = BJ_CHIP_REG_BASE + 0x0328,
 } bj_chip_reg_id_t;
 
+
+#endif //IS_CORE_CODE
 
 #ifdef __cplusplus
 }

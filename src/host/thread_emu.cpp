@@ -11,6 +11,7 @@
 #include "shared.h"
 #include "booter.h"
 
+#include "core_main.h"
 
 thread_info_t* ALL_THREADS_INFO = bj_null;
 int TOT_THREADS = 0;
@@ -258,9 +259,12 @@ thread_start(void *arg){
 	thread_info_t *tinfo = (thread_info_t *)arg;
 	pthread_t slf = pthread_self();
 
-	printf("SELF = %ld \tCORE_ID = %ld \tNAME = %s \n", slf, tinfo->thread_id, tinfo->thread_name);
-
 	pthread_setname_np(slf, tinfo->thread_name);
+
+	printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thread_name);
+
+	//test_logs_main();
+	core_main();
 
 	return bj_null;
 }
