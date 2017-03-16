@@ -11,9 +11,6 @@ bj_c_decl {
 #endif
 
 void 
-test_logs_main() bj_code_dram;
-
-void 
 core_main() bj_code_dram;
 
 

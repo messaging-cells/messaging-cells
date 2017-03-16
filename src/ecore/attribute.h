@@ -70,11 +70,23 @@ bj_c_decl {
 #endif	//NOT IS_EMU_CODE
 
 #ifdef IS_EMU_CODE
+	#include <stdbool.h>
+
+	bool bje_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg);
+	void bje_printf(const char *format, ...);
+	void bje_log(const char *fmt, ...);
+
 	#define EMU_CODE(cod) cod
 	#define ZNQ_CODE(cod) 
+	#define EMU_CK(vv) bje_call_assert(vv, __FILE__, __LINE__, #vv, NULL)
+	#define EMU_PRT(...) bje_printf(__VA_ARGS__)
+	#define EMU_LOG(...) bje_log(__VA_ARGS__)
 #else
 	#define EMU_CODE(cod) 
 	#define ZNQ_CODE(cod) cod
+	#define EMU_CK(prm) 
+	#define EMU_PRT(...) 
+	#define EMU_LOG(...) 
 #endif
 
 	

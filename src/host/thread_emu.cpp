@@ -1,12 +1,15 @@
 
 //define _GNU_SOURCE
 
+#include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+#include "attribute.h"
 #include "thread_emu.hh"
 #include "shared.h"
 #include "booter.h"
@@ -74,24 +77,24 @@ bj_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str) {
 uint16_t
 bjk_get_thread_idx(){
 	if(ALL_THREADS_INFO == bj_null){
-		bjh_abort_func(2, "bjk_get_thread_info. NULL ALL_THREADS_INFO \n");
+		bjh_abort_func(2, "bjk_get_thread_idx. NULL ALL_THREADS_INFO \n");
 		return 0;
 	}
 	pthread_t slf = pthread_self();
 	if(slf == HOST_THREAD_ID){
-		bjh_abort_func(2, "bjk_get_thread_info. Host thread. \n");
+		bjh_abort_func(2, "bjk_get_thread_idx. Host thread. \n");
 		return 0;
 	}
 
 	char thd_name[NAMELEN];
 	int rc = pthread_getname_np(slf, thd_name, NAMELEN);
 	if(rc != 0){
-		bjh_abort_func(1, "bjk_get_thread_info. INVALID THREAD NAME \n");
+		bjh_abort_func(1, "bjk_get_thread_idx. INVALID THREAD NAME \n");
 		return 0;
 	}
 	uint16_t thd_idx = bj_hex_bytes_to_uint16((uint8_t*)thd_name);
 	if((thd_idx < 0) || (thd_idx >= TOT_THREADS)){
-		bjh_abort_func(1, "bjk_get_thread_info. INVALID thd_idx \n");
+		bjh_abort_func(1, "bjk_get_thread_idx. INVALID thd_idx \n");
 		return 0;
 	}
 	return thd_idx;
@@ -269,4 +272,58 @@ thread_start(void *arg){
 	return bj_null;
 }
 
+bool 
+bje_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
+	
+	if(! vv_ck){
+		fprintf(stderr, "------------------------------------------------------------------\n");
+		fprintf(stderr, "ASSERT '%s' FAILED\nFILE= %s\nLINE=%d \n", ck_str, file, line);
+		//bj_out << get_stack_trace(file, line) << bj_eol;
+		if(msg != NULL){
+			fprintf(stderr, "MSG=%s\n", msg);
+		}
+		fprintf(stderr, "------------------------------------------------------------------\n");
+	}
+	assert(vv_ck);
+	return vv_ck;
+}
+
+void
+bje_log(const char *fmt, ...){
+	EMU_CK(! bj_is_host_thread());
+
+	char pp[BJ_MAX_STR_SZ];
+	va_list ap;
+
+	va_start(ap, fmt);
+	int size = vsnprintf(pp, BJ_MAX_STR_SZ, fmt, ap);
+	va_end(ap);
+
+	pp[BJ_MAX_STR_SZ - 1] = '\0';
+
+	if(size < 0){ return; }
+
+	bjk_slog2(pp);
+}
+
+void
+bje_printf(const char *fmt, ...){
+	EMU_CK(! bj_is_host_thread());
+
+	char pp[BJ_MAX_STR_SZ];
+	va_list ap;
+
+	va_start(ap, fmt);
+	int size = vsnprintf(pp, BJ_MAX_STR_SZ, fmt, ap);
+	va_end(ap);
+
+	pp[BJ_MAX_STR_SZ - 1] = '\0';
+
+	if(size < 0){ return; }
+
+	thread_info_t* inf = bjk_get_thread_info();
+
+	printf("%d:%x --> %s", inf->thread_num, inf->bjk_core_id, pp);
+	fflush(stdout); 
+}
 

@@ -26,11 +26,13 @@ bool
 bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
 	
 	if(! vv_ck){
-		fprintf(stderr, "ASSERT '%s' FAILED\n", ck_str);
+		fprintf(stderr, "------------------------------------------------------------------\n");
+		fprintf(stderr, "ASSERT '%s' FAILED\nFILE= %s\nLINE=%d \n", ck_str, file, line);
 		//bj_out << get_stack_trace(file, line) << bj_eol;
 		if(msg != NULL){
 			fprintf(stderr, "MSG=%s\n", msg);
 		}
+		fprintf(stderr, "------------------------------------------------------------------\n");
 	}
 	assert(vv_ck);
 	return vv_ck;

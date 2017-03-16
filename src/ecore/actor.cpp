@@ -2,6 +2,10 @@
 #include <cstdlib>
 #include <new>
 
+#ifdef IS_EMU_CODE
+	#include "booter.h"
+#endif
+
 #include "interruptions.h"
 #include "global.h"
 #include "trace.h"
@@ -44,17 +48,25 @@ BJK_DEFINE_ACQUIRE(missive)
 BJK_DEFINE_ACQUIRE(missive_ref)
 BJK_DEFINE_ACQUIRE(missive_grp)
 
-void
-init_class_names(){
-	bjk_set_class_name(actor);
-	bjk_set_class_name(missive);
-	bjk_set_class_name(missive_ref);
+BJK_DEFINE_SEPARATE(actor)
+BJK_DEFINE_SEPARATE(missive)
+BJK_DEFINE_SEPARATE(missive_ref)
+BJK_DEFINE_SEPARATE(missive_grp)
+
+char*
+agent::get_class_name(){
+	kernel* ker = kernel::get_sys();
+	bjk_actor_id_t id = get_actor_id();
+	if(bjk_is_valid_class_name_idx(id)){
+		return (ker->class_names_arr)[id];
+	}
+	return bj_null;
 }
 
 void 
-add_out_missive(missive& msv1){
+kernel::add_out_missive(missive& msv1){
 	binder * fst, * lst, * wrk;
-	kernel* ker = kernel::get_sys();
+	kernel* ker = this;
 
 	fst = ker->out_work.bn_right;
 	lst = &(ker->out_work);
@@ -66,80 +78,46 @@ add_out_missive(missive& msv1){
 		}
 	}
 	missive_grp* mgrp2 = missive_grp::acquire();
-	mgrp2->bind_to_my_left(msv1);
+	EMU_CK(mgrp2 != bj_null);
+	EMU_CK(mgrp2->all_msv.is_alone());
+
+	mgrp2->all_msv.bind_to_my_left(msv1);
 	ker->out_work.bind_to_my_left(*mgrp2);
 }
 
 void 
-call_handlers_of_group(missive_grp& mgrp){
+kernel::call_handlers_of_group(missive_grp* rem_mgrp){
 	binder * fst, * lst, * wrk;
-	kernel* ker = kernel::get_sys();
+	kernel* ker = this;
 
-	fst = mgrp.bn_right;
-	lst = &mgrp;
+	binder* all_msv = &(rem_mgrp->all_msv);
+
+	bjk_slog2("all_msv=");
+	bjk_xlog((bj_addr_t)all_msv);
+	bjk_slog2("\n");
+
+	fst = all_msv->bn_right;
+	lst = all_msv;
 	for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
 		missive* remote_msv = (missive*)wrk;
+
+		bjk_slog2("Handling missive\n");
+
 		actor* dst = remote_msv->dst;
+		EMU_CK(dst != bj_null);
 		bjk_handler_idx_t idx = dst->id_idx;
-		if(bjk_is_valid_handler_idx(idx)){
+		if(bjk_is_valid_handler_idx(ker, idx)){
 			(*((ker->handlers_arr)[idx]))(remote_msv);
 		}
 	}
 }
 
-void 
-actors_main_loop(){
+void // static
+kernel::actors_main_loop(){
 	kernel* ker = kernel::get_sys();
 	
 	while(true){
-		binder * fst, * lst, * wrk, * nxt;
-
-		fst = ker->in_work.bn_right;
-		lst = &(ker->in_work);
-		for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
-			missive_ref* fst_ref = (missive_ref*)wrk;
-			nxt = wrk->bn_right;
-
-			missive_grp* remote_grp = (missive_grp*)(fst_ref->remote_grp);
-			call_handlers_of_group(*remote_grp);
-			fst_ref->remote_grp = bj_null;
-			fst_ref->release();
-		}
-
-		fst = ker->local_work.bn_right;
-		lst = &(ker->local_work);
-		for(wrk = fst; wrk != lst; wrk = nxt){
-			missive* fst_msg = (missive*)wrk;
-			nxt = wrk->bn_right;
-
-			actor* dst = fst_msg->dst;
-			if(bjk_addr_is_local(dst)){
-				if(bjk_is_valid_handler_idx(dst->id_idx)){
-					(*((ker->handlers_arr)[dst->id_idx]))(fst_msg);
-				}
-				fst_msg->release();
-			} else {
-				fst_msg->let_go();
-				add_out_missive(*fst_msg);
-			}
-		}
-
-		fst = ker->out_work.bn_right;
-		lst = &(ker->out_work);
-		for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
-			missive_grp* mgrp = (missive_grp*)wrk;
-			nxt = wrk->bn_right;
-
-			missive* msv = (missive*)(mgrp->all_msv.get_right_pt());
-			bj_core_id_t dst_id = bj_addr_get_core_id(msv->dst);
-			bj_core_nn_t idx = bj_id_to_nn(dst_id);
-			void* loc_pt = &((ker->pw0_routed_arr)[idx]);
-			missive_grp** rmt_pt = (missive_grp**)bj_addr_with(dst_id, loc_pt);
-
-			*rmt_pt = mgrp;
-
-			// send signal
-		}
+		ker->handle_missives();
 	}
 }
 
@@ -184,8 +162,17 @@ agent::get_available(){
 }
 
 void
+agent::init_me(){
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wpmf-conversions"
+	bjk_abort((bj_addr_t)(void*)&agent::init_me, 0, bj_null);
+	#pragma GCC diagnostic pop
+}
+
+void
 kernel::init_kernel(){
 	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
+
 	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
 	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_null);
 	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_null);
@@ -193,17 +180,23 @@ kernel::init_kernel(){
 	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_null);
 
 	bj_init_arr_vals(kernel_class_names_arr_sz, class_names_arr, bj_null);
+
+	bjk_set_class_name(agent);
+	bjk_set_class_name(actor);
+	bjk_set_class_name(missive);
+	bjk_set_class_name(missive_ref);
+	bjk_set_class_name(missive_grp);
+
+	first_actor = actor::acquire();
 }
 
-void	// is static
+void	// static
 kernel::init_sys(){
 	bjk_glb_init();
 
 	kernel* ker = kernel::get_sys();
 
 	new (ker) kernel(); 
-
-	init_class_names();
 
 	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
 
@@ -215,20 +208,21 @@ kernel::init_sys(){
 	in_shd->kernel_sz = sizeof(kernel);
 	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
 
-	bjk_separate(missive_grp, bj_out_num_cores);
-
 	bjk_enable_all_irq();
 	bjk_global_irq_enable();
+
+	in_shd->the_core_state = bjk_inited_state;
 }
 
-void	// is static
+void	// static
 kernel::finish_sys(){
 	bjk_glb_finish();
 }
 
 uint32_t test_send_irq2 = 0;
 
-void core_main() {
+void test_send_irq() bj_code_dram;
+void test_send_irq() {
 	kernel::init_sys();
 	ck_sizes();
 
@@ -236,14 +230,7 @@ void core_main() {
 		bjk_slog2("direct_routed ALONE\n");
 	}
 
-	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
-	in_shd->the_core_state = bjk_inited_state;
-
-	//bjk_glb_sys_st* glb = bjk_get_glb_sys();
-	//BJ_MARK_USED(glb);
-
 	test_send_irq2 = 0;
-	//agent aa;
 	
 	if(bjk_is_core(0,0)){
 		bjk_slog2("CORE (0,0) started\n");
@@ -271,11 +258,11 @@ void core_main() {
 		bjk_slog2("CORE (0,1) sent 4 irq2\n");
 	}
 
-	bjk_slog2("FINISHED !!\n");
-	
+	bjk_slog2("FINISHED !!\n");	
 	kernel::finish_sys();
 }
 
+void test_logs_main() bj_code_dram;
 void test_logs_main() {
 	bjk_glb_init();
 
@@ -290,6 +277,203 @@ void test_logs_main() {
 	}
 
 	bjk_glb_finish();
+}
+
+actor*	//	static 
+kernel::get_core_actor(bj_core_id_t dst_id){
+	actor* loc_act = kernel::get_core_actor();
+	if(dst_id == kernel::get_core_id()){
+		return loc_act;
+	}
+	actor* rem_act = (actor*)bj_addr_with(dst_id, loc_act);
+	return rem_act;
+}
+
+void // static 
+kernel::set_handler(missive_handler_t hdlr, uint16_t idx){
+	kernel* ker = kernel::get_sys();
+	if(bjk_is_valid_handler_idx2(idx)){
+		(ker->handlers_arr)[idx] = hdlr;
+	}
+}
+
+void 
+kernel::process_signal(int sz, missive_grp** arr){
+	for(int aa = 0; aa < sz; aa++){
+		if(arr[aa] != bj_null){
+			missive_ref* nw_ref = missive_ref::acquire();
+			EMU_CK(nw_ref->is_alone());
+			EMU_CK(nw_ref->remote_grp == bj_null);
+
+			nw_ref->remote_grp = arr[aa];
+			in_work.bind_to_my_left(*nw_ref);
+			arr[aa] = bj_null;
+		}
+	}
+}
+
+void 
+kernel::handle_missives(){
+	kernel* ker = this;
+	binder * fst, * lst, * wrk, * nxt;
+
+	for(int aa = 0; aa < kernel_signals_arr_sz; aa++){
+		if(signals_arr[aa] == bj_true){
+			signals_arr[aa] = bj_false;
+			switch(aa){
+				case bjk_do_pw0_routes_sgnl:
+					process_signal(kernel_pw0_routed_arr_sz, pw0_routed_arr);
+					break;
+				case bjk_do_pw2_routes_sgnl:
+					process_signal(kernel_pw2_routed_arr_sz, pw2_routed_arr);
+					break;
+				case bjk_do_pw4_routes_sgnl:
+					process_signal(kernel_pw4_routed_arr_sz, pw4_routed_arr);
+					break;
+				case bjk_do_pw6_routes_sgnl:
+					process_signal(kernel_pw6_routed_arr_sz, pw6_routed_arr);
+					break;
+				case bjk_do_direct_routes_sgnl:
+					break;
+				default:
+					break;
+			}
+			if(aa == bjk_do_direct_routes_sgnl){
+			} else {
+			}
+		}
+	}
+
+	binder* in_grp = &(ker->in_work);
+	fst = in_grp->bn_right;
+	lst = in_grp;
+	for(wrk = fst; wrk != lst; wrk = nxt){
+		missive_ref* fst_ref = (missive_ref*)wrk;
+		nxt = wrk->bn_right;
+
+		missive_grp* remote_grp = (missive_grp*)(fst_ref->remote_grp);
+
+		bjk_slog2("RECEIVING MISSIVE\n");
+		//EMU_PRT("RECEIVING pt_msv_grp= %p\n", remote_grp);
+
+		call_handlers_of_group(remote_grp);
+		fst_ref->release();
+		EMU_CK(fst_ref->remote_grp == bj_null);
+	}
+
+	fst = ker->local_work.bn_right;
+	lst = &(ker->local_work);
+	for(wrk = fst; wrk != lst; wrk = nxt){
+		missive* fst_msg = (missive*)wrk;
+		nxt = wrk->bn_right;
+
+		actor* dst = fst_msg->dst;
+		if(bjk_addr_is_local(dst)){
+			if(bjk_is_valid_handler_idx(ker, dst->id_idx)){
+				(*((ker->handlers_arr)[dst->id_idx]))(fst_msg);
+			}
+			fst_msg->release();
+		} else {
+			fst_msg->let_go();
+			add_out_missive(*fst_msg);
+		}
+	}
+
+	fst = ker->out_work.bn_right;
+	lst = &(ker->out_work);
+	for(wrk = fst; wrk != lst; wrk = nxt){
+		missive_grp* mgrp = (missive_grp*)wrk;
+		nxt = wrk->bn_right;
+
+		EMU_CK(! mgrp->all_msv.is_alone());
+		
+		missive* msv = (missive*)(mgrp->all_msv.get_right_pt());
+		bj_core_id_t dst_id = bj_addr_get_core_id(msv->dst);
+		bj_core_nn_t idx = bj_id_to_nn(dst_id);
+
+		// ONLY pw0 case
+		missive_grp** loc_pt = &((ker->pw0_routed_arr)[idx]);
+		missive_grp** rmt_pt = (missive_grp**)bj_addr_with(dst_id, loc_pt);
+
+		//EMU_PRT("SENDING pt_msv_grp= %p right= %p\n", mgrp, mgrp->get_right_pt());
+
+		*rmt_pt = mgrp;
+
+		// send signal
+		bj_bool_t* loc_sg = &((ker->signals_arr)[bjk_do_pw0_routes_sgnl]);
+		bj_bool_t* rmt_sg = (bj_bool_t*)bj_addr_with(dst_id, loc_sg);
+
+		*rmt_sg = bj_true;
+	}
+}
+
+void test_send_msg() bj_code_dram;
+void test_send_msg() {
+	kernel::init_sys();
+
+	kernel::set_handler(actor_handler, bjk_handler_idx(actor));
+
+	actor::separate(bj_out_num_cores);
+	missive::separate(bj_out_num_cores);
+	missive_ref::separate(bj_out_num_cores);
+	missive_grp::separate(bj_out_num_cores);
+
+	kernel* ker = kernel::get_sys();
+	BJ_MARK_USED(ker);
+
+	if(bjk_is_core(0,0)){
+		bjk_slog2("CORE (0,0) started\n");
+		bj_core_id_t dst = bj_ro_co_to_id(0, 1);
+		wait_inited_state(dst);
+		bjk_slog2("CORE (0,0) SAW core (0,1) INITED\n");
+
+		actor* act1 = kernel::get_core_actor();
+		BJ_MARK_USED(act1);
+		while(! act1->flags){
+			ker->handle_missives();
+		}
+	}
+	if(bjk_is_core(0,1)){
+		bjk_slog2("CORE (0,1) started\n");
+		bj_core_id_t dst = bj_ro_co_to_id(0, 0);
+		wait_inited_state(dst);
+		bjk_slog2("CORE (0,1) SAW core (0,0) INITED\n");
+
+		
+		actor* act1 = kernel::get_core_actor();
+		actor* act2 = kernel::get_core_actor(dst);
+
+		missive* msv = missive::acquire();
+		msv->src = act1;
+		msv->dst = act2;
+		msv->send();
+
+		ker->handle_missives();
+
+		bjk_slog2("SENT MISSIVE\n");
+	}
+
+	bjk_slog2("FINISHED !!\n");	
+	kernel::finish_sys();
+}
+
+void core_main() {
+	//test_send_irq();
+	//test_logs_main();
+	test_send_msg();
+}
+
+void 
+actor_handler(missive* msg){
+	EMU_CK(bjk_addr_is_local(msg->dst));
+	bj_core_id_t koid = kernel::get_core_id();
+	BJ_MARK_USED(koid);
+	bj_core_nn_t konn = kernel::get_core_nn();
+	BJ_MARK_USED(konn);
+	bjk_slog2("GOT MISSIVE\n");
+	EMU_LOG("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->src, msg->dst);
+	EMU_PRT("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->src, msg->dst);
+	msg->dst->flags = 1;
 }
 
 
