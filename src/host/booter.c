@@ -77,11 +77,12 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
 	printf("binder_sz=%d \n", sh_dat->binder_sz);
-	printf("receptor_sz=%d \n", sh_dat->receptor_sz);
+	printf("kernel_sz=%d \n", sh_dat->kernel_sz);
+	printf("agent_sz=%d \n", sh_dat->agent_sz);
 	printf("actor_sz=%d \n", sh_dat->actor_sz);
 	printf("missive_sz=%d \n", sh_dat->missive_sz);
-	printf("missive_grp_sz=%d \n", sh_dat->missive_grp_sz);
-	printf("kernel_sz=%d \n", sh_dat->kernel_sz);
+	printf("agent_grp_sz=%d \n", sh_dat->agent_grp_sz);
+	printf("agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
 	printf("bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
 
 	printf("\n");

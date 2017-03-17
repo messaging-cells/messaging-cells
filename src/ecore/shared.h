@@ -208,12 +208,14 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	bj_core_co_t the_core_co;
 	uint8_t 	the_core_state;
 	
-	uint8_t 	binder_sz;
-	uint8_t 	receptor_sz;
-	uint8_t 	actor_sz;
-	uint8_t 	missive_sz;
-	uint8_t 	missive_grp_sz;
+	uint16_t 	binder_sz;
 	uint16_t 	kernel_sz;
+	uint16_t 	agent_sz;
+	uint16_t 	actor_sz;
+	uint16_t 	missive_sz;
+	uint16_t 	agent_grp_sz;
+	uint16_t 	agent_ref_sz;
+
 	uint16_t 	bjk_glb_sys_st_sz;
 
 	uint32_t 	magic_end;
