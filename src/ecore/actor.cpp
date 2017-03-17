@@ -104,6 +104,8 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 			(*((ker->handlers_arr)[idx]))(remote_msv);
 		}
 	}
+
+	rem_mgrp->handled = bj_true;
 }
 
 void // static
@@ -348,7 +350,7 @@ kernel::handle_missives(){
 
 		missive_grp_t* remote_grp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
 
-		bjk_slog2("RECEIVING MISSIVE\n");
+		//bjk_slog2("RECEIVING MISSIVE\n");
 		//EMU_PRT("RECEIVING pt_msv_grp= %p\n", remote_grp);
 
 		call_handlers_of_group(remote_grp);
@@ -401,6 +403,22 @@ kernel::handle_missives(){
 		bj_bool_t* rmt_sg = (bj_bool_t*)bj_addr_with(dst_id, loc_sg);
 
 		*rmt_sg = bj_true;
+
+		mgrp->let_go();
+		ker->sent_work.bind_to_my_left(*mgrp);
+	}
+
+	fst = bjk_pt_to_binderpt(ker->sent_work.bn_right);
+	lst = &(ker->sent_work);
+	for(wrk = fst; wrk != lst; wrk = nxt){
+		missive_grp_t* mgrp = (missive_grp_t*)wrk;
+		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+
+		if(mgrp->handled){
+			mgrp->release_all_agts();
+			mgrp->let_go();
+			mgrp->release();
+		}
 	}
 }
 
@@ -473,4 +491,18 @@ actor_handler(missive* msg){
 	msg->dst->flags = 1;
 }
 
+void
+agent_grp::release_all_agts(){
+	binder * fst, * lst, * wrk;
+
+	binder* all_agts = &(this->all_agts);
+
+	fst = binder::get_glb_right_pt(all_agts);
+	lst = all_agts;
+	for(wrk = fst; wrk != lst; wrk = binder::get_glb_right_pt(wrk)){
+		agent* agt = (agent*)wrk;
+		agt->let_go();
+		agt->release();
+	}
+}
 

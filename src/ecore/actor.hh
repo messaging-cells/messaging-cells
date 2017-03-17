@@ -401,6 +401,7 @@ public:
 
 	grip		all_agts;
 	uint8_t 	tot_agts;	// optional use
+	bj_bool_t 	handled;
 
 	bj_opt_sz_fn 
 	agent_grp(){
@@ -413,6 +414,7 @@ public:
 	virtual bj_opt_sz_fn 
 	void init_me(){
 		tot_agts = 0;
+		handled = bj_false;
 	}
 
 	virtual
@@ -424,6 +426,9 @@ public:
 	bj_opt_sz_fn grip&	get_available(){
 		return bjk_all_available(agent_grp);
 	}
+
+	void
+	release_all_agts();
 };
 
 //-------------------------------------------------------------------------
