@@ -55,7 +55,7 @@ typedef uint16_t bj_size_t;
 #define bjk_is_core(row, col) \
 	((bjk_get_glb_in_core_shd()->the_core_ro == (row)) && (bjk_get_glb_in_core_shd()->the_core_co == (col)))
 
-#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bjk_get_glb_in_core_shd()->the_core_co, (pt)))
+#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bjk_get_glb_in_core_shd()->the_core_id, (pt)))
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
 #define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
 

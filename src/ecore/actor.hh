@@ -39,7 +39,7 @@ enum bjk_actor_id_t : uint8_t {
 #define bjk_get_available(nam) \
 	grip& ava = bjk_all_available(nam); \
 	if(! ava.is_alone()){ \
-		binder* fst = ava.bn_right; \
+		binder* fst = bjk_pt_to_binderpt(ava.bn_right); \
 		fst->let_go(); \
 		return (nam *)fst; \
 	} \

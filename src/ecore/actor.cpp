@@ -68,9 +68,9 @@ kernel::add_out_missive(missive& msv1){
 	binder * fst, * lst, * wrk;
 	kernel* ker = this;
 
-	fst = ker->out_work.bn_right;
+	fst = bjk_pt_to_binderpt(ker->out_work.bn_right);
 	lst = &(ker->out_work);
-	for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
+	for(wrk = fst; wrk != lst; wrk = bjk_pt_to_binderpt(wrk->bn_right)){
 		missive_grp* mgrp = (missive_grp*)wrk;
 		missive* msv2 = (missive*)(mgrp->all_msv.get_right_pt());
 		if(bj_addr_same_id(msv1.dst, msv2->dst)){
@@ -92,16 +92,10 @@ kernel::call_handlers_of_group(missive_grp* rem_mgrp){
 
 	binder* all_msv = &(rem_mgrp->all_msv);
 
-	bjk_slog2("all_msv=");
-	bjk_xlog((bj_addr_t)all_msv);
-	bjk_slog2("\n");
-
-	fst = all_msv->bn_right;
+	fst = binder::get_glb_right_pt(all_msv);
 	lst = all_msv;
-	for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
+	for(wrk = fst; wrk != lst; wrk = binder::get_glb_right_pt(wrk)){
 		missive* remote_msv = (missive*)wrk;
-
-		bjk_slog2("Handling missive\n");
 
 		actor* dst = remote_msv->dst;
 		EMU_CK(dst != bj_null);
@@ -201,7 +195,6 @@ kernel::init_sys(){
 	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
 
 	in_shd->binder_sz = sizeof(binder);
-	in_shd->receptor_sz = sizeof(receptor<actor>);
 	in_shd->actor_sz = sizeof(actor);
 	in_shd->missive_sz = sizeof(missive);
 	in_shd->missive_grp_sz = sizeof(missive_grp);
@@ -345,11 +338,11 @@ kernel::handle_missives(){
 	}
 
 	binder* in_grp = &(ker->in_work);
-	fst = in_grp->bn_right;
+	fst = bjk_pt_to_binderpt(in_grp->bn_right);
 	lst = in_grp;
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive_ref* fst_ref = (missive_ref*)wrk;
-		nxt = wrk->bn_right;
+		nxt = bjk_pt_to_binderpt(wrk->bn_right);
 
 		missive_grp* remote_grp = (missive_grp*)(fst_ref->remote_grp);
 
@@ -361,11 +354,11 @@ kernel::handle_missives(){
 		EMU_CK(fst_ref->remote_grp == bj_null);
 	}
 
-	fst = ker->local_work.bn_right;
+	fst = bjk_pt_to_binderpt(ker->local_work.bn_right);
 	lst = &(ker->local_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive* fst_msg = (missive*)wrk;
-		nxt = wrk->bn_right;
+		nxt = bjk_pt_to_binderpt(wrk->bn_right);
 
 		actor* dst = fst_msg->dst;
 		if(bjk_addr_is_local(dst)){
@@ -379,11 +372,11 @@ kernel::handle_missives(){
 		}
 	}
 
-	fst = ker->out_work.bn_right;
+	fst = bjk_pt_to_binderpt(ker->out_work.bn_right);
 	lst = &(ker->out_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive_grp* mgrp = (missive_grp*)wrk;
-		nxt = wrk->bn_right;
+		nxt = bjk_pt_to_binderpt(wrk->bn_right);
 
 		EMU_CK(! mgrp->all_msv.is_alone());
 		
@@ -394,10 +387,11 @@ kernel::handle_missives(){
 		// ONLY pw0 case
 		missive_grp** loc_pt = &((ker->pw0_routed_arr)[idx]);
 		missive_grp** rmt_pt = (missive_grp**)bj_addr_with(dst_id, loc_pt);
+		missive_grp* glb_mgrp = (missive_grp*)bjk_as_glb_pt(mgrp);
 
 		//EMU_PRT("SENDING pt_msv_grp= %p right= %p\n", mgrp, mgrp->get_right_pt());
 
-		*rmt_pt = mgrp;
+		*rmt_pt = glb_mgrp;
 
 		// send signal
 		bj_bool_t* loc_sg = &((ker->signals_arr)[bjk_do_pw0_routes_sgnl]);

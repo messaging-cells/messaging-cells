@@ -60,9 +60,10 @@ bjk_addr_with_fn(bj_core_id_t id, void* addr);
 
 #define bj_addr_same_id(addr1, addr2) (bj_addr_get_core_id(addr1) == bj_addr_get_core_id(addr2))
 
+#define bjk_as_glb_pt(pt) ((void*)(pt))
+
 /*
 
-#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bjk_get_glb_in_core_shd()->the_core_co, (pt)))
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
 #define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
 
