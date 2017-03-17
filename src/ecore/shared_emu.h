@@ -1,8 +1,8 @@
 
-// bj_shared_eph3.h
+// bj_shared_emu.h
 
-#ifndef BJ_SHARED_DATA_EPH3_H
-#define BJ_SHARED_DATA_EPH3_H
+#ifndef BJ_SHARED_DATA_EMU_H
+#define BJ_SHARED_DATA_EMU_H
 
 #ifdef __cplusplus
 bj_c_decl {
@@ -73,5 +73,5 @@ bjk_addr_with_fn(bj_core_id_t id, void* addr);
 }
 #endif
 
-#endif // BJ_SHARED_DATA_EPH3_H
+#endif // BJ_SHARED_DATA_EMU_H
 

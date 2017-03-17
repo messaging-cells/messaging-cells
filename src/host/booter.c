@@ -85,6 +85,17 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	printf("agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
 	printf("bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
 
+	if(sh_dat->exception_code != bjk_invalid_exception){
+		for(int aa = 0; aa < 5; aa++){
+			if(sh_dat->exception_code == bjk_software_exception){
+				printf("%x. SOFTWARE EXCEPTION!!\n", sh_dat->the_core_id);
+			}
+			if(sh_dat->exception_code == bjk_memory_exception){
+				printf("%x. MEMORY EXCEPTION!!\n", sh_dat->the_core_id);
+			}
+		}
+	}
+
 	printf("\n");
 	
 	return 0;

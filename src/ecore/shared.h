@@ -194,6 +194,12 @@ bj_v32_of_p16(uint16_t* p16){
 
 #define BJ_MAX_CALL_STACK_SZ	20
 
+typedef uint8_t bjk_exception_t;
+
+#define bjk_invalid_exception 0
+#define bjk_software_exception 1
+#define bjk_memory_exception 2
+
 struct bj_align(8) bj_in_core_shared_data_def { 
 	// CAREFUL !! sometimes aligment(ekore) != aligment(host). bj_align(8) SHOULD SOLVE that.
 	uint32_t 	magic_id;
@@ -206,7 +212,9 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	bj_core_nn_t the_core_nn;
 	bj_core_co_t the_core_ro;
 	bj_core_co_t the_core_co;
-	uint8_t 	the_core_state;
+
+	uint8_t 			the_core_state;
+	bjk_exception_t 	exception_code;
 	
 	uint16_t 	binder_sz;
 	uint16_t 	kernel_sz;

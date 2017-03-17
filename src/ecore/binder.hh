@@ -11,7 +11,7 @@ binder class and related.
 #ifndef BINDER_H
 #define BINDER_H
 
-#include "kptr.hh"
+#include "shared.h"
 
 //define BINDER_CK(prm) 	DBG_CK(prm)
 #define BINDER_CK(prm) 	
@@ -21,15 +21,12 @@ binder class and related.
 
 class binder;
 
-extern const uint8_t* BINDER_BASE_POINTER;
-
 #ifdef IS_CORE_CODE
-	//typedef kptr<binder, BINDER_BASE_POINTER> bjk_pt_t;
-	typedef uint16_t bjk_pt_t;
+	typedef uint16_t bjk_sptr_t;
 	#define bjk_pt_to_binderpt(pt) ((binder*)(bj_addr_t)(pt))
 	#define bjk_binderpt_to_pt(bptr) ((intptr_t)(bptr))
 #else
-	typedef binder* bjk_pt_t;
+	typedef binder* bjk_sptr_t;
 	#define bjk_pt_to_binderpt(pt) (pt)
 	#define bjk_binderpt_to_pt(bptr) (bptr)
 #endif
@@ -38,8 +35,8 @@ typedef uint8_t bjk_flags_t;
 
 class binder {
 public:
-	bjk_pt_t	bn_left;
-	bjk_pt_t	bn_right;
+	bjk_sptr_t	bn_left;
+	bjk_sptr_t	bn_right;
 
 	binder(){
 		init_binder();

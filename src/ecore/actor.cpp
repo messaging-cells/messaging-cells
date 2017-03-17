@@ -216,7 +216,20 @@ kernel::finish_sys(){
 	bjk_glb_finish();
 }
 
-uint32_t test_send_irq2 = 0;
+void test_send_irq1() bj_code_dram;
+void test_send_irq1() {
+	kernel::init_sys();
+
+	if(bjk_is_core(3, 3)){
+		bj_core_id_t dst = kernel::get_core_id();
+		bjk_send_irq(dst, 1);	// send mem exception itself
+	}
+
+	bjk_slog2("FINISHED !!\n");	
+	kernel::finish_sys();
+}
+
+uint32_t test_send_irq3 = 0;
 
 void test_send_irq() bj_code_dram;
 void test_send_irq() {
@@ -227,7 +240,7 @@ void test_send_irq() {
 		bjk_slog2("direct_routed ALONE\n");
 	}
 
-	test_send_irq2 = 0;
+	test_send_irq3 = 0;
 	
 	if(bjk_is_core(0,0)){
 		bjk_slog2("CORE (0,0) started\n");
@@ -236,10 +249,10 @@ void test_send_irq() {
 		bjk_slog2("CORE (0,0) SAW core (0,1) INITED\n");
 
 		BJK_MARK_PLACE(START_UGLY_WAIT);
-		wait_value(test_send_irq2, 4);
+		wait_value(test_send_irq3, 4);
 		BJK_MARK_PLACE(END_UGLY_WAIT);
 
-		bjk_slog2("got_irq2="); bjk_ilog(test_send_irq2); bjk_slog2("\n");
+		bjk_slog2("got_irq3="); bjk_ilog(test_send_irq3); bjk_slog2("\n");
 	}
 	if(bjk_is_core(0,1)){
 		bjk_slog2("CORE (0,1) started\n");
@@ -247,12 +260,12 @@ void test_send_irq() {
 		wait_inited_state(dst);
 		bjk_slog2("CORE (0,1) SAW core (0,0) INITED\n");
 
-		bjk_send_irq(dst, 2);
-		bjk_send_irq(dst, 2);
-		bjk_send_irq(dst, 2);
-		bjk_send_irq(dst, 2);
+		bjk_send_irq(dst, 3);
+		bjk_send_irq(dst, 3);
+		bjk_send_irq(dst, 3);
+		bjk_send_irq(dst, 3);
 
-		bjk_slog2("CORE (0,1) sent 4 irq2\n");
+		bjk_slog2("CORE (0,1) sent 4 irq3\n");
 	}
 
 	bjk_slog2("FINISHED !!\n");	
@@ -459,7 +472,7 @@ void test_send_msg() {
 		actor* act2 = kernel::get_core_actor(dst);
 
 		missive* msv = missive::acquire();
-		msv->src = act1;
+		msv->set_source(act1);
 		msv->dst = act2;
 		msv->send();
 
@@ -473,6 +486,7 @@ void test_send_msg() {
 }
 
 void core_main() {
+	//test_send_irq1();
 	//test_send_irq();
 	//test_logs_main();
 	test_send_msg();
@@ -486,8 +500,8 @@ actor_handler(missive* msg){
 	bj_core_nn_t konn = kernel::get_core_nn();
 	BJ_MARK_USED(konn);
 	bjk_slog2("GOT MISSIVE\n");
-	EMU_LOG("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->src, msg->dst);
-	EMU_PRT("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->src, msg->dst);
+	EMU_LOG("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	EMU_PRT("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	msg->dst->flags = 1;
 }
 

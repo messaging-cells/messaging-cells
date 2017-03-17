@@ -45,8 +45,10 @@ bjk_timer0_handler(void); // ivt_entry_timer0
 		bj_asm("gie"); 
 	}
 
-	#define bjk_simple_abort(func) \
-		bjk_get_glb_in_core_shd()->dbg_error_code = (bj_addr_t)(func); \
+	#define bjk_simple_abort(func, excode) \
+		bj_in_core_st* in_core_pt = bjk_get_glb_in_core_shd(); \
+		in_core_pt->exception_code = excode; \
+		in_core_pt->dbg_error_code = (bj_addr_t)(func); \
 		bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt; \
 		if((off_core_pt != bj_null) && (off_core_pt->magic_id == BJ_MAGIC_ID)){ \
 			off_core_pt->is_finished = BJ_FINISHED_VAL; \
@@ -55,7 +57,7 @@ bjk_timer0_handler(void); // ivt_entry_timer0
 
 	// end_macro
 
-	extern uint32_t test_send_irq2;
+	extern uint32_t test_send_irq3;
 
 #endif	// IS_CORE_CODE
 

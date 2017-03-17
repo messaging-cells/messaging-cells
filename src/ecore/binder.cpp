@@ -9,8 +9,6 @@ binder class.
 
 #include "binder.hh"
 
-const uint8_t* BINDER_BASE_POINTER = bj_null;
-
 binder* // static
 binder::get_glb_right_pt(binder* bdr){
 	bj_core_id_t dst_id = bj_addr_get_core_id(bdr);

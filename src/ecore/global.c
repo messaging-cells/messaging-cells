@@ -16,6 +16,7 @@ bjk_glb_init(void) {
 	bjk_set_irq0_handler();
 
 	bjk_glb_sys_st* glb_dat = bjk_get_glb_sys();
+	bj_memset((uint8_t*)glb_dat, 0, sizeof(bjk_glb_sys_st));
 
 	glb_dat->off_core_pt = bj_null;
 	glb_dat->write_rrarray = 0x0;

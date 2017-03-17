@@ -342,7 +342,8 @@ public:
 //-------------------------------------------------------------------------
 // missive class
 
-typedef uint8_t	missive_token_t; 
+typedef bjk_sptr_t bjk_actor_sptr_t;
+typedef uint16_t	bjk_token_t; 
 
 class missive : public agent {
 public:
@@ -353,9 +354,9 @@ public:
 	static
 	void			separate(uint16_t sz) bj_code_dram;
 
-	actor*	dst;
-	actor*	src;
-	//missive_token_t tok;
+	actor* 				dst;
+	bjk_actor_sptr_t 	src;
+	bjk_token_t 		tok;
 
 	bj_opt_sz_fn 
 	missive(){
@@ -368,7 +369,8 @@ public:
 	virtual bj_opt_sz_fn 
 	void init_me(){
 		dst = bj_null;
-		src = bj_null;
+		src = bjk_binderpt_to_pt(bj_null);
+		tok = 0;
 	}
 
 	bj_inline_fn 
@@ -384,6 +386,16 @@ public:
 	virtual
 	bj_opt_sz_fn grip&	get_available(){
 		return bjk_all_available(missive);
+	}
+
+	bj_inline_fn actor*
+	get_source(){
+		return (actor*)bjk_pt_to_binderpt(src);
+	}
+
+	bj_inline_fn void
+	set_source(actor* act){
+		src = bjk_binderpt_to_pt(act);
 	}
 };
 
