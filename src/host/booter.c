@@ -56,7 +56,7 @@ bool ck_sys_data(bj_sys_sz_st* sys1){
 	BJH_CK(sys1->xx == sys0->xx);
 	BJH_CK(sys1->yy == sys0->yy);
 	BJH_CK(sys1->xx_sz == sys0->xx_sz);
-	BJH_CK(sys1->yy_sz == sys0->yy_sz);
+	BJH_CK(sys1->yy_sz_pw2 == sys0->yy_sz_pw2);
 	return true;
 }
 

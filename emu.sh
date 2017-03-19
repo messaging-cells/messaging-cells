@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd bin
-./bj-emu-actor.elf
+./bj-emu-actor.elf $*

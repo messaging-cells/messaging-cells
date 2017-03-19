@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
 	printf("sys_sz->xx=%d\n", sys_sz->xx);
 	printf("sys_sz->yy=%d\n", sys_sz->yy);
 	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
-	printf("sys_sz->yy_sz=%d\n", sys_sz->yy_sz);
+	printf("sys_sz->yy_sz_pw2=%d\n", sys_sz->yy_sz_pw2);
 	
 	// Reset the workgroup
 	e_reset_group(&dev); // FAILS. Why?

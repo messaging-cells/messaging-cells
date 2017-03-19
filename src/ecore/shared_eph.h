@@ -32,6 +32,7 @@ typedef uint16_t bj_size_t;
 #define bj_e3_yy 8
 #define bj_e3_xx_sz 4
 #define bj_e3_yy_sz 4
+#define bj_e3_yy_sz_pw2 2
 
 #define bj_e3_num_chip_cores 16
 

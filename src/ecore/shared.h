@@ -32,6 +32,10 @@ typedef uint8_t bj_bool_t;
 	
 //======================================================================
 // working system struct
+
+#define bj_pw2(pw2) (1 << (pw2))
+#define bj_div_pw2(v1, pw2) ((v1) >> (pw2))
+#define bj_mod_pw2(v1, pw2) ((v1) & ((1 << (pw2)) - 1))
 	
 #define bj_null 0x0
 
@@ -41,7 +45,7 @@ struct bj_align(8) bj_sys_def {
 	bj_core_co_t 	xx;		// absolute xx epiphany space coordinates
 	bj_core_co_t 	yy;		// absolute yy epiphany space coordinates
 	bj_core_co_t 	xx_sz;		// this running sys number of ekores in xx axis (sys length)
-	bj_core_co_t 	yy_sz;		// this running sys number of ekores in yy axis (sys witdh)
+	uint8_t 	 	yy_sz_pw2;		// this running sys number of ekores in yy axis (sys witdh) is (2 ^ yy_sz_pw2)
 };
 typedef struct bj_sys_def bj_sys_sz_st;
 
@@ -53,21 +57,23 @@ bj_init_glb_sys_sz(bj_sys_sz_st* sys_sz) {
 	sys_sz->xx = bj_e3_xx;
 	sys_sz->yy = bj_e3_yy;
 	sys_sz->xx_sz = bj_e3_xx_sz;
-	sys_sz->yy_sz = bj_e3_yy_sz;
+	sys_sz->yy_sz_pw2 = bj_e3_yy_sz_pw2;
 }
 
 void bj_inline_fn
 bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t yy_val, 
-				bj_core_co_t xx_sz_val, bj_core_co_t yy_sz_val)
+				bj_core_co_t xx_sz_val, uint8_t yy_sz_pw2_val)
 {
 	sys_sz->xx = xx_val;
 	sys_sz->yy = yy_val;
 	sys_sz->xx_sz = xx_sz_val;
-	sys_sz->yy_sz = yy_sz_val;
+	sys_sz->yy_sz_pw2 = yy_sz_pw2_val;
 }
 
+#define bj_e3_co_to_pw(co) (uint8_t)bj_div_pw2(co, bj_e3_yy_sz_pw2)
+
 #define bjh_init_glb_sys_sz_with_dev(sys_sz, dev) \
-	bj_init_glb_sys_sz_with((sys_sz), (dev)->row, (dev)->col, (dev)->rows, (dev)->cols)
+	bj_init_glb_sys_sz_with((sys_sz), (dev)->row, (dev)->col, (dev)->rows, bj_e3_co_to_pw((dev)->cols))
 	
 // end_of_macro
 	
@@ -80,8 +86,10 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 // id is the core id absolute in epiphany space 
 // nn is a consec with respect to the allocated running cores (bj_get_glb_sys_sz())
 
+#define bj_pw2_yy_sys (bj_get_glb_sys_sz()->yy_sz_pw2)
+
 #define bj_tot_xx_sys (bj_get_glb_sys_sz()->xx_sz)
-#define bj_tot_yy_sys (bj_get_glb_sys_sz()->yy_sz)
+#define bj_tot_yy_sys (1 << bj_pw2_yy_sys)
 #define bj_tot_nn_sys (bj_tot_xx_sys * bj_tot_yy_sys)
 
 #define bj_min_xx_sys (bj_get_glb_sys_sz()->xx)
@@ -100,14 +108,15 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 #define bj_ro_co_to_nn(ro, co) (((ro) * bj_tot_yy_sys) + (co))
 #define bj_xx_yy_to_id(xx, yy) (((xx) << bj_axis_bits) + (yy))
 #define bj_ro_co_to_id(ro, co) ((bj_ro_to_xx(ro) << bj_axis_bits) + bj_co_to_yy(co))
-#define bj_nn_to_ro(nn)	((nn) / bj_tot_yy_sys)
-#define bj_nn_to_co(nn)	((nn) % bj_tot_yy_sys)
+#define bj_nn_to_ro(nn)	bj_div_pw2(nn, bj_pw2_yy_sys)
+#define bj_nn_to_co(nn)	bj_mod_pw2(nn, bj_pw2_yy_sys)
 #define bj_id_to_nn(id) (bj_ro_co_to_nn(bj_id_to_ro(id), bj_id_to_co(id)))
 #define bj_nn_to_id(nn) (bj_ro_co_to_id(bj_nn_to_ro(nn), bj_nn_to_co(nn)))
 
 #define bj_xx_in_sys(xx) (((xx) >= bj_min_xx_sys) && ((xx) < bj_max_xx_sys))
 #define bj_yy_in_sys(yy) (((yy) >= bj_min_yy_sys) && ((yy) < bj_max_yy_sys))
 #define bj_xx_yy_in_sys(xx, yy) (bj_xx_in_sys(xx) && bj_yy_in_sys(yy))
+
 
 //======================================================================
 // address functions 2

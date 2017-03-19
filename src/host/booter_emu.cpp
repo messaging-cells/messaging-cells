@@ -130,7 +130,7 @@ host_main(int argc, char *argv[])
 	max_row = 1;
 	max_col = 2;
 	max_row = sys_sz->xx_sz;
-	max_col = sys_sz->yy_sz;
+	max_col = (1 << (sys_sz->yy_sz_pw2));
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
@@ -260,7 +260,7 @@ host_main(int argc, char *argv[])
 	printf("sys_sz->xx=%d\n", sys_sz->xx);
 	printf("sys_sz->yy=%d\n", sys_sz->yy);
 	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
-	printf("sys_sz->yy_sz=%d\n", sys_sz->yy_sz);
+	printf("sys_sz->yy_sz_pw2=%d\n", sys_sz->yy_sz_pw2);
 	
 	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
 		void *res;
@@ -310,11 +310,32 @@ show_sizes() {
 
 // ===============================================================================
 
+void pw2_ops(int argc, char *argv[]){
+	uint8_t pw2 = 3;
+
+	//if(argc > 0){ printf("arg0= %s \n", argv[0]); }
+	if(argc > 2){
+		pw2 = atoi(argv[2]);
+	}
+	bj_core_co_t yy_sz = (1 << pw2);
+	printf("yy_sz= %d \n", yy_sz);
+	if(argc > 1){
+		//printf("arg1= %s \n", argv[1]);
+		int v1 = atoi(argv[1]);
+		bj_core_co_t div1 = v1 / yy_sz;
+		bj_core_co_t mod1 = v1 % yy_sz;
+		bj_core_co_t div2 = v1 >> pw2;
+		bj_core_co_t mod2 = v1 & ((1 << pw2) - 1);
+		printf("div1= %d \n", div1);
+		printf("div2= %d \n", div2);
+		printf("mod1= %d \n", mod1);
+		printf("mod2= %d \n", mod2);
+	}
+}
 
 int main(int argc, char *argv[]) {
-	//test_logs_main();
-	//core_main();
 	host_main(argc, argv);
+	//pw2_ops(argc, argv);
 }
 
 
