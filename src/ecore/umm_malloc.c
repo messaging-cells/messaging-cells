@@ -42,10 +42,10 @@
 // the current block number.
 //
 // The umm_info function does all of that and makes the results available
-// in the UMM_THE_INFO structure.
+// in the (*the_info) structure.
 // ----------------------------------------------------------------------------
 
-#define UMM_NUMBLOCKS (umm_numblocks)
+#define UMM_NUMBLOCKS UMM_HEAP_NUM_BLOCKS
 
 #define UMM_BLOCK(b)  (UMM_THE_HEAP[b])
 
@@ -76,7 +76,7 @@ umm_assimilate_down( umm_idx_t c, umm_idx_t freemask ) bj_code_dram;
 // ----------------------------------------------------------------------------
 
 void *
-umm_info( void *ptr, int force ) {
+umm_info( UMM_HEAP_INFO* the_info, void *ptr, int force ) {
 
    umm_idx_t blockNo = 0;
 
@@ -84,10 +84,10 @@ umm_info( void *ptr, int force ) {
    //
    UMM_CRITICAL_ENTRY();
 
-   // Clear out all of the entries in the UMM_THE_INFO structure before doing
+   // Clear out all of the entries in the (*the_info) structure before doing
    // any calculations..
    //
-   umm_memset( (void*)(&UMM_THE_INFO), 0, sizeof( UMM_HEAP_INFO ) );
+   umm_memset( (void*)(the_info), 0, sizeof( UMM_HEAP_INFO ) );
 
    UMM_DBG_LOG_FORCE( force, "\n\nDumping the UMM_THE_HEAP...\n" );
 
@@ -107,14 +107,14 @@ umm_info( void *ptr, int force ) {
    blockNo = UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK;
 
    while( UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK ) {
-      ++UMM_THE_INFO.totalEntries;
-      UMM_THE_INFO.totalBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+      ++(*the_info).totalEntries;
+      (*the_info).totalBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
       // Is this a free block?
 
       if( UMM_NBLOCK(blockNo) & UMM_FREELIST_MASK ) {
-         ++UMM_THE_INFO.freeEntries;
-         UMM_THE_INFO.freeBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+         ++(*the_info).freeEntries;
+         (*the_info).freeBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
          UMM_DBG_LOG_FORCE( force, "|0x%p|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
                (&UMM_BLOCK(blockNo)),
@@ -136,8 +136,8 @@ umm_info( void *ptr, int force ) {
             return( ptr );
          }
       } else {
-         ++UMM_THE_INFO.usedEntries;
-         UMM_THE_INFO.usedBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
+         ++(*the_info).usedEntries;
+         (*the_info).usedBlocks += (UMM_NBLOCK(blockNo) & UMM_BLOCKNO_MASK )-blockNo;
 
          UMM_DBG_LOG_FORCE( force, "|0x%p|B %5i|NB %5i|PB %5i|Z %5i|\n",
                (&UMM_BLOCK(blockNo)),
@@ -153,8 +153,8 @@ umm_info( void *ptr, int force ) {
    // Update the accounting totals with information from the last block, the
    // rest must be free!
 
-   UMM_THE_INFO.freeBlocks  += UMM_NUMBLOCKS-blockNo;
-   UMM_THE_INFO.totalBlocks += UMM_NUMBLOCKS-blockNo;
+   (*the_info).freeBlocks  += UMM_NUMBLOCKS-blockNo;
+   (*the_info).totalBlocks += UMM_NUMBLOCKS-blockNo;
 
    UMM_DBG_LOG_FORCE( force, "|0x%p|B %5i|NB %5i|PB %5i|Z %5i|NF %5i|PF %5i|\n",
          (&UMM_BLOCK(blockNo)),
@@ -166,14 +166,14 @@ umm_info( void *ptr, int force ) {
          UMM_PFREE(blockNo) );
 
    UMM_DBG_LOG_FORCE( force, "Total Entries %5i    Used Entries %5i    Free Entries %5i\n",
-         UMM_THE_INFO.totalEntries,
-         UMM_THE_INFO.usedEntries,
-         UMM_THE_INFO.freeEntries );
+         (*the_info).totalEntries,
+         (*the_info).usedEntries,
+         (*the_info).freeEntries );
 
    UMM_DBG_LOG_FORCE( force, "Total Blocks  %5i    Used Blocks  %5i    Free Blocks  %5i\n",
-         UMM_THE_INFO.totalBlocks,
-         UMM_THE_INFO.usedBlocks,
-         UMM_THE_INFO.freeBlocks  );
+         (*the_info).totalBlocks,
+         (*the_info).usedBlocks,
+         (*the_info).freeBlocks  );
 
    // Release the critical section...
    //
@@ -366,7 +366,7 @@ umm_malloc( umm_size_t size ) {
    cf = UMM_NFREE(0);
 
    bestBlock = UMM_NFREE(0);
-   bestSize  = 0x7FFF;
+   bestSize  = UMM_BEST_SIZE;
 
    while( UMM_NFREE(cf) ) {
       blockSize = (UMM_NBLOCK(cf) & UMM_BLOCKNO_MASK) - cf;
@@ -387,7 +387,7 @@ umm_malloc( umm_size_t size ) {
       cf = UMM_NFREE(cf);
    }
 
-   if( 0x7FFF != bestSize ) {
+   if( UMM_BEST_SIZE != bestSize ) {
       cf        = bestBlock;
       blockSize = bestSize;
    }

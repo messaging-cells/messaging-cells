@@ -19,7 +19,12 @@ bj_c_decl {
 // WHEN TESTING LOGS USE
 #define BJ_MAX_STR_SZ BJ_OUT_BUFF_SZ	
 
-struct bjk_glb_sys_def { 
+	/*CORE_CODE(
+		void* 		bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
+		uint16_t 	bjk_trace_err;
+	)*/
+
+struct bj_aligned bjk_glb_sys_def { 
 	bj_sys_sz_st 	sys_sz;
 	bj_off_core_st* off_core_pt;
 	bj_rrarray_st* 	write_rrarray;
@@ -27,8 +32,8 @@ struct bjk_glb_sys_def {
 	uint8_t 		dbg_out_str[BJ_MAX_STR_SZ];
 
 	EMU_CODE(
-		uint8_t 		bjk_sync_signal;
-		char* 			bjk_dbg_call_nams_stack_trace[BJ_MAX_CALL_STACK_SZ];
+		uint8_t 	bjk_sync_signal;
+		char* 		bjk_dbg_call_nams_stack_trace[BJ_MAX_CALL_STACK_SZ];
 	)
 };
 typedef struct bjk_glb_sys_def bjk_glb_sys_st;

@@ -109,7 +109,7 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 }
 
 void // static
-kernel::actors_main_loop(){
+kernel::actors_handle_loop(){
 	kernel* ker = kernel::get_sys();
 	
 	while(true){
@@ -272,8 +272,8 @@ void test_send_irq() {
 	kernel::finish_sys();
 }
 
-void test_logs_main() bj_code_dram;
-void test_logs_main() {
+void test_logs() bj_code_dram;
+void test_logs() {
 	bjk_glb_init();
 
 	bj_core_id_t koid = bjk_get_core_id();
@@ -435,6 +435,34 @@ kernel::handle_missives(){
 	}
 }
 
+void
+agent_grp::release_all_agts(){
+	binder * fst, * lst, * wrk;
+
+	binder* all_agts = &(this->all_agts);
+
+	fst = binder::get_glb_right_pt(all_agts);
+	lst = all_agts;
+	for(wrk = fst; wrk != lst; wrk = binder::get_glb_right_pt(wrk)){
+		agent* agt = (agent*)wrk;
+		agt->let_go();
+		agt->release();
+	}
+}
+
+void 
+actor_handler(missive* msg){
+	EMU_CK(bjk_addr_is_local(msg->dst));
+	bj_core_id_t koid = kernel::get_core_id();
+	BJ_MARK_USED(koid);
+	bj_core_nn_t konn = kernel::get_core_nn();
+	BJ_MARK_USED(konn);
+	bjk_slog2("GOT MISSIVE\n");
+	EMU_LOG("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	EMU_PRT("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	msg->dst->flags = 1;
+}
+
 void test_send_msg() bj_code_dram;
 void test_send_msg() {
 	kernel::init_sys();
@@ -488,35 +516,7 @@ void test_send_msg() {
 void core_main() {
 	//test_send_irq1();
 	//test_send_irq();
-	//test_logs_main();
+	//test_logs();
 	test_send_msg();
-}
-
-void 
-actor_handler(missive* msg){
-	EMU_CK(bjk_addr_is_local(msg->dst));
-	bj_core_id_t koid = kernel::get_core_id();
-	BJ_MARK_USED(koid);
-	bj_core_nn_t konn = kernel::get_core_nn();
-	BJ_MARK_USED(konn);
-	bjk_slog2("GOT MISSIVE\n");
-	EMU_LOG("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	EMU_PRT("actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	msg->dst->flags = 1;
-}
-
-void
-agent_grp::release_all_agts(){
-	binder * fst, * lst, * wrk;
-
-	binder* all_agts = &(this->all_agts);
-
-	fst = binder::get_glb_right_pt(all_agts);
-	lst = all_agts;
-	for(wrk = fst; wrk != lst; wrk = binder::get_glb_right_pt(wrk)){
-		agent* agt = (agent*)wrk;
-		agt->let_go();
-		agt->release();
-	}
 }
 

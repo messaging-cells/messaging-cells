@@ -248,7 +248,7 @@ typedef struct bj_in_core_shared_data_def bj_in_core_st;
 
 struct bj_align(8) bj_off_core_shared_data_def { 
 	uint32_t 		magic_id;
-	bj_core_id_t	the_core_id;
+	bj_core_id_t	ck_core_id;
 	uint8_t 		is_finished;
 	uint8_t 		is_waiting;
 	bj_in_core_st* 	core_data;

@@ -230,7 +230,7 @@ public:
 	set_handler(missive_handler_t hdlr, uint16_t idx) bj_code_dram;
 
 	static bj_opt_sz_fn void 
-	actors_main_loop();
+	actors_handle_loop();
 
 	bj_opt_sz_fn void 
 	process_signal(int sz, missive_grp_t** arr);

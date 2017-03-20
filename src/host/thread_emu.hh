@@ -24,7 +24,6 @@ struct thread_info_st {    /* Used as argument to thread_start() */
 
 	kernel 			bjk_THE_KERNEL;
 
-	UMM_HEAP_INFO 	heapInfo;
 	umm_block 		umm_heap[UMM_HEAP_NUM_BLOCKS];
 };
 

@@ -28,20 +28,11 @@ const char* epiphany_elf_nm = "bj-core-actor.elf";
 
 int	write_file(char* the_pth, char* the_data, long the_sz, int write_once);
 
-char before[bj_mem_32K];
-char after[bj_mem_32K];
-
 bj_sys_sz_st bj_glb_sys;
 
 bj_sys_sz_st*
 bj_get_glb_sys_sz(){
 	return &bj_glb_sys;
-}
-
-void 
-prt_aligns(void* ptr){
-	int8_t alg = bj_get_aligment(ptr);
-	printf("%d", alg); 
 }
 
 void
@@ -155,7 +146,8 @@ int main(int argc, char *argv[])
 		has_work = false;
 		for (row=0; row < max_row; row++){
 			for (col=0; col < max_col; col++){
-				core_id = (row + platform.row) * 64 + col + platform.col;
+				//core_id = (row + platform.row) * 64 + col + platform.col;
+				core_id = bj_ro_co_to_id(row, col);
 				bj_core_nn_t num_core = bj_id_to_nn(core_id);
 				bj_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
 				bj_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
@@ -171,7 +163,10 @@ int main(int argc, char *argv[])
 				BJH_CK(	(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL) ||
 						(sh_dat_1->is_finished == BJ_FINISHED_VAL)
 				);
-				BJH_CK(sh_dat_1->the_core_id == core_id);
+				if(sh_dat_1->ck_core_id != core_id){
+					printf("CORE IDS DIFFER 0x%03x != 0x%03x nn=%d \n", sh_dat_1->ck_core_id, core_id, num_core);
+				}
+				BJH_CK(sh_dat_1->ck_core_id == core_id);
 				if(! core_started[row][col] && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
 					core_started[row][col] = true;
 					printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 

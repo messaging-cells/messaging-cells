@@ -8,11 +8,11 @@
 #include <string.h>
 #include <elf.h>
 
+#include "shared.h"
+
+const char* stack_names[BJ_MAX_CALL_STACK_SZ];
+
 void lookup_sections(const void *file, int addrs_sz, void** stack_addrs);
-
-#define MAX_CALL_STACK_SZ 100	// should be >= BJ_MAX_CALL_STACK_SZ
-
-const char* stack_names[MAX_CALL_STACK_SZ];
 
 int bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs)
 {
@@ -42,6 +42,18 @@ int bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs
     }
 
 	lookup_sections(file, addrs_sz, stack_addrs);
+
+	printf("CALL_STACK=[\n");
+	for(int kk = 0; kk < BJ_MAX_CALL_STACK_SZ; kk++){
+		if(kk == addrs_sz){
+			break;
+		}
+		if(stack_addrs[kk] == bj_null){
+			break;
+		}
+		printf("%s (%p)\n", stack_names[kk], stack_addrs[kk]);
+	}
+	printf("]\n");
 
 	munmap(file, st.st_size);
 	close(fd);
@@ -119,7 +131,7 @@ lookup_sections(const void *file, int addrs_sz, void** stack_addrs)
 					}
 					
 					int16_t idx = find_addr(addrs_sz, stack_addrs, addr);
-					if(idx < MAX_CALL_STACK_SZ){
+					if(idx < BJ_MAX_CALL_STACK_SZ){
 						if(stack_names[idx] == 0){
 							stack_names[idx] = nm2;
 							num_filled++;
@@ -144,16 +156,5 @@ lookup_sections(const void *file, int addrs_sz, void** stack_addrs)
 		}
 	}
 
-	printf("CALL_STACK=[\n");
-	for(kk = 0; kk < MAX_CALL_STACK_SZ; kk++){
-		if(kk == addrs_sz){
-			break;
-		}
-		if(stack_addrs[kk] == NULL){
-			break;
-		}
-		printf("%s (%p)\n", stack_names[kk], stack_addrs[kk]);
-	}
-	printf("]\n");
 }
 

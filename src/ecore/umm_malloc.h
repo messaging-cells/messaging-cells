@@ -18,6 +18,14 @@ bj_c_decl {
 typedef bj_size_t umm_size_t;
 typedef uint16_t umm_idx_t;
 
+// the following assume umm_idx_t to have 2 bytes
+// 0xFFFF == 65535 because sizeof(umm_idx_t) is 2 bytes (16 bits)
+
+#define UMM_FREELIST_MASK (0x8000)
+#define UMM_BLOCKNO_MASK  (0x7FFF)
+#define UMM_MAX_NUM_BLOCKS 0xFFFF
+#define UMM_BEST_SIZE 0x7FFF
+
 #define umm_align(aa) bj_align(aa) 
 
 #define umm_inline_fn bj_inline_fn
@@ -50,8 +58,6 @@ umm_memmove(uint8_t* dest, const uint8_t* src, umm_size_t sz){
 // ----------------------------------------------------------------------------
 // Size of the heap in bytes
 
-// 0xFFFF == 65535 because sizeof(umm_idx_t) is 2 bytes (16 bits)
-#define UMM_MAX_NUM_BLOCKS 0xFFFF
 #define UMM_MAX_HEAP_SIZE (UMM_MAX_NUM_BLOCKS * sizeof(umm_block))
 
 #ifdef IS_EMU_CODE
@@ -157,7 +163,7 @@ typedef struct UMM_HEAP_INFO_t {
 UMM_HEAP_INFO;
 
 
-void *umm_info( void *ptr, int force ) bj_code_dram;
+void *umm_info( UMM_HEAP_INFO* the_info, void *ptr, int force ) bj_code_dram;
 umm_opt_sz_fn void *umm_malloc( umm_size_t size ) bj_code_dram;
 umm_opt_sz_fn void *umm_realloc( void *ptr, umm_size_t size ) bj_code_dram;
 umm_opt_sz_fn void umm_free( void *ptr ) bj_code_dram;
@@ -179,27 +185,18 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 	} body;
 } UMM_H_ATTPACKSUF umm_block;
 
-#define UMM_FREELIST_MASK (0x8000)
-#define UMM_BLOCKNO_MASK  (0x7FFF)
-
 #define UMM_HEAP_NUM_BLOCKS (UMM_MALLOC_CFG__HEAP_SIZE / sizeof(umm_block))
 
 extern umm_idx_t umm_numblocks;
 
 #ifdef IS_EMU_CODE
 	umm_block*
-	umm_get_heap();
+	umm_get_heap();	// must have UMM_HEAP_NUM_BLOCKS in size
 
-	UMM_HEAP_INFO*
-	umm_get_info();
-
-	#define UMM_THE_INFO (*umm_get_info())
 	#define UMM_THE_HEAP umm_get_heap()
 #else
-	extern UMM_HEAP_INFO heapInfo;
 	extern umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_data_bank2;
 
-	#define UMM_THE_INFO heapInfo
 	#define UMM_THE_HEAP umm_heap
 #endif
 

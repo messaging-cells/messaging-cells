@@ -64,7 +64,7 @@ bjk_glb_init(void) {
 
 		// glb_dat->off_core_pt init	
 		//bj_set_off_chip_var(glb_dat->off_core_pt->magic_id, BJ_MAGIC_ID);
-		bj_set_off_chip_var(glb_dat->off_core_pt->the_core_id, koid);
+		bj_set_off_chip_var(glb_dat->off_core_pt->ck_core_id, koid);
 		bj_set_off_chip_var(glb_dat->off_core_pt->core_data, in_shd);
 		
 		bjk_set_finished(BJ_NOT_FINISHED_VAL);

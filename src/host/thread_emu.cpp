@@ -266,14 +266,13 @@ thread_start(void *arg){
 
 	printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thread_name);
 
-	//test_logs_main();
 	core_main();
 
 	return bj_null;
 }
 
 bool 
-bje_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
+bjm_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
 	
 	if(! vv_ck){
 		fprintf(stderr, "------------------------------------------------------------------\n");
@@ -289,7 +288,7 @@ bje_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, cons
 }
 
 void
-bje_log(const char *fmt, ...){
+bjm_log(const char *fmt, ...){
 	EMU_CK(! bj_is_host_thread());
 
 	char pp[BJ_MAX_STR_SZ];
@@ -307,7 +306,7 @@ bje_log(const char *fmt, ...){
 }
 
 void
-bje_printf(const char *fmt, ...){
+bjm_printf(const char *fmt, ...){
 	EMU_CK(! bj_is_host_thread());
 
 	char pp[BJ_MAX_STR_SZ];

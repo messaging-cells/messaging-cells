@@ -13,21 +13,7 @@
 
 // =====================================================================================
 
-#define f_nm_sz   1024
-#define BJ_SHARED_MEM_START_ADDR (0x01000000)
-
-const char* epiphany_elf_nm = "bj-core-actor.elf";
-
-char before[bj_mem_32K];
-char after[bj_mem_32K];
-
 bj_sys_sz_st bj_glb_host_sys;
-
-void 
-prt_aligns(void* ptr){
-	int8_t alg = bj_get_aligment(ptr);
-	printf("%d", alg); 
-}
 
 void 
 bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
@@ -67,16 +53,9 @@ int
 host_main(int argc, char *argv[])
 {
 	unsigned row, col, max_row, max_col, core_id;
-	//e_platform_t platform;
-	//e_epiphany_t dev;
-	//e_mem_t emem;
 	char f_nm[200];
 	char* all_f_nam[bj_out_num_cores];
 	int ss, tnum;
-	/*
-	int opt, num_threads;
-	pthread_attr_t attr;
-	int stack_size;*/
 
 	bj_init_glb_sys_sz(&bj_glb_host_sys);
 
@@ -94,24 +73,6 @@ host_main(int argc, char *argv[])
 
 	printf("TOT_THREADS = %d\n", TOT_THREADS);
 
-	/*
-	e_set_loader_verbosity(H_D0);
-
-	e_init(NULL);
-	e_reset_system();
-	e_get_platform_info(&platform);
-
-	e_alloc(&emem, BJ_SHARED_MEM_START_ADDR, sizeof(bj_off_sys_st));
-	
-	e_open(&dev, 0, 0, platform.rows, platform.cols);
-	
-	bjh_init_glb_sys_sz_with_dev(bj_get_glb_sys_sz(), &dev);
-
-	e_reset_group(&dev);
-
-	e_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE);
-	*/
-	
 	bj_off_sys_st* pt_shd_data = &BJK_OFF_CHIP_SHARED_MEM;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
 	printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data));
@@ -162,8 +123,7 @@ host_main(int argc, char *argv[])
 				bj_rr_init(&(pt_buff->rd_arr), BJ_OUT_BUFF_SZ, pt_buff->buff, 1);
 			}
 			
-			// Start one core
-			//e_start(&dev, row, col);
+			// Start one core emulation thread
 
 			ss = pthread_create(&thd_inf.thread_id, NULL,
 								&thread_start, &thd_inf);
@@ -205,7 +165,7 @@ host_main(int argc, char *argv[])
 				BJH_CK(	(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL) ||
 						(sh_dat_1->is_finished == BJ_FINISHED_VAL)
 				);
-				BJH_CK(sh_dat_1->the_core_id == core_id);
+				BJH_CK(sh_dat_1->ck_core_id == core_id);
 				if(! core_started[row][col] && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
 					core_started[row][col] = true;
 					printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
@@ -256,7 +216,6 @@ host_main(int argc, char *argv[])
 		}
 	} // while
 	
-	//printf("PLATFORM row=%2d col=%2d \n", platform.row, platform.col);
 	printf("sys_sz->xx=%d\n", sys_sz->xx);
 	printf("sys_sz->yy=%d\n", sys_sz->yy);
 	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
@@ -272,20 +231,6 @@ host_main(int argc, char *argv[])
 
 	free(ALL_THREADS_INFO);
 
-	/*
-	// Reset the workgroup
-	e_reset_group(&dev); // FAILS. Why?
-	e_reset_system();
-	
-	// Close the workgroup
-	e_close(&dev);
-	
-	// Release the allocated buffer and finalize the
-	// e-platform connection.
-	e_free(&emem);
-	e_finalize();
-	*/
-
 	int nn;
 	for (nn=0; nn < bj_out_num_cores; nn++){
 		if(all_f_nam[nn] != bj_null){
@@ -293,10 +238,10 @@ host_main(int argc, char *argv[])
 		}
 	}
 
-	//prt_host_aligns();
-
 	return 0;
 }
+
+// ===============================================================================
 
 void
 show_sizes() {
@@ -307,8 +252,6 @@ show_sizes() {
 	printf("SELF= %ld\n", slf); 
 
 }
-
-// ===============================================================================
 
 void pw2_ops(int argc, char *argv[]){
 	uint8_t pw2 = 3;
@@ -336,6 +279,7 @@ void pw2_ops(int argc, char *argv[]){
 int main(int argc, char *argv[]) {
 	host_main(argc, argv);
 	//pw2_ops(argc, argv);
+	//show_sizes();
 }
 
 
