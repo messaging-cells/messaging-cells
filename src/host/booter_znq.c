@@ -56,7 +56,7 @@ get_enter(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned co
 	getchar();
 }
 
-int main(int argc, char *argv[])
+int boot_znq(int argc, char *argv[])
 {
 	unsigned row, col, max_row, max_col, core_id;
 	e_platform_t platform;
@@ -255,67 +255,8 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-/*
-int main2(int argc, char *argv[])
-{
-	unsigned row, col, max_row, max_col, core_id;
-	e_platform_t platform;
-	e_epiphany_t dev;
-	e_mem_t emem;
-	char f_nm[200];
-	char* all_f_nam[bj_out_num_cores];
-	int num_wrk_cores;
-
-	memset(&all_f_nam, 0, sizeof(all_f_nam));
-	num_wrk_cores = 0;
-
-	printf("sizeof(bj_off_sys_st)=%d\n", sizeof(bj_off_sys_st));
-	
-	e_set_loader_verbosity(H_D0);
-
-	e_init(NULL);
-	e_reset_system();
-	e_get_platform_info(&platform);
-
-	e_alloc(&emem, BJ_SHARED_MEM_START_ADDR, sizeof(bj_off_sys_st));
-	
-	e_open(&dev, 0, 0, platform.rows, platform.cols);
-
-	int xx = log(4) / log(2);
-	printf("xx=%d pw2=%d cols=%d . yy_sz_pw2=%d\n", xx,
-		bj_e3_yy_sz_pw2, dev.cols, bj_e3_co_to_pw(dev.cols));
-	
-	bjh_init_glb_sys_sz_with_dev(bj_get_glb_sys_sz(), &dev);
-
-	e_reset_group(&dev);
-
-	// ==============================
-
-	printf("PLATFORM row=%2d col=%2d \n", platform.row, platform.col);
-	
-	// Reset the workgroup
-	e_reset_group(&dev); // FAILS. Why?
-	e_reset_system();
-	
-	// Close the workgroup
-	e_close(&dev);
-	
-	// Release the allocated buffer and finalize the
-	// e-platform connection.
-	e_free(&emem);
-	e_finalize();
-
-	int nn;
-	for (nn=0; nn < num_wrk_cores; nn++){
-		if(all_f_nam[nn] != bj_null){
-			free(all_f_nam[nn]);
-		}
-	}
-
-	//prt_host_aligns();
-
+int main(int argc, char *argv[]) {
+	boot_znq(argc, argv);
 	return 0;
 }
-
-*/
 

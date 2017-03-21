@@ -1,4 +1,16 @@
 
+define SET_CROSS_COMPILE
+ifeq "${CROSS_COMPILE+xxx}" ""
+	ifeq "$(findstring arm,$(shell uname -p))" "arm"
+		CROSS_COMPILE=
+	else
+		CROSS_COMPILE=arm-linux-gnueabihf-
+	endif	
+endif	
+endef
+
+$(eval $(SET_CROSS_COMPILE))
+
 
 TARGET_DIR := ../bin
 
@@ -10,7 +22,7 @@ ETOOLS=${ESDK}/tools
 
 SRC_DIR := ../src
 
-SUBMAKEFILES := bj-zynq.mk bj-ecore.mk bj-emu.mk 
+SUBMAKEFILES := dlmalloc-emu.mk dlmalloc-znq.mk bj-zynq.mk bj-ecore.mk bj-emu.mk 
 # SUBMAKEFILES := bj-zynq.mk bj-ecore.mk 
 # SUBMAKEFILES := bj-emu.mk 
 

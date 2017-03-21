@@ -1,15 +1,4 @@
 
-define SET_CROSS_COMPILE
-ifeq "${CROSS_COMPILE+xxx}" ""
-	ifeq "$(findstring arm,$(shell uname -p))" "arm"
-		CROSS_COMPILE=
-	else
-		CROSS_COMPILE=arm-linux-gnueabihf-
-	endif	
-endif	
-endef
-
-$(eval $(SET_CROSS_COMPILE))
 
 HCOMP=$(CROSS_COMPILE)gcc
 
@@ -29,11 +18,12 @@ DBG_FLAG := -DFULL_DEBUG
 
 TARGET := bj-actor-booter.elf
 
-TGT_LDFLAGS := -L${H_LIB_1}
+TGT_LDFLAGS := -L${H_LIB_1} -L${TARGET_DIR}
 
-TGT_LDLIBS  := -le-hal -le-loader -lm
+TGT_LDLIBS  := -le-hal -le-loader -lm -ldlmallocznq
+TGT_PREREQS := libdlmallocznq.a
 
-TGT_POSTMAKE := echo "Finished building "$(TARGET)
+TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
 TGT_CC := $(HCOMP)
 

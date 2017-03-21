@@ -38,7 +38,7 @@ TGT_LDFLAGS := -T ${E_LDF} -L${DIR_ELIBS_1} -L${DIR_ELIBS_2} --strip-debug ${LD_
 
 TGT_LDLIBS  := ${STDLIBS} ${ELIBS}
 
-TGT_POSTMAKE := echo "Finished building "$(TARGET)
+TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
 TGT_CC := e-gcc
 
