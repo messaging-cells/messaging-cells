@@ -19,11 +19,6 @@ bj_c_decl {
 // WHEN TESTING LOGS USE
 #define BJ_MAX_STR_SZ BJ_OUT_BUFF_SZ	
 
-	/*CORE_CODE(
-		void* 		bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
-		uint16_t 	bjk_trace_err;
-	)*/
-
 struct bj_aligned bjk_glb_sys_def { 
 	bj_sys_sz_st 	sys_sz;
 	bj_off_core_st* off_core_pt;
@@ -31,6 +26,10 @@ struct bj_aligned bjk_glb_sys_def {
 	bj_in_core_st 	in_core_shd;
 	uint8_t 		dbg_out_str[BJ_MAX_STR_SZ];
 
+	CORE_CODE(
+		void* 		bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
+		uint16_t 	bjk_trace_err;
+	)
 	EMU_CODE(
 		uint8_t 	bjk_sync_signal;
 		char* 		bjk_dbg_call_nams_stack_trace[BJ_MAX_CALL_STACK_SZ];
@@ -138,7 +137,8 @@ bjk_set_irq0_handler() bj_code_dram;
 #define BJK_CK(nam, cond) 
 #define BJK_CK2(nam, cond) 
 #else 
-#define BJK_CK(nam, cond) BJK_OFFCHIP_ASSERT(nam, code_dram, cond)
+//define BJK_CK(nam, cond) BJK_OFFCHIP_ASSERT(nam, code_dram, cond)
+#define BJK_CK(nam, cond) BJK_INCORE_ASSERT(nam, cond)
 #define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
 #endif
 

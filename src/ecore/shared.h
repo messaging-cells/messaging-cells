@@ -70,13 +70,14 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 	sys_sz->yy_sz_pw2 = yy_sz_pw2_val;
 }
 
-#define bj_e3_co_to_pw(co) (uint8_t)bj_div_pw2(co, bj_e3_yy_sz_pw2)
+#define bj_e3_co_to_pw(co) ((uint8_t)log2l(co))
 
 #define bjh_init_glb_sys_sz_with_dev(sys_sz, dev) \
 	bj_init_glb_sys_sz_with((sys_sz), (dev)->row, (dev)->col, (dev)->rows, bj_e3_co_to_pw((dev)->cols))
 	
 // end_of_macro
-	
+
+
 //======================================================================
 // convertion functions
 	
@@ -89,7 +90,7 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 #define bj_pw2_yy_sys (bj_get_glb_sys_sz()->yy_sz_pw2)
 
 #define bj_tot_xx_sys (bj_get_glb_sys_sz()->xx_sz)
-#define bj_tot_yy_sys (1 << bj_pw2_yy_sys)
+#define bj_tot_yy_sys ((bj_core_co_t)(1 << bj_pw2_yy_sys))
 #define bj_tot_nn_sys (bj_tot_xx_sys * bj_tot_yy_sys)
 
 #define bj_min_xx_sys (bj_get_glb_sys_sz()->xx)

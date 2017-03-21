@@ -31,7 +31,7 @@ TARGET := bj-actor-booter.elf
 
 TGT_LDFLAGS := -L${H_LIB_1}
 
-TGT_LDLIBS  := -le-hal -le-loader
+TGT_LDLIBS  := -le-hal -le-loader -lm
 
 TGT_POSTMAKE := echo "Finished building "$(TARGET)
 

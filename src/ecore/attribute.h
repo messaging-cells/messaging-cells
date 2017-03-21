@@ -38,7 +38,7 @@ bj_c_decl {
 
 	#define EMU_CODE(cod) cod
 	#define ZNQ_CODE(cod) 
-	#define EMU_CK(vv) bjm_call_assert(vv, __FILE__, __LINE__, #vv, NULL)
+	#define EMU_CK(vv) bjm_call_assert(vv, __FILE__, __LINE__, #vv, bj_null)
 	#define EMU_PRT(...) bjm_printf(__VA_ARGS__)
 	#define EMU_LOG(...) bjm_log(__VA_ARGS__)
 	#define CORE_CODE(cod) 

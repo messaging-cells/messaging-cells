@@ -2,9 +2,6 @@
 #include "global.h"
 #include "trace.h"
 
-		void* 		bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
-		uint16_t 	bjk_trace_err;
-
 #define bjk_simm11_up(pt_i16)	(((pt_i16)[1] & 0x00FF) << 3)
 #define bjk_simm11_low(pt_i16)	(((pt_i16)[0] & 0x0380) >> 7)
 #define bjk_simm11_to_uint(pt_i16) (bjk_simm11_up(pt_i16) | bjk_simm11_low(pt_i16))
@@ -58,8 +55,7 @@ get_call_opcode(uint16_t opcode[2], int16_t disp){
 uint16_t*
 find_call(uint16_t* code_addr, uint16_t opcode[2]){
 	uint16_t* addr = code_addr;
-	//uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
-	uint16_t* err = &(bjk_trace_err);
+	uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
 	(*err) = 0x0;
 	while(addr > 0x0){
 		if((addr[0] == opcode[0]) && (addr[1] == opcode[1])){
@@ -84,8 +80,7 @@ find_call(uint16_t* code_addr, uint16_t opcode[2]){
 uint16_t*
 find_interrupt_call(uint16_t* code_addr){
 	uint16_t* addr = code_addr;
-	//uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
-	uint16_t* err = &(bjk_trace_err);
+	uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
 	(*err) = 0x0;
 	while(addr > 0x0){
 		if(	(addr[0] == 0x14fc) && (addr[1] == 0x0500) && (addr[2] == 0x0512) &&
@@ -110,8 +105,7 @@ get_sp_disp(uint16_t* code_addr){
 	addr -= 2;
 	uint16_t v0 = addr[0];
 	uint16_t v1 = addr[1];
-	//uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
-	uint16_t* err = &(bjk_trace_err);
+	uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
 
 	(*err) = 0x0;
 	
@@ -164,8 +158,7 @@ find_rts(uint16_t* code_addr){
 
 	// changed this to work in shd mem
 	uint16_t* max_addr = code_addr + bj_max_opcodes_func;	
-	//uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
-	uint16_t* err = &(bjk_trace_err);
+	uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
 
 	(*err) = 0x0;
 	
@@ -206,8 +199,7 @@ void
 bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
 	if((trace == bj_null) && (sz_trace >= 0)){
 		sz_trace = BJ_MAX_CALL_STACK_SZ;
-		//trace = bjk_get_glb_sys()->bjk_dbg_call_stack_trace;
-		trace = bjk_dbg_call_stack_trace;
+		trace = bjk_get_glb_sys()->bjk_dbg_call_stack_trace;
 	}
 	if((trace != bj_null) && (sz_trace > 0)){
 		bjk_get_call_stack_trace(sz_trace, trace);
@@ -291,8 +283,7 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 		rts_addr = find_rts(pc_val);
 	}
 
-	//uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
-	uint16_t* err = &(bjk_trace_err);
+	uint16_t* err = &(bjk_get_glb_sys()->bjk_trace_err);
 	if((*err) == 0x41){
 		uint16_t* call_addr = find_interrupt_call(pc_val);
 		trace[idx++] = call_addr;

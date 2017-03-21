@@ -272,6 +272,31 @@ void test_send_irq() {
 	kernel::finish_sys();
 }
 
+bj_c_decl void f1();
+void f1(){
+	bjk_abort((bj_addr_t)f1, 0, bj_null);
+}
+
+bj_c_decl void f2();
+void f2(){
+	f1();
+}
+
+bj_c_decl void f3();
+void f3(){
+	f2();
+}
+
+void test_abort() bj_code_dram;
+void test_abort() {
+	bjk_glb_init();
+
+	f3();
+
+	bjk_glb_finish();
+}
+
+
 void test_logs() bj_code_dram;
 void test_logs() {
 	bjk_glb_init();
@@ -518,5 +543,6 @@ void core_main() {
 	//test_send_irq();
 	//test_logs();
 	test_send_msg();
+	//test_abort();
 }
 
