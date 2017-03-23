@@ -480,8 +480,8 @@ ee_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 		//printf("ihdr=%d irow=%d icol=%d\n", ihdr, row, col);
 		//printf("loc=%d chip=%d magic=%x\n", islocal, isonchip, DBG_BASE->magic_id);
 
-		//memcpy(pt_dst, pt_src, blk_sz);		// CHANGES MEMORY OUTSIDE OF RANGES !!!!! WHY !!!!
-		bj_memcpy(pt_dst, pt_src, blk_sz);		// CHANGES MEMORY OUTSIDE OF RANGES !!!!! WHY !!!!
+		memcpy(pt_dst, pt_src, blk_sz);		// CHANGES MEMORY OUTSIDE OF RANGES !!!!! WHY !!!!
+		//bj_memcpy(pt_dst, pt_src, blk_sz);		// CHANGES MEMORY OUTSIDE OF RANGES !!!!! WHY !!!!
 
 		//BJH_CK(DBG_BASE->magic_id == BJ_MAGIC_ID);
 
