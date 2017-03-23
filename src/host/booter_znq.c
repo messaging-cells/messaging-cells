@@ -13,17 +13,42 @@
 #include <inttypes.h>
 
 #include <e-hal.h>
-#include <e-loader.h>
+//include <e-loader.h>
 #include <epiphany-hal-api-local.h>
 
 #include "shared.h"
 #include "booter.h"
+#include "core_loader_znq.h"
 
 //include "test_align.h"
 
 
 #define f_nm_sz   1024
-#define BJ_SHARED_MEM_START_ADDR (0x01000000)
+
+//=====================================================================================
+// IMPORTANT NOTE:
+// ---------------
+
+// The following displacemente MUST match the definitions in the linker script and the 
+// Hardware Description File (HDF) passed to e_init.
+
+#define BJ_SHARED_MEM_START_DISP (0x01000000)
+
+// Current link script: bj-ld-script.ldf
+// Current link addres for section 'shared_dram': EXTERNAL_DRAM_1
+// Current origin of EXTERNAL_DRAM_1: 0x8f000000
+// Current HDF: the value of EPIPHANY_HDF enviroment variable because e_initi is called with NULL
+// Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf
+// Current value of EMEM_BASE_ADDRESS in HDF: 0x8e000000
+
+// So we have:
+// EMEM_BASE_ADDRESS 	+ BJ_SHARED_MEM_START_DISP 	== ORIGIN(EXTERNAL_DRAM_1)
+// 0x8e000000 			+ 0x01000000 				== 0x8f000000
+
+// Note also that these addresses are AS SEEN FROM THE EPIPHANY. Not as seen from the Zynq 
+// side (host side)
+
+//=====================================================================================
 
 const char* epiphany_elf_nm = "bj-core-actor.elf";
 
@@ -37,65 +62,67 @@ bj_get_glb_sys_sz(){
 }
 
 void
-get_enter(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
+print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
 	bj_in_core_st inco;
 	memset(&inco, 0, sizeof(bj_in_core_st));
 	e_read(dev, row, col, (uint32_t)(sh_dat_1->core_data), &inco, sizeof(inco));
 	int err = prt_inko_shd_dat(&inco);
 	if(err){
-		bjh_abort_func(0, "get_enter failed");
+		bjh_abort_func((bj_addr_t)(print_core_info), "print_core_info failed");
 	}
 	
 	void* 	trace[BJ_MAX_CALL_STACK_SZ];
 	memset(trace, 0, sizeof(trace));
 	e_read(dev, row, col, (uint32_t)(inco.dbg_stack_trace), trace, sizeof(trace));
 	bjh_prt_core_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
-	
-	// CONTINUE
-	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
-	getchar();
 }
+
+bj_off_sys_st* DBG_BASE;
 
 int boot_znq(int argc, char *argv[])
 {
-	unsigned row, col, max_row, max_col, core_id;
+	bj_core_co_t row, col, max_row, max_col;
+	bj_core_nn_t tot_cores;
+	bj_core_id_t core_id;
 	e_platform_t platform;
 	e_epiphany_t dev;
 	e_mem_t emem;
 	char f_nm[200];
-	char* all_f_nam[bj_out_num_cores];
-	int num_wrk_cores;
 
-	memset(&all_f_nam, 0, sizeof(all_f_nam));
-	num_wrk_cores = 0;
-
-	printf("sizeof(bj_off_sys_st)=%d\n", sizeof(bj_off_sys_st));
-	
-	e_set_loader_verbosity(H_D0);
+	//e_set_loader_verbosity(H_D0);
 
 	e_init(NULL);
 	e_reset_system();
 	e_get_platform_info(&platform);
 
-	e_alloc(&emem, BJ_SHARED_MEM_START_ADDR, sizeof(bj_off_sys_st));
+	e_alloc(&emem, BJ_SHARED_MEM_START_DISP, sizeof(bj_off_sys_st));
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
 	bjh_init_glb_sys_sz_with_dev(bj_get_glb_sys_sz(), &dev);
 
 	e_reset_group(&dev);
+	bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE);
 
-	e_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE);
+	void* the_base = (void*)(emem.base);
+	printf("the_base=%p \n", the_base);
+
+	DBG_BASE = (bj_off_sys_st*)the_base;
 	
-	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)emem.base;
+	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)the_base;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
-	printf("sizeof(*pt_shd_data)=%d\n", sizeof(*pt_shd_data));
 
 	// init shared data.
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
 
 	pt_shd_data->magic_id = BJ_MAGIC_ID;
 	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
+
+	//bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE); // resets magic_id !!!!!
+
+	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
+
+	pt_shd_data->pt_this_from_znq = pt_shd_data;
 
 	bj_sys_sz_st* sys_sz = bj_get_glb_sys_sz();
 
@@ -107,17 +134,24 @@ int boot_znq(int argc, char *argv[])
 	max_row = dev.rows;
 	max_col = dev.cols;
 
+	tot_cores = max_row * max_col;
+	BJH_CK(tot_cores <= bj_out_num_cores);
+
+	char* all_f_nam[tot_cores];
+	memset(&all_f_nam, 0, sizeof(all_f_nam));
+
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
-			core_id = (row + platform.row) * 64 + col + platform.col;
+			//core_id = (row + platform.row) * 64 + col + platform.col;
+			core_id = bj_ro_co_to_id(row, col);
 			bj_core_nn_t num_core = bj_id_to_nn(core_id);
+
 			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
+
 			memset(&f_nm, 0, sizeof(f_nm));
 			sprintf(f_nm, "log_core_%02d.txt", num_core);
 
-			BJH_CK(num_core < bj_out_num_cores);
 			all_f_nam[num_core] = strdup((const char*)f_nm);
-			num_wrk_cores++;
 			
 			// init shared data.
 			pt_shd_data->sys_cores[num_core].magic_id = BJ_MAGIC_ID;
@@ -164,9 +198,7 @@ int boot_znq(int argc, char *argv[])
 				BJH_CK(	(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL) ||
 						(sh_dat_1->is_finished == BJ_FINISHED_VAL)
 				);
-				if(sh_dat_1->ck_core_id != core_id){
-					printf("CORE IDS DIFFER 0x%03x != 0x%03x nn=%d \n", sh_dat_1->ck_core_id, core_id, num_core);
-				}
+
 				BJH_CK(sh_dat_1->ck_core_id == core_id);
 				if(! core_started[row][col] && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
 					core_started[row][col] = true;
@@ -174,16 +206,14 @@ int boot_znq(int argc, char *argv[])
 								core_id, row, col, num_core);
 				}
 
-				bj_in_core_st inco;
-				void* 	trace[BJ_MAX_CALL_STACK_SZ];
-				
 				// wait for finish
 				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
 					has_work = true;
 					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == BJ_WAITING_ENTER){
-							get_enter(sh_dat_1, &dev, row, col);
+							print_core_info(sh_dat_1, &dev, row, col);
+							get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == BJ_WAITING_BUFFER){
 							print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
@@ -206,18 +236,7 @@ int boot_znq(int argc, char *argv[])
 						BJH_CK(bj_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						printf("Finished\n");
-						memset(&inco, 0, sizeof(bj_in_core_st));
-						e_read(&dev, row, col, (uint32_t)sh_dat_1->core_data, 
-									&inco, sizeof(inco));
-						int err2 = prt_inko_shd_dat(&inco);
-						if(err2){
-							break;
-						}
-
-						memset(trace, 0, sizeof(trace));
-						e_read(&dev, row, col, (uint32_t)inco.dbg_stack_trace, 
-									trace, sizeof(trace));
-						bjh_prt_core_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
+						print_core_info(sh_dat_1, &dev, row, col);
 					}
 
 				}
@@ -230,6 +249,12 @@ int boot_znq(int argc, char *argv[])
 	printf("sys_sz->yy=%d\n", sys_sz->yy);
 	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
 	printf("sys_sz->yy_sz_pw2=%d\n", sys_sz->yy_sz_pw2);
+
+	printf("SHD_DATA_addr_as_seen_from_eph=%p\n", pt_shd_data->pt_this_from_eph);
+	printf("SHD_DATA_addr_as_seen_from_znq=%p\n", pt_shd_data->pt_this_from_znq);
+	printf("SHD_DATA_displacement_from_shd_mem_base_adddr= %p\n", (void*)BJ_SHARED_MEM_START_DISP);
+
+	printf("the_base=%p \n", the_base);
 	
 	// Reset the workgroup
 	e_reset_group(&dev); // FAILS. Why?
@@ -244,7 +269,7 @@ int boot_znq(int argc, char *argv[])
 	e_finalize();
 
 	int nn;
-	for (nn=0; nn < num_wrk_cores; nn++){
+	for (nn=0; nn < tot_cores; nn++){
 		if(all_f_nam[nn] != bj_null){
 			free(all_f_nam[nn]);
 		}

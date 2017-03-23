@@ -28,13 +28,6 @@ bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
 	bjh_out << "---------------------------------------------------\n";
 }
 
-void
-get_enter(bj_off_core_st* sh_dat_1, unsigned row, unsigned col){
-	// CONTINUE
-	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
-	getchar();
-}
-
 bool
 ck_all_core_ids(){
 	if (ALL_THREADS_INFO == NULL){
@@ -52,7 +45,8 @@ ck_all_core_ids(){
 int 
 host_main(int argc, char *argv[])
 {
-	unsigned row, col, max_row, max_col, core_id;
+	bj_core_co_t row, col, max_row, max_col;
+	bj_core_id_t core_id;
 	char f_nm[200];
 	char* all_f_nam[bj_out_num_cores];
 	int ss, tnum;
@@ -180,7 +174,7 @@ host_main(int argc, char *argv[])
 					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == BJ_WAITING_ENTER){
-							get_enter(sh_dat_1, row, col);
+							get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == BJ_WAITING_BUFFER){
 							print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);

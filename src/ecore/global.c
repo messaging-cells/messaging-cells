@@ -27,6 +27,8 @@ bjk_glb_init(void) {
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
 		bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
 	}
+
+	BJK_OFF_CHIP_SHARED_MEM.pt_this_from_eph = &BJK_OFF_CHIP_SHARED_MEM;	// should be same for all cores
 	
 	// glb_sys_sz init
 	bj_core_id_t koid = bjk_get_core_id();

@@ -264,3 +264,10 @@ write_file(char* the_pth, char* the_data, long the_sz, int write_once){
 	return 1;
 }
 
+void
+get_enter(bj_core_co_t row, bj_core_co_t col){
+	// CONTINUE
+	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
+	getchar();
+}
+

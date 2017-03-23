@@ -273,6 +273,8 @@ typedef struct bj_core_out_def bj_core_out_st;
 struct bj_align(8) bj_off_sys_shared_data_def { 
 	uint32_t 		magic_id;
 	uint32_t 		dbg_error_code;
+	void* 			pt_this_from_znq;
+	void* 			pt_this_from_eph;
 	bj_sys_sz_st 	wrk_sys;
 	bj_off_core_st 	sys_cores[bj_out_num_cores];
 	bj_core_out_st 	sys_out_buffs[bj_out_num_cores];

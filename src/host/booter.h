@@ -50,6 +50,9 @@ write_file(char* the_pth, char* the_data, long the_sz, int write_once);
 int 
 bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
 
+void
+get_enter(bj_core_co_t row, bj_core_co_t col);
+
 #define bjh_assert(vv) \
 	bjh_call_assert(vv, bj_as_pt_char(__FILE__), __LINE__, bj_as_pt_char(#vv), NULL)
 
