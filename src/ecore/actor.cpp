@@ -9,7 +9,7 @@
 #include "interruptions.h"
 #include "global.h"
 #include "trace.h"
-#include "test_logs.h"
+//include "test_logs.h"
 
 #include "core_main.h"
 //include "row.hh"
@@ -296,7 +296,7 @@ void test_abort() {
 	bjk_glb_finish();
 }
 
-
+/*
 void test_logs() bj_code_dram;
 void test_logs() {
 	bjk_glb_init();
@@ -312,7 +312,7 @@ void test_logs() {
 	}
 
 	bjk_glb_finish();
-}
+}*/
 
 actor*	//	static 
 kernel::get_core_actor(bj_core_id_t dst_id){
