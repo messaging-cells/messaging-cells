@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <execinfo.h>
 #include <fcntl.h>
 #include <sched.h>
 #include <stdio.h>
@@ -26,7 +27,6 @@ bool
 bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
 	
 	if(! vv_ck){
-		fprintf(stderr, "------------------------------------------------------------------\n");
 		fprintf(stderr, "ASSERT '%s' FAILED\nFILE= %s\nLINE=%d \n", ck_str, file, line);
 		//bj_out << get_stack_trace(file, line) << bj_eol;
 		if(msg != NULL){
@@ -269,5 +269,26 @@ get_enter(bj_core_co_t row, bj_core_co_t col){
 	// CONTINUE
 	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
 	getchar();
+}
+
+#define BJH_MAX_CALL_STACK_SZ 100
+
+void
+bjh_ptr_call_stack_trace() {
+	void* trace[BJH_MAX_CALL_STACK_SZ];
+
+	memset((uint8_t*)trace, 0, BJH_MAX_CALL_STACK_SZ * sizeof(void*));
+
+	size_t trace_sz = backtrace(trace, BJH_MAX_CALL_STACK_SZ);
+	EMU_CODE(fprintf(stderr, "trace_size=%lu \n", trace_sz));
+	ZNQ_CODE(fprintf(stderr, "trace_size=%u \n", trace_sz));
+
+	char **stack_strings = backtrace_symbols(trace, trace_sz);
+	for( size_t ii = 1; ii < trace_sz; ii++ ) {
+		if(ii >= BJH_MAX_CALL_STACK_SZ){ break; }
+		fprintf(stderr, "%s \n", stack_strings[ii]);
+	}
+	//result << "(to see full call names link with -rdynamic option)" << "\n";
+	free( stack_strings );
 }
 

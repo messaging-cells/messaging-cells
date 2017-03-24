@@ -53,6 +53,10 @@ bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
 void
 get_enter(bj_core_co_t row, bj_core_co_t col);
 
+void
+bjh_ptr_call_stack_trace();
+
+
 #define bjh_assert(vv) \
 	bjh_call_assert(vv, bj_as_pt_char(__FILE__), __LINE__, bj_as_pt_char(#vv), NULL)
 

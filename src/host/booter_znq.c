@@ -23,30 +23,7 @@
 //include "test_align.h"
 
 
-#define f_nm_sz   1024
-
-//=====================================================================================
-// IMPORTANT NOTE:
-// ---------------
-
-// The following displacemente MUST match the definitions in the linker script and the 
-// Hardware Description File (HDF) passed to e_init.
-
-#define BJ_SHARED_MEM_START_DISP (0x01000000)
-
-// Current link script: bj-ld-script.ldf
-// Current link addres for section 'shared_dram': EXTERNAL_DRAM_1
-// Current origin of EXTERNAL_DRAM_1: 0x8f000000
-// Current HDF: the value of EPIPHANY_HDF enviroment variable because e_initi is called with NULL
-// Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf
-// Current value of EMEM_BASE_ADDRESS in HDF: 0x8e000000
-
-// So we have:
-// EMEM_BASE_ADDRESS 	+ BJ_SHARED_MEM_START_DISP 	== ORIGIN(EXTERNAL_DRAM_1)
-// 0x8e000000 			+ 0x01000000 				== 0x8f000000
-
-// Note also that these addresses are AS SEEN FROM THE EPIPHANY. Not as seen from the Zynq 
-// side (host side)
+//define f_nm_sz   1024
 
 //=====================================================================================
 
@@ -101,16 +78,19 @@ int boot_znq(int argc, char *argv[])
 
 	bjh_init_glb_sys_sz_with_dev(bj_get_glb_sys_sz(), &dev);
 
-	e_reset_group(&dev);
-	bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE);
-
 	void* the_base = (void*)(emem.base);
 	printf("the_base=%p \n", the_base);
 
 	DBG_BASE = (bj_off_sys_st*)the_base;
-	
+
 	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)the_base;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
+
+	DBG_BASE->magic_id = BJ_MAGIC_ID;
+	BJH_CK(DBG_BASE->magic_id == BJ_MAGIC_ID);
+
+	//e_reset_group(&dev);
+	//bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE);
 
 	// init shared data.
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
@@ -128,6 +108,9 @@ int boot_znq(int argc, char *argv[])
 
 	pt_shd_data->wrk_sys = *sys_sz;
 	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
+
+	e_reset_group(&dev);
+	bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE); // resets magic_id !!!!!
 
 	max_row = 1;
 	max_col = 2;

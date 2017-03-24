@@ -41,22 +41,22 @@
 #include "core_loader_znq.h"
 //include "esim-target.h"
 #include "shared.h"
-//include "booter.h"
+#include "booter.h"
 
-#ifndef BJ_MARK_USED
-#define BJ_MARK_USED(X)  ((void)(&(X)))
+#ifndef BJL_MARK_USED
+#define BJL_MARK_USED(X)  ((void)(&(X)))
 #endif
 
-//extern bj_off_sys_st* DBG_BASE = bj_null;
-
-#define pt_out_of_range(pt, rs, rf) (((pt) < (rs)) || ((pt) > (rf)))
-
-#define ARRAY_SIZE(_a) (sizeof(_a) / sizeof((_a)[0]))
-
-typedef unsigned long long ulong64;
-#define diag(vN)   if (e_load_verbose >= vN)
+void ee_get_coords_from_id(e_epiphany_t *dev, unsigned coreid,
+								  unsigned *row, unsigned *col);
 
 extern e_platform_t e_platform;
+
+#define bjl_pt_out_of_range(pt, rs, rf) (((pt) < (rs)) || ((pt) > (rf)))
+
+#define BJL_ARRAY_SIZE(_a) (sizeof(_a) / sizeof((_a)[0]))
+
+#define bjl_diag(vN)   if (bjl_load_verbose >= vN)
 
 typedef enum {
 	L_D0 = 0,
@@ -64,52 +64,53 @@ typedef enum {
 	L_D2 = 2,
 	L_D3 = 3,
 	L_D4 = 40,
-} e_loader_diag_t;
+} bjl_loader_diag_t;
 
-enum loader_sections {
-	SEC_WORKGROUP_CFG,
-	SEC_EXT_MEM_CFG,
-	SEC_LOADER_CFG,
-	SEC_NUM,
+enum bjl_loader_sections {
+	BJL_SEC_WORKGROUP_CFG,
+	BJL_SEC_EXT_MEM_CFG,
+	BJL_SEC_LOADER_CFG,
+	BJL_SEC_NUM,
 };
 
-struct section_info {
+struct bjl_section_info {
 	const char *name;
 	bool present;
 	Elf32_Addr	sh_addr;		/* Section virtual addr at execution */
 };
 // TODO: These should be defined in common header file
-#define LOADER_BSS_CLEARED_FLAG 1
-#define LOADER_CUSTOM_ARGS_FLAG 2
-struct loader_cfg {
+#define BJL_BSS_CLEARED_FLAG 1
+#define BJL_CUSTOM_ARGS_FLAG 2
+
+struct bjl_loader_cfg {
 	uint32_t flags;
 	uint32_t __pad1;
 	uint32_t args_ptr;
 	uint32_t __pad2;
 } __attribute__((packed));
 
-static void lookup_sections(const void *file, struct section_info *tbl,
+void bjl_lookup_sections(const void *file, struct bjl_section_info *tbl,
 							size_t tbl_size);
 
-extern void ee_get_coords_from_id(e_epiphany_t *dev, unsigned coreid,
-								  unsigned *row, unsigned *col);
-
-static e_return_stat_t ee_process_elf(const void *file, e_epiphany_t *dev,
+e_return_stat_t bjl_process_elf(const void *file, e_epiphany_t *dev,
 									  e_mem_t *emem, int row, int col);
 
-static int ee_set_core_config(struct section_info *tbl, e_epiphany_t *dev,
+int bjl_set_core_config(struct bjl_section_info *tbl, e_epiphany_t *dev,
 							  e_mem_t *emem, int row, int col);
 
-e_loader_diag_t e_load_verbose = L_D0;
+bjl_loader_diag_t bjl_load_verbose = L_D3;
 
-/* diag_fd is set by set_loader_verbosity() */
-FILE *diag_fd = NULL;
+/* bjl_diag_fd is set by set_loader_verbosity() */
+FILE *bjl_diag_fd = bj_null;
 
 // TODO: replace with platform data
-#define EMEM_SIZE (0x02000000)
+#define BJL_EMEM_SIZE (0x02000000)
+
+extern bj_off_sys_st* DBG_BASE;
+uint8_t* BJL_BASE_PT = bj_null;
 
 #define EM_ADAPTEVA_EPIPHANY   0x1223  /* Adapteva's Epiphany architecture.  */
-static inline bool is_epiphany_exec_elf(Elf32_Ehdr *ehdr)
+static inline bool bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr)
 {
 	return ehdr
 		&& memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0
@@ -119,7 +120,7 @@ static inline bool is_epiphany_exec_elf(Elf32_Ehdr *ehdr)
 		&& ehdr->e_machine == EM_ADAPTEVA_EPIPHANY;
 }
 
-static bool is_srec_file(const char *hdr)
+static bool bjl_is_srec_file(const char *hdr)
 {
 	const char srechdr[] = {'S', '0'};
 	return (memcmp(hdr, srechdr, sizeof(srechdr)) == 0);
@@ -134,7 +135,7 @@ int bj_load(const char *executable, e_epiphany_t *dev, unsigned row, unsigned co
 	return status;
 }
 
-static void clear_sram(e_epiphany_t *dev,
+static void bjl_clear_sram(e_epiphany_t *dev,
 					   unsigned row, unsigned col,unsigned rows, unsigned cols)
 {
 	unsigned i, j;
@@ -147,9 +148,11 @@ static void clear_sram(e_epiphany_t *dev,
 	empty = alloca(sram_size);
 	memset(empty, 0, sram_size);
 
-	for (i = row; i < row + rows; i++)
-		for (j = col; j < col + cols; j++)
+	for (i = row; i < row + rows; i++){
+		for (j = col; j < col + cols; j++){
 			e_write(dev, i, j, 0, empty, sram_size);
+		}
+	}
 }
 
 int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, 
@@ -165,8 +168,9 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 	e_return_stat_t retval;
 
 	e_set_host_verbosity(H_D0);
+	bjl_diag_fd = stderr;
 
-	struct section_info tbl[] = {
+	struct bjl_section_info tbl[] = {
 		{ .name = "workgroup_cfg" },
 		{ .name = "ext_mem_cfg" },
 		{ .name = "loader_cfg" },
@@ -182,10 +186,12 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 	// Allocate External DRAM for the epiphany executable code
 	// TODO: this is barely scalable. Really need to test ext. mem size to load
 	// and possibly split the ext. mem accesses into 1MB chunks.
-	if (e_alloc(&emem, 0, EMEM_SIZE)) {
+	if (e_alloc(&emem, 0, BJL_EMEM_SIZE)) {
 		warnx("\nERROR: Can't allocate external memory buffer!\n\n");
 		return E_ERR;
 	}
+
+	BJL_BASE_PT = (uint8_t*)(emem.base);
 
 	fd = open(executable, O_RDONLY);
 	if (fd == -1) {
@@ -209,13 +215,13 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 		return E_ERR;
     }
 
-	if (is_epiphany_exec_elf((Elf32_Ehdr *) file)) {
-		diag(L_D1) { fprintf(diag_fd, "load_group(): loading ELF file %s ...\n", executable); }
-	} else if (is_srec_file((char *) file)) {
+	if (bjl_is_epiphany_exec_elf((Elf32_Ehdr *) file)) {
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "load_group(): loading ELF file %s ...\n", executable); }
+	} else if (bjl_is_srec_file((char *) file)) {
 		is_srec = true;
 		warnx("load_group(): WARNING: SREC file support is deprecated and will be removed in the next ESDK release. Use ELF format instead.\n");
 	} else {
-		diag(L_D1) { fprintf(diag_fd, "load_group(): ERROR: unidentified file format\n"); }
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "load_group(): ERROR: unidentified file format\n"); }
 		warnx("ERROR: Can't load executable file: unidentified format.\n");
 		status = E_ERR;
 		goto out;
@@ -223,24 +229,24 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 
 	if (is_srec) {
 		/* No symbol info in SREC files, use hard coded values */
-		tbl[SEC_WORKGROUP_CFG].present = true;
-		tbl[SEC_WORKGROUP_CFG].sh_addr = 0x28;
-		tbl[SEC_EXT_MEM_CFG].present   = true;
-		tbl[SEC_EXT_MEM_CFG].sh_addr   = 0x50;
-		tbl[SEC_LOADER_CFG].present    = true;
-		tbl[SEC_LOADER_CFG].sh_addr    = 0x58;
+		tbl[BJL_SEC_WORKGROUP_CFG].present = true;
+		tbl[BJL_SEC_WORKGROUP_CFG].sh_addr = 0x28;
+		tbl[BJL_SEC_EXT_MEM_CFG].present   = true;
+		tbl[BJL_SEC_EXT_MEM_CFG].sh_addr   = 0x50;
+		tbl[BJL_SEC_LOADER_CFG].present    = true;
+		tbl[BJL_SEC_LOADER_CFG].sh_addr    = 0x58;
 	} else {
-		lookup_sections(file, tbl, ARRAY_SIZE(tbl));
+		bjl_lookup_sections(file, tbl, BJL_ARRAY_SIZE(tbl));
 	}
 
-	for (i = 0; i < SEC_NUM; i++) {
+	for (i = 0; i < BJL_SEC_NUM; i++) {
 		if (!tbl[i].present) {
 			warnx("load_group(): WARNING: %s section not in binary.",
 				  tbl[i].name);
 		}
 	}
 
-	clear_sram(dev, row, col, rows, cols);
+	bjl_clear_sram(dev, row, col, rows, cols);
 
 	for (irow=row; irow<(row+rows); irow++) {
 		for (icol=col; icol<(col+cols); icol++) {
@@ -248,7 +254,7 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 				warnx("ERROR: SREC FORMAT NOT SUPPORTED ANYMORE.\n");
 				retval = E_ERR;
 			} else {
-				retval = ee_process_elf(file, dev, &emem, irow, icol);
+				retval = bjl_process_elf(file, dev, &emem, irow, icol);
 			}
 
 			if (retval == E_ERR) {
@@ -257,24 +263,24 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 				goto out;
 			}
 
-			ee_set_core_config(tbl, dev, &emem, irow, icol);
+			bjl_set_core_config(tbl, dev, &emem, irow, icol);
 		}
 	}
 
 	if (start) {
 		for (irow=row; irow<(row+rows); irow++) {
 			for (icol=col; icol<(col + cols); icol++) {
-				diag(L_D1) {
-					fprintf(diag_fd,
+				bjl_diag(L_D1) {
+					fprintf(bjl_diag_fd,
 							"load_group(): send SYNC signal to core (%d,%d)...\n",
 							irow, icol); }
 				e_start(dev, irow, icol);
-				diag(L_D1) {fprintf(diag_fd, "load_group(): done.\n"); }
+				bjl_diag(L_D1) {fprintf(bjl_diag_fd, "load_group(): done.\n"); }
 			}
 		}
 	}
 
-	diag(L_D1) { fprintf(diag_fd, "load_group(): done loading.\n"); }
+	bjl_diag(L_D1) { fprintf(bjl_diag_fd, "load_group(): done loading.\n"); }
 
 out:
 	munmap(file, st.st_size);
@@ -284,7 +290,7 @@ out:
 	return status;
 }
 
-static void lookup_sections(const void *file, struct section_info *tbl,
+void bjl_lookup_sections(const void *file, struct bjl_section_info *tbl,
 							size_t tbl_size)
 {
 	int i;
@@ -295,7 +301,7 @@ static void lookup_sections(const void *file, struct section_info *tbl,
 	const char *strtab;
 	uint8_t *src = (uint8_t *) file;
 
-	BJ_MARK_USED(phdr);
+	BJL_MARK_USED(phdr);
 
 	ehdr = (Elf32_Ehdr *) &src[0];
 	phdr = (Elf32_Phdr *) &src[ehdr->e_phoff];
@@ -319,14 +325,14 @@ static void lookup_sections(const void *file, struct section_info *tbl,
 	}
 }
 
-static int ee_set_core_config(struct section_info *tbl, e_epiphany_t *pEpiphany,
+int bjl_set_core_config(struct bjl_section_info *tbl, e_epiphany_t *pEpiphany,
 							  e_mem_t *pEMEM, int row, int col)
 {
 	e_group_config_t e_group_config;
 	e_emem_config_t  e_emem_config;
-	struct loader_cfg loader_cfg = { 0 };
+	struct bjl_loader_cfg loader_cfg = { 0 };
 
-	loader_cfg.flags = LOADER_BSS_CLEARED_FLAG;
+	loader_cfg.flags = BJL_BSS_CLEARED_FLAG;
 
 	e_group_config.objtype     = E_EPI_GROUP;
 	e_group_config.chiptype    = pEpiphany->type;
@@ -343,52 +349,52 @@ static int ee_set_core_config(struct section_info *tbl, e_epiphany_t *pEpiphany,
 	e_emem_config.objtype   = E_EXT_MEM;
 	e_emem_config.base      = pEMEM->ephy_base;
 
-	if (tbl[SEC_WORKGROUP_CFG].present)
-		e_write(pEpiphany, row, col, tbl[SEC_WORKGROUP_CFG].sh_addr,
+	if (tbl[BJL_SEC_WORKGROUP_CFG].present)
+		e_write(pEpiphany, row, col, tbl[BJL_SEC_WORKGROUP_CFG].sh_addr,
 				&e_group_config, sizeof(e_group_config_t));
 
-	if (tbl[SEC_EXT_MEM_CFG].present)
-		e_write(pEpiphany, row, col, tbl[SEC_EXT_MEM_CFG].sh_addr,
+	if (tbl[BJL_SEC_EXT_MEM_CFG].present)
+		e_write(pEpiphany, row, col, tbl[BJL_SEC_EXT_MEM_CFG].sh_addr,
 				&e_emem_config, sizeof(e_emem_config_t));
 
-	if (tbl[SEC_LOADER_CFG].present)
-		e_write(pEpiphany, row, col, tbl[SEC_LOADER_CFG].sh_addr,
+	if (tbl[BJL_SEC_LOADER_CFG].present)
+		e_write(pEpiphany, row, col, tbl[BJL_SEC_LOADER_CFG].sh_addr,
 				&loader_cfg, sizeof(loader_cfg));
 
 	return 0;
 }
 
 
-#define COREID(_addr) ((_addr) >> 20)
-static inline bool is_local(uint32_t addr)
+#define BJL_COREID(_addr) ((_addr) >> 20)
+static inline bool bjl_is_local(uint32_t addr)
 {
-	return COREID(addr) == 0;
+	return BJL_COREID(addr) == 0;
 }
 
-static bool is_valid_addr(uint32_t addr)
+static bool bjl_is_valid_addr(uint32_t addr)
 {
-	return is_local(addr)
+	return bjl_is_local(addr)
 		|| e_is_addr_on_chip((void *) addr)
 		|| e_is_addr_in_emem(addr);
 }
 
-static bool is_valid_range(uint32_t from, uint32_t size)
+static bool bjl_is_valid_range(uint32_t from, uint32_t size)
 {
 	/* Always allow empty range */
 	if (!size)
 		return true;
 
-	return is_valid_addr(from) && is_valid_addr(from + size - 1);
+	return bjl_is_valid_addr(from) && bjl_is_valid_addr(from + size - 1);
 }
 
 
-static e_return_stat_t
-ee_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
+e_return_stat_t
+bjl_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 			   int row, int col)
 {
 	Elf32_Ehdr *ehdr;
 	Elf32_Phdr *phdr;
-	bool       islocal, isonchip;
+	bool       islocal, isonchip, isexternal;
 	int        ihdr;
 	unsigned   globrow, globcol;
 	unsigned   coreid;
@@ -398,13 +404,15 @@ ee_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 
 	islocal  = false;
 	isonchip = false;
+	isexternal = false;
+	BJL_MARK_USED(isexternal);
 
 	ehdr = (Elf32_Ehdr *) &src[0];
 	phdr = (Elf32_Phdr *) &src[ehdr->e_phoff];
 
 	/* Range-check sections */
 	for (ihdr = 0; ihdr < ehdr->e_phnum; ihdr++) {
-		if (!is_valid_range(phdr[ihdr].p_vaddr, phdr[ihdr].p_memsz))
+		if (!bjl_is_valid_range(phdr[ihdr].p_vaddr, phdr[ihdr].p_memsz))
 			return E_ERR;
 	}
 
@@ -413,20 +421,20 @@ ee_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 		if (!phdr[ihdr].p_memsz)
 			continue;
 
-		islocal = is_local(phdr[ihdr].p_vaddr);
+		islocal = bjl_is_local(phdr[ihdr].p_vaddr);
 		isonchip = islocal ? true
 						   /* TODO: Don't cast to void */
 						   : e_is_addr_on_chip((void *) ((uintptr_t) phdr[ihdr].p_vaddr));
 
-		diag(L_D3) {
-			fprintf(diag_fd, "ee_process_elf(): copying the data (%d bytes)",
+		bjl_diag(L_D3) {
+			fprintf(bjl_diag_fd, "process_elf(): copying the data (%d bytes)",
 					phdr[ihdr].p_filesz); }
 
 		/* Address calculation */
 		char* dbg_case = "(undef)";
 		uint32_t the_p_vaddr = phdr[ihdr].p_vaddr;
 		if (islocal) {
-			diag(L_D3) { dbg_case = "(local)"; fprintf(diag_fd, " (local) to core (%d,%d)\n", row, col); }
+			bjl_diag(L_D3) { dbg_case = "(local)"; fprintf(bjl_diag_fd, " (local) to core (%d,%d)\n", row, col); }
 
 			// TODO: should this be p_paddr instead of p_vaddr?
 			dst = ((uintptr_t) dev->core[row][col].mems.base)
@@ -434,21 +442,23 @@ ee_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 		} else if (isonchip) {
 			coreid = phdr[ihdr].p_vaddr >> 20;
 			ee_get_coords_from_id(dev, coreid, &globrow, &globcol);
-			diag(L_D3) { dbg_case = "(onchip)"; 
-				fprintf(diag_fd, " (onchip) to core (%d,%d)\n", globrow, globcol); }
+			bjl_diag(L_D3) { dbg_case = "(onchip)"; 
+				fprintf(bjl_diag_fd, " (onchip) to core (%d,%d)\n", globrow, globcol); }
 			// TODO: should this be p_paddr instead of p_vaddr?
 			dst = ((uintptr_t) dev->core[globrow][globcol].mems.base)
 				+ (phdr[ihdr].p_vaddr & 0x000fffff);
 		} else {
+			isexternal = true;
 			// If it is not on an eCore, it's in external memory.
-			diag(L_D3) { dbg_case = "(external)"; fprintf(diag_fd, " (external) to external memory.\n"); }
+			bjl_diag(L_D3) { dbg_case = "(external)"; fprintf(bjl_diag_fd, " (external) to external memory.\n"); }
 			dst = phdr[ihdr].p_vaddr - emem->ephy_base
 				+ (uintptr_t) emem->base;
-			diag(L_D3) {
-				fprintf(diag_fd,
-						"ee_process_elf(): converting virtual (0x%08llx) to physical (0x%08llx)...\n",
-						(ulong64) phdr[ihdr].p_vaddr,
-						(ulong64) dst); }
+			bjl_diag(L_D3) {
+				fprintf(bjl_diag_fd,
+						"process_elf(): converting virtual (%p) to physical (%p)...\n",
+						(void*) phdr[ihdr].p_vaddr,
+						(void*) dst); }
+
 		}
 
 		/* Write */
@@ -456,32 +466,39 @@ ee_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 		void* pt_src = &src[phdr[ihdr].p_offset];
 		size_t blk_sz = phdr[ihdr].p_filesz;
 		
-		diag(L_D1) { fprintf(diag_fd, "LOADING(%s). row=%d col=%d dst=%p src=%p sz=%d p_vaddr=%04x (%p).\n", 
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, 
+				"LOADING(%s). row=%d col=%d dst=%p src=%p sz=%d p_vaddr=%04x (%p).\n", 
 				dbg_case, row, col, pt_dst, pt_src, blk_sz, the_p_vaddr, (void*)the_p_vaddr); }
 
-		/*
-		uint8_t* pt1 = ((uint8_t*)pt_dst);
-		uint8_t* pt2 = (((uint8_t*)pt_dst) + blk_sz);
-		uint8_t* pt3 = ((uint8_t*)pt_src);
-		uint8_t* pt4 = (((uint8_t*)pt_src) + blk_sz);
-		uint8_t* pt5 = ((uint8_t*)DBG_BASE);
-		uint8_t* pt6 = (((uint8_t*)DBG_BASE) + blk_sz);
+		if(isexternal){
+			uint8_t* pt_end_mem = (BJL_BASE_PT + BJ_SHARED_MEM_START_DISP);
+			uint8_t* pt_end_code = (((uint8_t*)pt_dst) + blk_sz);
+			if(pt_end_code > pt_end_mem){
+				bjl_diag(L_D3) {
+					fprintf(bjl_diag_fd,
+							"process_elf(): SKIP section in SHARED DATA virtual (%p) to physical (%p)...\n",
+							(void*) phdr[ihdr].p_vaddr,
+							(void*) dst); }
+				continue;	// Its data (an structure) NOT code.
+			}
+		}
 
-		BJH_CK(pt1 < ((uint8_t*)DBG_BASE));
-		BJH_CK(pt2 < ((uint8_t*)DBG_BASE));
-		BJH_CK(pt_out_of_range(pt1, pt3, pt4));
-		BJH_CK(pt_out_of_range(pt2, pt3, pt4));
-		BJH_CK(pt_out_of_range(pt3, pt1, pt2));
-		BJH_CK(pt_out_of_range(pt4, pt1, pt3));
-		BJH_CK(pt_out_of_range(pt3, pt5, pt6));
-		BJH_CK(pt_out_of_range(pt4, pt5, pt6));
-		*/
+		uint8_t* pt1 = ((uint8_t*)dst);
+		uint8_t* pt2 = (pt1 + blk_sz);
+		uint8_t* pt_end1 = (BJL_BASE_PT + BJ_SHARED_MEM_START_DISP);
+		uint8_t* pt_end2 = (BJL_BASE_PT + BJL_EMEM_SIZE);
 
 		//printf("ihdr=%d irow=%d icol=%d\n", ihdr, row, col);
 		//printf("loc=%d chip=%d magic=%x\n", islocal, isonchip, DBG_BASE->magic_id);
 
+		printf("base=%p end1=%p end2=%p pt1=%p end=%p \n", BJL_BASE_PT, pt_end1, pt_end2, pt1, pt2);
+		
+		//BJH_CK((BJL_BASE_PT + BJ_SHARED_MEM_START_DISP) > (((uint8_t*)pt_dst) + blk_sz));
+
 		//memcpy(pt_dst, pt_src, blk_sz);		// CHANGES MEMORY OUTSIDE OF RANGES !!!!! WHY !!!!
 		bj_memcpy(pt_dst, pt_src, blk_sz);		// CHANGES MEMORY OUTSIDE OF RANGES !!!!! WHY !!!!
+
+		//BJH_CK(DBG_BASE->magic_id == BJ_MAGIC_ID);
 
 		//BJH_CK(DBG_BASE->magic_id == BJ_MAGIC_ID);
 
@@ -494,8 +511,3 @@ ee_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 	return E_OK;
 }
 
-/*
-void main(){
-	printf("CODE_THIS_MAIN !! ");
-}
-*/

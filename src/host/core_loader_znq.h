@@ -33,6 +33,31 @@ extern "C"
 {
 #endif
 
+//=====================================================================================
+// IMPORTANT NOTE:
+// ---------------
+
+// The following displacemente MUST match the definitions in the linker script and the 
+// Hardware Description File (HDF) passed to e_init.
+
+#define BJ_SHARED_MEM_START_DISP (0x01000000)
+
+// Current link script: bj-ld-script.ldf
+// Current link addres for section 'shared_dram': EXTERNAL_DRAM_1
+// Current origin of EXTERNAL_DRAM_1: 0x8f000000
+// Current HDF: the value of EPIPHANY_HDF enviroment variable because e_initi is called with NULL
+// Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf
+// Current value of EMEM_BASE_ADDRESS in HDF: 0x8e000000
+
+// So we have:
+// EMEM_BASE_ADDRESS 	+ BJ_SHARED_MEM_START_DISP 	== ORIGIN(EXTERNAL_DRAM_1)
+// 0x8e000000 			+ 0x01000000 				== 0x8f000000
+
+// Note also that these addresses are AS SEEN FROM THE EPIPHANY. Not as seen from the Zynq 
+// side (host side)
+
+
+
 int bj_load(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, e_bool_t start);
 int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, 
 						unsigned rows, unsigned cols, e_bool_t start);
