@@ -476,9 +476,12 @@ bjl_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 			if(pt_end_code > pt_end_mem){
 				bjl_diag(L_D3) {
 					fprintf(bjl_diag_fd,
-							"process_elf(): SKIP section in SHARED DATA virtual (%p) to physical (%p)...\n",
+							"process_elf(): SKIP section in SHARED DATA virtual (%p) to physical (%p). SIZE=%u\n",
 							(void*) phdr[ihdr].p_vaddr,
-							(void*) dst); }
+							(void*) dst,
+							blk_sz
+							); 
+				}
 				continue;	// Its data (an structure) NOT code.
 			}
 		}

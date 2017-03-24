@@ -123,6 +123,7 @@ int boot_znq(int argc, char *argv[])
 	char* all_f_nam[tot_cores];
 	memset(&all_f_nam, 0, sizeof(all_f_nam));
 
+	/* */
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
 			//core_id = (row + platform.row) * 64 + col + platform.col;

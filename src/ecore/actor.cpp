@@ -287,6 +287,14 @@ void f3(){
 	f2();
 }
 
+void test_minimal() bj_code_dram;
+void test_minimal() {
+	bjk_glb_init();
+
+	f3();
+
+	bjk_glb_finish();
+}
 void test_abort() bj_code_dram;
 void test_abort() {
 	bjk_glb_init();
@@ -544,5 +552,6 @@ void core_main() {
 	//test_logs();
 	test_send_msg();
 	//test_abort();
+	//test_minimal();
 }
 
