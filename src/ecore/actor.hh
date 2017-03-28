@@ -501,6 +501,8 @@ init_class_names() bj_code_dram;
 void
 ck_sizes() bj_code_dram;
 
+void test_minimal() bj_code_dram;
+
 #ifdef __cplusplus
 }
 #endif

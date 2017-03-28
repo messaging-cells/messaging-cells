@@ -76,6 +76,7 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 
 	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
+	/*
 	printf("binder_sz=%d \n", sh_dat->binder_sz);
 	printf("kernel_sz=%d \n", sh_dat->kernel_sz);
 	printf("agent_sz=%d \n", sh_dat->agent_sz);
@@ -84,6 +85,7 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	printf("agent_grp_sz=%d \n", sh_dat->agent_grp_sz);
 	printf("agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
 	printf("bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
+	*/
 
 	if(sh_dat->exception_code != bjk_invalid_exception){
 		for(int aa = 0; aa < 5; aa++){
@@ -241,6 +243,52 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
 		}
 	}
 	close(log_fd);
+}
+
+uint8_t*
+read_file(char* the_pth, off_t* size){
+	int fd;
+	uint8_t* pt_str = NULL;
+
+	if(size == NULL){
+		return pt_str;
+	}
+	*size = 0;
+
+	fd = open(the_pth, O_RDONLY, 0744);
+	if(fd == -1){
+		*size = 0;
+		return pt_str;
+	}
+
+
+	off_t pos0 = 0;
+	off_t pos1 = lseek(fd, 0, SEEK_END);
+
+	*size = pos1;
+
+	if((pos1 != -1) && (pos1 != 0)){
+		pos0 = lseek(fd, 0, SEEK_SET);
+		if(pos0 != 0){
+			close(fd);
+			*size = 0;
+			return pt_str;
+		}
+
+		pt_str = (uint8_t*)malloc(pos1 + 1);
+		ssize_t nr = read(fd, pt_str, pos1);
+		if(nr != pos1){
+			close(fd);
+			*size = 0;
+			free(pt_str);
+			pt_str = NULL;
+			return pt_str;
+		}
+		pt_str[pos1] = 0;
+	}
+
+	close(fd);
+	return pt_str;
 }
 
 int

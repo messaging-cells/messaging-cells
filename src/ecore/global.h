@@ -165,6 +165,12 @@ bjk_set_irq0_handler() bj_code_dram;
 
 // end_of_macro
 
+//define DBG_CODE_SHD_SZ 20
+//extern uint16_t DBG_CODE_SHD_1[DBG_CODE_SHD_SZ];
+
+void test_link_shd_code() bj_code_dram;	// bj_code_dram
+
+void ck_shd_code();
 
 #ifdef __cplusplus
 }

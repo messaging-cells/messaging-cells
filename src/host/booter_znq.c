@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
+#include <sys/mman.h>
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,7 +111,11 @@ int boot_znq(int argc, char *argv[])
 	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	e_reset_group(&dev);
-	bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE); // resets magic_id !!!!!
+	int err = bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE); 
+	if(err == E_ERR){
+		printf("Loading_group_failed.\n");
+		return 0;
+	}
 
 	max_row = 1;
 	max_col = 2;
@@ -123,7 +128,6 @@ int boot_znq(int argc, char *argv[])
 	char* all_f_nam[tot_cores];
 	memset(&all_f_nam, 0, sizeof(all_f_nam));
 
-	/* */
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
 			//core_id = (row + platform.row) * 64 + col + platform.col;
@@ -264,8 +268,40 @@ int boot_znq(int argc, char *argv[])
 	return 0;
 }
 
+int map_physical(int argc, char *argv[]) {
+    if (argc < 3) {
+        printf("Usage: %s <phys_addr> <offset>\n", argv[0]);
+        return 0;
+    }
+
+    off_t offset = strtoul(argv[1], NULL, 0);
+    size_t len = strtoul(argv[2], NULL, 0);
+
+	printf("Got: phys_addr=%ld offset=%u\n", offset, len);
+
+    // Truncate offset to a multiple of the page size, or mmap will fail.
+    size_t pagesize = sysconf(_SC_PAGE_SIZE);
+    off_t page_base = (offset / pagesize) * pagesize;
+    off_t page_offset = offset - page_base;
+
+    int fd = open("/dev/mem", O_SYNC);
+    unsigned char *mem = mmap(NULL, page_offset + len, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, page_base);
+    if (mem == MAP_FAILED) {
+        perror("Can't map memory");
+        return -1;
+    }
+
+    size_t i;
+    for (i = 0; i < len; ++i)
+        printf("%02x ", (int)mem[page_offset + i]);
+
+    return 0;
+}
+
+
 int main(int argc, char *argv[]) {
 	boot_znq(argc, argv);
+	//map_physical(argc, argv);
 	return 0;
 }
 

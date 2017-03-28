@@ -25,6 +25,7 @@ bj_c_decl {
 	#define bj_asm(code) 
 	#define bj_section(sec)
 	#define bj_align(aa)
+	#define bj_naked_fn
 	#define bj_isr_fn 
 	#define bj_code_dram 
 	#define bj_shared_dram
@@ -53,12 +54,14 @@ bj_c_decl {
 	#define bj_align(aa)	__attribute__ ((aligned (aa)))
 
 	#ifdef IS_CORE_CODE
+		#define bj_naked_fn __attribute__((naked)) 
 		#define bj_isr_fn __attribute__((interrupt)) 
 		#define bj_code_dram bj_section("code_dram")
 		#define bj_shared_dram bj_section("shared_dram")
 		#define bj_data_bank2 bj_section(".data_bank2")
 		#define CORE_CODE(cod) cod
 	#else
+		#define bj_naked_fn
 		#define bj_isr_fn 
 		#define bj_code_dram 
 		#define bj_shared_dram

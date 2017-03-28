@@ -22,14 +22,7 @@ uint8_t*
 bj_memcpy(uint8_t* dest, const uint8_t* src, bj_size_t sz){
 	bj_size_t idx = 0;
 	for(idx = 0; idx < sz; idx++){
-		NO_ZNQ_CODE(BJH_CK(DBG_BASE->magic_id == BJ_MAGIC_ID));
 		dest[idx] = src[idx];
-		NO_ZNQ_CODE(
-			if(DBG_BASE->magic_id != BJ_MAGIC_ID){
-				printf("dest=%p src=%p DBG_BASE=%p val=%d\n", &(dest[idx]), &(src[idx]), DBG_BASE, src[idx]);
-			}
-			BJH_CK(DBG_BASE->magic_id == BJ_MAGIC_ID);
-		)
 	}
 	return dest;
 }

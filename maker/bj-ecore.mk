@@ -63,6 +63,7 @@ SRC_INCDIRS := $(SRC_ECORE_DIR)
 #	$(SRC_ECORE_DIR)/dyn_mem.cpp \
 #	$(SRC_ECORE_DIR)/actor.cpp \
 #	$(SRC_ECORE_DIR)/std2.c \
+#	$(SRC_ECORE_DIR)/a_shd_code_error.cpp \
 
 SOURCES := \
 	$(SRC_ECORE_DIR)/interruptions.c \
@@ -79,7 +80,6 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/dyn_mem.cpp \
 	$(SRC_ECORE_DIR)/binder.cpp \
 	$(SRC_ECORE_DIR)/actor_eph.cpp \
-	$(SRC_ECORE_DIR)/actor.cpp \
-	$(SRC_ECORE_DIR)/test_logs.c 
+	$(SRC_ECORE_DIR)/actor.cpp 
 
 

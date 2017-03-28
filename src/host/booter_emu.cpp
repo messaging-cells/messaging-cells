@@ -270,10 +270,25 @@ void pw2_ops(int argc, char *argv[]){
 	}
 }
 
+void test_align(){
+	void* pt = (void*)0x8e01f1f0;
+	printf("TEST_ALIGN\n");
+	if(BJ_IS_ALIGNED_16(pt)){
+		printf("16\n");
+	}	
+	if(BJ_IS_ALIGNED_32(pt)){
+		printf("32\n");
+	}	
+	if(BJ_IS_ALIGNED_64(pt)){
+		printf("64\n");
+	}	
+}
+
 int main(int argc, char *argv[]) {
 	host_main(argc, argv);
 	//pw2_ops(argc, argv);
 	//show_sizes();
+	//test_align();
 }
 
 

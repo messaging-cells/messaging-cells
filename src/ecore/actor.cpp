@@ -287,14 +287,6 @@ void f3(){
 	f2();
 }
 
-void test_minimal() bj_code_dram;
-void test_minimal() {
-	bjk_glb_init();
-
-	f3();
-
-	bjk_glb_finish();
-}
 void test_abort() bj_code_dram;
 void test_abort() {
 	bjk_glb_init();
@@ -320,7 +312,8 @@ void test_logs() {
 	}
 
 	bjk_glb_finish();
-}*/
+}
+*/
 
 actor*	//	static 
 kernel::get_core_actor(bj_core_id_t dst_id){
@@ -544,6 +537,16 @@ void test_send_msg() {
 
 	bjk_slog2("FINISHED !!\n");	
 	kernel::finish_sys();
+}
+
+void test_minimal() {
+	bjk_glb_init();
+	bjk_slog2("STARTED !!\n");	
+
+	//test_link_shd_code();	// THIS MAKES IT FAIL !!!!
+
+	bjk_slog2("FINISHED !!\n");	
+	bjk_glb_finish();
 }
 
 void core_main() {

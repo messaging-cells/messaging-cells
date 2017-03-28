@@ -44,6 +44,9 @@ bj_type_sz(bj_type_t tt);
 void
 print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core);
 
+uint8_t*
+read_file(char* the_pth, off_t* size);
+
 int
 write_file(char* the_pth, char* the_data, long the_sz, int write_once);
 

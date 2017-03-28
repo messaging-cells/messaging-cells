@@ -33,6 +33,8 @@ extern "C"
 {
 #endif
 
+#include "shared.h"
+
 //=====================================================================================
 // IMPORTANT NOTE:
 // ---------------
@@ -61,6 +63,13 @@ extern "C"
 int bj_load(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, e_bool_t start);
 int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, 
 						unsigned rows, unsigned cols, e_bool_t start);
+
+#define DBGH_CODE_SHD_SZ 20
+extern uint16_t DBGH_CODE_SHD_1[DBGH_CODE_SHD_SZ];
+extern bj_addr_t DBGH_FUNC_ADDR;
+
+void
+ck_dbg_shd_code(char* msg, uint16_t* base);
 
 #ifdef __cplusplus
 }
