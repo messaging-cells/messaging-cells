@@ -31,7 +31,7 @@ LD_IN_SECTIONS :=
 
 # =======================================
 
-TARGET := bj-core-actor.elf
+TARGET := bj-bug-core-actor.elf
 
 LD_FLAGS_1 := -static
 TGT_LDFLAGS := -T ${E_LDF} -L${DIR_ELIBS_1} -L${DIR_ELIBS_2} --strip-debug ${LD_IN_SECTIONS} ${LD_FLAGS_1}
@@ -81,6 +81,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/binder.cpp \
 	$(SRC_ECORE_DIR)/actor_eph.cpp \
 	$(SRC_ECORE_DIR)/actor.cpp \
+	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/a_shd_code_error.cpp
 
 

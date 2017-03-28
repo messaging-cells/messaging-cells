@@ -67,6 +67,10 @@ int boot_znq(int argc, char *argv[])
 	e_mem_t emem;
 	char f_nm[200];
 
+	if(argc > 1){
+		epiphany_elf_nm = argv[1];
+		printf("Using core executable: %s \n", epiphany_elf_nm);
+	}
 	//e_set_loader_verbosity(H_D0);
 
 	e_init(NULL);

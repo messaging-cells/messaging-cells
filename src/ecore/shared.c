@@ -1,14 +1,6 @@
 
 #include "shared.h"
 
-#ifdef IS_ZNQ_CODE
-	#include <stdio.h>
-	#include "booter.h"
-	extern bj_off_sys_st* DBG_BASE;
-#endif
-
-#define NO_ZNQ_CODE(cod)
-
 uint8_t*
 bj_memset(uint8_t* dest, uint8_t val, bj_size_t sz){
 	bj_size_t idx = 0;

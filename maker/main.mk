@@ -22,7 +22,7 @@ ETOOLS=${ESDK}/tools
 
 SRC_DIR := ../src
 
-SUBMAKEFILES := dlmalloc-emu.mk dlmalloc-znq.mk bj-zynq.mk bj-ecore.mk bj-emu.mk 
+SUBMAKEFILES := dlmalloc-emu.mk dlmalloc-znq.mk bj-zynq.mk bj-ecore.mk bj-emu.mk bj-bug-ecore.mk
 # SUBMAKEFILES := bj-zynq.mk bj-ecore.mk 
 # SUBMAKEFILES := bj-emu.mk 
 

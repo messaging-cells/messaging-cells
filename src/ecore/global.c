@@ -10,28 +10,8 @@ bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_shared_dram;
 //======================================================================
 // global funcs
 
-/*
-uint16_t DBG_CODE_SHD_1[DBG_CODE_SHD_SZ];
-
-void
-ck_shd_code(){
-	for(int aa = 0; aa < DBG_CODE_SHD_SZ; aa++){
-		if(DBG_CODE_SHD_1[aa] != ((uint16_t*)test_link_shd_code)[aa]){
-			bjk_slog("CK_SH_FAILED !!!");
-			break;
-		}
-		bjk_xlog(DBG_CODE_SHD_1[aa]);
-		bjk_slog("\n");
-	}
-}
-*/
-
 void 
 bjk_glb_init(void) {
-	/*for(int aa = 0; aa < DBG_CODE_SHD_SZ; aa++){
-		DBG_CODE_SHD_1[aa] = ((uint16_t*)test_link_shd_code)[aa];
-	}*/
-
 	// basic init
 	bjk_set_irq0_handler();
 
@@ -92,20 +72,10 @@ bjk_glb_init(void) {
 		bjk_set_finished(BJ_NOT_FINISHED_VAL);
 		bj_set_off_chip_var(glb_dat->off_core_pt->is_waiting, BJ_NOT_WAITING);
 	}
-
-	/*
-	ck_shd_code();
-	bjk_slog("ADDRES_test_link_shd_code\n");
-	bjk_xlog((bj_addr_t)test_link_shd_code);
-	bjk_slog("\n");
-	bjk_xlog((bj_addr_t)(&test_link_shd_code));
-	bjk_slog("\n");
-	*/
 }
 
 void 
 bjk_glb_finish(){
-	//bjk_get_glb_in_core_shd()->dbg_progress_flag = 0xeee;	
 	bjk_set_finished(BJ_FINISHED_VAL);
 }
 
