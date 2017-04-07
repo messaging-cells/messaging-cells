@@ -107,11 +107,18 @@ FILE *bjl_diag_fd = bj_null;
 uint8_t* BJL_BASE_PT = bj_null;
 
 void
-bj_ck_memload(uint8_t* pt1, uint8_t* pt2, size_t sz){
+bj_ck_memload(uint8_t* dst, uint8_t* src, size_t sz){
+	bool ok = true;
 	for(long aa = 0; aa < sz; aa++){
-		if(pt1[aa] != pt2[aa]){
-			bjh_abort_func(9, "bj_ck_memload() FAILED !! CODE_LOADING_FAILED !!\n");
+		if(dst[aa] != src[aa]){
+			ok = false;
+			break;
 		}
+	}
+	if(! ok){
+		write_file("SOURCE_shd_mem_dump.dat", src, sz, false);
+		write_file("DEST_shd_mem_dump.dat", dst, sz, false);
+		bjh_abort_func(9, "bj_ck_memload() FAILED !! CODE_LOADING_FAILED !!\n");
 	}
 }
 
@@ -139,6 +146,65 @@ bjl_rndl_page(unsigned long size)
 	return rsize;
 }
 
+/*
+	off_t			 phy_base;	  // physical global base address of external memory segment as seen by host
+	off_t			 ephy_base;	  // physical global base address of external memory segment as seen by devic
+	size_t			 size;		  // size of eDRAM allocated buffer for host side
+*/
+
+void
+print_platform_segs(e_platform_t* plat){
+	if(plat == NULL){
+		return;
+	}
+	int num = plat->num_emems;
+	e_memseg_t *all_seg = plat->emem;
+	printf("PLATAFORM NUM SEGMENTS=%d \n", num);
+	for(int aa = 0; aa < num; aa++){
+		printf("objtype=%d phy_base=%lu ephy_base=%lu size=%u type=%d \n", 
+			all_seg[aa].objtype, all_seg[aa].phy_base, all_seg[aa].ephy_base, all_seg[aa].size, all_seg[aa].type);
+	}
+	unsigned long psz = sysconf(_SC_PAGE_SIZE);
+	printf("page size=%lu \n", psz);
+	printf("------------------------------end of platform segments\n");
+}
+
+// prints:
+// objtype=0 phy_base=2382364672 ephy_base=2382364672 size=33554432 type=0
+// page size=4096
+
+/*
+typedef struct e_mem_t {
+	e_objtype_t		 objtype;	  // object type identifier
+	off_t			 phy_base;	  // physical global base address of external memory buffer as seen by host side
+	off_t			 page_base;	  // physical base address of memory page
+	off_t			 page_offset; // offset of memory region base to memory page base
+	size_t			 map_size;	  // size of eDRAM allocated buffer for host side
+	off_t			 ephy_base;	  // physical global base address of external memory buffer as seen by device side
+	size_t			 emap_size;	  // size of eDRAM allocated buffer for device side
+	void			*mapped_base; // for mmap
+	void			*base;		  // application (virtual) space base address of external memory buffer
+	int				 memfd;		  // for mmap
+
+	void			*priv;		  // Target private
+} e_mem_t;
+
+*/
+
+void
+print_mem_data(e_mem_t *mbuf){
+	printf("MEM_DATA \n");
+	printf("phy_base=%lu page_base=%lu page_offset=%lu map_size=%u ephy_base=%lu \n", 
+		mbuf->phy_base, mbuf->page_base, mbuf->page_offset, mbuf->map_size, mbuf->ephy_base);
+	printf("emap_size=%u mapped_base=%p base=%p memfd=%d \n", 
+		mbuf->emap_size, mbuf->mapped_base, mbuf->base, mbuf->memfd);
+	printf("-------------- end of mem data \n");
+}
+
+// prints:
+// phy_base=2382364672 page_base=2382364672 page_offset=0 map_size=33554432 ephy_base=2382364672 
+// emap_size=33554432 mapped_base=0x4 base=0x1000000 memfd=5
+
 #define BJL_EPIPHANY_DEV "/dev/epiphany/mesh0"
 int 
 bjl_shd_alloc(e_mem_t *mbuf, off_t offset, size_t size)
@@ -154,6 +220,7 @@ bjl_shd_alloc(e_mem_t *mbuf, off_t offset, size_t size)
 
 	bjl_diag(L_D2) { fprintf(bjl_diag_fd, 
 		"shd_alloc(): allocating EMEM buffer at offset 0x%08x\n", (uint) offset); 
+		print_platform_segs(&e_platform);
 	}
 
 	// TODO: this takes only the 1st segment into account
@@ -175,15 +242,29 @@ bjl_shd_alloc(e_mem_t *mbuf, off_t offset, size_t size)
 	bjl_diag(L_D2) { fprintf(bjl_diag_fd, 
 		"shd_alloc(): mbuf.phy_base = 0x%08x, mbuf.ephy_base = 0x%08x, mbuf.base = 0x%08x, mbuf.size = 0x%08x\n",
 		(uint) mbuf->phy_base, (uint) mbuf->ephy_base, (uint) mbuf->base, (uint) mbuf->map_size); 
+		print_mem_data(mbuf);
+		//printf("TYPE ENTER (before mmap)\n");
+		//getchar();
 	}
 
-	mbuf->mapped_base = mmap(NULL, mbuf->map_size, PROT_READ|PROT_WRITE, MAP_SHARED, mbuf->memfd, mbuf->page_base);
+	mbuf->mapped_base = mmap(NULL, mbuf->map_size, PROT_READ|PROT_WRITE, 
+			MAP_SHARED, mbuf->memfd, mbuf->page_base);
+	//mbuf->mapped_base = mmap(NULL, mbuf->map_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, 
+	//							mbuf->memfd, mbuf->page_base);	// FAILS BEFORE ABORT !
 	mbuf->base = (void*)(((char*)mbuf->mapped_base) + mbuf->page_offset);
+
+	/*bjl_diag(L_D2) { 
+		printf("TYPE ENTER (after mmap) mbuf->base=%p \n", mbuf->base); 
+		getchar();
+	}*/
 
 	if (mbuf->mapped_base == MAP_FAILED){
 		warnx("shd_alloc(): mmap failure.");
 		return E_ERR;
 	}
+	// DIFF OF "/proc/PID/mpas is
+	// b4b92000-b6b92000 rw-s 8e000000 00:06 2684       /dev/epiphany/mesh0
+	// TYPE ENTER (after mmap) mbuf->base=0xb4b92000
 
 	return E_OK;
 }

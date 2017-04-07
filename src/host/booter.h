@@ -48,7 +48,7 @@ uint8_t*
 read_file(char* the_pth, off_t* size);
 
 int
-write_file(char* the_pth, char* the_data, long the_sz, int write_once);
+write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once);
 
 int 
 bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);

@@ -30,8 +30,6 @@
 
 const char* epiphany_elf_nm = "bj-core-actor.elf";
 
-int	write_file(char* the_pth, char* the_data, long the_sz, int write_once);
-
 bj_sys_sz_st bj_glb_sys;
 
 bj_sys_sz_st*
