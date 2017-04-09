@@ -1,10 +1,9 @@
 
 IS_CORE_FLAG := -DIS_CORE_CODE
 
-# DIR_ELIBS_1=${ETOOLS}/e-gnu/epiphany-elf/lib
-DIR_ELIBS_1 := 
-# DIR_ELIBS_2=${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
-DIR_ELIBS_2 := 
+# FLG_1 := -L${ETOOLS}/e-gnu/epiphany-elf/lib
+# FLG_2 := -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
+# LIB_FLAGS_1 := ${FLG_1} ${FLG_2}
 
 E_LDF=bj-ld-script.ldf
 # ELDF=${ESDK}/bsps/current/fast.ldf
@@ -33,10 +32,11 @@ LD_IN_SECTIONS :=
 
 TARGET := bj-bug-core-actor.elf
 
-LD_FLAGS_1 := -static
-TGT_LDFLAGS := -T ${E_LDF} -L${DIR_ELIBS_1} -L${DIR_ELIBS_2} --strip-debug ${LD_IN_SECTIONS} ${LD_FLAGS_1}
+LD_FLAGS_1 := -static ${LD_IN_SECTIONS} 
+TGT_LDFLAGS := -T ${E_LDF} -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
 
-TGT_LDLIBS  := ${STDLIBS} ${ELIBS}
+TGT_LDLIBS  := ${STDLIBS} ${ELIBS} -lbjk-actor
+TGT_PREREQS := libbjk-actor.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
@@ -66,21 +66,7 @@ SRC_INCDIRS := $(SRC_ECORE_DIR)
 #	$(SRC_ECORE_DIR)/a_shd_code_error.cpp \
 
 SOURCES := \
-	$(SRC_ECORE_DIR)/interruptions.c \
-	$(SRC_ECORE_DIR)/umm_malloc.c \
-	$(SRC_ECORE_DIR)/umm_malloc_eph.c \
-	$(SRC_ECORE_DIR)/log.c \
-	$(SRC_ECORE_DIR)/shared.c \
-	$(SRC_ECORE_DIR)/global.c \
-	$(SRC_ECORE_DIR)/global_eph.c \
-	$(SRC_ECORE_DIR)/rr_array.c \
-	$(SRC_ECORE_DIR)/trace_eph.c \
 	$(SRC_ECORE_DIR)/call_core_main_eph.c \
-	$(SRC_ECORE_DIR)/e_start.s \
-	$(SRC_ECORE_DIR)/dyn_mem.cpp \
-	$(SRC_ECORE_DIR)/binder.cpp \
-	$(SRC_ECORE_DIR)/actor_eph.cpp \
-	$(SRC_ECORE_DIR)/actor.cpp \
 	$(SRC_ECORE_DIR)/test_logs.c \
 	$(SRC_ECORE_DIR)/a_shd_code_error.cpp
 
