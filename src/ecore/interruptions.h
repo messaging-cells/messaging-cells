@@ -57,8 +57,6 @@ bjk_timer0_handler(void); // ivt_entry_timer0
 
 	// end_macro
 
-	extern uint32_t test_send_irq3;
-
 #endif	// IS_CORE_CODE
 
 #ifdef IS_EMU_CODE

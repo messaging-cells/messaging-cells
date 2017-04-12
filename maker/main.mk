@@ -22,14 +22,21 @@ ETOOLS=${ESDK}/tools
 
 SRC_DIR := ../src
 
+EPH_SAMPLES_DIR := ./eph_samples
+EMU_SAMPLES_DIR := ./emu_samples
+
 SUBMAKEFILES := \
 	dlmalloc-emu.mk \
 	dlmalloc-znq.mk \
 	bj-zynq.mk \
 	bj-emu.mk \
 	bj-actor-ecore-lib.mk \
-	bj-ecore.mk \
-	bj-bug-ecore.mk
+	${EMU_SAMPLES_DIR}/send_msg_emu.mk \
+	${EPH_SAMPLES_DIR}/loader_bug.mk \
+	${EPH_SAMPLES_DIR}/send_msg.mk \
+	${EPH_SAMPLES_DIR}/mix_elfs/pru_1.mk \
+	${EPH_SAMPLES_DIR}/mix_elfs/pru_2.mk \
+	${EPH_SAMPLES_DIR}/mix_elfs/pru_3.mk \
 
 
 # SUBMAKEFILES := bj-zynq.mk bj-ecore.mk 

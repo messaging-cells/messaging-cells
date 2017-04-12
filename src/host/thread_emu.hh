@@ -18,10 +18,10 @@ struct thread_info_st {    /* Used as argument to thread_start() */
 	char 		thread_name[NAMELEN];
 	char 		*argv_string;      /* From command-line argument */
 
+	void 		(*core_func)();
+
 	bj_core_id_t 	bjk_core_id;
-
 	bjk_glb_sys_st	bj_glb_sys_data;
-
 	kernel 			bjk_THE_KERNEL;
 
 	umm_block 		umm_heap[UMM_HEAP_NUM_BLOCKS];

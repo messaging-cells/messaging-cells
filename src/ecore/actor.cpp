@@ -216,105 +216,6 @@ kernel::finish_sys(){
 	bjk_glb_finish();
 }
 
-void test_send_irq1() bj_code_dram;
-void test_send_irq1() {
-	kernel::init_sys();
-
-	if(bjk_is_core(3, 3)){
-		bj_core_id_t dst = kernel::get_core_id();
-		bjk_send_irq(dst, 1);	// send mem exception itself
-	}
-
-	bjk_slog2("FINISHED !!\n");	
-	kernel::finish_sys();
-}
-
-uint32_t test_send_irq3 = 0;
-
-void test_send_irq() bj_code_dram;
-void test_send_irq() {
-	kernel::init_sys();
-	ck_sizes();
-
-	if(kernel::get_sys()->direct_routed.is_alone()){
-		bjk_slog2("direct_routed ALONE\n");
-	}
-
-	test_send_irq3 = 0;
-	
-	if(bjk_is_core(0,0)){
-		bjk_slog2("CORE (0,0) started\n");
-		bj_core_id_t dst = bj_ro_co_to_id(0, 1);
-		wait_inited_state(dst);
-		bjk_slog2("CORE (0,0) SAW core (0,1) INITED\n");
-
-		BJK_MARK_PLACE(START_UGLY_WAIT);
-		wait_value(test_send_irq3, 4);
-		BJK_MARK_PLACE(END_UGLY_WAIT);
-
-		bjk_slog2("got_irq3="); bjk_ilog(test_send_irq3); bjk_slog2("\n");
-	}
-	if(bjk_is_core(0,1)){
-		bjk_slog2("CORE (0,1) started\n");
-		bj_core_id_t dst = bj_ro_co_to_id(0, 0);
-		wait_inited_state(dst);
-		bjk_slog2("CORE (0,1) SAW core (0,0) INITED\n");
-
-		bjk_send_irq(dst, 3);
-		bjk_send_irq(dst, 3);
-		bjk_send_irq(dst, 3);
-		bjk_send_irq(dst, 3);
-
-		bjk_slog2("CORE (0,1) sent 4 irq3\n");
-	}
-
-	bjk_slog2("FINISHED !!\n");	
-	kernel::finish_sys();
-}
-
-bj_c_decl void f1();
-void f1(){
-	bjk_abort((bj_addr_t)f1, 0, bj_null);
-}
-
-bj_c_decl void f2();
-void f2(){
-	f1();
-}
-
-bj_c_decl void f3();
-void f3(){
-	f2();
-}
-
-void test_abort() bj_code_dram;
-void test_abort() {
-	bjk_glb_init();
-
-	f3();
-
-	bjk_glb_finish();
-}
-
-/*
-void test_logs() bj_code_dram;
-void test_logs() {
-	bjk_glb_init();
-
-	bj_core_id_t koid = bjk_get_core_id();
-	bj_core_nn_t num_core = bj_id_to_nn(koid);
-
-	char** john = (char**)(all_tests[num_core]);
-	long john_sz = all_tests_sz[num_core];
-	long ii;
-	for(ii = 0; ii < john_sz; ii++){
-		bjk_slog(john[ii]);
-	}
-
-	bjk_glb_finish();
-}
-*/
-
 actor*	//	static 
 kernel::get_core_actor(bj_core_id_t dst_id){
 	actor* loc_act = kernel::get_core_actor();
@@ -476,6 +377,7 @@ agent_grp::release_all_agts(){
 	}
 }
 
+/*
 void 
 actor_handler(missive* msg){
 	EMU_CK(bjk_addr_is_local(msg->dst));
@@ -549,6 +451,104 @@ void test_minimal() {
 	bjk_glb_finish();
 }
 
+void test_send_irq1() bj_code_dram;
+void test_send_irq1() {
+	kernel::init_sys();
+
+	if(bjk_is_core(3, 3)){
+		bj_core_id_t dst = kernel::get_core_id();
+		bjk_send_irq(dst, 1);	// send mem exception itself
+	}
+
+	bjk_slog2("FINISHED !!\n");	
+	kernel::finish_sys();
+}
+
+uint32_t test_send_irq3 = 0;
+
+void test_send_irq() bj_code_dram;
+void test_send_irq() {
+	kernel::init_sys();
+	ck_sizes();
+
+	if(kernel::get_sys()->direct_routed.is_alone()){
+		bjk_slog2("direct_routed ALONE\n");
+	}
+
+	test_send_irq3 = 0;
+	
+	if(bjk_is_core(0,0)){
+		bjk_slog2("CORE (0,0) started\n");
+		bj_core_id_t dst = bj_ro_co_to_id(0, 1);
+		wait_inited_state(dst);
+		bjk_slog2("CORE (0,0) SAW core (0,1) INITED\n");
+
+		BJK_MARK_PLACE(START_UGLY_WAIT);
+		wait_value(test_send_irq3, 4);
+		BJK_MARK_PLACE(END_UGLY_WAIT);
+
+		bjk_slog2("got_irq3="); bjk_ilog(test_send_irq3); bjk_slog2("\n");
+	}
+	if(bjk_is_core(0,1)){
+		bjk_slog2("CORE (0,1) started\n");
+		bj_core_id_t dst = bj_ro_co_to_id(0, 0);
+		wait_inited_state(dst);
+		bjk_slog2("CORE (0,1) SAW core (0,0) INITED\n");
+
+		bjk_send_irq(dst, 3);
+		bjk_send_irq(dst, 3);
+		bjk_send_irq(dst, 3);
+		bjk_send_irq(dst, 3);
+
+		bjk_slog2("CORE (0,1) sent 4 irq3\n");
+	}
+
+	bjk_slog2("FINISHED !!\n");	
+	kernel::finish_sys();
+}
+
+bj_c_decl void f1();
+void f1(){
+	bjk_abort((bj_addr_t)f1, 0, bj_null);
+}
+
+bj_c_decl void f2();
+void f2(){
+	f1();
+}
+
+bj_c_decl void f3();
+void f3(){
+	f2();
+}
+
+void test_abort() bj_code_dram;
+void test_abort() {
+	bjk_glb_init();
+
+	f3();
+
+	bjk_glb_finish();
+}
+
+void test_logs() bj_code_dram;
+void test_logs() {
+	bjk_glb_init();
+
+	bj_core_id_t koid = bjk_get_core_id();
+	bj_core_nn_t num_core = bj_id_to_nn(koid);
+
+	char** john = (char**)(all_tests[num_core]);
+	long john_sz = all_tests_sz[num_core];
+	long ii;
+	for(ii = 0; ii < john_sz; ii++){
+		bjk_slog(john[ii]);
+	}
+
+	bjk_glb_finish();
+}
+
+
 void core_main() {
 	//test_send_irq1();
 	//test_send_irq();
@@ -558,3 +558,4 @@ void core_main() {
 	//test_minimal();
 }
 
+*/

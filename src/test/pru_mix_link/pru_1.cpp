@@ -1,20 +1,6 @@
 
-#include <cstdlib>
-#include <new>
-
-#ifdef IS_EMU_CODE
-	#include "booter.h"
-#endif
-
-#include "interruptions.h"
-#include "global.h"
-#include "trace.h"
-//include "test_logs.h"
-
-#include "core_main.h"
-#include "dyn_mem.hh"
 #include "actor.hh"
-
+#include "pru_1.h"
 
 void func_1a_shd() bj_code_dram;
 void func_1a_shd(){

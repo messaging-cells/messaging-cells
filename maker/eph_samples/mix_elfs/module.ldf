@@ -61,7 +61,7 @@ MEMORY
 	EXTERNAL_DRAM_0 (WXAI)   : ORIGIN = 0x8e000000, LENGTH = 0x01000000 /* .text, data, rodata, bss and .stack  */
 	EXTERNAL_DRAM_1 (WXAI)   : ORIGIN = 0x8f000000, LENGTH = 0x01000000 /* .heap                                */
 
-	/* interrupts */
+	/* run time lib and crt0 */
 	IVT_RAM (WXAI) : ORIGIN = 0, LENGTH = 0x28
 
 	/* user program, continuous placement */
@@ -75,7 +75,6 @@ MEMORY
 	BANK1_SRAM (WXAI)        : ORIGIN = 0x2000, LENGTH = 8K
 	BANK2_SRAM (WXAI)        : ORIGIN = 0x4000, LENGTH = 8K
 	BANK3_SRAM (WXAI)        : ORIGIN = 0x6000, LENGTH = 8K
-
 }
 
 SECTIONS
@@ -207,13 +206,10 @@ SECTIONS
   .iplt : { *(.iplt) }
   .text :
   {
-    *(.text.unlikely .text.*_unlikely)
-    *(.text.exit .text.exit.*)
-    *(.text.startup .text.startup.*)
-    *(.text.hot .text.hot.*)
-    *(.text .stub .text.* .gnu.linkonce.t.*)
+    *(.text*) 
+    *(.text .stub .text.* .text* .gnu.linkonce.t.*) 
     /* .gnu.warning sections are handled specially by elf32.em. */
-    *(.gnu.warning)
+    *(.gnu.warning) 
   } > INTERNAL_RAM =0
   .fini :
   {

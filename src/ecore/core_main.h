@@ -10,9 +10,7 @@
 bj_c_decl {
 #endif
 
-void 
-core_main() bj_code_dram;
-
+extern void (*CORE_MAIN_FUNC)();
 
 #ifdef __cplusplus
 }

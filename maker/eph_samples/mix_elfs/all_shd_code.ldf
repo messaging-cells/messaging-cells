@@ -1,0 +1,41 @@
+/*
+  all_shared code.ldf
+*/
+
+
+/* linker script for shared code */
+OUTPUT_FORMAT("elf32-epiphany", "elf32-epiphany", "elf32-epiphany")
+OUTPUT_ARCH(epiphany)
+ENTRY(_start)
+
+PROVIDE (___bss_start = __bss_start);
+
+MEMORY
+{
+	CORE_MEM (WXAI) : ORIGIN = 0, LENGTH = 32K 
+
+	EXTERNAL_DRAM_0 (WXAI)   : ORIGIN = 0x8e000000, LENGTH = 0x01000000 /* .text, data, rodata, bss and .stack  */
+	EXTERNAL_DRAM_1 (WXAI)   : ORIGIN = 0x8f000000, LENGTH = 0x01000000 /* .heap                                */
+}
+
+SECTIONS
+{
+	.code_dram    : {*.o(code_dram)   *.o(.code_dram)  } > EXTERNAL_DRAM_0
+	.shared_dram  : {*.o(shared_dram) *.o(.shared_dram)} > EXTERNAL_DRAM_1 
+
+	NEW_LIB_RO            : {lib_a-*.o(.text  .rodata)  *.o(libgloss_epiphany) } > EXTERNAL_DRAM_0
+	NEW_LIB_WR            : {lib_a-*.o(.data)                                  } > EXTERNAL_DRAM_0
+	GNU_C_BUILTIN_LIB_RO  :
+	{
+		*mulsi3.o(.text  .rodata)   *modsi3.o(.text  .rodata)
+		*divsi3.o(.text  .rodata)   *udivsi3.o(.text .rodata)
+		*umodsi3.o(.text .rodata)  _*.o(.text  .rodata)
+	} > EXTERNAL_DRAM_0
+
+	.not_used_0 : {*(.text*) } > CORE_MEM 
+	.not_used_1 : { *(.text*) *(.data) *(.rodata.*) } > CORE_MEM 
+	/* .not_used_2 : {*(.rodata.*) } > CORE_MEM 
+	.not_used_3 : {*(.data) } > CORE_MEM */
+
+/*	. = 0; */
+}

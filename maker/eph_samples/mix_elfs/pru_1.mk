@@ -5,10 +5,12 @@ IS_CORE_FLAG := -DIS_CORE_CODE
 # FLG_2 := -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
 # LIB_FLAGS_1 := ${FLG_1} ${FLG_2}
 
-E_LDF=bj-ld-script.ldf
+E_LDF=eph_samples/mix_elfs/all_shd_code.ldf
+# E_LDF=eph_samples/mix_elfs/module.ldf
 # ELDF=${ESDK}/bsps/current/fast.ldf
 
-SRC_ECORE_DIR := $(SRC_DIR)/ecore
+PRU_SRC_DIR := ../../${SRC_DIR}/test/pru_mix_link
+PRU_INC_DIR := ../../${SRC_DIR}/ecore
 
 DBG_FLAG := -DFULL_DEBUG
 # DBG_FLAG := 
@@ -30,10 +32,10 @@ LD_IN_SECTIONS :=
 
 # =======================================
 
-TARGET := bj-bug-core-actor.elf
+TARGET := eph_pru_1.elf
 
 LD_FLAGS_1 := -static ${LD_IN_SECTIONS} 
-TGT_LDFLAGS := -T ${E_LDF} -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
+TGT_LDFLAGS := -T ${E_LDF} -r -Map=ld_map.txt --cref -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
 
 TGT_LDLIBS  := ${STDLIBS} ${ELIBS} -lbjk-actor
 TGT_PREREQS := libbjk-actor.a
@@ -55,19 +57,10 @@ CXX_FLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables ${S
 CXX_FLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
 SRC_CXXFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1} ${CXX_FLAGS_2}
 
-SRC_INCDIRS := $(SRC_ECORE_DIR) 
-
-#	$(SRC_ECORE_DIR)/test_logs.c \
-#	$(SRC_ECORE_DIR)/umm_malloc.c \
-#	$(SRC_ECORE_DIR)/log.c \
-#	$(SRC_ECORE_DIR)/dyn_mem.cpp \
-#	$(SRC_ECORE_DIR)/actor.cpp \
-#	$(SRC_ECORE_DIR)/std2.c \
-#	$(SRC_ECORE_DIR)/a_shd_code_error.cpp \
+SRC_INCDIRS := $(PRU_INC_DIR) 
 
 SOURCES := \
-	$(SRC_ECORE_DIR)/call_core_main_eph.c \
-	$(SRC_ECORE_DIR)/test_logs.c \
-	$(SRC_ECORE_DIR)/a_shd_code_error.cpp
+	$(PRU_SRC_DIR)/main_eph_1.c \
+	$(PRU_SRC_DIR)/pru_1.cpp
 
 

@@ -11,6 +11,8 @@
 #include "booter.h"
 #include "string_hst.hh"
 
+#include "core_main.h"
+
 // =====================================================================================
 
 bj_sys_sz_st bj_glb_host_sys;
@@ -97,6 +99,7 @@ host_main(int argc, char *argv[])
 			thd_inf.argv_string = bj_null;
 			bj_uint16_to_hex_bytes(thd_inf.thread_num, (uint8_t*)(thd_inf.thread_name));
 			thd_inf.bjk_core_id = core_id;
+			thd_inf.core_func = CORE_MAIN_FUNC;
 
 			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 

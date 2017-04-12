@@ -19,7 +19,7 @@ DBG_FLAG := -DFULL_DEBUG
 
 TARGET := bj-actor-booter.elf
 
-TGT_LDFLAGS := -L${H_LIB_1} -L${TARGET_DIR}
+TGT_LDFLAGS := -Ur -L${H_LIB_1} -L${TARGET_DIR}
 
 TGT_LDLIBS  := -le-hal -le-loader -lm -ldlmallocznq
 TGT_PREREQS := libdlmallocznq.a

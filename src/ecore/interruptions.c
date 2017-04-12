@@ -5,6 +5,8 @@
 
 //pragma GCC diagnostic error "-Wattributes"
 
+uint32_t test_send_irq3 = 0;
+
 void
 bjk_sync_handler(){	// must be set afer normal start in glb init // IVT_RESET has irq0
 	// replaces the boot routines (normal start) that call the main func 

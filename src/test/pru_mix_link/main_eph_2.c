@@ -1,6 +1,6 @@
 
 
-#include "core_main.h"
+#include "pru_2.h"
 
 int main() {
 	pru_main_2();
