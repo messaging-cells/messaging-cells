@@ -289,18 +289,33 @@ bjl_shd_free(e_mem_t *mbuf)
 #define EM_ADAPTEVA_EPIPHANY   0x1223  /* Adapteva's Epiphany architecture.  */
 static inline bool bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr)
 {
-	return ehdr
-		&& memcmp(ehdr->e_ident, ELFMAG, SELFMAG) == 0
-		&& ehdr->e_ident[EI_CLASS] == ELFCLASS32
-		&& ehdr->e_type == ET_EXEC
-		&& ehdr->e_version == EV_CURRENT
-		&& ehdr->e_machine == EM_ADAPTEVA_EPIPHANY;
-}
+	bool ok = true;
+	if(! ehdr){ 
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "bjl_is_epiphany_exec_elf(): ERROR_1\n"); }
+		return false;
+	}
+	if(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) != 0){ 
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "bjl_is_epiphany_exec_elf(): NOT ELFMAG\n"); }
+		ok = false;
+	}
+	if(ehdr->e_ident[EI_CLASS] != ELFCLASS32){
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "bjl_is_epiphany_exec_elf(): NOT ELFCLASS32\n"); }
+		ok = false;
+	}
+	if(ehdr->e_type != ET_EXEC){
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "bjl_is_epiphany_exec_elf(): NOT ET_EXEC\n"); }
+		ok = false;
+	}
+	if(ehdr->e_version != EV_CURRENT){
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "bjl_is_epiphany_exec_elf(): NOT EV_CURRENT\n"); }
+		ok = false;
+	}
+	if(ehdr->e_machine != EM_ADAPTEVA_EPIPHANY){
+		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "bjl_is_epiphany_exec_elf(): NOT EM_ADAPTEVA_EPIPHANY\n"); }
+		ok = false;
+	}
 
-static bool bjl_is_srec_file(const char *hdr)
-{
-	const char srechdr[] = {'S', '0'};
-	return (memcmp(hdr, srechdr, sizeof(srechdr)) == 0);
+	return ok;
 }
 
 int bj_load(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, e_bool_t start)
@@ -417,9 +432,6 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 
 	if (bjl_is_epiphany_exec_elf((Elf32_Ehdr *) file)) {
 		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "load_group(): loading ELF file %s ...\n", executable); }
-	} else if (bjl_is_srec_file((char *) file)) {
-		is_srec = true;
-		warnx("load_group(): WARNING: SREC file support is deprecated and will be removed in the next ESDK release. Use ELF format instead.\n");
 	} else {
 		bjl_diag(L_D1) { fprintf(bjl_diag_fd, "load_group(): ERROR: unidentified file format\n"); }
 		warnx("ERROR: Can't load executable file: unidentified format.\n");

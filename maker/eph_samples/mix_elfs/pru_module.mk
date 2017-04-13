@@ -1,16 +1,15 @@
 
 IS_CORE_FLAG := -DIS_CORE_CODE
 
-MAP_F := -Map=eph_samples/mix_elfs/pru_2_ld_map.txt --cref
-
 # FLG_1 := -L${ETOOLS}/e-gnu/epiphany-elf/lib
 # FLG_2 := -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
 # LIB_FLAGS_1 := ${FLG_1} ${FLG_2}
 
+# E_LDF=bj-ld-script.ldf
 E_LDF=eph_samples/mix_elfs/module.ldf
 # ELDF=${ESDK}/bsps/current/fast.ldf
 
-PRU_SRC_DIR := ../../${SRC_DIR}/test/pru_mix_link
+PRU_SRC_DIR := ../../${SRC_DIR}/test/send_msg
 PRU_INC_DIR := ../../${SRC_DIR}/ecore
 
 DBG_FLAG := -DFULL_DEBUG
@@ -33,10 +32,10 @@ LD_IN_SECTIONS :=
 
 # =======================================
 
-TARGET := eph_pru_2.elf
+TARGET := pru_module.elf
 
 LD_FLAGS_1 := -static ${LD_IN_SECTIONS} 
-TGT_LDFLAGS := -T ${E_LDF} -r ${MAP_F} -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
+TGT_LDFLAGS := -T ${E_LDF} -r -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
 
 TGT_LDLIBS  := ${STDLIBS} ${ELIBS} -lbjk-actor
 TGT_PREREQS := libbjk-actor.a
@@ -60,8 +59,6 @@ SRC_CXXFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1} ${CXX_F
 
 SRC_INCDIRS := $(PRU_INC_DIR) 
 
-SOURCES := \
-	$(PRU_SRC_DIR)/main_eph_2.c \
-	$(PRU_SRC_DIR)/pru_2.cpp
+SOURCES := $(PRU_SRC_DIR)/send_msg.cpp
 
 

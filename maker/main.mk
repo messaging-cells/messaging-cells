@@ -37,6 +37,7 @@ SUBMAKEFILES := \
 	${EPH_SAMPLES_DIR}/mix_elfs/pru_1.mk \
 	${EPH_SAMPLES_DIR}/mix_elfs/pru_2.mk \
 	${EPH_SAMPLES_DIR}/mix_elfs/pru_3.mk \
+	${EPH_SAMPLES_DIR}/mix_elfs/pru_module.mk \
 
 
 # SUBMAKEFILES := bj-zynq.mk bj-ecore.mk 

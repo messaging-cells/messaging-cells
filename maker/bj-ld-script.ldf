@@ -75,7 +75,6 @@ MEMORY
 	BANK1_SRAM (WXAI)        : ORIGIN = 0x2000, LENGTH = 8K
 	BANK2_SRAM (WXAI)        : ORIGIN = 0x4000, LENGTH = 8K
 	BANK3_SRAM (WXAI)        : ORIGIN = 0x6000, LENGTH = 8K
-
 }
 
 SECTIONS
@@ -207,13 +206,10 @@ SECTIONS
   .iplt : { *(.iplt) }
   .text :
   {
-    *(.text.unlikely .text.*_unlikely)
-    *(.text.exit .text.exit.*)
-    *(.text.startup .text.startup.*)
-    *(.text.hot .text.hot.*)
-    *(.text .stub .text.* .gnu.linkonce.t.*)
+    *(.text*) 
+    *(.text .stub .text.* .gnu.linkonce.t.*) 
     /* .gnu.warning sections are handled specially by elf32.em. */
-    *(.gnu.warning)
+    *(.gnu.warning) 
   } > INTERNAL_RAM =0
   .fini :
   {

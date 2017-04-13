@@ -1,13 +1,16 @@
 
 IS_CORE_FLAG := -DIS_CORE_CODE
 
+MAP_F := -Map=eph_samples/mix_elfs/pru_1_ld_map.txt --cref
+
 # FLG_1 := -L${ETOOLS}/e-gnu/epiphany-elf/lib
 # FLG_2 := -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
 # LIB_FLAGS_1 := ${FLG_1} ${FLG_2}
 
-E_LDF=eph_samples/mix_elfs/all_shd_code.ldf
-# E_LDF=eph_samples/mix_elfs/module.ldf
+# E_LDF=eph_samples/mix_elfs/all_shd_code.ldf
+E_LDF=eph_samples/mix_elfs/module.ldf
 # ELDF=${ESDK}/bsps/current/fast.ldf
+
 
 PRU_SRC_DIR := ../../${SRC_DIR}/test/pru_mix_link
 PRU_INC_DIR := ../../${SRC_DIR}/ecore
@@ -35,7 +38,7 @@ LD_IN_SECTIONS :=
 TARGET := eph_pru_1.elf
 
 LD_FLAGS_1 := -static ${LD_IN_SECTIONS} 
-TGT_LDFLAGS := -T ${E_LDF} -r -Map=ld_map.txt --cref -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
+TGT_LDFLAGS := -T ${E_LDF} -r ${MAP_F} -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
 
 TGT_LDLIBS  := ${STDLIBS} ${ELIBS} -lbjk-actor
 TGT_PREREQS := libbjk-actor.a
