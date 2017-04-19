@@ -85,6 +85,30 @@ bj_c_decl {
 
 
 #define bj_aligned bj_align(8) 
+
+
+#define bj_comm_cod bj_section("common_code")
+#define bj_comm_dat bj_section("common_data")
+
+#define bj_mod1_cod bj_section("module1_code")
+#define bj_mod2_cod bj_section("module2_code")
+#define bj_mod3_cod bj_section("module3_code")
+#define bj_mod4_cod bj_section("module4_code")
+#define bj_mod5_cod bj_section("module5_code")
+#define bj_mod6_cod bj_section("module6_code")
+#define bj_mod7_cod bj_section("module7_code")
+#define bj_mod8_cod bj_section("module8_code")
+#define bj_mod9_cod bj_section("module9_code")
+
+#define bj_mod1_dat bj_section("module1_data")
+#define bj_mod2_dat bj_section("module2_data")
+#define bj_mod3_dat bj_section("module3_data")
+#define bj_mod4_dat bj_section("module4_data")
+#define bj_mod5_dat bj_section("module5_data")
+#define bj_mod6_dat bj_section("module6_data")
+#define bj_mod7_dat bj_section("module7_data")
+#define bj_mod8_dat bj_section("module8_data")
+#define bj_mod9_dat bj_section("module9_data")
 	
 #ifdef __cplusplus
 }

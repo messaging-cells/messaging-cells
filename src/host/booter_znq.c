@@ -69,6 +69,11 @@ int boot_znq(int argc, char *argv[])
 		epiphany_elf_nm = argv[1];
 		printf("Using core executable: %s \n", epiphany_elf_nm);
 	}
+	if(argc > 2){
+		printf("LOADING WITH MEMCPY \n");
+		LOAD_WITH_MEMCPY = true;
+	}
+
 	//e_set_loader_verbosity(H_D0);
 
 	e_init(NULL);

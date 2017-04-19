@@ -58,7 +58,7 @@ extern "C"
 // Note also that these addresses are AS SEEN FROM THE EPIPHANY. Not as seen from the Zynq 
 // side (host side)
 
-
+extern bool LOAD_WITH_MEMCPY;
 
 int bj_load(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, e_bool_t start);
 int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, 

@@ -25,19 +25,26 @@ SRC_DIR := ../src
 EPH_SAMPLES_DIR := ./eph_samples
 EMU_SAMPLES_DIR := ./emu_samples
 
+STD_EPH_CFLAGS := -Wall -std=gnu11 -ffreestanding -nostdlib -nostartfiles -fno-default-inline 
+
+CXXFLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables 
+CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
+STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
+
+ATVA_EPH_LFLAGS := -L${ETOOLS}/e-gnu/epiphany-elf/lib -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
+
 SUBMAKEFILES := \
 	dlmalloc-emu.mk \
 	dlmalloc-znq.mk \
 	bj-zynq.mk \
-	bj-emu.mk \
+	bj-emu-actor-lib.mk \
 	bj-actor-ecore-lib.mk \
+	${EPH_SAMPLES_DIR}/logs_test.mk \
 	${EMU_SAMPLES_DIR}/send_msg_emu.mk \
 	${EPH_SAMPLES_DIR}/loader_bug.mk \
+	${EPH_SAMPLES_DIR}/hello_world.mk \
 	${EPH_SAMPLES_DIR}/send_msg.mk \
-	${EPH_SAMPLES_DIR}/mix_elfs/pru_1.mk \
-	${EPH_SAMPLES_DIR}/mix_elfs/pru_2.mk \
-	${EPH_SAMPLES_DIR}/mix_elfs/pru_3.mk \
-	${EPH_SAMPLES_DIR}/mix_elfs/pru_module.mk \
+	${SRC_DIR}/test/modules/modules.mk \
 
 
 # SUBMAKEFILES := bj-zynq.mk bj-ecore.mk 

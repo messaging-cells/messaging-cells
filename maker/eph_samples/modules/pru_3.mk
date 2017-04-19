@@ -36,7 +36,7 @@ LD_IN_SECTIONS :=
 TARGET := eph_pru_3.elf
 
 LD_FLAGS_1 := -static ${LD_IN_SECTIONS} 
-TGT_LDFLAGS := -T ${E_LDF} -r ${MAP_F} -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
+TGT_LDFLAGS := -T ${E_LDF} -L${TARGET_DIR} --strip-debug ${LD_FLAGS_1}
 
 TGT_LDLIBS  := ${STDLIBS} ${ELIBS} -lbjk-actor
 TGT_PREREQS := libbjk-actor.a

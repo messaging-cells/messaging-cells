@@ -10,7 +10,7 @@ E_LDF=bj-ld-script.ldf
 # ELDF=${ESDK}/bsps/current/fast.ldf
 
 SRC_ECORE_DIR := ../${SRC_DIR}/ecore
-PRU_SRC_DIR := ../${SRC_DIR}/test/send_msg
+PRU_SRC_DIR := ../${SRC_DIR}/test/loader_bug
 PRU_INC_DIR := ${SRC_ECORE_DIR}
 
 DBG_FLAG := -DFULL_DEBUG
@@ -62,7 +62,7 @@ SRC_INCDIRS := $(PRU_INC_DIR)
 
 SOURCES := \
 	$(PRU_SRC_DIR)/send_msg.cpp \
-	$(SRC_ECORE_DIR)/test_logs.c \
-	$(SRC_ECORE_DIR)/a_shd_code_error.cpp
+	$(PRU_SRC_DIR)/test_logs.c \
+	$(PRU_SRC_DIR)/a_shd_code_error.cpp
 
 

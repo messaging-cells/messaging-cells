@@ -47,6 +47,8 @@
 #define BJL_MARK_USED(X)  ((void)(&(X)))
 #endif
 
+bool LOAD_WITH_MEMCPY = false;
+
 void ee_get_coords_from_id(e_epiphany_t *dev, unsigned coreid,
 								  unsigned *row, unsigned *col);
 
@@ -131,6 +133,7 @@ bj_memload(uint8_t* dest, const uint8_t* src, bj_size_t sz){
 	return dest;
 }
 
+/*
 unsigned long 
 bjl_rndl_page(unsigned long size)
 {
@@ -146,11 +149,10 @@ bjl_rndl_page(unsigned long size)
 	return rsize;
 }
 
-/*
-	off_t			 phy_base;	  // physical global base address of external memory segment as seen by host
-	off_t			 ephy_base;	  // physical global base address of external memory segment as seen by devic
-	size_t			 size;		  // size of eDRAM allocated buffer for host side
-*/
+
+// 	off_t			 phy_base;	  // physical global base address of external memory segment as seen by host
+// 	off_t			 ephy_base;	  // physical global base address of external memory segment as seen by devic
+// 	size_t			 size;		  // size of eDRAM allocated buffer for host side
 
 void
 print_platform_segs(e_platform_t* plat){
@@ -169,27 +171,25 @@ print_platform_segs(e_platform_t* plat){
 	printf("------------------------------end of platform segments\n");
 }
 
+
 // prints:
 // objtype=0 phy_base=2382364672 ephy_base=2382364672 size=33554432 type=0
 // page size=4096
 
-/*
-typedef struct e_mem_t {
-	e_objtype_t		 objtype;	  // object type identifier
-	off_t			 phy_base;	  // physical global base address of external memory buffer as seen by host side
-	off_t			 page_base;	  // physical base address of memory page
-	off_t			 page_offset; // offset of memory region base to memory page base
-	size_t			 map_size;	  // size of eDRAM allocated buffer for host side
-	off_t			 ephy_base;	  // physical global base address of external memory buffer as seen by device side
-	size_t			 emap_size;	  // size of eDRAM allocated buffer for device side
-	void			*mapped_base; // for mmap
-	void			*base;		  // application (virtual) space base address of external memory buffer
-	int				 memfd;		  // for mmap
-
-	void			*priv;		  // Target private
-} e_mem_t;
-
-*/
+// typedef struct e_mem_t {
+// 	e_objtype_t		 objtype;	  // object type identifier
+// 	off_t			 phy_base;	  // physical global base address of external memory buffer as seen by host side
+// 	off_t			 page_base;	  // physical base address of memory page
+// 	off_t			 page_offset; // offset of memory region base to memory page base
+// 	size_t			 map_size;	  // size of eDRAM allocated buffer for host side
+// 	off_t			 ephy_base;	  // physical global base address of external memory buffer as seen by device side
+// 	size_t			 emap_size;	  // size of eDRAM allocated buffer for device side
+// 	void			*mapped_base; // for mmap
+// 	void			*base;		  // application (virtual) space base address of external memory buffer
+// 	int				 memfd;		  // for mmap
+// 
+// 	void			*priv;		  // Target private
+// } e_mem_t;
 
 void
 print_mem_data(e_mem_t *mbuf){
@@ -204,6 +204,7 @@ print_mem_data(e_mem_t *mbuf){
 // prints:
 // phy_base=2382364672 page_base=2382364672 page_offset=0 map_size=33554432 ephy_base=2382364672 
 // emap_size=33554432 mapped_base=0x4 base=0x1000000 memfd=5
+
 
 #define BJL_EPIPHANY_DEV "/dev/epiphany/mesh0"
 int 
@@ -253,11 +254,6 @@ bjl_shd_alloc(e_mem_t *mbuf, off_t offset, size_t size)
 	//							mbuf->memfd, mbuf->page_base);	// FAILS BEFORE ABORT !
 	mbuf->base = (void*)(((char*)mbuf->mapped_base) + mbuf->page_offset);
 
-	/*bjl_diag(L_D2) { 
-		printf("TYPE ENTER (after mmap) mbuf->base=%p \n", mbuf->base); 
-		getchar();
-	}*/
-
 	if (mbuf->mapped_base == MAP_FAILED){
 		warnx("shd_alloc(): mmap failure.");
 		return E_ERR;
@@ -285,6 +281,7 @@ bjl_shd_free(e_mem_t *mbuf)
 
 	return E_OK;
 }
+*/
 
 #define EM_ADAPTEVA_EPIPHANY   0x1223  /* Adapteva's Epiphany architecture.  */
 static inline bool bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr)
@@ -353,10 +350,10 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 	e_mem_t      emem;
 	unsigned int irow, icol, i;
 	int          status;
-	//int          fd;
+	int          fd;
 	struct stat  st;
 	void        *file;
-	bool         is_srec = false;
+	//bool         is_srec = false;
 	e_return_stat_t retval;
 
 	e_set_host_verbosity(H_D0);
@@ -385,15 +382,14 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 	// TODO: this is barely scalable. Really need to test ext. mem size to load
 	// and possibly split the ext. mem accesses into 1MB chunks.
 
-	//if (e_alloc(&emem, 0, BJL_EMEM_SIZE)) {
-	if (bjl_shd_alloc(&emem, 0, BJL_EMEM_SIZE)) {
+	//if (bjl_shd_alloc(&emem, 0, BJL_EMEM_SIZE)) {
+	if (e_alloc(&emem, 0, BJL_EMEM_SIZE)) {
 		warnx("\nERROR: Can't allocate external memory buffer!\n\n");
 		return E_ERR;
 	}
 
 	BJL_BASE_PT = (uint8_t*)(emem.base);
 
-	/*
 	fd = open(executable, O_RDONLY);
 	if (fd == -1) {
 		warnx("ERROR: Can't open executable file \"%s\".\n", executable);
@@ -408,7 +404,7 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 		return E_ERR;
     }
 
-	BJH_CK(st.st_size < bjh_code_loader_buff_sz);
+	//BJH_CK(st.st_size < bjh_code_loader_buff_sz);
 	file = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (file == MAP_FAILED) {
 		warnx("ERROR: Can't mmap file \"%s\".\n", executable);
@@ -416,10 +412,10 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 		e_free(&emem);
 		return E_ERR;
     }
-	*/
-	off_t fsize;
-	uint8_t* fdata = read_file((char*)executable, &fsize);
-	file = fdata;
+	
+	//off_t fsize;
+	//uint8_t* fdata = read_file((char*)executable, &fsize);
+	//file = fdata;
 
 	uint8_t* pt_mem_start = (uint8_t*)(emem.base);
 	uint8_t* pt_mem_end = pt_mem_start + BJL_EMEM_SIZE;
@@ -439,17 +435,7 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 		goto out;
 	}
 
-	if (is_srec) {
-		/* No symbol info in SREC files, use hard coded values */
-		tbl[BJL_SEC_WORKGROUP_CFG].present = true;
-		tbl[BJL_SEC_WORKGROUP_CFG].sh_addr = 0x28;
-		tbl[BJL_SEC_EXT_MEM_CFG].present   = true;
-		tbl[BJL_SEC_EXT_MEM_CFG].sh_addr   = 0x50;
-		tbl[BJL_SEC_LOADER_CFG].present    = true;
-		tbl[BJL_SEC_LOADER_CFG].sh_addr    = 0x58;
-	} else {
-		bjl_lookup_sections(file, tbl, BJL_ARRAY_SIZE(tbl));
-	}
+	bjl_lookup_sections(file, tbl, BJL_ARRAY_SIZE(tbl));
 
 	for (i = 0; i < BJL_SEC_NUM; i++) {
 		if (!tbl[i].present) {
@@ -462,12 +448,7 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 
 	for (irow=row; irow<(row+rows); irow++) {
 		for (icol=col; icol<(col+cols); icol++) {
-			if (is_srec){
-				warnx("ERROR: SREC FORMAT NOT SUPPORTED ANYMORE.\n");
-				retval = E_ERR;
-			} else {
-				retval = bjl_process_elf(file, dev, &emem, irow, icol);
-			}
+			retval = bjl_process_elf(file, dev, &emem, irow, icol);
 
 			if (retval == E_ERR) {
 				warnx("ERROR: Can't load executable file \"%s\".\n", executable);
@@ -477,27 +458,14 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 		}
 	}
 
-	if (start) {
-		for (irow=row; irow<(row+rows); irow++) {
-			for (icol=col; icol<(col + cols); icol++) {
-				bjl_diag(L_D1) {
-					fprintf(bjl_diag_fd,
-							"load_group(): send SYNC signal to core (%d,%d)...\n",
-							irow, icol); }
-				e_start(dev, irow, icol);
-				bjl_diag(L_D1) {fprintf(bjl_diag_fd, "load_group(): done.\n"); }
-			}
-		}
-	}
-
 	bjl_diag(L_D1) { fprintf(bjl_diag_fd, "load_group(): done loading.\n"); }
 
 out:
-	//munmap(file, st.st_size);
-	//close(fd);
-	free(fdata);
-	//e_free(&emem);
-	bjl_shd_free(&emem);
+	munmap(file, st.st_size);
+	close(fd);
+	//free(fdata);
+	e_free(&emem);
+	//bjl_shd_free(&emem);
 
 	return status;
 }
@@ -667,8 +635,11 @@ bjl_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 			}
 		}
 
-		//memcpy(pt_dst, pt_src, blk_sz);		// CHANGES MEMORY OUTSIDE OF RANGES !!!!! WHY !!!!
-		bj_memload(pt_dst, pt_src, blk_sz);
+		if(LOAD_WITH_MEMCPY){
+			memcpy(pt_dst, pt_src, blk_sz);
+		} else {
+			bj_memload(pt_dst, pt_src, blk_sz);
+		}
 
 		bj_ck_memload(pt_dst, pt_src, blk_sz);	// LEAVE THIS. IT CAN FAIL !!!!
 
@@ -680,4 +651,5 @@ bjl_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 
 	return E_OK;
 }
+
 

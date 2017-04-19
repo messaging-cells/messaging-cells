@@ -60,8 +60,6 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/global_emu.cpp \
 	$(SRC_ECORE_DIR)/rr_array.c \
 	$(SRC_ECORE_DIR)/trace_emu.cpp \
-	$(SRC_ECORE_DIR)/test_logs.c \
-	$(SRC_ECORE_DIR)/a_shd_code_error.cpp \
 	$(SRC_ECORE_DIR)/dyn_mem.cpp \
 	$(SRC_ECORE_DIR)/binder.cpp \
 	$(SRC_ECORE_DIR)/actor.cpp \

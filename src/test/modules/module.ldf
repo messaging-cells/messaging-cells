@@ -1,0 +1,83 @@
+/*
+  all_shared code.ldf
+*/
+
+
+/* linker script for shared code */
+OUTPUT_FORMAT("elf32-epiphany", "elf32-epiphany", "elf32-epiphany")
+OUTPUT_ARCH(epiphany)
+ENTRY(_start)
+
+PROVIDE (___bss_start = __bss_start);
+
+BANK0_ORIGIN = 0x100;
+BANK1_ORIGIN = 0x2000;
+BANK2_ORIGIN = 0x4000;
+BANK3_ORIGIN = 0x6000;
+
+MEMORY
+{
+	IVT_RAM (WXAI) : ORIGIN = 0, LENGTH = BANK0_ORIGIN
+
+	INTERNAL_RAM (WXAI) : ORIGIN = BANK0_ORIGIN, LENGTH = 32K - BANK0_ORIGIN
+
+	MODULE_1 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+	MODULE_2 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+	MODULE_3 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+	MODULE_4 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+	MODULE_5 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+	MODULE_6 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+	MODULE_7 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+	MODULE_8 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+	MODULE_9 (WXAI) : ORIGIN = BANK1_ORIGIN, LENGTH = 16K
+
+	EXTERNAL_DRAM_0 (WXAI)   : ORIGIN = 0x8e000000, LENGTH = 0x01000000 /* .text, data, rodata, bss and .stack  */
+	EXTERNAL_DRAM_1 (WXAI)   : ORIGIN = 0x8f000000, LENGTH = 0x01000000 /* .heap                                */
+
+	BANK0_SRAM (WXAI)        : ORIGIN = BANK0_ORIGIN, LENGTH = 8K  - BANK0_ORIGIN
+	BANK1_SRAM (WXAI)        : ORIGIN = BANK1_ORIGIN, LENGTH = 8K
+	BANK2_SRAM (WXAI)        : ORIGIN = BANK2_ORIGIN, LENGTH = 8K
+	BANK3_SRAM (WXAI)        : ORIGIN = BANK3_ORIGIN, LENGTH = 8K
+}
+
+
+SECTIONS
+{
+	ivt_reset               0x00 : {*.o(IVT_RESET)}                    > IVT_RAM
+	ivt_software_exception  0x04 : {*.o(ivt_entry_software_exception)} > IVT_RAM
+	ivt_page_miss           0x08 : {*.o(ivt_entry_page_miss)}          > IVT_RAM
+	ivt_timer0              0x0c : {*.o(ivt_entry_timer0)}             > IVT_RAM
+	ivt_timer1              0x10 : {*.o(ivt_entry_timer1)}             > IVT_RAM
+	ivt_message             0x14 : {*.o(ivt_entry_message)}            > IVT_RAM
+	ivt_dma0                0x18 : {*.o(ivt_entry_dma0)}               > IVT_RAM
+	ivt_dma1                0x1c : {*.o(ivt_entry_dma1)}               > IVT_RAM
+	ivt_wand                0x20 : {*.o(ivt_entry_wand)}               > IVT_RAM
+	ivt_user                0x24 : {*.o(ivt_entry_user)}               > IVT_RAM
+
+	.code_dram    : {*.o(code_dram)   *.o(.code_dram)  } > EXTERNAL_DRAM_0
+	.shared_dram  : {*.o(shared_dram) *.o(.shared_dram)} > EXTERNAL_DRAM_1 
+
+	NEW_LIB_RO            : {lib_a-*.o(.text  .rodata)  *.o(libgloss_epiphany) } > EXTERNAL_DRAM_0
+	NEW_LIB_WR            : {lib_a-*.o(.data)                                  } > EXTERNAL_DRAM_0
+	GNU_C_BUILTIN_LIB_RO  :
+	{
+		*mulsi3.o(.text  .rodata)   *modsi3.o(.text  .rodata)
+		*divsi3.o(.text  .rodata)   *udivsi3.o(.text .rodata)
+		*umodsi3.o(.text .rodata)  _*.o(.text  .rodata)
+	} > EXTERNAL_DRAM_0
+
+	module1 : { *(module1*) } > MODULE_1
+	module2 : { *(module2*) } > MODULE_2
+	module3 : { *(module3*) } > MODULE_3
+	module4 : { *(module4*) } > MODULE_4
+	module5 : { *(module5*) } > MODULE_5
+	module6 : { *(module6*) } > MODULE_6
+	module7 : { *(module7*) } > MODULE_7
+	module8 : { *(module8*) } > MODULE_8
+	module9 : { *(module9*) } > MODULE_9
+
+	.text : { *(.text*) } > INTERNAL_RAM
+	.data : { *(.data*) } > INTERNAL_RAM
+	.rodata : { *(.rodata*) } > INTERNAL_RAM 
+	.comment  0 : { *(.comment*) }
+}

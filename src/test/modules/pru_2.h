@@ -10,8 +10,11 @@
 bj_c_decl {
 #endif
 
-void 
-pru_main_2() bj_code_dram;
+void m2_f1_shd() bj_code_dram;
+void m2_f2_shd() bj_code_dram;
+
+void m2_f3_core() bj_mod2_cod;
+void m2_main() bj_mod2_cod;
 
 #ifdef __cplusplus
 }
