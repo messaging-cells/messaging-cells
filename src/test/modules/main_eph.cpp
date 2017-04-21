@@ -9,9 +9,13 @@ bj_c_decl int main();
 
 int main() {
 	bjk_glb_init();
-	m1_main();
-	m2_main();
-	m3_main();
+	bjk_slog2("Modules main \n");
+	bool aa = false;
+	if(aa){
+		m1_main();
+		m2_main();
+		m3_main();
+	}
 	bjk_glb_finish();
 	return 0;
 }
