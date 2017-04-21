@@ -97,8 +97,18 @@ int boot_znq(int argc, char *argv[])
 	DBG_BASE->magic_id = BJ_MAGIC_ID;
 	BJH_CK(DBG_BASE->magic_id == BJ_MAGIC_ID);
 
+	load_info_t ld_dat;
+	ld_dat.executable = (char*)epiphany_elf_nm;
+	ld_dat.dev = &dev;
+	ld_dat.row = 0;
+	ld_dat.col = 0;
+	ld_dat.rows = platform.rows;
+	ld_dat.cols = platform.cols;
+	ld_dat.all_module_names = NULL;
+	ld_dat.all_module_addrs = NULL;
+
 	//e_reset_group(&dev);
-	//bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE);
+	//bj_load_group(&ld_dat);
 
 	// init shared data.
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
@@ -106,7 +116,7 @@ int boot_znq(int argc, char *argv[])
 	pt_shd_data->magic_id = BJ_MAGIC_ID;
 	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
 
-	//bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE); // resets magic_id !!!!!
+	//bj_load_group(&ld_dat); 
 
 	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
 
@@ -118,7 +128,7 @@ int boot_znq(int argc, char *argv[])
 	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	e_reset_group(&dev);
-	int err = bj_load_group(epiphany_elf_nm, &dev, 0, 0, platform.rows, platform.cols, E_FALSE); 
+	int err = bj_load_group(&ld_dat); 
 	if(err == E_ERR){
 		printf("Loading_group_failed.\n");
 		return 0;

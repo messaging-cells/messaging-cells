@@ -97,7 +97,7 @@ void bjl_lookup_sections(const void *file, struct bjl_section_info *tbl,
 
 e_return_stat_t bjl_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem, int row, int col);
 
-e_return_stat_t bjl_load_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem, int row, int col, bool is_fst);
+e_return_stat_t bjl_load_elf(const void *file, e_mem_t *emem, int row, int col, load_info_t *ld_dat);
 
 bjl_loader_diag_t bjl_load_verbose = L_D3;
 
@@ -316,15 +316,6 @@ static inline bool bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr)
 	return ok;
 }
 
-int bj_load(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, e_bool_t start)
-{
-	int status;
-
-	status = bj_load_group(executable, dev, row, col, 1, 1, start);
-
-	return status;
-}
-
 static void bjl_clear_sram(e_epiphany_t *dev,
 					   unsigned row, unsigned col,unsigned rows, unsigned cols)
 {
@@ -345,9 +336,8 @@ static void bjl_clear_sram(e_epiphany_t *dev,
 	}
 }
 
-int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, 
-			unsigned rows, unsigned cols, e_bool_t start)
-{
+int bj_load_group(load_info_t *ld_dat){
+
 	e_mem_t      emem;
 	unsigned int irow, icol, i;
 	int          status;
@@ -360,9 +350,15 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 	e_set_host_verbosity(H_D0);
 	bjl_diag_fd = stderr;
 
+	const char *executable = ld_dat->executable;
+	e_epiphany_t *dev = ld_dat->dev;
+	unsigned row = ld_dat->row;
+	unsigned col = ld_dat->col;
+	unsigned rows = ld_dat->rows;
+	unsigned cols = ld_dat->cols;
 	/*int eph_fd = open("/dev/epiphany/mesh0", O_RDWR | O_SYNC);
 	if (eph_fd == -1){
-		bjh_abort_func(9, "bj_load_group() Cannot open epiphany device.\n");
+		bjh_abort_func(9, "load_group() Cannot open epiphany device.\n");
 		return -1;
 	}*/
 
@@ -423,7 +419,7 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 	uint8_t* pt_file_start = (uint8_t*)(file);
 	uint8_t* pt_file_end = pt_mem_start + st.st_size;
 	bjl_diag(L_D3) {
-		fprintf(bjl_diag_fd, "bj_load_group(): mem_beg=%p end=%p file_beg=%p end=%p\n",
+		fprintf(bjl_diag_fd, "load_group(): mem_beg=%p end=%p file_beg=%p end=%p\n",
 				pt_mem_start, pt_mem_end, pt_file_start, pt_file_end); 
 	}
 
@@ -449,11 +445,8 @@ int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsig
 
 	for (irow=row; irow<(row+rows); irow++) {
 		for (icol=col; icol<(col+cols); icol++) {
-			bool is_fst = ((irow == row) && (icol == col));
-			BJL_MARK_USED(is_fst);
-
 			//retval = bjl_process_elf(file, dev, &emem, irow, icol);
-			retval = bjl_load_elf(file, dev, &emem, irow, icol, is_fst);
+			retval = bjl_load_elf(file, &emem, irow, icol, ld_dat);
 
 			if (retval == E_ERR) {
 				warnx("ERROR: Can't load executable file \"%s\".\n", executable);
@@ -664,8 +657,7 @@ bjl_process_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 }
 
 e_return_stat_t
-bjl_load_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
-			   int row, int col, bool is_fst)
+bjl_load_elf(const void *file, e_mem_t *emem, int row, int col, load_info_t *ld_dat)
 {
 	int ii;
 	Elf32_Ehdr *ehdr;
@@ -679,6 +671,8 @@ bjl_load_elf(const void *file, e_epiphany_t *dev, e_mem_t *emem,
 	uintptr_t  dst;
 	/* TODO: Make src const (need fix in esim.h first) */
 	uint8_t   *src = (uint8_t *) file;
+
+	e_epiphany_t *dev = ld_dat->dev;
 
 	BJL_MARK_USED(phdr);
 	BJL_MARK_USED(ihdr);

@@ -55,14 +55,25 @@ extern "C"
 // EMEM_BASE_ADDRESS 	+ BJ_SHARED_MEM_START_DISP 	== ORIGIN(EXTERNAL_DRAM_1)
 // 0x8e000000 			+ 0x01000000 				== 0x8f000000
 
-// Note also that these addresses are AS SEEN FROM THE EPIPHANY. Not as seen from the Zynq 
+// Observe also that these addresses are AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq 
 // side (host side)
 
 extern bool LOAD_WITH_MEMCPY;
 
-int bj_load(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, e_bool_t start);
-int bj_load_group(const char *executable, e_epiphany_t *dev, unsigned row, unsigned col, 
-						unsigned rows, unsigned cols, e_bool_t start);
+struct load_info_st {    
+	char *executable;
+	e_epiphany_t *dev;
+	unsigned row;
+	unsigned col;
+	unsigned rows;
+	unsigned cols;
+	char**	all_module_names;
+	void**	all_module_addrs;	// as seen from ephiphany side
+};
+typedef struct load_info_st load_info_t;
+
+
+int bj_load_group(load_info_t *ld_dat);
 
 #define DBGH_CODE_SHD_SZ 20
 extern uint16_t DBGH_CODE_SHD_1[DBGH_CODE_SHD_SZ];
