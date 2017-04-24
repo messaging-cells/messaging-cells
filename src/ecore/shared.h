@@ -312,7 +312,7 @@ bj_isprint(char cc){
 
 // end_macro
 
-#define bjk_has_off_core (bjk_get_glb_sys()->off_core_pt != bj_null)
+#define bjk_has_off_core (BJK_GLB_SYS->off_core_pt != bj_null)
 
 #ifdef IS_EMU_CODE
 	extern bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM;

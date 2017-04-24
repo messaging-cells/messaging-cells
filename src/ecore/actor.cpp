@@ -37,11 +37,10 @@ void* __dso_handle = bj_null;
 
 //----------------------------------------------------------------------------
 
-bjk_actor_id_t 	agent::THE_ACTOR_ID = bjk_actor_id(agent);
-bjk_actor_id_t 	actor::THE_ACTOR_ID = bjk_actor_id(actor);
-bjk_actor_id_t 	missive::THE_ACTOR_ID = bjk_actor_id(missive);
-bjk_actor_id_t 	agent_ref::THE_ACTOR_ID = bjk_actor_id(agent_ref);
-bjk_actor_id_t 	agent_grp::THE_ACTOR_ID = bjk_actor_id(agent_grp);
+BJK_DEFINE_ACQUIRE_ALLOC(actor)
+BJK_DEFINE_ACQUIRE_ALLOC(missive)
+BJK_DEFINE_ACQUIRE_ALLOC(agent_ref)
+BJK_DEFINE_ACQUIRE_ALLOC(agent_grp)
 
 BJK_DEFINE_ACQUIRE(actor)
 BJK_DEFINE_ACQUIRE(missive)
@@ -119,7 +118,7 @@ kernel::actors_handle_loop(){
 
 void
 wait_inited_state(bj_core_id_t dst_id){
-	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
 	uint8_t* loc_st = &(in_shd->the_core_state);
 	uint8_t* rmt_st = (uint8_t*)bj_addr_with(dst_id, loc_st);
 	while(*rmt_st != bjk_inited_state);
@@ -165,6 +164,12 @@ agent::init_me(){
 	#pragma GCC diagnostic pop
 }
 
+kernel::kernel(){
+	init_kernel();
+}
+
+kernel::~kernel(){}
+
 void
 kernel::init_kernel(){
 	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
@@ -194,7 +199,7 @@ kernel::init_sys(){
 
 	new (ker) kernel(); 
 
-	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
 
 	in_shd->binder_sz = sizeof(binder);
 	in_shd->kernel_sz = sizeof(kernel);

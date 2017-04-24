@@ -15,11 +15,11 @@ bjk_aux_sout(char* msg, bj_out_type_t outt){
 		oln = (BJ_MAX_STR_SZ - extra);
 	}
 
-	uint8_t* out_str = bjk_get_glb_sys()->dbg_out_str;
+	uint8_t* out_str = BJK_GLB_SYS->dbg_out_str;
 	bj_memcpy(out_str + extra, (uint8_t*)msg, oln);
 	out_str[0] = outt;
 	out_str[1] = BJ_CHR;
-	bjk_glb_sys_st* glb_dat = bjk_get_glb_sys();
+	bjk_glb_sys_st* glb_dat = BJK_GLB_SYS;
 	uint16_t ow = bj_rr_write_obj(glb_dat->write_rrarray, oln + extra, out_str);
 	while(ow == 0){
 		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);
@@ -42,7 +42,7 @@ bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt){
 	msg[3] = pt[1];
 	msg[4] = pt[2];
 	msg[5] = pt[3];
-	bjk_glb_sys_st* glb_dat = bjk_get_glb_sys();
+	bjk_glb_sys_st* glb_dat = BJK_GLB_SYS;
 	uint16_t ow = bj_rr_write_obj(glb_dat->write_rrarray, oln, (uint8_t*)msg);
 	while(ow == 0){
 		bjk_wait_sync(BJ_WAITING_BUFFER, 0, bj_null);

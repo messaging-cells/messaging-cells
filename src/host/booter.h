@@ -15,6 +15,9 @@
 bj_c_decl {
 #endif
 
+// TODO: replace with platform data
+#define BJL_EMEM_SIZE (0x02000000)
+
 extern bj_sys_sz_st bj_glb_host_sys;
 
 #define bj_as_pt_char(the_str) (the_str)

@@ -15,7 +15,7 @@ bjk_glb_init(void) {
 	// basic init
 	bjk_set_irq0_handler();
 
-	bjk_glb_sys_st* glb_dat = bjk_get_glb_sys();
+	bjk_glb_sys_st* glb_dat = BJK_GLB_SYS;
 	bj_memset((uint8_t*)glb_dat, 0, sizeof(bjk_glb_sys_st));
 
 	glb_dat->off_core_pt = bj_null;
@@ -39,7 +39,7 @@ bjk_glb_init(void) {
 	bj_core_nn_t num_core = bj_id_to_nn(koid);
 
 	// in_shd init 
-	bj_in_core_st* in_shd = bjk_get_glb_in_core_shd();
+	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
 	bj_memset((uint8_t*)in_shd, 0, sizeof(bj_in_core_st));
 
 	in_shd->magic_id = BJ_MAGIC_ID;

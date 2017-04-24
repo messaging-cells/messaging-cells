@@ -54,10 +54,10 @@ bjk_addr_with_fn(bj_core_id_t id, void* addr);
 #define bj_addr_with(id, addr) bjk_addr_with_fn(id, (void*)addr)
 
 #define bjk_addr_is_local(addr) \
-	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == bjk_get_glb_in_core_shd()->the_core_id))
+	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id))
 
 #define bjk_is_core(row, col) \
-	((bjk_get_glb_in_core_shd()->the_core_ro == (row)) && (bjk_get_glb_in_core_shd()->the_core_co == (col)))
+	((BJK_GLB_IN_CORE_SHD->the_core_ro == (row)) && (BJK_GLB_IN_CORE_SHD->the_core_co == (col)))
 
 #define bj_addr_same_id(addr1, addr2) (bj_addr_get_core_id(addr1) == bj_addr_get_core_id(addr2))
 

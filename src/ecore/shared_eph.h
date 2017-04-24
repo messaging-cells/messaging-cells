@@ -51,12 +51,12 @@ typedef uint16_t bj_size_t;
 #define bj_addr_with(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
 
 #define bjk_addr_is_local(addr) \
-	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == bjk_get_glb_in_core_shd()->the_core_id))
+	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id))
 
 #define bjk_is_core(row, col) \
-	((bjk_get_glb_in_core_shd()->the_core_ro == (row)) && (bjk_get_glb_in_core_shd()->the_core_co == (col)))
+	((BJK_GLB_IN_CORE_SHD->the_core_ro == (row)) && (BJK_GLB_IN_CORE_SHD->the_core_co == (col)))
 
-#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(bjk_get_glb_in_core_shd()->the_core_id, (pt)))
+#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(BJK_GLB_IN_CORE_SHD->the_core_id, (pt)))
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
 #define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
 

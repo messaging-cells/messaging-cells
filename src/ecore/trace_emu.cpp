@@ -21,7 +21,7 @@ bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
 
 uint16_t
 bjk_get_call_stack_trace(int16_t, void**) {
-	bjk_glb_sys_st* glb = bjk_get_glb_sys();
+	bjk_glb_sys_st* glb = BJK_GLB_SYS;
 	void* 		trace[BJ_MAX_CALL_STACK_SZ];
 
 	bj_memset((uint8_t*)trace, 0, BJ_MAX_CALL_STACK_SZ * sizeof(void*));
@@ -40,7 +40,7 @@ bjk_get_call_stack_trace(int16_t, void**) {
 
 void 
 bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
-	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt;
+	bj_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt;
 	if(off_core_pt == bj_null){
 		return;
 	}
@@ -52,7 +52,7 @@ bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	}
 	bj_set_off_chip_var(off_core_pt->is_waiting, info);
 
-	uint8_t& sync_sg = bjk_get_glb_sys()->bjk_sync_signal;
+	uint8_t& sync_sg = BJK_GLB_SYS->bjk_sync_signal;
 	while(sync_sg == 0){
 		sched_yield();
 	}

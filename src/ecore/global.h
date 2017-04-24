@@ -37,6 +37,17 @@ struct bj_aligned bjk_glb_sys_def {
 };
 typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 
+#if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
+	extern bjk_glb_sys_st	bj_glb_sys_data;
+	#define BJK_GLB_SYS (&bj_glb_sys_data)
+	#define BJK_GLB_SYS_SZ (&(bj_glb_sys_data.sys_sz))
+	#define BJK_GLB_IN_CORE_SHD (&(bj_glb_sys_data.in_core_shd))
+#else
+	#define BJK_GLB_SYS bjk_get_glb_sys()
+	#define BJK_GLB_SYS_SZ bj_get_glb_sys_sz()
+	#define BJK_GLB_IN_CORE_SHD bjk_get_glb_in_core_shd()
+#endif
+
 bjk_glb_sys_st*
 bjk_get_glb_sys();
 
@@ -50,7 +61,7 @@ bjk_get_glb_in_core_shd(){
 
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
-	bj_off_core_st* off_core_pt = bjk_get_glb_sys()->off_core_pt; 
+	bj_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt; 
 	if(off_core_pt != bj_null){
 		bj_set_off_chip_var(off_core_pt->is_finished, val);
 	}

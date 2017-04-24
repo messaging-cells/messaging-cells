@@ -80,13 +80,18 @@ int boot_znq(int argc, char *argv[])
 	e_reset_system();
 	e_get_platform_info(&platform);
 
-	e_alloc(&emem, BJ_SHARED_MEM_START_DISP, sizeof(bj_off_sys_st));
+	//e_alloc(&emem, BJ_SHARED_MEM_START_DISP, sizeof(bj_off_sys_st));
+	if (e_alloc(&emem, 0, BJL_EMEM_SIZE)) {
+		printf("ERROR: Can't allocate external memory buffer!\n\n");
+		return 0;
+	}
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
 	bjh_init_glb_sys_sz_with_dev(bj_get_glb_sys_sz(), &dev);
 
-	void* the_base = (void*)(emem.base);
+	//void* the_base = (void*)(emem.base);
+	void* the_base = (void*)(((uint8_t*)emem.base) + BJ_SHARED_MEM_START_DISP);
 	printf("the_base=%p \n", the_base);
 
 	DBG_BASE = (bj_off_sys_st*)the_base;

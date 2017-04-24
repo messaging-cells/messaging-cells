@@ -30,7 +30,7 @@ void test_link_shd_code() {
 
 void test_link_shd_code() {
 	// IF LINKED LAST THIS CODE WONT GET EXECUTED AND THE CORE HANGS !!!
-	//bjk_get_glb_in_core_shd()->dbg_progress_flag = 0xbadbadba;
+	//BJK_GLB_IN_CORE_SHD->dbg_progress_flag = 0xbadbadba;
 	bjk_slog2("test_link_shd_code called OK\n");
 	//bjk_xlog((bj_addr_t)(void*)test_link_shd_code);
 }

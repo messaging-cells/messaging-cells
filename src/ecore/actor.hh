@@ -41,16 +41,6 @@ enum bjk_actor_id_t : uint8_t {
 
 #define bjk_all_available(nam) kernel::get_sys()->cls_available_##nam
 
-#define bjk_get_available(nam) \
-	grip& ava = bjk_all_available(nam); \
-	if(! ava.is_alone()){ \
-		binder* fst = bjk_pt_to_binderpt(ava.bn_right); \
-		fst->let_go(); \
-		return (nam *)fst; \
-	} \
-
-// end_macro
-
 #define BJK_DEFINE_SEPARATE(nam) \
 void \
 nam::separate(uint16_t sz){ \
@@ -64,12 +54,9 @@ nam::separate(uint16_t sz){ \
 
 // end_macro
 
-#define BJK_DEFINE_ACQUIRE(nam) \
+#define BJK_DEFINE_ACQUIRE_ALLOC(nam) \
 nam* \
-nam::acquire(uint16_t sz){ \
-	if(sz == 1){ \
-		bjk_get_available(nam); \
-	} \
+nam::acquire_alloc(uint16_t sz){ \
 	nam* obj = bjk_malloc32(nam, sz); \
 	if(obj == bj_null){ \
 		bjk_abort((bj_addr_t)nam::acquire, 0, bj_null); \
@@ -78,6 +65,20 @@ nam::acquire(uint16_t sz){ \
 		new (&(obj[bb])) nam(); \
 	} \
 	return obj; \
+} \
+
+// end_macro
+
+#define BJK_DEFINE_ACQUIRE(nam) \
+nam* \
+nam::acquire(uint16_t sz){ \
+	grip& ava = bjk_all_available(nam); \
+	if((sz == 1) && (! ava.is_alone())){ \
+		binder* fst = bjk_pt_to_binderpt(ava.bn_right); \
+		fst->let_go(); \
+		return (nam *)fst; \
+	} \
+	return nam::acquire_alloc(sz); \
 } \
 
 // end_macro
@@ -161,11 +162,9 @@ public:
 
 	actor* 	first_actor;
 
-	kernel(){
-		init_kernel();
-	}
+	kernel() bj_code_dram;
 
-	~kernel(){}
+	~kernel() bj_code_dram;
 
 	void init_kernel() bj_code_dram;
 
@@ -180,42 +179,42 @@ public:
 
 	static bj_inline_fn bj_in_core_st& 
 	get_in_shd(){
-		return *bjk_get_glb_in_core_shd();
+		return *BJK_GLB_IN_CORE_SHD;
 	}
 
 	static bj_inline_fn bjk_glb_sys_st& 
 	get_glb(){
-		return *bjk_get_glb_sys();
+		return *BJK_GLB_SYS;
 	}
 
 	static bj_inline_fn bj_off_core_st& 
 	get_off_shd(){
-		return *(bjk_get_glb_sys()->off_core_pt);
+		return *(BJK_GLB_SYS->off_core_pt);
 	}
 
 	static bj_inline_fn bj_sys_sz_st& 
 	get_sys_sz(){
-		return bjk_get_glb_sys()->sys_sz;
+		return BJK_GLB_SYS->sys_sz;
 	}
 
 	static bj_inline_fn bj_core_nn_t 
 	get_core_nn(){
-		return bjk_get_glb_in_core_shd()->the_core_nn;
+		return BJK_GLB_IN_CORE_SHD->the_core_nn;
 	}
 
 	static bj_inline_fn bj_core_co_t 
 	get_core_ro(){
-		return bjk_get_glb_in_core_shd()->the_core_ro;
+		return BJK_GLB_IN_CORE_SHD->the_core_ro;
 	}
 
 	static bj_inline_fn bj_core_co_t 
 	get_core_co(){
-		return bjk_get_glb_in_core_shd()->the_core_co;
+		return BJK_GLB_IN_CORE_SHD->the_core_co;
 	}
 
 	static bj_inline_fn bj_core_id_t 
 	get_core_id(){
-		return bjk_get_glb_in_core_shd()->the_core_id;
+		return BJK_GLB_IN_CORE_SHD->the_core_id;
 	}
 
 	static bj_inline_fn actor*
@@ -262,9 +261,6 @@ public:
 
 class agent: public binder{
 public:
-	static
-	bjk_actor_id_t	THE_ACTOR_ID;
-
 	bj_opt_sz_fn 
 	agent(){}
 
@@ -273,7 +269,7 @@ public:
 
 	virtual bj_opt_sz_fn 
 	bjk_actor_id_t	get_actor_id(){
-		return agent::THE_ACTOR_ID;
+		return bjk_actor_id(agent);
 	}
 
 	virtual bj_opt_sz_fn 
@@ -305,7 +301,7 @@ public:
 class actor: public agent {
 public:
 	static
-	bjk_actor_id_t	THE_ACTOR_ID;
+	actor*			acquire_alloc(uint16_t sz) bj_code_dram;
 	static
 	actor*			acquire(uint16_t sz = 1);
 	static
@@ -330,7 +326,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn bjk_actor_id_t	get_actor_id(){
-		return actor::THE_ACTOR_ID;
+		return bjk_actor_id(actor);
 	}
 
 	virtual
@@ -348,7 +344,7 @@ typedef uint16_t	bjk_token_t;
 class missive : public agent {
 public:
 	static
-	bjk_actor_id_t 	THE_ACTOR_ID;
+	missive*		acquire_alloc(uint16_t sz) bj_code_dram;
 	static
 	missive*		acquire(uint16_t sz = 1);
 	static
@@ -380,7 +376,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn bjk_actor_id_t	get_actor_id(){
-		return missive::THE_ACTOR_ID;
+		return bjk_actor_id(missive);
 	}
 
 	virtual
@@ -405,7 +401,7 @@ public:
 class agent_grp : public agent {
 public:
 	static
-	bjk_actor_id_t 	THE_ACTOR_ID;
+	agent_grp*		acquire_alloc(uint16_t sz) bj_code_dram;
 	static
 	agent_grp*		acquire(uint16_t sz = 1);
 	static
@@ -431,7 +427,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn bjk_actor_id_t	get_actor_id(){
-		return agent_grp::THE_ACTOR_ID;
+		return bjk_actor_id(agent_grp);
 	}
 
 	virtual
@@ -449,7 +445,7 @@ public:
 class agent_ref : public agent {
 public:
 	static
-	bjk_actor_id_t 	THE_ACTOR_ID;
+	agent_ref*		acquire_alloc(uint16_t sz) bj_code_dram;
 	static
 	agent_ref* 		acquire(uint16_t sz = 1);
 	static
@@ -472,7 +468,7 @@ public:
 
 	virtual
 	bj_opt_sz_fn bjk_actor_id_t	get_actor_id(){
-		return agent_ref::THE_ACTOR_ID;
+		return bjk_actor_id(agent_ref);
 	}
 
 	virtual

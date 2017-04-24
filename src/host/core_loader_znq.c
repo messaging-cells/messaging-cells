@@ -104,9 +104,6 @@ bjl_loader_diag_t bjl_load_verbose = L_D3;
 /* bjl_diag_fd is set by set_loader_verbosity() */
 FILE *bjl_diag_fd = bj_null;
 
-// TODO: replace with platform data
-#define BJL_EMEM_SIZE (0x02000000)
-
 uint8_t* BJL_BASE_PT = bj_null;
 
 void
