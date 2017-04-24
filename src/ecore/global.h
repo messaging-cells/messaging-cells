@@ -20,7 +20,6 @@ bj_c_decl {
 #define BJ_MAX_STR_SZ BJ_OUT_BUFF_SZ	
 
 struct bj_aligned bjk_glb_sys_def { 
-	bj_sys_sz_st 	sys_sz;
 	bj_off_core_st* off_core_pt;
 	bj_rrarray_st* 	write_rrarray;
 	bj_in_core_st 	in_core_shd;
@@ -40,11 +39,9 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 #if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
 	extern bjk_glb_sys_st	bj_glb_sys_data;
 	#define BJK_GLB_SYS (&bj_glb_sys_data)
-	#define BJK_GLB_SYS_SZ (&(bj_glb_sys_data.sys_sz))
 	#define BJK_GLB_IN_CORE_SHD (&(bj_glb_sys_data.in_core_shd))
 #else
 	#define BJK_GLB_SYS bjk_get_glb_sys()
-	#define BJK_GLB_SYS_SZ bj_get_glb_sys_sz()
 	#define BJK_GLB_IN_CORE_SHD bjk_get_glb_in_core_shd()
 #endif
 

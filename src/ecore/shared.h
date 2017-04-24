@@ -52,6 +52,13 @@ typedef struct bj_sys_def bj_sys_sz_st;
 bj_sys_sz_st*
 bj_get_glb_sys_sz();
 
+#if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
+	extern bj_sys_sz_st 	bjk_system_sz;
+	#define BJK_GLB_SYS_SZ (&bjk_system_sz)
+#else
+	#define BJK_GLB_SYS_SZ bj_get_glb_sys_sz()
+#endif
+
 void bj_inline_fn
 bj_init_glb_sys_sz(bj_sys_sz_st* sys_sz) {
 	sys_sz->xx = bj_e3_xx;
@@ -83,19 +90,19 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 	
 // xx and yy are absolute epiphany space coordinates
 // ro and co are relative epiphany space coordinates with respect to the 
-// 		allocated running cores (bj_get_glb_sys_sz())
+// 		allocated running cores (BJK_GLB_SYS_SZ)
 // id is the core id absolute in epiphany space 
-// nn is a consec with respect to the allocated running cores (bj_get_glb_sys_sz())
+// nn is a consec with respect to the allocated running cores (BJK_GLB_SYS_SZ)
 
-#define bj_pw2_yy_sys (bj_get_glb_sys_sz()->yy_sz_pw2)
+#define bj_pw2_yy_sys (BJK_GLB_SYS_SZ->yy_sz_pw2)
 
-#define bj_tot_xx_sys (bj_get_glb_sys_sz()->xx_sz)
+#define bj_tot_xx_sys (BJK_GLB_SYS_SZ->xx_sz)
 #define bj_tot_yy_sys ((bj_core_co_t)(1 << bj_pw2_yy_sys))
 #define bj_tot_nn_sys (bj_tot_xx_sys * bj_tot_yy_sys)
 
-#define bj_min_xx_sys (bj_get_glb_sys_sz()->xx)
+#define bj_min_xx_sys (BJK_GLB_SYS_SZ->xx)
 #define bj_max_xx_sys (bj_min_xx_sys + bj_tot_xx_sys)
-#define bj_min_yy_sys (bj_get_glb_sys_sz()->yy)
+#define bj_min_yy_sys (BJK_GLB_SYS_SZ->yy)
 #define bj_max_yy_sys (bj_min_yy_sys + bj_tot_yy_sys)
 
 #define bj_id_to_xx(id)	(((id) >> bj_axis_bits) & bj_axis_mask)

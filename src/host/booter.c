@@ -52,7 +52,7 @@ bjh_file_append(char* the_pth, char* the_data, long the_sz){
 }
 
 bool ck_sys_data(bj_sys_sz_st* sys1){
-	bj_sys_sz_st* sys0 = bj_get_glb_sys_sz();
+	bj_sys_sz_st* sys0 = BJK_GLB_SYS_SZ;
 	BJH_CK(sys1->xx == sys0->xx);
 	BJH_CK(sys1->yy == sys0->yy);
 	BJH_CK(sys1->xx_sz == sys0->xx_sz);

@@ -72,6 +72,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/umm_malloc_eph.c \
 	$(SRC_ECORE_DIR)/log.c \
 	$(SRC_ECORE_DIR)/shared.c \
+	$(SRC_ECORE_DIR)/shared_eph.c \
 	$(SRC_ECORE_DIR)/global.c \
 	$(SRC_ECORE_DIR)/global_eph.c \
 	$(SRC_ECORE_DIR)/rr_array.c \

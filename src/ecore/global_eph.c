@@ -22,11 +22,6 @@ bjk_get_glb_sys(){
 	return &bj_glb_sys_data;
 }
 
-bj_sys_sz_st*
-bj_get_glb_sys_sz(){
-	return &(bjk_get_glb_sys()->sys_sz);
-}
-
 void 
 bjk_set_irq0_handler(){
 	unsigned * ivt = 0x0;

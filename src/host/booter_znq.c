@@ -30,11 +30,11 @@
 
 const char* epiphany_elf_nm = "bj-core-actor.elf";
 
-bj_sys_sz_st bj_glb_sys;
+bj_sys_sz_st bjh_glb_sys;
 
 bj_sys_sz_st*
 bj_get_glb_sys_sz(){
-	return &bj_glb_sys;
+	return &bjh_glb_sys;
 }
 
 void
@@ -88,7 +88,7 @@ int boot_znq(int argc, char *argv[])
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
-	bjh_init_glb_sys_sz_with_dev(bj_get_glb_sys_sz(), &dev);
+	bjh_init_glb_sys_sz_with_dev(BJK_GLB_SYS_SZ, &dev);
 
 	//void* the_base = (void*)(emem.base);
 	void* the_base = (void*)(((uint8_t*)emem.base) + BJ_SHARED_MEM_START_DISP);
@@ -127,7 +127,7 @@ int boot_znq(int argc, char *argv[])
 
 	pt_shd_data->pt_this_from_znq = pt_shd_data;
 
-	bj_sys_sz_st* sys_sz = bj_get_glb_sys_sz();
+	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 
 	pt_shd_data->wrk_sys = *sys_sz;
 	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));

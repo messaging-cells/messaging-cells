@@ -194,7 +194,8 @@ public:
 
 	static bj_inline_fn bj_sys_sz_st& 
 	get_sys_sz(){
-		return BJK_GLB_SYS->sys_sz;
+		return *BJK_GLB_SYS_SZ;
+		//return BJK_GLB_SYS->bjk_system_sz;
 	}
 
 	static bj_inline_fn bj_core_nn_t 

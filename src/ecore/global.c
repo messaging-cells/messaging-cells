@@ -21,7 +21,7 @@ bjk_glb_init(void) {
 	glb_dat->off_core_pt = bj_null;
 	glb_dat->write_rrarray = 0x0;
 
-	bj_sys_sz_st* sys_sz = bj_get_glb_sys_sz();
+	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 	bj_init_glb_sys_sz(sys_sz);
 	
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){

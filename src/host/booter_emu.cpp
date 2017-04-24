@@ -79,7 +79,7 @@ host_main(int argc, char *argv[])
 	pt_shd_data->magic_id = BJ_MAGIC_ID;
 	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
 
-	bj_sys_sz_st* sys_sz = bj_get_glb_sys_sz();
+	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 
 	pt_shd_data->wrk_sys = *sys_sz;
 	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));

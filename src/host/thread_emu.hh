@@ -21,6 +21,7 @@ struct thread_info_st {    /* Used as argument to thread_start() */
 	void 		(*core_func)();
 
 	bj_core_id_t 	bjk_core_id;
+	bj_sys_sz_st 	bjk_system_sz;
 	bjk_glb_sys_st	bj_glb_sys_data;
 	kernel 			bjk_THE_KERNEL;
 
