@@ -139,7 +139,7 @@ enum bjk_signal_t : uint8_t {
 
 #if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
 	kernel*
-	bjk_get_first_kernel();
+	bjk_get_first_kernel() bj_code_dram;
 
 	extern kernel*	bjk_PT_THE_KERNEL;
 	#define BJK_FIRST_KERNEL bjk_get_first_kernel()
@@ -499,9 +499,9 @@ actor_handler(missive* msg);
 bj_c_decl {
 #endif
 
-bj_opt_sz_fn 
+//bj_opt_sz_fn 
 void 
-bjk_send_irq(bj_core_id_t koid, uint16_t num_irq);
+bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) bj_code_dram;
 
 void
 wait_inited_state(bj_core_id_t dst) bj_code_dram;

@@ -38,7 +38,7 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 
 #if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
 	bjk_glb_sys_st*
-	bjk_get_first_glb_sys();
+	bjk_get_first_glb_sys() bj_code_dram;
 
 	extern bjk_glb_sys_st*	bjk_glb_pt_sys_data;
 	#define BJK_FIRST_GLB_SYS bjk_get_first_glb_sys()

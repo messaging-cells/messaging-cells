@@ -181,22 +181,6 @@ wait_inited_state(bj_core_id_t dst_id){
 	while(*rmt_st != bjk_inited_state);
 }
 
-//bj_opt_sz_fn
-void
-wait_value(uint32_t& var, uint32_t val){
-	while(var < val);
-}
-
-bj_opt_sz_fn
-uint32_t
-wait_time(uint32_t max){
-	uint32_t aa;
-	for(aa = 0; aa < max; aa++){
-		aa++;
-	}
-	return aa;
-}
-
 void
 ck_sizes(){
 	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(bj_addr_t)));
@@ -383,6 +367,22 @@ agent_grp::release_all_agts(){
 }
 
 /*
+//bj_opt_sz_fn
+void
+wait_value(uint32_t& var, uint32_t val){
+	while(var < val);
+}
+
+bj_opt_sz_fn
+uint32_t
+wait_time(uint32_t max){
+	uint32_t aa;
+	for(aa = 0; aa < max; aa++){
+		aa++;
+	}
+	return aa;
+}
+
 void 
 actor_handler(missive* msg){
 	EMU_CK(bjk_addr_is_local(msg->dst));
