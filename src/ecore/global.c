@@ -76,6 +76,7 @@ bjk_glb_init(void) {
 
 void 
 bjk_glb_finish(){
+	CORE_CODE(BJK_GLB_IN_CORE_SHD->min_sp = BJK_GLB_SYS->bjk_min_sp);
 	bjk_set_finished(BJ_FINISHED_VAL);
 }
 

@@ -87,6 +87,8 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	printf("bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
 	*/
 
+	ZNQ_CODE(printf("min_sp=0x%08x \n", sh_dat->min_sp));
+
 	if(sh_dat->exception_code != bjk_invalid_exception){
 		for(int aa = 0; aa < 5; aa++){
 			if(sh_dat->exception_code == bjk_software_exception){

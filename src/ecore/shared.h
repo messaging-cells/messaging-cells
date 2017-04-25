@@ -241,6 +241,8 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	uint16_t 	agent_grp_sz;
 	uint16_t 	agent_ref_sz;
 
+	bj_addr_t 	min_sp;
+
 	uint16_t 	bjk_glb_sys_st_sz;
 
 	uint32_t 	magic_end;

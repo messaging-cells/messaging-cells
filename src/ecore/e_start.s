@@ -27,7 +27,13 @@ irq3_entry:
 	.balign 4
 	.global	normal_start
 normal_start:
-	mov sp,0x7ff0
+; WARNING !!!!! Your .text code MUST be as small as possible. 
+; WARNING !!!!! ALWAYS use modules for incore funcs. 
+; WARNING !!!!! ALWAYS have LOW STACK consuming functions (use pointers to dynamic allocated structs). 
+; WARNING !!!!! Kernel already uses about 5k !!!! So you have about 3k of stack. THAT IS IT.
+; WARNING !!!!! TOP of STACK at addr ~8k NOT at addr ~32k !!!
+	mov sp,0x1FF0
+;	mov sp,0x7ff0
 	movt sp,0x0
 	mov fp,0x0
 	mov r0, #0x3ff

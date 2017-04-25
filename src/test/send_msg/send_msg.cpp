@@ -10,6 +10,7 @@ int main() {
 
 void 
 recv_actor_handler(missive* msg){
+	BJK_UPDATE_MIN_SP();
 	EMU_CK(bjk_addr_is_local(msg->dst));
 	bj_core_id_t koid = kernel::get_core_id();
 	BJ_MARK_USED(koid);
