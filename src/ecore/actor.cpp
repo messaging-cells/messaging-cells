@@ -13,7 +13,7 @@
 
 #include "core_main.h"
 //include "row.hh"
-#include "dyn_mem.hh"
+#include "dyn_mem.h"
 #include "actor.hh"
 
 
@@ -52,9 +52,66 @@ BJK_DEFINE_SEPARATE(missive)
 BJK_DEFINE_SEPARATE(agent_ref)
 BJK_DEFINE_SEPARATE(agent_grp)
 
+kernel::kernel(){
+	init_kernel();
+}
+
+kernel::~kernel(){}
+
+void
+kernel::init_kernel(){
+	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
+
+	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
+	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_null);
+
+	bj_init_arr_vals(kernel_class_names_arr_sz, class_names_arr, bj_null);
+
+	bjk_set_class_name(agent);
+	bjk_set_class_name(actor);
+	bjk_set_class_name(missive);
+	bjk_set_class_name(agent_ref);
+	bjk_set_class_name(agent_grp);
+
+	first_actor = actor::acquire();
+}
+
+void	// static
+kernel::init_sys(){
+	bjk_glb_init();
+
+	kernel* ker = BJK_FIRST_KERNEL;
+
+	new (ker) kernel(); 
+
+	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
+
+	in_shd->binder_sz = sizeof(binder);
+	in_shd->kernel_sz = sizeof(kernel);
+	in_shd->agent_sz = sizeof(agent);
+	in_shd->actor_sz = sizeof(actor);
+	in_shd->missive_sz = sizeof(missive);
+	in_shd->agent_ref_sz = sizeof(agent_ref);
+	in_shd->agent_grp_sz = sizeof(agent_grp);
+	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
+
+	bjk_enable_all_irq();
+	bjk_global_irq_enable();
+
+	in_shd->the_core_state = bjk_inited_state;
+}
+
+void	// static
+kernel::finish_sys(){
+	bjk_glb_finish();
+}
+
 char*
 agent::get_class_name(){
-	kernel* ker = kernel::get_sys();
+	kernel* ker = BJK_KERNEL;
 	bjk_actor_id_t id = get_actor_id();
 	if(bjk_is_valid_class_name_idx(id)){
 		return (ker->class_names_arr)[id];
@@ -109,7 +166,7 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 
 void // static
 kernel::actors_handle_loop(){
-	kernel* ker = kernel::get_sys();
+	kernel* ker = BJK_KERNEL;
 	
 	while(true){
 		ker->handle_missives();
@@ -164,63 +221,6 @@ agent::init_me(){
 	#pragma GCC diagnostic pop
 }
 
-kernel::kernel(){
-	init_kernel();
-}
-
-kernel::~kernel(){}
-
-void
-kernel::init_kernel(){
-	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
-
-	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
-	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_null);
-
-	bj_init_arr_vals(kernel_class_names_arr_sz, class_names_arr, bj_null);
-
-	bjk_set_class_name(agent);
-	bjk_set_class_name(actor);
-	bjk_set_class_name(missive);
-	bjk_set_class_name(agent_ref);
-	bjk_set_class_name(agent_grp);
-
-	first_actor = actor::acquire();
-}
-
-void	// static
-kernel::init_sys(){
-	bjk_glb_init();
-
-	kernel* ker = kernel::get_sys();
-
-	new (ker) kernel(); 
-
-	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
-
-	in_shd->binder_sz = sizeof(binder);
-	in_shd->kernel_sz = sizeof(kernel);
-	in_shd->agent_sz = sizeof(agent);
-	in_shd->actor_sz = sizeof(actor);
-	in_shd->missive_sz = sizeof(missive);
-	in_shd->agent_ref_sz = sizeof(agent_ref);
-	in_shd->agent_grp_sz = sizeof(agent_grp);
-	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
-
-	bjk_enable_all_irq();
-	bjk_global_irq_enable();
-
-	in_shd->the_core_state = bjk_inited_state;
-}
-
-void	// static
-kernel::finish_sys(){
-	bjk_glb_finish();
-}
-
 actor*	//	static 
 kernel::get_core_actor(bj_core_id_t dst_id){
 	actor* loc_act = kernel::get_core_actor();
@@ -233,7 +233,7 @@ kernel::get_core_actor(bj_core_id_t dst_id){
 
 void // static 
 kernel::set_handler(missive_handler_t hdlr, uint16_t idx){
-	kernel* ker = kernel::get_sys();
+	kernel* ker = BJK_KERNEL;
 	if(bjk_is_valid_handler_idx2(idx)){
 		(ker->handlers_arr)[idx] = hdlr;
 	}
@@ -407,7 +407,7 @@ void test_send_msg() {
 	agent_ref::separate(bj_out_num_cores);
 	agent_grp::separate(bj_out_num_cores);
 
-	kernel* ker = kernel::get_sys();
+	kernel* ker = BJK_KERNEL;
 	BJ_MARK_USED(ker);
 
 	if(bjk_is_core(0,0)){
@@ -476,7 +476,7 @@ void test_send_irq() {
 	kernel::init_sys();
 	ck_sizes();
 
-	if(kernel::get_sys()->direct_routed.is_alone()){
+	if(BJK_KERNEL->direct_routed.is_alone()){
 		bjk_slog2("direct_routed ALONE\n");
 	}
 

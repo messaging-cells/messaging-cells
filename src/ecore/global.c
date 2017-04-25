@@ -15,7 +15,7 @@ bjk_glb_init(void) {
 	// basic init
 	bjk_set_irq0_handler();
 
-	bjk_glb_sys_st* glb_dat = BJK_GLB_SYS;
+	bjk_glb_sys_st* glb_dat = BJK_FIRST_GLB_SYS;
 	bj_memset((uint8_t*)glb_dat, 0, sizeof(bjk_glb_sys_st));
 
 	glb_dat->off_core_pt = bj_null;

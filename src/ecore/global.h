@@ -37,21 +37,27 @@ struct bj_aligned bjk_glb_sys_def {
 typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 
 #if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
-	extern bjk_glb_sys_st	bj_glb_sys_data;
-	#define BJK_GLB_SYS (&bj_glb_sys_data)
-	#define BJK_GLB_IN_CORE_SHD (&(bj_glb_sys_data.in_core_shd))
+	bjk_glb_sys_st*
+	bjk_get_first_glb_sys();
+
+	extern bjk_glb_sys_st*	bjk_glb_pt_sys_data;
+	#define BJK_FIRST_GLB_SYS bjk_get_first_glb_sys()
+	#define BJK_GLB_SYS (bjk_glb_pt_sys_data)
+	#define BJK_GLB_IN_CORE_SHD (&(bjk_glb_pt_sys_data->in_core_shd))
 #else
+	bjk_glb_sys_st*
+	bjk_get_glb_sys();
+
+	bj_inline_fn bj_in_core_st* 
+	bjk_get_glb_in_core_shd(){
+		return &(bjk_get_glb_sys()->in_core_shd);
+	}
+
+	#define BJK_FIRST_GLB_SYS bjk_get_glb_sys()
 	#define BJK_GLB_SYS bjk_get_glb_sys()
 	#define BJK_GLB_IN_CORE_SHD bjk_get_glb_in_core_shd()
 #endif
 
-bjk_glb_sys_st*
-bjk_get_glb_sys();
-
-bj_inline_fn bj_in_core_st* 
-bjk_get_glb_in_core_shd(){
-	return &(bjk_get_glb_sys()->in_core_shd);
-}
 
 //=====================================================================
 // global funcs

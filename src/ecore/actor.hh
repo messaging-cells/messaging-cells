@@ -8,6 +8,7 @@
 #include "binder.hh"
 #include "global.h"
 
+class kernel;
 class agent;
 class actor;
 class missive;
@@ -39,7 +40,7 @@ enum bjk_actor_id_t : uint8_t {
 //-------------------------------------------------------------------------
 // dyn mem
 
-#define bjk_all_available(nam) kernel::get_sys()->cls_available_##nam
+#define bjk_all_available(nam) BJK_KERNEL->cls_available_##nam
 
 #define BJK_DEFINE_SEPARATE(nam) \
 void \
@@ -136,6 +137,19 @@ enum bjk_signal_t : uint8_t {
 
 #define kernel_class_names_arr_sz bjk_tot_actor_ids
 
+#if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
+	kernel*
+	bjk_get_first_kernel();
+
+	extern kernel*	bjk_PT_THE_KERNEL;
+	#define BJK_FIRST_KERNEL bjk_get_first_kernel()
+	#define BJK_KERNEL (bjk_PT_THE_KERNEL)
+#else
+	#define BJK_FIRST_KERNEL kernel::get_sys()
+	#define BJK_KERNEL kernel::get_sys()
+#endif
+
+
 class kernel { 
 public:
 	bj_bool_t signals_arr[kernel_signals_arr_sz];
@@ -220,7 +234,7 @@ public:
 
 	static bj_inline_fn actor*
 	get_core_actor(){
-		return get_sys()->first_actor;
+		return BJK_KERNEL->first_actor;
 	}
 
 	static actor*
@@ -372,7 +386,7 @@ public:
 
 	bj_inline_fn 
 	void send(){
-		kernel::get_sys()->local_work.bind_to_my_left(*this);
+		BJK_KERNEL->local_work.bind_to_my_left(*this);
 	}
 
 	virtual

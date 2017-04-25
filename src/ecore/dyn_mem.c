@@ -1,5 +1,5 @@
 
-#include "dyn_mem.hh"
+#include "dyn_mem.h"
 
 uint8_t* 
 a64_malloc(umm_size_t num_bytes){
@@ -28,11 +28,11 @@ a64_realloc(uint8_t* ptr, umm_size_t num_bytes){
 }
 
 void 
-a64_free(uint8_t*& ptr){
+a64_free(uint8_t* ptr){
 	if(ptr != umm_null){ 
 		void* umm_ptr = (void*)(((uint8_t*)ptr) - umm_aligned_disp);
 		umm_free(umm_ptr); 
-		ptr = umm_null;
+		//ptr = umm_null;
 	}
 }
 

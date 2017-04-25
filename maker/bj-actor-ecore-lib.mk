@@ -78,7 +78,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/rr_array.c \
 	$(SRC_ECORE_DIR)/trace_eph.c \
 	$(SRC_ECORE_DIR)/e_start.s \
-	$(SRC_ECORE_DIR)/dyn_mem.cpp \
+	$(SRC_ECORE_DIR)/dyn_mem.c \
 	$(SRC_ECORE_DIR)/binder.cpp \
 	$(SRC_ECORE_DIR)/actor_eph.cpp \
 	$(SRC_ECORE_DIR)/actor.cpp \

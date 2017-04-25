@@ -31,7 +31,7 @@ void pru_send_msg() {
 	agent_ref::separate(bj_out_num_cores);
 	agent_grp::separate(bj_out_num_cores);
 
-	kernel* ker = kernel::get_sys();
+	kernel* ker = BJK_KERNEL;
 	BJ_MARK_USED(ker);
 
 	if(bjk_is_core(0,0)){
