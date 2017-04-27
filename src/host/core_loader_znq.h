@@ -45,7 +45,7 @@ extern "C"
 #define BJ_SHARED_MEM_START_DISP (0x01000000)
 
 // Current link script: bj-ld-script.ldf
-// Current link addres for section 'shared_dram': EXTERNAL_DRAM_1
+// Current link addres for section 'external_data_ram': EXTERNAL_DRAM_1
 // Current origin of EXTERNAL_DRAM_1: 0x8f000000
 // Current HDF: the value of EPIPHANY_HDF enviroment variable because e_initi is called with NULL
 // Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf

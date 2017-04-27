@@ -152,7 +152,7 @@ bjk_set_irq0_handler() bj_external_code_ram;
 #define BJK_CK(nam, cond) 
 #define BJK_CK2(nam, cond) 
 #else 
-//define BJK_CK(nam, cond) BJK_OFFCHIP_ASSERT(nam, code_dram, cond)
+//define BJK_CK(nam, cond) BJK_OFFCHIP_ASSERT(nam, external_code_ram, cond)
 #define BJK_CK(nam, cond) BJK_INCORE_ASSERT(nam, cond)
 #define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
 #endif

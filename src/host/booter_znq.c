@@ -49,7 +49,9 @@ print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 	
 	void* 	trace[BJ_MAX_CALL_STACK_SZ];
 	memset(trace, 0, sizeof(trace));
-	e_read(dev, row, col, (uint32_t)(inco.dbg_stack_trace), trace, sizeof(trace));
+	if(inco.dbg_stack_trace != bj_null){
+		e_read(dev, row, col, (uint32_t)(inco.dbg_stack_trace), trace, sizeof(trace));
+	}
 	bjh_prt_core_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 }
 

@@ -56,8 +56,8 @@ bj_c_decl {
 	#ifdef IS_CORE_CODE
 		#define bj_naked_fn __attribute__((naked)) 
 		#define bj_isr_fn __attribute__((interrupt)) 
-		#define bj_external_code_ram bj_section("code_dram")
-		#define bj_external_data_ram bj_section("shared_dram")
+		#define bj_external_code_ram bj_section("external_code_ram")
+		#define bj_external_data_ram bj_section("external_data_ram")
 		#define bj_alloc_ram bj_section("alloc_ram")
 		#define CORE_CODE(cod) cod
 	#else
