@@ -5,8 +5,5 @@
 
 #include "umm_malloc.h"
 
-umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_alloc_ram;
-
-//int pru_heap_sz = 512;
-//uint8_t pru_heap[512];
-
+//umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_alloc_ram;
+umm_block *umm_heap = (umm_block*)BJK_LINK_SCRIPT_SYM_VAL(ALLOC_ORIG);
