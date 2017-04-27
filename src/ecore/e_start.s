@@ -27,14 +27,13 @@ irq3_entry:
 	.balign 4
 	.global	normal_start
 normal_start:
-; WARNING !!!!! Your .text code MUST be as small as possible. 
+; WARNING !!!!! Your .text code MUST fit in the space you give it in the link script (CODE_SIZE)
 ; WARNING !!!!! ALWAYS use modules for incore funcs. 
 ; WARNING !!!!! ALWAYS have LOW STACK consuming functions (use pointers to dynamic allocated structs). 
-; WARNING !!!!! Kernel already uses about 5k !!!! So you have about 3k of stack. THAT IS IT.
-; WARNING !!!!! TOP of STACK at addr ~8k NOT at addr ~32k !!!
-	mov sp,0x1FF0
-;	mov sp,0x7ff0
-	movt sp,0x0
+; WARNING !!!!! Kernel already uses about 5k in .text so CODE_SIZE MUST be bigger.
+; WARNING !!!!! sp initialized at addr STACK_TOP defined in the link script
+	mov sp, %low(STACK_TOP)
+	movt sp, %high(STACK_TOP)
 	mov fp,0x0
 	mov r0, #0x3ff
 	movts imask, r0
