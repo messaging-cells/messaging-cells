@@ -11,7 +11,7 @@ bj_c_decl {
 #endif
 
 int main();
-void pru_send_irq1() bj_code_dram;
+void pru_send_irq1() bj_external_code_ram;
 
 #ifdef __cplusplus
 }

@@ -4,7 +4,7 @@
 //======================================================================
 // off chip shared memory
 
-bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_shared_dram;
+bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_external_data_ram;
 
 
 //======================================================================

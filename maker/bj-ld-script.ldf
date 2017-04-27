@@ -129,6 +129,8 @@ SECTIONS
 	.data_bank2   : {*.o(.data_bank2)} > BANK2_SRAM
 	.text_bank2   : {*.o(.text_bank2)} > BANK2_SRAM
 
+	alloc_ram   : {*.o(alloc_ram)} > BANK2_SRAM
+
 	.data_bank3   : {*.o(.data_bank3)} > BANK3_SRAM
 	.text_bank3   : {*.o(.text_bank3)} > BANK3_SRAM
 

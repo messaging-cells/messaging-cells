@@ -59,19 +59,19 @@
 // local declarations
 
 umm_opt_sz_fn umm_idx_t 
-umm_blocks( umm_size_t size ) bj_code_dram;
+umm_blocks( umm_size_t size ) bj_external_code_ram;
 
 umm_opt_sz_fn void 
-umm_make_new_block( umm_idx_t c, umm_idx_t blocks, umm_idx_t freemask ) bj_code_dram;
+umm_make_new_block( umm_idx_t c, umm_idx_t blocks, umm_idx_t freemask ) bj_external_code_ram;
 
 umm_opt_sz_fn void 
-umm_disconnect_from_free_list( umm_idx_t c ) bj_code_dram;
+umm_disconnect_from_free_list( umm_idx_t c ) bj_external_code_ram;
 
 umm_opt_sz_fn void 
-umm_assimilate_up( umm_idx_t c ) bj_code_dram;
+umm_assimilate_up( umm_idx_t c ) bj_external_code_ram;
 
 umm_opt_sz_fn umm_idx_t 
-umm_assimilate_down( umm_idx_t c, umm_idx_t freemask ) bj_code_dram;
+umm_assimilate_down( umm_idx_t c, umm_idx_t freemask ) bj_external_code_ram;
 
 // ----------------------------------------------------------------------------
 

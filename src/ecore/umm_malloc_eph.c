@@ -5,5 +5,5 @@
 
 #include "umm_malloc.h"
 
-umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_data_bank2;
+umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_alloc_ram;
 

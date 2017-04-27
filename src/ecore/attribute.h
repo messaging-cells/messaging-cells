@@ -27,9 +27,9 @@ bj_c_decl {
 	#define bj_align(aa)
 	#define bj_naked_fn
 	#define bj_isr_fn 
-	#define bj_code_dram 
-	#define bj_shared_dram
-	#define bj_data_bank2
+	#define bj_external_code_ram 
+	#define bj_external_data_ram
+	#define bj_alloc_ram
 
 	#include <stdbool.h>
 
@@ -56,16 +56,16 @@ bj_c_decl {
 	#ifdef IS_CORE_CODE
 		#define bj_naked_fn __attribute__((naked)) 
 		#define bj_isr_fn __attribute__((interrupt)) 
-		#define bj_code_dram bj_section("code_dram")
-		#define bj_shared_dram bj_section("shared_dram")
-		#define bj_data_bank2 bj_section(".data_bank2")
+		#define bj_external_code_ram bj_section("code_dram")
+		#define bj_external_data_ram bj_section("shared_dram")
+		#define bj_alloc_ram bj_section("alloc_ram")
 		#define CORE_CODE(cod) cod
 	#else
 		#define bj_naked_fn
 		#define bj_isr_fn 
-		#define bj_code_dram 
-		#define bj_shared_dram
-		#define bj_data_bank2
+		#define bj_external_code_ram 
+		#define bj_external_data_ram
+		#define bj_alloc_ram
 		#define CORE_CODE(cod) 
 	#endif
 

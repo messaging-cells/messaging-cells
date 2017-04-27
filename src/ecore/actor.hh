@@ -139,7 +139,7 @@ enum bjk_signal_t : uint8_t {
 
 #if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
 	kernel*
-	bjk_get_first_kernel() bj_code_dram;
+	bjk_get_first_kernel() bj_external_code_ram;
 
 	extern kernel*	bjk_PT_THE_KERNEL;
 	#define BJK_FIRST_KERNEL bjk_get_first_kernel()
@@ -176,17 +176,17 @@ public:
 
 	actor* 	first_actor;
 
-	kernel() bj_code_dram;
+	kernel() bj_external_code_ram;
 
-	~kernel() bj_code_dram;
+	~kernel() bj_external_code_ram;
 
-	void init_kernel() bj_code_dram;
-
-	static void
-	init_sys() bj_code_dram;
+	void init_kernel() bj_external_code_ram;
 
 	static void
-	finish_sys() bj_code_dram;
+	init_sys() bj_external_code_ram;
+
+	static void
+	finish_sys() bj_external_code_ram;
 
 	static kernel*
 	get_sys();
@@ -241,7 +241,7 @@ public:
 	get_core_actor(bj_core_id_t dst_id);
 
 	static void
-	set_handler(missive_handler_t hdlr, uint16_t idx) bj_code_dram;
+	set_handler(missive_handler_t hdlr, uint16_t idx) bj_external_code_ram;
 
 	static bj_opt_sz_fn void 
 	actors_handle_loop();
@@ -288,10 +288,10 @@ public:
 	}
 
 	virtual bj_opt_sz_fn 
-	grip&	get_available() bj_code_dram;
+	grip&	get_available() bj_external_code_ram;
 
 	virtual bj_opt_sz_fn 
-	void	init_me() bj_code_dram;
+	void	init_me() bj_external_code_ram;
 
 	bj_opt_sz_fn 
 	void	release(){
@@ -307,7 +307,7 @@ public:
 	}
 
 	virtual
-	char* 	get_class_name() bj_code_dram;
+	char* 	get_class_name() bj_external_code_ram;
 };
 
 //-------------------------------------------------------------------------
@@ -316,11 +316,11 @@ public:
 class actor: public agent {
 public:
 	static
-	actor*			acquire_alloc(uint16_t sz) bj_code_dram;
+	actor*			acquire_alloc(uint16_t sz) bj_external_code_ram;
 	static
 	actor*			acquire(uint16_t sz = 1);
 	static
-	void			separate(uint16_t sz) bj_code_dram;
+	void			separate(uint16_t sz) bj_external_code_ram;
 
 	bjk_handler_idx_t 	id_idx;
 	bjk_flags_t 		flags;
@@ -359,11 +359,11 @@ typedef uint16_t	bjk_token_t;
 class missive : public agent {
 public:
 	static
-	missive*		acquire_alloc(uint16_t sz) bj_code_dram;
+	missive*		acquire_alloc(uint16_t sz) bj_external_code_ram;
 	static
 	missive*		acquire(uint16_t sz = 1);
 	static
-	void			separate(uint16_t sz) bj_code_dram;
+	void			separate(uint16_t sz) bj_external_code_ram;
 
 	actor* 				dst;
 	bjk_actor_sptr_t 	src;
@@ -416,11 +416,11 @@ public:
 class agent_grp : public agent {
 public:
 	static
-	agent_grp*		acquire_alloc(uint16_t sz) bj_code_dram;
+	agent_grp*		acquire_alloc(uint16_t sz) bj_external_code_ram;
 	static
 	agent_grp*		acquire(uint16_t sz = 1);
 	static
-	void			separate(uint16_t sz) bj_code_dram;
+	void			separate(uint16_t sz) bj_external_code_ram;
 
 	grip		all_agts;
 	uint8_t 	tot_agts;	// optional use
@@ -460,11 +460,11 @@ public:
 class agent_ref : public agent {
 public:
 	static
-	agent_ref*		acquire_alloc(uint16_t sz) bj_code_dram;
+	agent_ref*		acquire_alloc(uint16_t sz) bj_external_code_ram;
 	static
 	agent_ref* 		acquire(uint16_t sz = 1);
 	static
-	void			separate(uint16_t sz) bj_code_dram;
+	void			separate(uint16_t sz) bj_external_code_ram;
 
 	agent* 		glb_agent_ptr;
 
@@ -501,18 +501,18 @@ bj_c_decl {
 
 //bj_opt_sz_fn 
 void 
-bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) bj_code_dram;
+bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) bj_external_code_ram;
 
 void
-wait_inited_state(bj_core_id_t dst) bj_code_dram;
+wait_inited_state(bj_core_id_t dst) bj_external_code_ram;
 
 void
-init_class_names() bj_code_dram;
+init_class_names() bj_external_code_ram;
 
 void
-ck_sizes() bj_code_dram;
+ck_sizes() bj_external_code_ram;
 
-void test_minimal() bj_code_dram;
+void test_minimal() bj_external_code_ram;
 
 #ifdef __cplusplus
 }
@@ -520,7 +520,7 @@ void test_minimal() bj_code_dram;
 
 
 //static  void
-//__static_initialization_and_destruction_0(int, int) bj_code_dram;
+//__static_initialization_and_destruction_0(int, int) bj_external_code_ram;
 // ignored
 // pragma GCC diagnostic warning "-fpermissive"
 

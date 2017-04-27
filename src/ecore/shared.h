@@ -164,7 +164,7 @@ bj_addr_in_sys(bj_addr_t addr) {
 //define BJ_IS_ALIGNED(ptr, agn) ((((uintptr_t)ptr) & (agn - 1)) == 0)
 
 bj_opt_sz_fn uint8_t 
-bj_get_aligment(void* ptr) bj_code_dram;
+bj_get_aligment(void* ptr) bj_external_code_ram;
 
 uint32_t bj_inline_fn
 bj_v32_of_p16(uint16_t* p16){
@@ -291,16 +291,16 @@ struct bj_align(8) bj_off_sys_shared_data_def {
 typedef struct bj_off_sys_shared_data_def bj_off_sys_st;
 
 bj_opt_sz_fn uint8_t*
-bj_memset(uint8_t* dest, uint8_t val, bj_size_t sz) bj_code_dram;
+bj_memset(uint8_t* dest, uint8_t val, bj_size_t sz) bj_external_code_ram;
 
 bj_opt_sz_fn uint8_t*
-bj_memcpy(uint8_t* dest, const uint8_t* src, bj_size_t sz) bj_code_dram;
+bj_memcpy(uint8_t* dest, const uint8_t* src, bj_size_t sz) bj_external_code_ram;
 
 bj_opt_sz_fn uint8_t*
-bj_memmove(uint8_t* dest, const uint8_t* src, bj_size_t sz) bj_code_dram;
+bj_memmove(uint8_t* dest, const uint8_t* src, bj_size_t sz) bj_external_code_ram;
 
 uint16_t 
-bj_strlen(char* str) bj_code_dram;
+bj_strlen(char* str) bj_external_code_ram;
 
 bj_inline_fn bool
 bj_isprint(char cc){

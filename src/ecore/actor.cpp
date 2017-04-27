@@ -9,7 +9,7 @@
 // To FAKE std c++ lib initialization and destructions of global objects
 // DO NOT FORGET to call initializers explicitly.
 
-bj_c_decl int __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl) bj_code_dram;
+bj_c_decl int __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl) bj_external_code_ram;
 
 int 
 __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl){

@@ -15,22 +15,22 @@
 
 
 int16_t 
-get_add_simm11(uint16_t* add_cod) bj_code_dram;
+get_add_simm11(uint16_t* add_cod) bj_external_code_ram;
 	
 void 
-get_call_opcode(uint16_t opcode[2], int16_t disp) bj_code_dram;
+get_call_opcode(uint16_t opcode[2], int16_t disp) bj_external_code_ram;
 	
 uint16_t*
-find_call(uint16_t* code_addr, uint16_t opcode[2]) bj_code_dram;
+find_call(uint16_t* code_addr, uint16_t opcode[2]) bj_external_code_ram;
 
 uint16_t*
-find_interrupt_call(uint16_t* code_addr) bj_code_dram;
+find_interrupt_call(uint16_t* code_addr) bj_external_code_ram;
 
 uint16_t*
-find_rts(uint16_t* code_addr) bj_code_dram;
+find_rts(uint16_t* code_addr) bj_external_code_ram;
 	
 int16_t
-get_sp_disp(uint16_t* code_addr) bj_code_dram;
+get_sp_disp(uint16_t* code_addr) bj_external_code_ram;
 
 //=====================================================================
 

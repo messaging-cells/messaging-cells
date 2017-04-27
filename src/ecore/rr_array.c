@@ -9,19 +9,19 @@
 #define BJ_CRC16_POLY 0x8408
 
 uint16_t 
-bj_crc16(uint8_t *data_p, uint16_t length) bj_code_dram;
+bj_crc16(uint8_t *data_p, uint16_t length) bj_external_code_ram;
 
 uint16_t 
-bj_get_v16_of_p8(uint8_t* p8) bj_code_dram;
+bj_get_v16_of_p8(uint8_t* p8) bj_external_code_ram;
 
 void
-bj_set_v16_of_p8(uint8_t* p8, uint16_t v16) bj_code_dram;
+bj_set_v16_of_p8(uint8_t* p8, uint16_t v16) bj_external_code_ram;
 
 uint16_t
-bj_rr_get_v16(bj_rrarray_st* arr, uint8_t** pt_dat) bj_code_dram;
+bj_rr_get_v16(bj_rrarray_st* arr, uint8_t** pt_dat) bj_external_code_ram;
 
 void
-bj_rr_set_v16(bj_rrarray_st* arr, uint8_t** pt_dat, uint16_t v16) bj_code_dram;
+bj_rr_set_v16(bj_rrarray_st* arr, uint8_t** pt_dat, uint16_t v16) bj_external_code_ram;
 
 
 

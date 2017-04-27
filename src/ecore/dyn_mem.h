@@ -33,13 +33,13 @@ bj_c_decl {
 #define umm_aligned_disp 4
 
 bj_opt_sz_fn uint8_t* 
-a64_malloc(umm_size_t num_bytes) bj_code_dram;
+a64_malloc(umm_size_t num_bytes) bj_external_code_ram;
 
 bj_opt_sz_fn uint8_t* 
-a64_realloc(uint8_t* ptr, umm_size_t num_bytes) bj_code_dram;
+a64_realloc(uint8_t* ptr, umm_size_t num_bytes) bj_external_code_ram;
 
 bj_opt_sz_fn void 
-a64_free(uint8_t* ptr) bj_code_dram;
+a64_free(uint8_t* ptr) bj_external_code_ram;
 
 #define bjk_malloc32(nam, sz)	(nam *)(a32_malloc(sz * sizeof(nam)))
 #define bjk_realloc32(nam, ptr, sz)	(nam *)(a32_realloc((ptr), (sz * sizeof(nam))))

@@ -37,7 +37,7 @@ typedef enum bj_type_def bj_type_t;
 // log messages
 
 void
-bjk_aux_sout(char* msg, bj_out_type_t outt) bj_code_dram;
+bjk_aux_sout(char* msg, bj_out_type_t outt) bj_external_code_ram;
 
 bj_inline_fn void
 bjk_slog(char* msg){
@@ -54,7 +54,7 @@ bjk_sprt(char* msg){
 #define	bjk_sprt2(msg) bjk_sprt(as_pt_char(msg))
 
 void
-bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt) bj_code_dram;
+bjk_aux_iout(uint32_t vv, bj_out_type_t outt, bj_type_t tt) bj_external_code_ram;
 
 bj_inline_fn void
 bjk_ilog(int32_t vv){

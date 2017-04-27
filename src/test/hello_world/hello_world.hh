@@ -11,7 +11,7 @@ bj_c_decl {
 #endif
 
 int main();
-void hello_world() bj_code_dram;
+void hello_world() bj_external_code_ram;
 
 #ifdef __cplusplus
 }

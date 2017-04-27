@@ -163,10 +163,10 @@ typedef struct UMM_HEAP_INFO_t {
 UMM_HEAP_INFO;
 
 
-void *umm_info( UMM_HEAP_INFO* the_info, void *ptr, int force ) bj_code_dram;
-umm_opt_sz_fn void *umm_malloc( umm_size_t size ) bj_code_dram;
-umm_opt_sz_fn void *umm_realloc( void *ptr, umm_size_t size ) bj_code_dram;
-umm_opt_sz_fn void umm_free( void *ptr ) bj_code_dram;
+void *umm_info( UMM_HEAP_INFO* the_info, void *ptr, int force ) bj_external_code_ram;
+umm_opt_sz_fn void *umm_malloc( umm_size_t size ) bj_external_code_ram;
+umm_opt_sz_fn void *umm_realloc( void *ptr, umm_size_t size ) bj_external_code_ram;
+umm_opt_sz_fn void umm_free( void *ptr ) bj_external_code_ram;
 
 
 UMM_H_ATTPACKPRE typedef struct umm_ptr_t {
@@ -195,7 +195,7 @@ extern umm_idx_t umm_numblocks;
 
 	#define UMM_THE_HEAP umm_get_heap()
 #else
-	extern umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_data_bank2;
+	extern umm_block umm_heap[UMM_HEAP_NUM_BLOCKS] bj_alloc_ram;
 
 	#define UMM_THE_HEAP umm_heap
 #endif

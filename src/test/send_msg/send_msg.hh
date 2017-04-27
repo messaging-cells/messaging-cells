@@ -12,7 +12,7 @@ bj_c_decl {
 
 int main();
 void recv_actor_handler(missive* msg);
-void pru_send_msg() bj_code_dram;
+void pru_send_msg() bj_external_code_ram;
 
 #ifdef __cplusplus
 }

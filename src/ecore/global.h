@@ -39,7 +39,7 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 
 #if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
 	bjk_glb_sys_st*
-	bjk_get_first_glb_sys() bj_code_dram;
+	bjk_get_first_glb_sys() bj_external_code_ram;
 
 	extern bjk_glb_sys_st*	bjk_glb_pt_sys_data;
 	#define BJK_FIRST_GLB_SYS bjk_get_first_glb_sys()
@@ -72,20 +72,20 @@ bjk_set_finished(uint8_t val) {
 }
 
 void 
-bjk_glb_init() bj_code_dram;
+bjk_glb_init() bj_external_code_ram;
 
 void 
-bjk_glb_finish() bj_code_dram;
+bjk_glb_finish() bj_external_code_ram;
 
 #ifndef IS_EMU_CODE
 void 
-abort(void) bj_code_dram;		// Needed when -Os flag is set
+abort(void) bj_external_code_ram;		// Needed when -Os flag is set
 #endif
 
 #define BJ_B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
 
 void 
-bjk_set_irq0_handler() bj_code_dram;
+bjk_set_irq0_handler() bj_external_code_ram;
 
 //======================================================================
 // bj_asserts
@@ -183,7 +183,7 @@ bjk_set_irq0_handler() bj_code_dram;
 //define DBG_CODE_SHD_SZ 20
 //extern uint16_t DBG_CODE_SHD_1[DBG_CODE_SHD_SZ];
 
-void test_link_shd_code() bj_code_dram;	// bj_code_dram
+void test_link_shd_code() bj_external_code_ram;
 
 void ck_shd_code();
 

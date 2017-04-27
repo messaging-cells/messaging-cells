@@ -10,8 +10,8 @@
 bj_c_decl {
 #endif
 
-void m3_f1_shd() bj_code_dram;
-void m3_f2_shd() bj_code_dram;
+void m3_f1_shd() bj_external_code_ram;
+void m3_f2_shd() bj_external_code_ram;
 
 void m3_f3_core() bj_mod3_cod;
 void m3_main() bj_mod3_cod;
