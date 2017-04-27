@@ -288,7 +288,6 @@ int boot_znq(int argc, char *argv[])
 	}
 
 	//prt_host_aligns();
-
 	return 0;
 }
 
@@ -322,8 +321,17 @@ int map_physical(int argc, char *argv[]) {
     return 0;
 }
 
+void test_read_sysm(int argc, char *argv[]){
+	if(argc > 1){
+		epiphany_elf_nm = argv[1];
+		printf("Using core executable: %s \n", epiphany_elf_nm);
+	}
+	void* all_addr[BJH_TOT_LOAD_SYMS];
+	bjh_read_eph_elf_syms(epiphany_elf_nm, BJH_TOT_LOAD_SYMS, all_addr);
+}
 
 int main(int argc, char *argv[]) {
+	//test_read_sysm(argc, argv);
 	boot_znq(argc, argv);
 	//map_physical(argc, argv);
 	return 0;

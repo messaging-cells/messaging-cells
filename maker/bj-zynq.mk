@@ -41,5 +41,6 @@ SOURCES := \
 	$(SRC_HOST_DIR)/booter.c \
 	$(SRC_HOST_DIR)/booter_znq.c \
 	$(SRC_HOST_DIR)/prt_eph_call_stack_znq.c \
+	$(SRC_HOST_DIR)/read_eph_elf_boot_syms_znq.c \
 	$(SRC_ECORE_DIR)/rr_array.c 
 
