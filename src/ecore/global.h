@@ -28,7 +28,6 @@ struct bj_aligned bjk_glb_sys_def {
 	CORE_CODE(
 		void* 		bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
 		uint16_t 	bjk_trace_err;
-		bj_addr_t 	bjk_min_sp;
 	)
 	EMU_CODE(
 		uint8_t 	bjk_sync_signal;
@@ -198,9 +197,9 @@ void ck_shd_code();
 	bj_inline_fn void
 	bjk_update_min_stack_pointer() {
 		bj_addr_t curr_sp = (bj_addr_t)bjk_get_stack_pointer();
-		bj_addr_t min_sp = BJK_GLB_SYS->bjk_min_sp;
+		bj_addr_t min_sp = BJK_GLB_IN_CORE_SHD->dbg_min_sp;
 		if((min_sp == 0) || (curr_sp < min_sp)){
-			BJK_GLB_SYS->bjk_min_sp = curr_sp;
+			BJK_GLB_IN_CORE_SHD->dbg_min_sp = curr_sp;
 		}
 	}
 	#define BJK_UPDATE_MIN_SP() BJ_DBG(bjk_update_min_stack_pointer())

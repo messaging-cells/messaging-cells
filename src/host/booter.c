@@ -71,6 +71,8 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	}
 	printf("InCORE 0x%03x \n", sh_dat->the_core_id);
 	
+	ZNQ_CODE(printf("min_sp=0x%08x \n", sh_dat->dbg_min_sp));
+
 	EMU_CODE(printf("dbg_error_code=0x%08lx \n", sh_dat->dbg_error_code));
 	ZNQ_CODE(printf("dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
 
@@ -86,8 +88,6 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 	printf("agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
 	printf("bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
 	*/
-
-	ZNQ_CODE(printf("min_sp=0x%08x \n", sh_dat->min_sp));
 
 	if(sh_dat->exception_code != bjk_invalid_exception){
 		for(int aa = 0; aa < 5; aa++){

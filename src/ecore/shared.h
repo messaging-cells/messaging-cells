@@ -222,6 +222,7 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	uint32_t 	magic_id;
 	void** 		dbg_stack_trace;
 	
+	bj_addr_t 	dbg_min_sp;
 	bj_addr_t 	dbg_error_code;
 	uint32_t 	dbg_progress_flag;
 
@@ -240,8 +241,6 @@ struct bj_align(8) bj_in_core_shared_data_def {
 	uint16_t 	missive_sz;
 	uint16_t 	agent_grp_sz;
 	uint16_t 	agent_ref_sz;
-
-	bj_addr_t 	min_sp;
 
 	uint16_t 	bjk_glb_sys_st_sz;
 
