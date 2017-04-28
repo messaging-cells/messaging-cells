@@ -15,6 +15,8 @@
 bj_c_decl {
 #endif
 
+#define BJ_STDERR stderr
+
 // TODO: replace with platform data
 #define BJL_EMEM_SIZE (0x02000000)
 
@@ -62,24 +64,8 @@ get_enter(bj_core_co_t row, bj_core_co_t col);
 void
 bjh_ptr_call_stack_trace();
 
-#define BJH_STR_EXTERNAL_CODE_SIZE "EXTERNAL_CODE_SIZE"
-#define BJH_STR_EXTERNAL_LOAD_SIZE "EXTERNAL_LOAD_SIZE"
-#define BJH_STR_EXTERNAL_DATA_SIZE "EXTERNAL_DATA_SIZE"
-#define BJH_STR_EXTERNAL_ALLOC_SIZE "EXTERNAL_ALLOC_SIZE"
-
-#define BJH_STR_EXTERNAL_ORIG "EXTERNAL_ORIG"
-#define BJH_STR_EXTERNAL_CODE_ORIG "EXTERNAL_CODE_ORIG"
-#define BJH_STR_EXTERNAL_LOAD_ORIG "EXTERNAL_LOAD_ORIG"
-#define BJH_STR_EXTERNAL_DATA_ORIG "EXTERNAL_DATA_ORIG"
-#define BJH_STR_EXTERNAL_ALLOC_ORIG "EXTERNAL_ALLOC_ORIG"
-
-#define BJH_TOT_LOAD_SYMS 9
-
-void*
-bjh_find_link_script_addr(const char* nam, int addrs_sz, void** syms_addrs);
-
-int 
-bjh_read_eph_elf_syms(const char *elf_nm, int addrs_sz, void** syms_addrs);
+void
+bj_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 
 #define bjh_assert(vv) \
 	bjh_call_assert(vv, bj_as_pt_char(__FILE__), __LINE__, bj_as_pt_char(#vv), NULL)

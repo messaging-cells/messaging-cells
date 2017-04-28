@@ -70,6 +70,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/interruptions.c \
 	$(SRC_ECORE_DIR)/umm_malloc.c \
 	$(SRC_ECORE_DIR)/umm_malloc_eph.c \
+	$(SRC_ECORE_DIR)/link_syms_struct_eph.c \
 	$(SRC_ECORE_DIR)/log.c \
 	$(SRC_ECORE_DIR)/shared.c \
 	$(SRC_ECORE_DIR)/shared_eph.c \

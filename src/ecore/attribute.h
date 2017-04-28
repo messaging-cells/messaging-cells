@@ -30,9 +30,6 @@ bj_c_decl {
 	#define bj_align(aa)
 	#define bj_naked_fn
 	#define bj_isr_fn 
-	#define bj_external_code_ram 
-	#define bj_external_data_ram
-	#define bj_alloc_ram
 
 	#include <stdbool.h>
 
@@ -53,22 +50,17 @@ bj_c_decl {
 	#define bj_no_opt_fn __attribute__((optimize("O0")))
 	#define bj_inline_fn inline __attribute__((always_inline)) 
 	#define bj_asm __asm__ __volatile__
-	#define bj_section(sec) __attribute__ ((section (sec)))
 	#define bj_align(aa)	__attribute__ ((aligned (aa)))
 
 	#ifdef IS_CORE_CODE
 		#define bj_naked_fn __attribute__((naked)) 
 		#define bj_isr_fn __attribute__((interrupt)) 
-		#define bj_external_code_ram bj_section("external_code_ram")
-		#define bj_external_data_ram bj_section("external_data_ram")
-		#define bj_alloc_ram bj_section("alloc_ram")
+		#define bj_section(sec) __attribute__ ((section (sec)))
 		#define CORE_CODE(cod) cod
 	#else
 		#define bj_naked_fn
 		#define bj_isr_fn 
-		#define bj_external_code_ram 
-		#define bj_external_data_ram
-		#define bj_alloc_ram
+		#define bj_section(sec) 
 		#define CORE_CODE(cod) 
 	#endif
 
@@ -86,9 +78,17 @@ bj_c_decl {
 	#define ZNQ_CODE(cod)
 #endif	//IS_ZNQ_CODE
 
+#define bj_lk_syms_section_nm "link_symbols_data"
+
 
 #define bj_aligned bj_align(8) 
 
+#define bj_external_code_ram bj_section("external_code_ram")
+#define bj_external_data_ram bj_section("external_data_ram")
+#define bj_alloc_ram bj_section("alloc_ram")
+
+//define bj_lk_syms_dat bj_section("link_symbols_data,\"e\",@nobits ;")
+#define bj_lk_syms_dat bj_section(bj_lk_syms_section_nm)
 
 #define bj_comm_cod bj_section("common_code")
 #define bj_comm_dat bj_section("common_data")

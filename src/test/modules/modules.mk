@@ -1,7 +1,7 @@
 
 IS_CORE_FLAG := -DIS_CORE_CODE
 
-E_LDF=${SRC_DIR}/test/modules/module.ldf
+E_LDF=bj-ld-script.ldf
 
 PRU_SRC_DIR := .
 PRU_INC_DIR := ../../ecore

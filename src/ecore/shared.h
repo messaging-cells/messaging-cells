@@ -326,6 +326,24 @@ bj_isprint(char cc){
 	extern bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM;
 #endif
 
+struct bj_align(8) bj_link_syms_data_def { 
+	bj_addr_t bj_val_external_code_size;
+	bj_addr_t bj_val_external_load_size;
+	bj_addr_t bj_val_external_data_size;
+	bj_addr_t bj_val_external_alloc_size;
+	bj_addr_t bj_val_external_orig;
+	bj_addr_t bj_val_external_code_orig;
+	bj_addr_t bj_val_external_load_orig;
+	bj_addr_t bj_val_external_data_orig;
+	bj_addr_t bj_val_external_alloc_orig;
+};
+typedef struct bj_link_syms_data_def bj_link_syms_data_st;
+
+void*
+bj_add_lk_syms();
+
+//extern bj_link_syms_data_st bj_link_syms_values bj_lk_syms_dat;
+
 #ifdef __cplusplus
 }
 #endif

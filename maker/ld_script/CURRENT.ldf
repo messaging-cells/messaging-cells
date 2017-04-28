@@ -68,6 +68,8 @@ MEMORY
 
 SECTIONS
 {
+	link_symbols_data : { *(link_symbols_data*) } > EXTERNAL_CODE_RAM
+
 	ivt_reset               0x00 : {*.o(IVT_RESET)}                    > IVT_RAM
 	ivt_software_exception  0x04 : {*.o(ivt_entry_software_exception)} > IVT_RAM
 	ivt_page_miss           0x08 : {*.o(ivt_entry_page_miss)}          > IVT_RAM
@@ -109,7 +111,6 @@ SECTIONS
 	module9 : { *(module9*) } > MODULE_9
 
 	alloc_ram   : {*.o(alloc_ram)} > ALLOC_RAM
-
 
 	.comment  0 : { *(.comment*) }
 }

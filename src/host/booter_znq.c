@@ -326,8 +326,21 @@ void test_read_sysm(int argc, char *argv[]){
 		epiphany_elf_nm = argv[1];
 		printf("Using core executable: %s \n", epiphany_elf_nm);
 	}
-	void* all_addr[BJH_TOT_LOAD_SYMS];
-	bjh_read_eph_elf_syms(epiphany_elf_nm, BJH_TOT_LOAD_SYMS, all_addr);
+
+	bj_link_syms_data_st syms;
+	memset(&syms, 0, sizeof(syms));
+	bj_read_eph_link_syms(epiphany_elf_nm, &syms);
+
+	printf("bj_val_external_code_size = %p \n", (void*)syms.bj_val_external_code_size);
+	printf("bj_val_external_load_size = %p \n", (void*)syms.bj_val_external_load_size);
+	printf("bj_val_external_data_size = %p \n", (void*)syms.bj_val_external_data_size);
+	printf("bj_val_external_alloc_size = %p \n", (void*)syms.bj_val_external_alloc_size);
+	printf("bj_val_external_orig = %p \n", (void*)syms.bj_val_external_orig);
+	printf("bj_val_external_code_orig = %p \n", (void*)syms.bj_val_external_code_orig);
+	printf("bj_val_external_load_orig = %p \n", (void*)syms.bj_val_external_load_orig);
+	printf("bj_val_external_data_orig = %p \n", (void*)syms.bj_val_external_data_orig);
+	printf("bj_val_external_alloc_orig = %p \n", (void*)syms.bj_val_external_alloc_orig);
+
 }
 
 int main(int argc, char *argv[]) {

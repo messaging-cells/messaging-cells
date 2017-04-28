@@ -26,6 +26,7 @@
 #ifndef BJ_LOADER_H
 #define BJ_LOADER_H
 
+#include <elf.h>
 #include "e-hal.h"
 
 #ifdef __cplusplus
@@ -57,6 +58,23 @@ extern "C"
 
 // Observe also that these addresses are AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq 
 // side (host side)
+//=====================================================================================
+
+#ifndef BJL_MARK_USED
+#define BJL_MARK_USED(X)  ((void)(&(X)))
+#endif
+
+typedef enum {
+	L_D0 = 0,
+	L_D1 = 1,
+	L_D2 = 2,
+	L_D3 = 3,
+	L_D4 = 40,
+} bjl_loader_diag_t;
+
+extern bjl_loader_diag_t bjl_load_verbose;
+
+#define bjl_diag(vN)   if (bjl_load_verbose >= vN)
 
 extern bool LOAD_WITH_MEMCPY;
 
@@ -78,6 +96,9 @@ int bj_load_group(load_info_t *ld_dat);
 #define DBGH_CODE_SHD_SZ 20
 extern uint16_t DBGH_CODE_SHD_1[DBGH_CODE_SHD_SZ];
 extern bj_addr_t DBGH_FUNC_ADDR;
+
+bool 
+bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr);
 
 void
 ck_dbg_shd_code(char* msg, uint16_t* base);
