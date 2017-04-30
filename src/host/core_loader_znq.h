@@ -36,30 +36,6 @@ extern "C"
 
 #include "shared.h"
 
-//=====================================================================================
-// IMPORTANT NOTE:
-// ---------------
-
-// The following displacemente MUST match the definitions in the linker script and the 
-// Hardware Description File (HDF) passed to e_init.
-
-#define BJ_SHARED_MEM_START_DISP (0x01000000)
-
-// Current link script: bj-ld-script.ldf
-// Current link addres for section 'external_data_ram': LD_EXTERNAL_DRAM_1
-// Current origin of LD_EXTERNAL_DRAM_1: 0x8f000000
-// Current HDF: the value of EPIPHANY_HDF enviroment variable because e_initi is called with NULL
-// Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf
-// Current value of EMEM_BASE_ADDRESS in HDF: 0x8e000000
-
-// So we have:
-// EMEM_BASE_ADDRESS 	+ BJ_SHARED_MEM_START_DISP 	== ORIGIN(LD_EXTERNAL_DRAM_1)
-// 0x8e000000 			+ 0x01000000 				== 0x8f000000
-
-// Observe also that these addresses are AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq 
-// side (host side)
-//=====================================================================================
-
 #ifndef BJL_MARK_USED
 #define BJL_MARK_USED(X)  ((void)(&(X)))
 #endif
@@ -87,6 +63,9 @@ struct load_info_st {
 	unsigned cols;
 	char**	all_module_names;
 	void**	all_module_addrs;	// as seen from ephiphany side
+
+	void *file;
+	e_mem_t *emem;
 };
 typedef struct load_info_st load_info_t;
 

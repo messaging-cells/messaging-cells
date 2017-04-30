@@ -85,14 +85,20 @@ int boot_znq(int argc, char *argv[])
 		return 0;
 	}
 
-	BJH_CK(BJ_SHARED_MEM_START_DISP == (lk_dat->extnl_data_orig - lk_dat->extnl_ram_orig));
+	// IMPORTANT NOTE:
+	// Current HDF: the value of EPIPHANY_HDF enviroment variable because e_initi is called with NULL
+	// Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf
+	// Current value of EMEM_BASE_ADDRESS in HDF: 0x8e000000
+	// Current link script: bj-ld-script.ldf
+	// Observe that this address is AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq side.
+
+	// This MUST match the value en the linker script.
 
 	e_init(NULL);
 	e_reset_system();
 	e_get_platform_info(&platform);
 
-	//e_alloc(&emem, BJ_SHARED_MEM_START_DISP, sizeof(bj_off_sys_st));
-	if (e_alloc(&emem, 0, BJL_EMEM_SIZE)) {
+	if (e_alloc(&emem, 0, lk_dat->extnl_ram_size)) {
 		printf("ERROR: Can't allocate external memory buffer!\n\n");
 		return 0;
 	}
@@ -101,13 +107,13 @@ int boot_znq(int argc, char *argv[])
 
 	bjh_init_glb_sys_sz_with_dev(BJK_GLB_SYS_SZ, &dev);
 
-	//void* the_base = (void*)(emem.base);
-	void* the_base = (void*)(((uint8_t*)emem.base) + BJ_SHARED_MEM_START_DISP);
-	printf("the_base=%p \n", the_base);
+	//void* the_data_addr = (void*)(emem.base);
+	void* the_data_addr = (void*)(((uint8_t*)emem.base) + lk_dat->extnl_data_disp);
+	printf("the_data_addr=%p \n", the_data_addr);
 
-	DBG_BASE = (bj_off_sys_st*)the_base;
+	DBG_BASE = (bj_off_sys_st*)the_data_addr;
 
-	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)the_base;
+	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)the_data_addr;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
 
 	DBG_BASE->magic_id = BJ_MAGIC_ID;
@@ -273,9 +279,9 @@ int boot_znq(int argc, char *argv[])
 
 	printf("SHD_DATA_addr_as_seen_from_eph=%p\n", pt_shd_data->pt_this_from_eph);
 	printf("SHD_DATA_addr_as_seen_from_znq=%p\n", pt_shd_data->pt_this_from_znq);
-	printf("SHD_DATA_displacement_from_shd_mem_base_adddr= %p\n", (void*)BJ_SHARED_MEM_START_DISP);
+	printf("SHD_DATA_displacement_from_shd_mem_base_adddr= %p\n", (void*)(lk_dat->extnl_data_disp));
 
-	printf("the_base=%p \n", the_base);
+	printf("the_data_addr=%p \n", the_data_addr);
 	
 	// Reset the workgroup
 	e_reset_group(&dev); // FAILS. Why?
