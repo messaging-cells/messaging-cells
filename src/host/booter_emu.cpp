@@ -56,6 +56,7 @@ host_main(int argc, char *argv[])
 	bj_init_glb_sys_sz(&bj_glb_host_sys);
 
 	memset(&all_f_nam, 0, sizeof(all_f_nam));
+	memset(&bjh_external_ram_load_data, 0, sizeof(bj_link_syms_data_st));
 
 	ALL_THREADS_INFO = bj_null;
 

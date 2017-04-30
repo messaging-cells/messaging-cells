@@ -1,0 +1,7 @@
+
+# Only change last year. DO NOT use generic matching '^Copyright' because
+# it will change other people's Copyright.
+
+find . -name "*" -type f | xargs sed -i 's/extnl_ram_orig/extnl_ram_orig/g'
+
+

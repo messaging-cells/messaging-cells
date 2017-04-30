@@ -12,6 +12,7 @@ PROVIDE (___bss_start = __bss_start);
 USER DEFINED SIZES
 */
 
+LD_EXTERNAL_RAM_SIZE = 32M;	/* all external ram */
 LD_EXTERNAL_CODE_SIZE = 8M;	/* ready to exec shared code (.text, data, rodata, bss and .stack) */
 LD_EXTERNAL_LOAD_SIZE = 8M;	/* ready to load shared code (elf format)*/
 LD_EXTERNAL_DATA_SIZE = 8M;	/* shared data (a big struct) */
@@ -25,8 +26,8 @@ LD_CORE_ALLOC_SIZE = 12k;
 
 /* =============================================================================================== */
 
-LD_EXTERNAL_ORIG = 0x8e000000;
-LD_EXTERNAL_CODE_ORIG = LD_EXTERNAL_ORIG;
+LD_EXTERNAL_RAM_ORIG = 0x8e000000;
+LD_EXTERNAL_CODE_ORIG = LD_EXTERNAL_RAM_ORIG;
 LD_EXTERNAL_LOAD_ORIG = LD_EXTERNAL_CODE_ORIG + LD_EXTERNAL_CODE_SIZE;
 LD_EXTERNAL_DATA_ORIG = LD_EXTERNAL_LOAD_ORIG + LD_EXTERNAL_LOAD_SIZE;
 LD_EXTERNAL_ALLOC_ORIG = LD_EXTERNAL_DATA_ORIG + LD_EXTERNAL_DATA_SIZE;

@@ -21,7 +21,7 @@ bj_c_decl {
 #define BJL_EMEM_SIZE (0x02000000)
 
 extern bj_sys_sz_st bj_glb_host_sys;
-extern bj_link_syms_data_st bj_external_ram_load_data;
+extern bj_link_syms_data_st bjh_external_ram_load_data;
 
 #define bj_as_pt_char(the_str) (the_str)
 

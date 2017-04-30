@@ -30,8 +30,6 @@
 
 const char* epiphany_elf_nm = "bj-core-actor.elf";
 
-bj_link_syms_data_st bj_external_ram_load_data;
-
 bj_sys_sz_st bjh_glb_sys;
 
 bj_sys_sz_st*
@@ -78,13 +76,16 @@ int boot_znq(int argc, char *argv[])
 		LOAD_WITH_MEMCPY = true;
 	}
 
-	bj_read_eph_link_syms(epiphany_elf_nm, &bj_external_ram_load_data);
+	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
+	bj_read_eph_link_syms(epiphany_elf_nm, lk_dat);
 
-	if(bj_external_ram_load_data.bj_val_external_orig == 0) {
+	if(lk_dat->extnl_ram_orig == 0) {
 		printf("ERROR: Can't read external memory location from %s\n", epiphany_elf_nm);
 		printf("Make sure linker script for %s defines LD_EXTERNAL_* symbols\n\n", epiphany_elf_nm);
 		return 0;
 	}
+
+	BJH_CK(BJ_SHARED_MEM_START_DISP == (lk_dat->extnl_data_orig - lk_dat->extnl_ram_orig));
 
 	e_init(NULL);
 	e_reset_system();
@@ -338,15 +339,20 @@ void test_read_sysm(int argc, char *argv[]){
 	bj_link_syms_data_st syms;
 	bj_read_eph_link_syms(epiphany_elf_nm, &syms);
 
-	printf("bj_val_external_code_size = %p \n", (void*)syms.bj_val_external_code_size);
-	printf("bj_val_external_load_size = %p \n", (void*)syms.bj_val_external_load_size);
-	printf("bj_val_external_data_size = %p \n", (void*)syms.bj_val_external_data_size);
-	printf("bj_val_external_alloc_size = %p \n", (void*)syms.bj_val_external_alloc_size);
-	printf("bj_val_external_orig = %p \n", (void*)syms.bj_val_external_orig);
-	printf("bj_val_external_code_orig = %p \n", (void*)syms.bj_val_external_code_orig);
-	printf("bj_val_external_load_orig = %p \n", (void*)syms.bj_val_external_load_orig);
-	printf("bj_val_external_data_orig = %p \n", (void*)syms.bj_val_external_data_orig);
-	printf("bj_val_external_alloc_orig = %p \n", (void*)syms.bj_val_external_alloc_orig);
+	printf("extnl_ram_size = %p \n", (void*)syms.extnl_ram_size);
+	printf("extnl_code_size = %p \n", (void*)syms.extnl_code_size);
+	printf("extnl_load_size = %p \n", (void*)syms.extnl_load_size);
+	printf("extnl_data_size = %p \n", (void*)syms.extnl_data_size);
+	printf("extnl_alloc_size = %p \n", (void*)syms.extnl_alloc_size);
+	printf("extnl_ram_orig = %p \n", (void*)syms.extnl_ram_orig);
+	printf("extnl_code_orig = %p \n", (void*)syms.extnl_code_orig);
+	printf("extnl_load_orig = %p \n", (void*)syms.extnl_load_orig);
+	printf("extnl_data_orig = %p \n", (void*)syms.extnl_data_orig);
+	printf("extnl_alloc_orig = %p \n", (void*)syms.extnl_alloc_orig);
+	printf("extnl_code_disp = %p \n", (void*)syms.extnl_code_disp);
+	printf("extnl_load_disp = %p \n", (void*)syms.extnl_load_disp);
+	printf("extnl_data_disp = %p \n", (void*)syms.extnl_data_disp);
+	printf("extnl_alloc_disp = %p \n", (void*)syms.extnl_alloc_disp);
 
 }
 

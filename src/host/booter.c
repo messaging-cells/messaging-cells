@@ -17,6 +17,8 @@
 
 //include "test_align.h"
 
+bj_link_syms_data_st bjh_external_ram_load_data;
+
 void 
 bjh_abort_func(long val, const char* msg){
 	fprintf(stderr, "\nABORTING! %s\n", msg); 

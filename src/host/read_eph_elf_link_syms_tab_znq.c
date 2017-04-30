@@ -69,6 +69,7 @@ bj_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms){
 	}
 
 	bj_read_sections_elf(file, syms);
+	bj_extnl_ram_load_data_fill(syms);
 
 out:
 	munmap(file, st.st_size);

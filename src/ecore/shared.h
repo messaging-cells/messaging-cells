@@ -327,22 +327,35 @@ bj_isprint(char cc){
 #endif
 
 struct bj_aligned bj_link_syms_data_def { 
-	bj_addr_t bj_val_external_code_size;
-	bj_addr_t bj_val_external_load_size;
-	bj_addr_t bj_val_external_data_size;
-	bj_addr_t bj_val_external_alloc_size;
-	bj_addr_t bj_val_external_orig;
-	bj_addr_t bj_val_external_code_orig;
-	bj_addr_t bj_val_external_load_orig;
-	bj_addr_t bj_val_external_data_orig;
-	bj_addr_t bj_val_external_alloc_orig;
+	bj_addr_t extnl_ram_size;
+	bj_addr_t extnl_code_size;
+	bj_addr_t extnl_load_size;
+	bj_addr_t extnl_data_size;
+	bj_addr_t extnl_alloc_size;
+	bj_addr_t extnl_ram_orig;
+	bj_addr_t extnl_code_orig;
+	bj_addr_t extnl_load_orig;
+	bj_addr_t extnl_data_orig;
+	bj_addr_t extnl_alloc_orig;
+	bj_addr_t extnl_code_disp;
+	bj_addr_t extnl_load_disp;
+	bj_addr_t extnl_data_disp;
+	bj_addr_t extnl_alloc_disp;
 };
 typedef struct bj_link_syms_data_def bj_link_syms_data_st;
 
 void*
 bj_add_lk_syms();
 
-//extern bj_link_syms_data_st bj_link_syms_values bj_lk_syms_dat;
+void
+bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms);
+
+
+#ifdef IS_CORE_CODE
+	#define BJ_EXTERNAL_RAM_LOAD_DATA bjk_external_ram_load_data
+#else
+	#define BJ_EXTERNAL_RAM_LOAD_DATA bjh_external_ram_load_data
+#endif
 
 #ifdef __cplusplus
 }
