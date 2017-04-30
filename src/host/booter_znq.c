@@ -30,6 +30,8 @@
 
 const char* epiphany_elf_nm = "bj-core-actor.elf";
 
+bj_link_syms_data_st bj_external_ram_load_data;
+
 bj_sys_sz_st bjh_glb_sys;
 
 bj_sys_sz_st*
@@ -76,7 +78,13 @@ int boot_znq(int argc, char *argv[])
 		LOAD_WITH_MEMCPY = true;
 	}
 
-	//e_set_loader_verbosity(H_D0);
+	bj_read_eph_link_syms(epiphany_elf_nm, &bj_external_ram_load_data);
+
+	if(bj_external_ram_load_data.bj_val_external_orig == 0) {
+		printf("ERROR: Can't read external memory location from %s\n", epiphany_elf_nm);
+		printf("Make sure linker script for %s defines LD_EXTERNAL_* symbols\n\n", epiphany_elf_nm);
+		return 0;
+	}
 
 	e_init(NULL);
 	e_reset_system();
@@ -328,7 +336,6 @@ void test_read_sysm(int argc, char *argv[]){
 	}
 
 	bj_link_syms_data_st syms;
-	memset(&syms, 0, sizeof(syms));
 	bj_read_eph_link_syms(epiphany_elf_nm, &syms);
 
 	printf("bj_val_external_code_size = %p \n", (void*)syms.bj_val_external_code_size);

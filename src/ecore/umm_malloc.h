@@ -63,9 +63,9 @@ umm_memmove(uint8_t* dest, const uint8_t* src, umm_size_t sz){
 #ifdef IS_EMU_CODE
 	#define UMM_MALLOC_CFG__HEAP_SIZE 131064
 #else
-	extern bj_addr_t ALLOC_ORIG;
-	extern bj_addr_t ALLOC_SIZE;
-	#define UMM_MALLOC_CFG__HEAP_SIZE BJK_LINK_SCRIPT_SYM_VAL(ALLOC_SIZE)
+	extern bj_addr_t LD_CORE_ALLOC_ORIG;
+	extern bj_addr_t LD_CORE_ALLOC_SIZE;
+	#define UMM_MALLOC_CFG__HEAP_SIZE BJK_LINK_SCRIPT_SYM_VAL(LD_CORE_ALLOC_SIZE)
 	//define UMM_MALLOC_CFG__HEAP_SIZE 8192
 #endif
 

@@ -46,14 +46,14 @@ extern "C"
 #define BJ_SHARED_MEM_START_DISP (0x01000000)
 
 // Current link script: bj-ld-script.ldf
-// Current link addres for section 'external_data_ram': EXTERNAL_DRAM_1
-// Current origin of EXTERNAL_DRAM_1: 0x8f000000
+// Current link addres for section 'external_data_ram': LD_EXTERNAL_DRAM_1
+// Current origin of LD_EXTERNAL_DRAM_1: 0x8f000000
 // Current HDF: the value of EPIPHANY_HDF enviroment variable because e_initi is called with NULL
 // Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf
 // Current value of EMEM_BASE_ADDRESS in HDF: 0x8e000000
 
 // So we have:
-// EMEM_BASE_ADDRESS 	+ BJ_SHARED_MEM_START_DISP 	== ORIGIN(EXTERNAL_DRAM_1)
+// EMEM_BASE_ADDRESS 	+ BJ_SHARED_MEM_START_DISP 	== ORIGIN(LD_EXTERNAL_DRAM_1)
 // 0x8e000000 			+ 0x01000000 				== 0x8f000000
 
 // Observe also that these addresses are AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq 

@@ -41,7 +41,7 @@ typedef uint8_t bj_bool_t;
 
 #define bj_out_num_cores bj_e3_num_chip_cores
 
-struct bj_align(8) bj_sys_def { 
+struct bj_aligned bj_sys_def { 
 	bj_core_co_t 	xx;		// absolute xx epiphany space coordinates
 	bj_core_co_t 	yy;		// absolute yy epiphany space coordinates
 	bj_core_co_t 	xx_sz;		// this running sys number of ekores in xx axis (sys length)
@@ -217,8 +217,8 @@ typedef uint8_t bjk_exception_t;
 #define bjk_software_exception 1
 #define bjk_memory_exception 2
 
-struct bj_align(8) bj_in_core_shared_data_def { 
-	// CAREFUL !! sometimes aligment(ekore) != aligment(host). bj_align(8) SHOULD SOLVE that.
+struct bj_aligned bj_in_core_shared_data_def { 
+	// CAREFUL !! sometimes aligment(ekore) != aligment(host). bj_aligned SHOULD SOLVE that.
 	uint32_t 	magic_id;
 	void** 		dbg_stack_trace;
 	
@@ -255,7 +255,7 @@ typedef struct bj_in_core_shared_data_def bj_in_core_st;
 #define BJ_WAITING_ENTER	0xaa
 #define BJ_WAITING_BUFFER	0xbb
 
-struct bj_align(8) bj_off_core_shared_data_def { 
+struct bj_aligned bj_off_core_shared_data_def { 
 	uint32_t 		magic_id;
 	bj_core_id_t	ck_core_id;
 	uint8_t 		is_finished;
@@ -269,7 +269,7 @@ typedef struct bj_off_core_shared_data_def bj_off_core_st;
 #define BJ_OUT_BUFF_SZ 	300
 #define BJ_OUT_BUFF_MAX_OBJ_SZ 500
 
-struct bj_align(8) bj_core_out_def { 
+struct bj_aligned bj_core_out_def { 
 	uint32_t 		magic_id;
 	bj_rrarray_st 	wr_arr;
 	bj_rrarray_st 	rd_arr;
@@ -278,7 +278,7 @@ struct bj_align(8) bj_core_out_def {
 typedef struct bj_core_out_def bj_core_out_st;
 
 
-struct bj_align(8) bj_off_sys_shared_data_def { 
+struct bj_aligned bj_off_sys_shared_data_def { 
 	uint32_t 		magic_id;
 	uint32_t 		dbg_error_code;
 	void* 			pt_this_from_znq;
@@ -326,7 +326,7 @@ bj_isprint(char cc){
 	extern bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM;
 #endif
 
-struct bj_align(8) bj_link_syms_data_def { 
+struct bj_aligned bj_link_syms_data_def { 
 	bj_addr_t bj_val_external_code_size;
 	bj_addr_t bj_val_external_load_size;
 	bj_addr_t bj_val_external_data_size;

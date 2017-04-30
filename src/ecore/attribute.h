@@ -87,7 +87,6 @@ bj_c_decl {
 #define bj_external_data_ram bj_section("external_data_ram")
 #define bj_alloc_ram bj_section("alloc_ram")
 
-//define bj_lk_syms_dat bj_section("link_symbols_data,\"e\",@nobits ;")
 #define bj_lk_syms_dat bj_section(bj_lk_syms_section_nm)
 
 #define bj_comm_cod bj_section("common_code")

@@ -30,6 +30,11 @@ bj_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms){
 	struct stat  st;
 	void        *file;
 
+	if(syms == NULL){
+		return;
+	}
+	memset(syms, 0, sizeof(bj_link_syms_data_st));
+
 	e_set_host_verbosity(H_D0);
 
 	fd = open(executable, O_RDONLY);
@@ -115,10 +120,8 @@ bj_read_sections_elf(const void *file, bj_link_syms_data_st* syms)
 
 		//uint8_t* pt_src_end = pt_src + blk_sz;
 
-		if(syms != NULL){
-			bj_link_syms_data_st* pt_syms = (bj_link_syms_data_st*)pt_src;
-			*syms = *pt_syms;
-		}
+		bj_link_syms_data_st* pt_syms = (bj_link_syms_data_st*)pt_src;
+		*syms = *pt_syms;
 
 		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bj_read_sections_elf(): FOUND section=%s\n", sect_nm); }
 		break;

@@ -11,7 +11,7 @@
 bj_c_decl {
 #endif
 
-struct bj_align(8) bj_rrarray_def { 
+struct bj_aligned bj_rrarray_def { 
 	uint32_t magic_id;
 	uint8_t* data;
 	uint8_t* end_data;

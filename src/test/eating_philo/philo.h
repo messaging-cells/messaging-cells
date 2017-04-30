@@ -17,7 +17,7 @@ bj_c_decl {
 #define chop_kind 1
 #define philo_kind 2
 
-struct bj_align(8) load_def { 
+struct bj_aligned load_def { 
 	uint32_t 		magic_id;
 	uint32_t 		kind;	
 	bj_core_id_t	koid;
@@ -25,19 +25,19 @@ struct bj_align(8) load_def {
 };
 typedef struct load_def ld_loadable_t;
 
-struct bj_align(8) chop_def { 
+struct bj_aligned chop_def { 
 	ld_loadable_t	load;
 };
 typedef struct chop_def ld_chopstick_t;
 
-struct bj_align(8) philoso_def { 
+struct bj_aligned philoso_def { 
 	ld_loadable_t	load;
 	bj_addr_t 		left_chop;
 	bj_addr_t 		right_chop;
 };
 typedef struct philoso_def ld_philoso_t;
 
-struct bj_align(8) input_def { 
+struct bj_aligned input_def { 
 	uint32_t	sz;
 	uint8_t* 	dat;
 };
