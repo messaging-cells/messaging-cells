@@ -14,21 +14,15 @@
 #include <inttypes.h>
 
 #include <e-hal.h>
-//include <e-loader.h>
 #include <epiphany-hal-api-local.h>
 
 #include "shared.h"
 #include "booter.h"
 #include "core_loader_znq.h"
 
-//include "test_align.h"
-
-
-//define f_nm_sz   1024
-
 //=====================================================================================
 
-const char* epiphany_elf_nm = "bj-core-actor.elf";
+const char* epiphany_elf_nm = "the_epiphany_executable.elf";
 
 bj_sys_sz_st bjh_glb_sys;
 
@@ -54,8 +48,6 @@ print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 	}
 	bjh_prt_core_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 }
-
-bj_off_sys_st* DBG_BASE;
 
 int boot_znq(int argc, char *argv[])
 {
@@ -86,13 +78,15 @@ int boot_znq(int argc, char *argv[])
 	}
 
 	// IMPORTANT NOTE:
+	// Vales in HDF MUST match values in the linker script:
+	// 			EMEM_BASE_ADDRESS == LD_EXTERNAL_RAM_ORIG
+	// 			EMEM_SIZE == LD_EXTERNAL_RAM_SIZE
+
 	// Current HDF: the value of EPIPHANY_HDF enviroment variable because e_initi is called with NULL
 	// Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf
 	// Current value of EMEM_BASE_ADDRESS in HDF: 0x8e000000
 	// Current link script: bj-ld-script.ldf
-	// Observe that this address is AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq side.
-
-	// This MUST match the value en the linker script.
+	// Observe that this address is AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq (host) side.
 
 	e_init(NULL);
 	e_reset_system();
@@ -105,19 +99,16 @@ int boot_znq(int argc, char *argv[])
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
-	bjh_init_glb_sys_sz_with_dev(BJK_GLB_SYS_SZ, &dev);
+	bj_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
+	bjh_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
-	//void* the_data_addr = (void*)(emem.base);
-	void* the_data_addr = (void*)(((uint8_t*)emem.base) + lk_dat->extnl_data_disp);
-	printf("the_data_addr=%p \n", the_data_addr);
-
-	DBG_BASE = (bj_off_sys_st*)the_data_addr;
-
-	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)the_data_addr;
+	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)(((uint8_t*)emem.base) + lk_dat->extnl_data_disp);
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
 
-	DBG_BASE->magic_id = BJ_MAGIC_ID;
-	BJH_CK(DBG_BASE->magic_id == BJ_MAGIC_ID);
+	printf("pt_shd_data=%p \n", pt_shd_data);
+
+	// init shared data.
+	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
 
 	load_info_t ld_dat;
 	ld_dat.executable = (char*)epiphany_elf_nm;
@@ -129,32 +120,21 @@ int boot_znq(int argc, char *argv[])
 	ld_dat.all_module_names = NULL;
 	ld_dat.all_module_addrs = NULL;
 
-	//e_reset_group(&dev);
-	//bj_load_group(&ld_dat);
-
-	// init shared data.
-	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
-
-	pt_shd_data->magic_id = BJ_MAGIC_ID;
-	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
-
-	//bj_load_group(&ld_dat); 
-
-	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
-
-	pt_shd_data->pt_this_from_znq = pt_shd_data;
-
-	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
-
-	pt_shd_data->wrk_sys = *sys_sz;
-	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
-
 	e_reset_group(&dev);
 	int err = bj_load_group(&ld_dat); 
 	if(err == E_ERR){
 		printf("Loading_group_failed.\n");
 		return 0;
 	}
+
+	pt_shd_data->magic_id = BJ_MAGIC_ID;
+	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
+
+	pt_shd_data->pt_this_from_znq = pt_shd_data;
+	pt_shd_data->wrk_sys = *g_sys_sz;
+	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
+
+	/// HERE GOES USER INIT CODE
 
 	max_row = 1;
 	max_col = 2;
@@ -272,16 +252,16 @@ int boot_znq(int argc, char *argv[])
 	} // while
 	
 	printf("PLATFORM row=%2d col=%2d \n", platform.row, platform.col);
-	printf("sys_sz->xx=%d\n", sys_sz->xx);
-	printf("sys_sz->yy=%d\n", sys_sz->yy);
-	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
-	printf("sys_sz->yy_sz_pw2=%d\n", sys_sz->yy_sz_pw2);
+	printf("sys_sz->xx=%d\n", g_sys_sz->xx);
+	printf("sys_sz->yy=%d\n", g_sys_sz->yy);
+	printf("sys_sz->xx_sz=%d\n", g_sys_sz->xx_sz);
+	printf("sys_sz->yy_sz_pw2=%d\n", g_sys_sz->yy_sz_pw2);
 
 	printf("SHD_DATA_addr_as_seen_from_eph=%p\n", pt_shd_data->pt_this_from_eph);
 	printf("SHD_DATA_addr_as_seen_from_znq=%p\n", pt_shd_data->pt_this_from_znq);
 	printf("SHD_DATA_displacement_from_shd_mem_base_adddr= %p\n", (void*)(lk_dat->extnl_data_disp));
 
-	printf("the_data_addr=%p \n", the_data_addr);
+	printf("pt_shd_data=%p \n", pt_shd_data);
 	
 	// Reset the workgroup
 	e_reset_group(&dev); // FAILS. Why?

@@ -410,7 +410,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 				(void*)ld_addr); 
 		}
 
-		if(isexternal){
+		/*if(isexternal){
 			if(pt_dst_end > pt_end_code){
 				bjl_diag(L_D3) {
 					fprintf(BJ_STDERR,
@@ -419,7 +419,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 				}
 				continue;	// Its data (an structure) NOT code.
 			}
-		}
+		}*/
 
 		if(LOAD_WITH_MEMCPY){
 			memcpy(pt_dst, pt_src, blk_sz);
