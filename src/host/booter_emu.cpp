@@ -15,7 +15,7 @@
 
 // =====================================================================================
 
-bj_sys_sz_st bj_glb_host_sys;
+bj_sys_sz_st bjh_glb_host_sys;
 
 void 
 bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
@@ -53,7 +53,7 @@ host_main(int argc, char *argv[])
 	char* all_f_nam[bj_out_num_cores];
 	int ss, tnum;
 
-	bj_init_glb_sys_sz(&bj_glb_host_sys);
+	bj_init_glb_sys_sz(&bjh_glb_host_sys);
 
 	memset(&all_f_nam, 0, sizeof(all_f_nam));
 	memset(&bjh_external_ram_load_data, 0, sizeof(bj_link_syms_data_st));
@@ -83,7 +83,7 @@ host_main(int argc, char *argv[])
 	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 
 	pt_shd_data->wrk_sys = *sys_sz;
-	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
+	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	max_row = 1;
 	max_col = 2;
@@ -175,13 +175,13 @@ host_main(int argc, char *argv[])
 				// wait for finish
 				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
 					has_work = true;
-					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+					bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == BJ_WAITING_ENTER){
-							get_enter(row, col);
+							bjh_get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == BJ_WAITING_BUFFER){
-							print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+							bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						}
 						
 						sh_dat_1->is_waiting = BJ_NOT_WAITING;
@@ -195,13 +195,13 @@ host_main(int argc, char *argv[])
 
 						core_finished[row][col] = true;
 
-						print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
-						BJH_CK(bj_rr_ck_zero(&(pt_buff->rd_arr)));
+						bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+						BJH_CK(bjh_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						printf("Finished\n");
 						memset(&inco, 0, sizeof(bj_in_core_st));
 						memcpy(&inco, &thd_inf.bj_glb_sys_data.in_core_shd, sizeof(bj_in_core_st));
-						int err2 = prt_inko_shd_dat(&inco);
+						int err2 = bjh_prt_in_core_shd_dat(&inco);
 						if(err2){
 							break;
 						}

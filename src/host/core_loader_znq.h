@@ -40,6 +40,10 @@ extern "C"
 #define BJL_MARK_USED(X)  ((void)(&(X)))
 #endif
 
+extern uint8_t* BJH_EXTERNAL_RAM_BASE_PT;
+
+#define bjh_disp_to_pt(disp) (BJH_EXTERNAL_RAM_BASE_PT + disp)
+
 typedef enum {
 	L_D0 = 0,
 	L_D1 = 1,

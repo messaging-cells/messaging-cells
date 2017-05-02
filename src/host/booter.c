@@ -53,7 +53,7 @@ bjh_file_append(char* the_pth, char* the_data, long the_sz){
 	return true;
 }
 
-bool ck_sys_data(bj_sys_sz_st* sys1){
+bool bjh_ck_sys_data(bj_sys_sz_st* sys1){
 	bj_sys_sz_st* sys0 = BJK_GLB_SYS_SZ;
 	BJH_CK(sys1->xx == sys0->xx);
 	BJH_CK(sys1->yy == sys0->yy);
@@ -62,7 +62,7 @@ bool ck_sys_data(bj_sys_sz_st* sys1){
 	return true;
 }
 
-int prt_inko_shd_dat(bj_in_core_st* sh_dat){
+int bjh_prt_in_core_shd_dat(bj_in_core_st* sh_dat){
 	if(sh_dat->magic_id != BJ_MAGIC_ID){
 		printf("ERROR with inco.magic_id (0x%08x)\n", sh_dat->magic_id);
 		return 1;
@@ -108,7 +108,7 @@ int prt_inko_shd_dat(bj_in_core_st* sh_dat){
 }
 
 bool
-bj_rr_ck_zero(bj_rrarray_st* arr){
+bjh_rr_ck_zero(bj_rrarray_st* arr){
 	if(arr == bj_null){
 		return true;
 	}
@@ -123,7 +123,7 @@ bj_rr_ck_zero(bj_rrarray_st* arr){
 }
 
 void
-bj_rr_print(bj_rrarray_st* arr){
+bjh_rr_print(bj_rrarray_st* arr){
 	if(arr == bj_null){
 		return;
 	}
@@ -151,7 +151,7 @@ bj_rr_print(bj_rrarray_st* arr){
 }
 
 int
-bj_type_sz(bj_type_t tt){
+bjh_type_sz(bj_type_t tt){
 	int sz = 0;
 	switch(tt){
 		case BJ_CHR:
@@ -175,7 +175,7 @@ bj_type_sz(bj_type_t tt){
 }
 
 void
-print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
+bjh_print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
 	int log_fd = 0;
 	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
 		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
@@ -198,12 +198,12 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
 			if(obj[0] == BJ_OUT_LOG){
 				fd = log_fd;
 			} 
-			bj_type_t ot = obj[1];
+			bj_type_t ot = (bj_type_t)obj[1];
 			if(ot == BJ_CHR){
 				write(fd, obj + 2, obj_sz - 2);
 				continue;
 			}
-			int osz = bj_type_sz(ot);
+			int osz = bjh_type_sz(ot);
 			int tot = (obj_sz - 2) / osz;
 			int aa;
 			uint8_t* pt_num = obj + 2;
@@ -250,7 +250,7 @@ print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
 }
 
 uint8_t*
-read_file(char* the_pth, off_t* size){
+bjh_read_file(char* the_pth, off_t* size){
 	int fd;
 	uint8_t* pt_str = NULL;
 
@@ -296,7 +296,7 @@ read_file(char* the_pth, off_t* size){
 }
 
 int
-write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once){
+bjh_write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once){
 	int fd = 0;
 	
 	if(write_once){
@@ -317,7 +317,7 @@ write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once){
 }
 
 void
-get_enter(bj_core_co_t row, bj_core_co_t col){
+bjh_get_enter(bj_core_co_t row, bj_core_co_t col){
 	// CONTINUE
 	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
 	getchar();

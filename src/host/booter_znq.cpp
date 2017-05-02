@@ -1,26 +1,20 @@
 
 
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <math.h>
-#include <sys/mman.h>
 #include <sched.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <inttypes.h>
 
 #include <e-hal.h>
 #include <epiphany-hal-api-local.h>
 
-#include "shared.h"
 #include "booter.h"
 #include "core_loader_znq.h"
 
+#include "dlmalloc.h"
+
 //=====================================================================================
+
+uint8_t* BJH_EXTERNAL_RAM_BASE_PT = bj_null;
 
 const char* epiphany_elf_nm = "the_epiphany_executable.elf";
 
@@ -36,7 +30,7 @@ print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 	bj_in_core_st inco;
 	memset(&inco, 0, sizeof(bj_in_core_st));
 	e_read(dev, row, col, (uint32_t)(sh_dat_1->core_data), &inco, sizeof(inco));
-	int err = prt_inko_shd_dat(&inco);
+	int err = bjh_prt_in_core_shd_dat(&inco);
 	if(err){
 		bjh_abort_func((bj_addr_t)(print_core_info), "print_core_info failed");
 	}
@@ -69,7 +63,7 @@ int boot_znq(int argc, char *argv[])
 	}
 
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
-	bj_read_eph_link_syms(epiphany_elf_nm, lk_dat);
+	bjh_read_eph_link_syms(epiphany_elf_nm, lk_dat);
 
 	if(lk_dat->extnl_ram_orig == 0) {
 		printf("ERROR: Can't read external memory location from %s\n", epiphany_elf_nm);
@@ -88,6 +82,8 @@ int boot_znq(int argc, char *argv[])
 	// Current link script: bj-ld-script.ldf
 	// Observe that this address is AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq (host) side.
 
+	// sys init
+
 	e_init(NULL);
 	e_reset_system();
 	e_get_platform_info(&platform);
@@ -96,19 +92,30 @@ int boot_znq(int argc, char *argv[])
 		printf("ERROR: Can't allocate external memory buffer!\n\n");
 		return 0;
 	}
+
+	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
+
+	uint8_t* extnl_load_base = bjh_disp_to_pt(lk_dat->extnl_load_disp);
+	uint8_t* extnl_alloc_base = bjh_disp_to_pt(lk_dat->extnl_alloc_disp);
+	
+	mspace load_space = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
+	mspace alloc_space = create_mspace_with_base(extnl_alloc_base, lk_dat->extnl_alloc_size, 0);
+
+	// dev init
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
 	bj_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
 	bjh_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
-	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)(((uint8_t*)emem.base) + lk_dat->extnl_data_disp);
+	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_data_disp);
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
 
-	// init shared data.
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
+
+	// load elf
 
 	load_info_t ld_dat;
 	ld_dat.executable = (char*)epiphany_elf_nm;
@@ -127,12 +134,14 @@ int boot_znq(int argc, char *argv[])
 		return 0;
 	}
 
+	// init shared data.
+
 	pt_shd_data->magic_id = BJ_MAGIC_ID;
 	BJH_CK(pt_shd_data->magic_id == BJ_MAGIC_ID);
 
 	pt_shd_data->pt_this_from_znq = pt_shd_data;
 	pt_shd_data->wrk_sys = *g_sys_sz;
-	BJH_CK(ck_sys_data(&(pt_shd_data->wrk_sys)));
+	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	/// HERE GOES USER INIT CODE
 
@@ -216,14 +225,14 @@ int boot_znq(int argc, char *argv[])
 				// wait for finish
 				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
 					has_work = true;
-					print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+					bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == BJ_WAITING_ENTER){
 							print_core_info(sh_dat_1, &dev, row, col);
-							get_enter(row, col);
+							bjh_get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == BJ_WAITING_BUFFER){
-							print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+							bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						}
 						
 						int SYNC = (1 << E_SYNC);
@@ -239,8 +248,8 @@ int boot_znq(int argc, char *argv[])
 					if(! core_finished[row][col]){
 						core_finished[row][col] = true;
 
-						print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
-						BJH_CK(bj_rr_ck_zero(&(pt_buff->rd_arr)));
+						bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+						BJH_CK(bjh_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						printf("Finished\n");
 						print_core_info(sh_dat_1, &dev, row, col);
@@ -272,6 +281,10 @@ int boot_znq(int argc, char *argv[])
 	
 	// Release the allocated buffer and finalize the
 	// e-platform connection.
+
+	destroy_mspace(load_space);
+	destroy_mspace(alloc_space);
+
 	e_free(&emem);
 	e_finalize();
 
@@ -286,36 +299,6 @@ int boot_znq(int argc, char *argv[])
 	return 0;
 }
 
-int map_physical(int argc, char *argv[]) {
-    if (argc < 3) {
-        printf("Usage: %s <phys_addr> <offset>\n", argv[0]);
-        return 0;
-    }
-
-    off_t offset = strtoul(argv[1], NULL, 0);
-    size_t len = strtoul(argv[2], NULL, 0);
-
-	printf("Got: phys_addr=%ld offset=%u\n", offset, len);
-
-    // Truncate offset to a multiple of the page size, or mmap will fail.
-    size_t pagesize = sysconf(_SC_PAGE_SIZE);
-    off_t page_base = (offset / pagesize) * pagesize;
-    off_t page_offset = offset - page_base;
-
-    int fd = open("/dev/mem", O_SYNC);
-    unsigned char *mem = mmap(NULL, page_offset + len, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, page_base);
-    if (mem == MAP_FAILED) {
-        perror("Can't map memory");
-        return -1;
-    }
-
-    size_t i;
-    for (i = 0; i < len; ++i)
-        printf("%02x ", (int)mem[page_offset + i]);
-
-    return 0;
-}
-
 void test_read_sysm(int argc, char *argv[]){
 	if(argc > 1){
 		epiphany_elf_nm = argv[1];
@@ -323,7 +306,7 @@ void test_read_sysm(int argc, char *argv[]){
 	}
 
 	bj_link_syms_data_st syms;
-	bj_read_eph_link_syms(epiphany_elf_nm, &syms);
+	bjh_read_eph_link_syms(epiphany_elf_nm, &syms);
 
 	printf("extnl_ram_size = %p \n", (void*)syms.extnl_ram_size);
 	printf("extnl_code_size = %p \n", (void*)syms.extnl_code_size);
@@ -345,7 +328,6 @@ void test_read_sysm(int argc, char *argv[]){
 int main(int argc, char *argv[]) {
 	//test_read_sysm(argc, argv);
 	boot_znq(argc, argv);
-	//map_physical(argc, argv);
 	return 0;
 }
 

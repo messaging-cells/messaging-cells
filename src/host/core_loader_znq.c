@@ -51,26 +51,6 @@ void ee_get_coords_from_id(e_epiphany_t *dev, unsigned coreid,
 
 extern e_platform_t e_platform;
 
-enum bjl_loader_sections {
-	BJL_SEC_WORKGROUP_CFG,
-	BJL_SEC_EXT_MEM_CFG,
-	BJL_SEC_LOADER_CFG,
-	BJL_SEC_NUM,
-};
-
-struct bjl_section_info {
-	const char *name;
-	bool present;
-	Elf32_Addr	sh_addr;		/* Section virtual addr at execution */
-};
-
-struct bjl_loader_cfg {
-	uint32_t flags;
-	uint32_t __pad1;
-	uint32_t args_ptr;
-	uint32_t __pad2;
-} __attribute__((packed));
-
 e_return_stat_t bjl_load_elf(int row, int col, load_info_t *ld_dat);
 
 bjl_loader_diag_t bjl_load_verbose = L_D3;
@@ -85,8 +65,8 @@ bj_ck_memload(uint8_t* dst, uint8_t* src, size_t sz){
 		}
 	}
 	if(! ok){
-		write_file("SOURCE_shd_mem_dump.dat", src, sz, false);
-		write_file("DEST_shd_mem_dump.dat", dst, sz, false);
+		bjh_write_file("SOURCE_shd_mem_dump.dat", src, sz, false);
+		bjh_write_file("DEST_shd_mem_dump.dat", dst, sz, false);
 		bjh_abort_func(9, "bj_ck_memload() FAILED !! CODE_LOADING_FAILED !!\n");
 	}
 }
@@ -132,8 +112,7 @@ bool bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr)
 	return ok;
 }
 
-static void bjl_clear_sram(e_epiphany_t *dev,
-					   unsigned row, unsigned col,unsigned rows, unsigned cols)
+static void bjl_clear_sram(e_epiphany_t *dev, unsigned row, unsigned col,unsigned rows, unsigned cols)
 {
 	unsigned i, j;
 	size_t sram_size;

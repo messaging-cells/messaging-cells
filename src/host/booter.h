@@ -17,10 +17,10 @@ bj_c_decl {
 
 #define BJ_STDERR stderr
 
-extern bj_sys_sz_st bj_glb_host_sys;
-extern bj_link_syms_data_st bjh_external_ram_load_data;
+extern bj_sys_sz_st 			bjh_glb_host_sys;
+extern bj_link_syms_data_st 	bjh_external_ram_load_data;
 
-#define bj_as_pt_char(the_str) (the_str)
+#define bjh_disp_to_extnal_ram_pt(disp) (the_str)
 
 void 
 bjh_abort_func(long val, const char* msg);
@@ -28,47 +28,45 @@ bjh_abort_func(long val, const char* msg);
 bool 
 bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg);
 
+#define bjh_assert(vv) bjh_call_assert(vv, __FILE__, __LINE__, #vv, NULL)
+
 bool
 bjh_file_append(char* the_pth, char* the_data, long the_sz);
 
-bool ck_sys_data(bj_sys_sz_st* sys1);
+bool bjh_ck_sys_data(bj_sys_sz_st* sys1);
 
-int prt_inko_shd_dat(bj_in_core_st* sh_dat);
+int bjh_prt_in_core_shd_dat(bj_in_core_st* sh_dat);
 
 bool
-bj_rr_ck_zero(bj_rrarray_st* arr);
+bjh_rr_ck_zero(bj_rrarray_st* arr);
 
 void
-bj_rr_print(bj_rrarray_st* arr);
+bjh_rr_print(bj_rrarray_st* arr);
 
 int
-bj_type_sz(bj_type_t tt);
+bjh_type_sz(bj_type_t tt);
 
 void
-print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core);
+bjh_print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core);
 
 uint8_t*
-read_file(char* the_pth, off_t* size);
+bjh_read_file(char* the_pth, off_t* size);
 
 int
-write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once);
+bjh_write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once);
 
 int 
 bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
 
 void
-get_enter(bj_core_co_t row, bj_core_co_t col);
+bjh_get_enter(bj_core_co_t row, bj_core_co_t col);
 
 void
 bjh_ptr_call_stack_trace();
 
 void
-bj_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
+bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 
-#define bjh_assert(vv) \
-	bjh_call_assert(vv, bj_as_pt_char(__FILE__), __LINE__, bj_as_pt_char(#vv), NULL)
-
-	
 #define	BJH_DBG_COND_COMM(cond, comm)	\
 	BJ_DBG( \
 		if(cond){ \

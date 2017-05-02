@@ -21,10 +21,10 @@
 #include "shared.h"
 #include "booter.h"
 
-void bj_read_sections_elf(const void *file, bj_link_syms_data_st* syms);
+void bjh_read_sections_elf(const void *file, bj_link_syms_data_st* syms);
 
 void
-bj_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms){
+bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms){
 
 	int          fd;
 	struct stat  st;
@@ -58,17 +58,17 @@ bj_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms){
 	
 	if (bjl_is_epiphany_exec_elf((Elf32_Ehdr *) file)) {
 		bjl_diag(L_D1) { 
-			fprintf(BJ_STDERR, "bj_read_eph_link_syms(): loading ELF file %s ...\n", executable); 
+			fprintf(BJ_STDERR, "bjh_read_eph_link_syms(): loading ELF file %s ...\n", executable); 
 		}
 	} else {
 		bjl_diag(L_D1) { 
-			fprintf(BJ_STDERR, "bj_read_eph_link_syms(): ERROR: unidentified file format\n"); 
+			fprintf(BJ_STDERR, "bjh_read_eph_link_syms(): ERROR: unidentified file format\n"); 
 		}
 		warnx("ERROR: Can't load executable file: unidentified format.\n");
 		goto out;
 	}
 
-	bj_read_sections_elf(file, syms);
+	bjh_read_sections_elf(file, syms);
 	bj_extnl_ram_load_data_fill(syms);
 
 out:
@@ -77,7 +77,7 @@ out:
 }
 
 void
-bj_read_sections_elf(const void *file, bj_link_syms_data_st* syms)
+bjh_read_sections_elf(const void *file, bj_link_syms_data_st* syms)
 {
 	int ii;
 	Elf32_Ehdr *ehdr;
@@ -112,7 +112,7 @@ bj_read_sections_elf(const void *file, bj_link_syms_data_st* syms)
 		const char* sect_nm = &strtab[shdr[ii].sh_name];
 
 		if(strcmp(sect_nm, bj_lk_syms_section_nm) != 0){
-			bjl_diag(L_D1) { fprintf(BJ_STDERR, "bj_read_sections_elf(): section=%s\n", sect_nm); }
+			bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjh_read_sections_elf(): section=%s\n", sect_nm); }
 			continue;
 		}
 
@@ -124,7 +124,7 @@ bj_read_sections_elf(const void *file, bj_link_syms_data_st* syms)
 		bj_link_syms_data_st* pt_syms = (bj_link_syms_data_st*)pt_src;
 		*syms = *pt_syms;
 
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bj_read_sections_elf(): FOUND section=%s\n", sect_nm); }
+		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjh_read_sections_elf(): FOUND section=%s\n", sect_nm); }
 		break;
 	}
 }
