@@ -80,7 +80,6 @@ int bjh_prt_in_core_shd_dat(bj_in_core_st* sh_dat){
 
 	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
-	/*
 	printf("binder_sz=%d \n", sh_dat->binder_sz);
 	printf("kernel_sz=%d \n", sh_dat->kernel_sz);
 	printf("agent_sz=%d \n", sh_dat->agent_sz);
@@ -89,6 +88,7 @@ int bjh_prt_in_core_shd_dat(bj_in_core_st* sh_dat){
 	printf("agent_grp_sz=%d \n", sh_dat->agent_grp_sz);
 	printf("agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
 	printf("bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
+	/*
 	*/
 
 	if(sh_dat->exception_code != bjk_invalid_exception){

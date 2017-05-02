@@ -33,13 +33,8 @@ TGT_LDFLAGS := -L${TARGET_DIR}
 TGT_LDLIBS  := ${STDLIBS} -lbj-emu-actor -lpthread
 TGT_PREREQS := libbj-emu-actor.a
 
-C_FLAGS_1 := -Wall -std=gnu11 -nostdlib -fno-default-inline ${SRC_IN_SECTIONS}
-SRC_CFLAGS := ${IS_EMU_FLAG} ${DBG_FLAG} ${C_FLAGS_1} -pthread
-
-# -std=c++11 -nostdlib -fno-exceptions -fno-unwind-tables -fno-rtti -Os
-CXX_FLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables ${SRC_IN_SECTIONS}
-CXX_FLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
-SRC_CXXFLAGS := ${IS_EMU_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1} ${CXX_FLAGS_2} -pthread
+SRC_CFLAGS := -DIS_EMU_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
+SRC_CXXFLAGS := -DIS_EMU_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
 
 SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_ECORE_DIR) 
 

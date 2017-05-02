@@ -1,6 +1,4 @@
 
-IS_CORE_FLAG := -DIS_CORE_CODE
-
 # DIR_ELIBS_1=${ETOOLS}/e-gnu/epiphany-elf/lib
 DIR_ELIBS_1 := 
 # DIR_ELIBS_2=${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
@@ -46,14 +44,8 @@ TGT_CXX := e-g++
 
 TGT_LINKER := e-ld
 
-# -Wall -std=c11 -nostdlib -nostartfiles
-C_FLAGS_1 := -ffreestanding -Wall -std=gnu11 -nostdlib -nostartfiles -fno-default-inline ${SRC_IN_SECTIONS}
-SRC_CFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${C_FLAGS_1}
-
-# -std=c++11 -nostdlib -fno-exceptions -fno-unwind-tables -fno-rtti -Os
-CXX_FLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables ${SRC_IN_SECTIONS}
-CXX_FLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
-SRC_CXXFLAGS := ${IS_CORE_FLAG} ${OPTSZ_FLAG} ${DBG_FLAG} ${CXX_FLAGS_1} ${CXX_FLAGS_2}
+SRC_CFLAGS := -DIS_CORE_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
+SRC_CXXFLAGS := -DIS_CORE_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
 
 SRC_INCDIRS := $(SRC_ECORE_DIR) 
 

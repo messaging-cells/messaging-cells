@@ -34,11 +34,11 @@ STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 ATVA_EPH_LFLAGS := -L${ETOOLS}/e-gnu/epiphany-elf/lib -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
 
 SUBMAKEFILES := \
-	dlmalloc-emu.mk \
-	dlmalloc-znq.mk \
-	bj-zynq.mk \
+	bj-emu-dlmalloc-lib.mk \
+	bj-znq-dlmalloc-lib.mk \
+	bj-znq.mk \
 	bj-emu-actor-lib.mk \
-	bj-actor-ecore-lib.mk \
+	bj-eph-actor-lib.mk \
 	${EPH_SAMPLES_DIR}/logs_test.mk \
 	${EMU_SAMPLES_DIR}/send_msg_emu.mk \
 	${EPH_SAMPLES_DIR}/loader_bug.mk \

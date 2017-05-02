@@ -137,7 +137,9 @@ enum bjk_signal_t : uint8_t {
 
 #define kernel_class_names_arr_sz bjk_tot_actor_ids
 
-#if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
+//if defined(XXX) && !defined(YYY) 
+
+#ifdef IS_CORE_CODE
 	kernel*
 	bjk_get_first_kernel() bj_external_code_ram;
 
@@ -150,7 +152,7 @@ enum bjk_signal_t : uint8_t {
 #endif
 
 
-class kernel { 
+class bj_aligned kernel { 
 public:
 	bj_bool_t signals_arr[kernel_signals_arr_sz];
 
@@ -274,7 +276,7 @@ public:
 //-------------------------------------------------------------------------
 // agent class 
 
-class agent: public binder{
+class bj_aligned agent: public binder{
 public:
 	bj_opt_sz_fn 
 	agent(){}
@@ -313,7 +315,7 @@ public:
 //-------------------------------------------------------------------------
 // actor class 
 
-class actor: public agent {
+class bj_aligned actor: public agent {
 public:
 	static
 	actor*			acquire_alloc(uint16_t sz) bj_external_code_ram;
@@ -356,7 +358,7 @@ public:
 typedef bjk_sptr_t bjk_actor_sptr_t;
 typedef uint16_t	bjk_token_t; 
 
-class missive : public agent {
+class bj_aligned missive : public agent {
 public:
 	static
 	missive*		acquire_alloc(uint16_t sz) bj_external_code_ram;
@@ -413,7 +415,7 @@ public:
 //-------------------------------------------------------------------------
 // agent_grp class 
 
-class agent_grp : public agent {
+class bj_aligned agent_grp : public agent {
 public:
 	static
 	agent_grp*		acquire_alloc(uint16_t sz) bj_external_code_ram;
@@ -457,7 +459,7 @@ public:
 //-------------------------------------------------------------------------
 // agent_ref class 
 
-class agent_ref : public agent {
+class bj_aligned agent_ref : public agent {
 public:
 	static
 	agent_ref*		acquire_alloc(uint16_t sz) bj_external_code_ram;

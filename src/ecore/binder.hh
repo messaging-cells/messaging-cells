@@ -33,7 +33,7 @@ class binder;
 
 typedef uint8_t bjk_flags_t;
 
-class binder {
+class bj_aligned binder {
 public:
 	bjk_sptr_t	bn_left;
 	bjk_sptr_t	bn_right;

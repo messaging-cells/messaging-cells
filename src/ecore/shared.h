@@ -52,7 +52,7 @@ typedef struct bj_sys_def bj_sys_sz_st;
 bj_sys_sz_st*
 bj_get_glb_sys_sz();
 
-#if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
+#ifdef IS_CORE_CODE
 	extern bj_sys_sz_st 	bjk_system_sz;
 	#define BJK_GLB_SYS_SZ (&bjk_system_sz)
 #else

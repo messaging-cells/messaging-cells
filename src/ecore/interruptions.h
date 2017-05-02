@@ -57,9 +57,7 @@ bjk_timer0_handler(void); // ivt_entry_timer0
 
 	// end_macro
 
-#endif	// IS_CORE_CODE
-
-#ifdef IS_EMU_CODE
+#else 
 
 	void bj_inline_fn
 	bjk_enable_all_irq() {
@@ -77,7 +75,7 @@ bjk_timer0_handler(void); // ivt_entry_timer0
 	bjk_global_irq_enable() {
 	}
 
-#endif	// IS_EMU_CODE
+#endif	// IS_CORE_CODE
 
 #ifdef __cplusplus
 }
