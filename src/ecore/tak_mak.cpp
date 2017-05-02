@@ -70,7 +70,44 @@ Makoto and Takuji.
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
 
-#include "tak_mak.h"
+#include "tak_mak.hh"
+
+long	
+to_interval(long val, long min, long max){
+	long diff = 0, resp = 0;
+	diff = max - min;
+	if(diff <= 0){ 
+		return min; 
+	}
+	long rr = (val % diff);
+	if(rr < 0){ rr = -rr; }
+	resp = min + rr;
+	return resp;
+}
+
+tak_mak::tak_mak(unsigned long ini_val){
+	init_tak_mak();
+	if(ini_val == 0){
+		ini_val = TAK_MAK_INIT_LONG_1;
+	}
+	init_with_long(ini_val);
+}
+
+tak_mak::tak_mak(const unsigned long* init_key, int key_length){
+	init_tak_mak();
+	init_with_array(init_key, key_length);
+}
+
+void 
+tak_mak::init_tak_mak(){
+	mti=TAK_MAK_N+1;
+}
+
+long
+tak_mak::gen_rand_int32_ie(long min, long max){
+	return to_interval(gen_rand_int32(), min, max);
+}
+
 
 /* initializes mt[TAK_MAK_N] with a seed */
 void 
@@ -159,31 +196,6 @@ tak_mak::gen_rand_int32(void)
     return y;
 }
 
-/* generates a random number on [0,1]-real-interval */
-double 
-tak_mak::gen_rand_i0_i1(void)
-{
-    return gen_rand_int32()*(1.0/4294967295.0); 
-    /* divided by 2^32-1 */ 
-}
-
-/* generates a random number on [0,1)-real-interval */
-double 
-tak_mak::gen_rand_i0_e1(void)
-{
-    return gen_rand_int32()*(1.0/4294967296.0); 
-    /* divided by 2^32 */
-}
-
-/* generates a random number on (0,1)-real-interval */
-double 
-tak_mak::gen_rand_e0_e1(void)
-{
-    return (((double)gen_rand_int32()) + 0.5)*(1.0/4294967296.0); 
-    /* divided by 2^32 */
-}
-
-/* These real versions are due to Isaku Wada, 2002/01/09 added */
 /*
 int main(void)
 {

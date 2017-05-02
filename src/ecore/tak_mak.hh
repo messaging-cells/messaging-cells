@@ -52,6 +52,8 @@ class for the tak_mak pseudo random number generator.
 
 #include <cstdio>
 
+#include "attribute.h"
+
 #define TAK_MAK_INIT_LONG_1		 19650218UL
 #define TAK_MAK_INIT_LONG_2		 5489UL
 
@@ -62,19 +64,9 @@ class for the tak_mak pseudo random number generator.
 #define TAK_MAK_UPPER_MASK 0x80000000UL /* most significant w-r bits */
 #define TAK_MAK_LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
-inline
+
 long	
-to_interval(long val, long min, long max){
-	long diff = 0, resp = 0;
-	diff = max - min;
-	if(diff <= 0){ 
-		return min; 
-	}
-	long rr = (val % diff);
-	if(rr < 0){ rr = -rr; }
-	resp = min + rr;
-	return resp;
-}
+to_interval(long val, long min, long max) bj_external_code_ram;
 
 class tak_mak {
 private:
@@ -82,37 +74,20 @@ private:
 	int mti; /* mti==TAK_MAK_N+1 means mt[TAK_MAK_N] is not initialized */
 
 public:
-	tak_mak(unsigned long ini_val = 0){
-		init_tak_mak();
-		if(ini_val == 0){
-			ini_val = TAK_MAK_INIT_LONG_1;
-		}
-		init_with_long(ini_val);
-	}
+	tak_mak(unsigned long ini_val = 0) bj_external_code_ram;
 
-	tak_mak(const unsigned long* init_key, int key_length){
-		init_tak_mak();
-		init_with_array(init_key, key_length);
-	}
+	tak_mak(const unsigned long* init_key, int key_length) bj_external_code_ram;
 
-	void init_tak_mak(){
-		mti=TAK_MAK_N+1;
-	}
+	void init_tak_mak() bj_external_code_ram;
 
-	void init_with_long(unsigned long s);
-	void init_with_array(const unsigned long* init_key, int key_length);
+	void init_with_long(unsigned long s) bj_external_code_ram;
+	void init_with_array(const unsigned long* init_key, int key_length) bj_external_code_ram;
 
-	unsigned long gen_rand_int32(void);
+	unsigned long gen_rand_int32(void) bj_external_code_ram;
 
-	double gen_rand_i0_i1(void);
-	double gen_rand_i0_e1(void);
-	double gen_rand_e0_e1(void);
-
-	long gen_rand_int32_ie(long min, long max){
-		return to_interval(gen_rand_int32(), min, max);
-	}
-
+	long gen_rand_int32_ie(long min, long max) bj_external_code_ram;
 };
+
 
 
 #endif	// TAK_MAK_H

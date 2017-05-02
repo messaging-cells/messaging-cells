@@ -288,11 +288,25 @@ void test_align(){
 	}	
 }
 
+#include "tak_mak.hh"
+void test_dlmalloc_align(){
+	unsigned long init_val = 10;
+	tak_mak gg(init_val);
+
+	for(int aa = 0; aa < 1000; aa++){
+		long val = gg.gen_rand_int32_ie(1, 1000);
+		printf("%ld ", val);
+	}
+	printf("\n\n");
+	
+}
+
 int main(int argc, char *argv[]) {
 	host_main(argc, argv);
 	//pw2_ops(argc, argv);
 	//show_sizes();
 	//test_align();
+	//test_dlmalloc_align();
 }
 
 

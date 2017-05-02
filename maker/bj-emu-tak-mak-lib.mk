@@ -1,5 +1,5 @@
 
-SRC_DLMALLOC_DIR := $(SRC_DIR)/host/dlmalloc
+SRC_ECORE_DIR := $(SRC_DIR)/ecore
 
 # =======================================
 
@@ -12,6 +12,6 @@ TGT_POSTMAKE := printf "====================================\nFinished building 
 
 SRC_CFLAGS := -Wall -std=gnu11 -g -O2 -Wstrict-prototypes $(DEF_FLAGS_1) $(DEF_FLAGS_2)
 
-SOURCES := $(SRC_DLMALLOC_DIR)/dlmalloc.c 
+SOURCES := $(SRC_ECORE_DIR)/tak_mak.cpp 
 
 
