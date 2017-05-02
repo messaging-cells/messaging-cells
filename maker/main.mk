@@ -34,6 +34,8 @@ STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 ATVA_EPH_LFLAGS := -L${ETOOLS}/e-gnu/epiphany-elf/lib -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
 
 SUBMAKEFILES := \
+	bj-eph-tak-mak-lib.mk \
+	bj-znq-tak-mak-lib.mk \
 	bj-emu-dlmalloc-lib.mk \
 	bj-znq-dlmalloc-lib.mk \
 	bj-znq.mk \

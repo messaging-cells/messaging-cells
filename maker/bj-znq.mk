@@ -19,8 +19,8 @@ TARGET := bj-actor-booter.elf
 
 TGT_LDFLAGS := -Ur -L${H_LIB_1} -L${TARGET_DIR}
 
-TGT_LDLIBS  := -le-hal -le-loader -lm -ldlmallocznq
-TGT_PREREQS := libdlmallocznq.a
+TGT_LDLIBS  := -le-hal -le-loader -lm -lbjz-dlmalloc
+TGT_PREREQS := libbjz-dlmalloc.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
