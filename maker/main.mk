@@ -48,7 +48,10 @@ SUBMAKEFILES := \
 	${EMU_SAMPLES_DIR}/send_msg_emu.mk \
 	${SRC_DIR}/test/hello_world/hello_world.mk \
 	${SRC_DIR}/test/modules/modules.mk \
-	${SRC_DIR}/test/tak_mak/tak_mak.mk \
+	${SRC_DIR}/test/tak_mak_test/tak_mak.mk \
+	${SRC_DIR}/test/dlmalloc_test/emu_dlmalloc.mk \
+	${SRC_DIR}/test/dlmalloc_test/znq_dlmalloc.mk \
+
 
 
 # SUBMAKEFILES := bj-zynq.mk bj-ecore.mk 
