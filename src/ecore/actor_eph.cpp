@@ -10,7 +10,7 @@ kernel* bjk_PT_THE_KERNEL;
 
 kernel*
 bjk_get_first_kernel(){
-	bjk_PT_THE_KERNEL = bjk_malloc32(kernel, 1);
+	bjk_PT_THE_KERNEL = bj_malloc32(kernel, 1);
 	return bjk_PT_THE_KERNEL;
 }
 

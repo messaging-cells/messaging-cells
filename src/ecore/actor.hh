@@ -55,10 +55,10 @@ nam::separate(uint16_t sz){ \
 
 // end_macro
 
-#define BJK_DEFINE_ACQUIRE_ALLOC(nam) \
+#define BJK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 nam* \
 nam::acquire_alloc(uint16_t sz){ \
-	nam* obj = bjk_malloc32(nam, sz); \
+	nam* obj = bj_malloc##align(nam, sz); \
 	if(obj == bj_null){ \
 		bjk_abort((bj_addr_t)nam::acquire, 0, bj_null); \
 	} \

@@ -25,10 +25,10 @@ void* __dso_handle = bj_null;
 
 //----------------------------------------------------------------------------
 
-BJK_DEFINE_ACQUIRE_ALLOC(actor)
-BJK_DEFINE_ACQUIRE_ALLOC(missive)
-BJK_DEFINE_ACQUIRE_ALLOC(agent_ref)
-BJK_DEFINE_ACQUIRE_ALLOC(agent_grp)
+BJK_DEFINE_ACQUIRE_ALLOC(actor, 32)
+BJK_DEFINE_ACQUIRE_ALLOC(missive, 32)
+BJK_DEFINE_ACQUIRE_ALLOC(agent_ref, 32)
+BJK_DEFINE_ACQUIRE_ALLOC(agent_grp, 32)
 
 BJK_DEFINE_ACQUIRE(actor)
 BJK_DEFINE_ACQUIRE(missive)

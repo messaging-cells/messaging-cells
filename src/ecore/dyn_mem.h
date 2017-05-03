@@ -41,13 +41,47 @@ a64_realloc(uint8_t* ptr, umm_size_t num_bytes) bj_external_code_ram;
 bj_opt_sz_fn void 
 a64_free(uint8_t* ptr) bj_external_code_ram;
 
-#define bjk_malloc32(nam, sz)	(nam *)(a32_malloc(sz * sizeof(nam)))
-#define bjk_realloc32(nam, ptr, sz)	(nam *)(a32_realloc((ptr), (sz * sizeof(nam))))
-#define bjk_free32(ptr)	a32_free(ptr)
+#ifdef IS_CORE_CODE
+	#define bj_malloc32(nam, sz)	(nam *)(a32_malloc(sz * sizeof(nam)))
+	#define bj_realloc32(nam, ptr, sz)	(nam *)(a32_realloc((ptr), (sz * sizeof(nam))))
+	#define bj_free32(ptr)	a32_free(ptr)
 
-#define bjk_malloc64(nam, sz)	(nam *)(a64_malloc(sz * sizeof(nam)))
-#define bjk_realloc64(nam, ptr, sz)	(nam *)(a64_realloc((ptr), (sz * sizeof(nam))))
-#define bjk_free64(ptr)	a64_free(ptr)
+	#define bj_malloc64(nam, sz)	(nam *)(a64_malloc(sz * sizeof(nam)))
+	#define bj_realloc64(nam, ptr, sz)	(nam *)(a64_realloc((ptr), (sz * sizeof(nam))))
+	#define bj_free64(ptr)	a64_free(ptr)
+#endif
+
+#ifdef IS_ZNQ_CODE
+	#include "dlmalloc.h"
+	extern mspace bjh_glb_mspace;
+
+	#define bj_malloc32(nam, sz)	(nam *)(mspace_malloc(bjh_glb_mspace, (sz * sizeof(nam))))
+	#define bj_realloc32(nam, ptr, sz)	(nam *)(mspace_realloc(bjh_glb_mspace, ((ptr), (sz * sizeof(nam)))))
+	#define bj_free32(ptr)	mspace_free(bjh_glb_mspace, ptr)
+
+	#define bj_malloc64(nam, sz)	(nam *)(mspace_malloc(bjh_glb_mspace, (sz * sizeof(nam)))
+	#define bj_realloc64(nam, ptr, sz)	(nam *)(mspace_realloc(bjh_glb_mspace, ((ptr), (sz * sizeof(nam)))))
+	#define bj_free64(ptr)	mspace_free(bjh_glb_mspace, ptr)
+#endif
+
+#ifdef IS_EMU_CODE
+	uint8_t* 
+	bj_malloc_impl(umm_size_t num_bytes);
+
+	uint8_t* 
+	bj_realloc_impl(uint8_t* ptr, umm_size_t num_bytes);
+
+	void 
+	bj_free_impl(uint8_t* ptr);
+
+	#define bj_malloc32(nam, sz)	(nam *)(bj_malloc_impl(sz * sizeof(nam)))
+	#define bj_realloc32(nam, ptr, sz)	(nam *)(bj_realloc_impl((ptr), (sz * sizeof(nam))))
+	#define bj_free32(ptr)	bj_free_impl(ptr)
+
+	#define bj_malloc64(nam, sz)	(nam *)(bj_malloc_impl(sz * sizeof(nam)))
+	#define bj_realloc64(nam, ptr, sz)	(nam *)(bj_realloc_impl((ptr), (sz * sizeof(nam))))
+	#define bj_free64(ptr)	bj_free_impl(ptr)
+#endif
 
 #ifdef __cplusplus
 }

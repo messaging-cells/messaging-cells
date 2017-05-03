@@ -30,11 +30,11 @@ LD_IN_SECTIONS :=
 TARGET := send_msg_emu.elf
 
 TGT_LDFLAGS := -L${TARGET_DIR} 
-TGT_LDLIBS  := ${STDLIBS} -lbjm-actor -lbjm-tak-mak -lpthread
-TGT_PREREQS := libbjm-actor.a libbjm-tak-mak.a
+TGT_LDLIBS  := ${STDLIBS} -lbjm-actor -lbjm-tak-mak -lbjm-dlmalloc -lpthread
+TGT_PREREQS := libbjm-actor.a libbjm-tak-mak.a libbjm-dlmalloc.a
 
-SRC_CFLAGS := -DIS_EMU_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
-SRC_CXXFLAGS := -DIS_EMU_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
+SRC_CFLAGS := -DIS_EMU_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS} -pthread
+SRC_CXXFLAGS := -DIS_EMU_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS} -pthread
 
 SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_ECORE_DIR) 
 

@@ -12,8 +12,14 @@
 #include "string_hst.hh"
 
 #include "core_main.h"
+#include "dlmalloc.h"
 
 // =====================================================================================
+
+#define DLMALLOC_HEAP_SZ (10 * MBY_SZ)
+uint8_t dlmalloc_heap[DLMALLOC_HEAP_SZ];
+
+mspace bjm_glb_mspace;
 
 bj_sys_sz_st bjh_glb_host_sys;
 
@@ -52,6 +58,8 @@ host_main(int argc, char *argv[])
 	char f_nm[200];
 	char* all_f_nam[bj_out_num_cores];
 	int ss, tnum;
+
+	bjm_glb_mspace = create_mspace_with_base(dlmalloc_heap, DLMALLOC_HEAP_SZ, 0);
 
 	bj_init_glb_sys_sz(&bjh_glb_host_sys);
 
@@ -235,6 +243,8 @@ host_main(int argc, char *argv[])
 			free(all_f_nam[nn]);
 		}
 	}
+
+	destroy_mspace(bjm_glb_mspace);
 
 	return 0;
 }

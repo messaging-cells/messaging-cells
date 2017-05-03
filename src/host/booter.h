@@ -15,6 +15,9 @@
 bj_c_decl {
 #endif
 
+#define KBY_SZ 1024
+#define MBY_SZ 1048576
+
 #define BJ_STDERR stderr
 
 extern bj_sys_sz_st 			bjh_glb_host_sys;

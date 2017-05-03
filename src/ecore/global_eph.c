@@ -13,7 +13,7 @@ bjk_glb_sys_st*	bjk_glb_pt_sys_data;
 
 bjk_glb_sys_st*
 bjk_get_first_glb_sys(){
-	bjk_glb_pt_sys_data = bjk_malloc32(bjk_glb_sys_st, 1);
+	bjk_glb_pt_sys_data = bj_malloc32(bjk_glb_sys_st, 1);
 	return bjk_glb_pt_sys_data;
 }
 

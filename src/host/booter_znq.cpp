@@ -18,6 +18,8 @@ uint8_t* BJH_EXTERNAL_RAM_BASE_PT = bj_null;
 
 const char* epiphany_elf_nm = "the_epiphany_executable.elf";
 
+mspace bjh_glb_mspace;
+
 bj_sys_sz_st bjh_glb_sys;
 
 bj_sys_sz_st*
@@ -99,7 +101,7 @@ int boot_znq(int argc, char *argv[])
 	uint8_t* extnl_alloc_base = bjh_disp_to_pt(lk_dat->extnl_alloc_disp);
 	
 	mspace load_space = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
-	mspace alloc_space = create_mspace_with_base(extnl_alloc_base, lk_dat->extnl_alloc_size, 0);
+	bjh_glb_mspace = create_mspace_with_base(extnl_alloc_base, lk_dat->extnl_alloc_size, 0);
 
 	// dev init
 	
@@ -283,7 +285,7 @@ int boot_znq(int argc, char *argv[])
 	// e-platform connection.
 
 	destroy_mspace(load_space);
-	destroy_mspace(alloc_space);
+	destroy_mspace(bjh_glb_mspace);
 
 	e_free(&emem);
 	e_finalize();
