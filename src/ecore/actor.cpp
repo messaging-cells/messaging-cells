@@ -19,7 +19,7 @@ __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl){
 	return 0;
 }
 
-#ifndef IS_EMU_CODE
+#ifdef IS_CORE_CODE
 void* __dso_handle = bj_null;
 #endif	//IS_EMU_CODE
 

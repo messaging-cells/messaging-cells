@@ -14,7 +14,11 @@
 #include "core_main.h"
 #include "dlmalloc.h"
 
+#include "dyn_mem.h"
+#include "actor.hh"
+
 // =====================================================================================
+
 
 #define DLMALLOC_HEAP_SZ (10 * MBY_SZ)
 uint8_t dlmalloc_heap[DLMALLOC_HEAP_SZ];
@@ -75,6 +79,8 @@ host_main(int argc, char *argv[])
 	if (ALL_THREADS_INFO == NULL){
 		bjh_abort_func(0, "host_main. NULL ALL_THREADS_INFO \n");
 	}
+
+	bjm_pt_THE_KERNEL = bj_malloc32(kernel, 1);
 
 	printf("TOT_THREADS = %d\n", TOT_THREADS);
 

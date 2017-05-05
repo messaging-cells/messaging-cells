@@ -30,3 +30,28 @@ bjk_set_irq0_handler(){
 	*ivt = ((((unsigned)bjk_sync_handler) >> 1) << 8) | BJ_B_OPCODE;
 }
 
+void 
+bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
+	if((trace == bj_null) && (sz_trace >= 0)){
+		sz_trace = BJ_MAX_CALL_STACK_SZ;
+		trace = BJK_GLB_SYS->bjk_dbg_call_stack_trace;
+	}
+	if((trace != bj_null) && (sz_trace > 0)){
+		bjk_get_call_stack_trace(sz_trace, trace);
+	}
+	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
+	in_shd->dbg_error_code = err;
+
+	bj_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt;
+	if((off_core_pt != bj_null) && (off_core_pt->magic_id == BJ_MAGIC_ID)){
+		bj_set_off_chip_var(off_core_pt->is_finished, BJ_FINISHED_VAL);
+	}
+	
+	bj_asm("mov r62, %0" : : "r" (in_shd));
+	bj_asm("mov r63, %0" : : "r" (err));
+	bj_asm("gid");
+	bj_asm("trap 0x3");
+	bj_asm("movfs r0, pc");
+	bj_asm("jalr r0");
+}
+

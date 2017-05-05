@@ -146,7 +146,15 @@ enum bjk_signal_t : uint8_t {
 	extern kernel*	bjk_PT_THE_KERNEL;
 	#define BJK_FIRST_KERNEL bjk_get_first_kernel()
 	#define BJK_KERNEL (bjk_PT_THE_KERNEL)
-#else
+#endif
+
+#ifdef IS_ZNQ_CODE
+	extern kernel*	bjh_PT_THE_KERNEL;
+	#define BJK_FIRST_KERNEL bjh_get_first_kernel()
+	#define BJK_KERNEL (bjh_PT_THE_KERNEL)
+#endif
+
+#ifdef IS_EMU_CODE
 	#define BJK_FIRST_KERNEL kernel::get_sys()
 	#define BJK_KERNEL kernel::get_sys()
 #endif

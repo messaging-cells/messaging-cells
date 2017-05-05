@@ -62,6 +62,9 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 //=====================================================================
 // global funcs
 
+void 
+bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) bj_external_code_ram;
+	
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
 	bj_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt; 

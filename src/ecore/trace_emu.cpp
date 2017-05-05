@@ -11,14 +11,6 @@
 
 //=====================================================================
 
-void 
-bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
-	thread_info_t* inf = bjk_get_thread_info();
-	char msg[200];
-	sprintf(msg, "ABORTED THREAD=%ld \t CORE_ID=%x\n", inf->thread_id, inf->bjk_core_id);
-	bjh_abort_func(err, msg);
-}
-
 uint16_t
 bjk_get_call_stack_trace(int16_t, void**) {
 	bjk_glb_sys_st* glb = BJK_GLB_SYS;

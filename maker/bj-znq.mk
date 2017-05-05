@@ -33,6 +33,9 @@ SRC_CXXFLAGS := -DIS_ZNQ_CODE -Wall -std=c++14 ${DBG_FLAG} ${IS_ZNQ_FLAG}
 
 SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_ECORE_DIR) $(H_INC_1) 
 
+#	$(SRC_ECORE_DIR)/actor_znq.cpp \
+#	$(SRC_ECORE_DIR)/actor.cpp \
+
 SOURCES := \
 	$(SRC_ECORE_DIR)/rr_array.c \
 	$(SRC_ECORE_DIR)/shared.c \

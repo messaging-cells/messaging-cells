@@ -34,6 +34,8 @@ extern thread_info_t* ALL_THREADS_INFO;
 extern int TOT_THREADS;
 extern pthread_t HOST_THREAD_ID;
 
+extern kernel *bjm_pt_THE_KERNEL;
+
 uint16_t
 bjk_get_thread_idx();
 

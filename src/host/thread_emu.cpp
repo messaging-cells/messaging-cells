@@ -20,6 +20,8 @@ thread_info_t* ALL_THREADS_INFO = bj_null;
 int TOT_THREADS = 0;
 pthread_t HOST_THREAD_ID = 0;
 
+kernel *bjm_pt_THE_KERNEL = bj_null;
+
 // =====================================================================================
 
 uint8_t
