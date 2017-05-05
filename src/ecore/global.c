@@ -20,7 +20,7 @@ bjk_glb_init(void) {
 	bj_memset((uint8_t*)glb_dat, 0, sizeof(bjk_glb_sys_st));
 
 	glb_dat->off_core_pt = bj_null;
-	glb_dat->write_rrarray = 0x0;
+	glb_dat->write_rrarray = bj_null;
 
 	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 	bj_init_glb_sys_sz(sys_sz);
@@ -58,6 +58,7 @@ bjk_glb_init(void) {
 		}
 
 		bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
+
 		glb_dat->write_rrarray = &(out_st->wr_arr);
 		bj_rr_init(glb_dat->write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
 

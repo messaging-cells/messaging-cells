@@ -20,13 +20,6 @@ const char* epiphany_elf_nm = "the_epiphany_executable.elf";
 
 mspace bjh_glb_mspace;
 
-bj_sys_sz_st bjh_glb_sys;
-
-bj_sys_sz_st*
-bj_get_glb_sys_sz(){
-	return &bjh_glb_sys;
-}
-
 void
 print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
 	bj_in_core_st inco;
@@ -47,13 +40,9 @@ print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 
 int boot_znq(int argc, char *argv[])
 {
-	bj_core_co_t row, col, max_row, max_col;
-	bj_core_nn_t tot_cores;
-	bj_core_id_t core_id;
 	e_platform_t platform;
-	e_epiphany_t dev;
 	e_mem_t emem;
-	char f_nm[200];
+	e_epiphany_t dev;
 
 	if(argc > 1){
 		epiphany_elf_nm = argv[1];
@@ -146,6 +135,11 @@ int boot_znq(int argc, char *argv[])
 	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	/// HERE GOES USER INIT CODE
+
+	bj_core_co_t row, col, max_row, max_col;
+	bj_core_nn_t tot_cores;
+	bj_core_id_t core_id;
+	char f_nm[200];
 
 	max_row = 1;
 	max_col = 2;
@@ -262,7 +256,6 @@ int boot_znq(int argc, char *argv[])
 		}
 	} // while
 	
-	printf("PLATFORM row=%2d col=%2d \n", platform.row, platform.col);
 	printf("sys_sz->xx=%d\n", g_sys_sz->xx);
 	printf("sys_sz->yy=%d\n", g_sys_sz->yy);
 	printf("sys_sz->xx_sz=%d\n", g_sys_sz->xx_sz);

@@ -4,12 +4,14 @@
 #include "booter.h"
 #include "actor.hh"
 
-kernel* bjh_THE_KERNEL;
+#include "dyn_mem.h"
+
+kernel* bjh_PT_THE_KERNEL;
 
 kernel*
 bjh_get_first_kernel(){
-	bjh_THE_KERNEL = bj_malloc32(kernel, 1);
-	return bjh_THE_KERNEL;
+	bjh_PT_THE_KERNEL = bj_malloc32(kernel, 1);
+	return bjh_PT_THE_KERNEL;
 }
 
 void 

@@ -29,7 +29,7 @@ bj_sys_sz_st bjh_glb_host_sys;
 
 void 
 bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
-	char** trace = thd_inf.bj_glb_sys_data.bjk_dbg_call_nams_stack_trace;
+	char** trace = thd_inf.bjk_glb_sys_data.bjk_dbg_call_nams_stack_trace;
 	bjh_out << "---------------------------------------------------\n";
 	bjh_out << "STACK_TRACE for core num " << std::dec << thd_inf.thread_num;
 	bjh_out << " with core_id = 0x" << std::hex << thd_inf.bjk_core_id << "\n";
@@ -57,17 +57,10 @@ ck_all_core_ids(){
 int 
 host_main(int argc, char *argv[])
 {
-	bj_core_co_t row, col, max_row, max_col;
-	bj_core_id_t core_id;
-	char f_nm[200];
-	char* all_f_nam[bj_out_num_cores];
-	int ss, tnum;
-
 	bjm_glb_mspace = create_mspace_with_base(dlmalloc_heap, DLMALLOC_HEAP_SZ, 0);
 
 	bj_init_glb_sys_sz(&bjh_glb_host_sys);
 
-	memset(&all_f_nam, 0, sizeof(all_f_nam));
 	memset(&bjh_external_ram_load_data, 0, sizeof(bj_link_syms_data_st));
 
 	ALL_THREADS_INFO = bj_null;
@@ -98,6 +91,16 @@ host_main(int argc, char *argv[])
 
 	pt_shd_data->wrk_sys = *sys_sz;
 	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
+
+	/// HERE GOES USER INIT CODE
+
+	bj_core_id_t core_id;
+	bj_core_co_t row, col, max_row, max_col;
+	char f_nm[200];
+	int ss, tnum;
+
+	char* all_f_nam[bj_out_num_cores];
+	memset(&all_f_nam, 0, sizeof(all_f_nam));
 
 	max_row = 1;
 	max_col = 2;
@@ -200,7 +203,7 @@ host_main(int argc, char *argv[])
 						
 						sh_dat_1->is_waiting = BJ_NOT_WAITING;
 
-						thd_inf.bj_glb_sys_data.bjk_sync_signal = 1;	// SEND signal
+						thd_inf.bjk_glb_sys_data.bjk_sync_signal = 1;	// SEND signal
 					}
 				} else {
 					BJH_CK(sh_dat_1->is_finished == BJ_FINISHED_VAL);
@@ -214,7 +217,7 @@ host_main(int argc, char *argv[])
 
 						printf("Finished\n");
 						memset(&inco, 0, sizeof(bj_in_core_st));
-						memcpy(&inco, &thd_inf.bj_glb_sys_data.in_core_shd, sizeof(bj_in_core_st));
+						memcpy(&inco, &thd_inf.bjk_glb_sys_data.in_core_shd, sizeof(bj_in_core_st));
 						int err2 = bjh_prt_in_core_shd_dat(&inco);
 						if(err2){
 							break;
@@ -241,8 +244,6 @@ host_main(int argc, char *argv[])
 		}
 	}
 
-	free(ALL_THREADS_INFO);
-
 	int nn;
 	for (nn=0; nn < bj_out_num_cores; nn++){
 		if(all_f_nam[nn] != bj_null){
@@ -250,6 +251,7 @@ host_main(int argc, char *argv[])
 		}
 	}
 
+	free(ALL_THREADS_INFO);
 	destroy_mspace(bjm_glb_mspace);
 
 	return 0;

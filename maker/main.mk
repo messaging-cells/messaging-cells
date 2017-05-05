@@ -39,7 +39,7 @@ SUBMAKEFILES := \
 	bj-znq-tak-mak-lib.mk \
 	bj-emu-dlmalloc-lib.mk \
 	bj-znq-dlmalloc-lib.mk \
-	bj-znq.mk \
+	bj-znq-actor-lib.mk \
 	bj-emu-actor-lib.mk \
 	bj-eph-actor-lib.mk \
 	${EPH_SAMPLES_DIR}/logs_test.mk \

@@ -26,7 +26,7 @@ bjk_get_glb_sys(){
 	if(bj_is_host_thread()){
 		return &bjm_glb_sys_data;
 	}
-	return &(bjk_get_thread_info()->bj_glb_sys_data);
+	return &(bjk_get_thread_info()->bjk_glb_sys_data);
 }
 
 void 

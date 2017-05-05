@@ -1,7 +1,6 @@
 
 #include "global.h"
 
-#include "thread_emu.hh"
 #include "booter.h"
 
 //=====================================================================

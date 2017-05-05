@@ -149,6 +149,9 @@ enum bjk_signal_t : uint8_t {
 #endif
 
 #ifdef IS_ZNQ_CODE
+	kernel*
+	bjh_get_first_kernel();
+
 	extern kernel*	bjh_PT_THE_KERNEL;
 	#define BJK_FIRST_KERNEL bjh_get_first_kernel()
 	#define BJK_KERNEL (bjh_PT_THE_KERNEL)
