@@ -19,6 +19,8 @@
 
 bj_link_syms_data_st bjh_external_ram_load_data;
 
+bool BJH_LOAD_WITH_MEMCPY = false;
+
 void 
 bjh_abort_func(long val, const char* msg){
 	fprintf(stderr, "\nABORTING! %s\n", msg); 

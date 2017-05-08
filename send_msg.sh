@@ -1,4 +1,5 @@
 #!/bin/bash
 
-cd bin
-./bj-actor-booter.elf send_msg.elf
+cd src/tests/bin
+./nil-host.elf send_msg_eph.elf
+

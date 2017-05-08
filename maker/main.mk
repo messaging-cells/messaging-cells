@@ -33,6 +33,17 @@ STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
 ATVA_EPH_LFLAGS := -L${ETOOLS}/e-gnu/epiphany-elf/lib -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
 
+#	${EPH_SAMPLES_DIR}/logs_test.mk \
+#	${EPH_SAMPLES_DIR}/loader_bug.mk \
+#	${EPH_SAMPLES_DIR}/send_msg.mk \
+#	${EMU_SAMPLES_DIR}/send_msg_emu.mk \
+#	${SRC_DIR}/test/hello_world/hello_world.mk \
+#	${SRC_DIR}/test/modules/modules.mk \
+#	${SRC_DIR}/test/tak_mak_test/tak_mak.mk \
+#	${SRC_DIR}/test/dlmalloc_test/emu_dlmalloc.mk \
+#	${SRC_DIR}/test/dlmalloc_test/znq_dlmalloc.mk \
+
+
 SUBMAKEFILES := \
 	bj-emu-tak-mak-lib.mk \
 	bj-eph-tak-mak-lib.mk \
@@ -42,15 +53,6 @@ SUBMAKEFILES := \
 	bj-znq-actor-lib.mk \
 	bj-emu-actor-lib.mk \
 	bj-eph-actor-lib.mk \
-	${EPH_SAMPLES_DIR}/logs_test.mk \
-	${EPH_SAMPLES_DIR}/loader_bug.mk \
-	${EPH_SAMPLES_DIR}/send_msg.mk \
-	${EMU_SAMPLES_DIR}/send_msg_emu.mk \
-	${SRC_DIR}/test/hello_world/hello_world.mk \
-	${SRC_DIR}/test/modules/modules.mk \
-	${SRC_DIR}/test/tak_mak_test/tak_mak.mk \
-	${SRC_DIR}/test/dlmalloc_test/emu_dlmalloc.mk \
-	${SRC_DIR}/test/dlmalloc_test/znq_dlmalloc.mk \
 
 
 

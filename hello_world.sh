@@ -1,4 +1,5 @@
 #!/bin/bash
 
-cd bin
-./bj-actor-booter.elf hello_world.elf
+cd src/tests/bin
+./nil-host.elf hello_world.elf
+

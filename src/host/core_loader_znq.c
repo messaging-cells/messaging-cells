@@ -43,8 +43,6 @@
 #include "shared.h"
 #include "booter.h"
 
-bool BJH_LOAD_WITH_MEMCPY = false;
-
 void ee_get_coords_from_id(e_epiphany_t *dev, unsigned coreid,
 								  unsigned *row, unsigned *col);
 

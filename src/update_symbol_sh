@@ -2,6 +2,6 @@
 # Only change last year. DO NOT use generic matching '^Copyright' because
 # it will change other people's Copyright.
 
-find . -name "*" -type f | xargs sed -i 's/LD_EXTERNAL_/LD_LD_EXTERNAL_/g'
+find . -name "*" -type f | xargs sed -i 's/_host_/_host_/g'
 
 

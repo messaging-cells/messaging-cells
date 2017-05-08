@@ -12,9 +12,9 @@ DBG_FLAG := -DFULL_DEBUG
 
 # =======================================
 
-# TARGET := libbjz-actor.a
+TARGET := libbjz-actor.a
 
-TARGET := bj-actor-booter.elf
+# TARGET := bj-actor-booter.elf
 
 TGT_LDFLAGS := -Ur -L${H_LIB_1} -L${TARGET_DIR}
 

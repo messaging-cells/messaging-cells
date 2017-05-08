@@ -56,6 +56,7 @@ SRC_INCDIRS := $(SRC_ECORE_DIR)
 #	$(SRC_ECORE_DIR)/actor.cpp \
 #	$(SRC_ECORE_DIR)/std2.c \
 #	$(SRC_ECORE_DIR)/a_shd_code_error.cpp \
+#	$(SRC_ECORE_DIR)/call_bj_cores_main_eph.c \
 
 
 SOURCES := \
@@ -72,6 +73,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/trace_eph.c \
 	$(SRC_ECORE_DIR)/e_start.s \
 	$(SRC_ECORE_DIR)/dyn_mem.c \
+	$(SRC_ECORE_DIR)/call_bj_cores_main_eph.c \
 	$(SRC_ECORE_DIR)/binder.cpp \
 	$(SRC_ECORE_DIR)/actor_eph.cpp \
 	$(SRC_ECORE_DIR)/actor.cpp \

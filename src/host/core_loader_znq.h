@@ -56,8 +56,6 @@ extern bjl_loader_diag_t bjl_load_verbose;
 
 #define bjl_diag(vN)   if (bjl_load_verbose >= vN)
 
-extern bool BJH_LOAD_WITH_MEMCPY;
-
 struct load_info_st {    
 	char *executable;
 	e_epiphany_t *dev;

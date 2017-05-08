@@ -11,7 +11,7 @@
 #include "booter.h"
 #include "string_hst.hh"
 
-#include "core_main.h"
+#include "cores_main.h"
 #include "dlmalloc.h"
 
 #include "dyn_mem.h"
@@ -55,7 +55,7 @@ ck_all_core_ids(){
 }
 
 void
-bjm_booter_init()
+bj_host_init()
 {
 	bjm_glb_mspace = create_mspace_with_base(dlmalloc_heap, DLMALLOC_HEAP_SZ, 0);
 
@@ -94,7 +94,7 @@ bjm_booter_init()
 }
 
 void
-bjm_booter_run()
+bj_host_run()
 {
 	bj_off_sys_st* pt_shd_data = &BJK_OFF_CHIP_SHARED_MEM;
 	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
@@ -121,7 +121,7 @@ bjm_booter_run()
 			thd_inf.argv_string = bj_null;
 			bj_uint16_to_hex_bytes(thd_inf.thread_num, (uint8_t*)(thd_inf.thread_name));
 			thd_inf.bjk_core_id = core_id;
-			thd_inf.core_func = CORE_MAIN_FUNC;
+			thd_inf.core_func = &bj_cores_main;
 
 			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
@@ -250,7 +250,7 @@ bjm_booter_run()
 }
 
 void
-bjm_booter_finish()
+bj_host_finish()
 {
 	int tnum;
 	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
@@ -268,13 +268,13 @@ bjm_booter_finish()
 int 
 host_main(int argc, char *argv[])
 {
-	bjm_booter_init();
+	bj_host_init();
 
 	/// HERE GOES USER INIT CODE
 
-	bjm_booter_run();
+	bj_host_run();
 
-	bjm_booter_finish();
+	bj_host_finish();
 
 	return 0;
 }
@@ -342,7 +342,12 @@ void test_dlmalloc_align(){
 }
 
 int main(int argc, char *argv[]) {
-	host_main(argc, argv);
+	int rr = 0;
+	rr = bj_host_main(argc, argv);
+	return rr;
+
+	//host_main(argc, argv);
+
 	//pw2_ops(argc, argv);
 	//show_sizes();
 	//test_align();

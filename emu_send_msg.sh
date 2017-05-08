@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd bin
+cd src/tests/bin
 ./send_msg_emu.elf $*

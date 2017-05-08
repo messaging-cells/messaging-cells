@@ -7,6 +7,7 @@
 
 #include "binder.hh"
 #include "global.h"
+#include "cores_main.h"
 
 class kernel;
 class agent;
@@ -506,9 +507,6 @@ public:
 	}
 };
 
-void 
-actor_handler(missive* msg);
-
 #ifdef __cplusplus
 bj_c_decl {
 #endif
@@ -516,17 +514,6 @@ bj_c_decl {
 //bj_opt_sz_fn 
 void 
 bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) bj_external_code_ram;
-
-void
-wait_inited_state(bj_core_id_t dst) bj_external_code_ram;
-
-void
-init_class_names() bj_external_code_ram;
-
-void
-ck_sizes() bj_external_code_ram;
-
-void test_minimal() bj_external_code_ram;
 
 #ifdef __cplusplus
 }

@@ -2,6 +2,10 @@
 
 rm -rf ./bin
 rm -rf ./maker/build
-rm ./code_prog.s
-rm ./sizes.txt
+
+rm -rf ./src/tests/bin
+rm -rf ./src/tests/build
+
+rm ./send_msg_code.s
+rm ./send_msg_sizes.txt
 

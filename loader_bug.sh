@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd bin
-./bj-actor-booter.elf loader_bug.elf
+cd src/tests/bin
+./nil-host.elf loader_bug.elf

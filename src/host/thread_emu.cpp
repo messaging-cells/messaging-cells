@@ -14,8 +14,6 @@
 #include "shared.h"
 #include "booter.h"
 
-#include "core_main.h"
-
 thread_info_t* ALL_THREADS_INFO = bj_null;
 int TOT_THREADS = 0;
 pthread_t HOST_THREAD_ID = 0;

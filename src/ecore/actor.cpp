@@ -4,36 +4,24 @@
 #include "dyn_mem.h"
 #include "actor.hh"
 
-#ifdef IS_EMU_CODE
-	#include "booter.h"
-	#define bj_booter_init_fn bjm_booter_init 
-	#define bj_booter_run_fn bjm_booter_run
-	#define bj_booter_finish_fn bjm_booter_finish
-#endif	//IS_EMU_CODE
-
-#ifdef IS_ZNQ_CODE
-	#include "booter.h"
-	#define bj_booter_init_fn bjh_booter_init 
-	#define bj_booter_run_fn bjh_booter_run
-	#define bj_booter_finish_fn bjh_booter_finish
-#endif	//IS_EMU_CODE
-
 //----------------------------------------------------------------------------
 // To FAKE std c++ lib initialization and destructions of global objects
 // DO NOT FORGET to call initializers explicitly.
 
-bj_c_decl int __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl) bj_external_code_ram;
-
-int 
-__cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl){
-	static_cast<void>(obj);
-	static_cast<void>(destruc);
-	static_cast<void>(dso_hndl);
-	return 0;
-}
-
 #ifdef IS_CORE_CODE
-void* __dso_handle = bj_null;
+
+	bj_c_decl int __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl) bj_external_code_ram;
+
+	int 
+	__cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl){
+		static_cast<void>(obj);
+		static_cast<void>(destruc);
+		static_cast<void>(dso_hndl);
+		return 0;
+	}
+
+	void* __dso_handle = bj_null;
+
 #endif	//IS_EMU_CODE
 
 //----------------------------------------------------------------------------
@@ -80,9 +68,21 @@ kernel::init_kernel(){
 	first_actor = actor::acquire();
 }
 
+bool
+bjk_ck_type_sizes(){
+	CORE_CODE(
+	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(bj_addr_t)));
+	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(unsigned)));
+	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(uint32_t)));
+	);
+	return true;
+}
+
 void	// static
 kernel::init_sys(){
 	bjk_glb_init();
+
+	BJK_CK2(ck_szs, bjk_ck_type_sizes());
 
 	kernel* ker = BJK_FIRST_KERNEL;
 
@@ -172,21 +172,6 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 	}
 
 	rem_mgrp->handled = bj_true;
-}
-
-void
-wait_inited_state(bj_core_id_t dst_id){
-	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
-	uint8_t* loc_st = &(in_shd->the_core_state);
-	uint8_t* rmt_st = (uint8_t*)bj_addr_with(dst_id, loc_st);
-	while(*rmt_st != bjk_inited_state);
-}
-
-void
-ck_sizes(){
-	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(bj_addr_t)));
-	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(unsigned)));
-	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(uint32_t)));
 }
 
 grip&	

@@ -16,7 +16,7 @@
 
 uint8_t* BJH_EXTERNAL_RAM_BASE_PT = bj_null;
 
-const char* bjh_epiphany_elf_nm = "the_epiphany_executable.elf";
+//char* bjh_epiphany_elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
 
 mspace bjh_glb_load_mspace;
 mspace bjh_glb_alloc_mspace;
@@ -39,23 +39,23 @@ print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 	if(inco.dbg_stack_trace != bj_null){
 		e_read(dev, row, col, (uint32_t)(inco.dbg_stack_trace), trace, sizeof(trace));
 	}
-	bjh_prt_core_call_stack(bjh_epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
+	bjh_prt_core_call_stack(bjh_epiphany_elf_path, BJ_MAX_CALL_STACK_SZ, trace);
 }
 
 void
-bjh_booter_init(){
+bj_host_init(){
 	e_mem_t & emem = bjh_glb_emem;
 	e_epiphany_t & dev = bjh_glb_dev;
 
 	e_platform_t platform;
 
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
-	bjh_read_eph_link_syms(bjh_epiphany_elf_nm, lk_dat);
+	bjh_read_eph_link_syms(bjh_epiphany_elf_path, lk_dat);
 
 	if(lk_dat->extnl_ram_orig == 0) {
-		printf("ERROR: Can't read external memory location from '%s'\n", bjh_epiphany_elf_nm);
-		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", bjh_epiphany_elf_nm);
-		bjh_abort_func((bj_addr_t)(bjh_booter_init), "ERROR: Bad ELF\n");
+		printf("ERROR: Can't read external memory location from '%s'\n", bjh_epiphany_elf_path);
+		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", bjh_epiphany_elf_path);
+		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Bad ELF\n");
 	}
 
 	// IMPORTANT NOTE:
@@ -76,7 +76,7 @@ bjh_booter_init(){
 	e_get_platform_info(&platform);
 
 	if (e_alloc(&emem, 0, lk_dat->extnl_ram_size)) {
-		bjh_abort_func((bj_addr_t)(bjh_booter_init), "ERROR: Can't allocate external memory buffer!\n\n");
+		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
 	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
@@ -104,7 +104,7 @@ bjh_booter_init(){
 	// load elf
 
 	load_info_t ld_dat;
-	ld_dat.executable = (char*)bjh_epiphany_elf_nm;
+	ld_dat.executable = (char*)bjh_epiphany_elf_path;
 	ld_dat.dev = &dev;
 	ld_dat.row = 0;
 	ld_dat.col = 0;
@@ -116,7 +116,7 @@ bjh_booter_init(){
 	e_reset_group(&dev);
 	int err = bj_load_group(&ld_dat); 
 	if(err == E_ERR){
-		bjh_abort_func((bj_addr_t)(bjh_booter_init), "ERROR: Loading_group_failed.\n");
+		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Loading_group_failed.\n");
 	}
 
 	// init shared data.
@@ -130,7 +130,7 @@ bjh_booter_init(){
 }
 
 void
-bjh_booter_run(){
+bj_host_run(){
 	//e_mem_t & emem = bjh_glb_emem;
 	e_epiphany_t & dev = bjh_glb_dev;
 
@@ -280,7 +280,7 @@ bjh_booter_run(){
 }
 
 void
-bjh_booter_finish(){
+bj_host_finish(){
 	e_mem_t & emem = bjh_glb_emem;
 	e_epiphany_t & dev = bjh_glb_dev;
 
@@ -306,32 +306,32 @@ bjh_booter_finish(){
 int boot_znq(int argc, char *argv[])
 {
 	if(argc > 1){
-		bjh_epiphany_elf_nm = argv[1];
-		printf("Using core executable: %s \n", bjh_epiphany_elf_nm);
+		bjh_epiphany_elf_path = argv[1];
+		printf("Using core executable: %s \n", bjh_epiphany_elf_path);
 	}
 	if(argc > 2){
 		printf("LOADING WITH MEMCPY \n");
 		BJH_LOAD_WITH_MEMCPY = true;
 	}
 
-	bjh_booter_init();
+	bj_host_init();
 
 	/// HERE GOES USER INIT CODE
 
-	bjh_booter_run();
-	bjh_booter_finish();
+	bj_host_run();
+	bj_host_finish();
 
 	return 0;
 }
 
 void test_read_sysm(int argc, char *argv[]){
 	if(argc > 1){
-		bjh_epiphany_elf_nm = argv[1];
-		printf("Using core executable: %s \n", bjh_epiphany_elf_nm);
+		bjh_epiphany_elf_path = argv[1];
+		printf("Using core executable: %s \n", bjh_epiphany_elf_path);
 	}
 
 	bj_link_syms_data_st syms;
-	bjh_read_eph_link_syms(bjh_epiphany_elf_nm, &syms);
+	bjh_read_eph_link_syms(bjh_epiphany_elf_path, &syms);
 
 	printf("extnl_ram_size = %p \n", (void*)syms.extnl_ram_size);
 	printf("extnl_code_size = %p \n", (void*)syms.extnl_code_size);
@@ -351,8 +351,9 @@ void test_read_sysm(int argc, char *argv[]){
 }
 
 int main(int argc, char *argv[]) {
+	int rr = 0;
 	//test_read_sysm(argc, argv);
-	boot_znq(argc, argv);
-	return 0;
+	rr = bj_host_main(argc, argv);
+	return rr;
 }
 
