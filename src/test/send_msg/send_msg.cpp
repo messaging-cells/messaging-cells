@@ -1,6 +1,8 @@
 
 #include "send_msg.hh"
 
+void (*CORE_MAIN_FUNC)() = &pru_send_msg;
+
 #ifdef IS_CORE_CODE
 int main() {
 	pru_send_msg();

@@ -38,8 +38,8 @@ SRC_CXXFLAGS := -DIS_EMU_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
 
 SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_ECORE_DIR) 
 
-SOURCES := \
-	$(PRU_SRC_DIR)/send_msg_emu.cpp \
-	$(PRU_SRC_DIR)/send_msg.cpp \
+#	$(PRU_SRC_DIR)/send_msg_emu.cpp \
+
+SOURCES := $(PRU_SRC_DIR)/send_msg.cpp \
 
 

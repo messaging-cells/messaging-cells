@@ -54,8 +54,8 @@ ck_all_core_ids(){
 	return true;
 }
 
-int 
-host_main(int argc, char *argv[])
+void
+bjm_booter_init()
 {
 	bjm_glb_mspace = create_mspace_with_base(dlmalloc_heap, DLMALLOC_HEAP_SZ, 0);
 
@@ -91,13 +91,17 @@ host_main(int argc, char *argv[])
 
 	pt_shd_data->wrk_sys = *sys_sz;
 	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
+}
 
-	/// HERE GOES USER INIT CODE
+void
+bjm_booter_run()
+{
+	bj_off_sys_st* pt_shd_data = &BJK_OFF_CHIP_SHARED_MEM;
+	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 
 	bj_core_id_t core_id;
 	bj_core_co_t row, col, max_row, max_col;
 	char f_nm[200];
-	int ss, tnum;
 
 	char* all_f_nam[bj_out_num_cores];
 	memset(&all_f_nam, 0, sizeof(all_f_nam));
@@ -140,7 +144,7 @@ host_main(int argc, char *argv[])
 			
 			// Start one core emulation thread
 
-			ss = pthread_create(&thd_inf.thread_id, NULL,
+			int ss = pthread_create(&thd_inf.thread_id, NULL,
 								&thread_start, &thd_inf);
 			if (ss != 0){
 				bjh_abort_func(ss, "host_main. Cannot pthread_create");
@@ -230,20 +234,12 @@ host_main(int argc, char *argv[])
 			}
 		}
 	} // while
-	
+
 	printf("sys_sz->xx=%d\n", sys_sz->xx);
 	printf("sys_sz->yy=%d\n", sys_sz->yy);
 	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
 	printf("sys_sz->yy_sz_pw2=%d\n", sys_sz->yy_sz_pw2);
 	
-	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
-		void *res;
-		ss = pthread_join(ALL_THREADS_INFO[tnum].thread_id, &res);
-		if(ss != 0){
-			bjh_abort_func(ss, "host_main. Cannot join thread.");
-		}
-	}
-
 	int nn;
 	for (nn=0; nn < bj_out_num_cores; nn++){
 		if(all_f_nam[nn] != bj_null){
@@ -251,8 +247,34 @@ host_main(int argc, char *argv[])
 		}
 	}
 
+}
+
+void
+bjm_booter_finish()
+{
+	int tnum;
+	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
+		void *res;
+		int ss = pthread_join(ALL_THREADS_INFO[tnum].thread_id, &res);
+		if(ss != 0){
+			bjh_abort_func(ss, "host_main. Cannot join thread.");
+		}
+	}
+
 	free(ALL_THREADS_INFO);
 	destroy_mspace(bjm_glb_mspace);
+}
+
+int 
+host_main(int argc, char *argv[])
+{
+	bjm_booter_init();
+
+	/// HERE GOES USER INIT CODE
+
+	bjm_booter_run();
+
+	bjm_booter_finish();
 
 	return 0;
 }

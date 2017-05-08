@@ -150,13 +150,22 @@ bjk_set_irq0_handler() bj_external_code_ram;
 
 // end_of_macro
 
-#ifdef IS_EMU_CODE
-#define BJK_CK(nam, cond) 
-#define BJK_CK2(nam, cond) 
-#else 
 //define BJK_CK(nam, cond) BJK_OFFCHIP_ASSERT(nam, external_code_ram, cond)
-#define BJK_CK(nam, cond) BJK_INCORE_ASSERT(nam, cond)
-#define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
+
+#ifdef IS_CORE_CODE
+	#define BJK_CK(nam, cond) BJK_INCORE_ASSERT(nam, cond)
+	#define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
+#endif
+
+#ifdef IS_EMU_CODE
+	#define BJK_CK(nam, cond) EMU_CK(cond)
+	#define BJK_CK2(nam, cond) EMU_CK(cond)
+#endif
+
+#ifdef IS_ZNQ_CODE
+	#include "booter.h"
+	#define BJK_CK(nam, cond) BJH_CK(cond)
+	#define BJK_CK2(nam, cond) BJH_CK(cond)
 #endif
 
 #define BJK_MARK_PLACE(nam) BJ_DBG(bj_asm(#nam ":")) 

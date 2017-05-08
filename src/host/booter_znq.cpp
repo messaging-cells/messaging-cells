@@ -16,9 +16,13 @@
 
 uint8_t* BJH_EXTERNAL_RAM_BASE_PT = bj_null;
 
-const char* epiphany_elf_nm = "the_epiphany_executable.elf";
+const char* bjh_epiphany_elf_nm = "the_epiphany_executable.elf";
 
-mspace bjh_glb_mspace;
+mspace bjh_glb_load_mspace;
+mspace bjh_glb_alloc_mspace;
+
+e_mem_t bjh_glb_emem;
+e_epiphany_t bjh_glb_dev;
 
 void
 print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
@@ -35,31 +39,23 @@ print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 	if(inco.dbg_stack_trace != bj_null){
 		e_read(dev, row, col, (uint32_t)(inco.dbg_stack_trace), trace, sizeof(trace));
 	}
-	bjh_prt_core_call_stack(epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
+	bjh_prt_core_call_stack(bjh_epiphany_elf_nm, BJ_MAX_CALL_STACK_SZ, trace);
 }
 
-int boot_znq(int argc, char *argv[])
-{
-	e_platform_t platform;
-	e_mem_t emem;
-	e_epiphany_t dev;
+void
+bjh_booter_init(){
+	e_mem_t & emem = bjh_glb_emem;
+	e_epiphany_t & dev = bjh_glb_dev;
 
-	if(argc > 1){
-		epiphany_elf_nm = argv[1];
-		printf("Using core executable: %s \n", epiphany_elf_nm);
-	}
-	if(argc > 2){
-		printf("LOADING WITH MEMCPY \n");
-		LOAD_WITH_MEMCPY = true;
-	}
+	e_platform_t platform;
 
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
-	bjh_read_eph_link_syms(epiphany_elf_nm, lk_dat);
+	bjh_read_eph_link_syms(bjh_epiphany_elf_nm, lk_dat);
 
 	if(lk_dat->extnl_ram_orig == 0) {
-		printf("ERROR: Can't read external memory location from %s\n", epiphany_elf_nm);
-		printf("Make sure linker script for %s defines LD_EXTERNAL_* symbols\n\n", epiphany_elf_nm);
-		return 0;
+		printf("ERROR: Can't read external memory location from '%s'\n", bjh_epiphany_elf_nm);
+		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", bjh_epiphany_elf_nm);
+		bjh_abort_func((bj_addr_t)(bjh_booter_init), "ERROR: Bad ELF\n");
 	}
 
 	// IMPORTANT NOTE:
@@ -80,8 +76,7 @@ int boot_znq(int argc, char *argv[])
 	e_get_platform_info(&platform);
 
 	if (e_alloc(&emem, 0, lk_dat->extnl_ram_size)) {
-		printf("ERROR: Can't allocate external memory buffer!\n\n");
-		return 0;
+		bjh_abort_func((bj_addr_t)(bjh_booter_init), "ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
 	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
@@ -89,8 +84,8 @@ int boot_znq(int argc, char *argv[])
 	uint8_t* extnl_load_base = bjh_disp_to_pt(lk_dat->extnl_load_disp);
 	uint8_t* extnl_alloc_base = bjh_disp_to_pt(lk_dat->extnl_alloc_disp);
 	
-	mspace load_space = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
-	bjh_glb_mspace = create_mspace_with_base(extnl_alloc_base, lk_dat->extnl_alloc_size, 0);
+	bjh_glb_load_mspace = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
+	bjh_glb_alloc_mspace = create_mspace_with_base(extnl_alloc_base, lk_dat->extnl_alloc_size, 0);
 
 	// dev init
 	
@@ -109,7 +104,7 @@ int boot_znq(int argc, char *argv[])
 	// load elf
 
 	load_info_t ld_dat;
-	ld_dat.executable = (char*)epiphany_elf_nm;
+	ld_dat.executable = (char*)bjh_epiphany_elf_nm;
 	ld_dat.dev = &dev;
 	ld_dat.row = 0;
 	ld_dat.col = 0;
@@ -121,8 +116,7 @@ int boot_znq(int argc, char *argv[])
 	e_reset_group(&dev);
 	int err = bj_load_group(&ld_dat); 
 	if(err == E_ERR){
-		printf("Loading_group_failed.\n");
-		return 0;
+		bjh_abort_func((bj_addr_t)(bjh_booter_init), "ERROR: Loading_group_failed.\n");
 	}
 
 	// init shared data.
@@ -133,8 +127,15 @@ int boot_znq(int argc, char *argv[])
 	pt_shd_data->pt_this_from_znq = pt_shd_data;
 	pt_shd_data->wrk_sys = *g_sys_sz;
 	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
+}
 
-	/// HERE GOES USER INIT CODE
+void
+bjh_booter_run(){
+	//e_mem_t & emem = bjh_glb_emem;
+	e_epiphany_t & dev = bjh_glb_dev;
+
+	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
+	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_data_disp);
 
 	bj_core_co_t row, col, max_row, max_col;
 	bj_core_nn_t tot_cores;
@@ -255,7 +256,9 @@ int boot_znq(int argc, char *argv[])
 			}
 		}
 	} // while
-	
+
+	bj_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
+
 	printf("sys_sz->xx=%d\n", g_sys_sz->xx);
 	printf("sys_sz->yy=%d\n", g_sys_sz->yy);
 	printf("sys_sz->xx_sz=%d\n", g_sys_sz->xx_sz);
@@ -266,7 +269,21 @@ int boot_znq(int argc, char *argv[])
 	printf("SHD_DATA_displacement_from_shd_mem_base_adddr= %p\n", (void*)(lk_dat->extnl_data_disp));
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
+
+	int nn;
+	for (nn=0; nn < tot_cores; nn++){
+		if(all_f_nam[nn] != bj_null){
+			free(all_f_nam[nn]);
+		}
+	}
 	
+}
+
+void
+bjh_booter_finish(){
+	e_mem_t & emem = bjh_glb_emem;
+	e_epiphany_t & dev = bjh_glb_dev;
+
 	// Reset the workgroup
 	e_reset_group(&dev); // FAILS. Why?
 	e_reset_system();
@@ -277,31 +294,44 @@ int boot_znq(int argc, char *argv[])
 	// Release the allocated buffer and finalize the
 	// e-platform connection.
 
-	destroy_mspace(load_space);
-	destroy_mspace(bjh_glb_mspace);
+	destroy_mspace(bjh_glb_load_mspace);
+	destroy_mspace(bjh_glb_alloc_mspace);
 
 	e_free(&emem);
 	e_finalize();
 
-	int nn;
-	for (nn=0; nn < tot_cores; nn++){
-		if(all_f_nam[nn] != bj_null){
-			free(all_f_nam[nn]);
-		}
+	//prt_host_aligns();
+}
+
+int boot_znq(int argc, char *argv[])
+{
+	if(argc > 1){
+		bjh_epiphany_elf_nm = argv[1];
+		printf("Using core executable: %s \n", bjh_epiphany_elf_nm);
+	}
+	if(argc > 2){
+		printf("LOADING WITH MEMCPY \n");
+		BJH_LOAD_WITH_MEMCPY = true;
 	}
 
-	//prt_host_aligns();
+	bjh_booter_init();
+
+	/// HERE GOES USER INIT CODE
+
+	bjh_booter_run();
+	bjh_booter_finish();
+
 	return 0;
 }
 
 void test_read_sysm(int argc, char *argv[]){
 	if(argc > 1){
-		epiphany_elf_nm = argv[1];
-		printf("Using core executable: %s \n", epiphany_elf_nm);
+		bjh_epiphany_elf_nm = argv[1];
+		printf("Using core executable: %s \n", bjh_epiphany_elf_nm);
 	}
 
 	bj_link_syms_data_st syms;
-	bjh_read_eph_link_syms(epiphany_elf_nm, &syms);
+	bjh_read_eph_link_syms(bjh_epiphany_elf_nm, &syms);
 
 	printf("extnl_ram_size = %p \n", (void*)syms.extnl_ram_size);
 	printf("extnl_code_size = %p \n", (void*)syms.extnl_code_size);

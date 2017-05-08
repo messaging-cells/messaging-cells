@@ -91,6 +91,20 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 	
 //--end_of_def
 
+void
+bjm_booter_init();
+void
+bjh_booter_init();
+void
+bjm_booter_run();
+void
+bjh_booter_run();
+void
+bjm_booter_finish();
+void
+bjh_booter_finish();
+
+
 #ifdef __cplusplus
 }
 #endif

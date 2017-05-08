@@ -43,7 +43,7 @@
 #include "shared.h"
 #include "booter.h"
 
-bool LOAD_WITH_MEMCPY = false;
+bool BJH_LOAD_WITH_MEMCPY = false;
 
 void ee_get_coords_from_id(e_epiphany_t *dev, unsigned coreid,
 								  unsigned *row, unsigned *col);
@@ -400,7 +400,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 			}
 		}*/
 
-		if(LOAD_WITH_MEMCPY){
+		if(BJH_LOAD_WITH_MEMCPY){
 			memcpy(pt_dst, pt_src, blk_sz);
 		} else {
 			bj_memload(pt_dst, pt_src, blk_sz);

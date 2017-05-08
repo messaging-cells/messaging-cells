@@ -62,6 +62,7 @@ nam::acquire_alloc(uint16_t sz){ \
 	if(obj == bj_null){ \
 		bjk_abort((bj_addr_t)nam::acquire, 0, bj_null); \
 	} \
+	BJK_CK(BJ_STRFY(nam##alloc), BJ_IS_ALIGNED_##align(obj)); \
 	for(int bb = 0; bb < sz; bb++){ \
 		new (&(obj[bb])) nam(); \
 	} \
@@ -198,6 +199,9 @@ public:
 	static void
 	init_sys() bj_external_code_ram;
 
+	static bj_opt_sz_fn void 
+	run_sys();
+
 	static void
 	finish_sys() bj_external_code_ram;
 
@@ -255,9 +259,6 @@ public:
 
 	static void
 	set_handler(missive_handler_t hdlr, uint16_t idx) bj_external_code_ram;
-
-	static bj_opt_sz_fn void 
-	actors_handle_loop();
 
 	bj_opt_sz_fn void 
 	process_signal(int sz, missive_grp_t** arr);

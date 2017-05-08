@@ -4,6 +4,19 @@
 #include "dyn_mem.h"
 #include "actor.hh"
 
+#ifdef IS_EMU_CODE
+	#include "booter.h"
+	#define bj_booter_init_fn bjm_booter_init 
+	#define bj_booter_run_fn bjm_booter_run
+	#define bj_booter_finish_fn bjm_booter_finish
+#endif	//IS_EMU_CODE
+
+#ifdef IS_ZNQ_CODE
+	#include "booter.h"
+	#define bj_booter_init_fn bjh_booter_init 
+	#define bj_booter_run_fn bjh_booter_run
+	#define bj_booter_finish_fn bjh_booter_finish
+#endif	//IS_EMU_CODE
 
 //----------------------------------------------------------------------------
 // To FAKE std c++ lib initialization and destructions of global objects
@@ -92,6 +105,15 @@ kernel::init_sys(){
 	in_shd->the_core_state = bjk_inited_state;
 }
 
+void // static
+kernel::run_sys(){
+	kernel* ker = BJK_KERNEL;
+	
+	while(true){
+		ker->handle_missives();
+	}
+}
+
 void	// static
 kernel::finish_sys(){
 	bjk_glb_finish();
@@ -150,15 +172,6 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 	}
 
 	rem_mgrp->handled = bj_true;
-}
-
-void // static
-kernel::actors_handle_loop(){
-	kernel* ker = BJK_KERNEL;
-	
-	while(true){
-		ker->handle_missives();
-	}
 }
 
 void

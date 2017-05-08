@@ -12,6 +12,7 @@ bj_c_decl {
 
 #define BJK_LINK_SCRIPT_SYM_VAL(xx) ((bj_addr_t)(&xx))
 
+#define BJ_STRFY(prm) #prm
 
 //======================================================================
 // function attibutes
