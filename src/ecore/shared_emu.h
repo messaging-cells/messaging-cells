@@ -49,24 +49,25 @@ bjk_get_addr_core_id_fn(void*);
 void*
 bjk_addr_with_fn(bj_core_id_t id, void* addr);
 
-#define bj_addr_is_global(addr) true
-#define bj_addr_get_core_id(addr) bjk_get_addr_core_id_fn((void*)(addr))
-#define bj_addr_with(id, addr) bjk_addr_with_fn(id, (void*)addr)
-#define bj_addr_is_pure_local(addr) (! bj_addr_is_global(addr))
-#define bjk_addr_is_core_local(addr) (bj_addr_get_core_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id)
-#define bjk_addr_is_local(addr) (bj_addr_is_pure_local(addr) || bjk_addr_is_core_local(addr))
+#define bj_addr_has_id(addr) true
+#define bj_addr_get_id(addr) bjk_get_addr_core_id_fn((void*)(addr))
+#define bj_addr_set_id(id, addr) bjk_addr_with_fn(id, (void*)addr)
+#define bj_addr_has_local_id(addr) (bj_addr_get_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id)
+#define bj_addr_is_local(addr) ((! bj_addr_has_id(addr)) || bj_addr_has_local_id(addr))
 
 #define bjk_is_core(row, col) \
 	((BJK_GLB_IN_CORE_SHD->the_core_ro == (row)) && (BJK_GLB_IN_CORE_SHD->the_core_co == (col)))
 
-#define bj_addr_same_id(addr1, addr2) (bj_addr_get_core_id(addr1) == bj_addr_get_core_id(addr2))
+#define bjk_as_local_addr(addr) ((bj_addr_t)bj_addr_mask_ad(addr))
+
+#define bj_addr_same_id(addr1, addr2) (bj_addr_get_id(addr1) == bj_addr_get_id(addr2))
 
 #define bjk_as_glb_pt(pt) ((void*)(pt))
 
 /*
 
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
-#define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
+#define bjk_as_img_pt(pt, id) ((void*)bj_addr_set_id((id), (pt)))
 
 */
 

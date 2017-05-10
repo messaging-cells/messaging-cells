@@ -143,13 +143,13 @@ bjk_get_core_id();
 
 bool bj_inline_fn
 bj_addr_in_core(bj_addr_t addr, bj_core_id_t koid) {
-	bj_core_id_t addr_koid = bj_addr_get_core_id(addr);
+	bj_core_id_t addr_koid = bj_addr_get_id(addr);
 	return ((addr_koid == 0) || (addr_koid == koid));
 }
 
 bool bj_inline_fn
 bj_addr_in_sys(bj_addr_t addr) {
-	bj_core_id_t addr_koid = bj_addr_get_core_id(addr);
+	bj_core_id_t addr_koid = bj_addr_get_id(addr);
 	if(addr_koid == 0){
 		return true;
 	}

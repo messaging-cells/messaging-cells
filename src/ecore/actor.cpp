@@ -197,7 +197,7 @@ kernel::get_core_actor(bj_core_id_t dst_id){
 	if(dst_id == kernel::get_core_id()){
 		return loc_act;
 	}
-	actor* rem_act = (actor*)bj_addr_with(dst_id, loc_act);
+	actor* rem_act = (actor*)bj_addr_set_id(dst_id, loc_act);
 	return rem_act;
 }
 
@@ -280,7 +280,7 @@ kernel::handle_missives(){
 		nxt = bjk_pt_to_binderpt(wrk->bn_right);
 
 		actor* dst = fst_msg->dst;
-		if(bjk_addr_is_local(dst)){
+		if(bj_addr_is_local(dst)){
 			if(bjk_is_valid_handler_idx(ker, dst->id_idx)){
 				(*((ker->handlers_arr)[dst->id_idx]))(fst_msg);
 			}
@@ -300,12 +300,12 @@ kernel::handle_missives(){
 		EMU_CK(! mgrp->all_agts.is_alone());
 		
 		missive* msv = (missive*)(mgrp->all_agts.get_right_pt());
-		bj_core_id_t dst_id = bj_addr_get_core_id(msv->dst);
+		bj_core_id_t dst_id = bj_addr_get_id(msv->dst);
 		bj_core_nn_t idx = bj_id_to_nn(dst_id);
 
 		// ONLY pw0 case
 		missive_grp_t** loc_pt = &((ker->pw0_routed_arr)[idx]);
-		missive_grp_t** rmt_pt = (missive_grp_t**)bj_addr_with(dst_id, loc_pt);
+		missive_grp_t** rmt_pt = (missive_grp_t**)bj_addr_set_id(dst_id, loc_pt);
 		missive_grp_t* glb_mgrp = (missive_grp_t*)bjk_as_glb_pt(mgrp);
 		//missive_grp_t* glb_mgrp = (missive_grp_t*)mgrp->get_glb_ptr();
 
@@ -315,7 +315,7 @@ kernel::handle_missives(){
 
 		// send signal
 		bj_bool_t* loc_sg = &((ker->signals_arr)[bjk_do_pw0_routes_sgnl]);
-		bj_bool_t* rmt_sg = (bj_bool_t*)bj_addr_with(dst_id, loc_sg);
+		bj_bool_t* rmt_sg = (bj_bool_t*)bj_addr_set_id(dst_id, loc_sg);
 
 		*rmt_sg = bj_true;
 

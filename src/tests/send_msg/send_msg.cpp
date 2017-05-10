@@ -8,14 +8,14 @@ void
 wait_inited_state(bj_core_id_t dst_id){
 	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
 	uint8_t* loc_st = &(in_shd->the_core_state);
-	uint8_t* rmt_st = (uint8_t*)bj_addr_with(dst_id, loc_st);
+	uint8_t* rmt_st = (uint8_t*)bj_addr_set_id(dst_id, loc_st);
 	while(*rmt_st != bjk_inited_state);
 }
 
 void 
 recv_actor_handler(missive* msg){
 	BJK_UPDATE_MIN_SP();
-	EMU_CK(bjk_addr_is_local(msg->dst));
+	EMU_CK(bj_addr_is_local(msg->dst));
 	bj_core_id_t koid = kernel::get_core_id();
 	BJ_MARK_USED(koid);
 	bj_core_nn_t konn = kernel::get_core_nn();

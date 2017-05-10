@@ -234,7 +234,7 @@ out:
 
 static bool bjl_is_valid_addr(uint32_t addr)
 {
-	return bj_addr_is_pure_local(addr)
+	return (! bj_addr_has_id(addr))
 		|| e_is_addr_on_chip((void *) addr)
 		|| e_is_addr_in_emem(addr);
 }
@@ -246,6 +246,33 @@ static bool bjl_is_valid_range(uint32_t from, uint32_t size)
 		return true;
 
 	return bjl_is_valid_addr(from) && bjl_is_valid_addr(from + size - 1);
+}
+
+bj_addr_t
+bj_eph_addr_to_znq_addr(bj_addr_t eph_addr, int row, int col){
+	e_epiphany_t *dev = &bjh_glb_dev;
+	e_mem_t * emem = &bjh_glb_emem;
+
+	BJH_CK(bj_addr_has_id(eph_addr));
+	
+	bool islocal = ! bj_addr_has_id(eph_addr);
+	bool isonchip = bj_addr_in_sys(eph_addr);
+
+	bj_addr_t znq_addr = bj_null;
+	if (islocal) {
+		znq_addr = ((bj_addr_t) dev->core[row][col].mems.base) + eph_addr;
+
+	} else if (isonchip) {
+		bj_core_id_t coreid = bj_addr_get_id(eph_addr);
+		bj_core_co_t g_ro = bj_id_to_ro(coreid);
+		bj_core_co_t g_co = bj_id_to_co(coreid);
+
+		znq_addr = ((bj_addr_t) dev->core[g_ro][g_co].mems.base) + bjk_as_local_addr(eph_addr);
+
+	} else {
+		znq_addr = eph_addr - emem->ephy_base + (bj_addr_t) emem->base;
+	}
+	return znq_addr;
 }
 
 e_return_stat_t
@@ -317,9 +344,13 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 			continue;
 		}
 
-		islocal = bj_addr_is_pure_local(ld_addr);
+		islocal = ! bj_addr_has_id(ld_addr);
 		isonchip = bj_addr_in_sys(ld_addr);
 		isexternal = ((! islocal) && (! isonchip));
+
+		/*if(){
+			bj_addr_set_id(
+		}*/
 
 		bjl_diag(L_D3) { fprintf(BJ_STDERR, "%d. process_elf(): SECTION %s copying the data (%d bytes)",
 					ii, sect_nm, ld_src_sz); }
@@ -332,7 +363,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 			bjl_diag(L_D3) { dbg_case = "(local)"; 
 					fprintf(BJ_STDERR, "%d.(local) to core (%d,%d)\n", ii, row, col); }
 		} else if (isonchip) {
-			coreid = bj_addr_get_core_id(ld_addr);
+			coreid = bj_addr_get_id(ld_addr);
 
 			bj_core_co_t g_ro = bj_id_to_ro(coreid);
 			bj_core_co_t g_co = bj_id_to_co(coreid);

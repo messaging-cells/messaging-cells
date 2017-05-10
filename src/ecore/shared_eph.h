@@ -46,23 +46,24 @@ typedef uint16_t bj_size_t;
 #define bj_addr_mask_id(addr) (((bj_addr_t)(addr)) & bj_glb_id_mask)
 #define bj_addr_mask_ad(addr) (((bj_addr_t)(addr)) & bj_glb_addr_mask)
 
-#define bj_addr_is_global(addr) bj_addr_mask_id(addr)
-#define bj_addr_get_core_id(addr) ((bj_core_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
-#define bj_addr_with(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
-#define bj_addr_is_pure_local(addr) (! bj_addr_is_global(addr))
-#define bjk_addr_is_core_local(addr) (bj_addr_get_core_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id)
-#define bjk_addr_is_local(addr) (bj_addr_is_pure_local(addr) || bjk_addr_is_core_local(addr))
+#define bj_addr_has_id(addr) bj_addr_mask_id(addr)
+#define bj_addr_get_id(addr) ((bj_core_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
+#define bj_addr_set_id(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
+#define bj_addr_has_local_id(addr) (bj_addr_get_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id)
+#define bj_addr_is_local(addr) ((! bj_addr_has_id(addr)) || bj_addr_has_local_id(addr))
 
 #define bjk_is_core(row, col) \
 	((BJK_GLB_IN_CORE_SHD->the_core_ro == (row)) && (BJK_GLB_IN_CORE_SHD->the_core_co == (col)))
 
-#define bjk_as_glb_pt(pt) ((void*)bj_addr_with(BJK_GLB_IN_CORE_SHD->the_core_id, (pt)))
+#define bjk_as_local_addr(addr) ((bj_addr_t)bj_addr_mask_ad(addr))
+
+#define bjk_as_glb_pt(pt) ((void*)bj_addr_set_id(BJK_GLB_IN_CORE_SHD->the_core_id, (pt)))
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
-#define bjk_as_img_pt(pt, id) ((void*)bj_addr_with((id), (pt)))
+#define bjk_as_img_pt(pt, id) ((void*)bj_addr_set_id((id), (pt)))
 
 #define bj_addr_same_id(addr1, addr2) (bj_addr_mask_id(addr1) == bj_addr_mask_id(addr2))
 
-//define bj_addr_with_same_id(addr_id, addr) ((bj_addr_t)(bj_addr_mask_id(addr_id) | bj_addr_mask_ad(addr)))
+//define bj_addr_set_id_same_id(addr_id, addr) ((bj_addr_t)(bj_addr_mask_id(addr_id) | bj_addr_mask_ad(addr)))
 
 #ifdef __cplusplus
 }

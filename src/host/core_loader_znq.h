@@ -42,6 +42,10 @@ extern "C"
 
 extern uint8_t* BJH_EXTERNAL_RAM_BASE_PT;
 
+extern e_mem_t bjh_glb_emem;
+extern e_epiphany_t bjh_glb_dev;
+
+
 #define bjh_disp_to_pt(disp) (BJH_EXTERNAL_RAM_BASE_PT + disp)
 
 typedef enum {

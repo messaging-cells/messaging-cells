@@ -133,7 +133,7 @@ bj_host_main(int argc, char *argv[])
 		bool isexternal = ((! islocal) && (! isonchip));
 
 		unsigned coreid = ld_addr >> 20;
-		bj_addr_t coreid_2 = bj_addr_get_core_id(ld_addr);
+		bj_addr_t coreid_2 = bj_addr_get_id(ld_addr);
 
 		BJH_CK(coreid == coreid_2);
 
@@ -142,7 +142,7 @@ bj_host_main(int argc, char *argv[])
 		bool isexternal_2 = ((! islocal) && (! isonchip));
 
 		//printf("%" PRIu32 " == %p  coreid=%u \n", ld_addr, (void*)ld_addr, coreid);
-		bool islocal_3 = bj_addr_is_pure_local(ld_addr);
+		bool islocal_3 = ! bj_addr_has_id(ld_addr);
 		
 		BJH_CK(islocal == islocal_2);
 		BJH_CK(islocal == islocal_3);
