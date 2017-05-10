@@ -44,7 +44,6 @@ print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 
 void
 bj_host_init(){
-	e_mem_t & emem = bjh_glb_emem;
 	e_epiphany_t & dev = bjh_glb_dev;
 
 	e_platform_t platform;
@@ -75,11 +74,11 @@ bj_host_init(){
 	e_reset_system();
 	e_get_platform_info(&platform);
 
-	if (e_alloc(&emem, 0, lk_dat->extnl_ram_size)) {
+	if (e_alloc(&bjh_glb_emem, 0, lk_dat->extnl_ram_size)) {
 		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
-	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
+	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)bjh_glb_emem.base);
 
 	uint8_t* extnl_load_base = bjh_disp_to_pt(lk_dat->extnl_load_disp);
 	uint8_t* extnl_alloc_base = bjh_disp_to_pt(lk_dat->extnl_alloc_disp);
@@ -131,7 +130,6 @@ bj_host_init(){
 
 void
 bj_host_run(){
-	//e_mem_t & emem = bjh_glb_emem;
 	e_epiphany_t & dev = bjh_glb_dev;
 
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
@@ -281,23 +279,17 @@ bj_host_run(){
 
 void
 bj_host_finish(){
-	e_mem_t & emem = bjh_glb_emem;
 	e_epiphany_t & dev = bjh_glb_dev;
 
-	// Reset the workgroup
-	e_reset_group(&dev); // FAILS. Why?
+	e_reset_group(&dev); 
 	e_reset_system();
 	
-	// Close the workgroup
 	e_close(&dev);
 	
-	// Release the allocated buffer and finalize the
-	// e-platform connection.
-
 	destroy_mspace(bjh_glb_load_mspace);
 	destroy_mspace(bjh_glb_alloc_mspace);
 
-	e_free(&emem);
+	e_free(&bjh_glb_emem);
 	e_finalize();
 
 	//prt_host_aligns();

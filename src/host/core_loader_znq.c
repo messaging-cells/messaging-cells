@@ -232,15 +232,9 @@ out:
 	return status;
 }
 
-#define BJL_COREID(_addr) ((_addr) >> 20)
-static inline bool bjl_is_local(uint32_t addr)
-{
-	return BJL_COREID(addr) == 0;
-}
-
 static bool bjl_is_valid_addr(uint32_t addr)
 {
-	return bjl_is_local(addr)
+	return bj_addr_is_pure_local(addr)
 		|| e_is_addr_on_chip((void *) addr)
 		|| e_is_addr_in_emem(addr);
 }
@@ -264,7 +258,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 	const char *strtab;
 	bool       islocal, isonchip, isexternal;
 	int        ihdr;
-	unsigned  globrow, globcol;
+	//unsigned  globrow, globcol;
 	unsigned   coreid;
 	uintptr_t  dst;
 	/* TODO: Make src const (need fix in esim.h first) */
@@ -323,48 +317,41 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 			continue;
 		}
 
-		islocal = bjl_is_local(ld_addr);
-		isonchip = islocal ? true
-						   /* TODO: Don't cast to void */
-						   : e_is_addr_on_chip((void *) ((uintptr_t) ld_addr));
-		isexternal = false;
+		islocal = bj_addr_is_pure_local(ld_addr);
+		isonchip = bj_addr_in_sys(ld_addr);
+		isexternal = ((! islocal) && (! isonchip));
 
-		bjl_diag(L_D3) {
-			fprintf(BJ_STDERR, "%d. process_elf(): SECTION %s copying the data (%d bytes)",
+		bjl_diag(L_D3) { fprintf(BJ_STDERR, "%d. process_elf(): SECTION %s copying the data (%d bytes)",
 					ii, sect_nm, ld_src_sz); }
 
 		/* Address calculation */
 		char* dbg_case = "(undef)";
 		if (islocal) {
+			dst = ((uintptr_t) dev->core[row][col].mems.base) + ld_addr;
+
 			bjl_diag(L_D3) { dbg_case = "(local)"; 
 					fprintf(BJ_STDERR, "%d.(local) to core (%d,%d)\n", ii, row, col); }
-
-			// TODO: should this be p_paddr instead of p_vaddr?
-			dst = ((uintptr_t) dev->core[row][col].mems.base)
-				+ ld_addr;
 		} else if (isonchip) {
-			coreid = ld_addr >> 20;
+			coreid = bj_addr_get_core_id(ld_addr);
 
-			ee_get_coords_from_id(dev, coreid, &globrow, &globcol);
 			bj_core_co_t g_ro = bj_id_to_ro(coreid);
 			bj_core_co_t g_co = bj_id_to_co(coreid);
-			BJH_CK(g_ro == globrow);
-			BJH_CK(g_co == globcol);
+
+			dst = ((uintptr_t) dev->core[g_ro][g_co].mems.base) + (ld_addr & 0x000fffff);
 
 			bjl_diag(L_D3) { dbg_case = "(onchip)"; 
-				fprintf(BJ_STDERR, "%d.(onchip) to core (%d,%d)\n", ii, globrow, globcol); }
-			// TODO: should this be p_paddr instead of p_vaddr?
-			dst = ((uintptr_t) dev->core[globrow][globcol].mems.base) + (ld_addr & 0x000fffff);
+				fprintf(BJ_STDERR, "%d.(onchip) to core (%d,%d)\n", ii, g_ro, g_co); }
 		} else {
-			isexternal = true;
 			// If it is not on an eCore, it's in external memory.
+			isexternal = true;
+
 			dst = ld_addr - emem->ephy_base + (uintptr_t) emem->base;
+
 			bjl_diag(L_D3) { dbg_case = "(external)"; 
 				fprintf(BJ_STDERR,
 						"%d. process_elf(): (external) converting virtual (%p) to physical (%p)...\n", ii, 
 						(void*) ld_addr,
 						(void*) dst); }
-
 		}
 
 		/* Write */
@@ -387,17 +374,6 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 				(void*)ld_addr); 
 		}
 
-		/*if(isexternal){
-			if(pt_dst_end > pt_end_code){
-				bjl_diag(L_D3) {
-					fprintf(BJ_STDERR,
-							"%d.process_elf(): SKIP section %s virtual (%p) to physical (%p). SIZE=%u\n",
-							ii, sect_nm, (void*) ld_addr, (void*) dst, blk_sz); 
-				}
-				continue;	// Its data (an structure) NOT code.
-			}
-		}*/
-
 		if(BJH_LOAD_WITH_MEMCPY){
 			memcpy(pt_dst, pt_src, blk_sz);
 		} else {
@@ -405,8 +381,6 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 		}
 
 		bj_ck_memload(pt_dst, pt_src, blk_sz);	// LEAVE THIS. IT CAN FAIL !!!!
-
-		//memcpy((void *) dst, &src[ld_src_off], ld_src_sz);
 	}
 
 	return E_OK;

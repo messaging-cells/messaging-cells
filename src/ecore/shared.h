@@ -49,13 +49,13 @@ struct bj_aligned bj_sys_def {
 };
 typedef struct bj_sys_def bj_sys_sz_st;
 
-bj_sys_sz_st*
-bj_get_glb_sys_sz();
-
 #ifdef IS_CORE_CODE
 	extern bj_sys_sz_st 	bjk_system_sz;
 	#define BJK_GLB_SYS_SZ (&bjk_system_sz)
 #else
+	bj_sys_sz_st*
+	bj_get_glb_sys_sz();
+
 	#define BJK_GLB_SYS_SZ bj_get_glb_sys_sz()
 #endif
 
@@ -150,6 +150,9 @@ bj_addr_in_core(bj_addr_t addr, bj_core_id_t koid) {
 bool bj_inline_fn
 bj_addr_in_sys(bj_addr_t addr) {
 	bj_core_id_t addr_koid = bj_addr_get_core_id(addr);
+	if(addr_koid == 0){
+		return true;
+	}
 	bj_core_co_t xx = bj_id_to_xx(addr_koid);
 	bj_core_co_t yy = bj_id_to_yy(addr_koid);
 	return bj_xx_yy_in_sys(xx, yy);

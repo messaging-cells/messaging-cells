@@ -49,9 +49,9 @@ typedef uint16_t bj_size_t;
 #define bj_addr_is_global(addr) bj_addr_mask_id(addr)
 #define bj_addr_get_core_id(addr) ((bj_core_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
 #define bj_addr_with(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
-
-#define bjk_addr_is_local(addr) \
-	(! bj_addr_is_global(addr) || (bj_addr_get_core_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id))
+#define bj_addr_is_pure_local(addr) (! bj_addr_is_global(addr))
+#define bjk_addr_is_core_local(addr) (bj_addr_get_core_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id)
+#define bjk_addr_is_local(addr) (bj_addr_is_pure_local(addr) || bjk_addr_is_core_local(addr))
 
 #define bjk_is_core(row, col) \
 	((BJK_GLB_IN_CORE_SHD->the_core_ro == (row)) && (BJK_GLB_IN_CORE_SHD->the_core_co == (col)))

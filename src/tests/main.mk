@@ -55,6 +55,7 @@ SUBMAKEFILES := \
 	./dlmalloc_test/test_dlmalloc_emu.mk \
 	./dlmalloc_test/test_dlmalloc_znq.mk \
 	./modules/modules.mk \
+	./test_addr_conv/addr_conv.mk \
 
 
 default: all
