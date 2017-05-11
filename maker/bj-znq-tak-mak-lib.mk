@@ -1,5 +1,5 @@
 
-SRC_ECORE_DIR := $(SRC_DIR)/ecore
+SRC_ACTORS_DIR := $(SRC_DIR)/actors
 
 # =======================================
 
@@ -16,6 +16,6 @@ TGT_POSTMAKE := printf "====================================\nFinished building 
 
 SRC_CFLAGS := -Wall -std=gnu11 -g -O2 -Wstrict-prototypes $(DEF_FLAGS_1) $(DEF_FLAGS_2)
 
-SOURCES := $(SRC_ECORE_DIR)/tak_mak.cpp 
+SOURCES := $(SRC_ACTORS_DIR)/tak_mak.cpp 
 
 

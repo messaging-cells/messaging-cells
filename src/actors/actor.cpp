@@ -9,7 +9,7 @@
 // To FAKE std c++ lib initialization and destructions of global objects
 // DO NOT FORGET to call initializers explicitly.
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 
 	bj_c_decl int __cxa_atexit(void* obj, void (*destruc) (void*), void* dso_hndl) bj_external_code_ram;
 
@@ -23,7 +23,7 @@
 
 	void* __dso_handle = bj_null;
 
-#endif	//IS_EMU_CODE
+#endif	//BJ_IS_EMU_CODE
 
 //----------------------------------------------------------------------------
 
@@ -71,7 +71,7 @@ kernel::init_kernel(){
 
 bool
 bjk_ck_type_sizes(){
-	CORE_CODE(
+	EPH_CODE(
 	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(bj_addr_t)));
 	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(unsigned)));
 	BJK_CK2(ck_sz1, (sizeof(void*) == sizeof(uint32_t)));

@@ -21,7 +21,7 @@ bjk_page_miss_handler(void); // ivt_entry_page_miss
 void bj_opt_sz_fn bj_isr_fn 
 bjk_timer0_handler(void); // ivt_entry_timer0
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 
 	void bj_inline_fn
 	bjk_enable_all_irq() {
@@ -75,7 +75,7 @@ bjk_timer0_handler(void); // ivt_entry_timer0
 	bjk_global_irq_enable() {
 	}
 
-#endif	// IS_CORE_CODE
+#endif	// BJ_IS_EPH_CODE
 
 #ifdef __cplusplus
 }

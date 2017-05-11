@@ -14,7 +14,7 @@ bj_c_decl {
 #define bj_axis_bits	6
 #define bj_axis_mask	0x3f
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	typedef uint32_t bj_addr_t;
 #else
 	typedef uintptr_t bj_addr_t;

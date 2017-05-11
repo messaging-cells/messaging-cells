@@ -10,8 +10,8 @@ TGT_LINKER := $(CROSS_COMPILE)gcc
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
-SRC_CFLAGS := -DIS_ZNQ_CODE -Wall -std=gnu11 ${BJ_DBG_FLAG}
-SRC_CXXFLAGS := -DIS_ZNQ_CODE -Wall -std=c++14 ${BJ_DBG_FLAG}
+SRC_CFLAGS := -DBJ_IS_ZNQ_CODE -Wall -std=gnu11 ${BJ_DBG_FLAG}
+SRC_CXXFLAGS := -DBJ_IS_ZNQ_CODE -Wall -std=c++14 ${BJ_DBG_FLAG}
 
 SRC_INCDIRS := $(BJ_STD_INCDIRS)
 

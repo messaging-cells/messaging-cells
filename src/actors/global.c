@@ -10,7 +10,7 @@ void
 bjk_glb_init(void) {
 	// basic init
 	bjk_set_irq0_handler();
-	CORE_CODE(bj_add_lk_syms());
+	EPH_CODE(bj_add_lk_syms());
 
 	bjk_glb_sys_st* glb_dat = BJK_FIRST_GLB_SYS;
 	bj_memset((uint8_t*)glb_dat, 0, sizeof(bjk_glb_sys_st));

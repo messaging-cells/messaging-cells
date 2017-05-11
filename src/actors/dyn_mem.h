@@ -41,7 +41,7 @@ a64_realloc(uint8_t* ptr, umm_size_t num_bytes) bj_external_code_ram;
 bj_opt_sz_fn void 
 a64_free(uint8_t* ptr) bj_external_code_ram;
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	#define bj_malloc32(nam, sz)	(nam *)(a32_malloc(sz * sizeof(nam)))
 	#define bj_realloc32(nam, ptr, sz)	(nam *)(a32_realloc((ptr), (sz * sizeof(nam))))
 	#define bj_free32(ptr)	a32_free(ptr)
@@ -51,7 +51,7 @@ a64_free(uint8_t* ptr) bj_external_code_ram;
 	#define bj_free64(ptr)	a64_free(ptr)
 #endif
 
-#ifdef IS_ZNQ_CODE
+#ifdef BJ_IS_ZNQ_CODE
 	#include "dlmalloc.h"
 	extern mspace bjh_glb_alloc_mspace;
 
@@ -64,7 +64,7 @@ a64_free(uint8_t* ptr) bj_external_code_ram;
 	#define bj_free64(ptr)	mspace_free(bjh_glb_alloc_mspace, ptr)
 #endif
 
-#ifdef IS_EMU_CODE
+#ifdef BJ_IS_EMU_CODE
 	uint8_t* 
 	bj_malloc_impl(umm_size_t num_bytes);
 

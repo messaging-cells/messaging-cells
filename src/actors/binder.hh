@@ -21,7 +21,7 @@ binder class and related.
 
 class binder;
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	typedef uint16_t bjk_sptr_t;
 	#define bjk_pt_to_binderpt(pt) ((binder*)(bj_addr_t)(pt))
 	#define bjk_binderpt_to_pt(bptr) ((intptr_t)(bptr))

@@ -40,7 +40,7 @@ BJ_STD_ZNQ_LDLIBS := -lbjz-actor -lbjz-tak-mak -lbjz-dlmalloc -le-hal -lm
 BJ_STD_EMU_LDLIBS := -lbjm-actor -lbjm-tak-mak -lbjm-dlmalloc -lpthread
 BJ_STD_EPH_LDLIBS := -lbjk-actor -lbjk-tak-mak 
 
-BJ_STD_INCDIRS := ../../ecore ../../host ${BJ_ETOOLS}/host/include
+BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
 
 #	./tak_mak_test/test_tak_mak.mk \
 #	./logs_test/logs_test.mk \

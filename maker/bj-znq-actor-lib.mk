@@ -5,7 +5,7 @@ H_LIB_1=${ETOOLS}/host/lib
 H_INC_1=${ETOOLS}/host/include
 
 SRC_HOST_DIR := $(SRC_DIR)/host
-SRC_ECORE_DIR := $(SRC_DIR)/ecore
+SRC_ACTORS_DIR := $(SRC_DIR)/actors
 
 DBG_FLAG := -DFULL_DEBUG
 # DBG_FLAG := 

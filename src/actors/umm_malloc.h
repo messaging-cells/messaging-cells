@@ -60,7 +60,7 @@ umm_memmove(uint8_t* dest, const uint8_t* src, umm_size_t sz){
 
 #define UMM_MAX_HEAP_SIZE (UMM_MAX_NUM_BLOCKS * sizeof(umm_block))
 
-#ifdef IS_EMU_CODE
+#ifdef BJ_IS_EMU_CODE
 	#define UMM_MALLOC_CFG__HEAP_SIZE 131064
 #else
 	extern bj_addr_t LD_CORE_ALLOC_ORIG;
@@ -192,7 +192,7 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 
 extern umm_idx_t umm_numblocks;
 
-#ifdef IS_EMU_CODE
+#ifdef BJ_IS_EMU_CODE
 	umm_block*
 	umm_get_heap();	// must have UMM_HEAP_NUM_BLOCKS in size
 

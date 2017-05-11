@@ -23,7 +23,7 @@ bj_c_decl {
 
 typedef uint8_t bj_bool_t;
 
-#ifdef IS_EMU_CODE
+#ifdef BJ_IS_EMU_CODE
 	#include "shared_emu.h"
 #else
 	#include "shared_eph.h"
@@ -49,7 +49,7 @@ struct bj_aligned bj_sys_def {
 };
 typedef struct bj_sys_def bj_sys_sz_st;
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	extern bj_sys_sz_st 	bjk_system_sz;
 	#define BJK_GLB_SYS_SZ (&bjk_system_sz)
 #else
@@ -129,7 +129,7 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 //======================================================================
 // address functions 2
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 bj_core_id_t bj_inline_fn
 bjk_get_core_id() {
 	bj_core_id_t koid = 0x0; 
@@ -350,7 +350,7 @@ void
 bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms);
 
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	#define BJ_EXTERNAL_RAM_LOAD_DATA bjk_external_ram_load_data
 #else
 	#define BJ_EXTERNAL_RAM_LOAD_DATA bjh_external_ram_load_data

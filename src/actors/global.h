@@ -26,7 +26,7 @@ struct bj_aligned bjk_glb_sys_def {
 	bj_in_core_st 	in_core_shd;
 	uint8_t 		dbg_out_str[BJ_MAX_STR_SZ];
 
-	CORE_CODE(
+	EPH_CODE(
 		void* 		bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
 		uint16_t 	bjk_trace_err;
 	)
@@ -37,9 +37,9 @@ struct bj_aligned bjk_glb_sys_def {
 };
 typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 
-//if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
+//if defined(BJ_IS_EPH_CODE) && !defined(IS_EMU_COD) 
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	bjk_glb_sys_st*
 	bjk_get_first_glb_sys() bj_external_code_ram;
 
@@ -61,17 +61,17 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 	#define BJK_GLB_IN_CORE_SHD bjk_get_glb_in_core_shd()
 #endif
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	extern bj_off_sys_st bjk_external_data_obj;
 	#define BJK_PT_EXTERNAL_DATA (&bjk_external_data_obj)
 #endif
 
-#ifdef IS_ZNQ_CODE
+#ifdef BJ_IS_ZNQ_CODE
 	extern bj_off_sys_st* bjz_pt_external_data_obj;
 	#define BJK_PT_EXTERNAL_DATA bjz_pt_external_data_obj
 #endif
 
-#ifdef IS_EMU_CODE
+#ifdef BJ_IS_EMU_CODE
 	extern bj_off_sys_st bjm_external_data_obj;
 	#define BJK_PT_EXTERNAL_DATA (&bjm_external_data_obj)
 #endif
@@ -97,7 +97,7 @@ bjk_glb_init() bj_external_code_ram;
 void 
 bjk_glb_finish() bj_external_code_ram;
 
-#ifndef IS_EMU_CODE
+#ifndef BJ_IS_EMU_CODE
 void 
 abort(void) bj_external_code_ram;		// Needed when -Os flag is set
 #endif
@@ -127,17 +127,17 @@ bjk_set_irq0_handler() bj_external_code_ram;
 
 // end_of_macro
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	#define BJK_CK(nam, cond) BJK_INCORE_ASSERT(nam, cond)
 	#define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
 #endif
 
-#ifdef IS_EMU_CODE
+#ifdef BJ_IS_EMU_CODE
 	#define BJK_CK(nam, cond) EMU_CK(cond)
 	#define BJK_CK2(nam, cond) EMU_CK(cond)
 #endif
 
-#ifdef IS_ZNQ_CODE
+#ifdef BJ_IS_ZNQ_CODE
 	#include "booter.h"
 	#define BJK_CK(nam, cond) BJH_CK(cond)
 	#define BJK_CK2(nam, cond) BJH_CK(cond)
@@ -173,7 +173,7 @@ void test_link_shd_code() bj_external_code_ram;
 
 void ck_shd_code();
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	bj_inline_fn uint16_t*
 	bjk_get_stack_pointer() {
 		uint16_t* sp_val = 0;

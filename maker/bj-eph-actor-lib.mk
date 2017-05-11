@@ -7,7 +7,7 @@ DIR_ELIBS_2 :=
 E_LDF=bj-ld-script.ldf
 # ELDF=${ESDK}/bsps/current/fast.ldf
 
-SRC_ECORE_DIR := $(SRC_DIR)/ecore
+SRC_ACTORS_DIR := $(SRC_DIR)/actors
 
 DBG_FLAG := -DFULL_DEBUG
 # DBG_FLAG := 
@@ -44,39 +44,39 @@ TGT_CXX := e-g++
 
 TGT_LINKER := e-ld
 
-SRC_CFLAGS := -DIS_CORE_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
-SRC_CXXFLAGS := -DIS_CORE_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
+SRC_CFLAGS := -DBJ_IS_EPH_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
+SRC_CXXFLAGS := -DBJ_IS_EPH_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIONS}
 
-SRC_INCDIRS := $(SRC_ECORE_DIR) 
+SRC_INCDIRS := $(SRC_ACTORS_DIR) 
 
-#	$(SRC_ECORE_DIR)/test_logs.c \
-#	$(SRC_ECORE_DIR)/umm_malloc.c \
-#	$(SRC_ECORE_DIR)/log.c \
-#	$(SRC_ECORE_DIR)/dyn_mem.cpp \
-#	$(SRC_ECORE_DIR)/actor.cpp \
-#	$(SRC_ECORE_DIR)/std2.c \
-#	$(SRC_ECORE_DIR)/a_shd_code_error.cpp \
-#	$(SRC_ECORE_DIR)/call_bj_cores_main_eph.c \
+#	$(SRC_ACTORS_DIR)/test_logs.c \
+#	$(SRC_ACTORS_DIR)/umm_malloc.c \
+#	$(SRC_ACTORS_DIR)/log.c \
+#	$(SRC_ACTORS_DIR)/dyn_mem.cpp \
+#	$(SRC_ACTORS_DIR)/actor.cpp \
+#	$(SRC_ACTORS_DIR)/std2.c \
+#	$(SRC_ACTORS_DIR)/a_shd_code_error.cpp \
+#	$(SRC_ACTORS_DIR)/call_bj_cores_main_eph.c \
 
 
 SOURCES := \
-	$(SRC_ECORE_DIR)/interruptions.c \
-	$(SRC_ECORE_DIR)/umm_malloc.c \
-	$(SRC_ECORE_DIR)/umm_malloc_eph.c \
-	$(SRC_ECORE_DIR)/link_syms_struct_eph.c \
-	$(SRC_ECORE_DIR)/log.c \
-	$(SRC_ECORE_DIR)/shared.c \
-	$(SRC_ECORE_DIR)/shared_eph.c \
-	$(SRC_ECORE_DIR)/err_msgs.c \
-	$(SRC_ECORE_DIR)/global.c \
-	$(SRC_ECORE_DIR)/global_eph.c \
-	$(SRC_ECORE_DIR)/rr_array.c \
-	$(SRC_ECORE_DIR)/trace_eph.c \
-	$(SRC_ECORE_DIR)/e_start.s \
-	$(SRC_ECORE_DIR)/dyn_mem.c \
-	$(SRC_ECORE_DIR)/call_bj_cores_main_eph.c \
-	$(SRC_ECORE_DIR)/binder.cpp \
-	$(SRC_ECORE_DIR)/actor_eph.cpp \
-	$(SRC_ECORE_DIR)/actor.cpp \
+	$(SRC_ACTORS_DIR)/interruptions.c \
+	$(SRC_ACTORS_DIR)/umm_malloc.c \
+	$(SRC_ACTORS_DIR)/umm_malloc_eph.c \
+	$(SRC_ACTORS_DIR)/link_syms_struct_eph.c \
+	$(SRC_ACTORS_DIR)/log.c \
+	$(SRC_ACTORS_DIR)/shared.c \
+	$(SRC_ACTORS_DIR)/shared_eph.c \
+	$(SRC_ACTORS_DIR)/err_msgs.c \
+	$(SRC_ACTORS_DIR)/global.c \
+	$(SRC_ACTORS_DIR)/global_eph.c \
+	$(SRC_ACTORS_DIR)/rr_array.c \
+	$(SRC_ACTORS_DIR)/trace_eph.c \
+	$(SRC_ACTORS_DIR)/e_start.s \
+	$(SRC_ACTORS_DIR)/dyn_mem.c \
+	$(SRC_ACTORS_DIR)/call_bj_cores_main_eph.c \
+	$(SRC_ACTORS_DIR)/binder.cpp \
+	$(SRC_ACTORS_DIR)/actor_eph.cpp \
+	$(SRC_ACTORS_DIR)/actor.cpp \
 
 

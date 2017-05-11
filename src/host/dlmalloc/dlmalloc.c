@@ -1503,7 +1503,7 @@ static FORCEINLINE int win32munmap(void* ptr, size_t size) {
 #define CALL_MORECORE(S)     MFAIL
 #endif /* HAVE_MORECORE */
 
-/* mstate bit set if continguous morecore disabled or failed */
+/* mstate bit set if continguous MORECORE disabled or failed */
 #define USE_NONCONTIGUOUS_BIT (4U)
 
 /* segment bit set in create_mspace_with_base */
@@ -1515,7 +1515,7 @@ static FORCEINLINE int win32munmap(void* ptr, size_t size) {
 /*
   When locks are defined, there are up to two global locks:
 
-  * If HAVE_MORECORE, morecore_mutex protects sequences of calls to
+  * If HAVE_MORECORE, morcore_mutex protects sequences of calls to
     MORECORE.  In many cases sys_alloc requires two calls, that should
     not be interleaved with calls by other threads.  This does not
     protect against direct calls to MORECORE by other threads not
@@ -1612,7 +1612,7 @@ static FORCEINLINE int pthread_try_lock (MLOCK_T *sl) {
 
 static MLOCK_T magic_init_mutex = {0, 0, 0 };
 #if HAVE_MORECORE
-static MLOCK_T morecore_mutex = {0, 0, 0 };
+static MLOCK_T morcore_mutex = {0, 0, 0 };
 #endif /* HAVE_MORECORE */
 
 #else /* WIN32 */
@@ -1672,7 +1672,7 @@ static FORCEINLINE int win32_try_lock (MLOCK_T *sl) {
 
 static MLOCK_T magic_init_mutex = {0, 0 };
 #if HAVE_MORECORE
-static MLOCK_T morecore_mutex = {0, 0 };
+static MLOCK_T morcore_mutex = {0, 0 };
 #endif /* HAVE_MORECORE */
 
 #endif /* WIN32 */
@@ -1735,7 +1735,7 @@ static FORCEINLINE int pthread_islocked (MLOCK_T *sl) {
 
 static MLOCK_T magic_init_mutex = {0, PTHREAD_MUTEX_INITIALIZER };
 #if HAVE_MORECORE
-static MLOCK_T morecore_mutex = {0, PTHREAD_MUTEX_INITIALIZER };
+static MLOCK_T morcore_mutex = {0, PTHREAD_MUTEX_INITIALIZER };
 #endif /* HAVE_MORECORE */
 
 #else /* WIN32 */
@@ -1750,7 +1750,7 @@ static MLOCK_T morecore_mutex = {0, PTHREAD_MUTEX_INITIALIZER };
 #define NULL_LOCK_INITIALIZER
 static MLOCK_T magic_init_mutex;
 #if HAVE_MORECORE
-static MLOCK_T morecore_mutex;
+static MLOCK_T morcore_mutex;
 #endif /* HAVE_MORECORE */
 #endif /* WIN32 */
 #endif /* USE_SPIN_LOCKS */
@@ -1769,7 +1769,7 @@ static MLOCK_T morecore_mutex;
 
 static MLOCK_T magic_init_mutex = NULL_LOCK_INITIALIZER;
 #if HAVE_MORECORE
-static MLOCK_T morecore_mutex = NULL_LOCK_INITIALIZER;
+static MLOCK_T morcore_mutex = NULL_LOCK_INITIALIZER;
 #endif /* HAVE_MORECORE */
 #endif /* USE_LOCKS > 1 */
 
@@ -1784,8 +1784,8 @@ static MLOCK_T morecore_mutex = NULL_LOCK_INITIALIZER;
 #endif /* USE_LOCKS */
 
 #if USE_LOCKS && HAVE_MORECORE
-#define ACQUIRE_MORECORE_LOCK()    ACQUIRE_LOCK(&morecore_mutex);
-#define RELEASE_MORECORE_LOCK()    RELEASE_LOCK(&morecore_mutex);
+#define ACQUIRE_MORECORE_LOCK()    ACQUIRE_LOCK(&morcore_mutex);
+#define RELEASE_MORECORE_LOCK()    RELEASE_LOCK(&morcore_mutex);
 #else /* USE_LOCKS && HAVE_MORECORE */
 #define ACQUIRE_MORECORE_LOCK()
 #define RELEASE_MORECORE_LOCK()

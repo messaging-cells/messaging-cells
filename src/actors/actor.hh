@@ -142,7 +142,7 @@ enum bjk_signal_t : uint8_t {
 
 //if defined(XXX) && !defined(YYY) 
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	kernel*
 	bjk_get_first_kernel() bj_external_code_ram;
 
@@ -151,7 +151,7 @@ enum bjk_signal_t : uint8_t {
 	#define BJK_KERNEL (bjk_PT_THE_KERNEL)
 #endif
 
-#ifdef IS_ZNQ_CODE
+#ifdef BJ_IS_ZNQ_CODE
 	kernel*
 	bjh_get_first_kernel();
 
@@ -160,7 +160,7 @@ enum bjk_signal_t : uint8_t {
 	#define BJK_KERNEL (bjh_PT_THE_KERNEL)
 #endif
 
-#ifdef IS_EMU_CODE
+#ifdef BJ_IS_EMU_CODE
 	#define BJK_FIRST_KERNEL kernel::get_sys()
 	#define BJK_KERNEL kernel::get_sys()
 #endif

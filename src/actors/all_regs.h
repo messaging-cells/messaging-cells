@@ -10,7 +10,7 @@
 bj_c_decl {
 #endif
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 
 // eCore General Purpose Registers
 typedef enum {
@@ -146,7 +146,7 @@ typedef enum {
 } bj_chip_reg_id_t;
 
 
-#endif //IS_CORE_CODE
+#endif //BJ_IS_EPH_CODE
 
 #ifdef __cplusplus
 }

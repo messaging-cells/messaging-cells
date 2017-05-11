@@ -23,7 +23,7 @@ class binder;
 
 extern const uint8_t* BINDER_BASE_POINTER;
 
-#ifdef IS_CORE_CODE
+#ifdef BJ_IS_EPH_CODE
 	//typedef kptr<binder, BINDER_BASE_POINTER> bjk_pt_t;
 	typedef uint16_t bjk_pt_t;
 	#define bjk_pt_to_binderpt(pt) ((binder*)(bj_addr_t)(pt))
