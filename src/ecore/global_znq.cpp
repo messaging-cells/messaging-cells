@@ -1,9 +1,12 @@
 
 #include <stdio.h>
-
 #include "global.h"
-
 #include "booter.h"
+
+//======================================================================
+// off chip shared memory
+
+bj_off_sys_st* bjz_pt_external_data_obj = bj_null;
 
 //=====================================================================
 // global funcs

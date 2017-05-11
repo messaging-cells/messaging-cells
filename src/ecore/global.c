@@ -2,11 +2,6 @@
 #include "err_msgs.h"
 #include "global.h"
 
-//======================================================================
-// off chip shared memory
-
-bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM bj_external_data_ram;
-
 
 //======================================================================
 // global funcs
@@ -26,16 +21,16 @@ bjk_glb_init(void) {
 	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 	bj_init_glb_sys_sz(sys_sz);
 	
-	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
+	if(BJK_PT_EXTERNAL_DATA->magic_id != BJ_MAGIC_ID){
 		bjk_abort((bj_addr_t)bjk_glb_init, err_6);
 	}
 
-	BJK_OFF_CHIP_SHARED_MEM.pt_this_from_eph = &BJK_OFF_CHIP_SHARED_MEM;	// should be same for all cores
+	BJK_PT_EXTERNAL_DATA->pt_this_from_eph = BJK_PT_EXTERNAL_DATA;	// should be same for all cores
 	
 	// glb_sys_sz init
 	bj_core_id_t koid = bjk_get_core_id();
 	bj_memset((uint8_t*)sys_sz, 0, sizeof(bj_sys_sz_st));
-	*sys_sz = BJK_OFF_CHIP_SHARED_MEM.wrk_sys;
+	*sys_sz = BJK_PT_EXTERNAL_DATA->wrk_sys;
 
 	// num_core init
 	bj_core_nn_t num_core = bj_id_to_nn(koid);
@@ -53,12 +48,12 @@ bjk_glb_init(void) {
 	in_shd->the_core_nn = num_core;
 
 	if(num_core < bj_out_num_cores){
-		glb_dat->off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
-		if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
+		glb_dat->off_core_pt = &((BJK_PT_EXTERNAL_DATA->sys_cores)[num_core]);
+		if((BJK_PT_EXTERNAL_DATA->sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
 			bjk_abort((bj_addr_t)bjk_glb_init, err_7);
 		}
 
-		bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
+		bj_core_out_st* out_st = &((BJK_PT_EXTERNAL_DATA->sys_out_buffs)[num_core]);
 
 		glb_dat->write_rrarray = &(out_st->wr_arr);
 		bj_rr_init(glb_dat->write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);

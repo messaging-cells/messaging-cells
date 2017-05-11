@@ -325,10 +325,6 @@ bj_isprint(char cc){
 
 #define bjk_has_off_core (BJK_GLB_SYS->off_core_pt != bj_null)
 
-#ifdef IS_EMU_CODE
-	extern bj_off_sys_st BJK_OFF_CHIP_SHARED_MEM;
-#endif
-
 struct bj_aligned bj_link_syms_data_def { 
 	bj_addr_t extnl_ram_size;
 	bj_addr_t extnl_code_size;

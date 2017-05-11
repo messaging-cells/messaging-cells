@@ -37,7 +37,9 @@ struct bj_aligned bjk_glb_sys_def {
 };
 typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 
-#if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
+//if defined(IS_CORE_CODE) && !defined(IS_EMU_COD) 
+
+#ifdef IS_CORE_CODE
 	bjk_glb_sys_st*
 	bjk_get_first_glb_sys() bj_external_code_ram;
 
@@ -57,6 +59,21 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 	#define BJK_FIRST_GLB_SYS bjk_get_glb_sys()
 	#define BJK_GLB_SYS bjk_get_glb_sys()
 	#define BJK_GLB_IN_CORE_SHD bjk_get_glb_in_core_shd()
+#endif
+
+#ifdef IS_CORE_CODE
+	extern bj_off_sys_st bjk_external_data_obj;
+	#define BJK_PT_EXTERNAL_DATA (&bjk_external_data_obj)
+#endif
+
+#ifdef IS_ZNQ_CODE
+	extern bj_off_sys_st* bjz_pt_external_data_obj;
+	#define BJK_PT_EXTERNAL_DATA bjz_pt_external_data_obj
+#endif
+
+#ifdef IS_EMU_CODE
+	extern bj_off_sys_st bjm_external_data_obj;
+	#define BJK_PT_EXTERNAL_DATA (&bjm_external_data_obj)
 #endif
 
 

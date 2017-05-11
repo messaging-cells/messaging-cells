@@ -4,6 +4,11 @@
 #include "global.h"
 #include "dyn_mem.h"
 
+//======================================================================
+// off chip shared memory
+
+bj_off_sys_st bjk_external_data_obj bj_external_data_ram;
+
 //=====================================================================
 // global data
 

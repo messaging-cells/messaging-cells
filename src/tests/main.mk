@@ -49,6 +49,8 @@ BJ_STD_INCDIRS := ../../ecore ../../host ${BJ_ETOOLS}/host/include
 #	./dlmalloc_test/test_dlmalloc_znq.mk \
 #	./modules/modules.mk \
 #	./test_addr_conv/addr_conv.mk \
+#	./znq_tests/znq_hello.mk \
+#	./znq_tests/znq_backtrace.mk \
 
 SUBMAKEFILES := \
 	./nil_host/nil_host.mk \
@@ -56,6 +58,7 @@ SUBMAKEFILES := \
 	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_emu.mk \
 	./min_host/min_host.mk \
+
 
 
 default: all

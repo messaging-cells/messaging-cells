@@ -4,6 +4,11 @@
 #include "thread_emu.hh"
 #include "booter.h"
 
+//======================================================================
+// off chip shared memory
+
+bj_off_sys_st bjm_external_data_obj;
+
 //=====================================================================
 // global funcs
 

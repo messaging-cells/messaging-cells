@@ -80,6 +80,8 @@ bj_host_init(){
 
 	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)bjh_glb_emem.base);
 
+	bjz_pt_external_data_obj = (bj_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_data_disp);
+
 	uint8_t* extnl_load_base = bjh_disp_to_pt(lk_dat->extnl_load_disp);
 	uint8_t* extnl_alloc_base = bjh_disp_to_pt(lk_dat->extnl_alloc_disp);
 	
@@ -93,7 +95,7 @@ bj_host_init(){
 	bj_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
 	bjh_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
-	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_data_disp);
+	bj_off_sys_st* pt_shd_data = bjz_pt_external_data_obj;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
@@ -133,7 +135,7 @@ bj_host_run(){
 	e_epiphany_t & dev = bjh_glb_dev;
 
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
-	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_data_disp);
+	bj_off_sys_st* pt_shd_data = bjz_pt_external_data_obj;
 
 	bj_core_co_t row, col, max_row, max_col;
 	bj_core_nn_t tot_cores;
