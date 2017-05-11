@@ -1,4 +1,6 @@
 
+#include <stdio.h>
+
 #include "global.h"
 
 #include "booter.h"
@@ -9,8 +11,10 @@
 bjk_glb_sys_st	bjh_glb_sys_data;
 
 void 
-bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
-	bjh_abort_func(err, "ABORTED HOST THREAD \n");
+bjk_abort(bj_addr_t err, char* msg) {
+	char full_msg[200];
+	snprintf(full_msg, 200, "ABORTED_ZNQ_HOST_BJ_SYS. %s\n", msg);
+	bjh_abort_func(err, full_msg);
 }
 
 bjk_glb_sys_st*

@@ -45,6 +45,18 @@ extern uint8_t* BJH_EXTERNAL_RAM_BASE_PT;
 extern e_mem_t bjh_glb_emem;
 extern e_epiphany_t bjh_glb_dev;
 
+#define bjh_min_shd_eph_addr ((bj_addr_t) bjh_glb_emem.ephy_base)
+#define bjh_max_shd_eph_addr ((bj_addr_t) (bjh_glb_emem.ephy_base + BJ_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
+#define bjh_min_shd_znq_addr ((bj_addr_t) bjh_glb_emem.base)
+#define bjh_max_shd_znq_addr ((bj_addr_t) (bjh_glb_emem.base + BJ_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
+#define bjh_znq_addr_in_shd_ram(znq_addr) ((bjh_min_shd_znq_addr <= znq_addr) && (znq_addr < bjh_max_shd_znq_addr))
+
+bj_addr_t
+bj_znq_addr_to_eph_addr(bj_addr_t znq_addr);
+
+bj_addr_t
+bj_eph_addr_to_znq_addr(bj_addr_t eph_addr);
+
 
 #define bjh_disp_to_pt(disp) (BJH_EXTERNAL_RAM_BASE_PT + disp)
 

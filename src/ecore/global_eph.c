@@ -1,5 +1,6 @@
 
 #include "interruptions.h"
+#include "err_msgs.h"
 #include "global.h"
 #include "dyn_mem.h"
 
@@ -20,7 +21,7 @@ bjk_get_first_glb_sys(){
 void
 abort(){	// Needed when optimizing for size
 	BJK_CK2(ck2_abort, 0);
-	bjk_abort((bj_addr_t)abort, 0, bj_null);
+	bjk_abort((bj_addr_t)abort, err_5);
 	while(1);
 }
 
@@ -31,8 +32,10 @@ bjk_set_irq0_handler(){
 }
 
 void 
-bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
-	if((trace == bj_null) && (sz_trace >= 0)){
+bjk_abort(bj_addr_t err, char* msg) {
+	int16_t sz_trace = -1;
+	void** trace = bj_null;
+	if(msg != bj_null){
 		sz_trace = BJ_MAX_CALL_STACK_SZ;
 		trace = BJK_GLB_SYS->bjk_dbg_call_stack_trace;
 	}
@@ -53,5 +56,23 @@ bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
 	bj_asm("trap 0x3");
 	bj_asm("movfs r0, pc");
 	bj_asm("jalr r0");
+}
+
+void
+bj_host_init(){
+	// a core must never call this
+	bjk_abort((bj_addr_t)bj_host_init, err_2);
+}
+
+void
+bj_host_run(){
+	// a core must never call this
+	bjk_abort((bj_addr_t)bj_host_run, err_3);
+}
+
+void
+bj_host_finish(){
+	// a core must never call this
+	bjk_abort((bj_addr_t)bj_host_finish, err_4);
 }
 

@@ -27,6 +27,7 @@ SOURCES := \
 	$(SRC_ECORE_DIR)/log.c \
 	$(SRC_ECORE_DIR)/shared.c \
 	$(SRC_ECORE_DIR)/shared_emu.cpp \
+	$(SRC_ECORE_DIR)/err_msgs.c \
 	$(SRC_ECORE_DIR)/global.c \
 	$(SRC_ECORE_DIR)/global_emu.cpp \
 	$(SRC_ECORE_DIR)/rr_array.c \

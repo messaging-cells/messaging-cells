@@ -42,20 +42,20 @@ BJ_STD_EPH_LDLIBS := -lbjk-actor -lbjk-tak-mak
 
 BJ_STD_INCDIRS := ../../ecore ../../host ${BJ_ETOOLS}/host/include
 
-#	../../maker/main.mk \
+#	./tak_mak_test/test_tak_mak.mk \
+#	./logs_test/logs_test.mk \
+#	./eph_dev_driver_bug/eph_dev_driver_bug.mk \
+#	./dlmalloc_test/test_dlmalloc_emu.mk \
+#	./dlmalloc_test/test_dlmalloc_znq.mk \
+#	./modules/modules.mk \
+#	./test_addr_conv/addr_conv.mk \
 
 SUBMAKEFILES := \
 	./nil_host/nil_host.mk \
 	./hello_world/hello_world.mk \
 	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_emu.mk \
-	./tak_mak_test/test_tak_mak.mk \
-	./logs_test/logs_test.mk \
-	./loader_bug/loader_bug.mk \
-	./dlmalloc_test/test_dlmalloc_emu.mk \
-	./dlmalloc_test/test_dlmalloc_znq.mk \
-	./modules/modules.mk \
-	./test_addr_conv/addr_conv.mk \
+	./min_host/min_host.mk \
 
 
 default: all

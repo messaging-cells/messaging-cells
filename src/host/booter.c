@@ -23,7 +23,7 @@ bool BJH_LOAD_WITH_MEMCPY = false;
 
 void 
 bjh_abort_func(long val, const char* msg){
-	fprintf(stderr, "\nABORTING! %s\n", msg); 
+	fprintf(stderr, "\nABORTING! ERR=%ld %s\n", val, msg);
 	exit(val);
 }
 

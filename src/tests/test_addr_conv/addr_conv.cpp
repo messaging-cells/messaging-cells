@@ -48,7 +48,7 @@ bj_host_main(int argc, char *argv[])
 	if(lk_dat->extnl_ram_orig == 0) {
 		printf("ERROR: Can't read external memory location from '%s'\n", elf_path);
 		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", elf_path);
-		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Bad ELF\n");
+		bjh_abort_func(301, "301. ERROR: Bad ELF\n");
 	}
 
 	// sys init
@@ -58,7 +58,7 @@ bj_host_main(int argc, char *argv[])
 	e_get_platform_info(&platform);
 
 	if (e_alloc(&emem, 0, lk_dat->extnl_ram_size)) {
-		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Can't allocate external memory buffer!\n\n");
+		bjh_abort_func(302, "302. ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
 	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
@@ -180,39 +180,4 @@ bj_host_main(int argc, char *argv[])
 	return 0;
 }
 
-
-/*
-
-		if (islocal) {
-			dst = ((uintptr_t) dev->core[row][col].mems.base) + ld_addr;
-
-			bjl_diag(L_D3) { dbg_case = "(local)"; 
-					fprintf(BJ_STDERR, "%d.(local) to core (%d,%d)\n", ii, row, col); }
-		} else if (isonchip) {
-			coreid = ld_addr >> 20;
-
-			ee_get_coords_from_id(dev, coreid, &globrow, &globcol);
-			bj_core_co_t g_ro = bj_id_to_ro(coreid);
-			bj_core_co_t g_co = bj_id_to_co(coreid);
-			BJH_CK(g_ro == globrow);
-			BJH_CK(g_co == globcol);
-
-			dst = ((uintptr_t) dev->core[globrow][globcol].mems.base) + (ld_addr & 0x000fffff);
-
-			bjl_diag(L_D3) { dbg_case = "(onchip)"; 
-				fprintf(BJ_STDERR, "%d.(onchip) to core (%d,%d)\n", ii, globrow, globcol); }
-		} else {
-			// If it is not on an eCore, it's in external memory.
-			isexternal = true;
-
-			dst = ld_addr - emem->ephy_base + (uintptr_t) emem->base;
-
-			bjl_diag(L_D3) { dbg_case = "(external)"; 
-				fprintf(BJ_STDERR,
-						"%d. process_elf(): (external) converting virtual (%p) to physical (%p)...\n", ii, 
-						(void*) ld_addr,
-						(void*) dst); }
-		}
-
-*/
 

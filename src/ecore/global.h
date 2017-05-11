@@ -5,6 +5,7 @@
 #define BJ_GLOBAL_H
 
 #include "debug.h"
+#include "err_msgs.h"
 #include "shared.h"
 #include "trace.h"
 
@@ -63,8 +64,8 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 // global funcs
 
 void 
-bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) bj_external_code_ram;
-	
+bjk_abort(bj_addr_t err, char* msg) bj_external_code_ram;
+
 void bj_inline_fn
 bjk_set_finished(uint8_t val) {
 	bj_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt; 
@@ -92,47 +93,6 @@ bjk_set_irq0_handler() bj_external_code_ram;
 //======================================================================
 // bj_asserts
 
-#define BJK_OFFCHIP_ASSERT(nam, sec, cond) \
-	BJ_DBG( \
-	{ \
-		bj_asm( \
-			"gid \n\t" \
-			"mov r62, lr \n\t" \
-			"mov r61, %low(" #nam ") \n\t" \
-			"movt r61, %high(" #nam ") \n\t" \
-			"jalr r61 \n\t" \
-			".section " #sec " \n\t" \
-			".balign 4 \n\t" \
-			".global " #nam " \n" \
-			#nam ": \n\t" \
-		); \
-		if(! (cond)){ \
-			bj_addr_t nm_addr; \
-			bj_asm( \
-				"mov r61, %low(" #nam ") \n\t" \
-				"movt r61, %high(" #nam ") \n\t" \
-			); \
-			bj_asm("mov %0, r61" : "=r" (nm_addr)); \
-			bjk_abort(nm_addr, 0, bj_null); \
-		} \
-		bj_asm( \
-			"mov r61, %low(end_" #nam ") \n\t" \
-			"movt r61, %high(end_" #nam ") \n\t" \
-			"jalr r61 \n\t" \
-			"trap 0x3 \n\t" \
-			"rts \n\t" \
-			".previous \n\t" \
-			".balign 4 \n\t" \
-			".global end_" #nam " \n" \
-			"end_" #nam ": \n\t" \
-			"mov lr, r62 \n\t" \
-			"gie \n\t" \
-		); \
-	} \
-	) \
-	
-// end_of_macro
-
 #define BJK_INCORE_ASSERT(nam, cond) \
 	BJ_DBG( \
 	if(! (cond)){ \
@@ -144,13 +104,11 @@ bjk_set_irq0_handler() bj_external_code_ram;
 			"movt r61, %high(" #nam ") \n\t" \
 		); \
 		bj_asm("mov %0, r61" : "=r" (nm_addr)); \
-		bjk_abort(nm_addr, 0, bj_null); \
+		bjk_abort(nm_addr, err_11); \
 	} \
 	) \
 
 // end_of_macro
-
-//define BJK_CK(nam, cond) BJK_OFFCHIP_ASSERT(nam, external_code_ram, cond)
 
 #ifdef IS_CORE_CODE
 	#define BJK_CK(nam, cond) BJK_INCORE_ASSERT(nam, cond)
@@ -218,6 +176,10 @@ void ck_shd_code();
 #else
 	#define BJK_UPDATE_MIN_SP() 
 #endif
+
+void bj_host_init() bj_external_code_ram;
+void bj_host_run() bj_external_code_ram;
+void bj_host_finish() bj_external_code_ram;
 
 
 #ifdef __cplusplus

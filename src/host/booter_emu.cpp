@@ -55,8 +55,8 @@ ck_all_core_ids(){
 }
 
 void
-bj_host_init()
-{
+bj_host_init(){
+
 	bjm_glb_mspace = create_mspace_with_base(dlmalloc_heap, DLMALLOC_HEAP_SZ, 0);
 
 	bj_init_glb_sys_sz(&bjh_glb_host_sys);
@@ -257,7 +257,7 @@ bj_host_finish()
 		void *res;
 		int ss = pthread_join(ALL_THREADS_INFO[tnum].thread_id, &res);
 		if(ss != 0){
-			bjh_abort_func(ss, "host_main. Cannot join thread.");
+			bjh_abort_func(ss, "bj_host_finish. Cannot join thread.");
 		}
 	}
 
@@ -265,69 +265,7 @@ bj_host_finish()
 	destroy_mspace(bjm_glb_mspace);
 }
 
-int 
-host_main(int argc, char *argv[])
-{
-	bj_host_init();
-
-	/// HERE GOES USER INIT CODE
-
-	bj_host_run();
-
-	bj_host_finish();
-
-	return 0;
-}
-
-// ===============================================================================
-
-void
-show_sizes() {
-	printf("HOLA JOSE LUIS\n");
-	printf("sizeof(thread_info_t)= %ld\n", sizeof(thread_info_t)); 
-
-	pthread_t slf = pthread_self();
-	printf("SELF= %ld\n", slf); 
-
-}
-
-void pw2_ops(int argc, char *argv[]){
-	uint8_t pw2 = 3;
-
-	//if(argc > 0){ printf("arg0= %s \n", argv[0]); }
-	if(argc > 2){
-		pw2 = atoi(argv[2]);
-	}
-	bj_core_co_t yy_sz = (1 << pw2);
-	printf("yy_sz= %d \n", yy_sz);
-	if(argc > 1){
-		//printf("arg1= %s \n", argv[1]);
-		int v1 = atoi(argv[1]);
-		bj_core_co_t div1 = v1 / yy_sz;
-		bj_core_co_t mod1 = v1 % yy_sz;
-		bj_core_co_t div2 = v1 >> pw2;
-		bj_core_co_t mod2 = v1 & ((1 << pw2) - 1);
-		printf("div1= %d \n", div1);
-		printf("div2= %d \n", div2);
-		printf("mod1= %d \n", mod1);
-		printf("mod2= %d \n", mod2);
-	}
-}
-
-void test_align(){
-	void* pt = (void*)0x8e01f1f0;
-	printf("TEST_ALIGN\n");
-	if(BJ_IS_ALIGNED_16(pt)){
-		printf("16\n");
-	}	
-	if(BJ_IS_ALIGNED_32(pt)){
-		printf("32\n");
-	}	
-	if(BJ_IS_ALIGNED_64(pt)){
-		printf("64\n");
-	}	
-}
-
+/*
 #include "tak_mak.hh"
 void test_dlmalloc_align(){
 	unsigned long init_val = 10;
@@ -339,18 +277,12 @@ void test_dlmalloc_align(){
 	}
 	printf("\n\n");
 	
-}
+}*/
 
 int main(int argc, char *argv[]) {
 	int rr = 0;
 	rr = bj_host_main(argc, argv);
 	return rr;
-
-	//host_main(argc, argv);
-
-	//pw2_ops(argc, argv);
-	//show_sizes();
-	//test_align();
 	//test_dlmalloc_align();
 }
 

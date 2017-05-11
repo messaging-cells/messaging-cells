@@ -2,6 +2,7 @@
 #include <new>
 #include "interruptions.h"
 #include "dyn_mem.h"
+#include "err_msgs.h"
 #include "actor.hh"
 
 //----------------------------------------------------------------------------
@@ -119,6 +120,23 @@ kernel::finish_sys(){
 	bjk_glb_finish();
 }
 
+void // static
+kernel::init_host_sys(){
+	bj_host_init();
+	kernel::init_sys();
+}
+
+void // static
+kernel::run_host_sys(){
+	bj_host_run();
+}
+
+void // static 
+kernel::finish_host_sys(){
+	kernel::finish_sys();
+	bj_host_finish();
+}
+
 char*
 agent::get_class_name(){
 	kernel* ker = BJK_KERNEL;
@@ -178,7 +196,7 @@ grip&
 agent::get_available(){
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpmf-conversions"
-	bjk_abort((bj_addr_t)(void*)&agent::get_available, 0, bj_null);
+	bjk_abort((bj_addr_t)(void*)&agent::get_available, err_9);
 	#pragma GCC diagnostic pop
 	return *((grip*)bj_null);
 }
@@ -187,7 +205,7 @@ void
 agent::init_me(){
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpmf-conversions"
-	bjk_abort((bj_addr_t)(void*)&agent::init_me, 0, bj_null);
+	bjk_abort((bj_addr_t)(void*)&agent::init_me, err_10);
 	#pragma GCC diagnostic pop
 }
 

@@ -54,7 +54,7 @@ bj_host_init(){
 	if(lk_dat->extnl_ram_orig == 0) {
 		printf("ERROR: Can't read external memory location from '%s'\n", bjh_epiphany_elf_path);
 		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", bjh_epiphany_elf_path);
-		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Bad ELF\n");
+		bjh_abort_func(201, "host_init_1. ERROR: Bad ELF\n");
 	}
 
 	// IMPORTANT NOTE:
@@ -75,7 +75,7 @@ bj_host_init(){
 	e_get_platform_info(&platform);
 
 	if (e_alloc(&bjh_glb_emem, 0, lk_dat->extnl_ram_size)) {
-		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Can't allocate external memory buffer!\n\n");
+		bjh_abort_func(202, "host_init_2. ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
 	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)bjh_glb_emem.base);
@@ -115,7 +115,7 @@ bj_host_init(){
 	e_reset_group(&dev);
 	int err = bj_load_group(&ld_dat); 
 	if(err == E_ERR){
-		bjh_abort_func((bj_addr_t)(bj_host_init), "ERROR: Loading_group_failed.\n");
+		bjh_abort_func(203, "host_init_3. ERROR: Loading_group_failed.\n");
 	}
 
 	// init shared data.
@@ -295,56 +295,8 @@ bj_host_finish(){
 	//prt_host_aligns();
 }
 
-int boot_znq(int argc, char *argv[])
-{
-	if(argc > 1){
-		bjh_epiphany_elf_path = argv[1];
-		printf("Using core executable: %s \n", bjh_epiphany_elf_path);
-	}
-	if(argc > 2){
-		printf("LOADING WITH MEMCPY \n");
-		BJH_LOAD_WITH_MEMCPY = true;
-	}
-
-	bj_host_init();
-
-	/// HERE GOES USER INIT CODE
-
-	bj_host_run();
-	bj_host_finish();
-
-	return 0;
-}
-
-void test_read_sysm(int argc, char *argv[]){
-	if(argc > 1){
-		bjh_epiphany_elf_path = argv[1];
-		printf("Using core executable: %s \n", bjh_epiphany_elf_path);
-	}
-
-	bj_link_syms_data_st syms;
-	bjh_read_eph_link_syms(bjh_epiphany_elf_path, &syms);
-
-	printf("extnl_ram_size = %p \n", (void*)syms.extnl_ram_size);
-	printf("extnl_code_size = %p \n", (void*)syms.extnl_code_size);
-	printf("extnl_load_size = %p \n", (void*)syms.extnl_load_size);
-	printf("extnl_data_size = %p \n", (void*)syms.extnl_data_size);
-	printf("extnl_alloc_size = %p \n", (void*)syms.extnl_alloc_size);
-	printf("extnl_ram_orig = %p \n", (void*)syms.extnl_ram_orig);
-	printf("extnl_code_orig = %p \n", (void*)syms.extnl_code_orig);
-	printf("extnl_load_orig = %p \n", (void*)syms.extnl_load_orig);
-	printf("extnl_data_orig = %p \n", (void*)syms.extnl_data_orig);
-	printf("extnl_alloc_orig = %p \n", (void*)syms.extnl_alloc_orig);
-	printf("extnl_code_disp = %p \n", (void*)syms.extnl_code_disp);
-	printf("extnl_load_disp = %p \n", (void*)syms.extnl_load_disp);
-	printf("extnl_data_disp = %p \n", (void*)syms.extnl_data_disp);
-	printf("extnl_alloc_disp = %p \n", (void*)syms.extnl_alloc_disp);
-
-}
-
 int main(int argc, char *argv[]) {
 	int rr = 0;
-	//test_read_sysm(argc, argv);
 	rr = bj_host_main(argc, argv);
 	return rr;
 }

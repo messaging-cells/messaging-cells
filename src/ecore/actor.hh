@@ -6,6 +6,7 @@
 #define ACTOR_HH
 
 #include "binder.hh"
+#include "err_msgs.h"
 #include "global.h"
 #include "cores_main.h"
 
@@ -61,7 +62,7 @@ nam* \
 nam::acquire_alloc(uint16_t sz){ \
 	nam* obj = bj_malloc##align(nam, sz); \
 	if(obj == bj_null){ \
-		bjk_abort((bj_addr_t)nam::acquire, 0, bj_null); \
+		bjk_abort((bj_addr_t)nam::acquire, err_1); \
 	} \
 	BJK_CK(BJ_STRFY(nam##alloc), BJ_IS_ALIGNED_##align(obj)); \
 	for(int bb = 0; bb < sz; bb++){ \
@@ -205,6 +206,15 @@ public:
 
 	static void
 	finish_sys() bj_external_code_ram;
+
+	static void
+	init_host_sys();
+
+	static void 
+	run_host_sys();
+
+	static void
+	finish_host_sys();
 
 	static kernel*
 	get_sys();

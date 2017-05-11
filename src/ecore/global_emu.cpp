@@ -10,14 +10,15 @@
 bjk_glb_sys_st	bjm_glb_sys_data;
 
 void 
-bjk_abort(bj_addr_t err, int16_t sz_trace, void** trace) {
+bjk_abort(bj_addr_t err, char* orig_msg) {
+	char msg[300];
 	if(bj_is_host_thread()){
-		bjh_abort_func(err, "ABORTED HOST THREAD \n");
+		snprintf(msg, 300, "ABORTED_EMU_HOST_THREAD MSG=%s\n", orig_msg);
+		bjh_abort_func(err, msg);
 		return;
 	}
 	thread_info_t* inf = bjk_get_thread_info();
-	char msg[200];
-	sprintf(msg, "ABORTED THREAD=%ld \t CORE_ID=%x\n", inf->thread_id, inf->bjk_core_id);
+	snprintf(msg, 300, "ABORTED THREAD=%ld \t CORE_ID=%x MSG=%s\n", inf->thread_id, inf->bjk_core_id, orig_msg);
 	bjh_abort_func(err, msg);
 }
 

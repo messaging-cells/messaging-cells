@@ -233,7 +233,7 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 			break;
 		} 
 		if((disp % 2) != 0){ // Is disp ever odd?. If so: bad align access ...
-			bjk_abort((bj_addr_t)bjk_get_call_stack_trace, -1, bj_null);
+			bjk_abort((bj_addr_t)bjk_get_call_stack_trace, bj_null); // ***LEAVE IT bj_null*** (no recurrence)
 		}
 		uint8_t* aux_sp = (uint8_t*)(sp_val);
 		aux_sp += disp;

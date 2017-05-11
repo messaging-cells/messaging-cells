@@ -1,4 +1,5 @@
 
+#include "err_msgs.h"
 #include "global.h"
 
 //======================================================================
@@ -26,7 +27,7 @@ bjk_glb_init(void) {
 	bj_init_glb_sys_sz(sys_sz);
 	
 	if(BJK_OFF_CHIP_SHARED_MEM.magic_id != BJ_MAGIC_ID){
-		bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
+		bjk_abort((bj_addr_t)bjk_glb_init, err_6);
 	}
 
 	BJK_OFF_CHIP_SHARED_MEM.pt_this_from_eph = &BJK_OFF_CHIP_SHARED_MEM;	// should be same for all cores
@@ -54,7 +55,7 @@ bjk_glb_init(void) {
 	if(num_core < bj_out_num_cores){
 		glb_dat->off_core_pt = &((BJK_OFF_CHIP_SHARED_MEM.sys_cores)[num_core]);
 		if((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
-			bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
+			bjk_abort((bj_addr_t)bjk_glb_init, err_7);
 		}
 
 		bj_core_out_st* out_st = &((BJK_OFF_CHIP_SHARED_MEM.sys_out_buffs)[num_core]);
@@ -63,7 +64,7 @@ bjk_glb_init(void) {
 		bj_rr_init(glb_dat->write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
 
 		if(glb_dat->off_core_pt->magic_id != BJ_MAGIC_ID){
-			bjk_abort((bj_addr_t)bjk_glb_init, 0, bj_null);
+			bjk_abort((bj_addr_t)bjk_glb_init, err_8);
 		}
 
 		// glb_dat->off_core_pt init	

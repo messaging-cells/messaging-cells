@@ -9,7 +9,8 @@
 #include "debug.h"
 #include "stdbool.h"
 
-#include "shared.h"
+//include "shared.h"
+#include "global.h"
 
 #ifdef __cplusplus
 bj_c_decl {
@@ -98,13 +99,6 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 	) \
 	
 //--end_of_def
-
-void
-bj_host_init();
-void
-bj_host_run();
-void
-bj_host_finish();
 
 extern int bj_host_main(int argc, char *argv[]);
 

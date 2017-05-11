@@ -7,7 +7,7 @@ LD_IN_SECTIONS :=
 
 # =======================================
 
-TARGET := loader_bug.elf
+TARGET := dev_driver_bug.elf
 
 TGT_LDFLAGS := ${BJ_STD_EPH_LDFLAGS} ${LD_IN_SECTIONS} 
 TGT_LDLIBS  := ${BJ_STD_EPH_LDLIBS}
@@ -22,6 +22,6 @@ SRC_CXXFLAGS := -DIS_CORE_CODE ${BJ_STD_EPH_CXXFLAGS} ${BJ_DBG_FLAG} ${SRC_IN_SE
 
 SRC_INCDIRS := ${BJ_STD_INCDIRS}
 
-SOURCES := test_logs.c loader_bug.cpp
+SOURCES := test_logs.c driver_bug.cpp
 
 
