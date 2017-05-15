@@ -175,10 +175,12 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 	kernel* ker = this;
 
 	binder* all_msvs = &(rem_mgrp->all_agts);
+	bj_core_id_t msvs_id = bj_addr_get_id(all_msvs);
+	bj_binder_fn nx_fn = bj_epiphany_binder_get_right;
 
-	fst = binder::get_glb_right_pt(all_msvs);
+	fst = (*nx_fn)(all_msvs, msvs_id);
 	lst = all_msvs;
-	for(wrk = fst; wrk != lst; wrk = binder::get_glb_right_pt(wrk)){
+	for(wrk = fst; wrk != lst; wrk = (*nx_fn)(wrk, msvs_id)){
 		missive* remote_msv = (missive*)wrk;
 
 		actor* dst = remote_msv->dst;
@@ -197,6 +199,7 @@ agent::get_available(){
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpmf-conversions"
 	bjk_abort((bj_addr_t)(void*)&agent::get_available, err_9);
+	//bjk_abort((bj_addr_t)(void*)(bj_method_1_t)(&agent::get_available), err_9);
 	#pragma GCC diagnostic pop
 	return *((grip*)bj_null);
 }
@@ -360,10 +363,12 @@ agent_grp::release_all_agts(){
 	binder * fst, * lst, * wrk;
 
 	binder* all_agts = &(this->all_agts);
+	bj_core_id_t agts_id = bj_addr_get_id(all_agts);
+	bj_binder_fn nx_fn = bj_epiphany_binder_get_right;
 
-	fst = binder::get_glb_right_pt(all_agts);
+	fst = (*nx_fn)(all_agts, agts_id);
 	lst = all_agts;
-	for(wrk = fst; wrk != lst; wrk = binder::get_glb_right_pt(wrk)){
+	for(wrk = fst; wrk != lst; wrk = (*nx_fn)(wrk, agts_id)){
 		agent* agt = (agent*)wrk;
 		agt->let_go();
 		agt->release();

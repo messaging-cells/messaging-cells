@@ -124,6 +124,7 @@ bj_init_glb_sys_sz_with(bj_sys_sz_st* sys_sz, bj_core_co_t xx_val, bj_core_co_t 
 #define bj_xx_in_sys(xx) (((xx) >= bj_min_xx_sys) && ((xx) < bj_max_xx_sys))
 #define bj_yy_in_sys(yy) (((yy) >= bj_min_yy_sys) && ((yy) < bj_max_yy_sys))
 #define bj_xx_yy_in_sys(xx, yy) (bj_xx_in_sys(xx) && bj_yy_in_sys(yy))
+#define bj_id_in_sys(id) (bj_xx_yy_in_sys(bj_id_to_xx(id), bj_id_to_yy(id)))
 
 
 //======================================================================
@@ -153,9 +154,7 @@ bj_addr_in_sys(bj_addr_t addr) {
 	if(addr_koid == 0){
 		return true;
 	}
-	bj_core_co_t xx = bj_id_to_xx(addr_koid);
-	bj_core_co_t yy = bj_id_to_yy(addr_koid);
-	return bj_xx_yy_in_sys(xx, yy);
+	return bj_id_in_sys(addr_koid);
 }
 
 //======================================================================

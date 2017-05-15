@@ -21,17 +21,38 @@ binder class and related.
 
 class binder;
 
+/*
+class bj_aligned epiphany_binder {
+public:
+	uint16_t	bn_left;
+	uint16_t	bn_right;
+};
+
+class bj_aligned host_binder {
+public:
+	binder*	bn_left;
+	binder*	bn_right;
+};
+
 #ifdef BJ_IS_EPH_CODE
 	typedef uint16_t bjk_sptr_t;
 	#define bjk_pt_to_binderpt(pt) ((binder*)(bj_addr_t)(pt))
-	#define bjk_binderpt_to_pt(bptr) ((intptr_t)(bptr))
+	#define bjk_binderpt_to_pt(bptr) ((uintptr_t)(bptr))
+	#define bj_binder_base epiphany_binder
 #else
 	typedef binder* bjk_sptr_t;
 	#define bjk_pt_to_binderpt(pt) (pt)
 	#define bjk_binderpt_to_pt(bptr) (bptr)
+	#define bj_binder_base host_binder
 #endif
 
-typedef uint8_t bjk_flags_t;
+//class bj_aligned binder : public bj_binder_base {
+//class binder {
+*/
+
+typedef binder* bjk_sptr_t;
+#define bjk_pt_to_binderpt(pt) (pt)
+#define bjk_binderpt_to_pt(bptr) (bptr)
 
 class bj_aligned binder {
 public:
@@ -191,18 +212,54 @@ public:
 			bjk_pt_to_binderpt(bn_right)->let_go();
 		}
 	}
-
-	static bj_opt_sz_fn binder*
-	get_glb_right_pt(binder* bdr);
-
-	static bj_opt_sz_fn binder*
-	get_glb_left_pt(binder* bdr);
 };
 
 typedef binder grip;
 
+#ifdef __cplusplus
+bj_c_decl {
+#endif
+
+typedef binder* (*bj_binder_fn)(binder* bdr, bj_core_id_t id);
+
+bj_opt_sz_fn 
+binder*
+bj_epiphany_binder_get_right(binder* bdr, bj_core_id_t id);
+
+bj_opt_sz_fn 
+binder*
+bj_epiphany_binder_get_left(binder* bdr, bj_core_id_t id);
+
+binder*
+bj_host_binder_get_right(binder* bdr, bj_core_id_t id) bj_external_code_ram;
+
+binder*
+bj_host_binder_get_left(binder* bdr, bj_core_id_t id) bj_external_code_ram;
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif		// BINDER_H
 
 
+/*
+	host_binder() bj_external_code_ram;
+	~host_binder() bj_external_code_ram;
+	void	init_host_binder() bj_external_code_ram;
+	bool	is_alone() bj_external_code_ram;
+	void	let_go() bj_external_code_ram;
+	bool	ck_binder() bj_external_code_ram;
+	binder&	get_right() bj_external_code_ram;
+	binder&	get_left() bj_external_code_ram;
+	binder*	get_right_pt() bj_external_code_ram;
+	binder*	get_left_pt() bj_external_code_ram;
+	void	bind_to_my_right(binder& the_rgt) bj_external_code_ram;
+	void	bind_to_my_left(binder& the_lft) bj_external_code_ram;
+	bool	is_single() bj_external_code_ram;
+	bool	is_multiple() bj_external_code_ram;
+	void	move_all_to_my_right(binder& grp) bj_external_code_ram;
+	void	move_all_to_my_left(binder& grp) bj_external_code_ram;
+	void 	let_all_go() bj_external_code_ram;
+*/

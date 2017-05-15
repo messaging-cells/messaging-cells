@@ -54,7 +54,7 @@ e_return_stat_t bjl_load_elf(int row, int col, load_info_t *ld_dat);
 bjl_loader_diag_t bjl_load_verbose = L_D3;
 
 void
-bj_ck_memload(uint8_t* dst, uint8_t* src, size_t sz){
+bj_ck_memload(uint8_t* dst, uint8_t* src, uint32_t sz){
 	bool ok = true;
 	for(long aa = 0; aa < sz; aa++){
 		if(dst[aa] != src[aa]){
@@ -70,8 +70,8 @@ bj_ck_memload(uint8_t* dst, uint8_t* src, size_t sz){
 }
 
 uint8_t*
-bj_memload(uint8_t* dest, const uint8_t* src, bj_size_t sz){
-	bj_size_t idx = 0;
+bj_memload(uint8_t* dest, const uint8_t* src, uint32_t sz){
+	uint32_t idx = 0;
 	for(idx = 0; idx < sz; idx++){
 		bj_set_off_chip_var(dest[idx], src[idx]);
 	}

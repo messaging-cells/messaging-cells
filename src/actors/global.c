@@ -8,6 +8,11 @@
 
 void 
 bjk_glb_init(void) {
+	ZNQ_CODE(
+		if(BJ_EXTERNAL_RAM_LOAD_DATA.extnl_ram_orig == 0){
+			bjk_abort((bj_addr_t)bjk_glb_init, "bjk_glb_init. Use bj_host_init before.");
+		}
+	);
 	// basic init
 	bjk_set_irq0_handler();
 	EPH_CODE(bj_add_lk_syms());

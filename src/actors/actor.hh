@@ -22,6 +22,12 @@ typedef agent_ref missive_ref_t;
 typedef agent_grp actor_grp_t;
 typedef agent_ref actor_ref_t;
 
+
+//-------------------------------------------------------------------------
+// casts
+
+typedef grip& (* bj_method_1_t)();
+
 //-------------------------------------------------------------------------
 // actor ids
 
@@ -208,13 +214,13 @@ public:
 	finish_sys() bj_external_code_ram;
 
 	static void
-	init_host_sys();
+	init_host_sys() bj_external_code_ram;
 
 	static void 
-	run_host_sys();
+	run_host_sys() bj_external_code_ram;
 
 	static void
-	finish_host_sys();
+	finish_host_sys() bj_external_code_ram;
 
 	static kernel*
 	get_sys();
@@ -337,6 +343,8 @@ public:
 
 //-------------------------------------------------------------------------
 // actor class 
+
+typedef uint8_t bjk_flags_t;
 
 class bj_aligned actor: public agent {
 public:
