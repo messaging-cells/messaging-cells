@@ -58,7 +58,6 @@ SUBMAKEFILES := \
 	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_emu.mk \
 	./min_host/min_host.mk \
-	./eph_dev_driver_bug/eph_dev_driver_bug.mk \
 
 
 
