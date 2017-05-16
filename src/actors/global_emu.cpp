@@ -23,7 +23,7 @@ bjk_abort(bj_addr_t err, char* orig_msg) {
 		return;
 	}
 	thread_info_t* inf = bjk_get_thread_info();
-	snprintf(msg, 300, "ABORTED THREAD=%ld \t CORE_ID=%x MSG=%s\n", inf->thread_id, inf->bjk_core_id, orig_msg);
+	snprintf(msg, 300, "ABORTED THREAD=%ld \t CORE_ID=%x MSG=%s\n", inf->thd_id, inf->thd_core_id, orig_msg);
 	bjh_abort_func(err, msg);
 }
 
@@ -32,7 +32,7 @@ bjk_get_glb_sys(){
 	if(bj_is_host_thread()){
 		return &bjm_glb_sys_data;
 	}
-	return &(bjk_get_thread_info()->bjk_glb_sys_data);
+	return &(bjk_get_thread_info()->thd_glb_sys_data);
 }
 
 void 

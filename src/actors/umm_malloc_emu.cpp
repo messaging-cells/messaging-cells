@@ -9,6 +9,6 @@
 
 umm_block*
 umm_get_heap(){
-	return bjk_get_thread_info()->umm_heap;
+	return bjk_get_thread_info()->thd_umm_heap;
 }
 

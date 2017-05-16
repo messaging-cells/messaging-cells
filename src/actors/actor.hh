@@ -137,6 +137,9 @@ enum bjk_signal_t : uint8_t {
 //-------------------------------------------------------------------------
 // kernel class
 
+//define bj_virgin bj_null
+#define bj_virgin ((missive_grp_t*)(~((bj_addr_t)bj_null)))
+
 #define kernel_signals_arr_sz bjk_tot_signals
 #define kernel_handlers_arr_sz bjk_tot_handler_ids
 #define kernel_pw0_routed_arr_sz bj_out_num_cores

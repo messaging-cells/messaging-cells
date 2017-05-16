@@ -14,19 +14,8 @@
 uint16_t
 bjk_get_call_stack_trace(int16_t, void**) {
 	bjk_glb_sys_st* glb = BJK_GLB_SYS;
-	void* 		trace[BJ_MAX_CALL_STACK_SZ];
 
-	bj_memset((uint8_t*)trace, 0, BJ_MAX_CALL_STACK_SZ * sizeof(void*));
-	bj_memset((uint8_t*)glb->bjk_dbg_call_nams_stack_trace, 0, BJ_MAX_CALL_STACK_SZ * sizeof(char*));
-
-	size_t trace_sz = backtrace(trace, BJ_MAX_CALL_STACK_SZ);
-	char **stack_strings = backtrace_symbols(trace, trace_sz);
-	for( size_t ii = 1; ii < trace_sz; ii++ ) {
-		if(ii >= BJ_MAX_CALL_STACK_SZ){ break; }
-		glb->bjk_dbg_call_nams_stack_trace[ii] = stack_strings[ii];
-	}
-	//result << "(to see full call names link with -rdynamic option)" << "\n";
-	free( stack_strings );
+	bjm_get_call_stack_trace(BJ_MAX_CALL_STACK_SZ, glb->bjk_dbg_call_nams_stack_trace);
 	return 0;
 }
 

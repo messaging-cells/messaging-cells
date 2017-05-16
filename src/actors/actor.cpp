@@ -53,10 +53,10 @@ kernel::init_kernel(){
 	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
 
 	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
-	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_null);
-	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_virgin);
+	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_virgin);
+	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_virgin);
+	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_virgin);
 
 	bj_init_arr_vals(kernel_class_names_arr_sz, class_names_arr, bj_null);
 
@@ -233,7 +233,7 @@ kernel::set_handler(missive_handler_t hdlr, uint16_t idx){
 void 
 kernel::process_signal(int sz, missive_grp_t** arr){
 	for(int aa = 0; aa < sz; aa++){
-		if(arr[aa] != bj_null){
+		if((arr[aa] != bj_null) && (arr[aa] != bj_virgin)){
 			missive_ref_t* nw_ref = agent_ref::acquire();
 			EMU_CK(nw_ref->is_alone());
 			EMU_CK(nw_ref->glb_agent_ptr == bj_null);
@@ -243,6 +243,17 @@ kernel::process_signal(int sz, missive_grp_t** arr){
 			arr[aa] = bj_null;
 		}
 	}
+}
+
+bool
+bjk_is_inited(bj_core_id_t dst_id){
+	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
+	uint8_t* loc_st = &(in_shd->the_core_state);
+	uint8_t* rmt_st = (uint8_t*)bj_addr_set_id(dst_id, loc_st);
+	if((*rmt_st) != bjk_inited_state){
+		return false;
+	}
+	return true;
 }
 
 void 
@@ -326,6 +337,13 @@ kernel::handle_missives(){
 
 		// ONLY pw0 case
 		missive_grp_t** loc_pt = &((ker->pw0_routed_arr)[idx]);
+
+		if((*loc_pt) == bj_virgin){
+			if(! bjk_is_inited(dst_id)){
+				continue;
+			}
+		}
+
 		missive_grp_t** rmt_pt = (missive_grp_t**)bj_addr_set_id(dst_id, loc_pt);
 		missive_grp_t* glb_mgrp = (missive_grp_t*)bjk_as_glb_pt(mgrp);
 		//missive_grp_t* glb_mgrp = (missive_grp_t*)mgrp->get_glb_ptr();

@@ -12,20 +12,19 @@
 
 #define NAMELEN 16
 
-struct thread_info_st {    /* Used as argument to thread_start() */
-	pthread_t 	thread_id;        /* ID returned by pthread_create() */
-	uint16_t 	thread_num;       /* Application-defined thread # */
-	char 		thread_name[NAMELEN];
-	char 		*argv_string;      /* From command-line argument */
+struct thread_info_st {    // Used as argument to thread_start() 
+	pthread_t 	thd_id;        // id returned by pthread_create() 
+	uint16_t 	thd_num;       // core consec
+	char 		thd_name[NAMELEN];
 
-	void 		(*core_func)();
+	void 		(*thd_core_func)();
 
-	bj_core_id_t 	bjk_core_id;
-	bj_sys_sz_st 	bjk_system_sz;
-	bjk_glb_sys_st	bjk_glb_sys_data;
-	kernel 			bjk_THE_KERNEL;
+	bj_core_id_t 	thd_core_id;	// core id as in epiphany arch
+	bj_sys_sz_st 	thd_system_sz;
+	bjk_glb_sys_st	thd_glb_sys_data;
+	kernel 			thd_THE_KERNEL;
 
-	umm_block 		umm_heap[UMM_HEAP_NUM_BLOCKS];
+	umm_block 		thd_umm_heap[UMM_HEAP_NUM_BLOCKS];
 };
 
 typedef struct thread_info_st thread_info_t;

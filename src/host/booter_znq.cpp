@@ -12,6 +12,8 @@
 
 #include "dlmalloc.h"
 
+#include "actor.hh"
+
 //=====================================================================================
 
 uint8_t* BJH_EXTERNAL_RAM_BASE_PT = bj_null;
@@ -192,6 +194,12 @@ bj_host_run(){
 	while(has_work){
 		sched_yield();				//yield
 		has_work = false;
+
+		kernel* ker = BJK_KERNEL;
+		if(ker != bj_null){
+			//ker->handle_missives();
+		}
+
 		for (row=0; row < max_row; row++){
 			for (col=0; col < max_col; col++){
 				//core_id = (row + platform.row) * 64 + col + platform.col;

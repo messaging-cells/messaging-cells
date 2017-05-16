@@ -1,6 +1,7 @@
 
 //define _GNU_SOURCE
 
+#include <execinfo.h>
 #include <inttypes.h>
 #include <sched.h>
 #include <stdio.h>
@@ -19,20 +20,54 @@
 
 // =====================================================================================
 
-
-#define DLMALLOC_HEAP_SZ (10 * MBY_SZ)
-uint8_t dlmalloc_heap[DLMALLOC_HEAP_SZ];
+uint8_t bjm_dlmalloc_heap[BJM_DLMALLOC_HEAP_SZ];
 
 mspace bjm_glb_mspace;
 
 bj_sys_sz_st bjh_glb_host_sys;
 
+bj_addr_t
+bj_znq_addr_to_eph_addr(bj_addr_t znq_addr){
+	return znq_addr;
+}
+
+bj_addr_t
+bj_eph_addr_to_znq_addr(bj_addr_t eph_addr){
+	return eph_addr;
+}
+
+void
+bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
+	void* 		trace[trace_strs_sz];
+
+	bj_memset((uint8_t*)trace, 0, trace_strs_sz * sizeof(void*));
+	bj_memset((uint8_t*)trace_strs, 0, trace_strs_sz * sizeof(char*));
+
+	size_t trace_sz = backtrace(trace, trace_strs_sz);
+	fprintf(stderr, "%%%%%%%%%%%%%%%%%%%%%%%%%% TRACE_POINTERS\n");
+	for( size_t ii = 1; ii < trace_sz; ii++ ) {
+		if(ii >= trace_strs_sz){ break; }
+		fprintf(stderr, "\t %p \n", trace[ii]);
+	}
+	char **stack_strings = backtrace_symbols(trace, trace_sz);
+	if(stack_strings != NULL){
+		fprintf(stderr, "%%%%%%%%%%%%%%%%%%%%%%%%%% \n");
+		for( size_t ii = 1; ii < trace_sz; ii++ ) {
+			if(ii >= trace_strs_sz){ break; }
+			trace_strs[ii] = stack_strings[ii];
+			fprintf(stderr, "\t %s \n", stack_strings[ii]);
+		}
+		fprintf(stderr, "%%%%%%%%%%%%%%%%%%%%%%%%%% \n");
+		free( stack_strings );
+	}
+}
+
 void 
 bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
-	char** trace = thd_inf.bjk_glb_sys_data.bjk_dbg_call_nams_stack_trace;
+	char** trace = thd_inf.thd_glb_sys_data.bjk_dbg_call_nams_stack_trace;
 	bjh_out << "---------------------------------------------------\n";
-	bjh_out << "STACK_TRACE for core num " << std::dec << thd_inf.thread_num;
-	bjh_out << " with core_id = 0x" << std::hex << thd_inf.bjk_core_id << "\n";
+	bjh_out << "STACK_TRACE for core num " << std::dec << thd_inf.thd_num;
+	bjh_out << " with core_id = 0x" << std::hex << thd_inf.thd_core_id << "\n";
 	for(int aa = 0; aa < BJ_MAX_CALL_STACK_SZ; aa++){
 		if(trace[aa] == bj_null){ break; }
 		bjh_out << trace[aa] << "\n";
@@ -47,7 +82,7 @@ ck_all_core_ids(){
 	}
 	for(int aa = 0; aa < TOT_THREADS; aa++){
 		bj_core_id_t koid = bj_nn_to_id(aa);
-		if(ALL_THREADS_INFO[aa].bjk_core_id != koid){
+		if(ALL_THREADS_INFO[aa].thd_core_id != koid){
 			bjh_abort_func(0, "ck_all_core_ids. BAD CORE ID \n");
 		}
 	}
@@ -57,7 +92,7 @@ ck_all_core_ids(){
 void
 bj_host_init(){
 
-	bjm_glb_mspace = create_mspace_with_base(dlmalloc_heap, DLMALLOC_HEAP_SZ, 0);
+	bjm_glb_mspace = create_mspace_with_base(bjm_dlmalloc_heap, BJM_DLMALLOC_HEAP_SZ, 0);
 
 	bj_init_glb_sys_sz(&bjh_glb_host_sys);
 
@@ -117,11 +152,10 @@ bj_host_run()
 			bj_core_nn_t num_core = bj_id_to_nn(core_id);
 
 			thread_info_t& thd_inf = ALL_THREADS_INFO[num_core];
-			thd_inf.thread_num = num_core;
-			thd_inf.argv_string = bj_null;
-			bj_uint16_to_hex_bytes(thd_inf.thread_num, (uint8_t*)(thd_inf.thread_name));
-			thd_inf.bjk_core_id = core_id;
-			thd_inf.core_func = &bj_cores_main;
+			thd_inf.thd_num = num_core;
+			bj_uint16_to_hex_bytes(thd_inf.thd_num, (uint8_t*)(thd_inf.thd_name));
+			thd_inf.thd_core_id = core_id;
+			thd_inf.thd_core_func = &bj_cores_main;
 
 			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
@@ -144,7 +178,7 @@ bj_host_run()
 			
 			// Start one core emulation thread
 
-			int ss = pthread_create(&thd_inf.thread_id, NULL,
+			int ss = pthread_create(&thd_inf.thd_id, NULL,
 								&thread_start, &thd_inf);
 			if (ss != 0){
 				bjh_abort_func(ss, "host_main. Cannot pthread_create");
@@ -164,6 +198,12 @@ bj_host_run()
 	while(has_work){
 		sched_yield();				//yield
 		has_work = false;
+
+		kernel* ker = BJK_KERNEL;
+		if(ker != bj_null){
+			//ker->handle_missives();
+		}
+
 		for (row=0; row < max_row; row++){
 			for (col=0; col < max_col; col++){
 				core_id = bj_ro_co_to_id(row, col);
@@ -207,7 +247,7 @@ bj_host_run()
 						
 						sh_dat_1->is_waiting = BJ_NOT_WAITING;
 
-						thd_inf.bjk_glb_sys_data.bjk_sync_signal = 1;	// SEND signal
+						thd_inf.thd_glb_sys_data.bjk_sync_signal = 1;	// SEND signal
 					}
 				} else {
 					BJH_CK(sh_dat_1->is_finished == BJ_FINISHED_VAL);
@@ -221,7 +261,7 @@ bj_host_run()
 
 						printf("Finished\n");
 						memset(&inco, 0, sizeof(bj_in_core_st));
-						memcpy(&inco, &thd_inf.bjk_glb_sys_data.in_core_shd, sizeof(bj_in_core_st));
+						memcpy(&inco, &thd_inf.thd_glb_sys_data.in_core_shd, sizeof(bj_in_core_st));
 						int err2 = bjh_prt_in_core_shd_dat(&inco);
 						if(err2){
 							break;
@@ -255,7 +295,7 @@ bj_host_finish()
 	int tnum;
 	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
 		void *res;
-		int ss = pthread_join(ALL_THREADS_INFO[tnum].thread_id, &res);
+		int ss = pthread_join(ALL_THREADS_INFO[tnum].thd_id, &res);
 		if(ss != 0){
 			bjh_abort_func(ss, "bj_host_finish. Cannot join thread.");
 		}

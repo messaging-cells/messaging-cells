@@ -24,6 +24,18 @@ bool BJH_LOAD_WITH_MEMCPY = false;
 void 
 bjh_abort_func(long val, const char* msg){
 	fprintf(stderr, "\nABORTING! ERR=%ld %s\n", val, msg);
+	EMU_CODE(bjh_ptr_call_stack_trace(););
+	/*
+		fprintf(stderr, "\nAFULL_TRACE-------------------------\n");
+		char* full_trace[BJ_MAX_CALL_STACK_SZ];
+		bjm_get_call_stack_trace(BJ_MAX_CALL_STACK_SZ, full_trace);
+		for(long aa = 0; aa < BJ_MAX_CALL_STACK_SZ; aa++){
+			if(full_trace[aa] == 0){ break; }
+			fprintf(stderr, "\n %s\n", full_trace[aa]);
+		}
+		fprintf(stderr, "-----------------------------------\n");
+	*/
+	
 	exit(val);
 }
 
@@ -338,11 +350,12 @@ bjh_ptr_call_stack_trace() {
 	ZNQ_CODE(fprintf(stderr, "trace_size=%u \n", trace_sz));
 
 	char **stack_strings = backtrace_symbols(trace, trace_sz);
+	fprintf(stderr, "STACK_STRACE------------------------------\n");
 	for( size_t ii = 1; ii < trace_sz; ii++ ) {
 		if(ii >= BJH_MAX_CALL_STACK_SZ){ break; }
 		fprintf(stderr, "%s \n", stack_strings[ii]);
 	}
-	//result << "(to see full call names link with -rdynamic option)" << "\n";
+	fprintf(stderr, "------------------------------\n");
 	free( stack_strings );
 }
 

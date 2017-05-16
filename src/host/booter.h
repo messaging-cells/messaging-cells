@@ -34,6 +34,9 @@ extern bj_link_syms_data_st 	bjh_external_ram_load_data;
 extern char* bjh_epiphany_elf_path;
 extern bool BJH_LOAD_WITH_MEMCPY;
 
+#define BJM_DLMALLOC_HEAP_SZ (10 * MBY_SZ)
+extern uint8_t bjm_dlmalloc_heap[BJM_DLMALLOC_HEAP_SZ];
+
 void 
 bjh_abort_func(long val, const char* msg);
 
@@ -101,6 +104,16 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 //--end_of_def
 
 extern int bj_host_main(int argc, char *argv[]);
+
+bj_addr_t
+bj_znq_addr_to_eph_addr(bj_addr_t znq_addr);
+
+bj_addr_t
+bj_eph_addr_to_znq_addr(bj_addr_t eph_addr);
+
+void
+bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs);
+
 
 #ifdef __cplusplus
 }

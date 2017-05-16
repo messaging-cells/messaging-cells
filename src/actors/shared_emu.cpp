@@ -9,10 +9,13 @@ bj_get_glb_sys_sz(){
 	if(bj_is_host_thread()){
 		return &bjh_glb_host_sys;
 	}
-	return &(bjk_get_thread_info()->bjk_system_sz);
+	return &(bjk_get_thread_info()->thd_system_sz);
 }
 
 bj_core_id_t 
 bjk_get_core_id(){
-	return bjk_get_thread_info()->bjk_core_id;
+	if(bj_is_host_thread()){
+		//bj_core_id_t bjk_addr_
+	}
+	return bjk_get_thread_info()->thd_core_id;
 }

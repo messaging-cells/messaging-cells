@@ -119,7 +119,7 @@ bj_core_id_t
 bjk_get_addr_core_id_fn(void* addr){
 	bj_core_nn_t idx = bjk_get_addr_idx(addr);
 	thread_info_t* info = &(ALL_THREADS_INFO[idx]);
-	return info->bjk_core_id;
+	return info->thd_core_id;
 }
 
 void*
@@ -180,7 +180,7 @@ bjm_printf(const char *fmt, ...){
 
 	thread_info_t* inf = bjk_get_thread_info();
 
-	printf("%d:%x --> %s", inf->thread_num, inf->bjk_core_id, pp);
+	printf("%d:%x --> %s", inf->thd_num, inf->thd_core_id, pp);
 	fflush(stdout); 
 }
 
@@ -190,12 +190,12 @@ thread_start(void *arg){
 	thread_info_t *tinfo = (thread_info_t *)arg;
 	pthread_t slf = pthread_self();
 
-	pthread_setname_np(slf, tinfo->thread_name);
+	pthread_setname_np(slf, tinfo->thd_name);
 
-	printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thread_name);
+	printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thd_name);
 
-	if(tinfo->core_func != bj_null){
-		(tinfo->core_func)();
+	if(tinfo->thd_core_func != bj_null){
+		(tinfo->thd_core_func)();
 	}
 
 	return bj_null;

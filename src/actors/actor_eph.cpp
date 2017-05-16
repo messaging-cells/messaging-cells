@@ -6,7 +6,7 @@
 #include "actor.hh"
 #include "dyn_mem.h"
 
-kernel* bjk_PT_THE_KERNEL;
+kernel* bjk_PT_THE_KERNEL = bj_null;
 
 kernel*
 bjk_get_first_kernel(){

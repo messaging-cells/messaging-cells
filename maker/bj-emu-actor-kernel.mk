@@ -9,8 +9,8 @@ DBG_FLAG := -DFULL_DEBUG
 
 # =======================================
 
-SRC_CFLAGS := -DBJ_IS_EMU_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} -pthread
-SRC_CXXFLAGS := -DBJ_IS_EMU_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} -pthread
+SRC_CFLAGS := -DBJ_IS_EMU_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} -pthread 
+SRC_CXXFLAGS := -DBJ_IS_EMU_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} -pthread 
 
 # C_FLAGS_1 := -Wall -std=gnu11 -nostdlib -fno-default-inline ${SRC_IN_SECTIONS}
 # SRC_CFLAGS := ${IS_EMU_FLAG} ${DBG_FLAG} ${C_FLAGS_1} -pthread

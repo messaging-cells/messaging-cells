@@ -39,7 +39,6 @@ bjh_get_stack_trace( const bjh_string_t & file, int line ){
 		//result << "   " << demangle_cxx_name( stack_strings[i] ) << "\n";
 		result << "   " << stack_strings[i] << "\n";
 	}
-	result << "(to see full call names link with -rdynamic option)" << "\n";
 	std::free( stack_strings );
 
 	return result.str();

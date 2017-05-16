@@ -6,7 +6,7 @@
 
 #include "dyn_mem.h"
 
-kernel* bjh_PT_THE_KERNEL;
+kernel* bjh_PT_THE_KERNEL = bj_null;
 
 kernel*
 bjh_get_first_kernel(){
