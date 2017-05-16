@@ -9,46 +9,73 @@
 #include "umm_malloc.h"
 #include "global.h"
 #include "actor.hh"
+#include "booter.h"
 
 #define NAMELEN 16
 
+struct emu_info_st {    // Used as argument to thread_start() 
+	pthread_t 	emu_id;        // id returned by pthread_create() 
+	int16_t 	emu_num;       // core consec
+	char 		emu_name[NAMELEN];
+
+	void 		(*emu_core_func)();
+
+	bj_core_id_t 	emu_core_id;	// core id as in epiphany arch
+	bj_sys_sz_st 	emu_system_sz;
+	bjk_glb_sys_st	emu_glb_sys_data;
+	kernel 			emu_THE_KERNEL;
+};
+
+typedef struct emu_info_st emu_info_t;
+
 struct thread_info_st {    // Used as argument to thread_start() 
-	pthread_t 	thd_id;        // id returned by pthread_create() 
-	uint16_t 	thd_num;       // core consec
-	char 		thd_name[NAMELEN];
-
-	void 		(*thd_core_func)();
-
-	bj_core_id_t 	thd_core_id;	// core id as in epiphany arch
-	bj_sys_sz_st 	thd_system_sz;
-	bjk_glb_sys_st	thd_glb_sys_data;
-	kernel 			thd_THE_KERNEL;
+	emu_info_t		thd_emu;
 
 	umm_block 		thd_umm_heap[UMM_HEAP_NUM_BLOCKS];
 };
 
 typedef struct thread_info_st thread_info_t;
 
+extern emu_info_t*	bjm_HOST_EMU_INFO;
+
 extern thread_info_t* ALL_THREADS_INFO;
 extern int TOT_THREADS;
 extern pthread_t HOST_THREAD_ID;
 
-extern kernel *bjm_pt_THE_KERNEL;
-
 uint16_t
 bjk_get_thread_idx();
 
-thread_info_t*
-bjk_get_thread_info();
+emu_info_t*
+bjk_get_emu_info();
+
+bj_inline_fn bool
+bjk_addr_in_host(void* addr){
+	uint8_t* pt = (uint8_t*)addr;
+	uint8_t* hh = (uint8_t*)bjm_dlmalloc_heap;
+	uint8_t* ll = hh + sizeof(bjm_dlmalloc_heap);
+	if((pt >= hh) && (pt < ll)){ return true; }
+	return false;
+}
+
+bj_inline_fn bool
+bjk_addr_in_cores(void* addr){
+	uint8_t* pt = (uint8_t*)addr;
+	uint8_t* hh = (uint8_t*)ALL_THREADS_INFO;
+	uint8_t* ll = hh + (sizeof(thread_info_t) * TOT_THREADS);
+	if((pt >= hh) && (pt < ll)){ return true; }
+	return false;
+}
 
 bj_inline_fn bj_core_nn_t
 bjk_get_addr_idx(void* addr){
+	EMU_CK(bjk_addr_in_cores(addr));
 	bj_core_nn_t idx = (bj_core_nn_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t));
 	return idx;
 }
 
 bj_inline_fn uintptr_t
 bjk_get_addr_offset(void* addr){
+	EMU_CK(bjk_addr_in_cores(addr));
 	uintptr_t ofs = (uintptr_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) % sizeof(thread_info_t));
 	return ofs;
 }

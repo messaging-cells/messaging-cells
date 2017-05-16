@@ -355,7 +355,7 @@ bjh_ptr_call_stack_trace() {
 		if(ii >= BJH_MAX_CALL_STACK_SZ){ break; }
 		fprintf(stderr, "%s \n", stack_strings[ii]);
 	}
-	fprintf(stderr, "------------------------------\n");
+	fprintf(stderr, "------------------------------(to see names link with -rdynamic)\n");
 	free( stack_strings );
 }
 

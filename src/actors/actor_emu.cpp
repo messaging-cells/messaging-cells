@@ -7,11 +7,7 @@
 
 kernel*
 kernel::get_sys(){
-	if(bj_is_host_thread()){
-		EMU_CK(bjm_pt_THE_KERNEL != bj_null);
-		return bjm_pt_THE_KERNEL;
-	}
-	return &(bjk_get_thread_info()->thd_THE_KERNEL);
+	return &(bjk_get_emu_info()->emu_THE_KERNEL);
 }
 
 void 

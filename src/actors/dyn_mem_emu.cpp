@@ -29,6 +29,7 @@ void
 bj_free_impl(uint8_t* ptr){
 	if(bj_is_host_thread()){
 		mspace_free(bjm_glb_mspace, ptr);
+		return;
 	}
 	a64_free(ptr);
 }

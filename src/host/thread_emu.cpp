@@ -18,8 +18,6 @@ thread_info_t* ALL_THREADS_INFO = bj_null;
 int TOT_THREADS = 0;
 pthread_t HOST_THREAD_ID = 0;
 
-kernel *bjm_pt_THE_KERNEL = bj_null;
-
 // =====================================================================================
 
 uint8_t
@@ -77,33 +75,37 @@ bj_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str) {
 uint16_t
 bjk_get_thread_idx(){
 	if(ALL_THREADS_INFO == bj_null){
-		bjh_abort_func(2, "bjk_get_thread_idx. NULL ALL_THREADS_INFO \n");
+		bjh_abort_func(2, "get_thread_idx. NULL ALL_THREADS_INFO \n");
 		return 0;
 	}
 	pthread_t slf = pthread_self();
 	if(slf == HOST_THREAD_ID){
-		bjh_abort_func(2, "bjk_get_thread_idx. Host thread. \n");
+		bjh_abort_func(2, "get_thread_idx. Host thread. \n");
 		return 0;
 	}
 
 	char thd_name[NAMELEN];
 	int rc = pthread_getname_np(slf, thd_name, NAMELEN);
 	if(rc != 0){
-		bjh_abort_func(1, "bjk_get_thread_idx. INVALID THREAD NAME \n");
+		bjh_abort_func(1, "get_thread_idx. INVALID THREAD NAME \n");
 		return 0;
 	}
 	uint16_t thd_idx = bj_hex_bytes_to_uint16((uint8_t*)thd_name);
 	if((thd_idx < 0) || (thd_idx >= TOT_THREADS)){
-		bjh_abort_func(1, "bjk_get_thread_idx. INVALID thd_idx \n");
+		bjh_abort_func(1, "get_thread_idx. INVALID thd_idx \n");
 		return 0;
 	}
 	return thd_idx;
 }
 
-thread_info_t*
-bjk_get_thread_info(){
+emu_info_t*
+bjk_get_emu_info(){
+	if(bj_is_host_thread()){
+		EMU_CK(bjm_HOST_EMU_INFO != bj_null);
+		return bjm_HOST_EMU_INFO;
+	}
 	uint16_t thd_idx = bjk_get_thread_idx();
-	thread_info_t* info = &(ALL_THREADS_INFO[thd_idx]);
+	emu_info_t* info = &(ALL_THREADS_INFO[thd_idx].thd_emu);
 	return info;
 }
 
@@ -117,13 +119,19 @@ bjk_get_thread_info(){
 
 bj_core_id_t
 bjk_get_addr_core_id_fn(void* addr){
+	if(bjk_addr_in_host(addr)){
+		EMU_CK(bjm_HOST_EMU_INFO != bj_null);
+		return bjm_HOST_EMU_INFO->emu_core_id;
+	}	
 	bj_core_nn_t idx = bjk_get_addr_idx(addr);
 	thread_info_t* info = &(ALL_THREADS_INFO[idx]);
-	return info->thd_core_id;
+	return info->thd_emu.emu_core_id;
 }
 
 void*
 bjk_addr_with_fn(bj_core_id_t core_id, void* addr){
+	//if(core_id == bjm_HOST_EMU_INFO.emu_core_id){
+	//}
 	bj_core_nn_t idx = bj_id_to_nn(core_id);
 	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + bjk_get_addr_offset(addr));
 	return addr2;
@@ -178,9 +186,9 @@ bjm_printf(const char *fmt, ...){
 
 	if(size < 0){ return; }
 
-	thread_info_t* inf = bjk_get_thread_info();
+	emu_info_t* inf = bjk_get_emu_info();
 
-	printf("%d:%x --> %s", inf->thd_num, inf->thd_core_id, pp);
+	printf("%d:%x --> %s", inf->emu_num, inf->emu_core_id, pp);
 	fflush(stdout); 
 }
 
@@ -190,12 +198,12 @@ thread_start(void *arg){
 	thread_info_t *tinfo = (thread_info_t *)arg;
 	pthread_t slf = pthread_self();
 
-	pthread_setname_np(slf, tinfo->thd_name);
+	pthread_setname_np(slf, tinfo->thd_emu.emu_name);
 
-	printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thd_name);
+	printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thd_emu.emu_name);
 
-	if(tinfo->thd_core_func != bj_null){
-		(tinfo->thd_core_func)();
+	if(tinfo->thd_emu.emu_core_func != bj_null){
+		(tinfo->thd_emu.emu_core_func)();
 	}
 
 	return bj_null;

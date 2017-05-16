@@ -24,8 +24,6 @@ typedef uint16_t bj_core_id_t;	// e_coreid_t
 typedef uint16_t bj_core_co_t;
 typedef uint16_t bj_core_nn_t;
 
-typedef uint32_t bj_size_t;
-
 #define bj_addr_val_in_p16(p16) ((bj_addr_t)(bj_v32_of_p16(p16)))
 
 #define bj_e3_xx 32

@@ -26,7 +26,6 @@ bj_c_decl {
 #define BJ_EXTE_LOCAL_ADDR 5
 
 
-extern bj_sys_sz_st 			bjh_glb_host_sys;
 extern bj_link_syms_data_st 	bjh_external_ram_load_data;
 
 #define bjh_disp_to_extnal_ram_pt(disp) (the_str)

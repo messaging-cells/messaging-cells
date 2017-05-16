@@ -29,6 +29,7 @@ typedef uint8_t bj_bool_t;
 	#include "shared_eph.h"
 #endif
 
+typedef bj_addr_t bj_size_t;
 	
 //======================================================================
 // working system struct
