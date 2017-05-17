@@ -23,6 +23,21 @@ bj_c_decl {
 
 typedef uint8_t bj_bool_t;
 
+//======================================================================
+// epiphany III
+
+#define bj_e3_xx 32
+#define bj_e3_yy 8
+#define bj_e3_xx_sz 4
+#define bj_e3_yy_sz 4
+#define bj_e3_yy_sz_pw2 2
+
+#define bj_e3_num_chip_cores 16
+
+
+//======================================================================
+// address opers
+
 #ifdef BJ_IS_EMU_CODE
 	#include "shared_emu.h"
 #else
@@ -157,6 +172,12 @@ bj_addr_in_sys(bj_addr_t addr) {
 	}
 	return bj_id_in_sys(addr_koid);
 }
+
+#define bj_addr_in_host(addr) (! bj_addr_in_sys(addr))
+
+#define bjk_is_core(row, col) \
+	((BJK_GLB_IN_CORE_SHD->the_core_ro == (row)) && (BJK_GLB_IN_CORE_SHD->the_core_co == (col)))
+
 
 //======================================================================
 // sane alignment/access functions

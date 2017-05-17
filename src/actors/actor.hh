@@ -185,7 +185,7 @@ public:
 	missive_grp_t* pw4_routed_arr[kernel_pw4_routed_arr_sz];
 	missive_grp_t* pw6_routed_arr[kernel_pw6_routed_arr_sz];
 
-	grip direct_routed;
+	//grip direct_routed;
 
 	grip in_work;
 	grip local_work;

@@ -4,4 +4,3 @@
 
 find . -name "*" -type f | xargs sed -i 's/cadena_inexistente/cadena_inexistente/g'
 
-

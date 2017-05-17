@@ -323,6 +323,8 @@ kernel::handle_missives(){
 		}
 	}
 
+	bj_core_nn_t src_idx = bj_id_to_nn(get_core_id());
+
 	fst = bjk_pt_to_binderpt(ker->out_work.bn_right);
 	lst = &(ker->out_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
@@ -333,24 +335,25 @@ kernel::handle_missives(){
 		
 		missive* msv = (missive*)(mgrp->all_agts.get_right_pt());
 		bj_core_id_t dst_id = bj_addr_get_id(msv->dst);
-		bj_core_nn_t idx = bj_id_to_nn(dst_id);
+		bj_core_nn_t dst_idx = bj_id_to_nn(dst_id);
 
 		// ONLY pw0 case
-		missive_grp_t** loc_pt = &((ker->pw0_routed_arr)[idx]);
+		missive_grp_t** loc_dst_pt = &((ker->pw0_routed_arr)[dst_idx]);
 
-		if((*loc_pt) == bj_virgin){
+		if((*loc_dst_pt) == bj_virgin){
 			if(! bjk_is_inited(dst_id)){
 				continue;
 			}
 		}
 
-		missive_grp_t** rmt_pt = (missive_grp_t**)bj_addr_set_id(dst_id, loc_pt);
+		missive_grp_t** loc_src_pt = &((ker->pw0_routed_arr)[src_idx]);
+
+		missive_grp_t** rmt_src_pt = (missive_grp_t**)bj_addr_set_id(dst_id, loc_src_pt);
 		missive_grp_t* glb_mgrp = (missive_grp_t*)bjk_as_glb_pt(mgrp);
-		//missive_grp_t* glb_mgrp = (missive_grp_t*)mgrp->get_glb_ptr();
 
 		//EMU_PRT("SENDING pt_msv_grp= %p right= %p\n", mgrp, mgrp->get_right_pt());
 
-		*rmt_pt = glb_mgrp;
+		*rmt_src_pt = glb_mgrp;
 
 		// send signal
 		bj_bool_t* loc_sg = &((ker->signals_arr)[bjk_do_pw0_routes_sgnl]);
