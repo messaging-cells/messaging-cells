@@ -123,6 +123,8 @@ bj_host_init(){
 
 	pt_shd_data->wrk_sys = *sys_sz;
 	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
+
+	pt_shd_data->pt_host_kernel = bj_null;
 }
 
 void

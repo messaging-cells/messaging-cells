@@ -66,6 +66,8 @@ kernel::init_kernel(){
 	bjk_set_class_name(agent_ref);
 	bjk_set_class_name(agent_grp);
 
+	host_kernel = bj_null;
+
 	first_actor = actor::acquire();
 }
 
@@ -88,6 +90,8 @@ kernel::init_sys(){
 	kernel* ker = BJK_FIRST_KERNEL;
 
 	new (ker) kernel(); 
+
+	ker->host_kernel = (kernel*)(BJK_PT_EXTERNAL_DATA->pt_host_kernel);
 
 	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
 
@@ -120,10 +124,18 @@ kernel::finish_sys(){
 	bjk_glb_finish();
 }
 
+#ifdef BJ_IS_ZNQ_CODE
+	#include <stdio.h>
+#endif
+
 void // static
 kernel::init_host_sys(){
 	bj_host_init();
 	kernel::init_sys();
+	BJK_PT_EXTERNAL_DATA->pt_host_kernel = (void*)bj_host_addr_to_core_addr((bj_addr_t)BJK_KERNEL);
+	#ifdef BJ_IS_ZNQ_CODE
+		printf("Initing pt_host_kernel with %p \n", BJK_KERNEL);
+	#endif
 }
 
 void // static

@@ -72,6 +72,9 @@ void bj_cores_main() {
 	}
 
 	bjk_slog2("FINISHED !!\n");	
+	//bjk_xlog((bj_addr_t)ker->host_kernel);
+	//bjk_slog2(" is the HOST_KERNEL\n");	
+
 	kernel::finish_sys();
 }
 

@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "booter.h"
+#include "actor.hh"
 
 char* bjh_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
@@ -16,9 +17,15 @@ int bj_host_main(int argc, char *argv[])
 		BJH_LOAD_WITH_MEMCPY = true;
 	}
 
+	/*
 	bj_host_init();
 	bj_host_run();
 	bj_host_finish();
+	*/
+
+	kernel::init_host_sys();
+	kernel::run_host_sys();
+	kernel::finish_host_sys();
 
 	return 0;
 }

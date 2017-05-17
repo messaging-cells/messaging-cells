@@ -307,6 +307,7 @@ struct bj_aligned bj_off_sys_shared_data_def {
 	uint32_t 		dbg_error_code;
 	void* 			pt_this_from_znq;
 	void* 			pt_this_from_eph;
+	void* 			pt_host_kernel;
 	bj_sys_sz_st 	wrk_sys;
 	bj_off_core_st 	sys_cores[bj_out_num_cores];
 	bj_core_out_st 	sys_out_buffs[bj_out_num_cores];
@@ -376,6 +377,13 @@ bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms);
 #else
 	#define BJ_EXTERNAL_RAM_LOAD_DATA bjh_external_ram_load_data
 #endif
+
+bj_addr_t
+bj_host_addr_to_core_addr(bj_addr_t h_addr) bj_external_code_ram;
+
+bj_addr_t
+bj_core_addr_to_host_addr(bj_addr_t c_addr) bj_external_code_ram;
+
 
 #ifdef __cplusplus
 }

@@ -113,7 +113,6 @@ bj_eph_addr_to_znq_addr(bj_addr_t eph_addr);
 void
 bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs);
 
-
 #ifdef __cplusplus
 }
 #endif

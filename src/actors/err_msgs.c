@@ -13,4 +13,6 @@ char err_8[] bj_external_code_ram = "bjk_glb_init abort_3.\n";
 char err_9[] bj_external_code_ram = "agent::get_available abort\n";
 char err_10[] bj_external_code_ram = "agent::init_me abort\n";
 char err_11[] bj_external_code_ram = "assert abort\n";
+char err_12[] bj_external_code_ram = "bj_host_addr_to_core_addr abort\n";
+char err_13[] bj_external_code_ram = "bj_core_addr_to_host_addr abort\n";
 

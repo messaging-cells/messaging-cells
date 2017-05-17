@@ -20,6 +20,8 @@ extern char err_8[] bj_external_code_ram;
 extern char err_9[] bj_external_code_ram;
 extern char err_10[] bj_external_code_ram;
 extern char err_11[] bj_external_code_ram;
+extern char err_12[] bj_external_code_ram;
+extern char err_13[] bj_external_code_ram;
 
 #ifdef __cplusplus
 }

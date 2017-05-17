@@ -51,7 +51,8 @@ extern e_platform_t e_platform;
 
 e_return_stat_t bjl_load_elf(int row, int col, load_info_t *ld_dat);
 
-bjl_loader_diag_t bjl_load_verbose = L_D3;
+//bjl_loader_diag_t bjl_load_verbose = L_D3;
+bjl_loader_diag_t bjl_load_verbose = L_D0;
 
 void
 bj_ck_memload(uint8_t* dst, uint8_t* src, uint32_t sz){

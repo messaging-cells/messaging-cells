@@ -199,6 +199,8 @@ public:
 	grip 	cls_available_agent_ref;
 	grip 	cls_available_agent_grp;
 
+	kernel*	host_kernel;
+
 	actor* 	first_actor;
 
 	kernel() bj_external_code_ram;
