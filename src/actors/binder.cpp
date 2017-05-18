@@ -10,6 +10,7 @@ binder class.
 #include "binder.hh"
 #include "global.h"
 
+/*
 binder* // static 
 bj_epiphany_binder_get_right(binder* bdr, bj_core_id_t id){
 	BJK_CK(ck_id_1, (id == bj_addr_get_id(bdr)));
@@ -26,3 +27,4 @@ bj_epiphany_binder_get_left(binder* bdr, bj_core_id_t id){
 	return glb_lft;
 }
 
+*/

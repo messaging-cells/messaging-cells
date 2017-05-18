@@ -220,22 +220,6 @@ typedef binder grip;
 bj_c_decl {
 #endif
 
-typedef binder* (*bj_binder_fn)(binder* bdr, bj_core_id_t id);
-
-bj_opt_sz_fn 
-binder*
-bj_epiphany_binder_get_right(binder* bdr, bj_core_id_t id);
-
-bj_opt_sz_fn 
-binder*
-bj_epiphany_binder_get_left(binder* bdr, bj_core_id_t id);
-
-binder*
-bj_host_binder_get_right(binder* bdr, bj_core_id_t id) bj_external_code_ram;
-
-binder*
-bj_host_binder_get_left(binder* bdr, bj_core_id_t id) bj_external_code_ram;
-
 #ifdef __cplusplus
 }
 #endif

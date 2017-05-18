@@ -200,7 +200,7 @@ bj_host_run()
 
 		kernel* ker = BJK_KERNEL;
 		if(ker != bj_null){
-			//ker->handle_missives();
+			ker->handle_host_missives();
 		}
 
 		for (row=0; row < max_row; row++){

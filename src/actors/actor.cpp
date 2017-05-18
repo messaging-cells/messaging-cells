@@ -50,6 +50,8 @@ kernel::~kernel(){}
 
 void
 kernel::init_kernel(){
+	is_host_kernel = false;
+
 	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
 
 	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
@@ -124,18 +126,12 @@ kernel::finish_sys(){
 	bjk_glb_finish();
 }
 
-#ifdef BJ_IS_ZNQ_CODE
-	#include <stdio.h>
-#endif
-
 void // static
 kernel::init_host_sys(){
 	bj_host_init();
 	kernel::init_sys();
 	BJK_PT_EXTERNAL_DATA->pt_host_kernel = (void*)bj_host_addr_to_core_addr((bj_addr_t)BJK_KERNEL);
-	#ifdef BJ_IS_ZNQ_CODE
-		printf("Initing pt_host_kernel with %p \n", BJK_KERNEL);
-	#endif
+	BJK_KERNEL->is_host_kernel = true;
 }
 
 void // static
@@ -188,19 +184,15 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 
 	binder* all_msvs = &(rem_mgrp->all_agts);
 	bj_core_id_t msvs_id = bj_addr_get_id(all_msvs);
-	bj_binder_fn nx_fn = bj_epiphany_binder_get_right;
 
-	fst = (*nx_fn)(all_msvs, msvs_id);
+	fst = bj_glb_binder_get_rgt(all_msvs, msvs_id);
 	lst = all_msvs;
-	for(wrk = fst; wrk != lst; wrk = (*nx_fn)(wrk, msvs_id)){
+	for(wrk = fst; wrk != lst; wrk = bj_glb_binder_get_rgt(wrk, msvs_id)){
 		missive* remote_msv = (missive*)wrk;
 
 		actor* dst = remote_msv->dst;
 		EMU_CK(dst != bj_null);
-		bjk_handler_idx_t idx = dst->id_idx;
-		if(bjk_is_valid_handler_idx(ker, idx)){
-			(*((ker->handlers_arr)[idx]))(remote_msv);
-		}
+		bj_ker_call_handler(ker, dst->id_idx, remote_msv);
 	}
 
 	rem_mgrp->handled = bj_true;
@@ -289,13 +281,8 @@ kernel::handle_missives(){
 				case bjk_do_pw6_routes_sgnl:
 					process_signal(kernel_pw6_routed_arr_sz, pw6_routed_arr);
 					break;
-				case bjk_do_direct_routes_sgnl:
-					break;
 				default:
 					break;
-			}
-			if(aa == bjk_do_direct_routes_sgnl){
-			} else {
 			}
 		}
 	}
@@ -325,9 +312,7 @@ kernel::handle_missives(){
 
 		actor* dst = fst_msg->dst;
 		if(bj_addr_is_local(dst)){
-			if(bjk_is_valid_handler_idx(ker, dst->id_idx)){
-				(*((ker->handlers_arr)[dst->id_idx]))(fst_msg);
-			}
+			bj_ker_call_handler(ker, dst->id_idx, fst_msg);
 			fst_msg->release();
 		} else {
 			fst_msg->let_go();
@@ -393,18 +378,21 @@ kernel::handle_missives(){
 
 void
 agent_grp::release_all_agts(){
-	binder * fst, * lst, * wrk;
-
+	binder * fst, * lst, * wrk, * nxt;
 	binder* all_agts = &(this->all_agts);
-	bj_core_id_t agts_id = bj_addr_get_id(all_agts);
-	bj_binder_fn nx_fn = bj_epiphany_binder_get_right;
 
-	fst = (*nx_fn)(all_agts, agts_id);
+	fst = bjk_pt_to_binderpt(all_agts->bn_right);
 	lst = all_agts;
-	for(wrk = fst; wrk != lst; wrk = (*nx_fn)(wrk, agts_id)){
+	for(wrk = fst; wrk != lst; wrk = nxt){
 		agent* agt = (agent*)wrk;
+		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+
 		agt->let_go();
 		agt->release();
 	}
+}
+
+void 
+kernel::handle_host_missives(){
 }
 

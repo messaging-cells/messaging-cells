@@ -130,7 +130,6 @@ enum bjk_signal_t : uint8_t {
 	bjk_do_pw2_routes_sgnl,
 	bjk_do_pw4_routes_sgnl,
 	bjk_do_pw6_routes_sgnl,
-	bjk_do_direct_routes_sgnl,
 	bjk_tot_signals
 };
 
@@ -177,6 +176,8 @@ enum bjk_signal_t : uint8_t {
 
 class bj_aligned kernel { 
 public:
+	bool	is_host_kernel;
+
 	bj_bool_t signals_arr[kernel_signals_arr_sz];
 
 	missive_handler_t handlers_arr[kernel_handlers_arr_sz];
@@ -287,6 +288,9 @@ public:
 
 	bj_opt_sz_fn void 
 	handle_missives();
+
+	void 
+	handle_host_missives() bj_external_code_ram;
 
 	bj_opt_sz_fn void 
 	add_out_missive(missive& msv);
@@ -529,6 +533,16 @@ public:
 		return bjk_all_available(agent_ref);
 	}
 };
+
+#define bj_glb_binder_get_rgt(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_right)))
+#define bj_glb_binder_get_lft(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_left)))
+
+#define bj_ker_call_handler(ker, idx, msv) \
+	if(bjk_is_valid_handler_idx(ker, idx)){ \
+		(*(((ker)->handlers_arr)[idx]))(msv); \
+	} \
+
+// end_macro
 
 #ifdef __cplusplus
 bj_c_decl {

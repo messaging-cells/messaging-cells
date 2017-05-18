@@ -366,10 +366,10 @@ struct bj_aligned bj_link_syms_data_def {
 typedef struct bj_link_syms_data_def bj_link_syms_data_st;
 
 void*
-bj_add_lk_syms();
+bj_add_lk_syms() bj_external_code_ram;
 
 void
-bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms);
+bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms) bj_external_code_ram;
 
 
 #ifdef BJ_IS_EPH_CODE
