@@ -133,6 +133,13 @@ enum bjk_signal_t : uint8_t {
 	bjk_tot_signals
 };
 
+enum bjk_ack_t : uint8_t {
+	bjk_ready_ack = 0,
+	bjk_busy_ack,
+	bjk_virgin_ack
+};
+
+
 //-------------------------------------------------------------------------
 // kernel class
 
@@ -173,20 +180,27 @@ enum bjk_signal_t : uint8_t {
 	#define BJK_KERNEL kernel::get_sys()
 #endif
 
-
 class bj_aligned kernel { 
 public:
 	bool	is_host_kernel;
 
+	missive_handler_t handlers_arr[kernel_handlers_arr_sz];
+
 	bj_bool_t signals_arr[kernel_signals_arr_sz];
 
-	missive_handler_t handlers_arr[kernel_handlers_arr_sz];
 	missive_grp_t* pw0_routed_arr[kernel_pw0_routed_arr_sz];
 	missive_grp_t* pw2_routed_arr[kernel_pw2_routed_arr_sz];
 	missive_grp_t* pw4_routed_arr[kernel_pw4_routed_arr_sz];
 	missive_grp_t* pw6_routed_arr[kernel_pw6_routed_arr_sz];
 
+	bjk_ack_t pw0_routed_ack_arr[kernel_pw0_routed_arr_sz];
+	bjk_ack_t pw2_routed_ack_arr[kernel_pw2_routed_arr_sz];
+	bjk_ack_t pw4_routed_ack_arr[kernel_pw4_routed_arr_sz];
+	bjk_ack_t pw6_routed_ack_arr[kernel_pw6_routed_arr_sz];
+
 	missive_grp_t*	routed_from_host;
+	missive_grp_t*	routed_ack_from_host;
+
 	bj_bool_t has_from_host_work;
 	bj_bool_t has_to_host_work;
 	grip from_host_work;

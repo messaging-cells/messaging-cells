@@ -14,9 +14,9 @@
 #define NAMELEN 16
 
 struct emu_info_st {    // Used as argument to thread_start() 
-	pthread_t 	emu_id;        // id returned by pthread_create() 
-	int16_t 	emu_num;       // core consec
-	char 		emu_name[NAMELEN];
+	pthread_t 		emu_id;        // id returned by pthread_create() 
+	bj_core_nn_t	emu_num;       // core consec
+	char 			emu_name[NAMELEN];
 
 	void 		(*emu_core_func)();
 

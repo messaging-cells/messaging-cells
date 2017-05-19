@@ -52,13 +52,19 @@ void
 kernel::init_kernel(){
 	is_host_kernel = false;
 
+	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
+
 	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
 
-	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
-	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_virgin);
-	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_virgin);
-	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_virgin);
-	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_virgin);
+	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, bj_null);
+	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, bj_null);
+
+	bj_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_ack_arr, bjk_virgin_ack);
+	bj_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_ack_arr, bjk_virgin_ack);
+	bj_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_ack_arr, bjk_virgin_ack);
+	bj_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_ack_arr, bjk_virgin_ack);
 
 	bj_init_arr_vals(kernel_class_names_arr_sz, class_names_arr, bj_null);
 
@@ -244,14 +250,22 @@ kernel::set_handler(missive_handler_t hdlr, uint16_t idx){
 
 void 
 kernel::process_signal(int sz, missive_grp_t** arr){
+	bj_core_nn_t dst_idx = get_core_nn();
+
 	for(int aa = 0; aa < sz; aa++){
-		if((arr[aa] != bj_null) && (arr[aa] != bj_virgin)){
+		if(arr[aa] != bj_null){
 			missive_ref_t* nw_ref = agent_ref::acquire();
 			EMU_CK(nw_ref->is_alone());
 			EMU_CK(nw_ref->glb_agent_ptr == bj_null);
 
 			nw_ref->glb_agent_ptr = arr[aa];
 			in_work.bind_to_my_left(*nw_ref);
+
+			bj_core_id_t src_id = bj_addr_get_id((bj_addr_t)(arr[aa]));
+			bjk_ack_t* loc_dst_ack_pt = &(pw0_routed_ack_arr[dst_idx]);
+			bjk_ack_t* rem_dst_ack_pt = (bjk_ack_t*)bj_addr_set_id(src_id, loc_dst_ack_pt);
+			*rem_dst_ack_pt = bjk_ready_ack;
+
 			arr[aa] = bj_null;
 		}
 	}
@@ -332,7 +346,7 @@ kernel::handle_missives(){
 		}
 	}
 
-	bj_core_nn_t src_idx = bj_id_to_nn(get_core_id());
+	bj_core_nn_t src_idx = get_core_nn();
 
 	fst = bjk_pt_to_binderpt(ker->out_work.bn_right);
 	lst = &(ker->out_work);
@@ -347,16 +361,21 @@ kernel::handle_missives(){
 		bj_core_nn_t dst_idx = bj_id_to_nn(dst_id);
 
 		// ONLY pw0 case
-		missive_grp_t** loc_dst_pt = &((ker->pw0_routed_arr)[dst_idx]);
+		bjk_ack_t& loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[dst_idx];
 
-		if((*loc_dst_pt) == bj_virgin){
+		if(loc_dst_ack_pt == bjk_virgin_ack){
+			// Have never sent missives
 			if(! bjk_is_inited(dst_id)){
 				continue;
 			}
+			loc_dst_ack_pt = bjk_ready_ack;
 		}
+		if(loc_dst_ack_pt != bjk_ready_ack){
+			continue;
+		}
+		loc_dst_ack_pt = bjk_busy_ack;
 
 		missive_grp_t** loc_src_pt = &((ker->pw0_routed_arr)[src_idx]);
-
 		missive_grp_t** rmt_src_pt = (missive_grp_t**)bj_addr_set_id(dst_id, loc_src_pt);
 		missive_grp_t* glb_mgrp = (missive_grp_t*)bjk_as_glb_pt(mgrp);
 
@@ -410,16 +429,42 @@ agent_grp::release_all_agts(){
 
 void 
 kernel::handle_host_missives(){
+	if(! is_host_kernel){ return; }
 }
 
 void 
 kernel::call_host_handlers_of_group(missive_grp_t* mgrp){
+	if(! is_host_kernel){ return; }
 }
 
 void 
 kernel::handle_work_from_host(){
+	if(is_host_kernel){ return; }
+	if(host_kernel == bj_null){ return; }
+
+	has_from_host_work = false;
 }
 
 void 
 kernel::handle_work_to_host(){
+	if(is_host_kernel){ return; }
+	if(host_kernel == bj_null){ return; }
+
+	missive_grp_t* mgrp2 = agent_grp::acquire();
+	EMU_CK(mgrp2 != bj_null);
+	EMU_CK(mgrp2->all_agts.is_alone());
+
+	mgrp2->all_agts.move_all_to_my_left(to_host_work);
+
+	bj_core_nn_t src_idx = get_core_nn();
+	missive_grp_t* glb_mgrp = (missive_grp_t*)bjk_as_glb_pt(mgrp2);
+
+	(host_kernel->pw0_routed_arr)[src_idx] = glb_mgrp;
+
+	// send signal
+	host_kernel->signals_arr[bjk_do_pw0_routes_sgnl] = bj_true;
+
+	sent_work.bind_to_my_left(*mgrp2);
+
+	has_to_host_work = false;
 }

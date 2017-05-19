@@ -141,13 +141,22 @@ bool
 bjm_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
 	
 	if(! vv_ck){
+		emu_info_t* info = bjk_get_emu_info();
+		bj_core_id_t koid = info->emu_core_id;
+		bj_core_nn_t core_nn = info->emu_num;
+		if(bj_is_host_thread()){
+			fprintf(stderr, "HOST THREAD ***********************\n");
+			koid = -1;
+		}
 		fprintf(stderr, "------------------------------------------------------------------\n");
-		fprintf(stderr, "ASSERT '%s' FAILED\nFILE= %s\nLINE=%d \n", ck_str, file, line);
+		fprintf(stderr, "ASSERT '%s' FAILED\n CORE_ID=%x CORE_NN=%d FILE= %s\nLINE=%d \n", 
+				ck_str, koid, core_nn, file, line);
 		//bj_out << get_stack_trace(file, line) << bj_eol;
 		if(msg != NULL){
 			fprintf(stderr, "MSG=%s\n", msg);
 		}
 		fprintf(stderr, "------------------------------------------------------------------\n");
+		bjh_ptr_call_stack_trace();
 	}
 	assert(vv_ck);
 	return vv_ck;

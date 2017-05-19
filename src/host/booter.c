@@ -25,16 +25,6 @@ void
 bjh_abort_func(long val, const char* msg){
 	fprintf(stderr, "\nABORTING! ERR=%ld %s\n", val, msg);
 	EMU_CODE(bjh_ptr_call_stack_trace(););
-	/*
-		fprintf(stderr, "\nAFULL_TRACE-------------------------\n");
-		char* full_trace[BJ_MAX_CALL_STACK_SZ];
-		bjm_get_call_stack_trace(BJ_MAX_CALL_STACK_SZ, full_trace);
-		for(long aa = 0; aa < BJ_MAX_CALL_STACK_SZ; aa++){
-			if(full_trace[aa] == 0){ break; }
-			fprintf(stderr, "\n %s\n", full_trace[aa]);
-		}
-		fprintf(stderr, "-----------------------------------\n");
-	*/
 	
 	exit(val);
 }
@@ -94,9 +84,9 @@ int bjh_prt_in_core_shd_dat(bj_in_core_st* sh_dat){
 
 	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
-	/*
 	printf("binder_sz=%d \n", sh_dat->binder_sz);
 	printf("kernel_sz=%d \n", sh_dat->kernel_sz);
+	/*
 	printf("agent_sz=%d \n", sh_dat->agent_sz);
 	printf("actor_sz=%d \n", sh_dat->actor_sz);
 	printf("missive_sz=%d \n", sh_dat->missive_sz);
