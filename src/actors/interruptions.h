@@ -46,7 +46,7 @@ bjk_timer0_handler(void); // ivt_entry_timer0
 	}
 
 	#define bjk_simple_abort(func, excode) \
-		bj_in_core_st* in_core_pt = BJK_GLB_IN_CORE_SHD; \
+		bjk_glb_sys_st* in_core_pt = BJK_GLB_SYS; \
 		in_core_pt->exception_code = excode; \
 		in_core_pt->dbg_error_code = (bj_addr_t)(func); \
 		bj_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt; \

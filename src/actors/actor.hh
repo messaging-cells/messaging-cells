@@ -267,22 +267,22 @@ public:
 
 	static bj_inline_fn bj_core_nn_t 
 	get_core_nn(){
-		return BJK_GLB_IN_CORE_SHD->the_core_nn;
+		return BJK_GLB_SYS->the_core_nn;
 	}
 
 	static bj_inline_fn bj_core_co_t 
 	get_core_ro(){
-		return BJK_GLB_IN_CORE_SHD->the_core_ro;
+		return BJK_GLB_SYS->the_core_ro;
 	}
 
 	static bj_inline_fn bj_core_co_t 
 	get_core_co(){
-		return BJK_GLB_IN_CORE_SHD->the_core_co;
+		return BJK_GLB_SYS->the_core_co;
 	}
 
 	static bj_inline_fn bj_core_id_t 
 	get_core_id(){
-		return BJK_GLB_IN_CORE_SHD->the_core_id;
+		return BJK_GLB_SYS->the_core_id;
 	}
 
 	static bj_inline_fn actor*

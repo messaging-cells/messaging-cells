@@ -16,39 +16,6 @@ bj_c_decl {
 //=====================================================================
 // in ekore shared memory
 
-/*
-struct bj_aligned bj_in_core_shared_data_def { 
-	// CAREFUL !! sometimes aligment(ekore) != aligment(host). bj_aligned SHOULD SOLVE that.
-	uint32_t 	magic_id;
-	void** 		dbg_stack_trace;
-	
-	bj_addr_t 	dbg_min_sp;
-	bj_addr_t 	dbg_error_code;
-	uint32_t 	dbg_progress_flag;
-
-	bj_core_id_t the_core_id;
-	bj_core_nn_t the_core_nn;
-	bj_core_co_t the_core_ro;
-	bj_core_co_t the_core_co;
-
-	uint8_t 			the_core_state;
-	bjk_exception_t 	exception_code;
-	
-	uint16_t 	binder_sz;
-	uint16_t 	kernel_sz;
-	uint16_t 	agent_sz;
-	uint16_t 	actor_sz;
-	uint16_t 	missive_sz;
-	uint16_t 	agent_grp_sz;
-	uint16_t 	agent_ref_sz;
-
-	uint16_t 	bjk_glb_sys_st_sz;
-
-	uint32_t 	magic_end;
-};
-typedef struct bj_in_core_shared_data_def bj_in_core_st;
-*/
-
 //define BJ_MAX_STR_SZ 80
 // WHEN TESTING LOGS USE
 #define BJ_MAX_STR_SZ BJ_OUT_BUFF_SZ	
@@ -81,12 +48,8 @@ struct bj_aligned bjk_glb_sys_def {
 
 	uint32_t 	magic_end;
 
-
-	// ============================================================
-
 	bj_off_core_st* off_core_pt;
 	bj_rrarray_st* 	write_rrarray;
-	//bj_in_core_st 	in_core_shd;
 	uint8_t 		dbg_out_str[BJ_MAX_STR_SZ];
 
 	EPH_CODE(
@@ -100,8 +63,6 @@ struct bj_aligned bjk_glb_sys_def {
 };
 typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 
-typedef bjk_glb_sys_st bj_in_core_st;
-
 //if defined(BJ_IS_EPH_CODE) && !defined(IS_EMU_COD) 
 
 #ifdef BJ_IS_EPH_CODE
@@ -111,16 +72,12 @@ typedef bjk_glb_sys_st bj_in_core_st;
 	extern bjk_glb_sys_st*	bjk_glb_pt_sys_data;
 	#define BJK_FIRST_GLB_SYS bjk_get_first_glb_sys()
 	#define BJK_GLB_SYS (bjk_glb_pt_sys_data)
-	//define BJK_GLB_IN_CORE_SHD (&(bjk_glb_pt_sys_data->in_core_shd))
-	#define BJK_GLB_IN_CORE_SHD (bjk_glb_pt_sys_data)
 #else
 	bjk_glb_sys_st*
 	bjk_get_glb_sys();
 
 	#define BJK_FIRST_GLB_SYS bjk_get_glb_sys()
 	#define BJK_GLB_SYS bjk_get_glb_sys()
-	//define BJK_GLB_IN_CORE_SHD (&(bjk_get_glb_sys()->in_core_shd))
-	#define BJK_GLB_IN_CORE_SHD (bjk_get_glb_sys())
 #endif
 
 #ifdef BJ_IS_EPH_CODE
@@ -246,9 +203,9 @@ void ck_shd_code();
 	bj_inline_fn void
 	bjk_update_min_stack_pointer() {
 		bj_addr_t curr_sp = (bj_addr_t)bjk_get_stack_pointer();
-		bj_addr_t min_sp = BJK_GLB_IN_CORE_SHD->dbg_min_sp;
+		bj_addr_t min_sp = BJK_GLB_SYS->dbg_min_sp;
 		if((min_sp == 0) || (curr_sp < min_sp)){
-			BJK_GLB_IN_CORE_SHD->dbg_min_sp = curr_sp;
+			BJK_GLB_SYS->dbg_min_sp = curr_sp;
 		}
 	}
 	#define BJK_UPDATE_MIN_SP() BJ_DBG(bjk_update_min_stack_pointer())

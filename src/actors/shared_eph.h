@@ -38,13 +38,13 @@ typedef uint16_t bj_core_nn_t;
 #define bj_addr_has_id(addr) bj_addr_mask_id(addr)
 #define bj_addr_get_id(addr) ((bj_core_id_t)(bj_addr_mask_id(addr) >> bj_glb_addr_sz))
 #define bj_addr_set_id(id, addr) ((bj_addr_t)((((bj_addr_t)(id)) << bj_glb_addr_sz) | bj_addr_mask_ad(addr)))
-#define bj_addr_has_local_id(addr) (bj_addr_get_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id)
+#define bj_addr_has_local_id(addr) (bj_addr_get_id(addr) == BJK_GLB_SYS->the_core_id)
 #define bj_addr_is_local(addr) ((! bj_addr_has_id(addr)) || bj_addr_has_local_id(addr))
 
 #define bj_addr_get_disp(addr) ((bj_addr_t)bj_addr_mask_ad(addr))
 #define bj_addr_set_disp(disp, addr) ((bj_addr_t)(bj_addr_mask_id(addr) | bj_addr_mask_ad(disp)))
 
-#define bjk_as_glb_pt(pt) ((void*)bj_addr_set_id(BJK_GLB_IN_CORE_SHD->the_core_id, (pt)))
+#define bjk_as_glb_pt(pt) ((void*)bj_addr_set_id(BJK_GLB_SYS->the_core_id, (pt)))
 #define bjk_as_loc_pt(pt) ((void*)bj_addr_mask_ad(pt))
 #define bjk_as_img_pt(pt, id) ((void*)bj_addr_set_id((id), (pt)))
 

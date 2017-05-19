@@ -230,8 +230,8 @@ bj_host_run()
 								core_id, row, col, num_core);
 				}
 
-				//bj_in_core_st* inco = &thd_inf.thd_emu.emu_glb_sys_data.in_core_shd;
-				bj_in_core_st* inco = &thd_inf.thd_emu.emu_glb_sys_data;
+				//bjk_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data.in_core_shd;
+				bjk_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data;
 
 				// wait for finish
 				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){

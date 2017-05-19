@@ -47,7 +47,7 @@ bjk_abort(bj_addr_t err, char* msg) {
 	if((trace != bj_null) && (sz_trace > 0)){
 		bjk_get_call_stack_trace(sz_trace, trace);
 	}
-	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
+	bjk_glb_sys_st* in_shd = BJK_GLB_SYS;
 	in_shd->dbg_error_code = err;
 
 	bj_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt;

@@ -174,7 +174,7 @@ bj_addr_in_sys(bj_addr_t addr) {
 #define bj_addr_in_host(addr) (! bj_addr_in_sys(addr))
 
 #define bjk_is_core(row, col) \
-	((BJK_GLB_IN_CORE_SHD->the_core_ro == (row)) && (BJK_GLB_IN_CORE_SHD->the_core_co == (col)))
+	((BJK_GLB_SYS->the_core_ro == (row)) && (BJK_GLB_SYS->the_core_co == (col)))
 
 
 //======================================================================

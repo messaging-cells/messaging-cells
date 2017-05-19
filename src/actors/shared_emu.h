@@ -37,7 +37,7 @@ bjk_addr_with_fn(bj_core_id_t id, void* addr);
 #define bj_addr_has_id(addr) true
 #define bj_addr_get_id(addr) bjk_get_addr_core_id_fn((void*)(addr))
 #define bj_addr_set_id(id, addr) bjk_addr_with_fn((id), (void*)(addr))
-#define bj_addr_has_local_id(addr) (bj_addr_get_id(addr) == BJK_GLB_IN_CORE_SHD->the_core_id)
+#define bj_addr_has_local_id(addr) (bj_addr_get_id(addr) == BJK_GLB_SYS->the_core_id)
 #define bj_addr_is_local(addr) bj_addr_has_local_id(addr)
 
 #define bj_addr_get_disp(addr) ((bj_addr_t)(addr))

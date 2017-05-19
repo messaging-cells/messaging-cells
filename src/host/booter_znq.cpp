@@ -28,8 +28,8 @@ e_epiphany_t bjh_glb_dev;
 
 void
 print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
-	bj_in_core_st* pt_inco = 
-		(bj_in_core_st*)bj_core_eph_addr_to_znq_addr(row, col, (bj_addr_t)(sh_dat_1->core_data));
+	bjk_glb_sys_st* pt_inco = 
+		(bjk_glb_sys_st*)bj_core_eph_addr_to_znq_addr(row, col, (bj_addr_t)(sh_dat_1->core_data));
 	bjh_prt_in_core_shd_dat(pt_inco);
 
 	if(pt_inco->dbg_stack_trace != bj_null){

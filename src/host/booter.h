@@ -49,7 +49,7 @@ bjh_file_append(char* the_pth, char* the_data, long the_sz);
 
 bool bjh_ck_sys_data(bj_sys_sz_st* sys1);
 
-int bjh_prt_in_core_shd_dat(bj_in_core_st* sh_dat);
+int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat);
 
 bool
 bjh_rr_ck_zero(bj_rrarray_st* arr);

@@ -6,7 +6,7 @@ void actor_handler(missive* msg);
 
 void
 wait_inited_state(bj_core_id_t dst_id){
-	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
+	bjk_glb_sys_st* in_shd = BJK_GLB_SYS;
 	uint8_t* loc_st = &(in_shd->the_core_state);
 	uint8_t* rmt_st = (uint8_t*)bj_addr_set_id(dst_id, loc_st);
 	while(*rmt_st != bjk_inited_state);

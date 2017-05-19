@@ -66,7 +66,7 @@ bool bjh_ck_sys_data(bj_sys_sz_st* sys1){
 	return true;
 }
 
-int bjh_prt_in_core_shd_dat(bj_in_core_st* sh_dat){
+int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
 	if(sh_dat->magic_id != BJ_MAGIC_ID){
 		printf("ERROR with inco.magic_id (0x%08x)\n", sh_dat->magic_id);
 		return 1;

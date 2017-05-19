@@ -207,7 +207,7 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 		return 0;
 	}
 	bj_memset((uint8_t*)trace, 0, sizeof(void*) * sz);
-	BJK_GLB_IN_CORE_SHD->dbg_stack_trace = trace;
+	BJK_GLB_SYS->dbg_stack_trace = trace;
 	
 	uint16_t* pc_val = 0;
 	uint16_t* sp_val = 0;

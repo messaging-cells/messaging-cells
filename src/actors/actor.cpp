@@ -101,7 +101,7 @@ kernel::init_sys(){
 
 	ker->host_kernel = (kernel*)(BJK_PT_EXTERNAL_DATA->pt_host_kernel);
 
-	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
+	bjk_glb_sys_st* in_shd = BJK_GLB_SYS;
 
 	in_shd->binder_sz = sizeof(binder);
 	in_shd->kernel_sz = sizeof(kernel);
@@ -273,7 +273,7 @@ kernel::process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks){
 
 bool
 bjk_is_inited(bj_core_id_t dst_id){
-	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
+	bjk_glb_sys_st* in_shd = BJK_GLB_SYS;
 	uint8_t* loc_st = &(in_shd->the_core_state);
 	uint8_t* rmt_st = (uint8_t*)bj_addr_set_id(dst_id, loc_st);
 	if((*rmt_st) != bjk_inited_state){
