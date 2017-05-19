@@ -52,6 +52,8 @@ struct bj_aligned bjk_glb_sys_def {
 	bj_rrarray_st* 	write_rrarray;
 	uint8_t 		dbg_out_str[BJ_MAX_STR_SZ];
 
+	void*			pt_kernel;
+
 	EPH_CODE(
 		void* 		bjk_dbg_call_stack_trace[BJ_MAX_CALL_STACK_SZ];
 		uint16_t 	bjk_trace_err;

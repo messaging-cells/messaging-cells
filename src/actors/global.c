@@ -47,6 +47,7 @@ bjk_glb_init(void) {
 	glb_dat->the_core_ro = bj_id_to_ro(koid);
 	glb_dat->the_core_co = bj_id_to_co(koid);
 	glb_dat->the_core_nn = num_core;
+	glb_dat->pt_kernel = bj_null;
 
 	if(num_core < bj_out_num_cores){
 		glb_dat->off_core_pt = &((BJK_PT_EXTERNAL_DATA->sys_cores)[num_core]);

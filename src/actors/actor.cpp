@@ -112,6 +112,8 @@ kernel::init_sys(){
 	in_shd->agent_grp_sz = sizeof(agent_grp);
 	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
 
+	in_shd->pt_kernel = ker;
+
 	bjk_enable_all_irq();
 	bjk_global_irq_enable();
 
