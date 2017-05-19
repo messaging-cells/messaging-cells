@@ -1,6 +1,4 @@
 
-// bj_in_core_st the IN_CORE shared with host data
-
 // bj_shared_data.h
 
 #ifndef BJ_SHARED_DATA_H
@@ -241,37 +239,6 @@ typedef uint8_t bjk_exception_t;
 #define bjk_software_exception 1
 #define bjk_memory_exception 2
 
-struct bj_aligned bj_in_core_shared_data_def { 
-	// CAREFUL !! sometimes aligment(ekore) != aligment(host). bj_aligned SHOULD SOLVE that.
-	uint32_t 	magic_id;
-	void** 		dbg_stack_trace;
-	
-	bj_addr_t 	dbg_min_sp;
-	bj_addr_t 	dbg_error_code;
-	uint32_t 	dbg_progress_flag;
-
-	bj_core_id_t the_core_id;
-	bj_core_nn_t the_core_nn;
-	bj_core_co_t the_core_ro;
-	bj_core_co_t the_core_co;
-
-	uint8_t 			the_core_state;
-	bjk_exception_t 	exception_code;
-	
-	uint16_t 	binder_sz;
-	uint16_t 	kernel_sz;
-	uint16_t 	agent_sz;
-	uint16_t 	actor_sz;
-	uint16_t 	missive_sz;
-	uint16_t 	agent_grp_sz;
-	uint16_t 	agent_ref_sz;
-
-	uint16_t 	bjk_glb_sys_st_sz;
-
-	uint32_t 	magic_end;
-};
-typedef struct bj_in_core_shared_data_def bj_in_core_st;
-
 #define BJ_NOT_FINISHED_VAL 0x21
 #define BJ_FINISHED_VAL 	0xf1
 
@@ -284,7 +251,7 @@ struct bj_aligned bj_off_core_shared_data_def {
 	bj_core_id_t	ck_core_id;
 	uint8_t 		is_finished;
 	uint8_t 		is_waiting;
-	bj_in_core_st* 	core_data;
+	void* 			core_data;
 };
 typedef struct bj_off_core_shared_data_def bj_off_core_st;
 

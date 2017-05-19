@@ -249,11 +249,6 @@ public:
 	static kernel*
 	get_sys();
 
-	static bj_inline_fn bj_in_core_st& 
-	get_in_shd(){
-		return *BJK_GLB_IN_CORE_SHD;
-	}
-
 	static bj_inline_fn bjk_glb_sys_st& 
 	get_glb(){
 		return *BJK_GLB_SYS;

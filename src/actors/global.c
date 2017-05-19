@@ -42,7 +42,6 @@ bjk_glb_init(void) {
 
 	// in_shd init 
 	bj_in_core_st* in_shd = BJK_GLB_IN_CORE_SHD;
-	bj_memset((uint8_t*)in_shd, 0, sizeof(bj_in_core_st));
 
 	in_shd->magic_id = BJ_MAGIC_ID;
 	in_shd->dbg_stack_trace = bj_null;
