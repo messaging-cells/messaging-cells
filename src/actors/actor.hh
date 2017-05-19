@@ -186,7 +186,11 @@ public:
 	missive_grp_t* pw4_routed_arr[kernel_pw4_routed_arr_sz];
 	missive_grp_t* pw6_routed_arr[kernel_pw6_routed_arr_sz];
 
-	//grip direct_routed;
+	missive_grp_t*	routed_from_host;
+	bj_bool_t has_from_host_work;
+	bj_bool_t has_to_host_work;
+	grip from_host_work;
+	grip to_host_work;
 
 	grip in_work;
 	grip local_work;
@@ -289,14 +293,23 @@ public:
 	bj_opt_sz_fn void 
 	handle_missives();
 
-	void 
-	handle_host_missives() bj_external_code_ram;
-
 	bj_opt_sz_fn void 
 	add_out_missive(missive& msv);
 
 	bj_opt_sz_fn void 
 	call_handlers_of_group(missive_grp_t* mgrp);
+
+	void 
+	handle_work_from_host() bj_external_code_ram;
+
+	void 
+	handle_work_to_host() bj_external_code_ram;
+
+	void 
+	handle_host_missives() bj_external_code_ram;
+
+	void 
+	call_host_handlers_of_group(missive_grp_t* mgrp) bj_external_code_ram;
 
 };
 
@@ -428,7 +441,17 @@ public:
 
 	bj_inline_fn 
 	void send(){
+		EMU_CK(dst != bj_null);
+		EMU_CK(bj_addr_in_sys((bj_addr_t)dst));
 		BJK_KERNEL->local_work.bind_to_my_left(*this);
+	}
+
+	bj_inline_fn 
+	void send_to_host(){
+		EMU_CK(dst != bj_null);
+		EMU_CK(! bj_addr_in_sys((bj_addr_t)dst));
+		BJK_KERNEL->to_host_work.bind_to_my_left(*this);
+		BJK_KERNEL->has_to_host_work = true;
 	}
 
 	virtual

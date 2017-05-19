@@ -160,15 +160,23 @@ kernel::add_out_missive(missive& msv1){
 	binder * fst, * lst, * wrk;
 	kernel* ker = this;
 
+	bool found_grp = false;
+
 	fst = bjk_pt_to_binderpt(ker->out_work.bn_right);
 	lst = &(ker->out_work);
 	for(wrk = fst; wrk != lst; wrk = bjk_pt_to_binderpt(wrk->bn_right)){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
 		missive* msv2 = (missive*)(mgrp->all_agts.get_right_pt());
 		if(bj_addr_same_id(msv1.dst, msv2->dst)){
-			mgrp->bind_to_my_left(*msv2);
+			mgrp->all_agts.bind_to_my_left(msv1);
+			found_grp = true;
+			break;
 		}
 	}
+	if(found_grp){
+		return;
+	}
+
 	missive_grp_t* mgrp2 = agent_grp::acquire();
 	EMU_CK(mgrp2 != bj_null);
 	EMU_CK(mgrp2->all_agts.is_alone());
@@ -287,6 +295,10 @@ kernel::handle_missives(){
 		}
 	}
 
+	if(has_from_host_work){
+		handle_work_from_host();
+	}
+
 	binder* in_grp = &(ker->in_work);
 	fst = bjk_pt_to_binderpt(in_grp->bn_right);
 	lst = in_grp;
@@ -362,6 +374,10 @@ kernel::handle_missives(){
 		ker->sent_work.bind_to_my_left(*mgrp);
 	}
 
+	if(has_to_host_work){
+		handle_work_to_host();
+	}
+
 	fst = bjk_pt_to_binderpt(ker->sent_work.bn_right);
 	lst = &(ker->sent_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
@@ -396,3 +412,14 @@ void
 kernel::handle_host_missives(){
 }
 
+void 
+kernel::call_host_handlers_of_group(missive_grp_t* mgrp){
+}
+
+void 
+kernel::handle_work_from_host(){
+}
+
+void 
+kernel::handle_work_to_host(){
+}
