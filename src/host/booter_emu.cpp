@@ -230,8 +230,8 @@ bj_host_run()
 								core_id, row, col, num_core);
 				}
 
-				bj_in_core_st inco;
-				
+				bj_in_core_st* inco = &thd_inf.thd_emu.emu_glb_sys_data.in_core_shd;
+
 				// wait for finish
 				if(sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL){
 					has_work = true;
@@ -259,9 +259,7 @@ bj_host_run()
 						BJH_CK(bjh_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						printf("Finished\n");
-						memset(&inco, 0, sizeof(bj_in_core_st));
-						memcpy(&inco, &thd_inf.thd_emu.emu_glb_sys_data.in_core_shd, sizeof(bj_in_core_st));
-						int err2 = bjh_prt_in_core_shd_dat(&inco);
+						int err2 = bjh_prt_in_core_shd_dat(inco);
 						if(err2){
 							break;
 						}

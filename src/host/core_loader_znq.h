@@ -93,6 +93,9 @@ bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr);
 void
 ck_dbg_shd_code(char* msg, uint16_t* base);
 
+bj_addr_t
+bj_core_eph_addr_to_znq_addr(int row, int col, bj_addr_t ld_addr);
+
 #ifdef __cplusplus
 }
 #endif

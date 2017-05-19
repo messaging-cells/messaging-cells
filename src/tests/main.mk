@@ -51,6 +51,7 @@ BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
 #	./test_addr_conv/addr_conv.mk \
 #	./znq_tests/znq_hello.mk \
 #	./znq_tests/znq_backtrace.mk \
+#	./backtrace/backtrace.mk \
 
 SUBMAKEFILES := \
 	./nil_host/nil_host.mk \
@@ -59,6 +60,7 @@ SUBMAKEFILES := \
 	./send_msg/send_msg_emu.mk \
 	./min_host/min_host.mk \
 	./min_host/min_host_emu.mk \
+	./backtrace/backtrace.mk \
 
 
 

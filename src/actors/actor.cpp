@@ -249,7 +249,7 @@ kernel::set_handler(missive_handler_t hdlr, uint16_t idx){
 }
 
 void 
-kernel::process_signal(int sz, missive_grp_t** arr){
+kernel::process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks){
 	bj_core_nn_t dst_idx = get_core_nn();
 
 	for(int aa = 0; aa < sz; aa++){
@@ -262,7 +262,7 @@ kernel::process_signal(int sz, missive_grp_t** arr){
 			in_work.bind_to_my_left(*nw_ref);
 
 			bj_core_id_t src_id = bj_addr_get_id((bj_addr_t)(arr[aa]));
-			bjk_ack_t* loc_dst_ack_pt = &(pw0_routed_ack_arr[dst_idx]);
+			bjk_ack_t* loc_dst_ack_pt = &(acks[dst_idx]);
 			bjk_ack_t* rem_dst_ack_pt = (bjk_ack_t*)bj_addr_set_id(src_id, loc_dst_ack_pt);
 			*rem_dst_ack_pt = bjk_ready_ack;
 
@@ -292,16 +292,16 @@ kernel::handle_missives(){
 			signals_arr[aa] = bj_false;
 			switch(aa){
 				case bjk_do_pw0_routes_sgnl:
-					process_signal(kernel_pw0_routed_arr_sz, pw0_routed_arr);
+					process_signal(kernel_pw0_routed_arr_sz, pw0_routed_arr, pw0_routed_ack_arr);
 					break;
 				case bjk_do_pw2_routes_sgnl:
-					process_signal(kernel_pw2_routed_arr_sz, pw2_routed_arr);
+					process_signal(kernel_pw2_routed_arr_sz, pw2_routed_arr, pw2_routed_ack_arr);
 					break;
 				case bjk_do_pw4_routes_sgnl:
-					process_signal(kernel_pw4_routed_arr_sz, pw4_routed_arr);
+					process_signal(kernel_pw4_routed_arr_sz, pw4_routed_arr, pw4_routed_ack_arr);
 					break;
 				case bjk_do_pw6_routes_sgnl:
-					process_signal(kernel_pw6_routed_arr_sz, pw6_routed_arr);
+					process_signal(kernel_pw6_routed_arr_sz, pw6_routed_arr, pw6_routed_ack_arr);
 					break;
 				default:
 					break;
@@ -441,6 +441,7 @@ void
 kernel::handle_work_from_host(){
 	if(is_host_kernel){ return; }
 	if(host_kernel == bj_null){ return; }
+	if(! has_from_host_work){ return; }
 
 	has_from_host_work = false;
 }
@@ -449,6 +450,7 @@ void
 kernel::handle_work_to_host(){
 	if(is_host_kernel){ return; }
 	if(host_kernel == bj_null){ return; }
+	if(! has_to_host_work){ return; }
 
 	missive_grp_t* mgrp2 = agent_grp::acquire();
 	EMU_CK(mgrp2 != bj_null);
@@ -468,3 +470,28 @@ kernel::handle_work_to_host(){
 
 	has_to_host_work = false;
 }
+
+void 
+kernel::process_host_signal(int sz, missive_grp_t** arr){
+	//bj_core_nn_t dst_idx = get_core_nn();
+
+	/*
+	for(int aa = 0; aa < sz; aa++){
+		if(arr[aa] != bj_null){
+			missive_ref_t* nw_ref = agent_ref::acquire();
+			EMU_CK(nw_ref->is_alone());
+			EMU_CK(nw_ref->glb_agent_ptr == bj_null);
+
+			nw_ref->glb_agent_ptr = arr[aa];
+			in_work.bind_to_my_left(*nw_ref);
+
+			bj_core_id_t src_id = bj_addr_get_id((bj_addr_t)(arr[aa]));
+			bjk_ack_t* loc_dst_ack_pt = &(acks[dst_idx]);
+			bjk_ack_t* rem_dst_ack_pt = (bjk_ack_t*)bj_addr_set_id(src_id, loc_dst_ack_pt);
+			*rem_dst_ack_pt = bjk_ready_ack;
+
+			arr[aa] = bj_null;
+		}
+	}*/
+}
+

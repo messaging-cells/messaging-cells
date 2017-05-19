@@ -28,20 +28,14 @@ e_epiphany_t bjh_glb_dev;
 
 void
 print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
-	bj_in_core_st inco;
-	memset(&inco, 0, sizeof(bj_in_core_st));
-	e_read(dev, row, col, (uint32_t)(sh_dat_1->core_data), &inco, sizeof(inco));
-	int err = bjh_prt_in_core_shd_dat(&inco);
-	if(err){
-		bjh_abort_func((bj_addr_t)(print_core_info), "print_core_info failed");
+	bj_in_core_st* pt_inco = 
+		(bj_in_core_st*)bj_core_eph_addr_to_znq_addr(row, col, (bj_addr_t)(sh_dat_1->core_data));
+	bjh_prt_in_core_shd_dat(pt_inco);
+
+	if(pt_inco->dbg_stack_trace != bj_null){
+		void** 	pt_trace = (void**)bj_core_eph_addr_to_znq_addr(row, col, (bj_addr_t)(pt_inco->dbg_stack_trace));;
+		bjh_prt_core_call_stack(bjh_epiphany_elf_path, BJ_MAX_CALL_STACK_SZ, pt_trace);
 	}
-	
-	void* 	trace[BJ_MAX_CALL_STACK_SZ];
-	memset(trace, 0, sizeof(trace));
-	if(inco.dbg_stack_trace != bj_null){
-		e_read(dev, row, col, (uint32_t)(inco.dbg_stack_trace), trace, sizeof(trace));
-	}
-	bjh_prt_core_call_stack(bjh_epiphany_elf_path, BJ_MAX_CALL_STACK_SZ, trace);
 }
 
 void

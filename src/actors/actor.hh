@@ -199,7 +199,7 @@ public:
 	bjk_ack_t pw6_routed_ack_arr[kernel_pw6_routed_arr_sz];
 
 	missive_grp_t*	routed_from_host;
-	missive_grp_t*	routed_ack_from_host;
+	bjk_ack_t	routed_ack_from_host;
 
 	bj_bool_t has_from_host_work;
 	bj_bool_t has_to_host_work;
@@ -302,7 +302,7 @@ public:
 	set_handler(missive_handler_t hdlr, uint16_t idx) bj_external_code_ram;
 
 	bj_opt_sz_fn void 
-	process_signal(int sz, missive_grp_t** arr);
+	process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks);
 
 	bj_opt_sz_fn void 
 	handle_missives();
@@ -312,6 +312,9 @@ public:
 
 	bj_opt_sz_fn void 
 	call_handlers_of_group(missive_grp_t* mgrp);
+
+	void 
+	process_host_signal(int sz, missive_grp_t** arr) bj_external_code_ram;
 
 	void 
 	handle_work_from_host() bj_external_code_ram;
