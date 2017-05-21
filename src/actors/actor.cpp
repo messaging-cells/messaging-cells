@@ -77,6 +77,9 @@ kernel::init_kernel(){
 	host_kernel = bj_null;
 
 	first_actor = actor::acquire();
+
+	did_work = true;
+	exit_when_idle = false;
 }
 
 bool
@@ -125,7 +128,11 @@ kernel::run_sys(){
 	kernel* ker = BJK_KERNEL;
 	
 	while(true){
+		ker->did_work = false;
 		ker->handle_missives();
+		if(! ker->did_work && ker->exit_when_idle){
+			break;
+		}
 	}
 }
 
@@ -255,20 +262,22 @@ kernel::process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks){
 	bj_core_nn_t dst_idx = get_core_nn();
 
 	for(int aa = 0; aa < sz; aa++){
-		if(arr[aa] != bj_null){
+		missive_grp_t* glb_msv_grp = arr[aa];
+		arr[aa] = bj_null;
+		if(glb_msv_grp != bj_null){
 			missive_ref_t* nw_ref = agent_ref::acquire();
 			EMU_CK(nw_ref->is_alone());
 			EMU_CK(nw_ref->glb_agent_ptr == bj_null);
 
-			nw_ref->glb_agent_ptr = arr[aa];
+			nw_ref->glb_agent_ptr = glb_msv_grp;
 			in_work.bind_to_my_left(*nw_ref);
 
-			bj_core_id_t src_id = bj_addr_get_id((bj_addr_t)(arr[aa]));
+			bj_core_id_t src_id = bj_addr_get_id((bj_addr_t)(glb_msv_grp));
 			bjk_ack_t* loc_dst_ack_pt = &(acks[dst_idx]);
 			bjk_ack_t* rem_dst_ack_pt = (bjk_ack_t*)bj_addr_set_id(src_id, loc_dst_ack_pt);
 			*rem_dst_ack_pt = bjk_ready_ack;
 
-			arr[aa] = bj_null;
+			did_work = true;
 		}
 	}
 }
@@ -330,6 +339,7 @@ kernel::handle_missives(){
 		call_handlers_of_group(remote_grp);
 		fst_ref->release();
 		EMU_CK(fst_ref->glb_agent_ptr == bj_null);
+		did_work = true;
 	}
 
 	fst = bjk_pt_to_binderpt(ker->local_work.bn_right);
@@ -346,6 +356,7 @@ kernel::handle_missives(){
 			fst_msg->let_go();
 			add_out_missive(*fst_msg);
 		}
+		did_work = true;
 	}
 
 	bj_core_nn_t src_idx = get_core_nn();
@@ -368,11 +379,13 @@ kernel::handle_missives(){
 		if(loc_dst_ack_pt == bjk_virgin_ack){
 			// Have never sent missives
 			if(! bjk_is_inited(dst_id)){
+				did_work = true;
 				continue;
 			}
 			loc_dst_ack_pt = bjk_ready_ack;
 		}
 		if(loc_dst_ack_pt != bjk_ready_ack){
+			did_work = true;
 			continue;
 		}
 		loc_dst_ack_pt = bjk_busy_ack;
@@ -393,6 +406,7 @@ kernel::handle_missives(){
 
 		mgrp->let_go();
 		ker->sent_work.bind_to_my_left(*mgrp);
+		did_work = true;
 	}
 
 	if(has_to_host_work){
@@ -410,6 +424,7 @@ kernel::handle_missives(){
 			mgrp->let_go();
 			mgrp->release();
 		}
+		did_work = true;
 	}
 }
 

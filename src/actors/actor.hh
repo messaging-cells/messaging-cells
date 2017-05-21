@@ -180,6 +180,8 @@ enum bjk_ack_t : uint8_t {
 	#define BJK_KERNEL kernel::get_sys()
 #endif
 
+#define bjk_get_kernel() BJK_KERNEL
+
 class bj_aligned kernel { 
 public:
 	bool	is_host_kernel;
@@ -221,6 +223,9 @@ public:
 	kernel*	host_kernel;
 
 	actor* 	first_actor;
+
+	bool 	did_work;
+	bool 	exit_when_idle;
 
 	kernel() bj_external_code_ram;
 
@@ -295,6 +300,11 @@ public:
 
 	static void
 	set_handler(missive_handler_t hdlr, uint16_t idx) bj_external_code_ram;
+
+	bj_inline_fn
+	void set_idle_exit(){
+		exit_when_idle = true;
+	}
 
 	bj_opt_sz_fn void 
 	process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks);
@@ -420,7 +430,6 @@ public:
 //-------------------------------------------------------------------------
 // missive class
 
-typedef bjk_sptr_t bjk_actor_sptr_t;
 typedef uint16_t	bjk_token_t; 
 
 class bj_aligned missive : public agent {
@@ -433,7 +442,7 @@ public:
 	void			separate(uint16_t sz) bj_external_code_ram;
 
 	actor* 				dst;
-	bjk_actor_sptr_t 	src;
+	actor*				src;
 	bjk_token_t 		tok;
 
 	bj_opt_sz_fn 
@@ -478,12 +487,12 @@ public:
 
 	bj_inline_fn actor*
 	get_source(){
-		return (actor*)bjk_pt_to_binderpt(src);
+		return src;
 	}
 
 	bj_inline_fn void
 	set_source(actor* act){
-		src = bjk_binderpt_to_pt(act);
+		src = act;
 	}
 };
 
