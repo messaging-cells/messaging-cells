@@ -1,7 +1,5 @@
 
-#include <new>
 #include "interruptions.h"
-#include "dyn_mem.h"
 #include "err_msgs.h"
 #include "actor.hh"
 
@@ -52,7 +50,8 @@ void
 kernel::init_kernel(){
 	is_host_kernel = false;
 
-	bj_init_arr_vals(kernel_handlers_arr_sz, handlers_arr, bj_null);
+	tot_handlers = 0;
+	all_handlers = bj_null;
 
 	bj_init_arr_vals(kernel_signals_arr_sz, signals_arr, bj_false);
 
@@ -119,14 +118,13 @@ kernel::init_sys(){
 
 	bjk_enable_all_irq();
 	bjk_global_irq_enable();
-
-	in_shd->the_core_state = bjk_inited_state;
 }
 
 void // static
 kernel::run_sys(){
 	kernel* ker = BJK_KERNEL;
 	
+	BJK_GLB_SYS->the_core_state = bjk_inited_state;
 	while(true){
 		ker->did_work = false;
 		ker->handle_missives();
@@ -203,7 +201,7 @@ kernel::add_out_missive(missive& msv1){
 void 
 kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 	binder * fst, * lst, * wrk;
-	kernel* ker = this;
+	//kernel* ker = this;
 
 	binder* all_msvs = &(rem_mgrp->all_agts);
 	bj_core_id_t msvs_id = bj_addr_get_id(all_msvs);
@@ -213,9 +211,7 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 	for(wrk = fst; wrk != lst; wrk = bj_glb_binder_get_rgt(wrk, msvs_id)){
 		missive* remote_msv = (missive*)wrk;
 
-		actor* dst = remote_msv->dst;
-		EMU_CK(dst != bj_null);
-		bj_ker_call_handler(ker, dst->id_idx, remote_msv);
+		bjk_handle_missive(remote_msv);
 	}
 
 	rem_mgrp->handled = bj_true;
@@ -250,11 +246,10 @@ kernel::get_core_actor(bj_core_id_t dst_id){
 }
 
 void // static 
-kernel::set_handler(missive_handler_t hdlr, uint16_t idx){
+kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 	kernel* ker = BJK_KERNEL;
-	if(bjk_is_valid_handler_idx2(idx)){
-		(ker->handlers_arr)[idx] = hdlr;
-	}
+	ker->tot_handlers = tot_hdlrs;
+	ker->all_handlers = hdlrs;
 }
 
 void 
@@ -350,7 +345,7 @@ kernel::handle_missives(){
 
 		actor* dst = fst_msg->dst;
 		if(bj_addr_is_local(dst)){
-			bj_ker_call_handler(ker, dst->id_idx, fst_msg);
+			bjk_handle_missive(fst_msg);
 			fst_msg->release();
 		} else {
 			fst_msg->let_go();
@@ -510,5 +505,14 @@ kernel::process_host_signal(int sz, missive_grp_t** arr){
 			arr[aa] = bj_null;
 		}
 	}*/
+}
+
+void
+actor::respond(missive* msv_orig, bjk_token_t tok){
+	missive* msv = missive::acquire();
+	msv->src = this;
+	msv->dst = msv_orig->src;
+	msv->tok = tok;
+	msv->send();
 }
 

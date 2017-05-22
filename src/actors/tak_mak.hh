@@ -50,7 +50,7 @@ class for the tak_mak pseudo random number generator.
 #ifndef TAK_MAK_H
 #define TAK_MAK_H
 
-#include <cstdio>
+// include <cstdio>
 
 #include "attribute.h"
 

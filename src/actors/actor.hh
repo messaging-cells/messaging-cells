@@ -5,6 +5,8 @@
 #ifndef ACTOR_HH
 #define ACTOR_HH
 
+#include <new>
+#include "dyn_mem.h"
 #include "binder.hh"
 #include "err_msgs.h"
 #include "global.h"
@@ -50,10 +52,10 @@ enum bjk_actor_id_t : uint8_t {
 
 #define bjk_all_available(nam) BJK_KERNEL->cls_available_##nam
 
-#define BJK_DEFINE_SEPARATE(nam) \
+#define BJK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 void \
 nam::separate(uint16_t sz){ \
-	grip& ava = bjk_all_available(nam); \
+	grip& ava = all_ava; \
 	nam* obj = nam::acquire(sz); \
 	for(int bb = 0; bb < sz; bb++){ \
 		obj[bb].let_go(); \
@@ -62,6 +64,8 @@ nam::separate(uint16_t sz){ \
 } \
 
 // end_macro
+
+#define BJK_DEFINE_SEPARATE(nam) BJK_DEFINE_SEPARATE_AVA(nam, bjk_all_available(nam))
 
 #define BJK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 nam* \
@@ -79,10 +83,10 @@ nam::acquire_alloc(uint16_t sz){ \
 
 // end_macro
 
-#define BJK_DEFINE_ACQUIRE(nam) \
+#define BJK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
 nam* \
 nam::acquire(uint16_t sz){ \
-	grip& ava = bjk_all_available(nam); \
+	grip& ava = all_ava; \
 	if((sz == 1) && (! ava.is_alone())){ \
 		binder* fst = bjk_pt_to_binderpt(ava.bn_right); \
 		fst->let_go(); \
@@ -93,19 +97,26 @@ nam::acquire(uint16_t sz){ \
 
 // end_macro
 
+#define BJK_DEFINE_ACQUIRE(nam) BJK_DEFINE_ACQUIRE_AVA(nam, bjk_all_available(nam))
+
+#define BJK_DECLARE_MEM_METHODS(nam) \
+	static	nam*			acquire_alloc(uint16_t sz) bj_external_code_ram; \
+	static	nam*			acquire(uint16_t sz = 1); \
+	static	void			separate(uint16_t sz) bj_external_code_ram; \
+
+// end_macro
+
+#define BJK_DEFINE_MEM_METHODS(nam, align, all_ava) \
+	BJK_DEFINE_ACQUIRE_ALLOC(nam, align) \
+	BJK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
+	BJK_DEFINE_SEPARATE_AVA(nam, all_ava) \
+
+// end_macro
 
 //-------------------------------------------------------------------------
 // handler ids
 
-#define bjk_handler_idx(cls) BJ_CLASS_IDX_##cls
-
-enum bjk_handler_idx_t : uint8_t {
-	bjk_invalid_handler = 0,
-
-	bjk_handler_idx(actor),
-
-	bjk_tot_handler_ids
-};
+typedef uint8_t bjk_handler_idx_t;
 
 enum bjk_core_state_t : uint8_t {
 	bjk_invalid_state = 0,
@@ -147,7 +158,6 @@ enum bjk_ack_t : uint8_t {
 #define bj_virgin ((missive_grp_t*)(~((bj_addr_t)bj_null)))
 
 #define kernel_signals_arr_sz bjk_tot_signals
-#define kernel_handlers_arr_sz bjk_tot_handler_ids
 #define kernel_pw0_routed_arr_sz bj_out_num_cores
 #define kernel_pw2_routed_arr_sz bjk_tot_routes
 #define kernel_pw4_routed_arr_sz bjk_tot_routes
@@ -186,7 +196,8 @@ class bj_aligned kernel {
 public:
 	bool	is_host_kernel;
 
-	missive_handler_t handlers_arr[kernel_handlers_arr_sz];
+	bjk_handler_idx_t 	tot_handlers;
+	missive_handler_t* 	all_handlers;
 
 	bj_bool_t signals_arr[kernel_signals_arr_sz];
 
@@ -299,7 +310,7 @@ public:
 	get_core_actor(bj_core_id_t dst_id);
 
 	static void
-	set_handler(missive_handler_t hdlr, uint16_t idx) bj_external_code_ram;
+	set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) bj_external_code_ram;
 
 	bj_inline_fn
 	void set_idle_exit(){
@@ -335,10 +346,21 @@ public:
 
 };
 
-#define bjk_is_valid_handler_idx(ker, idx) \
-	((idx >= 0) && (idx < kernel_handlers_arr_sz) && ((ker->handlers_arr)[idx] != bj_null))
+#define bjk_is_valid_handler_idx(idx) ((idx >= 0) && (idx < tot_handlers))
 
-#define bjk_is_valid_handler_idx2(idx) ((idx >= 0) && (idx < kernel_handlers_arr_sz))
+#define bjk_is_valid_handler_index(idx) \
+	((all_handlers != bj_null) && bjk_is_valid_handler_idx(idx) && (all_handlers[idx] != bj_null))
+
+
+#define bjk_handle_missive(msv) \
+	actor* hdlr_dst = (msv)->dst; \
+	EMU_CK(hdlr_dst != bj_null); \
+	if(bjk_is_valid_handler_idx(hdlr_dst->handler_idx)){ \
+		(*(all_handlers[hdlr_dst->handler_idx]))(msv); \
+	} \
+
+// end_macro
+
 
 #define bj_class_name(cls) const_cast<char*>("{" #cls "}");
 
@@ -388,6 +410,7 @@ public:
 //-------------------------------------------------------------------------
 // actor class 
 
+typedef uint16_t bjk_token_t; 
 typedef uint8_t bjk_flags_t;
 
 class bj_aligned actor: public agent {
@@ -399,7 +422,7 @@ public:
 	static
 	void			separate(uint16_t sz) bj_external_code_ram;
 
-	bjk_handler_idx_t 	id_idx;
+	bjk_handler_idx_t 	handler_idx;
 	bjk_flags_t 		flags;
 
 	bj_opt_sz_fn 
@@ -412,7 +435,7 @@ public:
 
 	virtual bj_opt_sz_fn 
 	void init_me(){
-		id_idx = bjk_handler_idx(actor);
+		handler_idx = 0;
 		flags = 0;
 	}
 
@@ -425,12 +448,14 @@ public:
 	bj_opt_sz_fn grip&	get_available(){
 		return bjk_all_available(actor);
 	}
+
+	bj_opt_sz_fn
+	void
+	respond(missive* msv, bjk_token_t tok);
 };
 
 //-------------------------------------------------------------------------
 // missive class
-
-typedef uint16_t	bjk_token_t; 
 
 class bj_aligned missive : public agent {
 public:
@@ -464,6 +489,7 @@ public:
 	void send(){
 		EMU_CK(dst != bj_null);
 		EMU_CK(bj_addr_in_sys((bj_addr_t)dst));
+		src = (actor*)bjk_as_glb_pt(src);
 		BJK_KERNEL->local_work.bind_to_my_left(*this);
 	}
 
@@ -471,6 +497,7 @@ public:
 	void send_to_host(){
 		EMU_CK(dst != bj_null);
 		EMU_CK(! bj_addr_in_sys((bj_addr_t)dst));
+		src = (actor*)bjk_as_glb_pt(src);
 		BJK_KERNEL->to_host_work.bind_to_my_left(*this);
 		BJK_KERNEL->has_to_host_work = true;
 	}
@@ -581,12 +608,7 @@ public:
 #define bj_glb_binder_get_rgt(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_right)))
 #define bj_glb_binder_get_lft(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_left)))
 
-#define bj_ker_call_handler(ker, idx, msv) \
-	if(bjk_is_valid_handler_idx(ker, idx)){ \
-		(*(((ker)->handlers_arr)[idx]))(msv); \
-	} \
-
-// end_macro
+#define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(bjk_as_loc_pt(msv->dst)))->nam(msv))
 
 #ifdef __cplusplus
 bj_c_decl {

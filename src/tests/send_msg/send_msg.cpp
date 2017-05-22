@@ -4,13 +4,6 @@
 void recv_actor_handler(missive* msg);
 void actor_handler(missive* msg);
 
-void
-wait_inited_state(bj_core_id_t dst_id){
-	bjk_glb_sys_st* in_shd = BJK_GLB_SYS;
-	uint8_t* loc_st = &(in_shd->the_core_state);
-	uint8_t* rmt_st = (uint8_t*)bj_addr_set_id(dst_id, loc_st);
-	while(*rmt_st != bjk_inited_state);
-}
 
 void 
 recv_actor_handler(missive* msg){
@@ -27,10 +20,14 @@ recv_actor_handler(missive* msg){
 	bjk_get_kernel()->set_idle_exit();
 }
 
+missive_handler_t the_handlers[] = {
+	recv_actor_handler
+};
+
 void bj_cores_main() {
 	kernel::init_sys();
 
-	kernel::set_handler(recv_actor_handler, bjk_handler_idx(actor));
+	kernel::set_handlers(1, the_handlers);
 
 	actor::separate(bj_out_num_cores);
 	missive::separate(bj_out_num_cores);
@@ -42,6 +39,8 @@ void bj_cores_main() {
 
 	if(bjk_is_core(0,0)){
 		bjk_slog2("CORE (0,0) started\n");
+		kernel::get_core_actor()->handler_idx = 0;	// was 0 but it should be inited for every actors's subclass.
+
 		kernel::run_sys();
 	}
 	if(bjk_is_core(0,1)){
