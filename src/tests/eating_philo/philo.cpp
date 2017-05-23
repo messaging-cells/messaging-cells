@@ -5,20 +5,24 @@
 class chopstick;
 class philosopher;
 
+#define MAX_BITES 10
+
 chopstick* stick;
 philosopher* philo;
 
-enum chopstick_req_t : uint8_t {
+enum philo_tok_t : uint8_t {
 	tok_eat,
 	tok_take,
 	tok_taken,
 	tok_not_taken,
 	tok_drop,
 	tok_droped,
-	tok_not_droped
+	tok_not_droped, 
+	tok_full,
+	tok_not_full
 };
 
-class chopstick : actor {
+class chopstick : public actor {
 public:
 	BJK_DECLARE_MEM_METHODS(chopstick)
 
@@ -38,12 +42,14 @@ public:
 	void handler(missive* msv);
 };
 
-class philosopher : actor {
+class philosopher : public actor {
 public:
 	BJK_DECLARE_MEM_METHODS(philosopher)
 
 	chopstick* left;
-	chopstick* right;
+	int	num_bites;
+	bool lft_ph_full;
+	bool rgt_ph_full;
 
 	philosopher(){
 		init_philosopher();
@@ -54,10 +60,16 @@ public:
 	void init_philosopher(){
 		handler_idx = 2;
 		left = bj_null;
-		right = bj_null;
+		num_bites = 0;
+		lft_ph_full = false;
+		rgt_ph_full = false;
 	}
 
 	void handler(missive* msv);
+
+	void send(actor* dst, philo_tok_t tok);
+
+	void send_full();
 };
 
 void 
@@ -79,7 +91,7 @@ missive_handler_t the_handlers[] = {
 void
 chopstick::handler(missive* msv){
 	actor* msv_src = msv->src;
-	chopstick_req_t req = (chopstick_req_t)msv->tok;
+	philo_tok_t req = (philo_tok_t)msv->tok;
 
 	EMU_CODE(
 		bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
@@ -110,29 +122,104 @@ chopstick::handler(missive* msv){
 	//bjk_get_kernel()->set_idle_exit();
 }
 
+#define left_chp_nn(nn) (nn)
+#define right_chp_nn(nn) ((nn == 15)?(0):(nn + 1))
+
+#define left_phl_nn(nn) ((nn == 0)?(15):(nn - 1))
+#define right_phl_nn(nn) ((nn == 15)?(0):(nn + 1))
+
+#define get_stick(id) ((chopstick*)bj_addr_set_id(id, stick))
+#define get_philo(id) ((philosopher*)bj_addr_set_id(id, philo))
+
+void
+philosopher::send(actor* dst, philo_tok_t tok){
+	missive* msv = missive::acquire();
+	msv->src = this;
+	msv->dst = dst;
+	msv->tok = tok;
+	msv->send();
+}
+
+void
+philosopher::send_full(){
+	bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
+	if(! lft_ph_full){
+		philosopher* lft_phl = get_philo(bj_nn_to_id(left_phl_nn(nn)));
+		send(lft_phl, tok_full);
+	}
+	if(! rgt_ph_full){
+		philosopher* rgt_phl = get_philo(bj_nn_to_id(right_phl_nn(nn)));
+		send(rgt_phl, tok_full);
+	}
+}
+
 void
 philosopher::handler(missive* msv){
 	actor* msv_src = msv->src;
-	chopstick_req_t tok = (chopstick_req_t)msv->tok;
+	philo_tok_t tok = (philo_tok_t)msv->tok;
+	bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
 
 	EMU_CODE(
-		bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
 		bj_core_nn_t src_nn = bj_id_to_nn(bj_addr_get_id(msv_src));
 	);
 	EMU_LOG("philosopher %d GOT ANSWER from chopstick %d \n", nn, src_nn);
 
+	bj_core_id_t lft_id = bj_nn_to_id(left_chp_nn(nn));
+	bj_core_id_t rgt_id = bj_nn_to_id(right_chp_nn(nn));
+
+	chopstick* lft = get_stick(lft_id);
+	chopstick* rgt = get_stick(rgt_id);
+
 	switch(tok){
 		case tok_eat:
+			EMU_CK(num_bites < MAX_BITES);
+			if((msv_src == this) && (left == bj_null)){
+				send(lft, tok_take);
+			}
 		break;
 		case tok_taken:
+			if((left == bj_null) && (msv_src == lft)){
+				EMU_LOG("philosopher %d TOOK LEFT \n", nn);
+				left = lft;
+				send(rgt, tok_take);
+			}
+			if((left == lft) && (msv_src == rgt)){
+				EMU_LOG("philosopher %d TOOK RIGHT and EATING bite %d \n", nn, num_bites);
+				send(lft, tok_drop);
+				send(rgt, tok_drop);
+			}
 		break;
 		case tok_not_taken:
+			if((left == bj_null) && (msv_src == lft)){
+				send(this, tok_eat);
+			}
+			if((left == lft) && (msv_src == rgt)){
+				send(lft, tok_drop);
+			}
 		break;
 		case tok_droped:
+			num_bites++;
+			if(num_bites == MAX_BITES){
+				send_full();
+			}
 		break;
-		case tok_not_droped:
+		case tok_full:
+			if(msv_src == rgt){ rgt_ph_full = true; }
+			if(msv_src == lft){ lft_ph_full = true; }
+			if(num_bites == MAX_BITES){
+				send(msv_src, tok_full);
+			} else {
+				send(msv_src, tok_not_full);
+			}
+			if(rgt_ph_full && lft_ph_full){
+				bjk_get_kernel()->set_idle_exit();
+			}
+		break;
+		case tok_not_full:
+			send_full();
 		break;
 		default:
+			bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
 		break;
 	} 
 	
@@ -164,9 +251,16 @@ void bj_cores_main() {
 
 	EMU_PRT("PHILOSOPHERS CORE (%d,%d) started\n", ker->get_core_ro(), ker->get_core_co());
 
-	kernel::run_sys();
+	missive* msv = missive::acquire();
+	msv->src = philo;
+	msv->dst = philo;
+	msv->tok = tok_eat;
+	msv->send();
+	//philo->send
+	//kernel::run_sys();
 
-	bjk_slog2("FINISHED !!\n");	
+	EMU_LOG("PHILOSOPHERS CORE (%d,%d) finished\n", ker->get_core_ro(), ker->get_core_co());
+	bjk_slog2("PHILOSOPHERS FINISHED !!\n");	
 
 	kernel::finish_sys();
 }
