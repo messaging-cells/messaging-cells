@@ -30,6 +30,8 @@ typedef agent_ref actor_ref_t;
 
 typedef grip& (* bj_method_1_t)();
 
+typedef void (*bj_kenel_func_t)(void);
+
 //-------------------------------------------------------------------------
 // actor ids
 
@@ -72,7 +74,7 @@ nam* \
 nam::acquire_alloc(uint16_t sz){ \
 	nam* obj = bj_malloc##align(nam, sz); \
 	if(obj == bj_null){ \
-		bjk_abort((bj_addr_t)nam::acquire, err_1); \
+		bjk_abort((bj_addr_t)nam::acquire_alloc, err_1); \
 	} \
 	BJK_CK(BJ_STRFY(nam##alloc), BJ_IS_ALIGNED_##align(obj)); \
 	for(int bb = 0; bb < sz; bb++){ \
@@ -100,7 +102,7 @@ nam::acquire(uint16_t sz){ \
 #define BJK_DEFINE_ACQUIRE(nam) BJK_DEFINE_ACQUIRE_AVA(nam, bjk_all_available(nam))
 
 #define BJK_DECLARE_MEM_METHODS(nam) \
-	static	nam*			acquire_alloc(uint16_t sz) bj_external_code_ram; \
+	static	nam*			acquire_alloc(uint16_t sz = 1) bj_external_code_ram; \
 	static	nam*			acquire(uint16_t sz = 1); \
 	static	void			separate(uint16_t sz) bj_external_code_ram; \
 
@@ -234,6 +236,9 @@ public:
 	kernel*	host_kernel;
 
 	actor* 	first_actor;
+
+	bj_kenel_func_t	user_func;
+	void*	user_data;
 
 	bool 	did_work;
 	bool 	exit_when_idle;

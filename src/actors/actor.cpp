@@ -77,6 +77,9 @@ kernel::init_kernel(){
 
 	first_actor = actor::acquire();
 
+	user_func = bj_null;
+	user_data = bj_null;
+
 	did_work = true;
 	exit_when_idle = false;
 }
@@ -128,6 +131,9 @@ kernel::run_sys(){
 	while(true){
 		ker->did_work = false;
 		ker->handle_missives();
+		if(ker->user_func != bj_null){
+			(* (ker->user_func))();
+		}
 		if(! ker->did_work && ker->exit_when_idle){
 			break;
 		}
