@@ -25,14 +25,14 @@ comm_cla::method1(){
 }
 
 comm_cla::comm_cla(){
-	init_me();
+	init_comm_cla();
 }
 
 comm_cla::~comm_cla(){
 }
 
 void
-comm_cla::init_me(){
+comm_cla::init_comm_cla(){
 	aa = 7;
 	bb = 33;
 }

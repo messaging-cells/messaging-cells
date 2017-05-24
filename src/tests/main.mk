@@ -54,15 +54,17 @@ BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
 #	./backtrace/backtrace.mk \
 #	./min_host/min_host.mk \
 #	./min_host/min_host_emu.mk \
+#	./hello_class/hello_class.mk \
+#	./sequence/sequence.mk \
+#	./sequence/sequence_2.mk \
+#	./sequence/sequence_3.mk \
 
 SUBMAKEFILES := \
 	./nil_host/nil_host.mk \
 	./hello_world/hello_world.mk \
 	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_emu.mk \
-	./tak_mak_test/test_tak_mak.mk \
 	./eating_philo/philo_emu.mk \
-	./hello_class/hello_class.mk \
 
 
 

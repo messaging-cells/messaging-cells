@@ -9,10 +9,12 @@
 
 bool dbg_all_idle_prt[16];
 bool dbg_all_full[16];
+bool dbg_waiting[16];
 
-void prt_idle();
-void prt_full();
-void prt_all_philo();
+void prt_idle() bj_external_code_ram;
+void prt_full() bj_external_code_ram;
+void prt_waiting() bj_external_code_ram;
+void prt_all_philo() bj_external_code_ram;
 
 class chopstick;
 class philosopher;
@@ -22,6 +24,7 @@ class philosopher;
 #define PH_DBG EMU_PRT
 
 enum philo_tok_t : uint8_t {
+	tok_invalid,
 	tok_eat,
 	tok_take,
 	tok_taken,
@@ -35,11 +38,64 @@ enum philo_tok_t : uint8_t {
 	tok_wait_full
 };
 
+char*
+tok_to_str(philo_tok_t tok) bj_external_code_ram;
+
+char*
+tok_to_str(philo_tok_t tok){
+	switch(tok){
+	case tok_invalid:
+		return const_cast<char*>("invalid");
+	break;
+	case tok_eat:
+		return const_cast<char*>("eat");
+	break;
+	case tok_take:
+		return const_cast<char*>("take");
+	break;
+	case tok_taken:
+		return const_cast<char*>("taken");
+	break;
+	case tok_not_taken:
+		return const_cast<char*>("not_taken");
+	break;
+	case tok_drop:
+		return const_cast<char*>("drop");
+	break;
+	case tok_droped:
+		return const_cast<char*>("droped");
+	break;
+	case tok_not_droped:
+		return const_cast<char*>("not_droped");
+	break;
+	case tok_is_full:
+		return const_cast<char*>("is_fll");
+	break;
+	case tok_yes_full:
+		return const_cast<char*>("yes_fll");
+	break;
+	case tok_not_full:
+		return const_cast<char*>("not_fll");
+	break;
+	case tok_wait_full:
+		return const_cast<char*>("wait_fll");
+	break;
+	default:
+		bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
+	break;
+	}
+	return const_cast<char*>("NO_TOK");
+}
+
 class chopstick : public actor {
 public:
 	BJK_DECLARE_MEM_METHODS(chopstick)
 
 	actor* owner;
+
+	actor* last_src;
+	philo_tok_t last_sent;
+	philo_tok_t last_recv;
 
 	chopstick(){
 		init_chopstick();
@@ -50,6 +106,10 @@ public:
 	void init_chopstick(){
 		handler_idx = 1;
 		owner = bj_null;
+
+		last_src = bj_null;
+		last_sent = tok_invalid;
+		last_recv = tok_invalid;
 	}
 
 	void handler(missive* msv);
@@ -66,6 +126,22 @@ public:
 	bool lft_ph_full;
 	bool rgt_ph_full;
 
+	bj_core_id_t	lft_stk_id;
+	bj_core_id_t	rgt_stk_id;
+	chopstick*		lft_stick;
+	chopstick*		rgt_stick;
+	bj_core_id_t	lft_phi_id;
+	bj_core_id_t	rgt_phi_id;
+	philosopher*	lft_philo;
+	philosopher*	rgt_philo;
+
+	philo_tok_t last_sent;
+	philo_tok_t last_sent_lft;
+	philo_tok_t last_sent_rgt;
+	philo_tok_t last_recv;
+	philo_tok_t last_recv_lft;
+	philo_tok_t last_recv_rgt;
+
 	philosopher(){
 		init_philosopher();
 	}
@@ -81,6 +157,22 @@ public:
 		num_bites = 0;
 		lft_ph_full = false;
 		rgt_ph_full = false;
+
+		lft_stk_id = ~0;
+		rgt_stk_id = ~0;
+		lft_stick = bj_null;
+		rgt_stick = bj_null;
+		lft_phi_id = ~0;
+		rgt_phi_id = ~0;
+		lft_philo = bj_null;
+		rgt_philo = bj_null;
+
+		last_sent = tok_invalid;
+		last_sent_lft = tok_invalid;
+		last_sent_rgt = tok_invalid;
+		last_recv = tok_invalid;
+		last_recv_lft = tok_invalid;
+		last_recv_rgt = tok_invalid;
 	}
 
 	void handler(missive* msv);
@@ -105,10 +197,21 @@ BJK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
 
 #define glb_philo_core ((philo_core*)(bjk_get_kernel()->user_data))
 
-#define glb_stick &(glb_philo_core->stick)
-#define glb_philo &(glb_philo_core->philo)
+#define glb_stick (&(glb_philo_core->stick))
+#define glb_philo (&(glb_philo_core->philo))
+
 #define glb_ava_sticks (glb_philo_core->ava_chopstick)
 #define glb_ava_philos (glb_philo_core->ava_philosopher)
+
+#define left_chp_nn(nn) (nn)
+#define right_chp_nn(nn) ((nn == 15)?(0):(nn + 1))
+
+#define left_phl_nn(nn) ((nn == 0)?(15):(nn - 1))
+#define right_phl_nn(nn) ((nn == 15)?(0):(nn + 1))
+
+#define get_stick(id) ((chopstick*)bj_addr_set_id(id, glb_stick))
+#define get_philo(id) ((philosopher*)bj_addr_set_id(id, glb_philo))
+
 
 philo_core* dbg_all_philo[16];
 
@@ -131,50 +234,44 @@ missive_handler_t the_handlers[] = {
 void
 chopstick::handler(missive* msv){
 	actor* msv_src = msv->src;
-	philo_tok_t req = (philo_tok_t)msv->tok;
+	philo_tok_t tok = (philo_tok_t)msv->tok;
 
-	EMU_CODE(
-		bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
-		bj_core_nn_t src_nn = bj_id_to_nn(bj_addr_get_id(msv_src));
-	);
-	BJ_MARK_USED(nn);
-	BJ_MARK_USED(src_nn);
+	last_src = msv_src;
+	last_recv = tok;
 
-	if(req == tok_take){
-		if(owner == bj_null){
-			owner = msv_src;
-			respond(msv, tok_taken);
-			//PH_DBG("chopstick %d TAKEN by %d \n", nn, src_nn);
-		} else {
-			EMU_CK(owner != bj_null);
-			respond(msv, tok_not_taken);
-			//PH_DBG("chopstick %d NOT_taken by %d \n", nn, src_nn);
-		}
-	} else if(req == tok_drop){
-		if(owner == msv_src){
+	switch(tok){
+		case tok_take:
+			EMU_CK(owner != msv_src);
+			if(owner == bj_null){
+				owner = msv_src;
+				last_sent = tok_taken;
+				respond(msv, tok_taken);
+			} else {
+				EMU_CK(owner != bj_null);
+				last_sent = tok_not_taken;
+				respond(msv, tok_not_taken);
+			}
+		break;
+		case tok_drop:
+			EMU_CK(owner == msv_src);
 			owner = bj_null;
+			last_sent = tok_droped;
 			respond(msv, tok_droped);
-			//PH_DBG("chopstick %d DROPED by %d \n", nn, src_nn);
-		} else {
-			respond(msv, tok_not_droped);
-			//PH_DBG("chopstick %d NOT_droped by %d \n", nn, src_nn);
-		}
+		break;
+		default:
+			bjk_abort(1, const_cast<char*>("BAD_STICK_TOK"));
+		break;
 	}
 	
 	//bjk_get_kernel()->set_idle_exit();
 }
 
-#define left_chp_nn(nn) (nn)
-#define right_chp_nn(nn) ((nn == 15)?(0):(nn + 1))
-
-#define left_phl_nn(nn) ((nn == 0)?(15):(nn - 1))
-#define right_phl_nn(nn) ((nn == 15)?(0):(nn + 1))
-
-#define get_stick(id) ((chopstick*)bj_addr_set_id(id, glb_stick))
-#define get_philo(id) ((philosopher*)bj_addr_set_id(id, glb_philo))
-
 void
 philosopher::send(actor* dst, philo_tok_t tok){
+	last_sent = tok;
+	if(dst == lft_stick){ last_sent_lft = tok; }
+	if(dst == rgt_stick){ last_sent_rgt = tok; }
+
 	missive* msv = missive::acquire();
 	msv->src = this;
 	msv->dst = dst;
@@ -188,20 +285,10 @@ philosopher::handler(missive* msv){
 	philo_tok_t tok = (philo_tok_t)msv->tok;
 	bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
 
-	EMU_CODE(
-		bj_core_nn_t src_nn = bj_id_to_nn(bj_addr_get_id(msv_src));
-	);
-	BJ_MARK_USED(src_nn);
-	//PH_DBG("philosopher %d GOT ANSWER from chopstick %d \n", nn, src_nn);
+	last_recv = tok;
 
-	bj_core_id_t lft_id = bj_nn_to_id(left_chp_nn(nn));
-	bj_core_id_t rgt_id = bj_nn_to_id(right_chp_nn(nn));
-
-	chopstick* lft = get_stick(lft_id);
-	chopstick* rgt = get_stick(rgt_id);
-
-	philosopher* lft_phl = get_philo(bj_nn_to_id(left_phl_nn(nn)));
-	philosopher* rgt_phl = get_philo(bj_nn_to_id(right_phl_nn(nn)));
+	if(msv_src == lft_stick){ last_recv_lft = tok; }
+	if(msv_src == rgt_stick){ last_recv_rgt = tok; }
 
 	switch(tok){
 		case tok_eat:
@@ -209,87 +296,99 @@ philosopher::handler(missive* msv){
 			EMU_CK(left == bj_null);
 			EMU_CK(right == bj_null);
 			EMU_CK(num_bites < MAX_BITES);
-			send(lft, tok_take);
+			send(lft_stick, tok_take);
 		break;
 		case tok_taken:
-			EMU_CK((msv_src == lft) || (msv_src == rgt));
-			if(msv_src == lft){
+			EMU_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
+			if(msv_src == lft_stick){
 				EMU_CK(left == bj_null);
 				EMU_CK(right == bj_null);
 				//PH_DBG("philosopher %d TOOK LEFT \n", nn);
-				left = lft;
-				send(rgt, tok_take);
+				left = lft_stick;
+				send(rgt_stick, tok_take);
 			}
-			if(msv_src == rgt){
-				EMU_CK(left == lft);
+			if(msv_src == rgt_stick){
+				EMU_CK(left == lft_stick);
 				EMU_CK(right == bj_null);
-				right = rgt;
+				right = rgt_stick;
+
+				EMU_CK(left != bj_null);
+				EMU_CK(right != bj_null);
+				EMU_CK(num_bites < MAX_BITES);
+				num_bites++;
+				PH_DBG("NUM_BITES %d \n", num_bites);
+
 				//PH_DBG("philosopher %d TOOK RIGHT \n", nn);
-				send(lft, tok_drop);
-				send(rgt, tok_drop);
+				send(lft_stick, tok_drop);
+				send(rgt_stick, tok_drop);
 			}
 		break;
 		case tok_not_taken:
-			EMU_CK((msv_src == lft) || (msv_src == rgt));
-			if(msv_src == lft){
+			EMU_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
+			if(msv_src == lft_stick){
 				EMU_CK(left == bj_null);
 				EMU_CK(right == bj_null);
 				send(this, tok_eat);
 			}
-			if(msv_src == rgt){
-				EMU_CK(left == lft);
+			if(msv_src == rgt_stick){
+				EMU_CK(left == lft_stick);
 				EMU_CK(right == bj_null);
-				send(lft, tok_drop);
+				send(lft_stick, tok_drop);
 			}
 		break;
 		case tok_droped:
-			EMU_CK((msv_src == lft) || (msv_src == rgt));
-			if(msv_src == lft){
+			EMU_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
+			if(msv_src == lft_stick){
+				EMU_CK(left == lft_stick);
 				left = bj_null;
 			}
-			if(msv_src == rgt){
+			if(msv_src == rgt_stick){
+				EMU_CK(right == rgt_stick);
 				right = bj_null;
 			}
 			if((left == bj_null) && (right == bj_null)){
-				EMU_CK(num_bites < MAX_BITES);
-				num_bites++;
-				PH_DBG("NUM_BITES %d \n", num_bites);
 				if(num_bites == MAX_BITES){
 					PH_DBG("I AM FULL \n");
 					dbg_all_full[nn] = true;
 					prt_idle();
 					prt_full();
 					prt_all_philo();
-					if(! lft_ph_full){ send(lft_phl, tok_is_full); }
-					if(! rgt_ph_full){ send(rgt_phl, tok_is_full); }
-					send(lft_phl, tok_yes_full);
-					send(rgt_phl, tok_yes_full);
+					if(! lft_ph_full){ send(lft_philo, tok_is_full); }
+					if(! rgt_ph_full){ send(rgt_philo, tok_is_full); }
+					send(lft_philo, tok_yes_full);
+					send(rgt_philo, tok_yes_full);
 				} else {
 					send(this, tok_eat);
 				}
 			}
 		break;
 		case tok_is_full:
-			EMU_CK((msv_src == lft_phl) || (msv_src == rgt_phl));
+			EMU_CK((msv_src == lft_philo) || (msv_src == rgt_philo));
 			if(num_bites == MAX_BITES){
 				send(msv_src, tok_yes_full);
 			} else {
 				send(msv_src, tok_not_full);
 			}
+			if(num_bites == MAX_BITES){
+				send(this, tok_wait_full); 
+			}
 		break;
 		case tok_yes_full:
-			EMU_CK((msv_src == lft_phl) || (msv_src == rgt_phl));
-			if(msv_src == lft_phl){ 
-				//EMU_CK(! lft_ph_full);
+			EMU_CK((msv_src == lft_philo) || (msv_src == rgt_philo));
+			if(msv_src == lft_philo){ 
+				EMU_CK(! lft_ph_full);
 				lft_ph_full = true; 
 			}
-			if(msv_src == rgt_phl){ 
-				//EMU_CK(! rgt_ph_full);
+			if(msv_src == rgt_philo){ 
+				EMU_CK(! rgt_ph_full);
 				rgt_ph_full = true; 
 			}
 			if((num_bites == MAX_BITES) && rgt_ph_full && lft_ph_full){
 				//bjk_get_kernel()->set_idle_exit();
 			} 
+			if(num_bites == MAX_BITES){
+				send(this, tok_wait_full); 
+			}
 		break;
 		case tok_not_full:
 			EMU_CK(! (rgt_ph_full && lft_ph_full));
@@ -298,8 +397,10 @@ philosopher::handler(missive* msv){
 			}
 		break;
 		case tok_wait_full:
-			//EMU_CK(msv_src == this);
+			EMU_CK(num_bites == MAX_BITES);
+			EMU_CK(msv_src == bjk_as_glb_pt(this));
 			send(this, tok_wait_full); 
+			dbg_waiting[nn] = true;
 		break;
 		default:
 			bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
@@ -323,6 +424,7 @@ void prt_idle(){
 	}
 	pt += sprintf(pt, "]\n");
 	PH_DBG("%s", full_str);
+	prt_waiting();
 }
 
 void prt_full(){
@@ -339,19 +441,50 @@ void prt_full(){
 	PH_DBG("%s", full_str);
 }
 
+void prt_waiting(){
+	char full_str[500];
+	char* pt = full_str;
+	pt += sprintf(pt, "ALL_WAIT=[");
+	for(int aa = 0; aa < 16; aa++){
+		bool idl = dbg_waiting[aa];
+		if(idl){
+			pt += sprintf(pt, "%d,", aa);
+		}
+	}
+	pt += sprintf(pt, "]\n");
+	PH_DBG("%s", full_str);
+}
+
 void prt_ph(int aa, philosopher* ph){
 	char full_str[500];
 	char* pt = full_str;
 	bool is_fll = (ph->num_bites == MAX_BITES);
 	bool to_exit = is_fll && ph->lft_ph_full && ph->rgt_ph_full;
-	pt += sprintf(pt, "PHILO %d=[", aa);
-	pt += sprintf(pt, "FULL=%d ", is_fll);
-	pt += sprintf(pt, "TO_EXIT=%d ", to_exit);
-	pt += sprintf(pt, "left=%d ", (ph->left != bj_null)?(1):(0));
-	pt += sprintf(pt, "right=%d ", (ph->right != bj_null)?(1):(0));
-	pt += sprintf(pt, "num_bites=%d ", ph->num_bites);
-	pt += sprintf(pt, "lft_ph_full=%d ", ph->lft_ph_full);
-	pt += sprintf(pt, "rgt_ph_full=%d ", ph->rgt_ph_full);
+	pt += sprintf(pt, "PHILO (%p) %d=[", ph, aa);
+	pt += sprintf(pt, "F%d ", is_fll);
+	pt += sprintf(pt, "X%d ", to_exit);
+	pt += sprintf(pt, "L%d ", (ph->left != bj_null)?(1):(0));
+	pt += sprintf(pt, "R%d ", (ph->right != bj_null)?(1):(0));
+	pt += sprintf(pt, "N%d ", ph->num_bites);
+	pt += sprintf(pt, "LF%d ", ph->lft_ph_full);
+	pt += sprintf(pt, "RF%d ", ph->rgt_ph_full);
+	//pt += sprintf(pt, "ls=%s ", tok_to_str(ph->last_sent));
+	//pt += sprintf(pt, "lr=%s ", tok_to_str(ph->last_recv));
+	pt += sprintf(pt, "Lsnt=%s ", tok_to_str(ph->last_sent_lft));
+	pt += sprintf(pt, "Lrcv=%s ", tok_to_str(ph->last_recv_lft));
+	pt += sprintf(pt, "Rsnt=%s ", tok_to_str(ph->last_sent_rgt));
+	pt += sprintf(pt, "Rrcv=%s ", tok_to_str(ph->last_recv_rgt));
+	pt += sprintf(pt, "]\n");
+	PH_DBG("%s", full_str);
+}
+
+void prt_ch(int aa, chopstick* ch){
+	char full_str[500];
+	char* pt = full_str;
+	pt += sprintf(pt, "STICK (%p) %d=[", ch, aa);
+	pt += sprintf(pt, "lst_sent=%s ", tok_to_str(ch->last_sent));
+	pt += sprintf(pt, "lst_recv=%s ", tok_to_str(ch->last_recv));
+	pt += sprintf(pt, "lst_src=%p ", ch->last_src);
 	pt += sprintf(pt, "]\n");
 	PH_DBG("%s", full_str);
 }
@@ -359,6 +492,7 @@ void prt_ph(int aa, philosopher* ph){
 void prt_all_philo(){
 	for(int aa = 0; aa < 16; aa++){
 		philo_core* phl = dbg_all_philo[aa];
+		prt_ch(aa, &(phl->stick));
 		prt_ph(aa, &(phl->philo));
 	}
 }
@@ -374,7 +508,7 @@ void ker_func(){
 	}
 	if(ker->did_work && dbg_all_idle_prt[nn]){
 		dbg_all_idle_prt[nn] = false;
-		//PH_DBG("PHILOSOPHERS ACTIVE CORE (%d,%d)\n", ker->get_core_ro(), ker->get_core_co());
+		PH_DBG("WORK=%x\n", ker->did_work);
 	}
 }
 
@@ -387,18 +521,28 @@ void bj_cores_main() {
 
 	dbg_all_idle_prt[nn] = false;
 	dbg_all_full[nn] = false;
+	dbg_waiting[nn] = false;
 
 	//PH_DBG("PHILOSOPHERS CORE (%d,%d) starting\n", ker->get_core_ro(), ker->get_core_co());
 
 	philo_core* core_dat = philo_core::acquire_alloc();
+	if(core_dat == bj_null){
+		bjk_abort(1, const_cast<char*>("CAN NOT INIT GLB CORE DATA"));
+	}
+
 	ker->user_data = core_dat;
-	ker->user_func = ker_func;
+	//ker->user_func = ker_func;
 
 	dbg_all_philo[nn] = core_dat;
 
-	if(ker->user_data == bj_null){
-		bjk_abort(1, const_cast<char*>("CAN NOT INIT GLB CORE DATA"));
-	}
+	glb_philo->lft_stk_id = bj_nn_to_id(left_chp_nn(nn));
+	glb_philo->rgt_stk_id = bj_nn_to_id(right_chp_nn(nn));
+	glb_philo->lft_stick = get_stick(glb_philo->lft_stk_id);
+	glb_philo->rgt_stick = get_stick(glb_philo->rgt_stk_id);
+	glb_philo->lft_phi_id = bj_nn_to_id(left_phl_nn(nn));
+	glb_philo->rgt_phi_id = bj_nn_to_id(right_phl_nn(nn));
+	glb_philo->lft_philo = get_philo(glb_philo->lft_phi_id);
+	glb_philo->rgt_philo = get_philo(glb_philo->rgt_phi_id);
 
 	kernel::set_handlers(3, the_handlers);
 
@@ -411,12 +555,7 @@ void bj_cores_main() {
 
 	PH_DBG("started\n");
 
-	missive* msv = missive::acquire();
-	msv->src = glb_philo;
-	msv->dst = glb_philo;
-	msv->tok = tok_eat;
-	msv->send();
-	//philo->send
+	glb_philo->send(glb_philo, tok_eat);
 	kernel::run_sys();
 
 	PH_DBG("finished\n");

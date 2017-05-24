@@ -12,6 +12,8 @@
 #include "global.h"
 #include "cores_main.h"
 
+// look for "class bj_aligned "
+
 class kernel;
 class agent;
 class actor;
@@ -240,8 +242,8 @@ public:
 	bj_kenel_func_t	user_func;
 	void*	user_data;
 
-	bool 	did_work;
-	bool 	exit_when_idle;
+	uint16_t 	did_work;
+	bool 		exit_when_idle;
 
 	kernel() bj_external_code_ram;
 
@@ -362,6 +364,7 @@ public:
 	EMU_CK(hdlr_dst != bj_null); \
 	if(bjk_is_valid_handler_idx(hdlr_dst->handler_idx)){ \
 		(*(all_handlers[hdlr_dst->handler_idx]))(msv); \
+		EMU_DBG_CODE(msv->dbg_msv |= 0x2); \
 	} \
 
 // end_macro
@@ -393,12 +396,12 @@ public:
 	grip&	get_available() bj_external_code_ram;
 
 	virtual bj_opt_sz_fn 
-	void	init_me() bj_external_code_ram;
+	void	init_me(int caller = 0) bj_external_code_ram;
 
 	bj_opt_sz_fn 
 	void	release(){
 		let_go();
-		init_me();
+		init_me(1);
 		grip& ava = get_available();
 		ava.bind_to_my_left(*this);
 	}
@@ -439,7 +442,7 @@ public:
 	~actor(){}
 
 	virtual bj_opt_sz_fn 
-	void init_me(){
+	void init_me(int caller = 0){
 		handler_idx = 0;
 		flags = 0;
 	}
@@ -475,6 +478,8 @@ public:
 	actor*				src;
 	bjk_token_t 		tok;
 
+	EMU_DBG_CODE(uint8_t	dbg_msv);
+
 	bj_opt_sz_fn 
 	missive(){
 		init_me();
@@ -484,14 +489,18 @@ public:
 	~missive(){}
 
 	virtual bj_opt_sz_fn 
-	void init_me(){
+	void init_me(int caller = 0){
+		EMU_CK((caller != 1) || (! (dbg_msv & 0x1)) || (dbg_msv & 0x2));
 		dst = bj_null;
 		src = bjk_binderpt_to_pt(bj_null);
 		tok = 0;
+		EMU_DBG_CODE(dbg_msv = 0);
 	}
 
 	bj_inline_fn 
 	void send(){
+		EMU_CK(dbg_msv == 0);
+		EMU_DBG_CODE(dbg_msv |= 0x1);
 		EMU_CK(dst != bj_null);
 		EMU_CK(bj_addr_in_sys((bj_addr_t)dst));
 		src = (actor*)bjk_as_glb_pt(src);
@@ -553,7 +562,7 @@ public:
 	~agent_grp(){}
 
 	virtual bj_opt_sz_fn 
-	void init_me(){
+	void init_me(int caller = 0){
 		tot_agts = 0;
 		handled = bj_false;
 	}
@@ -595,7 +604,7 @@ public:
 	~agent_ref(){}
 
 	virtual bj_opt_sz_fn 
-	void init_me(){
+	void init_me(int caller = 0){
 		glb_agent_ptr = bj_null;
 	}
 

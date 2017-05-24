@@ -14,7 +14,7 @@ binder class and related.
 #include "shared.h"
 
 //define BINDER_CK(prm) 	DBG_CK(prm)
-#define BINDER_CK(prm) 	
+#define BINDER_CK(prm) EMU_CK(prm)
 
 //=================================================================
 // binder

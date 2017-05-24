@@ -4,7 +4,7 @@
 #ifndef BJ_ATTRIBUTE_H
 #define BJ_ATTRIBUTE_H
 
-#define bj_c_decl extern "C"
+#include "debug.h"
 
 #ifdef __cplusplus
 bj_c_decl {
@@ -39,6 +39,7 @@ bj_c_decl {
 	void bjm_log(const char *fmt, ...);
 
 	#define EMU_CODE(cod) cod
+	#define EMU_DBG_CODE(cod) BJ_DBG(cod)
 	#define EMU_CK(vv) bjm_call_assert(vv, __FILE__, __LINE__, #vv, bj_null)
 	#define EMU_PRT(...) bjm_printf(__VA_ARGS__)
 	#define EMU_LOG(...) bjm_log(__VA_ARGS__)
@@ -66,6 +67,7 @@ bj_c_decl {
 	#endif
 
 	#define EMU_CODE(cod) 
+	#define EMU_DBG_CODE(cod) 
 	#define EMU_CK(prm) 
 	#define EMU_PRT(...) 
 	#define EMU_LOG(...) 

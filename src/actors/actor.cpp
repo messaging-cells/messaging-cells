@@ -1,4 +1,8 @@
 
+#ifdef BJ_IS_EMU_CODE
+#include <sched.h>
+#endif
+
 #include "interruptions.h"
 #include "err_msgs.h"
 #include "actor.hh"
@@ -80,7 +84,7 @@ kernel::init_kernel(){
 	user_func = bj_null;
 	user_data = bj_null;
 
-	did_work = true;
+	did_work = 0x80;
 	exit_when_idle = false;
 }
 
@@ -129,7 +133,7 @@ kernel::run_sys(){
 	
 	BJK_GLB_SYS->the_core_state = bjk_inited_state;
 	while(true){
-		ker->did_work = false;
+		ker->did_work = 0x0;
 		ker->handle_missives();
 		if(ker->user_func != bj_null){
 			(* (ker->user_func))();
@@ -137,6 +141,7 @@ kernel::run_sys(){
 		if(! ker->did_work && ker->exit_when_idle){
 			break;
 		}
+		EMU_CODE(sched_yield());
 	}
 }
 
@@ -187,6 +192,7 @@ kernel::add_out_missive(missive& msv1){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
 		missive* msv2 = (missive*)(mgrp->all_agts.get_right_pt());
 		if(bj_addr_same_id(msv1.dst, msv2->dst)){
+			msv1.let_go();
 			mgrp->all_agts.bind_to_my_left(msv1);
 			found_grp = true;
 			break;
@@ -200,6 +206,7 @@ kernel::add_out_missive(missive& msv1){
 	EMU_CK(mgrp2 != bj_null);
 	EMU_CK(mgrp2->all_agts.is_alone());
 
+	msv1.let_go();
 	mgrp2->all_agts.bind_to_my_left(msv1);
 	ker->out_work.bind_to_my_left(*mgrp2);
 }
@@ -225,20 +232,13 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 
 grip&	
 agent::get_available(){
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wpmf-conversions"
-	bjk_abort((bj_addr_t)(void*)&agent::get_available, err_9);
-	//bjk_abort((bj_addr_t)(void*)(bj_method_1_t)(&agent::get_available), err_9);
-	#pragma GCC diagnostic pop
+	bjk_abort((bj_addr_t)err_9, err_9);
 	return *((grip*)bj_null);
 }
 
 void
-agent::init_me(){
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wpmf-conversions"
-	bjk_abort((bj_addr_t)(void*)&agent::init_me, err_10);
-	#pragma GCC diagnostic pop
+agent::init_me(int caller){
+	bjk_abort((bj_addr_t)err_10, err_10);
 }
 
 actor*	//	static 
@@ -278,7 +278,7 @@ kernel::process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks){
 			bjk_ack_t* rem_dst_ack_pt = (bjk_ack_t*)bj_addr_set_id(src_id, loc_dst_ack_pt);
 			*rem_dst_ack_pt = bjk_ready_ack;
 
-			did_work = true;
+			did_work |= 0x01;
 		}
 	}
 }
@@ -340,7 +340,7 @@ kernel::handle_missives(){
 		call_handlers_of_group(remote_grp);
 		fst_ref->release();
 		EMU_CK(fst_ref->glb_agent_ptr == bj_null);
-		did_work = true;
+		did_work |= 0x02;
 	}
 
 	fst = bjk_pt_to_binderpt(ker->local_work.bn_right);
@@ -354,10 +354,10 @@ kernel::handle_missives(){
 			bjk_handle_missive(fst_msg);
 			fst_msg->release();
 		} else {
-			fst_msg->let_go();
 			add_out_missive(*fst_msg);
+			EMU_CK(! fst_msg->is_alone());
 		}
-		did_work = true;
+		did_work |= 0x04;
 	}
 
 	bj_core_nn_t src_idx = get_core_nn();
@@ -380,13 +380,13 @@ kernel::handle_missives(){
 		if(loc_dst_ack_pt == bjk_virgin_ack){
 			// Have never sent missives
 			if(! bjk_is_inited(dst_id)){
-				did_work = true;
+				did_work |= 0x08;
 				continue;
 			}
 			loc_dst_ack_pt = bjk_ready_ack;
 		}
 		if(loc_dst_ack_pt != bjk_ready_ack){
-			did_work = true;
+			did_work |= 0x10;
 			continue;
 		}
 		loc_dst_ack_pt = bjk_busy_ack;
@@ -397,6 +397,7 @@ kernel::handle_missives(){
 
 		//EMU_PRT("SENDING pt_msv_grp= %p right= %p\n", mgrp, mgrp->get_right_pt());
 
+		EMU_CK(*rmt_src_pt == bj_null);
 		*rmt_src_pt = glb_mgrp;
 
 		// send signal
@@ -407,7 +408,7 @@ kernel::handle_missives(){
 
 		mgrp->let_go();
 		ker->sent_work.bind_to_my_left(*mgrp);
-		did_work = true;
+		did_work |= 0x20;
 	}
 
 	if(has_to_host_work){
@@ -422,10 +423,9 @@ kernel::handle_missives(){
 
 		if(mgrp->handled){
 			mgrp->release_all_agts();
-			mgrp->let_go();
 			mgrp->release();
 		}
-		did_work = true;
+		did_work |= 0x40;
 	}
 }
 
@@ -440,7 +440,6 @@ agent_grp::release_all_agts(){
 		agent* agt = (agent*)wrk;
 		nxt = bjk_pt_to_binderpt(wrk->bn_right);
 
-		agt->let_go();
 		agt->release();
 	}
 }

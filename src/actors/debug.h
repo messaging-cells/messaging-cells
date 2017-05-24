@@ -4,7 +4,7 @@
 #ifndef BJ_DEBUG_H
 #define BJ_DEBUG_H
 
-#include "attribute.h"
+#define bj_c_decl extern "C"
 
 #ifdef __cplusplus
 bj_c_decl {

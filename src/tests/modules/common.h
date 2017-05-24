@@ -23,7 +23,7 @@ public:
 
 	~comm_cla() bj_comm_cod;
 
-	void init_me() bj_comm_cod;
+	void init_comm_cla() bj_comm_cod;
 
 	void method1() bj_comm_cod;
 };
