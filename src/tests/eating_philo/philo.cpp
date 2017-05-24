@@ -32,10 +32,7 @@ enum philo_tok_t : uint8_t {
 	tok_drop,
 	tok_droped,
 	tok_not_droped, 
-	tok_is_full,
-	tok_yes_full,
-	tok_not_full,
-	tok_wait_full
+	tok_yes_full
 };
 
 char*
@@ -68,17 +65,8 @@ tok_to_str(philo_tok_t tok){
 	case tok_not_droped:
 		return const_cast<char*>("not_droped");
 	break;
-	case tok_is_full:
-		return const_cast<char*>("is_fll");
-	break;
 	case tok_yes_full:
 		return const_cast<char*>("yes_fll");
-	break;
-	case tok_not_full:
-		return const_cast<char*>("not_fll");
-	break;
-	case tok_wait_full:
-		return const_cast<char*>("wait_fll");
 	break;
 	default:
 		bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
@@ -180,6 +168,10 @@ public:
 	void send(actor* dst, philo_tok_t tok);
 
 	void send_full();
+
+	bool can_exit(){
+		return ((num_bites == MAX_BITES) && rgt_ph_full && lft_ph_full);
+	}
 };
 
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
@@ -303,7 +295,6 @@ philosopher::handler(missive* msv){
 			if(msv_src == lft_stick){
 				EMU_CK(left == bj_null);
 				EMU_CK(right == bj_null);
-				//PH_DBG("philosopher %d TOOK LEFT \n", nn);
 				left = lft_stick;
 				send(rgt_stick, tok_take);
 			}
@@ -317,8 +308,8 @@ philosopher::handler(missive* msv){
 				EMU_CK(num_bites < MAX_BITES);
 				num_bites++;
 				PH_DBG("NUM_BITES %d \n", num_bites);
+				EMU_LOG("NUM_BITES %d \n", num_bites);
 
-				//PH_DBG("philosopher %d TOOK RIGHT \n", nn);
 				send(lft_stick, tok_drop);
 				send(rgt_stick, tok_drop);
 			}
@@ -349,28 +340,21 @@ philosopher::handler(missive* msv){
 			if((left == bj_null) && (right == bj_null)){
 				if(num_bites == MAX_BITES){
 					PH_DBG("I AM FULL \n");
+					EMU_LOG("I AM FULL \n");
 					dbg_all_full[nn] = true;
-					prt_idle();
-					prt_full();
-					prt_all_philo();
-					if(! lft_ph_full){ send(lft_philo, tok_is_full); }
-					if(! rgt_ph_full){ send(rgt_philo, tok_is_full); }
 					send(lft_philo, tok_yes_full);
 					send(rgt_philo, tok_yes_full);
+
+					if(can_exit()){
+						prt_idle();
+						prt_full();
+						prt_all_philo();
+						EMU_LOG("FINISHING \n");
+						bjk_get_kernel()->set_idle_exit();
+					}
 				} else {
 					send(this, tok_eat);
 				}
-			}
-		break;
-		case tok_is_full:
-			EMU_CK((msv_src == lft_philo) || (msv_src == rgt_philo));
-			if(num_bites == MAX_BITES){
-				send(msv_src, tok_yes_full);
-			} else {
-				send(msv_src, tok_not_full);
-			}
-			if(num_bites == MAX_BITES){
-				send(this, tok_wait_full); 
 			}
 		break;
 		case tok_yes_full:
@@ -383,24 +367,13 @@ philosopher::handler(missive* msv){
 				EMU_CK(! rgt_ph_full);
 				rgt_ph_full = true; 
 			}
-			if((num_bites == MAX_BITES) && rgt_ph_full && lft_ph_full){
-				//bjk_get_kernel()->set_idle_exit();
-			} 
-			if(num_bites == MAX_BITES){
-				send(this, tok_wait_full); 
+			if(can_exit()){
+				prt_idle();
+				prt_full();
+				prt_all_philo();
+				EMU_LOG("FINISHING \n");
+				bjk_get_kernel()->set_idle_exit();
 			}
-		break;
-		case tok_not_full:
-			EMU_CK(! (rgt_ph_full && lft_ph_full));
-			if(num_bites == MAX_BITES){
-				send(this, tok_wait_full); 
-			}
-		break;
-		case tok_wait_full:
-			EMU_CK(num_bites == MAX_BITES);
-			EMU_CK(msv_src == bjk_as_glb_pt(this));
-			send(this, tok_wait_full); 
-			dbg_waiting[nn] = true;
 		break;
 		default:
 			bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
@@ -468,8 +441,6 @@ void prt_ph(int aa, philosopher* ph){
 	pt += sprintf(pt, "N%d ", ph->num_bites);
 	pt += sprintf(pt, "LF%d ", ph->lft_ph_full);
 	pt += sprintf(pt, "RF%d ", ph->rgt_ph_full);
-	//pt += sprintf(pt, "ls=%s ", tok_to_str(ph->last_sent));
-	//pt += sprintf(pt, "lr=%s ", tok_to_str(ph->last_recv));
 	pt += sprintf(pt, "Lsnt=%s ", tok_to_str(ph->last_sent_lft));
 	pt += sprintf(pt, "Lrcv=%s ", tok_to_str(ph->last_recv_lft));
 	pt += sprintf(pt, "Rsnt=%s ", tok_to_str(ph->last_sent_rgt));
@@ -502,13 +473,9 @@ void ker_func(){
 	bj_core_nn_t nn = ker->get_core_nn();
 	if(! ker->did_work && ! dbg_all_idle_prt[nn]){
 		dbg_all_idle_prt[nn] = true;
-		PH_DBG("IDLE\n");
-		prt_idle();
-		prt_full();
 	}
 	if(ker->did_work && dbg_all_idle_prt[nn]){
 		dbg_all_idle_prt[nn] = false;
-		PH_DBG("WORK=%x\n", ker->did_work);
 	}
 }
 
@@ -531,7 +498,7 @@ void bj_cores_main() {
 	}
 
 	ker->user_data = core_dat;
-	//ker->user_func = ker_func;
+	ker->user_func = ker_func;
 
 	dbg_all_philo[nn] = core_dat;
 
@@ -559,6 +526,7 @@ void bj_cores_main() {
 	kernel::run_sys();
 
 	PH_DBG("finished\n");
+	EMU_LOG("PHILOSOPHERS FINISHED !!\n");	
 	bjk_slog2("PHILOSOPHERS FINISHED !!\n");	
 
 	kernel::finish_sys();
