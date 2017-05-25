@@ -8,7 +8,7 @@ cd ..
 
 cd src/tests
 make
-rm ./bin/log*
+rm ./bin/log_core_*
 cd ../..
 
 PROG=src/tests/bin/send_msg_eph.elf

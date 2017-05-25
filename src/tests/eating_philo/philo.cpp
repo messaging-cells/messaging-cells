@@ -1,20 +1,36 @@
 
-
-#ifdef BJ_IS_EMU_CODE
-#include "stdio.h"
-#endif
-
+#include <new>
 #include "attribute.h"
 #include "actor.hh"
 
-bool dbg_all_idle_prt[16];
-bool dbg_all_full[16];
-bool dbg_waiting[16];
+#ifdef BJ_IS_EMU_CODE
+#define PHILO_WITH_DBG
+#endif
 
-void prt_idle() bj_external_code_ram;
-void prt_full() bj_external_code_ram;
-void prt_waiting() bj_external_code_ram;
-void prt_all_philo() bj_external_code_ram;
+#ifdef PHILO_WITH_DBG
+	#include "stdio.h"
+
+	bool dbg_all_idle_prt[16] bj_external_code_ram = {
+		false, false, false, false, 
+		false, false, false, false, 
+		false, false, false, false, 
+		false, false, false, false
+	};
+	bool dbg_all_full[16] bj_external_code_ram = {
+		false, false, false, false, 
+		false, false, false, false, 
+		false, false, false, false, 
+		false, false, false, false
+	};
+
+	void prt_idle() bj_external_code_ram;
+	void prt_full() bj_external_code_ram;
+	void prt_all_philo() bj_external_code_ram;
+
+	#define PH_DBG_COD(prm) prm
+#else
+	#define PH_DBG_COD(prm) 
+#endif
 
 class chopstick;
 class philosopher;
@@ -35,45 +51,47 @@ enum philo_tok_t : uint8_t {
 	tok_yes_full
 };
 
-char*
-tok_to_str(philo_tok_t tok) bj_external_code_ram;
+#ifdef PHILO_WITH_DBG
+	char*
+	tok_to_str(philo_tok_t tok) bj_external_code_ram;
 
-char*
-tok_to_str(philo_tok_t tok){
-	switch(tok){
-	case tok_invalid:
-		return const_cast<char*>("invalid");
-	break;
-	case tok_eat:
-		return const_cast<char*>("eat");
-	break;
-	case tok_take:
-		return const_cast<char*>("take");
-	break;
-	case tok_taken:
-		return const_cast<char*>("taken");
-	break;
-	case tok_not_taken:
-		return const_cast<char*>("not_taken");
-	break;
-	case tok_drop:
-		return const_cast<char*>("drop");
-	break;
-	case tok_droped:
-		return const_cast<char*>("droped");
-	break;
-	case tok_not_droped:
-		return const_cast<char*>("not_droped");
-	break;
-	case tok_yes_full:
-		return const_cast<char*>("yes_fll");
-	break;
-	default:
-		bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
-	break;
+	char*
+	tok_to_str(philo_tok_t tok){
+		switch(tok){
+		case tok_invalid:
+			return const_cast<char*>("invalid");
+		break;
+		case tok_eat:
+			return const_cast<char*>("eat");
+		break;
+		case tok_take:
+			return const_cast<char*>("take");
+		break;
+		case tok_taken:
+			return const_cast<char*>("taken");
+		break;
+		case tok_not_taken:
+			return const_cast<char*>("not_taken");
+		break;
+		case tok_drop:
+			return const_cast<char*>("drop");
+		break;
+		case tok_droped:
+			return const_cast<char*>("droped");
+		break;
+		case tok_not_droped:
+			return const_cast<char*>("not_droped");
+		break;
+		case tok_yes_full:
+			return const_cast<char*>("yes_fll");
+		break;
+		default:
+			bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
+		break;
+		}
+		return const_cast<char*>("NO_TOK");
 	}
-	return const_cast<char*>("NO_TOK");
-}
+#endif
 
 class chopstick : public actor {
 public:
@@ -170,7 +188,7 @@ public:
 	void send_full();
 
 	bool can_exit(){
-		return ((num_bites == MAX_BITES) && rgt_ph_full && lft_ph_full);
+		return ((left == bj_null) && (right == bj_null) && (num_bites == MAX_BITES) && rgt_ph_full && lft_ph_full);
 	}
 };
 
@@ -178,6 +196,9 @@ public:
 class philo_core {
 public:
 	BJK_DECLARE_MEM_METHODS(philo_core)
+
+	philo_core(){}		// NEED THIS SO THAT no memset func call
+	~philo_core(){}		// NEED THIS SO THAT no memset func call
 
 	chopstick stick;
 	philosopher philo;
@@ -204,8 +225,19 @@ BJK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
 #define get_stick(id) ((chopstick*)bj_addr_set_id(id, glb_stick))
 #define get_philo(id) ((philosopher*)bj_addr_set_id(id, glb_philo))
 
+BJK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks)
+BJK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos)
 
-philo_core* dbg_all_philo[16];
+
+#ifdef PHILO_WITH_DBG
+philo_core* 
+dbg_all_philo[16] bj_external_code_ram = {
+	bj_null, bj_null, bj_null, bj_null, 
+	bj_null, bj_null, bj_null, bj_null, 
+	bj_null, bj_null, bj_null, bj_null, 
+	bj_null, bj_null, bj_null, bj_null
+};
+#endif
 
 void 
 philosopher_handler(missive* msv){
@@ -276,6 +308,7 @@ philosopher::handler(missive* msv){
 	actor* msv_src = msv->src;
 	philo_tok_t tok = (philo_tok_t)msv->tok;
 	bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
+	BJ_MARK_USED(nn);
 
 	last_recv = tok;
 
@@ -341,14 +374,18 @@ philosopher::handler(missive* msv){
 				if(num_bites == MAX_BITES){
 					PH_DBG("I AM FULL \n");
 					EMU_LOG("I AM FULL \n");
-					dbg_all_full[nn] = true;
+
+					PH_DBG_COD(bj_set_off_chip_var(dbg_all_full[nn], true);)
+
 					send(lft_philo, tok_yes_full);
 					send(rgt_philo, tok_yes_full);
 
 					if(can_exit()){
-						prt_idle();
-						prt_full();
-						prt_all_philo();
+						PH_DBG_COD(
+							prt_idle();
+							prt_full();
+							prt_all_philo();
+						)
 						EMU_LOG("FINISHING \n");
 						bjk_get_kernel()->set_idle_exit();
 					}
@@ -368,9 +405,11 @@ philosopher::handler(missive* msv){
 				rgt_ph_full = true; 
 			}
 			if(can_exit()){
-				prt_idle();
-				prt_full();
-				prt_all_philo();
+				PH_DBG_COD(
+					prt_idle();
+					prt_full();
+					prt_all_philo();
+				)
 				EMU_LOG("FINISHING \n");
 				bjk_get_kernel()->set_idle_exit();
 			}
@@ -382,9 +421,7 @@ philosopher::handler(missive* msv){
 	
 }
 
-BJK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks)
-BJK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos)
-
+#ifdef PHILO_WITH_DBG
 void prt_idle(){
 	char full_str[500];
 	char* pt = full_str;
@@ -397,7 +434,6 @@ void prt_idle(){
 	}
 	pt += sprintf(pt, "]\n");
 	PH_DBG("%s", full_str);
-	prt_waiting();
 }
 
 void prt_full(){
@@ -407,20 +443,6 @@ void prt_full(){
 	for(int aa = 0; aa < 16; aa++){
 		bool fll = dbg_all_full[aa];
 		if(fll){
-			pt += sprintf(pt, "%d,", aa);
-		}
-	}
-	pt += sprintf(pt, "]\n");
-	PH_DBG("%s", full_str);
-}
-
-void prt_waiting(){
-	char full_str[500];
-	char* pt = full_str;
-	pt += sprintf(pt, "ALL_WAIT=[");
-	for(int aa = 0; aa < 16; aa++){
-		bool idl = dbg_waiting[aa];
-		if(idl){
 			pt += sprintf(pt, "%d,", aa);
 		}
 	}
@@ -457,14 +479,16 @@ void prt_ch(int aa, chopstick* ch){
 	pt += sprintf(pt, "lst_recv=%s ", tok_to_str(ch->last_recv));
 	pt += sprintf(pt, "lst_src=%p ", ch->last_src);
 	pt += sprintf(pt, "]\n");
-	PH_DBG("%s", full_str);
+	PH_DBG(full_str);
 }
 
 void prt_all_philo(){
 	for(int aa = 0; aa < 16; aa++){
 		philo_core* phl = dbg_all_philo[aa];
-		prt_ch(aa, &(phl->stick));
-		prt_ph(aa, &(phl->philo));
+		if(phl != bj_null){
+			prt_ch(aa, &(phl->stick));
+			prt_ph(aa, &(phl->philo));
+		}
 	}
 }
 
@@ -472,12 +496,13 @@ void ker_func(){
 	kernel* ker = bjk_get_kernel();
 	bj_core_nn_t nn = ker->get_core_nn();
 	if(! ker->did_work && ! dbg_all_idle_prt[nn]){
-		dbg_all_idle_prt[nn] = true;
+		bj_set_off_chip_var(dbg_all_idle_prt[nn], true);
 	}
 	if(ker->did_work && dbg_all_idle_prt[nn]){
-		dbg_all_idle_prt[nn] = false;
+		bj_set_off_chip_var(dbg_all_idle_prt[nn], false);
 	}
 }
+#endif
 
 void bj_cores_main() {
 	kernel::init_sys();
@@ -486,11 +511,10 @@ void bj_cores_main() {
 
 	bj_core_nn_t nn = ker->get_core_nn();
 
-	dbg_all_idle_prt[nn] = false;
-	dbg_all_full[nn] = false;
-	dbg_waiting[nn] = false;
-
-	//PH_DBG("PHILOSOPHERS CORE (%d,%d) starting\n", ker->get_core_ro(), ker->get_core_co());
+	PH_DBG_COD(
+		bj_set_off_chip_var(dbg_all_idle_prt[nn], false);
+		bj_set_off_chip_var(dbg_all_full[nn], false);
+	)
 
 	philo_core* core_dat = philo_core::acquire_alloc();
 	if(core_dat == bj_null){
@@ -498,9 +522,11 @@ void bj_cores_main() {
 	}
 
 	ker->user_data = core_dat;
-	ker->user_func = ker_func;
 
-	dbg_all_philo[nn] = core_dat;
+	PH_DBG_COD(
+		ker->user_func = ker_func;
+		dbg_all_philo[nn] = core_dat;
+	)
 
 	glb_philo->lft_stk_id = bj_nn_to_id(left_chp_nn(nn));
 	glb_philo->rgt_stk_id = bj_nn_to_id(right_chp_nn(nn));
@@ -526,7 +552,7 @@ void bj_cores_main() {
 	kernel::run_sys();
 
 	PH_DBG("finished\n");
-	EMU_LOG("PHILOSOPHERS FINISHED !!\n");	
+	EMU_LOG("PHILOSOPHER %d FINISHED !!\n", nn);
 	bjk_slog2("PHILOSOPHERS FINISHED !!\n");	
 
 	kernel::finish_sys();

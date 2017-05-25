@@ -299,6 +299,10 @@ kernel::handle_missives(){
 	kernel* ker = this;
 	binder * fst, * lst, * wrk, * nxt;
 
+	if(all_handlers == bj_null){
+		return;
+	}
+
 	for(int aa = 0; aa < kernel_signals_arr_sz; aa++){
 		if(signals_arr[aa] == bj_true){
 			signals_arr[aa] = bj_false;

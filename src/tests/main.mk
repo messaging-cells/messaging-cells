@@ -28,7 +28,8 @@ CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-c
 BJ_STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
 BJ_EPH_LDFLAGS_1 := -L${BJ_ETOOLS}/e-gnu/epiphany-elf/lib -L${BJ_ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
-BJ_STD_EPH_LDFLAGS := -T ${BJ_LDF} -L../../bin -L${TARGET_DIR} ${BJ_EPH_LDFLAGS_1} --strip-debug -static 
+BJ_EPH_LDFLAGS_2 := -L../../bin -L${TARGET_DIR} ${BJ_EPH_LDFLAGS_1} --strip-debug -static 
+BJ_STD_EPH_LDFLAGS := -T ${BJ_LDF} ${BJ_EPH_LDFLAGS_2}
 
 BJ_STD_EMU_LDFLAGS := -L../../bin -L${TARGET_DIR} 
 
@@ -65,6 +66,7 @@ SUBMAKEFILES := \
 	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_emu.mk \
 	./eating_philo/philo_emu.mk \
+	./eating_philo/philo_eph.mk \
 
 
 
