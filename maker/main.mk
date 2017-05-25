@@ -1,4 +1,9 @@
 
+DBG_FLAG := -DFULL_DEBUG
+
+#SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
+SRC_IN_SECTIONS := 
+
 define SET_CROSS_COMPILE
 ifeq "${CROSS_COMPILE+xxx}" ""
 	ifeq "$(findstring arm,$(shell uname -p))" "arm"
@@ -11,11 +16,18 @@ endef
 
 $(eval $(SET_CROSS_COMPILE))
 
+define SET_g_FLAG
+ifeq "${DBG_FLAG}" ""
+	g_FLAG := 
+else
+	g_FLAG := -g
+endif
+endef
+
+$(eval $(SET_g_FLAG))
+
 
 TARGET_DIR := ../bin
-
-NUM_PRG=18
-NAME_PRG=prog_$(NUM_PRG)
 
 ESDK=${EPIPHANY_HOME}
 ETOOLS=${ESDK}/tools

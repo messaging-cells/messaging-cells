@@ -401,7 +401,7 @@ kernel::handle_missives(){
 
 		//EMU_PRT("SENDING pt_msv_grp= %p right= %p\n", mgrp, mgrp->get_right_pt());
 
-		EMU_CK(*rmt_src_pt == bj_null);
+		EMU_CK(*rmt_src_pt == bj_null);	// core dump here
 		*rmt_src_pt = glb_mgrp;
 
 		// send signal
