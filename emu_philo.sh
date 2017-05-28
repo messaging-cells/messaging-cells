@@ -2,5 +2,5 @@
 
 
 cd src/tests/bin
-rm ./log_core_*
+# rm ./log_core_*
 ./philo_emu.elf $*

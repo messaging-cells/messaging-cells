@@ -212,6 +212,8 @@ public:
 			bjk_pt_to_binderpt(bn_right)->let_go();
 		}
 	}
+
+	bj_size_t	calc_size() bj_external_code_ram;
 };
 
 typedef binder grip;

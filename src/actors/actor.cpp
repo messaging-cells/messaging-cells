@@ -131,7 +131,7 @@ void // static
 kernel::run_sys(){
 	kernel* ker = BJK_KERNEL;
 	
-	BJK_GLB_SYS->the_core_state = bjk_inited_state;
+	BJK_GLB_SYS->inited_core = BJK_GLB_SYS->the_core_id;
 	while(true){
 		ker->did_work = 0x0;
 		ker->handle_missives();
@@ -264,8 +264,9 @@ kernel::process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks){
 
 	for(int aa = 0; aa < sz; aa++){
 		missive_grp_t* glb_msv_grp = arr[aa];
-		arr[aa] = bj_null;
 		if(glb_msv_grp != bj_null){
+			arr[aa] = bj_null;
+
 			missive_ref_t* nw_ref = agent_ref::acquire();
 			EMU_CK(nw_ref->is_alone());
 			EMU_CK(nw_ref->glb_agent_ptr == bj_null);
@@ -274,8 +275,12 @@ kernel::process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks){
 			in_work.bind_to_my_left(*nw_ref);
 
 			bj_core_id_t src_id = bj_addr_get_id((bj_addr_t)(glb_msv_grp));
+			EMU_CK(aa == bj_id_to_nn(src_id));
+
 			bjk_ack_t* loc_dst_ack_pt = &(acks[dst_idx]);
 			bjk_ack_t* rem_dst_ack_pt = (bjk_ack_t*)bj_addr_set_id(src_id, loc_dst_ack_pt);
+
+			EMU_CK(*rem_dst_ack_pt == bjk_busy_ack);
 			*rem_dst_ack_pt = bjk_ready_ack;
 
 			did_work |= 0x01;
@@ -286,9 +291,9 @@ kernel::process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks){
 bool
 bjk_is_inited(bj_core_id_t dst_id){
 	bjk_glb_sys_st* in_shd = BJK_GLB_SYS;
-	uint8_t* loc_st = &(in_shd->the_core_state);
-	uint8_t* rmt_st = (uint8_t*)bj_addr_set_id(dst_id, loc_st);
-	if((*rmt_st) != bjk_inited_state){
+	bj_core_id_t* loc_st = &(in_shd->inited_core);
+	bj_core_id_t* rmt_st = (bj_core_id_t*)bj_addr_set_id(dst_id, loc_st);
+	if((*rmt_st) != dst_id){
 		return false;
 	}
 	return true;
@@ -401,7 +406,7 @@ kernel::handle_missives(){
 
 		//EMU_PRT("SENDING pt_msv_grp= %p right= %p\n", mgrp, mgrp->get_right_pt());
 
-		EMU_CK(*rmt_src_pt == bj_null);	// core dump here
+		EMU_CK(*rmt_src_pt == bj_null);	
 		*rmt_src_pt = glb_mgrp;
 
 		// send signal

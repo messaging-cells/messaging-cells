@@ -33,7 +33,7 @@ struct bj_aligned bjk_glb_sys_def {
 	bj_core_co_t the_core_ro;
 	bj_core_co_t the_core_co;
 
-	uint8_t 			the_core_state;
+	bj_core_id_t		inited_core;
 	bjk_exception_t 	exception_code;
 	
 	uint16_t 	binder_sz;

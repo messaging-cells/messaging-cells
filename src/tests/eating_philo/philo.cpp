@@ -27,6 +27,9 @@
 	void prt_full() bj_external_code_ram;
 	void prt_all_philo() bj_external_code_ram;
 
+	bool prt_recv_msgs bj_external_code_ram = false;
+	bool prt_send_msgs bj_external_code_ram = false;
+
 	#define PH_DBG_COD(prm) prm
 #else
 	#define PH_DBG_COD(prm) 
@@ -197,13 +200,39 @@ class philo_core {
 public:
 	BJK_DECLARE_MEM_METHODS(philo_core)
 
-	philo_core(){}		// NEED THIS SO THAT no memset func call
+	philo_core(){		// NEED THIS SO THAT no memset func call
+		init_philo_core();
+	}		
 	~philo_core(){}		// NEED THIS SO THAT no memset func call
 
 	chopstick stick;
 	philosopher philo;
 	grip ava_chopstick;
 	grip ava_philosopher;
+
+	bj_size_t from_host_work_sz;
+	bj_size_t to_host_work_sz;
+	bj_size_t in_work_sz;
+	bj_size_t local_work_sz;
+	bj_size_t out_work_sz;
+	bj_size_t sent_work_sz;
+	bj_size_t cls_available_actor_sz;
+	bj_size_t cls_available_missive_sz;
+	bj_size_t cls_available_agent_ref_sz;
+	bj_size_t cls_available_agent_grp_sz;
+
+	void init_philo_core(){
+		from_host_work_sz = 0;
+		to_host_work_sz = 0;
+		in_work_sz = 0;
+		local_work_sz = 0;
+		out_work_sz = 0;
+		sent_work_sz = 0;
+		cls_available_actor_sz = 0;
+		cls_available_missive_sz = 0;
+		cls_available_agent_ref_sz = 0;
+		cls_available_agent_grp_sz = 0;
+	}
 };
 
 BJK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
@@ -263,6 +292,13 @@ chopstick::handler(missive* msv){
 	last_src = msv_src;
 	last_recv = tok;
 
+	PH_DBG_COD(
+		bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
+		if(prt_recv_msgs){
+			PH_DBG("CHOP %d RECV %s \n", nn, tok_to_str(tok));
+		}
+	)
+
 	switch(tok){
 		case tok_take:
 			EMU_CK(owner != msv_src);
@@ -292,6 +328,12 @@ chopstick::handler(missive* msv){
 
 void
 philosopher::send(actor* dst, philo_tok_t tok){
+	PH_DBG_COD(
+		if(prt_send_msgs){
+			PH_DBG("PHIL SEND %d \n", tok);
+		}
+	)
+
 	last_sent = tok;
 	if(dst == lft_stick){ last_sent_lft = tok; }
 	if(dst == rgt_stick){ last_sent_rgt = tok; }
@@ -309,6 +351,12 @@ philosopher::handler(missive* msv){
 	philo_tok_t tok = (philo_tok_t)msv->tok;
 	bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
 	BJ_MARK_USED(nn);
+
+	PH_DBG_COD(
+		if(prt_recv_msgs){
+			PH_DBG("PHIL %d RECV %s \n", nn, tok_to_str(tok));
+		}
+	)
 
 	last_recv = tok;
 
@@ -454,7 +502,7 @@ void prt_ph(int aa, philosopher* ph){
 	char full_str[500];
 	char* pt = full_str;
 	bool is_fll = (ph->num_bites == MAX_BITES);
-	bool to_exit = is_fll && ph->lft_ph_full && ph->rgt_ph_full;
+	bool to_exit = ph->can_exit();
 	pt += sprintf(pt, "PHILO (%p) %d=[", ph, aa);
 	pt += sprintf(pt, "F%d ", is_fll);
 	pt += sprintf(pt, "X%d ", to_exit);
@@ -482,12 +530,29 @@ void prt_ch(int aa, chopstick* ch){
 	PH_DBG(full_str);
 }
 
+void prt_pc(int aa, philo_core* pc){
+	char full_str[500];
+	char* pt = full_str;
+	pt += sprintf(pt, "CORE %d=[", aa);
+	EMU_CODE(
+		pt += sprintf(pt, "out_work_sz=%ld ", pc->out_work_sz);
+		pt += sprintf(pt, "sent_work_sz=%ld ", pc->sent_work_sz);
+	)
+	EPH_CODE(
+		pt += sprintf(pt, "out_work_sz=%d ", pc->out_work_sz);
+		pt += sprintf(pt, "sent_work_sz=%d ", pc->sent_work_sz);
+	)
+	pt += sprintf(pt, "]\n");
+	PH_DBG(full_str);
+}
+
 void prt_all_philo(){
 	for(int aa = 0; aa < 16; aa++){
 		philo_core* phl = dbg_all_philo[aa];
 		if(phl != bj_null){
 			prt_ch(aa, &(phl->stick));
 			prt_ph(aa, &(phl->philo));
+			prt_pc(aa, phl);
 		}
 	}
 }
@@ -501,6 +566,18 @@ void ker_func(){
 	if(ker->did_work && dbg_all_idle_prt[nn]){
 		bj_set_off_chip_var(dbg_all_idle_prt[nn], false);
 	}
+	philo_core* phl = dbg_all_philo[nn];
+
+	phl->from_host_work_sz = ker->from_host_work.calc_size();
+	phl->to_host_work_sz = ker->to_host_work.calc_size();
+	phl->in_work_sz = ker->in_work.calc_size();
+	phl->local_work_sz = ker->local_work.calc_size();
+	phl->out_work_sz = ker->out_work.calc_size();
+	phl->sent_work_sz = ker->sent_work.calc_size();
+	phl->cls_available_actor_sz = ker->cls_available_actor.calc_size();
+	phl->cls_available_missive_sz = ker->cls_available_missive.calc_size();
+	phl->cls_available_agent_ref_sz = ker->cls_available_agent_ref.calc_size();
+	phl->cls_available_agent_grp_sz = ker->cls_available_agent_grp.calc_size();
 }
 #endif
 

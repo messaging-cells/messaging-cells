@@ -14,7 +14,7 @@ TGT_LINKER := $(CROSS_COMPILE)gcc
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
-SRC_CFLAGS := -Wall -std=gnu11 -g -O2 -Wstrict-prototypes $(DEF_FLAGS_1) $(DEF_FLAGS_2)
+SRC_CFLAGS := -Wall -std=gnu11 -O2 -Wstrict-prototypes $(DEF_FLAGS_1) $(DEF_FLAGS_2)
 
 SOURCES := $(SRC_ACTORS_DIR)/tak_mak.cpp 
 

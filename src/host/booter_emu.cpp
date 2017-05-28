@@ -162,6 +162,7 @@ bj_host_run()
 				memset(&f_nm, 0, sizeof(f_nm));
 				sprintf(f_nm, "log_core_%02d.txt", num_core);
 				all_f_nam[num_core] = strdup((const char*)f_nm);
+				bjh_reset_log_file(all_f_nam[num_core]);
 
 				// init shared data.
 				pt_shd_data->sys_cores[num_core].magic_id = BJ_MAGIC_ID;

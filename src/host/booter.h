@@ -61,6 +61,9 @@ int
 bjh_type_sz(bj_type_t tt);
 
 void
+bjh_reset_log_file(char* f_nm);
+
+void
 bjh_print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core);
 
 uint8_t*

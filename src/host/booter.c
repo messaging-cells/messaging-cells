@@ -179,6 +179,17 @@ bjh_type_sz(bj_type_t tt){
 }
 
 void
+bjh_reset_log_file(char* f_nm){
+	int log_fd = 0;
+	if((log_fd = creat(f_nm, 0777)) == -1){
+		fprintf(stderr, "ERROR. Can NOT reset log file %s\n", f_nm);
+		bjh_abort_func(0, "ERROR. Can NOT reset log file\n");
+		return;
+	}
+	close(log_fd);
+}
+
+void
 bjh_print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
 	int log_fd = 0;
 	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){

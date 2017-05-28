@@ -20,7 +20,7 @@ define SET_g_FLAG
 ifeq "${DBG_FLAG}" ""
 	g_FLAG := 
 else
-	g_FLAG := -g
+	g_FLAG := -g3
 endif
 endef
 

@@ -123,7 +123,7 @@ nam::acquire(uint16_t sz){ \
 typedef uint8_t bjk_handler_idx_t;
 
 enum bjk_core_state_t : uint8_t {
-	bjk_invalid_state = 0,
+	bjk_invalid_state = 10,
 	bjk_inited_state
 };
 
@@ -149,7 +149,7 @@ enum bjk_signal_t : uint8_t {
 };
 
 enum bjk_ack_t : uint8_t {
-	bjk_ready_ack = 0,
+	bjk_ready_ack = 30,
 	bjk_busy_ack,
 	bjk_virgin_ack
 };
