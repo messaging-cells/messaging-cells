@@ -351,6 +351,8 @@ bj_host_addr_to_core_addr(bj_addr_t h_addr) bj_external_code_ram;
 bj_addr_t
 bj_core_addr_to_host_addr(bj_addr_t c_addr) bj_external_code_ram;
 
+#define bj_host_pt_to_core_pt(pt) ((void*)(bj_host_addr_to_core_addr((bj_addr_t)(pt))))
+#define bj_core_pt_to_host_pt(pt) ((void*)(bj_core_addr_to_host_addr((bj_addr_t)(pt))))
 
 #ifdef __cplusplus
 }

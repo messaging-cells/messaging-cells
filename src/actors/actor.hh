@@ -78,7 +78,7 @@ nam::acquire_alloc(uint16_t sz){ \
 	if(obj == bj_null){ \
 		bjk_abort((bj_addr_t)nam::acquire_alloc, err_1); \
 	} \
-	BJK_CK(BJ_STRFY(nam##alloc), BJ_IS_ALIGNED_##align(obj)); \
+	BJK_CK(BJ_IS_ALIGNED_##align(obj)); \
 	for(int bb = 0; bb < sz; bb++){ \
 		new (&(obj[bb])) nam(); \
 	} \
@@ -337,12 +337,6 @@ public:
 	call_handlers_of_group(missive_grp_t* mgrp);
 
 	void 
-	process_host_signal(int sz, missive_grp_t** arr) bj_external_code_ram;
-
-	void 
-	handle_work_from_host() bj_external_code_ram;
-
-	void 
 	handle_work_to_host() bj_external_code_ram;
 
 	void 
@@ -359,13 +353,18 @@ public:
 	((all_handlers != bj_null) && bjk_is_valid_handler_idx(idx) && (all_handlers[idx] != bj_null))
 
 
+#define bjk_handle_missive_base(msv, hdlr_idx) \
+	if(bjk_is_valid_handler_idx(hdlr_idx)){ \
+		(*(all_handlers[hdlr_idx]))(msv); \
+		EMU_DBG_CODE(msv->dbg_msv |= 0x2); \
+	} \
+
+// end_macro
+
 #define bjk_handle_missive(msv) \
 	actor* hdlr_dst = (msv)->dst; \
 	EMU_CK(hdlr_dst != bj_null); \
-	if(bjk_is_valid_handler_idx(hdlr_dst->handler_idx)){ \
-		(*(all_handlers[hdlr_dst->handler_idx]))(msv); \
-		EMU_DBG_CODE(msv->dbg_msv |= 0x2); \
-	} \
+	bjk_handle_missive_base(msv, hdlr_dst->handler_idx) \
 
 // end_macro
 
@@ -622,7 +621,11 @@ public:
 #define bj_glb_binder_get_rgt(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_right)))
 #define bj_glb_binder_get_lft(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_left)))
 
+#define bjh_glb_binder_get_rgt(bdr, id) bj_glb_binder_get_rgt((binder*)bj_core_pt_to_host_pt(bdr), id)
+#define bjh_glb_binder_get_lft(bdr, id) bj_glb_binder_get_lft((binder*)bj_core_pt_to_host_pt(bdr), id)
+
 #define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(bjk_as_loc_pt(msv->dst)))->nam(msv))
+
 
 #ifdef __cplusplus
 bj_c_decl {

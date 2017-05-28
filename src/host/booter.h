@@ -107,6 +107,7 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 
 extern int bj_host_main(int argc, char *argv[]);
 
+
 bj_addr_t
 bj_znq_addr_to_eph_addr(bj_addr_t znq_addr);
 
@@ -115,6 +116,7 @@ bj_eph_addr_to_znq_addr(bj_addr_t eph_addr);
 
 void
 bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs);
+
 
 #ifdef __cplusplus
 }

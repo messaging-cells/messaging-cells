@@ -131,37 +131,21 @@ bjk_set_irq0_handler() bj_external_code_ram;
 //======================================================================
 // bj_asserts
 
-#define BJK_INCORE_ASSERT(nam, cond) \
-	BJ_DBG( \
-	if(! (cond)){ \
-		bj_addr_t nm_addr; \
-		bj_asm( \
-			".global " #nam " \n" \
-			#nam ": \n\t" \
-			"mov r61, %low(" #nam ") \n\t" \
-			"movt r61, %high(" #nam ") \n\t" \
-		); \
-		bj_asm("mov %0, r61" : "=r" (nm_addr)); \
-		bjk_abort(nm_addr, err_11); \
-	} \
-	) \
+#define BJK_INCORE_ASSERT(cond) BJ_DBG(if(! (cond)){ bjk_abort((bj_addr_t)(void*)err_11, err_11); } )
 
 // end_of_macro
 
 #ifdef BJ_IS_EPH_CODE
-	#define BJK_CK(nam, cond) BJK_INCORE_ASSERT(nam, cond)
-	#define BJK_CK2(nam, cond) BJK_INCORE_ASSERT(nam, cond)
+	#define BJK_CK(cond) BJK_INCORE_ASSERT(cond)
 #endif
 
 #ifdef BJ_IS_EMU_CODE
-	#define BJK_CK(nam, cond) EMU_CK(cond)
-	#define BJK_CK2(nam, cond) EMU_CK(cond)
+	#define BJK_CK(cond) EMU_CK(cond)
 #endif
 
 #ifdef BJ_IS_ZNQ_CODE
 	#include "booter.h"
-	#define BJK_CK(nam, cond) BJH_CK(cond)
-	#define BJK_CK2(nam, cond) BJH_CK(cond)
+	#define BJK_CK(cond) BJH_CK(cond)
 #endif
 
 #define BJK_MARK_PLACE(nam) BJ_DBG(bj_asm(#nam ":")) 

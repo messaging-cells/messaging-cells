@@ -25,7 +25,7 @@ bjk_get_first_glb_sys(){
 
 void
 abort(){	// Needed when optimizing for size
-	BJK_CK2(ck2_abort, 0);
+	BJK_CK(0);
 	bjk_abort((bj_addr_t)abort, err_5);
 	while(1);
 }
