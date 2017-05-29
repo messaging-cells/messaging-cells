@@ -127,7 +127,7 @@ kernel::init_sys(){
 	in_shd->agent_grp_sz = sizeof(agent_grp);
 	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
 
-	in_shd->pt_kernel = ker;
+	in_shd->pt_kernel = bj_null;
 
 	bjk_enable_all_irq();
 	bjk_global_irq_enable();
@@ -137,6 +137,7 @@ void // static
 kernel::run_sys(){
 	kernel* ker = BJK_KERNEL;
 	
+	BJK_GLB_SYS->pt_kernel = (void*)bj_addr_set_id(BJK_GLB_SYS->the_core_id, ker);
 	BJK_GLB_SYS->inited_core = BJK_GLB_SYS->the_core_id;
 	while(true){
 		ker->did_work = 0x0;
@@ -186,14 +187,14 @@ agent::get_class_name(){
 }
 
 void 
-kernel::add_out_missive(missive& msv1){
+kernel::add_out_missive(grip* out_wk, missive& msv1){
 	binder * fst, * lst, * wrk;
-	kernel* ker = this;
+	//kernel* ker = this;
 
 	bool found_grp = false;
 
-	fst = bjk_pt_to_binderpt(ker->out_work.bn_right);
-	lst = &(ker->out_work);
+	fst = bjk_pt_to_binderpt(out_wk->bn_right);
+	lst = out_wk;
 	for(wrk = fst; wrk != lst; wrk = bjk_pt_to_binderpt(wrk->bn_right)){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
 		missive* msv2 = (missive*)(mgrp->all_agts.get_right_pt());
@@ -214,7 +215,7 @@ kernel::add_out_missive(missive& msv1){
 
 	msv1.let_go();
 	mgrp2->all_agts.bind_to_my_left(msv1);
-	ker->out_work.bind_to_my_left(*mgrp2);
+	out_wk->bind_to_my_left(*mgrp2);
 }
 
 void 
@@ -362,11 +363,20 @@ kernel::handle_missives(){
 
 		//bjk_slog2("RECEIVING MISSIVE\n");
 		//EMU_PRT("RECEIVING pt_msv_grp= %p\n", remote_grp);
+		if(! is_host_kernel){ 
+			call_handlers_of_group(remote_grp);
+		} else {
+			call_host_handlers_of_group(remote_grp);
+		}
 
-		call_handlers_of_group(remote_grp);
 		fst_ref->release();
 		EMU_CK(fst_ref->glb_agent_ptr == bj_null);
 		did_work |= 0x02;
+	}
+
+	grip* out_msvs = &(ker->out_work);
+	if(is_host_kernel){
+		out_msvs = &(ker->to_cores_work);
 	}
 
 	fst = bjk_pt_to_binderpt(ker->local_work.bn_right);
@@ -380,7 +390,7 @@ kernel::handle_missives(){
 			bjk_handle_missive(fst_msg);
 			fst_msg->release();
 		} else {
-			add_out_missive(*fst_msg);
+			add_out_missive(out_msvs, *fst_msg);
 			EMU_CK(! fst_msg->is_alone());
 		}
 		did_work |= 0x04;
@@ -388,12 +398,19 @@ kernel::handle_missives(){
 
 	bj_core_nn_t src_idx = get_core_nn();
 
+	EMU_CK(is_host_kernel || ker->to_cores_work.is_alone());
+	if(is_host_kernel){
+		EMU_CK(ker->out_work.is_alone());
+		handle_work_to_cores();
+	}
+
 	fst = bjk_pt_to_binderpt(ker->out_work.bn_right);
 	lst = &(ker->out_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
 		nxt = bjk_pt_to_binderpt(wrk->bn_right);
 
+		EMU_CK(! is_host_kernel);
 		EMU_CK(! mgrp->all_agts.is_alone());
 		
 		missive* msv = (missive*)(mgrp->all_agts.get_right_pt());
@@ -480,10 +497,16 @@ actor::respond(missive* msv_orig, bjk_token_t tok){
 }
 
 void 
+kernel::handle_host_missives(){
+	BJK_CK(is_host_kernel);
+	handle_missives();
+}
+
+void 
 kernel::handle_work_to_host(){
-	if(is_host_kernel){ return; }
-	if(host_kernel == bj_null){ return; }
-	if(! has_to_host_work){ return; }
+	BJK_CK(! is_host_kernel);
+	BJK_CK(host_kernel != bj_null);
+	BJK_CK(has_to_host_work);
 
 	if(routed_ack_from_host != bjk_ready_ack){
 		did_work |= 0x100;
@@ -512,7 +535,7 @@ kernel::handle_work_to_host(){
 
 void 
 kernel::call_host_handlers_of_group(missive_grp_t* rem_mgrp){
-	if(! is_host_kernel){ return; }
+	EMU_CK(is_host_kernel);
 	
 	binder * fst, * lst, * wrk;
 
@@ -535,7 +558,60 @@ kernel::call_host_handlers_of_group(missive_grp_t* rem_mgrp){
 }
 
 void 
-kernel::handle_host_missives(){
-	if(! is_host_kernel){ return; }
+kernel::handle_work_to_cores(){
+	EMU_CK(is_host_kernel);
+
+	bj_core_nn_t src_idx = get_core_nn();
+
+	kernel* ker = this;
+	binder * fst, * lst, * wrk, * nxt;
+
+	fst = bjk_pt_to_binderpt(ker->to_cores_work.bn_right);
+	lst = &(ker->to_cores_work);
+	for(wrk = fst; wrk != lst; wrk = nxt){
+		missive_grp_t* mgrp = (missive_grp_t*)wrk;
+		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+
+		EMU_CK(! mgrp->all_agts.is_alone());
+		
+		missive* msv = (missive*)(mgrp->all_agts.get_right_pt());
+		bj_core_id_t dst_id = bj_addr_get_id(msv->dst);
+		bj_core_nn_t dst_idx = bj_id_to_nn(dst_id);
+
+		// ONLY pw0 case
+		bjk_ack_t& loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[dst_idx];
+
+		kernel* core_ker = kernel::get_core_kernel(dst_id);
+		if(core_ker == bj_null){
+			did_work |= 0x200;
+			continue;
+		}
+		if(loc_dst_ack_pt == bjk_virgin_ack){
+			// Have never sent missives
+			if(core_ker == bj_null){
+				did_work |= 0x400;
+				continue;
+			}
+			loc_dst_ack_pt = bjk_ready_ack;
+		}
+		if(loc_dst_ack_pt != bjk_ready_ack){
+			did_work |= 0x800;
+			continue;
+		}
+		loc_dst_ack_pt = bjk_busy_ack;
+
+		missive_grp_t** rmt_src_pt = &((core_ker->pw0_routed_arr)[src_idx]);
+		missive_grp_t* glb_mgrp = (missive_grp_t*)bj_host_pt_to_core_pt(mgrp);
+
+		EMU_CK(*rmt_src_pt == bj_null);
+		*rmt_src_pt = glb_mgrp;
+
+		// send signal
+		core_ker->has_from_host_work = bj_true;
+
+		mgrp->let_go();
+		ker->sent_work.bind_to_my_left(*mgrp);
+		did_work |= 0x20;
+	}
 }
 

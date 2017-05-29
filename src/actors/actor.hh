@@ -220,7 +220,8 @@ public:
 
 	bj_bool_t has_from_host_work;
 	bj_bool_t has_to_host_work;
-	grip from_host_work;
+
+	grip to_cores_work;
 	grip to_host_work;
 
 	grip in_work;
@@ -319,6 +320,9 @@ public:
 	static void
 	set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) bj_external_code_ram;
 
+	static kernel*
+	get_core_kernel(bj_core_id_t id) bj_external_code_ram;
+
 	bj_inline_fn
 	void set_idle_exit(){
 		exit_when_idle = true;
@@ -331,13 +335,16 @@ public:
 	handle_missives();
 
 	bj_opt_sz_fn void 
-	add_out_missive(missive& msv);
+	add_out_missive(grip* out_wk, missive& msv);
 
 	bj_opt_sz_fn void 
 	call_handlers_of_group(missive_grp_t* mgrp);
 
 	void 
 	handle_work_to_host() bj_external_code_ram;
+
+	void 
+	handle_work_to_cores() bj_external_code_ram;
 
 	void 
 	handle_host_missives() bj_external_code_ram;

@@ -66,8 +66,11 @@ bjk_glb_init(void) {
 
 		// glb_dat->off_core_pt init	
 		//bj_set_off_chip_var(glb_dat->off_core_pt->magic_id, BJ_MAGIC_ID);
+		void* glb_dat_wid = (void*)bj_addr_set_id(koid, glb_dat);
+		BJ_MARK_USED(glb_dat_wid);
+
 		bj_set_off_chip_var(glb_dat->off_core_pt->ck_core_id, koid);
-		bj_set_off_chip_var(glb_dat->off_core_pt->core_data, glb_dat);
+		bj_set_off_chip_var(glb_dat->off_core_pt->core_data, glb_dat_wid);
 		
 		bjk_set_finished(BJ_NOT_FINISHED_VAL);
 		bj_set_off_chip_var(glb_dat->off_core_pt->is_waiting, BJ_NOT_WAITING);

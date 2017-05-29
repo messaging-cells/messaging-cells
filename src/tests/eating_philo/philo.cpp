@@ -568,7 +568,6 @@ void ker_func(){
 	}
 	philo_core* phl = dbg_all_philo[nn];
 
-	phl->from_host_work_sz = ker->from_host_work.calc_size();
 	phl->to_host_work_sz = ker->to_host_work.calc_size();
 	phl->in_work_sz = ker->in_work.calc_size();
 	phl->local_work_sz = ker->local_work.calc_size();

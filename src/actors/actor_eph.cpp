@@ -3,6 +3,7 @@
 
 #include "all_regs.h"
 
+#include "err_msgs.h"
 #include "actor.hh"
 #include "dyn_mem.h"
 
@@ -20,3 +21,8 @@ bjk_send_irq(bj_core_id_t koid, uint16_t num_irq) {
 	*ilatst = 1 << num_irq;
 }
 
+kernel* //static 
+kernel::get_core_kernel(bj_core_id_t id){
+	bjk_abort((bj_addr_t)&(kernel::get_core_kernel), err_14);
+	return bj_null;
+}
