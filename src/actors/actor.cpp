@@ -127,7 +127,7 @@ kernel::init_sys(){
 	in_shd->agent_grp_sz = sizeof(agent_grp);
 	in_shd->bjk_glb_sys_st_sz = sizeof(bjk_glb_sys_st);
 
-	in_shd->pt_kernel = bj_null;
+	in_shd->pt_core_kernel = bj_null;
 
 	bjk_enable_all_irq();
 	bjk_global_irq_enable();
@@ -137,8 +137,10 @@ void // static
 kernel::run_sys(){
 	kernel* ker = BJK_KERNEL;
 	
-	BJK_GLB_SYS->pt_kernel = (void*)bj_addr_set_id(BJK_GLB_SYS->the_core_id, ker);
-	BJK_GLB_SYS->inited_core = BJK_GLB_SYS->the_core_id;
+	if(! ker->is_host_kernel){
+		BJK_GLB_SYS->pt_core_kernel = (void*)bj_addr_set_id(BJK_GLB_SYS->the_core_id, ker);
+		BJK_GLB_SYS->inited_core = BJK_GLB_SYS->the_core_id;
+	}
 	while(true){
 		ker->did_work = 0x0;
 		ker->handle_missives();
@@ -285,15 +287,22 @@ kernel::process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks){
 			bj_core_id_t src_id = bj_addr_get_id((bj_addr_t)(glb_msv_grp));
 			EMU_CK(aa == bj_id_to_nn(src_id));
 
-			bjk_ack_t* loc_dst_ack_pt = &(acks[dst_idx]);
-			bjk_ack_t* rem_dst_ack_pt = (bjk_ack_t*)bj_addr_set_id(src_id, loc_dst_ack_pt);
-			if(is_host_kernel){
-				rem_dst_ack_pt = (bjk_ack_t*)bj_core_pt_to_host_pt(rem_dst_ack_pt);
-			}
-			if(is_from_host){
-				rem_dst_ack_pt = loc_dst_ack_pt;
+			bjk_ack_t* rem_dst_ack_pt;
+			if(! is_host_kernel){
+				bjk_ack_t* loc_dst_ack_pt = &(acks[dst_idx]);
+				if(! is_from_host){
+					rem_dst_ack_pt = (bjk_ack_t*)bj_addr_set_id(src_id, loc_dst_ack_pt);
+				} else {
+					rem_dst_ack_pt = loc_dst_ack_pt;
+				}
+			} else {
+				EMU_CK(! is_from_host);
+				kernel* core_ker = kernel::get_core_kernel(src_id);
+				rem_dst_ack_pt = (bjk_ack_t*)(&(core_ker->routed_ack_from_host));
+				//EMU_PRT("process_signal. rem_dst_ack_pt=%p\n", rem_dst_ack_pt);
 			}
 
+			EMU_CK(rem_dst_ack_pt != bj_null);
 			EMU_CK(*rem_dst_ack_pt == bjk_busy_ack);
 			*rem_dst_ack_pt = bjk_ready_ack;
 
@@ -319,6 +328,9 @@ kernel::handle_missives(){
 	binder * fst, * lst, * wrk, * nxt;
 
 	if(all_handlers == bj_null){
+		bjk_slog2("ABORTING. MUST call kernel::set_handlers BEFORE kernel::run_sys. \n");
+		EMU_PRT("ABORTING. MUST call kernel::set_handlers BEFORE kernel::run_sys. \n");
+		bjk_abort((bj_addr_t)err_15, err_15);
 		return;
 	}
 
@@ -498,70 +510,14 @@ actor::respond(missive* msv_orig, bjk_token_t tok){
 
 void 
 kernel::handle_host_missives(){
+	//EMU_PRT("handle_host_missives ker=%p\n", this);
 	BJK_CK(is_host_kernel);
 	handle_missives();
 }
 
 void 
-kernel::handle_work_to_host(){
-	BJK_CK(! is_host_kernel);
-	BJK_CK(host_kernel != bj_null);
-	BJK_CK(has_to_host_work);
-
-	if(routed_ack_from_host != bjk_ready_ack){
-		did_work |= 0x100;
-		return;
-	}
-	routed_ack_from_host = bjk_busy_ack;
-
-	missive_grp_t* mgrp2 = agent_grp::acquire();
-	EMU_CK(mgrp2 != bj_null);
-	EMU_CK(mgrp2->all_agts.is_alone());
-
-	mgrp2->all_agts.move_all_to_my_left(to_host_work);
-
-	bj_core_nn_t src_idx = get_core_nn();
-	missive_grp_t* glb_mgrp = (missive_grp_t*)bjk_as_glb_pt(mgrp2);
-
-	(host_kernel->pw0_routed_arr)[src_idx] = glb_mgrp;
-
-	// send signal
-	host_kernel->signals_arr[bjk_do_pw0_routes_sgnl] = bj_true;
-
-	sent_work.bind_to_my_left(*mgrp2);
-
-	has_to_host_work = false;
-}
-
-void 
-kernel::call_host_handlers_of_group(missive_grp_t* rem_mgrp){
-	EMU_CK(is_host_kernel);
-	
-	binder * fst, * lst, * wrk;
-
-	rem_mgrp = (missive_grp_t*)bj_core_pt_to_host_pt(rem_mgrp);
-	binder* all_msvs = &(rem_mgrp->all_agts);
-	bj_core_id_t msvs_id = bj_addr_get_id(all_msvs);
-
-	fst = bjh_glb_binder_get_rgt(all_msvs, msvs_id);
-	lst = all_msvs;
-	for(wrk = fst; wrk != lst; wrk = bjh_glb_binder_get_rgt(wrk, msvs_id)){
-		missive* remote_msv = (missive*)bj_core_pt_to_host_pt(wrk);
-
-		actor* hdlr_dst = (remote_msv)->dst;
-		EMU_CK(hdlr_dst != bj_null);
-		hdlr_dst = (actor*)bj_core_pt_to_host_pt(hdlr_dst);
-		bjk_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
-	}
-
-	rem_mgrp->handled = bj_true;
-}
-
-void 
 kernel::handle_work_to_cores(){
 	EMU_CK(is_host_kernel);
-
-	bj_core_nn_t src_idx = get_core_nn();
 
 	kernel* ker = this;
 	binder * fst, * lst, * wrk, * nxt;
@@ -598,13 +554,13 @@ kernel::handle_work_to_cores(){
 			did_work |= 0x800;
 			continue;
 		}
+		EMU_PRT("kernel::handle_work_to_cores. loc_dst_ack_pt= %p \n", &loc_dst_ack_pt);
 		loc_dst_ack_pt = bjk_busy_ack;
 
-		missive_grp_t** rmt_src_pt = &((core_ker->pw0_routed_arr)[src_idx]);
 		missive_grp_t* glb_mgrp = (missive_grp_t*)bj_host_pt_to_core_pt(mgrp);
 
-		EMU_CK(*rmt_src_pt == bj_null);
-		*rmt_src_pt = glb_mgrp;
+		EMU_CK(core_ker->routed_from_host == bj_null);
+		core_ker->routed_from_host = glb_mgrp;
 
 		// send signal
 		core_ker->has_from_host_work = bj_true;
@@ -613,5 +569,63 @@ kernel::handle_work_to_cores(){
 		ker->sent_work.bind_to_my_left(*mgrp);
 		did_work |= 0x20;
 	}
+}
+
+void 
+kernel::handle_work_to_host(){
+	BJK_CK(! is_host_kernel);
+	BJK_CK(host_kernel != bj_null);
+	BJK_CK(has_to_host_work);
+
+	if(routed_ack_from_host != bjk_ready_ack){
+		did_work |= 0x100;
+		EMU_PRT("HOST NOT READY \n");
+		return;
+	}
+	routed_ack_from_host = bjk_busy_ack;
+
+	missive_grp_t* mgrp2 = agent_grp::acquire();
+	EMU_CK(mgrp2 != bj_null);
+	EMU_CK(mgrp2->all_agts.is_alone());
+
+	mgrp2->all_agts.move_all_to_my_left(to_host_work);
+
+	bj_core_nn_t src_idx = get_core_nn();
+	missive_grp_t* glb_mgrp = (missive_grp_t*)bjk_as_glb_pt(mgrp2);
+
+	(host_kernel->pw0_routed_arr)[src_idx] = glb_mgrp;
+
+	// send signal
+	host_kernel->signals_arr[bjk_do_pw0_routes_sgnl] = bj_true;
+
+	sent_work.bind_to_my_left(*mgrp2);
+
+	has_to_host_work = false;
+}
+
+void 
+kernel::call_host_handlers_of_group(missive_grp_t* rem_mgrp){
+	EMU_CK(is_host_kernel);
+	
+	binder * fst, * lst, * wrk;
+
+	rem_mgrp = (missive_grp_t*)bj_core_pt_to_host_pt(rem_mgrp);
+
+	binder* all_msvs = &(rem_mgrp->all_agts);
+	bj_core_id_t msvs_id = bj_addr_get_id(all_msvs);
+
+	fst = bjh_glb_binder_get_rgt(all_msvs, msvs_id);
+	lst = all_msvs;
+
+	for(wrk = fst; wrk != lst; wrk = bjh_glb_binder_get_rgt(wrk, msvs_id)){
+		missive* remote_msv = (missive*)(binder*)bj_core_pt_to_host_pt(wrk);
+
+		actor* hdlr_dst = (remote_msv)->dst;
+		EMU_CK(hdlr_dst != bj_null);
+		hdlr_dst = (actor*)bj_core_pt_to_host_pt(hdlr_dst);
+		bjk_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
+	}
+
+	rem_mgrp->handled = bj_true;
 }
 

@@ -422,6 +422,7 @@ philosopher::handler(missive* msv){
 				if(num_bites == MAX_BITES){
 					PH_DBG("I AM FULL \n");
 					EMU_LOG("I AM FULL \n");
+					bjk_sprt2("I AM FULL \n");
 
 					PH_DBG_COD(bj_set_off_chip_var(dbg_all_full[nn], true);)
 

@@ -24,8 +24,14 @@ int bj_host_main(int argc, char *argv[])
 	*/
 
 	kernel::init_host_sys();
+
+	missive_handler_t hndlers = bj_null;
+	kernel::set_handlers(0, &hndlers);
+
 	kernel::run_host_sys();
 	kernel::finish_host_sys();
+
+	printf("ALL FINISHED ==================================== \n");
 
 	return 0;
 }

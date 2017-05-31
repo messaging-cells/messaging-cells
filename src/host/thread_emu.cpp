@@ -118,8 +118,8 @@ bjk_get_emu_info(){
 		do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
 bj_core_id_t
-bjk_get_addr_core_id_fn(void* addr){
-	if(bjk_addr_in_host(addr)){
+bjm_get_addr_core_id_fn(void* addr){
+	if(bjm_addr_in_host(addr)){
 		EMU_CK(bjm_HOST_EMU_INFO != bj_null);
 		return bjm_HOST_EMU_INFO->emu_core_id;
 	}	
@@ -129,42 +129,59 @@ bjk_get_addr_core_id_fn(void* addr){
 }
 
 void*
-bjk_addr_with_fn(bj_core_id_t core_id, void* addr){
-	//if(core_id == bjm_HOST_EMU_INFO.emu_core_id){
-	//}
+bjm_addr_with_fn(bj_core_id_t core_id, void* addr){
+	if(bjm_addr_in_host(addr)){
+		return bj_null;
+	}
 	bj_core_nn_t idx = bj_id_to_nn(core_id);
 	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + bjk_get_addr_offset(addr));
+	//EMU_CK((core_id != bjm_get_addr_core_id_fn(addr)) || (addr2 == addr));
 	return addr2;
 }
 
 bool 
-bjm_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
-	
-	if(! vv_ck){
-		emu_info_t* info = bjk_get_emu_info();
-		bj_core_id_t koid = info->emu_core_id;
-		bj_core_nn_t core_nn = info->emu_num;
-		if(bj_is_host_thread()){
-			fprintf(stderr, "HOST THREAD ***********************\n");
-			koid = -1;
+bjm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const char* ck_str, const char* fmt, ...)
+{
+	bool is_asst = (is_assert && ! vv_ck);
+	bool is_prt = (! is_assert && vv_ck);
+	bool do_prt = is_asst || is_prt;
+	if(do_prt){
+		emu_info_t* inf = bjk_get_emu_info();
+		if(is_assert){
+			fprintf(stderr, "------------------------------------------------------------------\n");
+			fprintf(stderr, "%d:%x --> ASSERT '%s' FAILED. FILE (%d) = %s\n", 
+					inf->emu_num, inf->emu_core_id, ck_str, line, file);
+			bjh_ptr_call_stack_trace();
+		} 
+
+		if(fmt != NULL){
+			char pp[BJ_MAX_STR_SZ];
+			va_list ap;
+
+			va_start(ap, fmt);
+			int size = vsnprintf(pp, BJ_MAX_STR_SZ, fmt, ap);
+			va_end(ap);
+
+			pp[BJ_MAX_STR_SZ - 1] = '\0';
+
+			if(size < 0){ 
+				bjh_abort_func((bj_addr_t)bjm_printf, "bjm_printf. ERROR. \n");
+			}
+
+			fprintf(stderr, "%d:%x --> %s", inf->emu_num, inf->emu_core_id, pp);
+			fflush(stderr); 
 		}
 		fprintf(stderr, "------------------------------------------------------------------\n");
-		fprintf(stderr, "ASSERT '%s' FAILED\n CORE_ID=%x CORE_NN=%d FILE= %s\nLINE=%d \n", 
-				ck_str, koid, core_nn, file, line);
-		//bj_out << get_stack_trace(file, line) << bj_eol;
-		if(msg != NULL){
-			fprintf(stderr, "MSG=%s\n", msg);
-		}
-		fprintf(stderr, "------------------------------------------------------------------\n");
-		bjh_ptr_call_stack_trace();
 	}
-	assert(vv_ck);
+	if(is_assert){
+		assert(vv_ck);
+	}
 	return vv_ck;
 }
 
 void
 bjm_log(const char *fmt, ...){
-	EMU_CK(! bj_is_host_thread());
+	//EMU_CK(! bj_is_host_thread());
 
 	char pp[BJ_MAX_STR_SZ];
 	va_list ap;
@@ -175,14 +192,16 @@ bjm_log(const char *fmt, ...){
 
 	pp[BJ_MAX_STR_SZ - 1] = '\0';
 
-	if(size < 0){ return; }
+	if(size < 0){ 
+		bjh_abort_func((bj_addr_t)bjm_log, "bjm_log. ERROR. \n");
+	}
 
 	bjk_slog2(pp);
 }
 
 void
 bjm_printf(const char *fmt, ...){
-	EMU_CK(! bj_is_host_thread());
+	//EMU_CK(! bj_is_host_thread());
 
 	char pp[BJ_MAX_STR_SZ];
 	va_list ap;
@@ -193,7 +212,9 @@ bjm_printf(const char *fmt, ...){
 
 	pp[BJ_MAX_STR_SZ - 1] = '\0';
 
-	if(size < 0){ return; }
+	if(size < 0){ 
+		bjh_abort_func((bj_addr_t)bjm_printf, "bjm_printf. ERROR. \n");
+	}
 
 	emu_info_t* inf = bjk_get_emu_info();
 
@@ -209,7 +230,7 @@ thread_start(void *arg){
 
 	pthread_setname_np(slf, tinfo->thd_emu.emu_name);
 
-	printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thd_emu.emu_name);
+	//printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thd_emu.emu_name);
 
 	if(tinfo->thd_emu.emu_core_func != bj_null){
 		(tinfo->thd_emu.emu_core_func)();

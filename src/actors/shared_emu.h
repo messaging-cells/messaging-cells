@@ -29,14 +29,14 @@ typedef uint16_t bj_core_nn_t;
 // address macros
 
 bj_core_id_t
-bjk_get_addr_core_id_fn(void*);
+bjm_get_addr_core_id_fn(void*);
 
 void*
-bjk_addr_with_fn(bj_core_id_t id, void* addr);
+bjm_addr_with_fn(bj_core_id_t id, void* addr);
 
 #define bj_addr_has_id(addr) true
-#define bj_addr_get_id(addr) bjk_get_addr_core_id_fn((void*)(addr))
-#define bj_addr_set_id(id, addr) bjk_addr_with_fn((id), (void*)(addr))
+#define bj_addr_get_id(addr) bjm_get_addr_core_id_fn((void*)(addr))
+#define bj_addr_set_id(id, addr) bjm_addr_with_fn((id), (void*)(addr))
 #define bj_addr_has_local_id(addr) (bj_addr_get_id(addr) == BJK_GLB_SYS->the_core_id)
 #define bj_addr_is_local(addr) bj_addr_has_local_id(addr)
 
@@ -45,7 +45,6 @@ bjk_addr_with_fn(bj_core_id_t id, void* addr);
 
 #define bjk_as_glb_pt(pt) ((void*)(pt))
 #define bjk_as_loc_pt(pt) ((void*)(pt))
-#define bjk_as_img_pt(pt, id) ((void*)bj_addr_set_id((id), (pt)))
 
 #define bj_addr_same_id(addr1, addr2) (bj_addr_get_id(addr1) == bj_addr_get_id(addr2))
 

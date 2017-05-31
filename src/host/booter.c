@@ -66,6 +66,18 @@ bool bjh_ck_sys_data(bj_sys_sz_st* sys1){
 	return true;
 }
 
+void
+bjh_prt_exception(bjk_glb_sys_st* sh_dat){
+	for(int aa = 0; aa < 5; aa++){
+		if(sh_dat->exception_code == bjk_software_exception){
+			printf("%x. SOFTWARE EXCEPTION!!\n", sh_dat->the_core_id);
+		}
+		if(sh_dat->exception_code == bjk_memory_exception){
+			printf("%x. MEMORY EXCEPTION!!\n", sh_dat->the_core_id);
+		}
+	}
+}
+
 int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
 	if(sh_dat->magic_id != BJ_MAGIC_ID){
 		printf("ERROR with inco.magic_id (0x%08x)\n", sh_dat->magic_id);

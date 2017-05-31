@@ -20,6 +20,8 @@
 
 // =====================================================================================
 
+#define BJM_EXTERNAL_RAM_ORIG 0x8e000000
+
 uint8_t bjm_dlmalloc_heap[BJM_DLMALLOC_HEAP_SZ];
 
 mspace bjm_glb_mspace;
@@ -99,6 +101,12 @@ bj_host_init(){
 
 	bj_init_glb_sys_sz(&(bjm_HOST_EMU_INFO->emu_system_sz));
 
+	bj_core_co_t max_row = bj_tot_xx_sys;
+	bj_core_co_t max_col = bj_tot_yy_sys;
+	bj_core_id_t core_id = bj_ro_co_to_id(max_row + 1, max_col + 1);
+	bjm_HOST_EMU_INFO->emu_core_id = core_id;
+	bjm_HOST_EMU_INFO->emu_num = ~0;
+
 	memset(&bjh_external_ram_load_data, 0, sizeof(bj_link_syms_data_st));
 
 	TOT_THREADS = bj_tot_nn_sys;
@@ -131,7 +139,7 @@ void
 bj_host_run()
 {
 	bj_off_sys_st* pt_shd_data = BJK_PT_EXTERNAL_DATA;
-	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
+	//bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 
 	bj_core_id_t core_id;
 	bj_core_co_t row, col, max_row, max_col;
@@ -142,8 +150,8 @@ bj_host_run()
 
 	max_row = 1;
 	max_col = 2;
-	max_row = sys_sz->xx_sz;
-	max_col = (1 << (sys_sz->yy_sz_pw2));
+	max_row = bj_tot_xx_sys;
+	max_col = bj_tot_yy_sys;
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
@@ -156,7 +164,7 @@ bj_host_run()
 			thd_inf.thd_emu.emu_core_id = core_id;
 			thd_inf.thd_emu.emu_core_func = &bj_cores_main;
 
-			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
+			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
 			if(num_core < bj_out_num_cores){
 				memset(&f_nm, 0, sizeof(f_nm));
@@ -202,6 +210,7 @@ bj_host_run()
 		kernel* ker = BJK_KERNEL;
 		if(ker != bj_null){
 			ker->handle_host_missives();
+			//has_work = ker->did_work;
 		}
 
 		for (row=0; row < max_row; row++){
@@ -227,8 +236,8 @@ bj_host_run()
 				BJH_CK(sh_dat_1->ck_core_id == core_id);
 				if(! core_started[row][col] && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
 					core_started[row][col] = true;
-					printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
-								core_id, row, col, num_core);
+					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
+					//			core_id, row, col, num_core);
 				}
 
 				//bjk_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data.in_core_shd;
@@ -260,13 +269,15 @@ bj_host_run()
 						bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						BJH_CK(bjh_rr_ck_zero(&(pt_buff->rd_arr)));
 
-						printf("Finished\n");
+						/*printf("Finished\n");
 						int err2 = bjh_prt_in_core_shd_dat(inco);
 						if(err2){
 							break;
+						}*/
+						if(inco->exception_code != bjk_invalid_exception){
+							bjh_prt_exception(inco);
+							bjh_prt_core_call_stack_emu(thd_inf);
 						}
-
-						bjh_prt_core_call_stack_emu(thd_inf);
 					}
 
 				}
@@ -274,10 +285,12 @@ bj_host_run()
 		}
 	} // while
 
+	/*
 	printf("sys_sz->xx=%d\n", sys_sz->xx);
 	printf("sys_sz->yy=%d\n", sys_sz->yy);
 	printf("sys_sz->xx_sz=%d\n", sys_sz->xx_sz);
 	printf("sys_sz->yy_sz_pw2=%d\n", sys_sz->yy_sz_pw2);
+	*/
 	
 	int nn;
 	for (nn=0; nn < bj_out_num_cores; nn++){

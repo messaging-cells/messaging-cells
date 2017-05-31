@@ -38,8 +38,14 @@ typedef uint8_t bj_bool_t;
 
 #ifdef BJ_IS_EMU_CODE
 	#include "shared_emu.h"
-#else
+#endif
+
+#ifdef BJ_IS_EPH_CODE
 	#include "shared_eph.h"
+#endif
+
+#ifdef BJ_IS_ZNQ_CODE
+	#include "shared_znq.h"
 #endif
 
 typedef bj_addr_t bj_size_t;
@@ -172,6 +178,8 @@ bj_addr_in_sys(bj_addr_t addr) {
 }
 
 #define bj_addr_in_host(addr) (! bj_addr_in_sys(addr))
+
+#define bj_dref(typ_nam, glb_pt, pt_field) ((typ_nam*)bj_addr_set_id(bj_addr_get_id(glb_pt), (glb_pt)->pt_field))
 
 #define bjk_is_core(row, col) \
 	((BJK_GLB_SYS->the_core_ro == (row)) && (BJK_GLB_SYS->the_core_co == (col)))
@@ -351,8 +359,8 @@ bj_host_addr_to_core_addr(bj_addr_t h_addr) bj_external_code_ram;
 bj_addr_t
 bj_core_addr_to_host_addr(bj_addr_t c_addr) bj_external_code_ram;
 
-#define bj_host_pt_to_core_pt(pt) ((void*)(bj_host_addr_to_core_addr((bj_addr_t)(pt))))
-#define bj_core_pt_to_host_pt(pt) ((void*)(bj_core_addr_to_host_addr((bj_addr_t)(pt))))
+#define bj_host_pt_to_core_pt(pt) (bj_host_addr_to_core_addr((bj_addr_t)(pt)))
+#define bj_core_pt_to_host_pt(pt) (bj_core_addr_to_host_addr((bj_addr_t)(pt)))
 
 #ifdef __cplusplus
 }

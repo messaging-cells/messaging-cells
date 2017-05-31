@@ -3,6 +3,7 @@
 
 class hello : public actor {
 public:
+	char f1;
 	void handler_1(missive* msv);
 };
 

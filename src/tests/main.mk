@@ -59,6 +59,7 @@ BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
 #	./sequence/sequence.mk \
 #	./sequence/sequence_2.mk \
 #	./sequence/sequence_3.mk \
+#	./send_host_msg/send_host_msg_emu.mk \
 
 SUBMAKEFILES := \
 	./nil_host/nil_host.mk \
@@ -67,6 +68,7 @@ SUBMAKEFILES := \
 	./send_msg/send_msg_emu.mk \
 	./eating_philo/philo_emu.mk \
 	./eating_philo/philo_eph.mk \
+	./send_host_msg/send_host_msg_emu.mk \
 
 
 

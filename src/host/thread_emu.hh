@@ -49,7 +49,7 @@ emu_info_t*
 bjk_get_emu_info();
 
 bj_inline_fn bool
-bjk_addr_in_host(void* addr){
+bjm_addr_in_host(void* addr){
 	uint8_t* pt = (uint8_t*)addr;
 	uint8_t* hh = (uint8_t*)bjm_dlmalloc_heap;
 	uint8_t* ll = hh + sizeof(bjm_dlmalloc_heap);
@@ -81,10 +81,10 @@ bjk_get_addr_offset(void* addr){
 }
 
 bj_core_id_t
-bjk_get_addr_core_id_fn(void* addr);
+bjm_get_addr_core_id_fn(void* addr);
 
 void*
-bjk_addr_with_fn(bj_core_id_t id, void* addr);
+bjm_addr_with_fn(bj_core_id_t id, void* addr);
 
 bj_inline_fn bool
 bj_is_host_thread(){

@@ -39,6 +39,22 @@ print_core_info(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 }
 
 void
+print_exception_case(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
+	bjk_glb_sys_st* pt_inco = 
+		(bjk_glb_sys_st*)bj_core_eph_addr_to_znq_addr(row, col, (bj_addr_t)(sh_dat_1->core_data));
+
+	if(pt_inco->exception_code != bjk_invalid_exception){
+		bjh_prt_exception(pt_inco);
+		if(pt_inco->dbg_stack_trace != bj_null){
+			bj_addr_t eph_addr = (bj_addr_t)(pt_inco->dbg_stack_trace);
+			void** 	pt_trace = (void**)bj_core_eph_addr_to_znq_addr(row, col, eph_addr);
+			bjh_prt_core_call_stack(bjh_epiphany_elf_path, BJ_MAX_CALL_STACK_SZ, pt_trace);
+		}
+	}
+
+}
+
+void
 bj_host_init(){
 	e_epiphany_t & dev = bjh_glb_dev;
 
@@ -132,7 +148,7 @@ void
 bj_host_run(){
 	e_epiphany_t & dev = bjh_glb_dev;
 
-	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
+	//bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
 	bj_off_sys_st* pt_shd_data = bjz_pt_external_data_obj;
 
 	bj_core_co_t row, col, max_row, max_col;
@@ -157,7 +173,7 @@ bj_host_run(){
 			core_id = bj_ro_co_to_id(row, col);
 			bj_core_nn_t num_core = bj_id_to_nn(core_id);
 
-			printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
+			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
 			memset(&f_nm, 0, sizeof(f_nm));
 			sprintf(f_nm, "log_core_%02d.txt", num_core);
@@ -195,6 +211,7 @@ bj_host_run(){
 		kernel* ker = BJK_KERNEL;
 		if(ker != bj_null){
 			ker->handle_host_missives();
+			//has_work = ker->did_work;
 		}
 
 		for (row=0; row < max_row; row++){
@@ -220,8 +237,8 @@ bj_host_run(){
 				BJH_CK(sh_dat_1->ck_core_id == core_id);
 				if(! core_started[row][col] && (sh_dat_1->is_finished == BJ_NOT_FINISHED_VAL)){ 
 					core_started[row][col] = true;
-					printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
-								core_id, row, col, num_core);
+					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
+					//			core_id, row, col, num_core);
 				}
 
 				// wait for finish
@@ -253,8 +270,9 @@ bj_host_run(){
 						bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						BJH_CK(bjh_rr_ck_zero(&(pt_buff->rd_arr)));
 
-						printf("Finished\n");
-						print_core_info(sh_dat_1, &dev, row, col);
+						//printf("Finished\n");
+						//print_core_info(sh_dat_1, &dev, row, col);
+						print_exception_case(sh_dat_1, &dev, row, col);
 					}
 
 				}
@@ -262,6 +280,7 @@ bj_host_run(){
 		}
 	} // while
 
+	/*
 	bj_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
 
 	printf("sys_sz->xx=%d\n", g_sys_sz->xx);
@@ -274,6 +293,7 @@ bj_host_run(){
 	printf("SHD_DATA_displacement_from_shd_mem_base_adddr= %p\n", (void*)(lk_dat->extnl_data_disp));
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
+	*/
 
 	int nn;
 	for (nn=0; nn < tot_cores; nn++){

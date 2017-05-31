@@ -23,6 +23,7 @@ extern char err_11[] bj_external_code_ram;
 extern char err_12[] bj_external_code_ram;
 extern char err_13[] bj_external_code_ram;
 extern char err_14[] bj_external_code_ram;
+extern char err_15[] bj_external_code_ram;
 
 #ifdef __cplusplus
 }

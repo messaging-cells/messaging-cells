@@ -34,13 +34,16 @@ bj_c_decl {
 
 	#include <stdbool.h>
 
-	bool bjm_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg);
+	bool bjm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const char* ck_str, 
+							const char* fmt, ...);
 	void bjm_printf(const char *format, ...);
 	void bjm_log(const char *fmt, ...);
 
 	#define EMU_CODE(cod) cod
 	#define EMU_DBG_CODE(cod) BJ_DBG(cod)
-	#define EMU_CK(vv) bjm_call_assert(vv, __FILE__, __LINE__, #vv, bj_null)
+	#define EMU_CK(vv) bjm_call_assert(true, vv, __FILE__, __LINE__, #vv, bj_null)
+	#define EMU_CK_PRT(vv, ...) bjm_call_assert(true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__)
+	#define EMU_COND_PRT(cond, ...) bjm_call_assert(false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__)
 	#define EMU_PRT(...) bjm_printf(__VA_ARGS__)
 	#define EMU_LOG(...) bjm_log(__VA_ARGS__)
 	#define EPH_CODE(cod) 
@@ -69,6 +72,8 @@ bj_c_decl {
 	#define EMU_CODE(cod) 
 	#define EMU_DBG_CODE(cod) 
 	#define EMU_CK(prm) 
+	#define EMU_CK_PRT(vv, ...) 
+	#define EMU_COND_PRT(cond, ...)
 	#define EMU_PRT(...) 
 	#define EMU_LOG(...) 
 

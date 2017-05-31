@@ -16,4 +16,5 @@ char err_11[] bj_external_code_ram = "assert abort\n";
 char err_12[] bj_external_code_ram = "bj_host_addr_to_core_addr abort\n";
 char err_13[] bj_external_code_ram = "bj_core_addr_to_host_addr abort\n";
 char err_14[] bj_external_code_ram = "kernel::get_core_kernel abort\n";
+char err_15[] bj_external_code_ram = "kernel::run_sys abort. MUST call set_handlers BEFORE run_sys. \n";
 

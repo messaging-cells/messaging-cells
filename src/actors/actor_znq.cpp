@@ -31,6 +31,6 @@ kernel::get_core_kernel(bj_core_id_t id){
 	if(glb_dat->inited_core != id){
 		return bj_null;	//not inited yet
 	}
-	kernel* ker = (kernel*)(glb_dat->pt_kernel);
+	kernel* ker = (kernel*)(glb_dat->pt_core_kernel);
 	return ker;
 }

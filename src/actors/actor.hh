@@ -317,6 +317,15 @@ public:
 	static actor*
 	get_core_actor(bj_core_id_t dst_id);
 
+	static actor*
+	get_host_actor(){
+		kernel* ker = BJK_KERNEL;
+		if(ker->is_host_kernel){
+			return ker->first_actor;
+		} 
+		return ker->host_kernel->first_actor;
+	}
+
 	static void
 	set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) bj_external_code_ram;
 
@@ -507,19 +516,30 @@ public:
 	void send(){
 		EMU_CK(dbg_msv == 0);
 		EMU_DBG_CODE(dbg_msv |= 0x1);
+
+		EMU_CK(! BJK_KERNEL->is_host_kernel);
 		EMU_CK(dst != bj_null);
 		EMU_CK(bj_addr_in_sys((bj_addr_t)dst));
+
 		src = (actor*)bjk_as_glb_pt(src);
 		BJK_KERNEL->local_work.bind_to_my_left(*this);
 	}
 
 	bj_inline_fn 
 	void send_to_host(){
+		EMU_CK(dbg_msv == 0);
+		EMU_DBG_CODE(dbg_msv |= 0x1);
+
 		EMU_CK(dst != bj_null);
-		EMU_CK(! bj_addr_in_sys((bj_addr_t)dst));
-		src = (actor*)bjk_as_glb_pt(src);
-		BJK_KERNEL->to_host_work.bind_to_my_left(*this);
-		BJK_KERNEL->has_to_host_work = true;
+		if(! BJK_KERNEL->is_host_kernel){
+			EMU_CK(bj_addr_get_id((bj_addr_t)dst) != 0);
+			EMU_CK(! bj_addr_in_sys((bj_addr_t)dst));
+			src = (actor*)bjk_as_glb_pt(src);
+			BJK_KERNEL->to_host_work.bind_to_my_left(*this);
+			BJK_KERNEL->has_to_host_work = true;
+		} else {
+			BJK_KERNEL->local_work.bind_to_my_left(*this);
+		}
 	}
 
 	virtual
@@ -628,8 +648,8 @@ public:
 #define bj_glb_binder_get_rgt(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_right)))
 #define bj_glb_binder_get_lft(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_left)))
 
-#define bjh_glb_binder_get_rgt(bdr, id) bj_glb_binder_get_rgt((binder*)bj_core_pt_to_host_pt(bdr), id)
-#define bjh_glb_binder_get_lft(bdr, id) bj_glb_binder_get_lft((binder*)bj_core_pt_to_host_pt(bdr), id)
+#define bjh_glb_binder_get_rgt(bdr, id) (agent*)bj_glb_binder_get_rgt((binder*)bj_core_pt_to_host_pt(bdr), id)
+#define bjh_glb_binder_get_lft(bdr, id) (agent*)bj_glb_binder_get_lft((binder*)bj_core_pt_to_host_pt(bdr), id)
 
 #define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(bjk_as_loc_pt(msv->dst)))->nam(msv))
 
