@@ -10,7 +10,7 @@ kernel* bjh_PT_THE_KERNEL = bj_null;
 
 kernel*
 bjh_get_first_kernel(){
-	bjh_PT_THE_KERNEL = bj_malloc32(kernel, 1);
+	bjh_PT_THE_KERNEL = bj_malloc64(kernel, 1);
 	return bjh_PT_THE_KERNEL;
 }
 
@@ -32,5 +32,6 @@ kernel::get_core_kernel(bj_core_id_t id){
 		return bj_null;	//not inited yet
 	}
 	kernel* ker = (kernel*)(glb_dat->pt_core_kernel);
+	ker = (kernel*)bj_eph_addr_to_znq_addr((bj_addr_t)ker);
 	return ker;
 }

@@ -80,45 +80,46 @@ bjh_prt_exception(bjk_glb_sys_st* sh_dat){
 
 int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
 	if(sh_dat->magic_id != BJ_MAGIC_ID){
-		printf("ERROR with inco.magic_id (0x%08x)\n", sh_dat->magic_id);
+		fprintf(stderr, "ERROR with inco.magic_id (0x%08x)\n", sh_dat->magic_id);
 		return 1;
 	}
 	if(sh_dat->magic_end != BJ_MAGIC_END){
-		printf("ERROR with inco.magic_end (0x%08x)\n", sh_dat->magic_end);
+		fprintf(stderr, "ERROR with inco.magic_end (0x%08x)\n", sh_dat->magic_end);
 		return 1;
 	}
-	printf("InCORE 0x%03x \n", sh_dat->the_core_id);
+	fprintf(stderr, "----------------------------------------------------------------------------\n");
+	fprintf(stderr, "InCORE 0x%03x \n", sh_dat->the_core_id);
 	
-	ZNQ_CODE(printf("min_sp=0x%08x \n", sh_dat->dbg_min_sp));
+	ZNQ_CODE(fprintf(stderr, "min_sp=0x%08x \n", sh_dat->dbg_min_sp));
 
-	EMU_CODE(printf("dbg_error_code=0x%08lx \n", sh_dat->dbg_error_code));
-	ZNQ_CODE(printf("dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
+	EMU_CODE(fprintf(stderr, "dbg_error_code=0x%08lx \n", sh_dat->dbg_error_code));
+	ZNQ_CODE(fprintf(stderr, "dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
 
-	printf("dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
+	fprintf(stderr, "dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
-	printf("binder_sz=%d \n", sh_dat->binder_sz);
-	printf("kernel_sz=%d \n", sh_dat->kernel_sz);
+	fprintf(stderr, "binder_sz=%d \n", sh_dat->binder_sz);
+	fprintf(stderr, "kernel_sz=%d \n", sh_dat->kernel_sz);
 	/*
-	printf("agent_sz=%d \n", sh_dat->agent_sz);
-	printf("actor_sz=%d \n", sh_dat->actor_sz);
-	printf("missive_sz=%d \n", sh_dat->missive_sz);
-	printf("agent_grp_sz=%d \n", sh_dat->agent_grp_sz);
-	printf("agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
-	printf("bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
+	fprintf(stderr, "agent_sz=%d \n", sh_dat->agent_sz);
+	fprintf(stderr, "actor_sz=%d \n", sh_dat->actor_sz);
+	fprintf(stderr, "missive_sz=%d \n", sh_dat->missive_sz);
+	fprintf(stderr, "agent_grp_sz=%d \n", sh_dat->agent_grp_sz);
+	fprintf(stderr, "agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
+	fprintf(stderr, "bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
 	*/
 
 	if(sh_dat->exception_code != bjk_invalid_exception){
 		for(int aa = 0; aa < 5; aa++){
 			if(sh_dat->exception_code == bjk_software_exception){
-				printf("%x. SOFTWARE EXCEPTION!!\n", sh_dat->the_core_id);
+				fprintf(stderr, "%x. SOFTWARE EXCEPTION!!\n", sh_dat->the_core_id);
 			}
 			if(sh_dat->exception_code == bjk_memory_exception){
-				printf("%x. MEMORY EXCEPTION!!\n", sh_dat->the_core_id);
+				fprintf(stderr, "%x. MEMORY EXCEPTION!!\n", sh_dat->the_core_id);
 			}
 		}
 	}
 
-	printf("\n");
+	fprintf(stderr, "\n");
 	
 	return 0;
 }

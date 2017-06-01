@@ -60,6 +60,12 @@ bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
 void 
 bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
 	char** trace = thd_inf.thd_emu.emu_glb_sys_data.bjk_dbg_call_nams_stack_trace;
+	if(trace == bj_null){
+		return;
+	}
+	if(trace[0] == bj_null){
+		return;
+	}
 	bjh_out << "---------------------------------------------------\n";
 	bjh_out << "STACK_TRACE for core num " << std::dec << thd_inf.thd_emu.emu_num;
 	bjh_out << " with core_id = 0x" << std::hex << thd_inf.thd_emu.emu_core_id << "\n";
@@ -275,9 +281,13 @@ bj_host_run()
 							break;
 						}*/
 						if(inco->exception_code != bjk_invalid_exception){
-							bjh_prt_exception(inco);
-							bjh_prt_core_call_stack_emu(thd_inf);
+							//bjh_prt_exception(inco);
+							bjh_prt_in_core_shd_dat(inco);
 						}
+						if(inco->dbg_error_code != 0){
+							bjh_prt_in_core_shd_dat(inco);
+						}
+						bjh_prt_core_call_stack_emu(thd_inf);
 					}
 
 				}

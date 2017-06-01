@@ -59,8 +59,8 @@ a64_free(uint8_t* ptr) bj_external_code_ram;
 	#define bj_realloc32(nam, ptr, sz)	(nam *)(mspace_realloc(bjh_glb_alloc_mspace, ((ptr), (sz * sizeof(nam)))))
 	#define bj_free32(ptr)	mspace_free(bjh_glb_alloc_mspace, ptr)
 
-	#define bj_malloc64(nam, sz)	(nam *)(mspace_malloc(bjh_glb_alloc_mspace, (sz * sizeof(nam)))
-	#define bj_realloc64(nam, ptr, sz)	(nam *)(mspace_realloc(bjh_glb_alloc_mspace, ((ptr), (sz * sizeof(nam)))))
+	#define bj_malloc64(nam, sz)	((nam *)(mspace_malloc(bjh_glb_alloc_mspace, (sz * sizeof(nam)))))
+	#define bj_realloc64(nam, ptr, sz)	((nam *)(mspace_realloc(bjh_glb_alloc_mspace, ((ptr), (sz * sizeof(nam))))))
 	#define bj_free64(ptr)	mspace_free(bjh_glb_alloc_mspace, ptr)
 #endif
 

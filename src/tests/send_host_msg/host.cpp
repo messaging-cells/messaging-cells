@@ -15,13 +15,17 @@ recv_actor_handler(missive* msg){
 	EMU_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
 	EMU_PRT("RCV_CORE_ID=%x \n", bj_addr_get_id(msg->dst));
 	EMU_PRT("RCV_GLB_CORE_ID=%x \n", BJK_GLB_SYS->the_core_id);
+	printf("HOST_RECEIVED_MSV !!!\n");
 
 	EMU_CK(bj_addr_is_local(msg->dst));
 	bj_core_id_t koid = kernel::get_core_id();
 	BJ_MARK_USED(koid);
 	bj_core_nn_t konn = kernel::get_core_nn();
 	BJ_MARK_USED(konn);
-	bjk_slog2("HOST GOT MISSIVE\n");
+
+	bjk_slog2("HOST_GOT_MISSIVE\n");
+	bjk_sprt2("RCV_HOST_MISSIVE\n");
+
 	EMU_LOG("recv_actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	EMU_PRT("RCV_MSV. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	
@@ -55,6 +59,8 @@ int bj_host_main(int argc, char *argv[])
 
 	//bjk_slog2("HOST started\n");
 	kernel::get_core_actor()->handler_idx = 0;	// was 0 but it should be inited for every actors's subclass.
+
+	printf("HOST STARTING ==================================== \n");
 
 	kernel::run_host_sys();
 	kernel::finish_host_sys();

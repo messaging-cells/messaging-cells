@@ -198,7 +198,8 @@ enum bjk_ack_t : uint8_t {
 
 class bj_aligned kernel { 
 public:
-	bool	is_host_kernel;
+	uint32_t 	magic_id;
+	bool		is_host_kernel;
 
 	bjk_handler_idx_t 	tot_handlers;
 	missive_handler_t* 	all_handlers;
@@ -245,6 +246,8 @@ public:
 
 	uint16_t 	did_work;
 	bool 		exit_when_idle;
+
+	uint32_t 	end_magic_id;
 
 	kernel() bj_external_code_ram;
 
@@ -653,6 +656,12 @@ public:
 
 #define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(bjk_as_loc_pt(msv->dst)))->nam(msv))
 
+template<typename T, typename U> constexpr bj_size_t bj_offsetof(U T::*member) bj_external_code_ram;
+
+template<typename T, typename U> constexpr bj_size_t bj_offsetof(U T::*member)
+{
+    return (char*)&((T*)nullptr->*member) - (char*)nullptr;
+}
 
 #ifdef __cplusplus
 bj_c_decl {

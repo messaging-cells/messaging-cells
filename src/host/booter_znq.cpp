@@ -44,14 +44,17 @@ print_exception_case(bj_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, 
 		(bjk_glb_sys_st*)bj_core_eph_addr_to_znq_addr(row, col, (bj_addr_t)(sh_dat_1->core_data));
 
 	if(pt_inco->exception_code != bjk_invalid_exception){
-		bjh_prt_exception(pt_inco);
-		if(pt_inco->dbg_stack_trace != bj_null){
-			bj_addr_t eph_addr = (bj_addr_t)(pt_inco->dbg_stack_trace);
-			void** 	pt_trace = (void**)bj_core_eph_addr_to_znq_addr(row, col, eph_addr);
-			bjh_prt_core_call_stack(bjh_epiphany_elf_path, BJ_MAX_CALL_STACK_SZ, pt_trace);
-		}
+		//bjh_prt_exception(pt_inco);
+		bjh_prt_in_core_shd_dat(pt_inco);
 	}
-
+	if(pt_inco->dbg_error_code != 0){
+		bjh_prt_in_core_shd_dat(pt_inco);
+	}
+	if(pt_inco->dbg_stack_trace != bj_null){
+		bj_addr_t eph_addr = (bj_addr_t)(pt_inco->dbg_stack_trace);
+		void** 	pt_trace = (void**)bj_core_eph_addr_to_znq_addr(row, col, eph_addr);
+		bjh_prt_core_call_stack(bjh_epiphany_elf_path, BJ_MAX_CALL_STACK_SZ, pt_trace);
+	}
 }
 
 void
