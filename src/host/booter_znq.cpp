@@ -144,6 +144,11 @@ bj_host_init(){
 	pt_shd_data->wrk_sys = *g_sys_sz;
 	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
+	pt_shd_data->znq_shared_mem_base = (bj_addr_t)BJH_EXTERNAL_RAM_BASE_PT;
+	pt_shd_data->eph_shared_mem_base = (bj_addr_t)(lk_dat->extnl_ram_orig);
+
+	//printf("eph_shared_mem_base= %p \n", (void*)(pt_shd_data->eph_shared_mem_base));
+
 	pt_shd_data->pt_host_kernel = bj_null;
 }
 

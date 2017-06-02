@@ -28,6 +28,9 @@ struct bj_aligned bjk_glb_sys_def {
 	bj_addr_t 	dbg_error_code;
 	uint32_t 	dbg_progress_flag;
 
+	bj_addr_t	znq_shd_mem_base;
+	bj_addr_t	eph_shd_mem_base;
+
 	bj_core_id_t the_core_id;
 	bj_core_nn_t the_core_nn;
 	bj_core_co_t the_core_ro;

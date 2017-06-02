@@ -698,15 +698,17 @@ kernel::handle_work_from_host(){
 	fst_ref->let_go();
 	EMU_CK(from_host_work.is_alone());
 
-	missive_grp_t* remote_grp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
+	missive_grp_t* host_mgrp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
 
 	binder * fst, * lst, * wrk;
 	//kernel* ker = this;
 
 	EMU_PRT("handle_work_from_host. FLAG2 \n");
 
-	binder* all_msvs = &(remote_grp->all_agts);
-	//bj_core_id_t msvs_id = bj_addr_get_id(all_msvs);
+	missive_grp_t* rem_mgrp = (missive_grp_t*)bj_host_pt_to_core_pt(host_mgrp);
+
+	//binder* all_msvs = &(rem_mgrp->all_agts);
+	binder* all_msvs = (binder*)(((uint8_t*)host_mgrp) + bj_offsetof(&missive_grp_t::all_agts));
 
 	fst = bjc_glb_binder_get_rgt(all_msvs);
 	lst = all_msvs;
@@ -719,7 +721,11 @@ kernel::handle_work_from_host(){
 		bjk_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
 	}
 
-	remote_grp->handled = bj_true;
+	rem_mgrp->handled = bj_true;
+
+	//fst_ref->release();
+	//EMU_CK(fst_ref->glb_agent_ptr == bj_null);
+	//did_work |= 0x1000;
 
 	has_from_host_work = false;
 

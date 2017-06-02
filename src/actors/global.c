@@ -2,9 +2,12 @@
 #include "err_msgs.h"
 #include "global.h"
 
+#include "link_syms_vals.h"
 
 //======================================================================
 // global funcs
+
+//EPH_CODE(extern bj_addr_t LD_EXTERNAL_RAM_ORIG);
 
 void 
 bjk_glb_init(void) {
@@ -43,6 +46,8 @@ bjk_glb_init(void) {
 	glb_dat->magic_id = BJ_MAGIC_ID;
 	glb_dat->dbg_stack_trace = bj_null;
 	glb_dat->magic_end = BJ_MAGIC_END;	
+	glb_dat->znq_shd_mem_base = BJK_PT_EXTERNAL_DATA->znq_shared_mem_base;
+	glb_dat->eph_shd_mem_base = BJK_PT_EXTERNAL_DATA->eph_shared_mem_base;
 	glb_dat->the_core_id = koid;
 	glb_dat->the_core_ro = bj_id_to_ro(koid);
 	glb_dat->the_core_co = bj_id_to_co(koid);
@@ -75,6 +80,11 @@ bjk_glb_init(void) {
 		bjk_set_finished(BJ_NOT_FINISHED_VAL);
 		bj_set_off_chip_var(glb_dat->off_core_pt->is_waiting, BJ_NOT_WAITING);
 	}
+
+	EPH_CODE(
+		BJK_CK(glb_dat->eph_shd_mem_base == BJ_VAL_EXTERNAL_RAM_ORIG)
+		BJK_CK(glb_dat->znq_shd_mem_base != 0);
+	)
 }
 
 void 

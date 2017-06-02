@@ -283,6 +283,8 @@ struct bj_aligned bj_off_sys_shared_data_def {
 	void* 			pt_this_from_znq;
 	void* 			pt_this_from_eph;
 	void* 			pt_host_kernel;
+	bj_addr_t		znq_shared_mem_base;
+	bj_addr_t		eph_shared_mem_base;
 	bj_sys_sz_st 	wrk_sys;
 	bj_off_core_st 	sys_cores[bj_out_num_cores];
 	bj_core_out_st 	sys_out_buffs[bj_out_num_cores];
