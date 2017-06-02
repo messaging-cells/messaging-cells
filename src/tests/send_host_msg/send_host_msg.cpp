@@ -1,6 +1,24 @@
 
 #include "actor.hh"
 
+#include "resp_conf.h"
+
+void recv_core_handler(missive* msg);
+
+void 
+recv_core_handler(missive* msg){
+	EMU_CK(bj_addr_is_local(msg->dst));
+
+	bjk_sprt2("CORE_GOT_RESPONSE\n");
+	EMU_PRT("RCV_RESPONSE. src=%p dst=%p \n", msg->get_source(), msg->dst);
+	
+	bjk_get_kernel()->set_idle_exit();
+}
+
+missive_handler_t core_handlers[] = {
+	recv_core_handler
+};
+
 void bj_cores_main() {
 	kernel::init_sys();
 
@@ -15,14 +33,9 @@ void bj_cores_main() {
 	if(bjk_is_core(0,0)){
 		bjk_slog2("CORE (0,0) started\n");
 
-		missive_handler_t hndlers = bj_null;
-		kernel::set_handlers(0, &hndlers);
-
-		kernel* ker = BJK_KERNEL;
-		kernel* hker = ker->host_kernel;
-		//uint32_t mg = hker->magic_id;
-		//uint32_t emg = hker->end_magic_id;
-		actor* fst_act = hker->first_actor;
+		//missive_handler_t hndlers = bj_null;
+		//kernel::set_handlers(0, &hndlers);
+		kernel::set_handlers(1, core_handlers);
 
 		actor* act1 = kernel::get_core_actor();
 		actor* act2 = kernel::get_host_actor();
@@ -34,31 +47,24 @@ void bj_cores_main() {
 		msv->dst = act2;
 		msv->tok = 432;
 
-		EMU_PRT("SND_ACT1(SRC)=%p \n", act1);
-		EMU_PRT("SND_ACT2(DST)=%p \n", act2);
-		EMU_PRT("SND_MSV=%p \n", (void*)msv);
-
 		bjk_sprt2("SND_act2___");
 		bjk_xprt((bj_addr_t)(act2));
 		bjk_sprt2("___\n");
 
 		BJK_CK(act2 != bj_null);
-		//bjk_slog2("SND_BEFORE MISSIVE\n");
-		//bjk_sprt2("SND_BEFORE MISSIVE\n");
 
 		msv->send_to_host();
 
 		EMU_PRT("SND_SENT H MISSIVE\n");
-		//bjk_slog2("SND AFTER_HOST MISSIVE\n");
-		//bjk_sprt2("SND_AFTER_HOST_MISSIVE\n");
 
-		ker->set_idle_exit();
+		#ifndef WITH_RESPONSE
+			ker->set_idle_exit();
+		#endif
+
 		kernel::run_sys();
 	}
 
 	bjk_slog2("FINISHED SEND_HOST TEST\n");	
-	//bjk_xlog((bj_addr_t)ker->host_kernel);
-	//bjk_slog2(" is the HOST_KERNEL\n");	
 
 	kernel::finish_sys();
 }

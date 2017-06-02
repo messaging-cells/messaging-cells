@@ -224,6 +224,7 @@ public:
 
 	grip to_cores_work;
 	grip to_host_work;
+	grip from_host_work;
 
 	grip in_work;
 	grip local_work;
@@ -321,13 +322,7 @@ public:
 	get_core_actor(bj_core_id_t dst_id);
 
 	static actor*
-	get_host_actor(){
-		kernel* ker = BJK_KERNEL;
-		if(ker->is_host_kernel){
-			return ker->first_actor;
-		} 
-		return ker->host_kernel->first_actor;
-	}
+	get_host_actor() bj_external_code_ram;
 
 	static void
 	set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) bj_external_code_ram;
@@ -341,7 +336,7 @@ public:
 	}
 
 	bj_opt_sz_fn void 
-	process_signal(int sz, missive_grp_t** arr, bjk_ack_t* acks);
+	process_signal(binder& in_wrk, int sz, missive_grp_t** arr, bjk_ack_t* acks);
 
 	bj_opt_sz_fn void 
 	handle_missives();
@@ -354,6 +349,9 @@ public:
 
 	void 
 	handle_work_to_host() bj_external_code_ram;
+
+	void
+	handle_work_from_host() bj_external_code_ram;
 
 	void 
 	handle_work_to_cores() bj_external_code_ram;
@@ -520,7 +518,6 @@ public:
 		EMU_CK(dbg_msv == 0);
 		EMU_DBG_CODE(dbg_msv |= 0x1);
 
-		EMU_CK(! BJK_KERNEL->is_host_kernel);
 		EMU_CK(dst != bj_null);
 		EMU_CK(bj_addr_in_sys((bj_addr_t)dst));
 
@@ -651,8 +648,11 @@ public:
 #define bj_glb_binder_get_rgt(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_right)))
 #define bj_glb_binder_get_lft(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_left)))
 
-#define bjh_glb_binder_get_rgt(bdr, id) (agent*)bj_glb_binder_get_rgt((binder*)bj_core_pt_to_host_pt(bdr), id)
-#define bjh_glb_binder_get_lft(bdr, id) (agent*)bj_glb_binder_get_lft((binder*)bj_core_pt_to_host_pt(bdr), id)
+#define bjh_glb_binder_get_rgt(bdr, id) (binder*)bj_glb_binder_get_rgt((binder*)bj_core_pt_to_host_pt(bdr), id)
+#define bjh_glb_binder_get_lft(bdr, id) (binder*)bj_glb_binder_get_lft((binder*)bj_core_pt_to_host_pt(bdr), id)
+
+#define bjc_glb_binder_get_rgt(bdr) (binder*)(((binder*)bj_host_pt_to_core_pt(bdr))->bn_right)
+#define bjc_glb_binder_get_lft(bdr) (binder*)(((binder*)bj_host_pt_to_core_pt(bdr))->bn_left)
 
 #define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(bjk_as_loc_pt(msv->dst)))->nam(msv))
 
@@ -666,6 +666,12 @@ template<typename T, typename U> constexpr bj_size_t bj_offsetof(U T::*member)
 #ifdef __cplusplus
 bj_c_decl {
 #endif
+
+bool
+bjk_is_inited(bj_core_id_t dst_id) bj_external_code_ram;
+
+bool
+bjk_ck_type_sizes() bj_external_code_ram;
 
 //bj_opt_sz_fn 
 void 

@@ -16,6 +16,8 @@ TARGET_DIR := ./bin
 
 BJ_DBG_FLAG := -DFULL_DEBUG
 
+BJ_LIB_DIR := ../../bin
+
 BJ_LDF=bj-linker-script.ldf
 
 BJ_ESDK=${EPIPHANY_HOME}
@@ -28,18 +30,24 @@ CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-c
 BJ_STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
 BJ_EPH_LDFLAGS_1 := -L${BJ_ETOOLS}/e-gnu/epiphany-elf/lib -L${BJ_ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
-BJ_EPH_LDFLAGS_2 := -L../../bin -L${TARGET_DIR} ${BJ_EPH_LDFLAGS_1} --strip-debug -static 
+BJ_EPH_LDFLAGS_2 := -L${BJ_LIB_DIR} -L${TARGET_DIR} ${BJ_EPH_LDFLAGS_1} --strip-debug -static 
 BJ_STD_EPH_LDFLAGS := -T ${BJ_LDF} ${BJ_EPH_LDFLAGS_2}
 
-BJ_STD_EMU_LDFLAGS := -L../../bin -L${TARGET_DIR} 
+BJ_STD_EMU_LDFLAGS := -L${BJ_LIB_DIR} -L${TARGET_DIR} 
 
 BJ_ZNQ_LDFLAGS_1 := -L${BJ_ETOOLS}/host/lib 
-BJ_STD_ZNQ_LDFLAGS := -L../../bin -L${TARGET_DIR} ${BJ_ZNQ_LDFLAGS_1} 
+BJ_STD_ZNQ_LDFLAGS := -L${BJ_LIB_DIR} -L${TARGET_DIR} ${BJ_ZNQ_LDFLAGS_1} 
 
 BJ_STD_C_LDLIBS := -lc -lepiphany -lgcc -lg 
 BJ_STD_ZNQ_LDLIBS := -lbjz-actor -lbjz-tak-mak -lbjz-dlmalloc -le-hal -lm 
 BJ_STD_EMU_LDLIBS := -lbjm-actor -lbjm-tak-mak -lbjm-dlmalloc -lpthread
 BJ_STD_EPH_LDLIBS := -lbjk-actor -lbjk-tak-mak 
+
+BJ_LIB_DIR_2 := ../../../bin
+
+BJ_ZNQ_LIBS := ${BJ_LIB_DIR_2}/libbjz-actor.a ${BJ_LIB_DIR_2}/libbjz-tak-mak.a ${BJ_LIB_DIR_2}/libbjz-dlmalloc.a
+BJ_EMU_LIBS := ${BJ_LIB_DIR_2}/libbjm-actor.a ${BJ_LIB_DIR_2}/libbjm-tak-mak.a ${BJ_LIB_DIR_2}/libbjm-dlmalloc.a
+BJ_EPH_LIBS := ${BJ_LIB_DIR_2}/libbjk-actor.a ${BJ_LIB_DIR_2}/libbjk-tak-mak.a
 
 BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
 
@@ -62,6 +70,10 @@ BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
 #	./send_host_msg/send_host_msg_emu.mk \
 #	./send_msg/send_msg_eph.mk \
 #	./send_msg/send_msg_emu.mk \
+#	./send_host_msg/send_host_msg_emu.mk \
+#	./send_host_msg/send_host_msg_eph.mk \
+#	./send_host_msg/send_host_msg_znq.mk \
+#	./emu_tests/hola_jose.mk \
 
 SUBMAKEFILES := \
 	./nil_host/nil_host.mk \
@@ -71,7 +83,7 @@ SUBMAKEFILES := \
 	./send_host_msg/send_host_msg_emu.mk \
 	./send_host_msg/send_host_msg_eph.mk \
 	./send_host_msg/send_host_msg_znq.mk \
-	./emu_tests/hola_jose.mk \
+	./send_msg/send_msg_eph.mk \
 
 
 

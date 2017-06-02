@@ -4,12 +4,14 @@
 #include "booter.h"
 #include "actor.hh"
 
+#include "resp_conf.h"
+
 char* bjh_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
-void recv_actor_handler(missive* msg);
+void recv_host_handler(missive* msg);
 
 void 
-recv_actor_handler(missive* msg){
+recv_host_handler(missive* msg){
 	BJK_UPDATE_MIN_SP();
 	EMU_PRT("RCV_MSV=%p \n", msg);
 	EMU_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
@@ -26,14 +28,18 @@ recv_actor_handler(missive* msg){
 	bjk_slog2("HOST_GOT_MISSIVE\n");
 	bjk_sprt2("RCV_HOST_MISSIVE\n");
 
-	EMU_LOG("recv_actor_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	EMU_LOG("recv_host_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	EMU_PRT("RCV_MSV. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	
+
+	#ifdef WITH_RESPONSE
+		msg->dst->respond(msg, (msg->tok + 10)); 
+	#endif 
+
 	bjk_get_kernel()->set_idle_exit();
 }
 
-missive_handler_t the_handlers[] = {
-	recv_actor_handler
+missive_handler_t host_handlers[] = {
+	recv_host_handler
 };
 
 
@@ -50,7 +56,7 @@ int bj_host_main(int argc, char *argv[])
 
 	kernel::init_host_sys();
 
-	kernel::set_handlers(1, the_handlers);
+	kernel::set_handlers(1, host_handlers);
 
 	actor::separate(bj_out_num_cores);
 	missive::separate(bj_out_num_cores);
