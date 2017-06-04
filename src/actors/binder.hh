@@ -21,38 +21,9 @@ binder class and related.
 
 class binder;
 
-/*
-class bj_aligned epiphany_binder {
-public:
-	uint16_t	bn_left;
-	uint16_t	bn_right;
-};
-
-class bj_aligned host_binder {
-public:
-	binder*	bn_left;
-	binder*	bn_right;
-};
-
-#ifdef BJ_IS_EPH_CODE
-	typedef uint16_t bjk_sptr_t;
-	#define bjk_pt_to_binderpt(pt) ((binder*)(bj_addr_t)(pt))
-	#define bjk_binderpt_to_pt(bptr) ((uintptr_t)(bptr))
-	#define bj_binder_base epiphany_binder
-#else
-	typedef binder* bjk_sptr_t;
-	#define bjk_pt_to_binderpt(pt) (pt)
-	#define bjk_binderpt_to_pt(bptr) (bptr)
-	#define bj_binder_base host_binder
-#endif
-
-//class bj_aligned binder : public bj_binder_base {
-//class binder {
-*/
-
 typedef binder* bjk_sptr_t;
-#define bjk_pt_to_binderpt(pt) (pt)
-#define bjk_binderpt_to_pt(bptr) (bptr)
+//define bjk_pt_to_binderpt(pt) (pt)
+//define bjk_binderpt_to_pt(bptr) (bptr)
 
 class bj_aligned binder {
 public:
@@ -68,48 +39,48 @@ public:
 
 	bj_opt_sz_fn
 	void		init_binder(){
-		bn_left = bjk_binderpt_to_pt(this);
-		bn_right = bjk_binderpt_to_pt(this);
+		bn_left = this;
+		bn_right = this;
 	}
 
 	bj_opt_sz_fn
 	bool	is_alone(){
-		return ((bn_left == bjk_binderpt_to_pt(this)) && (bn_right == bjk_binderpt_to_pt(this)));
+		return ((bn_left == this) && (bn_right == this));
 	}
 
 	bj_opt_sz_fn //virtual // mem expensive
 	void	let_go(){
-		bjk_pt_to_binderpt(bn_left)->bn_right = bn_right;
-		bjk_pt_to_binderpt(bn_right)->bn_left = bn_left;
-		bn_left = bjk_binderpt_to_pt(this);
-		bn_right = bjk_binderpt_to_pt(this);
+		bn_left->bn_right = bn_right;
+		bn_right->bn_left = bn_left;
+		bn_left = this;
+		bn_right = this;
 	}
 
 	bj_opt_sz_fn
 	bool	ck_binder(){
-		BINDER_CK(bn_right->bn_left == bjk_binderpt_to_pt(this));
-		BINDER_CK(bn_left->bn_right == bjk_binderpt_to_pt(this));
+		BINDER_CK(bn_right->bn_left == this);
+		BINDER_CK(bn_left->bn_right == this);
 		return true;
 	}
 
 	bj_opt_sz_fn
 	binder&	get_right(){
-		return *bjk_pt_to_binderpt(bn_right);
+		return *bn_right;
 	}
 
 	bj_opt_sz_fn
 	binder&	get_left(){
-		return *bjk_pt_to_binderpt(bn_left);
+		return *bn_left;
 	}
 
 	bj_opt_sz_fn
 	binder*	get_right_pt(){
-		return bjk_pt_to_binderpt(bn_right);
+		return bn_right;
 	}
 
 	bj_opt_sz_fn
 	binder*	get_left_pt(){
-		return bjk_pt_to_binderpt(bn_left);
+		return bn_left;
 	}
 
 	bj_opt_sz_fn
@@ -118,9 +89,9 @@ public:
 		BINDER_CK(ck_binder());
 
 		the_rgt.bn_right = bn_right;
-		the_rgt.bn_left = bjk_binderpt_to_pt(this);
-		bjk_pt_to_binderpt(bn_right)->bn_left = bjk_binderpt_to_pt(&the_rgt);
-		bn_right = bjk_binderpt_to_pt(&the_rgt);
+		the_rgt.bn_left = this;
+		bn_right->bn_left = &the_rgt;
+		bn_right = &the_rgt;
 
 		BINDER_CK(the_rgt.ck_binder());
 		BINDER_CK(ck_binder());
@@ -132,9 +103,9 @@ public:
 		BINDER_CK(ck_binder());
 
 		the_lft.bn_left = bn_left;
-		the_lft.bn_right = bjk_binderpt_to_pt(this);
-		bjk_pt_to_binderpt(bn_left)->bn_right = bjk_binderpt_to_pt(&the_lft);
-		bn_left = bjk_binderpt_to_pt(&the_lft);
+		the_lft.bn_right = this;
+		bn_left->bn_right = &the_lft;
+		bn_left = &the_lft;
 
 		BINDER_CK(the_lft.ck_binder());
 		BINDER_CK(ck_binder());
@@ -158,18 +129,18 @@ public:
 
 		BINDER_CK(ck_binder());
 
-		binder* new_rgt = bjk_pt_to_binderpt(grp.bn_right);
-		binder* new_mid = bjk_pt_to_binderpt(grp.bn_left);
-		binder* old_rgt = bjk_pt_to_binderpt(bn_right);
+		binder* new_rgt = grp.bn_right;
+		binder* new_mid = grp.bn_left;
+		binder* old_rgt = bn_right;
 
-		grp.bn_right = bjk_binderpt_to_pt(&grp);
-		grp.bn_left = bjk_binderpt_to_pt(&grp);
+		grp.bn_right = &grp;
+		grp.bn_left = &grp;
 
-		bn_right = bjk_binderpt_to_pt(new_rgt);
-		bjk_pt_to_binderpt(bn_right)->bn_left = bjk_binderpt_to_pt(this);
+		bn_right = new_rgt;
+		bn_right->bn_left = this;
 
-		new_mid->bn_right = bjk_binderpt_to_pt(old_rgt);
-		bjk_pt_to_binderpt(new_mid->bn_right)->bn_left = bjk_binderpt_to_pt(new_mid);
+		new_mid->bn_right = old_rgt;
+		new_mid->bn_right->bn_left = new_mid;
 
 		BINDER_CK(grp.is_alone());
 		BINDER_CK(new_rgt->ck_binder());
@@ -186,18 +157,18 @@ public:
 
 		BINDER_CK(ck_binder());
 
-		binder* new_lft = bjk_pt_to_binderpt(grp.bn_left);
-		binder* new_mid = bjk_pt_to_binderpt(grp.bn_right);
-		binder* old_lft = bjk_pt_to_binderpt(bn_left);
+		binder* new_lft = grp.bn_left;
+		binder* new_mid = grp.bn_right;
+		binder* old_lft = bn_left;
 
-		grp.bn_right = bjk_binderpt_to_pt(&grp);
-		grp.bn_left = bjk_binderpt_to_pt(&grp);
+		grp.bn_right = &grp;
+		grp.bn_left = &grp;
 
-		bn_left = bjk_binderpt_to_pt(new_lft);
-		bjk_pt_to_binderpt(bn_left)->bn_right = bjk_binderpt_to_pt(this);
+		bn_left = new_lft;
+		bn_left->bn_right = this;
 
-		new_mid->bn_left = bjk_binderpt_to_pt(old_lft);
-		bjk_pt_to_binderpt(new_mid->bn_left)->bn_right = bjk_binderpt_to_pt(new_mid);
+		new_mid->bn_left = old_lft;
+		new_mid->bn_left->bn_right = new_mid;
 
 		BINDER_CK(grp.is_alone());
 		BINDER_CK(new_lft->ck_binder());
@@ -209,7 +180,7 @@ public:
 	bj_opt_sz_fn
 	void 	let_all_go(){
 		while(! is_alone()){
-			bjk_pt_to_binderpt(bn_right)->let_go();
+			bn_right->let_go();
 		}
 	}
 

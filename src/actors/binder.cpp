@@ -16,9 +16,9 @@ binder::calc_size(){
 	binder * fst, * lst, * wrk;
 	bj_size_t sz = 0;
 
-	fst = bjk_pt_to_binderpt(this->bn_right);
+	fst = this->bn_right;
 	lst = this;
-	for(wrk = fst; wrk != lst; wrk = bjk_pt_to_binderpt(wrk->bn_right)){
+	for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
 		sz++;
 	}
 	return sz;

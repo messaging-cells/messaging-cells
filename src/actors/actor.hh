@@ -92,7 +92,7 @@ nam* \
 nam::acquire(uint16_t sz){ \
 	grip& ava = all_ava; \
 	if((sz == 1) && (! ava.is_alone())){ \
-		binder* fst = bjk_pt_to_binderpt(ava.bn_right); \
+		binder* fst = ava.bn_right; \
 		fst->let_go(); \
 		return (nam *)fst; \
 	} \
@@ -245,6 +245,7 @@ public:
 	bj_kenel_func_t	user_func;
 	void*	user_data;
 
+	bool		host_running;
 	uint16_t 	did_work;
 	bool 		exit_when_idle;
 
@@ -508,7 +509,7 @@ public:
 	void init_me(int caller = 0){
 		EMU_CK((caller != 1) || (! (dbg_msv & 0x1)) || (dbg_msv & 0x2));
 		dst = bj_null;
-		src = bjk_binderpt_to_pt(bj_null);
+		src = bj_null;
 		tok = 0;
 		EMU_DBG_CODE(dbg_msv = 0);
 	}
@@ -645,14 +646,11 @@ public:
 	}
 };
 
-#define bj_glb_binder_get_rgt(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_right)))
-#define bj_glb_binder_get_lft(bdr, id) ((binder*)bj_addr_set_id((id), bjk_pt_to_binderpt((bdr)->bn_left)))
+#define bj_glb_binder_get_rgt(bdr, id) ((binder*)bj_addr_set_id((id), ((bdr)->bn_right)))
+#define bj_glb_binder_get_lft(bdr, id) ((binder*)bj_addr_set_id((id), ((bdr)->bn_left)))
 
 #define bjh_glb_binder_get_rgt(bdr, id) (binder*)bj_glb_binder_get_rgt((binder*)bj_core_pt_to_host_pt(bdr), id)
 #define bjh_glb_binder_get_lft(bdr, id) (binder*)bj_glb_binder_get_lft((binder*)bj_core_pt_to_host_pt(bdr), id)
-
-#define bjc_glb_binder_get_rgt(bdr) (binder*)(((binder*)bj_host_pt_to_core_pt(bdr))->bn_right)
-#define bjc_glb_binder_get_lft(bdr) (binder*)(((binder*)bj_host_pt_to_core_pt(bdr))->bn_left)
 
 #define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(bjk_as_loc_pt(msv->dst)))->nam(msv))
 

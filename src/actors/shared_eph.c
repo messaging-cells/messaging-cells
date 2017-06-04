@@ -7,6 +7,7 @@
 
 bj_sys_sz_st 	bjk_system_sz;
 
+
 bj_addr_t
 bj_host_addr_to_core_addr(bj_addr_t h_addr){
 	return (BJ_VAL_EXTERNAL_RAM_ORIG + (h_addr - BJK_GLB_SYS->znq_shd_mem_base));

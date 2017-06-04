@@ -25,15 +25,15 @@ recv_host_handler(missive* msg){
 	bj_core_nn_t konn = kernel::get_core_nn();
 	BJ_MARK_USED(konn);
 
-	bjk_slog2("HOST_GOT_MISSIVE\n");
-	bjk_sprt2("RCV_HOST_MISSIVE\n");
 
 	EMU_LOG("recv_host_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	EMU_PRT("RCV_MSV. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 
 	#ifdef WITH_RESPONSE
 		msg->dst->respond(msg, (msg->tok + 10)); 
+		printf("HOST_RESPONDED\n");
 	#endif 
+
 
 	bjk_get_kernel()->set_idle_exit();
 }
@@ -42,18 +42,8 @@ missive_handler_t host_handlers[] = {
 	recv_host_handler
 };
 
-
-int bj_host_main(int argc, char *argv[])
-{
-	if(argc > 1){
-		bjh_epiphany_elf_path = argv[1];
-		printf("Using core executable: %s \n", bjh_epiphany_elf_path);
-	}
-	if(argc > 2){
-		printf("LOADING WITH MEMCPY \n");
-		BJH_LOAD_WITH_MEMCPY = true;
-	}
-
+void
+send_host_main(){
 	kernel::init_host_sys();
 
 	kernel::set_handlers(1, host_handlers);
@@ -66,12 +56,30 @@ int bj_host_main(int argc, char *argv[])
 	//bjk_slog2("HOST started\n");
 	kernel::get_core_actor()->handler_idx = 0;	// was 0 but it should be inited for every actors's subclass.
 
+	bj_size_t off_all_agts = bj_offsetof(&missive_grp_t::all_agts);
+	BJ_MARK_USED(off_all_agts);
+
 	printf("HOST STARTING ==================================== \n");
+	ZNQ_CODE(printf("off_all_agts=%d \n", off_all_agts));
 
 	kernel::run_host_sys();
 	kernel::finish_host_sys();
 
 	printf("ALL FINISHED ==================================== \n");
+}
+
+int bj_host_main(int argc, char *argv[])
+{
+	if(argc > 1){
+		bjh_epiphany_elf_path = argv[1];
+		printf("Using core executable: %s \n", bjh_epiphany_elf_path);
+	}
+	if(argc > 2){
+		printf("LOADING WITH MEMCPY \n");
+		BJH_LOAD_WITH_MEMCPY = true;
+	}
+
+	send_host_main();
 
 	return 0;
 }

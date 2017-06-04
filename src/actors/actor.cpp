@@ -97,6 +97,7 @@ kernel::init_kernel(){
 	user_func = bj_null;
 	user_data = bj_null;
 
+	host_running = false;
 	did_work = 0x80;
 	exit_when_idle = false;
 
@@ -184,6 +185,7 @@ kernel::init_host_sys(){
 void // static
 kernel::run_host_sys(){
 	//ZNQ_CODE(printf("run_host_sys. fst_act=%p \n", BJK_KERNEL->first_actor));
+	BJK_KERNEL->host_running = true;
 	bj_host_run();
 }
 
@@ -210,9 +212,9 @@ kernel::add_out_missive(grip* out_wk, missive& msv1){
 
 	bool found_grp = false;
 
-	fst = bjk_pt_to_binderpt(out_wk->bn_right);
+	fst = out_wk->bn_right;
 	lst = out_wk;
-	for(wrk = fst; wrk != lst; wrk = bjk_pt_to_binderpt(wrk->bn_right)){
+	for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
 		missive* msv2 = (missive*)(mgrp->all_agts.get_right_pt());
 		if(bj_addr_same_id(msv1.dst, msv2->dst)){
@@ -400,11 +402,11 @@ kernel::handle_missives(){
 	}
 
 	binder* in_grp = &(ker->in_work);
-	fst = bjk_pt_to_binderpt(in_grp->bn_right);
+	fst = in_grp->bn_right;
 	lst = in_grp;
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive_ref_t* fst_ref = (missive_ref_t*)wrk;
-		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+		nxt = wrk->bn_right;
 
 		missive_grp_t* remote_grp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
 
@@ -426,11 +428,11 @@ kernel::handle_missives(){
 		out_msvs = &(ker->to_cores_work);
 	}
 
-	fst = bjk_pt_to_binderpt(ker->local_work.bn_right);
+	fst = ker->local_work.bn_right;
 	lst = &(ker->local_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive* fst_msg = (missive*)wrk;
-		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+		nxt = wrk->bn_right;
 
 		actor* dst = fst_msg->dst;
 		if(bj_addr_is_local(dst)){
@@ -451,11 +453,11 @@ kernel::handle_missives(){
 		handle_work_to_cores();
 	}
 
-	fst = bjk_pt_to_binderpt(ker->out_work.bn_right);
+	fst = ker->out_work.bn_right;
 	lst = &(ker->out_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
-		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+		nxt = wrk->bn_right;
 
 		EMU_CK(! is_host_kernel);
 		EMU_CK(! mgrp->all_agts.is_alone());
@@ -505,11 +507,11 @@ kernel::handle_missives(){
 		handle_work_to_host();
 	}
 
-	fst = bjk_pt_to_binderpt(ker->sent_work.bn_right);
+	fst = ker->sent_work.bn_right;
 	lst = &(ker->sent_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
-		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+		nxt = wrk->bn_right;
 
 		if(mgrp->handled){
 			mgrp->release_all_agts();
@@ -524,11 +526,11 @@ agent_grp::release_all_agts(){
 	binder * fst, * lst, * wrk, * nxt;
 	binder* all_agts = &(this->all_agts);
 
-	fst = bjk_pt_to_binderpt(all_agts->bn_right);
+	fst = all_agts->bn_right;
 	lst = all_agts;
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		agent* agt = (agent*)wrk;
-		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+		nxt = wrk->bn_right;
 
 		agt->release();
 	}
@@ -550,13 +552,15 @@ kernel::handle_work_to_cores(){
 	kernel* ker = this;
 	binder * fst, * lst, * wrk, * nxt;
 
-	fst = bjk_pt_to_binderpt(ker->to_cores_work.bn_right);
+	fst = ker->to_cores_work.bn_right;
 	lst = &(ker->to_cores_work);
 	for(wrk = fst; wrk != lst; wrk = nxt){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
-		nxt = bjk_pt_to_binderpt(wrk->bn_right);
+		nxt = wrk->bn_right;
 
 		EMU_CK(! mgrp->all_agts.is_alone());
+		//ZNQ_CODE(printf("handle_work_to_cores. mgrp=%p &all_agts=%p \n", 
+		//		mgrp, (binder*)(&(mgrp->all_agts)) ));
 		
 		missive* msv = (missive*)(mgrp->all_agts.get_right_pt());
 		bj_core_id_t dst_id = bj_addr_get_id(msv->dst);
@@ -643,6 +647,9 @@ void
 kernel::handle_host_missives(){
 	//EMU_PRT("handle_host_missives ker=%p\n", this);
 	BJK_CK(is_host_kernel);
+	if(! host_running){
+		return;
+	}
 	bool hdl = true;
 	/*ZNQ_CODE(
 		char buff[200];
@@ -652,7 +659,14 @@ kernel::handle_host_missives(){
 	)*/
 	
 	if(hdl){	
+		did_work = 0x0;
 		handle_missives();
+		if(user_func != bj_null){
+			(* (user_func))();
+		}
+		if(! did_work && exit_when_idle){
+			host_running = false;
+		}
 	}
 }
 
@@ -680,12 +694,63 @@ kernel::call_host_handlers_of_group(missive_grp_t* core_mgrp){
 	}
 
 	rem_mgrp->handled = bj_true;
+	//ZNQ_CODE(printf("call_host_handlers_of_group. END. \n"));
 }
+
+/*
+#ifdef BJ_IS_EPH_CODE
+#include "link_syms_vals.h"
+
+bj_addr_t
+bj_host_addr_to_core_addr(bj_addr_t h_addr){
+	return (BJ_VAL_EXTERNAL_RAM_ORIG + (h_addr - BJK_GLB_SYS->znq_shd_mem_base));
+	//bjk_abort((bj_addr_t)bj_host_addr_to_core_addr, err_12);
+	//return 0;
+}
+
+bj_addr_t
+bj_core_addr_to_host_addr(bj_addr_t c_addr){
+	return (BJK_GLB_SYS->znq_shd_mem_base + (c_addr - BJ_VAL_EXTERNAL_RAM_ORIG));
+	//bjk_abort((bj_addr_t)bj_core_addr_to_host_addr, err_13);
+	//return 0;
+}
+
+#define bjc_host_saddr_to_core_saddr(bdr) \
+	(((bj_addr_t)BJ_VAL_EXTERNAL_RAM_ORIG) + (((bj_addr_t)h_addr) - BJK_GLB_SYS->znq_shd_mem_base))
+
+
+#define bjc_core_saddr_to_core_saddr(bdr) \
+	(BJK_GLB_SYS->znq_shd_mem_base + (((bj_addr_t)c_addr) - ((bj_addr_t)BJ_VAL_EXTERNAL_RAM_ORIG)))
+
+
+#define bjc_glb_binder_get_rgt(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_right)
+#define bjc_glb_binder_get_lft(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_left)
+
+#else 
+
+#define bjc_glb_binder_get_rgt(bdr) (((binder*)bj_host_addr_to_core_addr(bdr))->bn_right)
+#define bjc_glb_binder_get_lft(bdr) (((binder*)bj_host_addr_to_core_addr(bdr))->bn_left)
+
+#endif
+*/
+
+#define bj_dref_field(cls_base, base, cls_field, field)	\
+	((cls_field*)(uint8_t*)(((uint8_t*)base) + bj_offsetof(&cls_base::field)))
+
+
+#define bjc_host_saddr_to_core_saddr(h_addr) \
+	(BJK_GLB_SYS->eph_shd_mem_base + (((bj_addr_t)h_addr) - BJK_GLB_SYS->znq_shd_mem_base))
+
+
+#define bjc_core_saddr_to_core_saddr(c_addr) \
+	(BJK_GLB_SYS->znq_shd_mem_base + (((bj_addr_t)c_addr) - BJK_GLB_SYS->eph_shd_mem_base))
+
+
+#define bjc_glb_binder_get_rgt(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_right)
+#define bjc_glb_binder_get_lft(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_left)
 
 void
 kernel::handle_work_from_host(){
-	EMU_PRT("handle_work_from_host. FLAG1 \n");
-
 	BJK_CK(! is_host_kernel);
 	BJK_CK(host_kernel != bj_null);
 	BJK_CK(has_from_host_work);
@@ -701,19 +766,15 @@ kernel::handle_work_from_host(){
 	missive_grp_t* host_mgrp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
 
 	binder * fst, * lst, * wrk;
-	//kernel* ker = this;
 
-	EMU_PRT("handle_work_from_host. FLAG2 \n");
+	binder* all_msvs = &(host_mgrp->all_agts);
 
-	missive_grp_t* rem_mgrp = (missive_grp_t*)bj_host_pt_to_core_pt(host_mgrp);
+	//bjk_sprt2("handle_work_from_host. FLAG1 \n");
 
-	//binder* all_msvs = &(rem_mgrp->all_agts);
-	binder* all_msvs = (binder*)(((uint8_t*)host_mgrp) + bj_offsetof(&missive_grp_t::all_agts));
-
-	fst = bjc_glb_binder_get_rgt(all_msvs);
+	fst = (binder*)bj_host_pt_to_core_pt(all_msvs->bn_right);
 	lst = all_msvs;
-	for(wrk = fst; wrk != lst; wrk = bjc_glb_binder_get_rgt(wrk)){
-		missive* remote_msv = (missive*)(binder*)bj_host_pt_to_core_pt(wrk);
+	for(wrk = fst; wrk != lst; wrk = (binder*)bj_host_pt_to_core_pt(wrk->bn_right)){
+		missive* remote_msv = (missive*)wrk;
 
 		actor* hdlr_dst = (remote_msv)->dst;
 		EMU_CK(hdlr_dst != bj_null);
@@ -721,14 +782,14 @@ kernel::handle_work_from_host(){
 		bjk_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
 	}
 
-	rem_mgrp->handled = bj_true;
+	host_mgrp->handled = bj_true;
 
-	//fst_ref->release();
-	//EMU_CK(fst_ref->glb_agent_ptr == bj_null);
-	//did_work |= 0x1000;
+	fst_ref->release();
+	EMU_CK(fst_ref->glb_agent_ptr == bj_null);
+	did_work |= 0x1000;
 
 	has_from_host_work = false;
 
-	EMU_PRT("handle_work_from_host. end_FLAG \n");
+	//bjk_sprt2("handle_work_from_host. end_FLAG \n");
 }
 
