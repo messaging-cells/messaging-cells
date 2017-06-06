@@ -1,9 +1,11 @@
 
 MODULES_DIR := modules
 
+MODULES_LDF=modules/lds_modules.ldf
+
 TARGET := ${MODULES_DIR}/modules.elf
 
-TGT_LDFLAGS := ${BJ_STD_EPH_LDFLAGS} ${LD_IN_SECTIONS} --no-check-sections -L${TARGET_DIR}/${MODULES_DIR}
+TGT_LDFLAGS := -T ${MODULES_LDF} ${BJ_EPH_LDFLAGS_2} --no-check-sections -L${TARGET_DIR}/${MODULES_DIR}
 TGT_LDLIBS  := -lmod_1 -lmod_2 -lmod_3 ${BJ_STD_EPH_LDLIBS}
 
 TGT_PREREQS := \
@@ -35,6 +37,6 @@ SUBMAKEFILES := \
 	mod2.mk \
 	mod3.mk \
 
-SOURCES := main_eph.cpp
+SOURCES := mods_test.cpp
 
 

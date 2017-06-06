@@ -43,10 +43,6 @@
 #include "shared.h"
 #include "booter.h"
 
-void ee_get_coords_from_id(e_epiphany_t *dev, unsigned coreid,
-								  unsigned *row, unsigned *col);
-
-
 extern e_platform_t e_platform;
 
 e_return_stat_t bjl_load_elf(int row, int col, load_info_t *ld_dat);
@@ -130,26 +126,21 @@ static void bjl_clear_sram(e_epiphany_t *dev, unsigned row, unsigned col,unsigne
 	}
 }
 
-int bj_load_group(load_info_t *ld_dat){
-
-	//e_mem_t      emem;
-	unsigned int irow, icol;
-	int          status;
+e_return_stat_t
+bj_start_load(load_info_t *ld_dat){
 	int          fd;
 	struct stat  st;
 	void        *file;
-	e_return_stat_t retval;
 
 	e_set_host_verbosity(H_D0);
 
 	const char *executable = ld_dat->executable;
 	e_epiphany_t *dev = ld_dat->dev;
-	unsigned row = ld_dat->row;
-	unsigned col = ld_dat->col;
-	unsigned rows = ld_dat->rows;
-	unsigned cols = ld_dat->cols;
+	bj_core_co_t row = ld_dat->row;
+	bj_core_co_t col = ld_dat->col;
+	bj_core_co_t rows = ld_dat->rows;
+	bj_core_co_t cols = ld_dat->cols;
 
-	status = E_OK;
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
 
 	if (!dev) {
@@ -190,34 +181,55 @@ int bj_load_group(load_info_t *ld_dat){
 	} else {
 		bjl_diag(L_D1) { fprintf(BJ_STDERR, "load_group(): ERROR: unidentified file format\n"); }
 		warnx("ERROR: Can't load executable file: unidentified format.\n");
-		status = E_ERR;
-		goto out;
+		munmap(file, st.st_size);
+		close(fd);
+		return E_ERR;
 	}
 
 	bjl_clear_sram(dev, row, col, rows, cols);
 
 	ld_dat->file = file;
 	ld_dat->emem = &bjh_glb_emem;
+	ld_dat->f_sz = st.st_size;
+	ld_dat->fd = fd;
+
+	return E_OK;
+}
+
+int bj_load_group(load_info_t *ld_dat){
+
+	e_return_stat_t ret_start;
+	ret_start = bj_start_load(ld_dat);
+	if (ret_start == E_ERR) {
+		return E_ERR;
+	}
+
+	unsigned row = ld_dat->row;
+	unsigned col = ld_dat->col;
+	unsigned rows = ld_dat->rows;
+	unsigned cols = ld_dat->cols;
+
+	unsigned int irow, icol;
 
 	for (irow=row; irow<(row+rows); irow++) {
 		for (icol=col; icol<(col+cols); icol++) {
-			retval = bjl_load_elf(irow, icol, ld_dat);
+			e_return_stat_t retval = bjl_load_elf(irow, icol, ld_dat);
 
 			if (retval == E_ERR) {
-				warnx("ERROR: Can't load executable file \"%s\".\n", executable);
-				status = E_ERR;
-				goto out;
+				warnx("ERROR: Can't load executable file \"%s\".\n", ld_dat->executable);
+				munmap(ld_dat->file, ld_dat->f_sz);
+				close(ld_dat->fd);
+				return E_ERR;
 			}
 		}
 	}
 
 	bjl_diag(L_D1) { fprintf(BJ_STDERR, "load_group(): done loading.\n"); }
 
-out:
-	munmap(file, st.st_size);
-	close(fd);
+	munmap(ld_dat->file, ld_dat->f_sz);
+	close(ld_dat->fd);
 
-	return status;
+	return E_OK;
 }
 
 static bool bjl_is_valid_addr(uint32_t addr)
@@ -311,6 +323,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 	BJL_MARK_USED(sh_strtab);
 	BJL_MARK_USED(strtab);
 
+	BJH_CK(sizeof(Elf32_Addr) == sizeof(bj_addr_t));
 	BJH_CK(dev == &bjh_glb_dev);
 	BJH_CK(emem == &bjh_glb_emem);
 
@@ -354,6 +367,11 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 			continue;
 		}
 
+		if(ld_sh_addr == lk_dat->core_module_orig){
+			fprintf(BJ_STDERR, "%d.SKIP load of MODULE section %s.\n", ii, sect_nm);
+			continue;
+		}
+
 		bj_addr_t ld_addr = ld_sh_addr;
 
 		bj_addr_t dst = bj_core_eph_addr_to_znq_addr(row, col, ld_addr);
@@ -377,17 +395,45 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 				(void*)ld_addr); 
 		}
 
-		if(BJH_LOAD_WITH_MEMCPY){
+		/*if(BJH_LOAD_WITH_MEMCPY){
 			memcpy(pt_dst, pt_src, blk_sz);
 		} else {
 			bj_memload(pt_dst, pt_src, blk_sz);
-		}
+		}*/
 
-		bj_ck_memload(pt_dst, pt_src, blk_sz);	// LEAVE THIS. IT CAN FAIL !!!!
+		memcpy(pt_dst, pt_src, blk_sz);
+		bj_ck_memload(pt_dst, pt_src, blk_sz);
 	}
 
 	return E_OK;
 }
 
+int bj_load_root(load_info_t *ld_dat){
 
+	e_return_stat_t ret_start;
+	ret_start = bj_start_load(ld_dat);
+	if (ret_start == E_ERR) {
+		return E_ERR;
+	}
+
+	bj_core_co_t root_ro = bj_nn_to_ro(ld_dat->root_nn);
+	bj_core_co_t root_co = bj_nn_to_co(ld_dat->root_nn);
+
+	e_return_stat_t retval = 
+		bjl_load_elf(root_ro, root_co, ld_dat);
+
+	if (retval == E_ERR) {
+		warnx("ERROR: Can't load executable file \"%s\".\n", ld_dat->executable);
+		munmap(ld_dat->file, ld_dat->f_sz);
+		close(ld_dat->fd);
+		return E_ERR;
+	}
+
+	bjl_diag(L_D1) { fprintf(BJ_STDERR, "bj_load_root(): done loading.\n"); }
+
+	munmap(ld_dat->file, ld_dat->f_sz);
+	close(ld_dat->fd);
+
+	return E_OK;
+}
 

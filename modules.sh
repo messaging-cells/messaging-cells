@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd bin
-./bj-actor-booter.elf test/modules/modules.elf
+cd src/tests/bin
+./nil-host.elf modules/modules.elf

@@ -11,6 +11,7 @@ TARGET := hello_world.elf
 
 TGT_LDFLAGS := ${BJ_STD_EPH_LDFLAGS} ${LD_IN_SECTIONS} 
 TGT_LDLIBS  := ${BJ_STD_EPH_LDLIBS}
+TGT_PREREQS := ${BJ_EPH_LIBS}
 
 TGT_CC := e-gcc
 TGT_CXX := e-g++

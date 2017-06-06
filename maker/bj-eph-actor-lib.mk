@@ -23,6 +23,7 @@ SOURCES := \
 	$(SRC_ACTORS_DIR)/log.c \
 	$(SRC_ACTORS_DIR)/shared.c \
 	$(SRC_ACTORS_DIR)/shared_eph.c \
+	$(SRC_ACTORS_DIR)/loader.c \
 	$(SRC_ACTORS_DIR)/err_msgs.c \
 	$(SRC_ACTORS_DIR)/global.c \
 	$(SRC_ACTORS_DIR)/global_eph.c \

@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "err_msgs.h"
 #include "shared.h"
+#include "loader.h"
 #include "trace.h"
 
 #ifdef __cplusplus

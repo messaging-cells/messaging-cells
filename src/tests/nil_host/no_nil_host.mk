@@ -4,11 +4,11 @@ SRC_ACTORS_DIR := $(SRC_DIR)/actors
 
 # =======================================
 
-TARGET := nil-host.elf
+TARGET := no-nil-host.elf
 
 TGT_LDFLAGS := ${BJ_STD_ZNQ_LDFLAGS}
 TGT_LDLIBS  := ${BJ_STD_ZNQ_LDLIBS}
-TGT_PREREQS := ${BJ_ZNQ_LIBS}
+# TGT_PREREQS := ${BJ_ZNQ_LIBS}
 
 TGT_CC := $(CROSS_COMPILE)gcc
 TGT_CXX := $(CROSS_COMPILE)g++

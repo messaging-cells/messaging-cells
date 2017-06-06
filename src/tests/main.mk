@@ -11,6 +11,7 @@ endef
 
 $(eval $(SET_CROSS_COMPILE))
 
+# -fno-extern-tls-init
 
 TARGET_DIR := ./bin
 
@@ -25,7 +26,7 @@ BJ_ETOOLS=${BJ_ESDK}/tools
 
 BJ_STD_EPH_CFLAGS := -Wall -std=gnu11 -ffreestanding -nostdlib -nostartfiles -fno-default-inline 
 
-CXXFLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables 
+CXXFLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables -fno-extern-tls-init
 CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
 BJ_STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
@@ -43,6 +44,9 @@ BJ_STD_ZNQ_LDLIBS := -lbjz-actor -lbjz-tak-mak -lbjz-dlmalloc -le-hal -lm
 BJ_STD_EMU_LDLIBS := -lbjm-actor -lbjm-tak-mak -lbjm-dlmalloc -lpthread
 BJ_STD_EPH_LDLIBS := -lbjk-actor -lbjk-tak-mak 
 
+BJ_CURR_DIR := $(shell pwd)
+
+# BJ_LIB_DIR_2 := ${BJ_CURR_DIR}/../../bin
 BJ_LIB_DIR_2 := ../../../bin
 
 BJ_ZNQ_LIBS := ${BJ_LIB_DIR_2}/libbjz-actor.a ${BJ_LIB_DIR_2}/libbjz-tak-mak.a ${BJ_LIB_DIR_2}/libbjz-dlmalloc.a
@@ -56,7 +60,6 @@ BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
 #	./eph_dev_driver_bug/eph_dev_driver_bug.mk \
 #	./dlmalloc_test/test_dlmalloc_emu.mk \
 #	./dlmalloc_test/test_dlmalloc_znq.mk \
-#	./modules/modules.mk \
 #	./test_addr_conv/addr_conv.mk \
 #	./znq_tests/znq_hello.mk \
 #	./znq_tests/znq_backtrace.mk \
@@ -74,8 +77,10 @@ BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
 #	./send_host_msg/send_host_msg_eph.mk \
 #	./send_host_msg/send_host_msg_znq.mk \
 #	./emu_tests/hola_jose.mk \
+#	./modules/modules.mk \
 
 SUBMAKEFILES := \
+	./nil_host/no_nil_host.mk \
 	./nil_host/nil_host.mk \
 	./hello_world/hello_world.mk \
 	./eating_philo/philo_emu.mk \
@@ -84,6 +89,7 @@ SUBMAKEFILES := \
 	./send_host_msg/send_host_msg_eph.mk \
 	./send_host_msg/send_host_msg_znq.mk \
 	./send_msg/send_msg_eph.mk \
+	./modules/modules.mk \
 
 
 

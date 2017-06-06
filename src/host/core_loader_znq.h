@@ -23,8 +23,8 @@
   <http://www.gnu.org/licenses/>.
 */
 
-#ifndef BJ_LOADER_H
-#define BJ_LOADER_H
+#ifndef BJ_CODE_LOADER_H
+#define BJ_CODE_LOADER_H
 
 #include <elf.h>
 #include "e-hal.h"
@@ -68,14 +68,20 @@ extern bjl_loader_diag_t bjl_load_verbose;
 struct load_info_st {    
 	char *executable;
 	e_epiphany_t *dev;
-	unsigned row;
-	unsigned col;
-	unsigned rows;
-	unsigned cols;
+
+	bj_core_nn_t root_nn;
+
+	bj_core_co_t row;
+	bj_core_co_t col;
+	bj_core_co_t rows;
+	bj_core_co_t cols;
+
 	char**	all_module_names;
 	void**	all_module_addrs;	// as seen from ephiphany side
 
 	void *file;
+	int   fd;
+	size_t f_sz;
 	e_mem_t *emem;
 };
 typedef struct load_info_st load_info_t;
@@ -100,4 +106,4 @@ bj_core_eph_addr_to_znq_addr(int row, int col, bj_addr_t ld_addr);
 }
 #endif
 
-#endif // BJ_LOADER_H
+#endif // BJ_CODE_LOADER_H

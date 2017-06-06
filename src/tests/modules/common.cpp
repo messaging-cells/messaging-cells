@@ -4,7 +4,18 @@
 
 long some_glb_val bj_comm_dat = 6;
 
-comm_cla some_comm_obj bj_comm_dat;
+
+// THE FOLLOWING COMMENTED LINE generates code of all 
+// 		*static_initialization_and_destruction* functions
+// 		*_GLOBAL__sub_I_main* functions (wrappers to the first)
+//
+// NEVER USE GLOBAL VARIABLES (EMULATOR WILL NOT WORK)
+
+//comm_cla some_comm_obj bj_comm_dat;  
+
+// INSTED USE GLOBAL POINTER AND EXPLICITLY INITIALIZE A START UP TIME
+
+comm_cla* some_comm_obj bj_comm_dat = bj_null;
 
 void comm_f1_core(){
 	//comm_cla oo;

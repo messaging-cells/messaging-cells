@@ -335,6 +335,10 @@ struct bj_aligned bj_link_syms_data_def {
 	bj_addr_t extnl_load_orig;
 	bj_addr_t extnl_data_orig;
 	bj_addr_t extnl_alloc_orig;
+
+	bj_addr_t core_module_orig;
+	bj_addr_t core_module_size;
+
 	bj_addr_t extnl_code_disp;
 	bj_addr_t extnl_load_disp;
 	bj_addr_t extnl_data_disp;
