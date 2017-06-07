@@ -2,7 +2,7 @@
 #include "err_msgs.h"
 #include "global.h"
 
-#include "link_syms_vals.h"
+//include "link_syms_vals.h"
 
 //======================================================================
 // global funcs

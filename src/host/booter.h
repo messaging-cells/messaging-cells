@@ -29,7 +29,6 @@ extern bj_link_syms_data_st 	bjh_external_ram_load_data;
 
 #define bjh_disp_to_extnal_ram_pt(disp) (the_str)
 
-extern char* bjh_epiphany_elf_path;
 extern bool BJH_LOAD_WITH_MEMCPY;
 
 #define BJM_DLMALLOC_HEAP_SZ (10 * MBY_SZ)
@@ -107,8 +106,6 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 	) \
 	
 //--end_of_def
-
-extern int bj_host_main(int argc, char *argv[]);
 
 
 bj_addr_t

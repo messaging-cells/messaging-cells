@@ -90,8 +90,14 @@ typedef struct load_info_st load_info_t;
 int bj_load_group(load_info_t *ld_dat);
 
 #define DBGH_CODE_SHD_SZ 20
+
 extern uint16_t DBGH_CODE_SHD_1[DBGH_CODE_SHD_SZ];
 extern bj_addr_t DBGH_FUNC_ADDR;
+
+#define BJL_MAX_TOT_MODULES 1000
+
+extern char* bjl_module_names[BJL_MAX_TOT_MODULES];
+extern int bjl_module_names_sz;
 
 bool 
 bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr);

@@ -63,6 +63,8 @@ bj_host_init(){
 
 	e_platform_t platform;
 
+	bjl_module_names_sz = 0;
+
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
 	bjh_read_eph_link_syms(bjh_epiphany_elf_path, lk_dat);
 
@@ -150,6 +152,7 @@ bj_host_init(){
 	//printf("eph_shared_mem_base= %p \n", (void*)(pt_shd_data->eph_shared_mem_base));
 
 	pt_shd_data->pt_host_kernel = bj_null;
+	pt_shd_data->tot_modules = bjl_module_names_sz;
 }
 
 void

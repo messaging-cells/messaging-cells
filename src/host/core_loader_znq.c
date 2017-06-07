@@ -45,6 +45,9 @@
 
 extern e_platform_t e_platform;
 
+char* bjl_module_names[BJL_MAX_TOT_MODULES];
+int bjl_module_names_sz;
+
 e_return_stat_t bjl_load_elf(int row, int col, load_info_t *ld_dat);
 
 //bjl_loader_diag_t bjl_load_verbose = L_D3;
@@ -62,7 +65,7 @@ bj_ck_memload(uint8_t* dst, uint8_t* src, uint32_t sz){
 	if(! ok){
 		bjh_write_file("SOURCE_shd_mem_dump.dat", src, sz, false);
 		bjh_write_file("DEST_shd_mem_dump.dat", dst, sz, false);
-		bjh_abort_func(9, "bj_ck_memload() FAILED !! CODE_LOADING_FAILED !!\n");
+		bjh_abort_func(9, "bj_ck_memload() FAILED !! CODE_LOADING_FAILED_1 !!\n");
 	}
 }
 
@@ -193,6 +196,8 @@ bj_start_load(load_info_t *ld_dat){
 	ld_dat->f_sz = st.st_size;
 	ld_dat->fd = fd;
 
+	memset(bjl_module_names, 0,  sizeof(bjl_module_names));
+
 	return E_OK;
 }
 
@@ -213,7 +218,8 @@ int bj_load_group(load_info_t *ld_dat){
 
 	for (irow=row; irow<(row+rows); irow++) {
 		for (icol=col; icol<(col+cols); icol++) {
-			e_return_stat_t retval = bjl_load_elf(irow, icol, ld_dat);
+			e_return_stat_t retval = 
+					bjl_load_elf(irow, icol, ld_dat);
 
 			if (retval == E_ERR) {
 				warnx("ERROR: Can't load executable file \"%s\".\n", ld_dat->executable);
@@ -317,12 +323,28 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 	e_epiphany_t *dev = ld_dat->dev;
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
 
+	uint8_t* pt_ram_base = (uint8_t*)(emem->base);
+	uint8_t* pt_end_code = (pt_ram_base + lk_dat->extnl_data_disp);
+	uint8_t* pt_end_mem = (pt_ram_base + lk_dat->extnl_ram_size);
+	BJL_MARK_USED(pt_end_code);
+	BJL_MARK_USED(pt_end_mem);
+
+	uint8_t* pt_load_dst = (pt_ram_base + lk_dat->extnl_load_disp);
+	uint8_t* pt_load_end = (pt_load_dst + lk_dat->extnl_load_size);
+
+	uint8_t* pt_module_dst = pt_load_dst;
+	bj_addr_t module_sz = lk_dat->core_module_size;
+
+	int module_ii = 0;
+	bjl_module_names_sz = 0;
+
 	BJL_MARK_USED(phdr);
 	BJL_MARK_USED(ihdr);
 	BJL_MARK_USED(shdr);
 	BJL_MARK_USED(sh_strtab);
 	BJL_MARK_USED(strtab);
 
+	BJH_CK(sizeof(uint8_t*) == sizeof(bj_addr_t));
 	BJH_CK(sizeof(Elf32_Addr) == sizeof(bj_addr_t));
 	BJH_CK(dev == &bjh_glb_dev);
 	BJH_CK(emem == &bjh_glb_emem);
@@ -367,29 +389,35 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 			continue;
 		}
 
-		if(ld_sh_addr == lk_dat->core_module_orig){
-			fprintf(BJ_STDERR, "%d.SKIP load of MODULE section %s.\n", ii, sect_nm);
-			continue;
-		}
-
 		bj_addr_t ld_addr = ld_sh_addr;
 
-		bj_addr_t dst = bj_core_eph_addr_to_znq_addr(row, col, ld_addr);
-
-		uint8_t* pt_dst = (void *) dst;
+		uint8_t* pt_dst = (uint8_t*)bj_core_eph_addr_to_znq_addr(row, col, ld_addr);
 		uint8_t* pt_src = &src[ld_src_off];
 		size_t blk_sz = ld_src_sz;
 
-		uint8_t* pt_dst_end = pt_dst + blk_sz;
-		uint8_t* pt_src_end = pt_src + blk_sz;
+		if(ld_sh_addr == lk_dat->core_module_orig){
+			if(blk_sz > module_sz){
+				bjh_abort_func(11, "Module too big. CODE_LOADING_FAILED_2 !!\n");
+				return E_ERR;
+			}
 
-		uint8_t* pt_ram_base = (uint8_t*)(emem->base);
-		uint8_t* pt_end_code = (pt_ram_base + lk_dat->extnl_data_disp);
-		uint8_t* pt_end_mem = (pt_ram_base + lk_dat->extnl_ram_size);
-		BJL_MARK_USED(pt_end_code);
-		BJL_MARK_USED(pt_end_mem);
+			pt_dst = pt_module_dst;
+			blk_sz = module_sz;
+			pt_module_dst += module_sz;
+		
+			if((pt_module_dst > pt_load_end) || (module_ii > (BJL_MAX_TOT_MODULES - 1))){
+				bjh_abort_func(12, "TOO MANY MODULES for BJ_VAL_EXTERNAL_LOAD_SIZE. CODE_LOADING_FAILED_3 !!\n");
+				return E_ERR;
+			}
 
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, 
+			bjl_module_names[module_ii] = strdup(sect_nm);
+			module_ii++;
+		}
+
+		bjl_diag(L_D1) { 
+			uint8_t* pt_dst_end = pt_dst + blk_sz;
+			uint8_t* pt_src_end = pt_src + blk_sz;
+			fprintf(BJ_STDERR, 
 				"%d.LOADING(%s). row=%d col=%d dst=%p end=%p src=%p end=%p sz=%d p_vaddr=%04x (%p).\n", 
 				ii, bj_addr_case(ld_addr), row, col, pt_dst, pt_dst_end, pt_src, pt_src_end, blk_sz, ld_addr, 
 				(void*)ld_addr); 
@@ -402,13 +430,44 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 		}*/
 
 		memcpy(pt_dst, pt_src, blk_sz);
-		bj_ck_memload(pt_dst, pt_src, blk_sz);
+		BJH_CK(memcmp(pt_dst, pt_src, blk_sz) == 0);
+
+		//bj_ck_memload(pt_dst, pt_src, blk_sz);
 	}
+
+	bjl_module_names_sz = module_ii;
 
 	return E_OK;
 }
 
-int bj_load_root(load_info_t *ld_dat){
+void
+bjl_load_module_names(load_info_t *ld_dat){
+	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
+	e_mem_t *emem = ld_dat->emem;
+	uint8_t* pt_ram_base = (uint8_t*)(emem->base);
+	uint8_t* pt_load_dst = (pt_ram_base + lk_dat->extnl_load_disp);
+	uint8_t* pt_load_eph_dst = (uint8_t*)(lk_dat->extnl_load_orig);
+	bj_addr_t module_sz = lk_dat->core_module_size;
+
+	char** pt_load_nams = (char**)(pt_load_dst + (bjl_module_names_sz * module_sz));
+
+	uint8_t* ld_str = (uint8_t*)(&(pt_load_nams[bjl_module_names_sz + 1])); 
+	for(int aa = 0; aa < bjl_module_names_sz; aa++){
+		bj_addr_t disp_str = ld_str - pt_load_dst;
+		pt_load_nams[aa] = (char*)(pt_load_eph_dst + disp_str);
+
+		char* src_str = bjl_module_names[aa];
+
+		int ln_str = strlen(src_str);
+		strcpy((char*)ld_str, src_str);
+		ld_str += (ln_str + 1);
+	}
+
+	pt_load_nams[bjl_module_names_sz] = bj_null;
+}
+
+int 
+bjl_load_root(load_info_t *ld_dat){
 
 	e_return_stat_t ret_start;
 	ret_start = bj_start_load(ld_dat);
@@ -428,6 +487,8 @@ int bj_load_root(load_info_t *ld_dat){
 		close(ld_dat->fd);
 		return E_ERR;
 	}
+
+	bjl_load_module_names(ld_dat);
 
 	bjl_diag(L_D1) { fprintf(BJ_STDERR, "bj_load_root(): done loading.\n"); }
 

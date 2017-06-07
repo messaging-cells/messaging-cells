@@ -2,86 +2,51 @@
 
 // loader.c 
 
+#include "shared.h"
 #include "loader.h"
+//include "link_syms_vals.h"
 
-bj_dbg_e3_leaf(15)
-bj_dbg_e3_leaf(14)
-bj_dbg_e3_leaf(13)
-bj_dbg_e3_leaf(12)
-bj_dbg_e3_leaf(11)
-bj_dbg_e3_leaf(10)
-bj_dbg_e3_leaf(9)
-bj_dbg_e3_leaf(8)
-bj_dbg_e3_leaf(7)
-bj_dbg_e3_leaf(6)
-bj_dbg_e3_leaf(5)
-bj_dbg_e3_leaf(4)
-bj_dbg_e3_leaf(3)
-bj_dbg_e3_leaf(2)
-bj_dbg_e3_leaf(1)
+#ifdef BJ_IS_EPH_CODE
 
-bj_dbg_e3_tree(0, 
-	bj_dbg_e3_node(1),
-	bj_dbg_e3_node(2),
-	bj_dbg_e3_node(3),
-	bj_dbg_e3_node(4),
-	bj_dbg_e3_node(5),
-	bj_dbg_e3_node(6),
-	bj_dbg_e3_node(7),
-	bj_dbg_e3_node(8),
-	bj_dbg_e3_node(9),
-	bj_dbg_e3_node(10),
-	bj_dbg_e3_node(11),
-	bj_dbg_e3_node(12),
-	bj_dbg_e3_node(13),
-	bj_dbg_e3_node(14),
-	bj_dbg_e3_node(15)
-)
+	bj_link_syms_data_st bjk_external_ram_load_data bj_lk_syms_dat = {
+		.extnl_ram_size = BJ_VAL_EXTERNAL_RAM_SIZE,
+		.extnl_code_size = BJ_VAL_EXTERNAL_CODE_SIZE,
+		.extnl_load_size = BJ_VAL_EXTERNAL_LOAD_SIZE,
+		.extnl_data_size = BJ_VAL_EXTERNAL_DATA_SIZE,
+		.extnl_alloc_size = BJ_VAL_EXTERNAL_ALLOC_SIZE,
+		.extnl_ram_orig = BJ_VAL_EXTERNAL_RAM_ORIG,
+		.extnl_code_orig = BJ_VAL_EXTERNAL_CODE_ORIG,
+		.extnl_load_orig = BJ_VAL_EXTERNAL_LOAD_ORIG,
+		.extnl_data_orig = BJ_VAL_EXTERNAL_DATA_ORIG,
+		.extnl_alloc_orig = BJ_VAL_EXTERNAL_ALLOC_ORIG,
 
+		.core_module_orig = BJ_VAL_CORE_MODULE_ORIG,
+		.core_module_size = BJ_VAL_CORE_MODULE_SIZE,
 
-bj_std_e3_leaf(7)
-bj_std_e3_leaf(8)
-bj_std_e3_leaf(9)
-bj_std_e3_leaf(10)
-bj_std_e3_leaf(11)
-bj_std_e3_leaf(12)
-bj_std_e3_leaf(13)
-bj_std_e3_leaf(14)
-bj_std_e3_leaf(15)
+		.extnl_code_disp = 0,
+		.extnl_load_disp = 0,
+		.extnl_data_disp = 0,
+		.extnl_alloc_disp = 0
+	};
 
-bj_std_e3_tree(3, 
-	bj_std_e3_node(7),
-	bj_std_e3_node(8)
-)
+	void*
+	bj_add_lk_syms(){
+		bj_extnl_ram_load_data_fill(&bjk_external_ram_load_data);
+		return (void*)&bjk_external_ram_load_data;
+	};
 
-bj_std_e3_tree(4, 
-	bj_std_e3_node(9),
-	bj_std_e3_node(10)
-)
+#endif
 
-bj_std_e3_tree(5, 
-	bj_std_e3_node(11),
-	bj_std_e3_node(12)
-)
+void
+bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms){
+	bj_addr_t ex_orig = syms->extnl_ram_orig;
+	syms->extnl_code_disp = syms->extnl_code_orig - ex_orig;
+	syms->extnl_load_disp = syms->extnl_load_orig - ex_orig;
+	syms->extnl_data_disp = syms->extnl_data_orig - ex_orig;
+	syms->extnl_alloc_disp = syms->extnl_alloc_orig - ex_orig;
+}
 
-bj_std_e3_tree(6, 
-	bj_std_e3_node(13),
-	bj_std_e3_node(14),
-	bj_std_e3_node(15)
-)
-
-bj_std_e3_tree(1, 
-	bj_std_e3_node(3),
-	bj_std_e3_node(4)
-)
-
-bj_std_e3_tree(2, 
-	bj_std_e3_node(5),
-	bj_std_e3_node(6)
-)
-
-bj_std_e3_tree(0, 
-	bj_std_e3_node(1),
-	bj_std_e3_node(2)
-)
+void
+bj_reset_core(bj_core_id_t id){
+}
 

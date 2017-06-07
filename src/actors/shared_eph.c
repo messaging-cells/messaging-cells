@@ -3,7 +3,7 @@
 #include "err_msgs.h"
 #include "global.h"
 
-#include "link_syms_vals.h"
+//include "link_syms_vals.h"
 
 bj_sys_sz_st 	bjk_system_sz;
 

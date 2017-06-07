@@ -285,6 +285,7 @@ struct bj_aligned bj_off_sys_shared_data_def {
 	void* 			pt_host_kernel;
 	bj_addr_t		znq_shared_mem_base;
 	bj_addr_t		eph_shared_mem_base;
+	uint32_t 		tot_modules;
 	bj_sys_sz_st 	wrk_sys;
 	bj_off_core_st 	sys_cores[bj_out_num_cores];
 	bj_core_out_st 	sys_out_buffs[bj_out_num_cores];
@@ -324,41 +325,6 @@ bj_isprint(char cc){
 
 #define bjk_has_off_core (BJK_GLB_SYS->off_core_pt != bj_null)
 
-struct bj_aligned bj_link_syms_data_def { 
-	bj_addr_t extnl_ram_size;
-	bj_addr_t extnl_code_size;
-	bj_addr_t extnl_load_size;
-	bj_addr_t extnl_data_size;
-	bj_addr_t extnl_alloc_size;
-	bj_addr_t extnl_ram_orig;
-	bj_addr_t extnl_code_orig;
-	bj_addr_t extnl_load_orig;
-	bj_addr_t extnl_data_orig;
-	bj_addr_t extnl_alloc_orig;
-
-	bj_addr_t core_module_orig;
-	bj_addr_t core_module_size;
-
-	bj_addr_t extnl_code_disp;
-	bj_addr_t extnl_load_disp;
-	bj_addr_t extnl_data_disp;
-	bj_addr_t extnl_alloc_disp;
-};
-typedef struct bj_link_syms_data_def bj_link_syms_data_st;
-
-void*
-bj_add_lk_syms() bj_external_code_ram;
-
-void
-bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms) bj_external_code_ram;
-
-
-#ifdef BJ_IS_EPH_CODE
-	#define BJ_EXTERNAL_RAM_LOAD_DATA bjk_external_ram_load_data
-#else
-	#define BJ_EXTERNAL_RAM_LOAD_DATA bjh_external_ram_load_data
-#endif
-
 bj_addr_t
 bj_host_addr_to_core_addr(bj_addr_t h_addr) bj_external_code_ram;
 
@@ -367,6 +333,26 @@ bj_core_addr_to_host_addr(bj_addr_t c_addr) bj_external_code_ram;
 
 #define bj_host_pt_to_core_pt(pt) (bj_host_addr_to_core_addr((bj_addr_t)(pt)))
 #define bj_core_pt_to_host_pt(pt) (bj_core_addr_to_host_addr((bj_addr_t)(pt)))
+
+#define bj_dref_field(cls_base, base, cls_field, field)	\
+	((cls_field*)(uint8_t*)(((uint8_t*)base) + bj_offsetof(&cls_base::field)))
+
+
+#define bjc_host_saddr_to_core_saddr(h_addr) \
+	(BJK_GLB_SYS->eph_shd_mem_base + (((bj_addr_t)h_addr) - BJK_GLB_SYS->znq_shd_mem_base))
+
+
+#define bjc_core_saddr_to_core_saddr(c_addr) \
+	(BJK_GLB_SYS->znq_shd_mem_base + (((bj_addr_t)c_addr) - BJK_GLB_SYS->eph_shd_mem_base))
+
+
+#define bjc_glb_binder_get_rgt(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_right)
+#define bjc_glb_binder_get_lft(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_left)
+
+
+extern char* bjh_epiphany_elf_path;
+extern void bj_cores_main() bj_external_code_ram;
+extern int bj_host_main(int argc, char *argv[]) bj_external_code_ram;
 
 #ifdef __cplusplus
 }

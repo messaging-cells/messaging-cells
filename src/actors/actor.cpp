@@ -697,58 +697,6 @@ kernel::call_host_handlers_of_group(missive_grp_t* core_mgrp){
 	//ZNQ_CODE(printf("call_host_handlers_of_group. END. \n"));
 }
 
-/*
-#ifdef BJ_IS_EPH_CODE
-#include "link_syms_vals.h"
-
-bj_addr_t
-bj_host_addr_to_core_addr(bj_addr_t h_addr){
-	return (BJ_VAL_EXTERNAL_RAM_ORIG + (h_addr - BJK_GLB_SYS->znq_shd_mem_base));
-	//bjk_abort((bj_addr_t)bj_host_addr_to_core_addr, err_12);
-	//return 0;
-}
-
-bj_addr_t
-bj_core_addr_to_host_addr(bj_addr_t c_addr){
-	return (BJK_GLB_SYS->znq_shd_mem_base + (c_addr - BJ_VAL_EXTERNAL_RAM_ORIG));
-	//bjk_abort((bj_addr_t)bj_core_addr_to_host_addr, err_13);
-	//return 0;
-}
-
-#define bjc_host_saddr_to_core_saddr(bdr) \
-	(((bj_addr_t)BJ_VAL_EXTERNAL_RAM_ORIG) + (((bj_addr_t)h_addr) - BJK_GLB_SYS->znq_shd_mem_base))
-
-
-#define bjc_core_saddr_to_core_saddr(bdr) \
-	(BJK_GLB_SYS->znq_shd_mem_base + (((bj_addr_t)c_addr) - ((bj_addr_t)BJ_VAL_EXTERNAL_RAM_ORIG)))
-
-
-#define bjc_glb_binder_get_rgt(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_right)
-#define bjc_glb_binder_get_lft(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_left)
-
-#else 
-
-#define bjc_glb_binder_get_rgt(bdr) (((binder*)bj_host_addr_to_core_addr(bdr))->bn_right)
-#define bjc_glb_binder_get_lft(bdr) (((binder*)bj_host_addr_to_core_addr(bdr))->bn_left)
-
-#endif
-*/
-
-#define bj_dref_field(cls_base, base, cls_field, field)	\
-	((cls_field*)(uint8_t*)(((uint8_t*)base) + bj_offsetof(&cls_base::field)))
-
-
-#define bjc_host_saddr_to_core_saddr(h_addr) \
-	(BJK_GLB_SYS->eph_shd_mem_base + (((bj_addr_t)h_addr) - BJK_GLB_SYS->znq_shd_mem_base))
-
-
-#define bjc_core_saddr_to_core_saddr(c_addr) \
-	(BJK_GLB_SYS->znq_shd_mem_base + (((bj_addr_t)c_addr) - BJK_GLB_SYS->eph_shd_mem_base))
-
-
-#define bjc_glb_binder_get_rgt(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_right)
-#define bjc_glb_binder_get_lft(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_left)
-
 void
 kernel::handle_work_from_host(){
 	BJK_CK(! is_host_kernel);

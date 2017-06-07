@@ -10,7 +10,7 @@
 #include "binder.hh"
 #include "err_msgs.h"
 #include "global.h"
-#include "cores_main.h"
+//include "cores_main.h"
 
 // look for "class bj_aligned "
 

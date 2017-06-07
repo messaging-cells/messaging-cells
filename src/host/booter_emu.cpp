@@ -12,7 +12,7 @@
 #include "booter.h"
 #include "string_hst.hh"
 
-#include "cores_main.h"
+//include "cores_main.h"
 #include "dlmalloc.h"
 
 #include "dyn_mem.h"

@@ -12,6 +12,7 @@ SOURCES := \
 	$(SRC_ACTORS_DIR)/shared_znq.cpp \
 	$(SRC_ACTORS_DIR)/shared.c \
 	$(SRC_ACTORS_DIR)/loader.c \
+	$(SRC_ACTORS_DIR)/loader_maps.c \
 	$(SRC_HOST_DIR)/core_loader_znq.c \
 	$(SRC_HOST_DIR)/prt_eph_call_stack_znq.c \
 	$(SRC_HOST_DIR)/read_eph_elf_link_syms_tab_znq.c \

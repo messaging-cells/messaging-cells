@@ -1,6 +1,6 @@
 
 
-#include "cores_main.h"
+#include "shared.h"
 
 int main() {
 	bj_cores_main();
