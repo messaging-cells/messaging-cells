@@ -286,7 +286,11 @@ struct bj_aligned bj_off_sys_shared_data_def {
 	void* 			pt_host_kernel;
 	bj_addr_t		znq_shared_mem_base;
 	bj_addr_t		eph_shared_mem_base;
+
 	uint32_t 		tot_modules;
+
+	bj_core_id_t	first_load_core_id;
+
 	bj_sys_sz_st 	wrk_sys;
 	bj_off_core_st 	sys_cores[bj_out_num_cores];
 	bj_core_out_st 	sys_out_buffs[bj_out_num_cores];
@@ -349,11 +353,6 @@ bj_core_addr_to_host_addr(bj_addr_t c_addr) bj_external_code_ram;
 
 #define bjc_glb_binder_get_rgt(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_right)
 #define bjc_glb_binder_get_lft(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_left)
-
-
-extern char* bjh_epiphany_elf_path;
-extern void bj_cores_main() bj_external_code_ram;
-extern int bj_host_main(int argc, char *argv[]) bj_external_code_ram;
 
 #ifdef __cplusplus
 }

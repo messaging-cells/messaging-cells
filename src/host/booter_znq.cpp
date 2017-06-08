@@ -16,6 +16,8 @@
 
 //=====================================================================================
 
+bj_core_id_t bjh_first_load_core_nn = 0;
+
 uint8_t* BJH_EXTERNAL_RAM_BASE_PT = bj_null;
 
 //char* bjh_epiphany_elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
@@ -130,9 +132,13 @@ bj_host_init(){
 	ld_dat.cols = platform.cols;
 	ld_dat.all_module_names = NULL;
 	ld_dat.all_module_addrs = NULL;
+	ld_dat.root_nn = bjh_first_load_core_nn;
 
 	e_reset_group(&dev);
+
 	int err = bj_load_group(&ld_dat); 
+	//int err = bjl_load_root(&ld_dat); 
+
 	if(err == E_ERR){
 		bjh_abort_func(203, "host_init_3. ERROR: Loading_group_failed.\n");
 	}
@@ -153,6 +159,32 @@ bj_host_init(){
 
 	pt_shd_data->pt_host_kernel = bj_null;
 	pt_shd_data->tot_modules = bjl_module_names_sz;
+
+	pt_shd_data->first_load_core_id = bj_nn_to_id(bjh_first_load_core_nn);
+}
+
+void
+bj_start_all_cores(){
+	e_epiphany_t & dev = bjh_glb_dev;
+	bj_core_co_t row, col, max_row, max_col;
+
+	max_row = dev.rows;
+	max_col = dev.cols;
+
+	for (row=0; row < max_row; row++){
+		for (col=0; col < max_col; col++){
+			e_start(&dev, row, col);
+		}
+	}
+}
+
+void
+bj_start_first_core(){
+	e_epiphany_t & dev = bjh_glb_dev;
+	bj_core_co_t row, col;
+	row = bj_nn_to_ro(bjh_first_load_core_nn);
+	col = bj_nn_to_co(bjh_first_load_core_nn);
+	e_start(&dev, row, col);
 }
 
 void
@@ -167,8 +199,8 @@ bj_host_run(){
 	bj_core_id_t core_id;
 	char f_nm[200];
 
-	max_row = 1;
-	max_col = 2;
+	//max_row = 1;
+	//max_col = 2;
 	max_row = dev.rows;
 	max_col = dev.cols;
 
@@ -204,9 +236,12 @@ bj_host_run(){
 			bj_rr_init(&(pt_buff->rd_arr), BJ_OUT_BUFF_SZ, pt_buff->buff, 1);
 
 			// Start one core
-			e_start(&dev, row, col);
+			//e_start(&dev, row, col);
 		}
 	}
+
+	//bj_start_first_core();
+	bj_start_all_cores();
 
 	bool core_started[max_row][max_col];
 	memset(core_started, 0, sizeof(core_started));

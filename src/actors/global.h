@@ -207,6 +207,12 @@ void bj_host_init() bj_external_code_ram;
 void bj_host_run() bj_external_code_ram;
 void bj_host_finish() bj_external_code_ram;
 
+extern bj_core_nn_t bjh_first_load_core_nn;
+extern char* bjh_epiphany_elf_path;
+extern bj_load_map_st* bjk_first_load_map bj_external_data_ram;
+extern void bj_cores_main() bj_external_code_ram;
+extern int bj_host_main(int argc, char *argv[]) bj_external_code_ram;
+
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 
 // broadcast_maps.c 
 
-#include "loader.h"
+#include "global.h"
 
 bj_dbg_e3_leaf(15)
 bj_dbg_e3_leaf(14)
@@ -83,4 +83,10 @@ bj_std_e3_tree(0,
 	bj_std_e3_node(1),
 	bj_std_e3_node(2)
 )
+
+bj_load_map_st*
+bj_get_first_load_map(){
+	return bj_std_e3_node(0);
+}
+
 

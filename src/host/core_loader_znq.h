@@ -89,6 +89,8 @@ typedef struct load_info_st load_info_t;
 
 int bj_load_group(load_info_t *ld_dat);
 
+int bjl_load_root(load_info_t *ld_dat);
+
 #define DBGH_CODE_SHD_SZ 20
 
 extern uint16_t DBGH_CODE_SHD_1[DBGH_CODE_SHD_SZ];
