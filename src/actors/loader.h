@@ -15,13 +15,13 @@ bj_c_decl {
 	extern bj_addr_t LD_EXTERNAL_RAM_SIZE;
 	extern bj_addr_t LD_EXTERNAL_CODE_SIZE;
 	extern bj_addr_t LD_EXTERNAL_LOAD_SIZE;
-	extern bj_addr_t LD_EXTERNAL_DATA_SIZE;
-	extern bj_addr_t LD_EXTERNAL_ALLOC_SIZE;
+	extern bj_addr_t LD_EXTERNAL_HOST_DATA_SIZE;
+	extern bj_addr_t LD_EXTERNAL_HOST_ALLOC_SIZE;
 	extern bj_addr_t LD_EXTERNAL_RAM_ORIG;
 	extern bj_addr_t LD_EXTERNAL_CODE_ORIG;
 	extern bj_addr_t LD_EXTERNAL_LOAD_ORIG;
-	extern bj_addr_t LD_EXTERNAL_DATA_ORIG;
-	extern bj_addr_t LD_EXTERNAL_ALLOC_ORIG;
+	extern bj_addr_t LD_EXTERNAL_HOST_DATA_ORIG;
+	extern bj_addr_t LD_EXTERNAL_HOST_ALLOC_ORIG;
 
 	extern bj_addr_t LD_CORE_MODULE_ORIG;
 	extern bj_addr_t LD_CORE_MODULE_SIZE;
@@ -31,13 +31,13 @@ bj_c_decl {
 	#define BJ_VAL_EXTERNAL_RAM_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_RAM_SIZE)
 	#define BJ_VAL_EXTERNAL_CODE_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_CODE_SIZE)
 	#define BJ_VAL_EXTERNAL_LOAD_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_LOAD_SIZE)
-	#define BJ_VAL_EXTERNAL_DATA_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_DATA_SIZE)
-	#define BJ_VAL_EXTERNAL_ALLOC_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_ALLOC_SIZE)
+	#define BJ_VAL_EXTERNAL_HOST_DATA_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_DATA_SIZE)
+	#define BJ_VAL_EXTERNAL_HOST_ALLOC_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_ALLOC_SIZE)
 	#define BJ_VAL_EXTERNAL_RAM_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_RAM_ORIG)
 	#define BJ_VAL_EXTERNAL_CODE_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_CODE_ORIG)
 	#define BJ_VAL_EXTERNAL_LOAD_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_LOAD_ORIG)
-	#define BJ_VAL_EXTERNAL_DATA_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_DATA_ORIG)
-	#define BJ_VAL_EXTERNAL_ALLOC_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_ALLOC_ORIG)
+	#define BJ_VAL_EXTERNAL_HOST_DATA_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_DATA_ORIG)
+	#define BJ_VAL_EXTERNAL_HOST_ALLOC_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_ALLOC_ORIG)
 
 	#define BJ_VAL_CORE_MODULE_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_ORIG)
 	#define BJ_VAL_CORE_MODULE_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_SIZE)
@@ -48,21 +48,21 @@ struct bj_aligned bj_link_syms_data_def {
 	bj_addr_t extnl_ram_size;
 	bj_addr_t extnl_code_size;
 	bj_addr_t extnl_load_size;
-	bj_addr_t extnl_data_size;
-	bj_addr_t extnl_alloc_size;
+	bj_addr_t extnl_host_data_size;
+	bj_addr_t extnl_host_alloc_size;
 	bj_addr_t extnl_ram_orig;
 	bj_addr_t extnl_code_orig;
 	bj_addr_t extnl_load_orig;
-	bj_addr_t extnl_data_orig;
-	bj_addr_t extnl_alloc_orig;
+	bj_addr_t extnl_host_data_orig;
+	bj_addr_t extnl_host_alloc_orig;
 
 	bj_addr_t core_module_orig;
 	bj_addr_t core_module_size;
 
 	bj_addr_t extnl_code_disp;
 	bj_addr_t extnl_load_disp;
-	bj_addr_t extnl_data_disp;
-	bj_addr_t extnl_alloc_disp;
+	bj_addr_t extnl_host_data_disp;
+	bj_addr_t extnl_host_alloc_disp;
 };
 typedef struct bj_link_syms_data_def bj_link_syms_data_st;
 

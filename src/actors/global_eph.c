@@ -7,7 +7,7 @@
 //======================================================================
 // off chip shared memory
 
-bj_off_sys_st bjk_external_data_obj bj_external_data_ram;
+bj_off_sys_st bjk_external_host_data_obj bj_external_host_data_ram;
 
 //=====================================================================
 // global data

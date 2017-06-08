@@ -324,7 +324,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
 
 	uint8_t* pt_ram_base = (uint8_t*)(emem->base);
-	uint8_t* pt_end_code = (pt_ram_base + lk_dat->extnl_data_disp);
+	uint8_t* pt_end_code = (pt_ram_base + lk_dat->extnl_host_data_disp);
 	uint8_t* pt_end_mem = (pt_ram_base + lk_dat->extnl_ram_size);
 	BJL_MARK_USED(pt_end_code);
 	BJL_MARK_USED(pt_end_mem);

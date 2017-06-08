@@ -124,7 +124,7 @@ kernel::init_sys(){
 
 	new (ker) kernel(); 
 
-	ker->host_kernel = (kernel*)(BJK_PT_EXTERNAL_DATA->pt_host_kernel);
+	ker->host_kernel = (kernel*)(BJK_PT_EXTERNAL_HOST_DATA->pt_host_kernel);
 
 	bjk_glb_sys_st* in_shd = BJK_GLB_SYS;
 
@@ -173,11 +173,11 @@ void // static
 kernel::init_host_sys(){
 	bj_host_init();
 	kernel::init_sys();
-	BJK_PT_EXTERNAL_DATA->pt_host_kernel = (void*)bj_host_addr_to_core_addr((bj_addr_t)BJK_KERNEL);
+	BJK_PT_EXTERNAL_HOST_DATA->pt_host_kernel = (void*)bj_host_addr_to_core_addr((bj_addr_t)BJK_KERNEL);
 	BJK_KERNEL->is_host_kernel = true;
 
 	//ZNQ_CODE(printf("init_host_sys. BJK_KERNEL = %p \n", BJK_KERNEL));
-	//ZNQ_CODE(printf("init_host_sys. pt_host_kernel = %p \n", BJK_PT_EXTERNAL_DATA->pt_host_kernel));
+	//ZNQ_CODE(printf("init_host_sys. pt_host_kernel = %p \n", BJK_PT_EXTERNAL_HOST_DATA->pt_host_kernel));
 	//ZNQ_CODE(printf("init_host_sys. mg=%x emg=%x \n", BJK_KERNEL->magic_id, BJK_KERNEL->end_magic_id));
 	//ZNQ_CODE(printf("init_host_sys. fst_act=%p \n", BJK_KERNEL->first_actor));
 }

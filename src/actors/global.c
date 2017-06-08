@@ -29,16 +29,16 @@ bjk_glb_init(void) {
 	bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 	bj_init_glb_sys_sz(sys_sz);
 	
-	if(BJK_PT_EXTERNAL_DATA->magic_id != BJ_MAGIC_ID){
+	if(BJK_PT_EXTERNAL_HOST_DATA->magic_id != BJ_MAGIC_ID){
 		bjk_abort((bj_addr_t)bjk_glb_init, err_6);
 	}
 
-	BJK_PT_EXTERNAL_DATA->pt_this_from_eph = BJK_PT_EXTERNAL_DATA;	// should be same for all cores
+	BJK_PT_EXTERNAL_HOST_DATA->pt_this_from_eph = BJK_PT_EXTERNAL_HOST_DATA;	// should be same for all cores
 	
 	// glb_sys_sz init
 	bj_core_id_t koid = bjk_get_core_id();
 	bj_memset((uint8_t*)sys_sz, 0, sizeof(bj_sys_sz_st));
-	*sys_sz = BJK_PT_EXTERNAL_DATA->wrk_sys;
+	*sys_sz = BJK_PT_EXTERNAL_HOST_DATA->wrk_sys;
 
 	// num_core init
 	bj_core_nn_t num_core = bj_id_to_nn(koid);
@@ -46,8 +46,8 @@ bjk_glb_init(void) {
 	glb_dat->magic_id = BJ_MAGIC_ID;
 	glb_dat->dbg_stack_trace = bj_null;
 	glb_dat->magic_end = BJ_MAGIC_END;	
-	glb_dat->znq_shd_mem_base = BJK_PT_EXTERNAL_DATA->znq_shared_mem_base;
-	glb_dat->eph_shd_mem_base = BJK_PT_EXTERNAL_DATA->eph_shared_mem_base;
+	glb_dat->znq_shd_mem_base = BJK_PT_EXTERNAL_HOST_DATA->znq_shared_mem_base;
+	glb_dat->eph_shd_mem_base = BJK_PT_EXTERNAL_HOST_DATA->eph_shared_mem_base;
 	glb_dat->the_core_id = koid;
 	glb_dat->the_core_ro = bj_id_to_ro(koid);
 	glb_dat->the_core_co = bj_id_to_co(koid);
@@ -55,12 +55,12 @@ bjk_glb_init(void) {
 	glb_dat->pt_core_kernel = bj_null;
 
 	if(num_core < bj_out_num_cores){
-		glb_dat->off_core_pt = &((BJK_PT_EXTERNAL_DATA->sys_cores)[num_core]);
-		if((BJK_PT_EXTERNAL_DATA->sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
+		glb_dat->off_core_pt = &((BJK_PT_EXTERNAL_HOST_DATA->sys_cores)[num_core]);
+		if((BJK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core].magic_id != BJ_MAGIC_ID){
 			bjk_abort((bj_addr_t)bjk_glb_init, err_7);
 		}
 
-		bj_core_out_st* out_st = &((BJK_PT_EXTERNAL_DATA->sys_out_buffs)[num_core]);
+		bj_core_out_st* out_st = &((BJK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core]);
 
 		glb_dat->write_rrarray = &(out_st->wr_arr);
 		bj_rr_init(glb_dat->write_rrarray, BJ_OUT_BUFF_SZ, out_st->buff, 0);
@@ -97,8 +97,8 @@ bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms){
 	bj_addr_t ex_orig = syms->extnl_ram_orig;
 	syms->extnl_code_disp = syms->extnl_code_orig - ex_orig;
 	syms->extnl_load_disp = syms->extnl_load_orig - ex_orig;
-	syms->extnl_data_disp = syms->extnl_data_orig - ex_orig;
-	syms->extnl_alloc_disp = syms->extnl_alloc_orig - ex_orig;
+	syms->extnl_host_data_disp = syms->extnl_host_data_orig - ex_orig;
+	syms->extnl_host_alloc_disp = syms->extnl_host_alloc_orig - ex_orig;
 }
 
 

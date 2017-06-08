@@ -24,7 +24,7 @@ int bj_host_main(int argc, char *argv[])
 	//bj_addr_t addr_0 = bj_addr_set_id(koid, 0);
 
 	//bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
-	//bj_addr_t addr_0 = (bj_addr_t)bjh_disp_to_pt(lk_dat->extnl_alloc_disp);
+	//bj_addr_t addr_0 = (bj_addr_t)bjh_disp_to_pt(lk_dat->extnl_host_alloc_disp);
 
 	actor* act1 = kernel::get_core_actor();
 

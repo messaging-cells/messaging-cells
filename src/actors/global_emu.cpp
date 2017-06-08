@@ -7,7 +7,7 @@
 //======================================================================
 // off chip shared memory
 
-bj_off_sys_st bjm_external_data_obj;
+bj_off_sys_st bjm_external_host_data_obj;
 
 //=====================================================================
 // global funcs

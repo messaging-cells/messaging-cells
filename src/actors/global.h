@@ -87,18 +87,18 @@ typedef struct bjk_glb_sys_def bjk_glb_sys_st;
 #endif
 
 #ifdef BJ_IS_EPH_CODE
-	extern bj_off_sys_st bjk_external_data_obj;
-	#define BJK_PT_EXTERNAL_DATA (&bjk_external_data_obj)
+	extern bj_off_sys_st bjk_external_host_data_obj;
+	#define BJK_PT_EXTERNAL_HOST_DATA (&bjk_external_host_data_obj)
 #endif
 
 #ifdef BJ_IS_ZNQ_CODE
-	extern bj_off_sys_st* bjz_pt_external_data_obj;
-	#define BJK_PT_EXTERNAL_DATA bjz_pt_external_data_obj
+	extern bj_off_sys_st* bjz_pt_external_host_data_obj;
+	#define BJK_PT_EXTERNAL_HOST_DATA bjz_pt_external_host_data_obj
 #endif
 
 #ifdef BJ_IS_EMU_CODE
-	extern bj_off_sys_st bjm_external_data_obj;
-	#define BJK_PT_EXTERNAL_DATA (&bjm_external_data_obj)
+	extern bj_off_sys_st bjm_external_host_data_obj;
+	#define BJK_PT_EXTERNAL_HOST_DATA (&bjm_external_host_data_obj)
 #endif
 
 

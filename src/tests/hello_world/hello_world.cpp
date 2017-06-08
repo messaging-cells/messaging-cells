@@ -1,7 +1,7 @@
 
 #include "actor.hh"
 
-char* test_string_1  bj_external_strings_ram = const_cast<char*>("AAAAAAAAAA");
+char* test_string_1  bj_external_data_ram = const_cast<char*>("AAAAAAAAAA");
 
 void
 bj_pru_string(){

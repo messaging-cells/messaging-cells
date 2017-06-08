@@ -123,7 +123,7 @@ bj_host_init(){
 
 	printf("TOT_THREADS = %d\n", TOT_THREADS);
 
-	bj_off_sys_st* pt_shd_data = BJK_PT_EXTERNAL_DATA;
+	bj_off_sys_st* pt_shd_data = BJK_PT_EXTERNAL_HOST_DATA;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
 	printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data));
 
@@ -144,7 +144,7 @@ bj_host_init(){
 void
 bj_host_run()
 {
-	bj_off_sys_st* pt_shd_data = BJK_PT_EXTERNAL_DATA;
+	bj_off_sys_st* pt_shd_data = BJK_PT_EXTERNAL_HOST_DATA;
 	//bj_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 
 	bj_core_id_t core_id;

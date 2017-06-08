@@ -15,8 +15,8 @@ USER DEFINED SIZES
 LD_EXTERNAL_RAM_SIZE = 32M;	/* all external ram */
 LD_EXTERNAL_CODE_SIZE = 8M;	/* ready to exec shared code (.text, data, rodata, bss and .stack) */
 LD_EXTERNAL_LOAD_SIZE = 8M;	/* ready to load shared code (elf format)*/
-LD_EXTERNAL_DATA_SIZE = 8M;	/* shared data (a big struct) */
-LD_EXTERNAL_ALLOC_SIZE = 8M;	/* alloc (dynamic heap) shared data */ 
+LD_EXTERNAL_HOST_DATA_SIZE = 8M;	/* shared data (a big struct) */
+LD_EXTERNAL_HOST_ALLOC_SIZE = 8M;	/* alloc (dynamic heap) shared data */ 
 
 LD_CORE_IVT_SIZE = 0x100;
 LD_CORE_CODE_SIZE = 16k - LD_CORE_IVT_SIZE;
@@ -29,8 +29,8 @@ LD_CORE_ALLOC_SIZE = 12k;
 LD_EXTERNAL_RAM_ORIG = 0x8e000000;
 LD_EXTERNAL_CODE_ORIG = LD_EXTERNAL_RAM_ORIG;
 LD_EXTERNAL_LOAD_ORIG = LD_EXTERNAL_CODE_ORIG + LD_EXTERNAL_CODE_SIZE;
-LD_EXTERNAL_DATA_ORIG = LD_EXTERNAL_LOAD_ORIG + LD_EXTERNAL_LOAD_SIZE;
-LD_EXTERNAL_ALLOC_ORIG = LD_EXTERNAL_DATA_ORIG + LD_EXTERNAL_DATA_SIZE;
+LD_EXTERNAL_HOST_DATA_ORIG = LD_EXTERNAL_LOAD_ORIG + LD_EXTERNAL_LOAD_SIZE;
+LD_EXTERNAL_HOST_ALLOC_ORIG = LD_EXTERNAL_HOST_DATA_ORIG + LD_EXTERNAL_HOST_DATA_SIZE;
 
 LD_CORE_IVT_ORIG = 0;
 LD_CORE_CODE_ORIG = LD_CORE_IVT_ORIG + LD_CORE_IVT_SIZE;
@@ -62,8 +62,8 @@ MEMORY
 
 	LD_EXTERNAL_CODE_RAM (WXAI)   : ORIGIN = LD_EXTERNAL_CODE_ORIG, LENGTH = LD_EXTERNAL_CODE_SIZE
 	LD_EXTERNAL_LOAD_RAM (WXAI)   : ORIGIN = LD_EXTERNAL_LOAD_ORIG, LENGTH = LD_EXTERNAL_LOAD_SIZE
-	LD_EXTERNAL_DATA_RAM (WXAI)   : ORIGIN = LD_EXTERNAL_DATA_ORIG, LENGTH = LD_EXTERNAL_DATA_SIZE
-	LD_EXTERNAL_ALLOC_RAM (WXAI)   : ORIGIN = LD_EXTERNAL_ALLOC_ORIG, LENGTH = LD_EXTERNAL_ALLOC_SIZE
+	LD_EXTERNAL_HOST_DATA_RAM (WXAI)   : ORIGIN = LD_EXTERNAL_HOST_DATA_ORIG, LENGTH = LD_EXTERNAL_HOST_DATA_SIZE
+	LD_EXTERNAL_HOST_ALLOC_RAM (WXAI)   : ORIGIN = LD_EXTERNAL_HOST_ALLOC_ORIG, LENGTH = LD_EXTERNAL_HOST_ALLOC_SIZE
 }
 
 
@@ -82,10 +82,10 @@ SECTIONS
 	ivt_wand                0x20 : {*.o(ivt_entry_wand)}               > IVT_RAM
 	ivt_user                0x24 : {*.o(ivt_entry_user)}               > IVT_RAM
 
-	external_code_ram : { *(external_code_ram external_strings_ram) } > LD_EXTERNAL_CODE_RAM
+	external_code_ram : { *(external_code_ram external_data_ram) } > LD_EXTERNAL_CODE_RAM
 	external_load_ram : { *(external_load_ram) } > LD_EXTERNAL_LOAD_RAM
-	external_data_ram : { *(external_data_ram) } > LD_EXTERNAL_DATA_RAM 
-	external_alloc_ram : { *(external_alloc_ram) } > LD_EXTERNAL_ALLOC_RAM 
+	external_host_data_ram : { *(external_host_data_ram) } > LD_EXTERNAL_HOST_DATA_RAM 
+	external_host_alloc_ram : { *(external_host_alloc_ram) } > LD_EXTERNAL_HOST_ALLOC_RAM 
 
 	NEW_LIB_RO            : {lib_a-*.o(.text  .rodata)  *.o(libgloss_epiphany) } > LD_EXTERNAL_CODE_RAM
 	NEW_LIB_WR            : {lib_a-*.o(.data)                                  } > LD_EXTERNAL_CODE_RAM
