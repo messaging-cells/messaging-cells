@@ -92,6 +92,7 @@ bj_c_decl {
 #define bj_aligned bj_align(8) 
 
 #define bj_external_code_ram bj_section("external_code_ram")
+#define bj_external_strings_ram bj_section("external_strings_ram")
 #define bj_external_data_ram bj_section("external_data_ram")
 #define bj_alloc_ram bj_section("alloc_ram")
 

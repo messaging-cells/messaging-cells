@@ -20,14 +20,14 @@ SRC_INCDIRS := $(SRC_ACTORS_DIR)
 #	$(SRC_ACTORS_DIR)/link_syms_struct_eph.c \
 
 SOURCES := \
-	$(SRC_ACTORS_DIR)/interruptions.c \
+	$(SRC_ACTORS_DIR)/interruptions_eph.c \
 	$(SRC_ACTORS_DIR)/umm_malloc.c \
 	$(SRC_ACTORS_DIR)/umm_malloc_eph.c \
 	$(SRC_ACTORS_DIR)/log.c \
 	$(SRC_ACTORS_DIR)/shared.c \
 	$(SRC_ACTORS_DIR)/shared_eph.c \
-	$(SRC_ACTORS_DIR)/loader.c \
-	$(SRC_ACTORS_DIR)/loader_maps.c \
+	$(SRC_ACTORS_DIR)/loader_eph.c \
+	$(SRC_ACTORS_DIR)/broadcast_maps_eph.c \
 	$(SRC_ACTORS_DIR)/err_msgs.c \
 	$(SRC_ACTORS_DIR)/global.c \
 	$(SRC_ACTORS_DIR)/global_eph.c \

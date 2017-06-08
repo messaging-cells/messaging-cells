@@ -16,7 +16,13 @@ TGT_PREREQS := ${BJ_EPH_LIBS}
 TGT_CC := e-gcc
 TGT_CXX := e-g++
 TGT_LINKER := e-ld
-TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
+
+define POST_OPERS
+	e-objdump -D $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET).s
+	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 
+endef
+
+TGT_POSTMAKE := ${POST_OPERS}
 
 SRC_CFLAGS := -DBJ_IS_EPH_CODE ${BJ_STD_EPH_CFLAGS} ${BJ_DBG_FLAG} ${SRC_IN_SECTIONS}
 SRC_CXXFLAGS := -DBJ_IS_EPH_CODE ${BJ_STD_EPH_CXXFLAGS} ${BJ_DBG_FLAG} ${SRC_IN_SECTIONS}

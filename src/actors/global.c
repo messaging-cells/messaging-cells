@@ -92,3 +92,13 @@ bjk_glb_finish(){
 	bjk_set_finished(BJ_FINISHED_VAL);
 }
 
+void
+bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms){
+	bj_addr_t ex_orig = syms->extnl_ram_orig;
+	syms->extnl_code_disp = syms->extnl_code_orig - ex_orig;
+	syms->extnl_load_disp = syms->extnl_load_orig - ex_orig;
+	syms->extnl_data_disp = syms->extnl_data_orig - ex_orig;
+	syms->extnl_alloc_disp = syms->extnl_alloc_orig - ex_orig;
+}
+
+

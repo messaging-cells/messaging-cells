@@ -8,7 +8,7 @@
 #endif
 
 #include <stddef.h>
-#include "interruptions.h"
+#include "interruptions_eph.h"
 #include "err_msgs.h"
 #include "actor.hh"
 

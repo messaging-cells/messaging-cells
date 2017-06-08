@@ -32,6 +32,7 @@ typedef uint8_t bj_bool_t;
 
 #define bj_e3_num_chip_cores 16
 
+#define bj_core_tot_mem		0x8000
 
 //======================================================================
 // address opers

@@ -1,6 +1,15 @@
 
 #include "actor.hh"
 
+char* test_string_1  bj_external_strings_ram = const_cast<char*>("AAAAAAAAAA");
+
+void
+bj_pru_string(){
+	//bj_asm(".section bj_strings_sect"); 
+	//BJ_MARK_USED(test_string_1);
+	//bj_asm(".previous"); 
+}
+
 void bj_cores_main() {
 	bjk_glb_init();
 

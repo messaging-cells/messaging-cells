@@ -72,6 +72,12 @@ typedef struct bj_link_syms_data_def bj_link_syms_data_st;
 	#define BJ_EXTERNAL_RAM_LOAD_DATA bjh_external_ram_load_data
 #endif
 
+void*
+bj_add_lk_syms() bj_external_code_ram;
+
+void
+bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms) bj_external_code_ram;
+
 
 struct bj_aligned bj_load_map_def {
 	bj_core_nn_t 			num_core;
@@ -111,17 +117,20 @@ typedef struct bj_load_map_def bj_load_map_st;
 #define bj_std_e3_leaf(nn) BJL_LEAF_NODE(lib_std_map, nn)
 #define bj_std_e3_tree(nn, ...) BJL_TREE_NODE(lib_std_map, nn, __VA_ARGS__)
 
-void*
-bj_add_lk_syms() bj_external_code_ram;
-
-void
-bj_extnl_ram_load_data_fill(bj_link_syms_data_st* syms) bj_external_code_ram;
-
 void
 bjl_load_module(char* module_name) bj_external_code_ram;
 
 void
 bj_reset_core(bj_core_id_t id) bj_external_code_ram;
+
+bj_inline_fn void
+bj_copy_mem_to_core(bj_core_id_t koid){
+	uint8_t* dst = (uint8_t*)bj_addr_set_id(koid, 0x0);
+	bj_memcpy(dst, (uint8_t*)0x0, bj_core_tot_mem);
+}
+
+void
+bj_load_map() bj_external_code_ram;
 
 #ifdef __cplusplus
 }

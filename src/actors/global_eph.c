@@ -1,5 +1,5 @@
 
-#include "interruptions.h"
+#include "interruptions_eph.h"
 #include "err_msgs.h"
 #include "global.h"
 #include "dyn_mem.h"

@@ -82,7 +82,7 @@ SECTIONS
 	ivt_wand                0x20 : {*.o(ivt_entry_wand)}               > IVT_RAM
 	ivt_user                0x24 : {*.o(ivt_entry_user)}               > IVT_RAM
 
-	external_code_ram : { *(external_code_ram) } > LD_EXTERNAL_CODE_RAM
+	external_code_ram : { *(external_code_ram external_strings_ram) } > LD_EXTERNAL_CODE_RAM
 	external_load_ram : { *(external_load_ram) } > LD_EXTERNAL_LOAD_RAM
 	external_data_ram : { *(external_data_ram) } > LD_EXTERNAL_DATA_RAM 
 	external_alloc_ram : { *(external_alloc_ram) } > LD_EXTERNAL_ALLOC_RAM 
