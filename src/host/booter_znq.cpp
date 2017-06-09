@@ -137,11 +137,11 @@ bj_host_init(){
 
 	e_reset_group(&dev);
 
-#ifdef BJ_PLL_LOADING
-	int err = bjl_load_root(&ld_dat); 
-#else
-	int err = bj_load_group(&ld_dat); 
-#endif
+	#ifdef BJ_PLL_LOADING
+		int err = bjl_load_root(&ld_dat); 
+	#else
+		int err = bj_load_group(&ld_dat); 
+	#endif
 
 	if(err == E_ERR){
 		bjh_abort_func(203, "host_init_3. ERROR: Loading_group_failed.\n");
@@ -229,11 +229,11 @@ bj_host_run(){
 		}
 	}
 
-#ifdef BJ_PLL_LOADING
-	bj_start_first_core();
-#else
-	bj_start_all_cores();
-#endif
+	#ifdef BJ_PLL_LOADING
+		bj_start_first_core();
+	#else
+		bj_start_all_cores();
+	#endif
 
 	bool core_started[max_row][max_col];
 	memset(core_started, 0, sizeof(core_started));

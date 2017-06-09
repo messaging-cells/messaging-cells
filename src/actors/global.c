@@ -1,6 +1,7 @@
 
 #include "err_msgs.h"
 #include "global.h"
+#include "dyn_mem.h"
 
 //include "link_syms_vals.h"
 
@@ -16,6 +17,8 @@ bjk_glb_init(void) {
 			bjk_abort((bj_addr_t)bjk_glb_init, "bjk_glb_init. Use bj_host_init before.");
 		}
 	);
+	bj_init_dyn_mem();
+
 	// basic init
 	bjk_set_irq0_handler();
 	EPH_CODE(bj_add_lk_syms());
@@ -86,9 +89,9 @@ bjk_glb_init(void) {
 		BJK_CK(glb_dat->znq_shd_mem_base != 0);
 	)
 
-#if defined(BJ_IS_EPH_CODE) && defined(BJ_PLL_LOADING)
+	#if defined(BJ_IS_EPH_CODE) && defined(BJ_PLL_LOADING)
 		bj_load_map();
-#endif
+	#endif
 
 }
 

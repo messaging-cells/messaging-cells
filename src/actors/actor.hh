@@ -666,7 +666,7 @@ bj_c_decl {
 #endif
 
 bool
-bjk_is_inited(bj_core_id_t dst_id) bj_external_code_ram;
+bjk_is_id_inited(bj_core_id_t dst_id) bj_external_code_ram;
 
 bool
 bjk_ck_type_sizes() bj_external_code_ram;

@@ -170,6 +170,7 @@ void *umm_info( UMM_HEAP_INFO* the_info, void *ptr, int force ) bj_external_code
 umm_opt_sz_fn void *umm_malloc( umm_size_t size ) bj_external_code_ram;
 umm_opt_sz_fn void *umm_realloc( void *ptr, umm_size_t size ) bj_external_code_ram;
 umm_opt_sz_fn void umm_free( void *ptr ) bj_external_code_ram;
+umm_opt_sz_fn void umm_init() bj_external_code_ram;
 
 
 UMM_H_ATTPACKPRE typedef struct umm_ptr_t {

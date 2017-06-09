@@ -150,6 +150,15 @@ kernel::run_sys(){
 	if(! ker->is_host_kernel){
 		BJK_GLB_SYS->pt_core_kernel = (void*)bj_addr_set_id(BJK_GLB_SYS->the_core_id, ker);
 		BJK_GLB_SYS->inited_core = BJK_GLB_SYS->the_core_id;
+		/*
+		#ifdef BJ_PLL_LOADING
+			if(BJK_GLB_SYS->the_core_nn == 0){
+				bjk_sprt2("INITED___"); 
+				bjk_xprt((bj_addr_t)(&(BJK_GLB_SYS->inited_core)));
+				bjk_sprt2("___\n");
+			}
+		#endif
+		*/
 	}
 	while(true){
 		ker->did_work = 0x0;
@@ -353,7 +362,7 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, bjk_ack_t* a
 }
 
 bool
-bjk_is_inited(bj_core_id_t dst_id){
+bjk_is_id_inited(bj_core_id_t dst_id){
 	bjk_glb_sys_st* in_shd = BJK_GLB_SYS;
 	bj_core_id_t* loc_st = &(in_shd->inited_core);
 	bj_core_id_t* rmt_st = (bj_core_id_t*)bj_addr_set_id(dst_id, loc_st);
@@ -471,7 +480,7 @@ kernel::handle_missives(){
 
 		if(loc_dst_ack_pt == bjk_virgin_ack){
 			// Have never sent missives
-			if(! bjk_is_inited(dst_id)){
+			if(! bjk_is_id_inited(dst_id)){
 				did_work |= 0x08;
 				continue;
 			}

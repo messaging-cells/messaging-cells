@@ -4,6 +4,7 @@
 
 #include "global.h"
 #include "all_regs.h"
+#include "umm_malloc.h"
 
 bj_load_map_st* bjz_loader_map;
 bj_load_map_st* bjk_first_load_map;
@@ -43,9 +44,17 @@ bj_load_map(){
 	bj_load_map_st* mp = bjz_loader_map;
 	bj_core_id_t koid = bjk_get_core_id();
 
+	/*
 	bjk_sprt("STARTING_LOAD_MAP core___");
 	bjk_xprt(koid);
+	EPH_CODE(
+		bjk_sprt("___umm_heap___");
+		bjk_xprt((bj_addr_t)umm_heap);
+	)
+	//bjk_sprt("___BJK_GLB_SYS___");
+	//bjk_xprt((bj_addr_t)BJK_GLB_SYS);
 	bjk_sprt("___\n");
+	*/
 
 	if(mp == bj_null){
 		if(BJK_PT_EXTERNAL_HOST_DATA->first_load_core_id != koid){
@@ -58,7 +67,7 @@ bj_load_map(){
 		}
 	}
 	if(mp->num_core != bj_id_to_nn(koid)){
-		bjk_sprt("ABORTING_LOAD_MAP");
+		//bjk_sprt("ABORTING_LOAD_MAP");
 		bjk_abort((bj_addr_t)err_load_map_2, err_load_map_2);
 		return;
 	}
@@ -67,9 +76,9 @@ bj_load_map(){
 
 	if(mp->childs == bj_null){ return; }
 
-	bjk_sprt("pt_ld_map___");
-	bjk_xprt((bj_addr_t)pt_ld_map);
-	bjk_sprt("___\n");
+	//bjk_sprt("pt_ld_map___");
+	//bjk_xprt((bj_addr_t)pt_ld_map);
+	//bjk_sprt("___\n");
 
 	//uint32_t SYNC = (1 << E_SYNC);
 	//uint32_t SYNC = (1 << 0);
@@ -91,9 +100,9 @@ bj_load_map(){
 
 		uint32_t* rem_reg = (uint32_t*)bj_addr_set_id(ch_id, BJ_REG_ILATST);
 
-		bjk_sprt("rem_reg___");
-		bjk_xprt((bj_addr_t)rem_reg);
-		bjk_sprt("___\n");
+		//bjk_sprt("rem_reg___");
+		//bjk_xprt((bj_addr_t)rem_reg);
+		//bjk_sprt("___\n");
 
 		*rem_reg = SYNC;
 
@@ -102,6 +111,7 @@ bj_load_map(){
 	}
 }
 
+/*
 void
 bj_prt_margin(int lv){
 	while(lv-- >= 0){ bjk_sprt("   "); }
@@ -137,4 +147,6 @@ bj_prt_load_map(bj_load_map_st* mp, int lv){
 	bj_prt_margin(lv);
 	bjk_sprt("]\n");
 }
+
+*/
 

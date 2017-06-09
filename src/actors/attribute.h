@@ -10,7 +10,7 @@
 bj_c_decl {
 #endif
 
-//define BJ_PLL_LOADING
+#define BJ_PLL_LOADING
 
 #define BJK_LINK_SCRIPT_SYM_VAL(xx) ((bj_addr_t)(&xx))
 

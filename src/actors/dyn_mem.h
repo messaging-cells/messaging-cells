@@ -42,6 +42,8 @@ bj_opt_sz_fn void
 a64_free(uint8_t* ptr) bj_external_code_ram;
 
 #ifdef BJ_IS_EPH_CODE
+	#define bj_init_dyn_mem()	umm_init()
+
 	#define bj_malloc32(nam, sz)	(nam *)(a32_malloc(sz * sizeof(nam)))
 	#define bj_realloc32(nam, ptr, sz)	(nam *)(a32_realloc((ptr), (sz * sizeof(nam))))
 	#define bj_free32(ptr)	a32_free(ptr)
@@ -54,6 +56,8 @@ a64_free(uint8_t* ptr) bj_external_code_ram;
 #ifdef BJ_IS_ZNQ_CODE
 	#include "dlmalloc.h"
 	extern mspace bjh_glb_alloc_mspace;
+
+	#define bj_init_dyn_mem()	
 
 	#define bj_malloc32(nam, sz)	(nam *)(mspace_malloc(bjh_glb_alloc_mspace, (sz * sizeof(nam))))
 	#define bj_realloc32(nam, ptr, sz)	(nam *)(mspace_realloc(bjh_glb_alloc_mspace, ((ptr), (sz * sizeof(nam)))))
@@ -73,6 +77,8 @@ a64_free(uint8_t* ptr) bj_external_code_ram;
 
 	void 
 	bj_free_impl(uint8_t* ptr);
+
+	#define bj_init_dyn_mem()
 
 	#define bj_malloc32(nam, sz)	(nam *)(bj_malloc_impl(sz * sizeof(nam)))
 	#define bj_realloc32(nam, ptr, sz)	(nam *)(bj_realloc_impl((ptr), (sz * sizeof(nam))))

@@ -621,3 +621,10 @@ umm_realloc( void *ptr, umm_size_t size ) {
 
 // ----------------------------------------------------------------------------
 
+void
+umm_init() {
+	umm_size_t h_sz = UMM_NUMBLOCKS * sizeof(umm_block);
+	umm_memset((uint8_t*)UMM_THE_HEAP, 0, h_sz);
+}
+
+// ----------------------------------------------------------------------------

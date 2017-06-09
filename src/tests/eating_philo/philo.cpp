@@ -3,6 +3,8 @@
 #include "attribute.h"
 #include "actor.hh"
 
+//define PHILO_EPH_DBG
+
 #ifdef BJ_IS_EMU_CODE
 #define PHILO_WITH_DBG
 #endif
@@ -54,7 +56,7 @@ enum philo_tok_t : uint8_t {
 	tok_yes_full
 };
 
-#ifdef PHILO_WITH_DBG
+//ifdef PHILO_WITH_DBG
 	char*
 	tok_to_str(philo_tok_t tok) bj_external_code_ram;
 
@@ -94,7 +96,7 @@ enum philo_tok_t : uint8_t {
 		}
 		return const_cast<char*>("NO_TOK");
 	}
-#endif
+//endif
 
 class chopstick : public actor {
 public:
@@ -193,6 +195,8 @@ public:
 	bool can_exit(){
 		return ((left == bj_null) && (right == bj_null) && (num_bites == MAX_BITES) && rgt_ph_full && lft_ph_full);
 	}
+
+	void call_exit();
 };
 
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
@@ -292,12 +296,38 @@ chopstick::handler(missive* msv){
 	last_src = msv_src;
 	last_recv = tok;
 
+	bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
 	PH_DBG_COD(
-		bj_core_nn_t nn = bjk_get_kernel()->get_core_nn();
 		if(prt_recv_msgs){
 			PH_DBG("CHOP %d RECV %s \n", nn, tok_to_str(tok));
 		}
 	)
+	if((nn == 0) || (nn >= 14)){
+		#ifdef PHILO_EPH_DBG
+			bj_core_id_t src_id = bj_addr_get_id(msv_src);
+			bjk_slog2("CHOP_RECV____");
+			bjk_slog2(tok_to_str(tok));
+			bjk_slog2("___");
+			bjk_xlog((bj_addr_t)msv_src);
+			bjk_slog2("___");
+			bjk_ilog(bj_id_to_nn(src_id));
+			bjk_slog2("___\n");
+
+			if(nn == 15){
+				//kernel* ker = bjk_get_kernel();
+				bool ini0 = bjk_is_id_inited(bj_nn_to_id(0));
+				//long osz = ker->out_work.calc_size();
+				//bjk_ack_t loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[0];
+				bjk_slog2("ADDR_INI____");
+				bjk_xlog((bj_addr_t)(&(BJK_GLB_SYS->inited_core)));
+				bjk_slog2("___\n");
+
+				bjk_slog2("INI_0____");
+				bjk_ilog(ini0);
+				bjk_slog2("___\n");
+			}
+		#endif
+	}
 
 	switch(tok){
 		case tok_take:
@@ -378,6 +408,12 @@ philosopher::handler(missive* msv){
 				EMU_CK(right == bj_null);
 				left = lft_stick;
 				send(rgt_stick, tok_take);
+	
+				#ifdef PHILO_EPH_DBG
+					if(nn == 15){
+						bjk_slog2("SENT_TAKE_RIGHT");
+					}
+				#endif
 			}
 			if(msv_src == rgt_stick){
 				EMU_CK(left == lft_stick);
@@ -388,8 +424,14 @@ philosopher::handler(missive* msv){
 				EMU_CK(right != bj_null);
 				EMU_CK(num_bites < MAX_BITES);
 				num_bites++;
-				PH_DBG("NUM_BITES %d \n", num_bites);
-				EMU_LOG("NUM_BITES %d \n", num_bites);
+				PH_DBG("#BITES %d \n", num_bites);
+				EMU_LOG("#BITES %d \n", num_bites);
+
+				#ifdef PHILO_EPH_DBG
+					bjk_slog2("#BITES____");
+					bjk_ilog(num_bites);
+					bjk_slog2("___\n");
+				#endif
 
 				send(lft_stick, tok_drop);
 				send(rgt_stick, tok_drop);
@@ -422,7 +464,9 @@ philosopher::handler(missive* msv){
 				if(num_bites == MAX_BITES){
 					PH_DBG("I AM FULL \n");
 					EMU_LOG("I AM FULL \n");
-					bjk_sprt2("I AM FULL \n");
+					bjk_sprt2("I AM FULL____");
+					bjk_iprt(bjk_get_kernel()->get_core_nn());
+					bjk_sprt2("___\n");
 
 					PH_DBG_COD(bj_set_off_chip_var(dbg_all_full[nn], true);)
 
@@ -430,13 +474,7 @@ philosopher::handler(missive* msv){
 					send(rgt_philo, tok_yes_full);
 
 					if(can_exit()){
-						PH_DBG_COD(
-							prt_idle();
-							prt_full();
-							prt_all_philo();
-						)
-						EMU_LOG("FINISHING \n");
-						bjk_get_kernel()->set_idle_exit();
+						call_exit();
 					}
 				} else {
 					send(this, tok_eat);
@@ -454,13 +492,7 @@ philosopher::handler(missive* msv){
 				rgt_ph_full = true; 
 			}
 			if(can_exit()){
-				PH_DBG_COD(
-					prt_idle();
-					prt_full();
-					prt_all_philo();
-				)
-				EMU_LOG("FINISHING \n");
-				bjk_get_kernel()->set_idle_exit();
+				call_exit();
 			}
 		break;
 		default:
@@ -468,6 +500,22 @@ philosopher::handler(missive* msv){
 		break;
 	} 
 	
+}
+
+void
+philosopher::call_exit(){
+	PH_DBG_COD(
+		prt_idle();
+		prt_full();
+		prt_all_philo();
+	)
+	EMU_LOG("FINISHING \n");
+
+	//bjk_sprt2("CALLING_EXIT____");
+	//bjk_iprt(bjk_get_kernel()->get_core_nn());
+	//bjk_sprt2("___\n");
+
+	bjk_get_kernel()->set_idle_exit();
 }
 
 #ifdef PHILO_WITH_DBG
