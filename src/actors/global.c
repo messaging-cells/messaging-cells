@@ -84,8 +84,12 @@ bjk_glb_init(void) {
 	EPH_CODE(
 		BJK_CK(glb_dat->eph_shd_mem_base == BJ_VAL_EXTERNAL_RAM_ORIG)
 		BJK_CK(glb_dat->znq_shd_mem_base != 0);
-		//bj_load_map();
 	)
+
+#if defined(BJ_IS_EPH_CODE) && defined(BJ_PLL_LOADING)
+		bj_load_map();
+#endif
+
 }
 
 void 

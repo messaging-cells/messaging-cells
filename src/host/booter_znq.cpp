@@ -9,6 +9,7 @@
 
 #include "booter.h"
 #include "core_loader_znq.h"
+#include "all_regs.h"
 
 #include "dlmalloc.h"
 
@@ -136,8 +137,11 @@ bj_host_init(){
 
 	e_reset_group(&dev);
 
+#ifdef BJ_PLL_LOADING
+	int err = bjl_load_root(&ld_dat); 
+#else
 	int err = bj_load_group(&ld_dat); 
-	//int err = bjl_load_root(&ld_dat); 
+#endif
 
 	if(err == E_ERR){
 		bjh_abort_func(203, "host_init_3. ERROR: Loading_group_failed.\n");
@@ -161,21 +165,6 @@ bj_host_init(){
 	pt_shd_data->tot_modules = bjl_module_names_sz;
 
 	pt_shd_data->first_load_core_id = bj_nn_to_id(bjh_first_load_core_nn);
-}
-
-void
-bj_start_all_cores(){
-	e_epiphany_t & dev = bjh_glb_dev;
-	bj_core_co_t row, col, max_row, max_col;
-
-	max_row = dev.rows;
-	max_col = dev.cols;
-
-	for (row=0; row < max_row; row++){
-		for (col=0; col < max_col; col++){
-			e_start(&dev, row, col);
-		}
-	}
 }
 
 void
@@ -240,8 +229,11 @@ bj_host_run(){
 		}
 	}
 
-	//bj_start_first_core();
+#ifdef BJ_PLL_LOADING
+	bj_start_first_core();
+#else
 	bj_start_all_cores();
+#endif
 
 	bool core_started[max_row][max_col];
 	memset(core_started, 0, sizeof(core_started));
@@ -372,5 +364,34 @@ int main(int argc, char *argv[]) {
 	int rr = 0;
 	rr = bj_host_main(argc, argv);
 	return rr;
+}
+
+void
+bj_start_all_cores(){
+	e_epiphany_t & dev = bjh_glb_dev;
+	bj_core_co_t row, col, max_row, max_col;
+
+	fprintf(stderr, "sizeof(int)=%d \n", sizeof(int));
+	fprintf(stderr, "sizeof(uint32_t)=%d \n", sizeof(uint32_t));
+	BJH_CK(sizeof(int) == sizeof(uint32_t));
+
+	max_row = dev.rows;
+	max_col = dev.cols;
+
+	//int		*pto;
+	//off_t to_addr = (off_t)BJ_REG_ILATST;
+	//if (to_addr >= E_REG_R0){
+	//	to_addr = to_addr - E_REG_R0;
+	//}
+	//int SYNC = (1 << E_SYNC);
+
+	for (row=0; row < max_row; row++){
+		for (col=0; col < max_col; col++){
+			//pto = (int *) (dev.core[row][col].regs.base + to_addr);
+			//*pto = SYNC;
+
+			e_start(&dev, row, col);
+		}
+	}
 }
 

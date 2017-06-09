@@ -17,6 +17,8 @@ bj_c_decl {
 //=====================================================================
 // in ekore shared memory
 
+extern unsigned bjk_original_ivt_0;
+
 //define BJ_MAX_STR_SZ 80
 // WHEN TESTING LOGS USE
 #define BJ_MAX_STR_SZ BJ_OUT_BUFF_SZ	

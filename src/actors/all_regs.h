@@ -10,8 +10,6 @@
 bj_c_decl {
 #endif
 
-#ifdef BJ_IS_EPH_CODE
-
 // eCore General Purpose Registers
 typedef enum {
 	BJ_CORE_GP_REG_BASE     = 0xf0000,
@@ -84,6 +82,7 @@ typedef enum {
 // eCore Special Registers
 typedef enum {
 	BJ_CORE_SP_REG_BASE     = 0xf0000,
+	//BJ_CORE_SP_REG_BASE     = 0x0,
 	// Control registers
 	BJ_REG_CONFIG           = BJ_CORE_SP_REG_BASE + 0x0400,
 	BJ_REG_STATUS           = BJ_CORE_SP_REG_BASE + 0x0404,
@@ -145,8 +144,6 @@ typedef enum {
 	BJ_REG_IO_LINK_DEBUG    = BJ_CHIP_REG_BASE + 0x0328,
 } bj_chip_reg_id_t;
 
-
-#endif //BJ_IS_EPH_CODE
 
 #ifdef __cplusplus
 }

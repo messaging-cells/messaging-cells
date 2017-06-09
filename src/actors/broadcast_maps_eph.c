@@ -86,7 +86,7 @@ bj_std_e3_tree(0,
 
 bj_load_map_st*
 bj_get_first_load_map(){
-	return bj_std_e3_node(0);
+	return bj_dbg_e3_node(0);
 }
 
 

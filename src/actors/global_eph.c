@@ -14,6 +14,8 @@ bj_off_sys_st bjk_external_host_data_obj bj_external_host_data_ram;
 
 bjk_glb_sys_st*	bjk_glb_pt_sys_data;
 
+unsigned bjk_original_ivt_0;
+
 //=====================================================================
 // global funcs
 
@@ -33,6 +35,7 @@ abort(){	// Needed when optimizing for size
 void 
 bjk_set_irq0_handler(){
 	unsigned * ivt = 0x0;
+	bjk_original_ivt_0 = *ivt;
 	*ivt = ((((unsigned)bjk_sync_handler) >> 1) << 8) | BJ_B_OPCODE;
 }
 

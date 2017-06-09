@@ -71,9 +71,9 @@ bj_load_map(){
 	bjk_xprt((bj_addr_t)pt_ld_map);
 	bjk_sprt("___\n");
 
-	//int SYNC = (1 << E_SYNC);
-	int SYNC = (1 << 0);
-	//uint16_t SYNC = 1;
+	//uint32_t SYNC = (1 << E_SYNC);
+	//uint32_t SYNC = (1 << 0);
+	uint32_t SYNC = 1;
 	int aa = 0;
 	bj_load_map_st* ch_map = (mp->childs)[aa];
 	while(ch_map != bj_null){
@@ -83,10 +83,13 @@ bj_load_map(){
 
 		bj_memcpy(dst, (uint8_t*)0x0, bj_core_tot_mem);
 
+		unsigned *ivt = (unsigned*)bj_addr_set_id(ch_id, 0x0);
+		bj_set_off_chip_var(*ivt, bjk_original_ivt_0);
+
 		bj_load_map_st** ch_ld_map = (bj_load_map_st**)bj_addr_set_id(ch_id, pt_ld_map);
 		bj_set_off_chip_var(*ch_ld_map, ch_map);
 
-		int* rem_reg = (int*)bj_addr_set_id(ch_id, BJ_REG_ILATST);
+		uint32_t* rem_reg = (uint32_t*)bj_addr_set_id(ch_id, BJ_REG_ILATST);
 
 		bjk_sprt("rem_reg___");
 		bjk_xprt((bj_addr_t)rem_reg);
