@@ -10,9 +10,9 @@
 bj_c_decl {
 #endif
 
-//define prts bjk_slog2
+#define prts(ss) bjk_slog2(ss)
 
-#define prts(ss) comm_prt(as_pt_char(ss))
+//define prts(ss) comm_prt(as_pt_char(ss))
 
 class comm_cla {
 public:

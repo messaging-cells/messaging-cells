@@ -84,3 +84,59 @@ bj_host_finish(){
 	bjk_abort((bj_addr_t)bj_host_finish, err_4);
 }
 
+bj_addr_t 
+bjk_get_module_address(uint32_t modl_idx){
+	uint32_t tot_modls = bjk_get_tot_modules();
+	if(modl_idx >= tot_modls){
+		return bj_null;
+	}
+	bj_addr_t mod_sz = BJ_VAL_CORE_MODULE_SIZE;
+	uint8_t* pt_ext_mods = (uint8_t*)BJ_VAL_EXTERNAL_LOAD_ORIG;
+	return ((bj_addr_t)(pt_ext_mods + (mod_sz * modl_idx)));
+}
+
+char* 
+bjk_get_module_name(uint32_t modl_idx){
+	uint32_t tot_modls = bjk_get_tot_modules();
+	if(modl_idx >= tot_modls){
+		return bj_null;
+	}
+	bj_addr_t mod_sz = BJ_VAL_CORE_MODULE_SIZE;
+	uint8_t* pt_ext_mods = (uint8_t*)BJ_VAL_EXTERNAL_LOAD_ORIG;
+	char** pt_mod_nams = (char**)(pt_ext_mods + (mod_sz * tot_modls));
+	return pt_mod_nams[modl_idx];
+}
+
+void
+bjk_fill_module_external_addresses(char** user_order, bj_addr_t* user_ext_addr){
+	uint32_t tot_modls = bjk_get_tot_modules();
+	for(uint32_t aa = 0; aa < tot_modls; aa++){
+		char* usr_nam = user_order[aa];
+		for(uint32_t bb = 0; bb < tot_modls; bb++){
+			char* link_nam = bjk_get_module_name(bb);
+			int cc = bj_strcmp(usr_nam, link_nam);
+			if(cc == 0){
+				user_ext_addr[aa] = bjk_get_module_address(bb);
+				bb = tot_modls;
+			}
+		}
+	}
+}
+
+bool
+bjk_load_module(bj_addr_t ext_addr){
+	uint8_t* pt_mod = (uint8_t*)ext_addr;
+	if(pt_mod == bj_null){
+		return false;
+	}
+	bjk_sprt("LOADING module idx____");
+	bjk_sprt("addr____");
+	bjk_xprt((bj_addr_t)pt_mod);
+	bjk_sprt("____\n");
+
+	bj_addr_t mod_sz = BJ_VAL_CORE_MODULE_SIZE;
+	uint8_t* pt_mem_mod = (uint8_t*)BJ_VAL_CORE_MODULE_ORIG;
+	bj_memcpy(pt_mem_mod, pt_mod, mod_sz);
+	return true;
+}
+

@@ -205,6 +205,24 @@ void ck_shd_code();
 	#define BJK_UPDATE_MIN_SP() 
 #endif
 
+bj_inline_fn 
+uint32_t 
+bjk_get_tot_modules(){
+	return BJK_PT_EXTERNAL_HOST_DATA->tot_modules;
+}
+
+bj_addr_t 
+bjk_get_module_address(uint32_t modl_idx) bj_external_code_ram;
+
+char* 
+bjk_get_module_name(uint32_t modl_idx) bj_external_code_ram;
+
+void
+bjk_fill_module_external_addresses(char** user_order, bj_addr_t* user_ext_addr) bj_external_code_ram;
+
+bool
+bjk_load_module(bj_addr_t ext_addr) bj_external_code_ram;
+
 void bj_host_init() bj_external_code_ram;
 void bj_host_run() bj_external_code_ram;
 void bj_host_finish() bj_external_code_ram;

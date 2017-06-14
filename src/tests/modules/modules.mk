@@ -8,7 +8,9 @@ TARGET := ${MODULES_DIR}/modules.elf
 TGT_LDFLAGS := -T ${MODULES_LDF} ${BJ_EPH_LDFLAGS_2} --no-check-sections -L${TARGET_DIR}/${MODULES_DIR}
 TGT_LDLIBS  := -lmod_1 -lmod_2 -lmod_3 ${BJ_STD_EPH_LDLIBS}
 
+
 TGT_PREREQS := \
+	${BJ_EPH_LIBS} \
 	${MODULES_DIR}/libcommon.a \
 	${MODULES_DIR}/libmod_1.a \
 	${MODULES_DIR}/libmod_2.a \

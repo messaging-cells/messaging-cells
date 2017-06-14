@@ -7,27 +7,107 @@
 
 bj_c_decl int main();
 
-#define map1_node(nn) BJL_NODE(map1, nn)
-#define map1_leaf(nn) BJL_LEAF_NODE(map1, nn)
-#define map1_tree(nn, ...) BJL_TREE_NODE(map1, nn, __VA_ARGS__)
+char* m1_nam bj_external_data_ram = const_cast<char*>("module1");
+char* m2_nam bj_external_data_ram = const_cast<char*>("module2");
+char* m3_nam bj_external_data_ram = const_cast<char*>("module3");
 
-map1_leaf(16)
-map1_leaf(15)
-map1_leaf(14)
+#define TOT_MODS 3
 
-map1_tree(12, map1_node(15), map1_node(16), map1_node(14))
-map1_tree(13, map1_node(14))
+#define MOD1_IDX 1
+#define MOD2_IDX 2
+#define MOD3_IDX 0
 
+char* all_mod_nams[TOT_MODS] bj_external_data_ram;
+bj_addr_t* all_mod_addr;
+
+void
+init_module_nams() bj_external_code_ram;
+
+void
+init_module_nams(){
+	all_mod_nams[MOD1_IDX] = m1_nam;
+	all_mod_nams[MOD2_IDX] = m2_nam;
+	all_mod_nams[MOD3_IDX] = m3_nam;
+}
+
+
+void
+print_module_nams() bj_external_code_ram;
+
+void
+print_module_nams(){
+	uint32_t to_m = bjk_get_tot_modules();
+	uint32_t aa = 0;
+	bjk_sprt2("ALL_MODULE_NAMES=\n");
+	for(aa = 0; aa < to_m; aa++){
+		char* nam0 = bjk_get_module_name(aa);
+		bjk_sprt2(nam0);
+		bjk_sprt2("\n");
+	}
+}
+
+void
+print_module_addrs() bj_external_code_ram;
+
+void
+print_module_addrs(){
+	uint32_t to_m = bjk_get_tot_modules();
+	uint32_t aa = 0;
+	bjk_sprt2("ALL_MODULE_ADDRS=\n");
+	for(aa = 0; aa < to_m; aa++){
+		char* nam0 = all_mod_nams[aa];
+		bjk_sprt2(nam0);
+		bjk_sprt2(" addr____");
+		bjk_xprt(all_mod_addr[aa]);
+		bjk_sprt2("____\n");
+	}
+}
+
+void
+link_all_modules_aux_fn() bj_external_code_ram;
+
+void
+link_all_modules_aux_fn(){
+	m1_main();
+	m2_main();
+	m3_main();
+}
 
 int main() {
 	bjk_glb_init();
 	bjk_slog2("Modules main \n");
-	bool aa = false;
-	if(aa){
-		m1_main();
-		m2_main();
-		m3_main();
+
+	init_module_nams();
+	uint32_t tot_m = bjk_get_tot_modules();
+	all_mod_addr = bj_malloc32(bj_addr_t, tot_m);
+	bjk_fill_module_external_addresses(all_mod_nams, all_mod_addr);
+
+	if(BJK_GLB_SYS->the_core_nn == 0){	
+		//print_module_nams();
+		//print_module_addrs();
+		bool ok = bjk_load_module(all_mod_addr[MOD2_IDX]);
+		if(ok){
+			m2_main();
+		}
 	}
+	if(BJK_GLB_SYS->the_core_nn == 1){	
+		//print_module_nams();
+		//print_module_addrs();
+		bool ok = bjk_load_module(all_mod_addr[MOD1_IDX]);
+		if(ok){
+			m1_main();
+		}
+	}
+	if(BJK_GLB_SYS->the_core_nn == 3){	
+		//print_module_nams();
+		//print_module_addrs();
+		bool ok = bjk_load_module(all_mod_addr[MOD3_IDX]);
+		if(ok){
+			m3_main();
+		}
+	}
+	bjk_slog2("______________________\n");
+
 	bjk_glb_finish();
 	return 0;
 }

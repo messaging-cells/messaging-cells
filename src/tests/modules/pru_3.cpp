@@ -4,20 +4,21 @@
 #include "common.h"
 
 void m3_f1_shd(){
-	prts("m3_f1_shd \n");		
+	prts("mm3_f1_shd \n");		
 }
 
 void m3_f2_shd(){
-	prts("m3_f2_shd \n");		
+	prts("mm3_f2_shd \n");		
 }
 
+char* msg3 bj_mod3_dat = const_cast<char*>("mm3_f3_core \n");
 void m3_f3_core(){
-	prts("m3_f3_core \n");		
+	prts(msg3);
 }
 
 
 void m3_main() {
-	prts("STARTED m3_main !!\n");	
+	prts("STARTED mm3_main !!\n");	
 
 	m3_f1_shd();
 	m3_f3_core();
@@ -25,6 +26,6 @@ void m3_main() {
 
 	comm_f1_core();
 
-	prts("FINISHED m3_main !!\n");	
+	prts("FINISHED mm3_main !!\n");	
 }
 

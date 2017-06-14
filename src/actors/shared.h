@@ -309,6 +309,9 @@ bj_memmove(uint8_t* dest, const uint8_t* src, bj_size_t sz) bj_external_code_ram
 uint16_t 
 bj_strlen(char* str) bj_external_code_ram;
 
+uint8_t 
+bj_strcmp(char* str1, char* str2) bj_external_code_ram;
+
 bj_inline_fn bool
 bj_isprint(char cc){
 	return ((cc >= ' ' && cc <= '~') ? true : false);

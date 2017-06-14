@@ -11,8 +11,9 @@ void m1_f2_shd(){
 	prts("m1_f2_shd \n");
 }
 
+char* msg1 bj_mod1_dat = const_cast<char*>("m1_f3_core \n");
 void m1_f3_core(){
-	prts("m1_f3_core \n");
+	prts(msg1);
 }
 
 
