@@ -21,10 +21,10 @@
 #include "shared.h"
 #include "booter.h"
 
-void bjh_read_sections_elf(const void *file, bj_link_syms_data_st* syms);
+void bjh_read_sections_elf(const void *file, mc_link_syms_data_st* syms);
 
 void
-bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms){
+bjh_read_eph_link_syms(const char *executable, mc_link_syms_data_st* syms){
 
 	int          fd;
 	struct stat  st;
@@ -33,7 +33,7 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms){
 	if(syms == NULL){
 		return;
 	}
-	memset(syms, 0, sizeof(bj_link_syms_data_st));
+	memset(syms, 0, sizeof(mc_link_syms_data_st));
 
 	e_set_host_verbosity(H_D0);
 
@@ -58,18 +58,18 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms){
 	
 	if (bjl_is_epiphany_exec_elf((Elf32_Ehdr *) file)) {
 		bjl_diag(L_D1) { 
-			fprintf(BJ_STDERR, "bjh_read_eph_link_syms(): loading ELF file %s ...\n", executable); 
+			fprintf(MC_STDERR, "bjh_read_eph_link_syms(): loading ELF file %s ...\n", executable); 
 		}
 	} else {
 		bjl_diag(L_D1) { 
-			fprintf(BJ_STDERR, "bjh_read_eph_link_syms(): ERROR: unidentified file format\n"); 
+			fprintf(MC_STDERR, "bjh_read_eph_link_syms(): ERROR: unidentified file format\n"); 
 		}
 		warnx("ERROR: Can't load executable file: unidentified format.\n");
 		goto out;
 	}
 
 	bjh_read_sections_elf(file, syms);
-	bj_extnl_ram_load_data_fill(syms);
+	mc_extnl_ram_load_data_fill(syms);
 
 out:
 	munmap(file, st.st_size);
@@ -77,7 +77,7 @@ out:
 }
 
 void
-bjh_read_sections_elf(const void *file, bj_link_syms_data_st* syms)
+bjh_read_sections_elf(const void *file, mc_link_syms_data_st* syms)
 {
 	int ii;
 	Elf32_Ehdr *ehdr;
@@ -111,8 +111,8 @@ bjh_read_sections_elf(const void *file, bj_link_syms_data_st* syms)
 
 		const char* sect_nm = &strtab[shdr[ii].sh_name];
 
-		if(strcmp(sect_nm, bj_lk_syms_section_nm) != 0){
-			bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjh_read_sections_elf(): section=%s\n", sect_nm); }
+		if(strcmp(sect_nm, mc_lk_syms_section_nm) != 0){
+			bjl_diag(L_D1) { fprintf(MC_STDERR, "bjh_read_sections_elf(): section=%s\n", sect_nm); }
 			continue;
 		}
 
@@ -121,10 +121,10 @@ bjh_read_sections_elf(const void *file, bj_link_syms_data_st* syms)
 
 		//uint8_t* pt_src_end = pt_src + blk_sz;
 
-		bj_link_syms_data_st* pt_syms = (bj_link_syms_data_st*)pt_src;
+		mc_link_syms_data_st* pt_syms = (mc_link_syms_data_st*)pt_src;
 		*syms = *pt_syms;
 
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjh_read_sections_elf(): FOUND section=%s\n", sect_nm); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "bjh_read_sections_elf(): FOUND section=%s\n", sect_nm); }
 		break;
 	}
 }

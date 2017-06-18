@@ -7,14 +7,14 @@
 #include "attribute.h"
 
 #ifdef __cplusplus
-bj_c_decl {
+mc_c_decl {
 #endif
 
-void m3_f1_shd() bj_external_code_ram;
-void m3_f2_shd() bj_external_code_ram;
+void m3_f1_shd() mc_external_code_ram;
+void m3_f2_shd() mc_external_code_ram;
 
-void m3_f3_core() bj_mod3_cod;
-void m3_main() bj_mod3_cod;
+void m3_f3_core() mc_mod3_cod;
+void m3_main() mc_mod3_cod;
 
 #ifdef __cplusplus
 }

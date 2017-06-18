@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "booter.h"
-#include "actor.hh"
+#include "cell.hh"
 
 #include "resp_conf.h"
 
@@ -15,15 +15,15 @@ recv_host_handler(missive* msg){
 	BJK_UPDATE_MIN_SP();
 	EMU_PRT("RCV_MSV=%p \n", msg);
 	EMU_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
-	EMU_PRT("RCV_CORE_ID=%x \n", bj_addr_get_id(msg->dst));
+	EMU_PRT("RCV_CORE_ID=%x \n", mc_addr_get_id(msg->dst));
 	EMU_PRT("RCV_GLB_CORE_ID=%x \n", BJK_GLB_SYS->the_core_id);
 	printf("HOST_RECEIVED_MSV !!!\n");
 
-	EMU_CK(bj_addr_is_local(msg->dst));
-	bj_core_id_t koid = kernel::get_core_id();
-	BJ_MARK_USED(koid);
-	bj_core_nn_t konn = kernel::get_core_nn();
-	BJ_MARK_USED(konn);
+	EMU_CK(mc_addr_is_local(msg->dst));
+	mc_core_id_t koid = kernel::get_core_id();
+	MC_MARK_USED(koid);
+	mc_core_nn_t konn = kernel::get_core_nn();
+	MC_MARK_USED(konn);
 
 
 	EMU_LOG("recv_host_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
@@ -48,16 +48,16 @@ send_host_main(){
 
 	kernel::set_handlers(1, host_handlers);
 
-	actor::separate(bj_out_num_cores);
-	missive::separate(bj_out_num_cores);
-	agent_ref::separate(bj_out_num_cores);
-	agent_grp::separate(bj_out_num_cores);
+	cell::separate(mc_out_num_cores);
+	missive::separate(mc_out_num_cores);
+	agent_ref::separate(mc_out_num_cores);
+	agent_grp::separate(mc_out_num_cores);
 
 	//bjk_slog2("HOST started\n");
-	kernel::get_core_actor()->handler_idx = 0;	// was 0 but it should be inited for every actors's subclass.
+	kernel::get_core_cell()->handler_idx = 0;	// was 0 but it should be inited for every cells's subclass.
 
-	bj_size_t off_all_agts = bj_offsetof(&missive_grp_t::all_agts);
-	BJ_MARK_USED(off_all_agts);
+	mc_size_t off_all_agts = mc_offsetof(&missive_grp_t::all_agts);
+	MC_MARK_USED(off_all_agts);
 
 	printf("HOST STARTING ==================================== \n");
 	ZNQ_CODE(printf("off_all_agts=%d \n", off_all_agts));
@@ -68,7 +68,7 @@ send_host_main(){
 	printf("ALL FINISHED ==================================== \n");
 }
 
-int bj_host_main(int argc, char *argv[])
+int mc_host_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		bjh_epiphany_elf_path = argv[1];

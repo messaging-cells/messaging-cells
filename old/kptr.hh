@@ -16,37 +16,37 @@ kptr class.
 //=================================================================
 // kptr
 
-template <typename obj_t, const uint8_t*& base_ptr> class kptr
+template <typename omc_t, const uint8_t*& base_ptr> class kptr
 {
     public:
     uint16_t    disp; // addr disp with respect to base_ptr
 
-    kptr() : disp(bj_null){}
-    kptr(obj_t* pt) : disp((uint16_t)((uint8_t*)pt - base_ptr)){}
-	kptr(const kptr<obj_t, base_ptr>& kp) : disp(kp.disp){}
-    ~kptr(){ disp = bj_null; }
+    kptr() : disp(mc_null){}
+    kptr(omc_t* pt) : disp((uint16_t)((uint8_t*)pt - base_ptr)){}
+	kptr(const kptr<omc_t, base_ptr>& kp) : disp(kp.disp){}
+    ~kptr(){ disp = mc_null; }
 
-	bj_opt_sz_fn
-    obj_t& operator* (){
-		obj_t* pt = (obj_t*)(base_ptr + disp);
+	mc_opt_sz_fn
+    omc_t& operator* (){
+		omc_t* pt = (omc_t*)(base_ptr + disp);
         return *pt;
     }
 
-	bj_opt_sz_fn
-    obj_t* operator-> (){
-		obj_t* pt = (obj_t*)(base_ptr + disp);
+	mc_opt_sz_fn
+    omc_t* operator-> (){
+		omc_t* pt = (omc_t*)(base_ptr + disp);
         return pt;
     }
 
-	bj_opt_sz_fn
-	kptr<obj_t, base_ptr>& operator = (const kptr<obj_t, base_ptr>& kp){
+	mc_opt_sz_fn
+	kptr<omc_t, base_ptr>& operator = (const kptr<omc_t, base_ptr>& kp){
 		disp = kp.disp;
 		return *this;
 	}
 
-	bj_opt_sz_fn
-	operator obj_t* () const {
-		obj_t* pt = (obj_t*)(base_ptr + disp);
+	mc_opt_sz_fn
+	operator omc_t* () const {
+		omc_t* pt = (omc_t*)(base_ptr + disp);
         return pt;
     }
 };

@@ -9,13 +9,13 @@ Wrapper for string class.
 --------------------------------------------------------------*/
 
 
-#ifndef BJ_STRING_H
-#define BJ_STRING_H
+#ifndef MC_STRING_H
+#define MC_STRING_H
 
 #include <string>
 #include <iostream>
 #include <sstream>
-#include <fstream>	// used for bj_ofstream
+#include <fstream>	// used for mc_ofstream
 
 typedef std::string bjh_string_t;
 typedef std::ostream bjh_ostream_t;
@@ -27,6 +27,6 @@ typedef std::ofstream bjh_ofstream_t;
 
 #define bjh_eol std::endl
 
-#endif // BJ_STRING_H
+#endif // MC_STRING_H
 
 

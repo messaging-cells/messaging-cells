@@ -1,7 +1,7 @@
 
-#include "actor.hh"
+#include "cell.hh"
 
-class hello : public actor {
+class hello : public cell {
 public:
 	char f1;
 	void handler_1(missive* msv);
@@ -12,16 +12,16 @@ hello::handler_1(missive* msv){
 	bjk_slog2("HELLO_CLASS\n");	
 }
 
-typedef void (actor::*bj_handler_t)(missive* msv);
+typedef void (cell::*mc_handler_t)(missive* msv);
 
-void bj_cores_main() {
+void mc_cores_main() {
 	bjk_glb_init();
 
 	hello ob1;
 
-	bj_handler_t pt_fun = (bj_handler_t)(&hello::handler_1);
+	mc_handler_t pt_fun = (mc_handler_t)(&hello::handler_1);
 
-	(ob1.*pt_fun)(bj_null);
+	(ob1.*pt_fun)(mc_null);
 
 	bjk_glb_finish();
 }

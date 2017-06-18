@@ -8,20 +8,20 @@
 
 #include "umm_malloc.h"
 #include "global.h"
-#include "actor.hh"
+#include "cell.hh"
 #include "booter.h"
 
 #define NAMELEN 16
 
 struct emu_info_st {    // Used as argument to thread_start() 
 	pthread_t 		emu_id;        // id returned by pthread_create() 
-	bj_core_nn_t	emu_num;       // core consec
+	mc_core_nn_t	emu_num;       // core consec
 	char 			emu_name[NAMELEN];
 
 	void 		(*emu_core_func)();
 
-	bj_core_id_t 	emu_core_id;	// core id as in epiphany arch
-	bj_sys_sz_st 	emu_system_sz;
+	mc_core_id_t 	emu_core_id;	// core id as in epiphany arch
+	mc_sys_sz_st 	emu_system_sz;
 	bjk_glb_sys_st	emu_glb_sys_data;
 	kernel 			emu_THE_KERNEL;
 };
@@ -48,7 +48,7 @@ bjk_get_thread_idx();
 emu_info_t*
 bjk_get_emu_info();
 
-bj_inline_fn bool
+mc_inline_fn bool
 bjm_addr_in_host(void* addr){
 	uint8_t* pt = (uint8_t*)addr;
 	uint8_t* hh = (uint8_t*)bjm_dlmalloc_heap;
@@ -57,7 +57,7 @@ bjm_addr_in_host(void* addr){
 	return false;
 }
 
-bj_inline_fn bool
+mc_inline_fn bool
 bjk_addr_in_cores(void* addr){
 	uint8_t* pt = (uint8_t*)addr;
 	uint8_t* hh = (uint8_t*)ALL_THREADS_INFO;
@@ -66,39 +66,39 @@ bjk_addr_in_cores(void* addr){
 	return false;
 }
 
-bj_inline_fn bj_core_nn_t
+mc_inline_fn mc_core_nn_t
 bjk_get_addr_idx(void* addr){
 	EMU_CK(bjk_addr_in_cores(addr));
-	bj_core_nn_t idx = (bj_core_nn_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t));
+	mc_core_nn_t idx = (mc_core_nn_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t));
 	return idx;
 }
 
-bj_inline_fn uintptr_t
+mc_inline_fn uintptr_t
 bjk_get_addr_offset(void* addr){
 	EMU_CK(bjk_addr_in_cores(addr));
 	uintptr_t ofs = (uintptr_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) % sizeof(thread_info_t));
 	return ofs;
 }
 
-bj_core_id_t
+mc_core_id_t
 bjm_get_addr_core_id_fn(void* addr);
 
 void*
-bjm_addr_with_fn(bj_core_id_t id, void* addr);
+bjm_addr_with_fn(mc_core_id_t id, void* addr);
 
-bj_inline_fn bool
-bj_is_host_thread(){
+mc_inline_fn bool
+mc_is_host_thread(){
 	return (pthread_self() == HOST_THREAD_ID);
 }
 
 void
-bj_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str);
+mc_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str);
 
 void *
 thread_start(void *arg);
 
 #ifdef __cplusplus
-bj_c_decl {
+mc_c_decl {
 #endif
 
 

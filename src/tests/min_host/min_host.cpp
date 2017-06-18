@@ -1,12 +1,12 @@
 
 #include <stdio.h>
 
-#include "actor.hh"
+#include "cell.hh"
 #include "booter.h"
 
 char* bjh_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
-int bj_host_main(int argc, char *argv[])
+int mc_host_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		bjh_epiphany_elf_path = argv[1];
@@ -20,20 +20,20 @@ int bj_host_main(int argc, char *argv[])
 	/*
 	kernel* ker = BJK_KERNEL;
 
-	bj_core_id_t koid = ker->get_core_id(); 
-	//bj_addr_t addr_0 = bj_addr_set_id(koid, 0);
+	mc_core_id_t koid = ker->get_core_id(); 
+	//mc_addr_t addr_0 = mc_addr_set_id(koid, 0);
 
-	//bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
-	//bj_addr_t addr_0 = (bj_addr_t)bjh_disp_to_pt(lk_dat->extnl_host_alloc_disp);
+	//mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
+	//mc_addr_t addr_0 = (mc_addr_t)bjh_disp_to_pt(lk_dat->extnl_host_alloc_disp);
 
-	actor* act1 = kernel::get_core_actor();
+	cell* act1 = kernel::get_core_cell();
 
-	bj_addr_t eph_act1 = bj_znq_addr_to_eph_addr((bj_addr_t)act1);
+	mc_addr_t eph_act1 = mc_znq_addr_to_eph_addr((mc_addr_t)act1);
 
-	bj_core_id_t koid2 = bj_addr_get_id(eph_act1);
+	mc_core_id_t koid2 = mc_addr_get_id(eph_act1);
 
-	printf("CORE_ID=%p Kactor=%p koid2=%p eph_act1=%p \n", 
-		(void*)(bj_addr_t)koid, act1, (void*)(bj_addr_t)koid2, (void*)eph_act1);
+	printf("CORE_ID=%p Kcell=%p koid2=%p eph_act1=%p \n", 
+		(void*)(mc_addr_t)koid, act1, (void*)(mc_addr_t)koid2, (void*)eph_act1);
 
 	//kernel::run_host_sys();
 	*/

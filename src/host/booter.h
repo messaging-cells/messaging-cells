@@ -1,8 +1,8 @@
 
 // attribute.h
 
-#ifndef BJ_BOOTER_H
-#define BJ_BOOTER_H
+#ifndef MC_BOOTER_H
+#define MC_BOOTER_H
 
 #include <stdio.h>
 
@@ -12,20 +12,20 @@
 #include "global.h"
 
 #ifdef __cplusplus
-bj_c_decl {
+mc_c_decl {
 #endif
 
 #define KBY_SZ 1024
 #define MBY_SZ 1048576
 
-#define BJ_STDERR stderr
+#define MC_STDERR stderr
 
-#define BJ_PURE_LOCAL_ADDR 3
-#define BJ_CORE_LOCAL_ADDR 4
-#define BJ_EXTE_LOCAL_ADDR 5
+#define MC_PURE_LOCAL_ADDR 3
+#define MC_CORE_LOCAL_ADDR 4
+#define MC_EXTE_LOCAL_ADDR 5
 
 
-extern bj_link_syms_data_st 	bjh_external_ram_load_data;
+extern mc_link_syms_data_st 	bjh_external_ram_load_data;
 
 #define bjh_disp_to_extnal_ram_pt(disp) (the_str)
 
@@ -45,7 +45,7 @@ bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, cons
 bool
 bjh_file_append(char* the_pth, char* the_data, long the_sz);
 
-bool bjh_ck_sys_data(bj_sys_sz_st* sys1);
+bool bjh_ck_sys_data(mc_sys_sz_st* sys1);
 
 void
 bjh_prt_exception(bjk_glb_sys_st* sh_dat);
@@ -54,19 +54,19 @@ int
 bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat);
 
 bool
-bjh_rr_ck_zero(bj_rrarray_st* arr);
+bjh_rr_ck_zero(mc_rrarray_st* arr);
 
 void
-bjh_rr_print(bj_rrarray_st* arr);
+bjh_rr_print(mc_rrarray_st* arr);
 
 int
-bjh_type_sz(bj_type_t tt);
+bjh_type_sz(mc_type_t tt);
 
 void
 bjh_reset_log_file(char* f_nm);
 
 void
-bjh_print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core);
+bjh_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core);
 
 uint8_t*
 bjh_read_file(char* the_pth, off_t* size);
@@ -78,16 +78,16 @@ int
 bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
 
 void
-bjh_get_enter(bj_core_co_t row, bj_core_co_t col);
+bjh_get_enter(mc_core_co_t row, mc_core_co_t col);
 
 void
 bjh_ptr_call_stack_trace();
 
 void
-bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
+bjh_read_eph_link_syms(const char *executable, mc_link_syms_data_st* syms);
 
 #define	BJH_DBG_COND_COMM(cond, comm)	\
-	BJ_DBG( \
+	MC_DBG( \
 		if(cond){ \
 			comm; \
 			printf("\n"); \
@@ -96,7 +96,7 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 
 //--end_of_def
 
-#define BJH_CK(prm) BJ_DBG(bjh_assert(prm))
+#define BJH_CK(prm) MC_DBG(bjh_assert(prm))
 
 #define BJH_CK_2(prm, comms1) \
 	BJH_DBG_COND_COMM((! (prm)), \
@@ -108,11 +108,11 @@ bjh_read_eph_link_syms(const char *executable, bj_link_syms_data_st* syms);
 //--end_of_def
 
 
-bj_addr_t
-bj_znq_addr_to_eph_addr(bj_addr_t znq_addr);
+mc_addr_t
+mc_znq_addr_to_eph_addr(mc_addr_t znq_addr);
 
-bj_addr_t
-bj_eph_addr_to_znq_addr(bj_addr_t eph_addr);
+mc_addr_t
+mc_eph_addr_to_znq_addr(mc_addr_t eph_addr);
 
 void
 bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs);
@@ -122,5 +122,5 @@ bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs);
 }
 #endif
 
-#endif // BJ_BOOTER_H
+#endif // MC_BOOTER_H
 

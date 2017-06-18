@@ -1,11 +1,11 @@
 
 
-#ifdef BJ_IS_EMU_CODE
+#ifdef MC_IS_EMU_CODE
 #include "stdio.h"
 #endif
 
 #include "attribute.h"
-#include "actor.hh"
+#include "cell.hh"
 
 class sequence;
 
@@ -15,7 +15,7 @@ class sequence;
 
 typedef uint32_t seq_tok_t;
 
-class sequence : public actor {
+class sequence : public cell {
 public:
 	BJK_DECLARE_MEM_METHODS(sequence)
 
@@ -39,7 +39,7 @@ public:
 	}
 
 	void handler(missive* msv);
-	void send(actor* dst, seq_tok_t tok);
+	void send(cell* dst, seq_tok_t tok);
 };
 
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
@@ -65,16 +65,16 @@ sequence_handler(missive* msv){
 }
 
 missive_handler_t the_handlers[] = {
-	bj_null,
+	mc_null,
 	sequence_handler
 };
 
 void
 sequence::handler(missive* msv){
-	actor* msv_src = msv->src;
+	cell* msv_src = msv->src;
 	seq_tok_t tok = (seq_tok_t)msv->tok;
-	BJ_MARK_USED(msv_src);
-	BJ_MARK_USED(tok);
+	MC_MARK_USED(msv_src);
+	MC_MARK_USED(tok);
 
 	PH_DBG("is_sender=%d tok=%d last_recv=%d\n", is_sender, tok, last_recv);
 	EMU_CK(tok == (last_recv + 1));
@@ -96,7 +96,7 @@ sequence::handler(missive* msv){
 }
 
 void
-sequence::send(actor* dst, seq_tok_t tok){
+sequence::send(cell* dst, seq_tok_t tok){
 	last_sent = tok;
 	missive* msv = missive::acquire();
 	msv->src = this;
@@ -109,15 +109,15 @@ BJK_DEFINE_MEM_METHODS(sequence, 32, glb_ava_seq)
 
 void ker_func(){
 	kernel* ker = bjk_get_kernel();
-	bj_core_nn_t nn = ker->get_core_nn();
-	BJ_MARK_USED(ker);
-	BJ_MARK_USED(nn);
+	mc_core_nn_t nn = ker->get_core_nn();
+	MC_MARK_USED(ker);
+	MC_MARK_USED(nn);
 }
 
-void bj_cores_main() {
+void mc_cores_main() {
 	kernel::init_sys();
 	kernel* ker = bjk_get_kernel();
-	BJ_MARK_USED(ker);
+	MC_MARK_USED(ker);
 
 	if(! bjk_is_core(0,0)){
 		PH_DBG("SKIP\n");
@@ -131,9 +131,9 @@ void bj_cores_main() {
 
 	kernel::set_handlers(2, the_handlers);
 
-	missive::separate(bj_out_num_cores);
-	agent_ref::separate(bj_out_num_cores);
-	agent_grp::separate(bj_out_num_cores);
+	missive::separate(mc_out_num_cores);
+	agent_ref::separate(mc_out_num_cores);
+	agent_grp::separate(mc_out_num_cores);
 
 	PH_DBG("started\n");
 	glb_sender->is_sender = true;

@@ -23,8 +23,8 @@
   <http://www.gnu.org/licenses/>.
 */
 
-#ifndef BJ_CODE_LOADER_H
-#define BJ_CODE_LOADER_H
+#ifndef MC_CODE_LOADER_H
+#define MC_CODE_LOADER_H
 
 #include <elf.h>
 #include "e-hal.h"
@@ -45,10 +45,10 @@ extern uint8_t* BJH_EXTERNAL_RAM_BASE_PT;
 extern e_mem_t bjh_glb_emem;
 extern e_epiphany_t bjh_glb_dev;
 
-#define bjh_min_shd_eph_addr ((bj_addr_t) bjh_glb_emem.ephy_base)
-#define bjh_max_shd_eph_addr ((bj_addr_t) (bjh_glb_emem.ephy_base + BJ_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
-#define bjh_min_shd_znq_addr ((bj_addr_t) bjh_glb_emem.base)
-#define bjh_max_shd_znq_addr ((bj_addr_t) (bjh_glb_emem.base + BJ_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
+#define bjh_min_shd_eph_addr ((mc_addr_t) bjh_glb_emem.ephy_base)
+#define bjh_max_shd_eph_addr ((mc_addr_t) (bjh_glb_emem.ephy_base + MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
+#define bjh_min_shd_znq_addr ((mc_addr_t) bjh_glb_emem.base)
+#define bjh_max_shd_znq_addr ((mc_addr_t) (bjh_glb_emem.base + MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
 #define bjh_znq_addr_in_shd_ram(znq_addr) ((bjh_min_shd_znq_addr <= znq_addr) && (znq_addr < bjh_max_shd_znq_addr))
 
 #define bjh_disp_to_pt(disp) (BJH_EXTERNAL_RAM_BASE_PT + disp)
@@ -69,12 +69,12 @@ struct load_info_st {
 	char *executable;
 	e_epiphany_t *dev;
 
-	bj_core_nn_t root_nn;
+	mc_core_nn_t root_nn;
 
-	bj_core_co_t row;
-	bj_core_co_t col;
-	bj_core_co_t rows;
-	bj_core_co_t cols;
+	mc_core_co_t row;
+	mc_core_co_t col;
+	mc_core_co_t rows;
+	mc_core_co_t cols;
 
 	char**	all_module_names;
 	void**	all_module_addrs;	// as seen from ephiphany side
@@ -87,14 +87,14 @@ struct load_info_st {
 typedef struct load_info_st load_info_t;
 
 
-int bj_load_group(load_info_t *ld_dat);
+int mc_load_group(load_info_t *ld_dat);
 
 int bjl_load_root(load_info_t *ld_dat);
 
 #define DBGH_CODE_SHD_SZ 20
 
 extern uint16_t DBGH_CODE_SHD_1[DBGH_CODE_SHD_SZ];
-extern bj_addr_t DBGH_FUNC_ADDR;
+extern mc_addr_t DBGH_FUNC_ADDR;
 
 #define BJL_MAX_TOT_MODULES 1000
 
@@ -107,14 +107,14 @@ bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr);
 void
 ck_dbg_shd_code(char* msg, uint16_t* base);
 
-bj_addr_t
-bj_core_eph_addr_to_znq_addr(int row, int col, bj_addr_t ld_addr);
+mc_addr_t
+mc_core_eph_addr_to_znq_addr(int row, int col, mc_addr_t ld_addr);
 
 void
-bj_start_all_cores();
+mc_start_all_cores();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // BJ_CODE_LOADER_H
+#endif // MC_CODE_LOADER_H

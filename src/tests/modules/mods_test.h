@@ -2,10 +2,10 @@
 #ifndef MODS_TEST_H
 #define MODS_TEST_H
 
-#include "actor.hh"
+#include "cell.hh"
 
 #ifdef __cplusplus
-bj_c_decl {
+mc_c_decl {
 #endif
 
 #ifdef __cplusplus

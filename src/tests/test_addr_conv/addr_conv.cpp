@@ -29,12 +29,12 @@ static inline bool bjt_is_local(uint32_t addr)
 
 
 int 
-bj_host_main(int argc, char *argv[])
+mc_host_main(int argc, char *argv[])
 {
 	e_mem_t emem;
 	e_epiphany_t dev;
 	e_platform_t platform;
-	bj_link_syms_data_st syms;
+	mc_link_syms_data_st syms;
 	char* elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
 
 	if(argc > 1){
@@ -42,7 +42,7 @@ bj_host_main(int argc, char *argv[])
 		printf("Using core executable: %s \n", elf_path);
 	}
 
-	bj_link_syms_data_st* lk_dat = &(syms);
+	mc_link_syms_data_st* lk_dat = &(syms);
 	bjh_read_eph_link_syms(elf_path, lk_dat);
 
 	if(lk_dat->extnl_ram_orig == 0) {
@@ -62,17 +62,17 @@ bj_host_main(int argc, char *argv[])
 	}
 
 	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
-	BJ_MARK_USED(BJH_EXTERNAL_RAM_BASE_PT);
+	MC_MARK_USED(BJH_EXTERNAL_RAM_BASE_PT);
 
 	// dev init
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
-	bj_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
+	mc_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
 	bjh_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
-	bj_off_sys_st* pt_shd_data = (bj_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_host_data_disp);
-	BJH_CK(sizeof(*pt_shd_data) == sizeof(bj_off_sys_st));
+	mc_off_sys_st* pt_shd_data = (mc_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_host_data_disp);
+	BJH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 
 	/*
 	printf("BJH_EXTERNAL_RAM_BASE_PT=%p \n", BJH_EXTERNAL_RAM_BASE_PT);
@@ -98,7 +98,7 @@ bj_host_main(int argc, char *argv[])
 
 	//============================================================
 
-	bj_core_co_t row, col, max_row, max_col;
+	mc_core_co_t row, col, max_row, max_col;
 
 	void* min_shd = (void*)BJH_EXTERNAL_RAM_BASE_PT;
 	void* max_shd = (void*)(BJH_EXTERNAL_RAM_BASE_PT + lk_dat->extnl_ram_size);
@@ -124,7 +124,7 @@ bj_host_main(int argc, char *argv[])
 	for(long kk=0; kk < NUM_OPERS; kk++) {
 		printf("%ld\r", kk);
 		//long ii = gg.gen_rand_int32_ie(0, TEST_NUM_PTS);
-		//long osz = gg.gen_rand_int32_ie(MIN_OBJ_SZ, MAX_OBJ_SZ);
+		//long osz = gg.gen_rand_int32_ie(MIN_OMC_SZ, MAX_OMC_SZ);
 		uint32_t ld_addr = gg.gen_rand_int32();
 		//uint32_t ld_addr = gg.gen_rand_int32_ie(0, 1000);
 
@@ -133,16 +133,16 @@ bj_host_main(int argc, char *argv[])
 		bool isexternal = ((! islocal) && (! isonchip));
 
 		unsigned coreid = ld_addr >> 20;
-		bj_addr_t coreid_2 = bj_addr_get_id(ld_addr);
+		mc_addr_t coreid_2 = mc_addr_get_id(ld_addr);
 
 		BJH_CK(coreid == coreid_2);
 
 		bool islocal_2 = (coreid_2 == 0);
-		bool isonchip_2 = bj_addr_in_sys(ld_addr);
+		bool isonchip_2 = mc_addr_in_sys(ld_addr);
 		bool isexternal_2 = ((! islocal) && (! isonchip));
 
 		//printf("%" PRIu32 " == %p  coreid=%u \n", ld_addr, (void*)ld_addr, coreid);
-		bool islocal_3 = ! bj_addr_has_id(ld_addr);
+		bool islocal_3 = ! mc_addr_has_id(ld_addr);
 		
 		BJH_CK(islocal == islocal_2);
 		BJH_CK(islocal == islocal_3);
@@ -152,8 +152,8 @@ bj_host_main(int argc, char *argv[])
 		if(!islocal && isonchip){
 			unsigned  globrow, globcol;
 			ee_get_coords_from_id(&dev, coreid, &globrow, &globcol);
-			bj_core_co_t g_ro = bj_id_to_ro(coreid);
-			bj_core_co_t g_co = bj_id_to_co(coreid);
+			mc_core_co_t g_ro = mc_id_to_ro(coreid);
+			mc_core_co_t g_co = mc_id_to_co(coreid);
 
 			//printf("coreid=%p \n", (void*)coreid);
 			//printf("g_ro=%d globrow=%d\n", g_ro, globrow);

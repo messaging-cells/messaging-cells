@@ -1,8 +1,8 @@
 
-#include "actor.hh"
+#include "cell.hh"
 
 void func_1(int aa){
-	bjk_abort((bj_addr_t)func_1, const_cast<char*>("Forced abort in backtrace test"));
+	bjk_abort((mc_addr_t)func_1, const_cast<char*>("Forced abort in backtrace test"));
 }
 
 void func_2(char bb, int aa){
@@ -13,7 +13,7 @@ void func_3(char* cc, int aa){
 	func_2('x', aa * 7);
 }
 
-void bj_cores_main() {
+void mc_cores_main() {
 	bjk_glb_init();
 
 	bjk_slog2("BACKTRACE_TEST\n");	

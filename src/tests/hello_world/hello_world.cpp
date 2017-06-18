@@ -1,7 +1,7 @@
 
-#include "actor.hh"
+#include "cell.hh"
 
-void bj_cores_main() {
+void mc_cores_main() {
 	//bjk_glb_init();
 	kernel::init_sys();
 

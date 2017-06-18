@@ -1,5 +1,5 @@
 /*
-  bj-modules.ldf
+  mc-modules.ldf
 */
 
 OUTPUT_FORMAT("elf32-epiphany", "elf32-epiphany", "elf32-epiphany")

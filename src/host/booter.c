@@ -17,7 +17,7 @@
 
 //include "test_align.h"
 
-bj_link_syms_data_st bjh_external_ram_load_data;
+mc_link_syms_data_st bjh_external_ram_load_data;
 
 bool BJH_LOAD_WITH_MEMCPY = false;
 
@@ -34,7 +34,7 @@ bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, cons
 	
 	if(! vv_ck){
 		fprintf(stderr, "ASSERT '%s' FAILED\nFILE= %s\nLINE=%d \n", ck_str, file, line);
-		//bj_out << get_stack_trace(file, line) << bj_eol;
+		//mc_out << get_stack_trace(file, line) << mc_eol;
 		if(msg != NULL){
 			fprintf(stderr, "MSG=%s\n", msg);
 		}
@@ -57,8 +57,8 @@ bjh_file_append(char* the_pth, char* the_data, long the_sz){
 	return true;
 }
 
-bool bjh_ck_sys_data(bj_sys_sz_st* sys1){
-	bj_sys_sz_st* sys0 = BJK_GLB_SYS_SZ;
+bool bjh_ck_sys_data(mc_sys_sz_st* sys1){
+	mc_sys_sz_st* sys0 = BJK_GLB_SYS_SZ;
 	BJH_CK(sys1->xx == sys0->xx);
 	BJH_CK(sys1->yy == sys0->yy);
 	BJH_CK(sys1->xx_sz == sys0->xx_sz);
@@ -79,11 +79,11 @@ bjh_prt_exception(bjk_glb_sys_st* sh_dat){
 }
 
 int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
-	if(sh_dat->magic_id != BJ_MAGIC_ID){
+	if(sh_dat->magic_id != MC_MAGIC_ID){
 		fprintf(stderr, "ERROR with inco.magic_id (0x%08x)\n", sh_dat->magic_id);
 		return 1;
 	}
-	if(sh_dat->magic_end != BJ_MAGIC_END){
+	if(sh_dat->magic_end != MC_MAGIC_END){
 		fprintf(stderr, "ERROR with inco.magic_end (0x%08x)\n", sh_dat->magic_end);
 		return 1;
 	}
@@ -101,7 +101,7 @@ int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
 	fprintf(stderr, "kernel_sz=%d \n", sh_dat->kernel_sz);
 	/*
 	fprintf(stderr, "agent_sz=%d \n", sh_dat->agent_sz);
-	fprintf(stderr, "actor_sz=%d \n", sh_dat->actor_sz);
+	fprintf(stderr, "cell_sz=%d \n", sh_dat->cell_sz);
 	fprintf(stderr, "missive_sz=%d \n", sh_dat->missive_sz);
 	fprintf(stderr, "agent_grp_sz=%d \n", sh_dat->agent_grp_sz);
 	fprintf(stderr, "agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
@@ -125,8 +125,8 @@ int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
 }
 
 bool
-bjh_rr_ck_zero(bj_rrarray_st* arr){
-	if(arr == bj_null){
+bjh_rr_ck_zero(mc_rrarray_st* arr){
+	if(arr == mc_null){
 		return true;
 	}
 	uint8_t* dat = arr->data;
@@ -140,8 +140,8 @@ bjh_rr_ck_zero(bj_rrarray_st* arr){
 }
 
 void
-bjh_rr_print(bj_rrarray_st* arr){
-	if(arr == bj_null){
+bjh_rr_print(mc_rrarray_st* arr){
+	if(arr == mc_null){
 		return;
 	}
 	printf("#####################################\n");
@@ -168,23 +168,23 @@ bjh_rr_print(bj_rrarray_st* arr){
 }
 
 int
-bjh_type_sz(bj_type_t tt){
+bjh_type_sz(mc_type_t tt){
 	int sz = 0;
 	switch(tt){
-		case BJ_CHR:
-		case BJ_I8:
-		case BJ_UI8:
-		case BJ_X8:
+		case MC_CHR:
+		case MC_I8:
+		case MC_UI8:
+		case MC_X8:
 			sz = 1;
 			break;
-		case BJ_I16:
-		case BJ_UI16:
-		case BJ_X16:
+		case MC_I16:
+		case MC_UI16:
+		case MC_X16:
 			sz = 2;
 			break;
-		case BJ_I32:
-		case BJ_UI32:
-		case BJ_X32:
+		case MC_I32:
+		case MC_UI32:
+		case MC_X32:
 			sz = 4;
 			break;
 	}
@@ -203,69 +203,69 @@ bjh_reset_log_file(char* f_nm){
 }
 
 void
-bjh_print_out_buffer(bj_rrarray_st* arr, char* f_nm, bj_core_nn_t num_core){
+bjh_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 	int log_fd = 0;
 	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
 		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
 		return;
 	}
 
-	uint8_t obj[BJ_OUT_BUFF_MAX_OBJ_SZ];
+	uint8_t obj[MC_OUT_BUFF_MAX_OMC_SZ];
 	while(true){
-		uint16_t obj_sz = bj_rr_read_obj(arr, BJ_OUT_BUFF_MAX_OBJ_SZ, obj);
-		if(obj_sz == 0){
+		uint16_t omc_sz = mc_rr_read_obj(arr, MC_OUT_BUFF_MAX_OMC_SZ, obj);
+		if(omc_sz == 0){
 			if(arr->rd_err != -4){
 				break;
 			}
 		} else {
-			if(obj_sz < 2){
+			if(omc_sz < 2){
 				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
 				continue;
 			}
 			int fd = STDOUT_FILENO;
-			if(obj[0] == BJ_OUT_LOG){
+			if(obj[0] == MC_OUT_LOG){
 				fd = log_fd;
 			} 
-			bj_type_t ot = (bj_type_t)obj[1];
-			if(ot == BJ_CHR){
-				write(fd, obj + 2, obj_sz - 2);
+			mc_type_t ot = (mc_type_t)obj[1];
+			if(ot == MC_CHR){
+				write(fd, obj + 2, omc_sz - 2);
 				continue;
 			}
 			int osz = bjh_type_sz(ot);
-			int tot = (obj_sz - 2) / osz;
+			int tot = (omc_sz - 2) / osz;
 			int aa;
 			uint8_t* pt_num = obj + 2;
 			for(aa = 0; aa < tot; aa++, pt_num += osz){
 				int istrsz = 50;
 				char istr[istrsz];
 				switch(ot){
-					case BJ_CHR:
+					case MC_CHR:
 						break;
-					case BJ_I8:
+					case MC_I8:
 						snprintf(istr, istrsz, "%" PRId8 , *((int8_t*)pt_num));
 						break;
-					case BJ_I16:
+					case MC_I16:
 						snprintf(istr, istrsz, "%" PRId16 , *((int16_t*)pt_num));
 						break;
-					case BJ_I32:
+					case MC_I32:
 						snprintf(istr, istrsz, "%" PRId32 , *((int32_t*)pt_num));
 						break;
-					case BJ_UI8:
+					case MC_UI8:
 						snprintf(istr, istrsz, "%" PRIu8 , *((uint8_t*)pt_num));
 						break;
-					case BJ_UI16:
+					case MC_UI16:
 						snprintf(istr, istrsz, "%" PRIu16 , *((uint16_t*)pt_num));
 						break;
-					case BJ_UI32:
+					case MC_UI32:
 						snprintf(istr, istrsz, "%" PRIu32 , *((uint32_t*)pt_num));
 						break;
-					case BJ_X8:
+					case MC_X8:
 						snprintf(istr, istrsz, "0x%02x", *((uint8_t*)pt_num));
 						break;
-					case BJ_X16:
+					case MC_X16:
 						snprintf(istr, istrsz, "0x%04x", *((uint16_t*)pt_num));
 						break;
-					case BJ_X32:
+					case MC_X32:
 						snprintf(istr, istrsz, "0x%08x", *((uint32_t*)pt_num));
 						break;
 				}
@@ -345,7 +345,7 @@ bjh_write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once){
 }
 
 void
-bjh_get_enter(bj_core_co_t row, bj_core_co_t col){
+bjh_get_enter(mc_core_co_t row, mc_core_co_t col){
 	// CONTINUE
 	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
 	getchar();

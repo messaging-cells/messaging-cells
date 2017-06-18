@@ -95,7 +95,7 @@ int bjh_read_eph_elf_syms(const char *elf_nm, int addrs_sz, void** syms_addrs)
 		if(kk == addrs_sz){
 			break;
 		}
-		if(syms_addrs[kk] == bj_null){
+		if(syms_addrs[kk] == mc_null){
 			break;
 		}
 		printf("%s = %p\n", nams[kk], syms_addrs[kk]);

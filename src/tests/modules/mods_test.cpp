@@ -1,15 +1,15 @@
 
 
-#include "actor.hh"
+#include "cell.hh"
 #include "pru_1.h"
 #include "pru_2.h"
 #include "pru_3.h"
 
-bj_c_decl int main();
+mc_c_decl int main();
 
-char* m1_nam bj_external_data_ram = const_cast<char*>("module1");
-char* m2_nam bj_external_data_ram = const_cast<char*>("module2");
-char* m3_nam bj_external_data_ram = const_cast<char*>("module3");
+char* m1_nam mc_external_data_ram = const_cast<char*>("module1");
+char* m2_nam mc_external_data_ram = const_cast<char*>("module2");
+char* m3_nam mc_external_data_ram = const_cast<char*>("module3");
 
 #define TOT_MODS 3
 
@@ -17,11 +17,11 @@ char* m3_nam bj_external_data_ram = const_cast<char*>("module3");
 #define MOD2_IDX 2
 #define MOD3_IDX 0
 
-char* all_mod_nams[TOT_MODS] bj_external_data_ram;
-bj_addr_t* all_mod_addr;
+char* all_mod_nams[TOT_MODS] mc_external_data_ram;
+mc_addr_t* all_mod_addr;
 
 void
-init_module_nams() bj_external_code_ram;
+init_module_nams() mc_external_code_ram;
 
 void
 init_module_nams(){
@@ -32,7 +32,7 @@ init_module_nams(){
 
 
 void
-print_module_nams() bj_external_code_ram;
+print_module_nams() mc_external_code_ram;
 
 void
 print_module_nams(){
@@ -47,7 +47,7 @@ print_module_nams(){
 }
 
 void
-print_module_addrs() bj_external_code_ram;
+print_module_addrs() mc_external_code_ram;
 
 void
 print_module_addrs(){
@@ -64,7 +64,7 @@ print_module_addrs(){
 }
 
 void
-link_all_modules_aux_fn() bj_external_code_ram;
+link_all_modules_aux_fn() mc_external_code_ram;
 
 void
 link_all_modules_aux_fn(){
@@ -79,7 +79,7 @@ int main() {
 
 	init_module_nams();
 	uint32_t tot_m = bjk_get_tot_modules();
-	all_mod_addr = bj_malloc32(bj_addr_t, tot_m);
+	all_mod_addr = mc_malloc32(mc_addr_t, tot_m);
 	bjk_fill_module_external_addresses(all_mod_nams, all_mod_addr);
 
 	if(BJK_GLB_SYS->the_core_nn == 0){	

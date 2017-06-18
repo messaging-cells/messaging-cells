@@ -1,8 +1,8 @@
 
-#include "actor.hh"
+#include "cell.hh"
 #include "tak_mak.hh"
 
-void bj_cores_main() {
+void mc_cores_main() {
 	bjk_glb_init();
 
 	tak_mak gg(123);

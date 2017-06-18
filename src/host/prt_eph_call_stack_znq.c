@@ -10,7 +10,7 @@
 
 #include "shared.h"
 
-const char* stack_names[BJ_MAX_CALL_STACK_SZ];
+const char* stack_names[MC_MAX_CALL_STACK_SZ];
 
 void lookup_sections(const void *file, int addrs_sz, void** stack_addrs);
 
@@ -45,11 +45,11 @@ int bjh_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs
 
 	fprintf(stderr, "-----------------------------------\n");
 	fprintf(stderr, "CALL_STACK=[\n");
-	for(int kk = 0; kk < BJ_MAX_CALL_STACK_SZ; kk++){
+	for(int kk = 0; kk < MC_MAX_CALL_STACK_SZ; kk++){
 		if(kk == addrs_sz){
 			break;
 		}
-		if(stack_addrs[kk] == bj_null){
+		if(stack_addrs[kk] == mc_null){
 			break;
 		}
 		fprintf(stderr, "%s (%p)\n", stack_names[kk], stack_addrs[kk]);
@@ -133,7 +133,7 @@ lookup_sections(const void *file, int addrs_sz, void** stack_addrs)
 					}
 					
 					int16_t idx = find_addr(addrs_sz, stack_addrs, addr);
-					if(idx < BJ_MAX_CALL_STACK_SZ){
+					if(idx < MC_MAX_CALL_STACK_SZ){
 						if(stack_names[idx] == 0){
 							stack_names[idx] = nm2;
 							num_filled++;

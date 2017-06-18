@@ -15,45 +15,45 @@ $(eval $(SET_CROSS_COMPILE))
 
 TARGET_DIR := ./bin
 
-BJ_DBG_FLAG := -DFULL_DEBUG
+MC_DBG_FLAG := -DFULL_DEBUG
 
-BJ_LIB_DIR := ../../bin
+MC_LIB_DIR := ../../bin
 
-BJ_LDF=bj-linker-script.ldf
+MC_LDF=mc-linker-script.ldf
 
-BJ_ESDK=${EPIPHANY_HOME}
-BJ_ETOOLS=${BJ_ESDK}/tools
+MC_ESDK=${EPIPHANY_HOME}
+MC_ETOOLS=${MC_ESDK}/tools
 
-BJ_STD_EPH_CFLAGS := -Wall -std=gnu11 -ffreestanding -nostdlib -nostartfiles -fno-default-inline 
+MC_STD_EPH_CFLAGS := -Wall -std=gnu11 -ffreestanding -nostdlib -nostartfiles -fno-default-inline 
 
 CXXFLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables -fno-extern-tls-init
 CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
-BJ_STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
+MC_STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
-BJ_EPH_LDFLAGS_1 := -L${BJ_ETOOLS}/e-gnu/epiphany-elf/lib -L${BJ_ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
-BJ_EPH_LDFLAGS_2 := -L${BJ_LIB_DIR} -L${TARGET_DIR} ${BJ_EPH_LDFLAGS_1} --strip-debug -static 
-BJ_STD_EPH_LDFLAGS := -T ${BJ_LDF} ${BJ_EPH_LDFLAGS_2}
+MC_EPH_LDFLAGS_1 := -L${MC_ETOOLS}/e-gnu/epiphany-elf/lib -L${MC_ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
+MC_EPH_LDFLAGS_2 := -L${MC_LIB_DIR} -L${TARGET_DIR} ${MC_EPH_LDFLAGS_1} --strip-debug -static 
+MC_STD_EPH_LDFLAGS := -T ${MC_LDF} ${MC_EPH_LDFLAGS_2}
 
-BJ_STD_EMU_LDFLAGS := -L${BJ_LIB_DIR} -L${TARGET_DIR} 
+MC_STD_EMU_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} 
 
-BJ_ZNQ_LDFLAGS_1 := -L${BJ_ETOOLS}/host/lib 
-BJ_STD_ZNQ_LDFLAGS := -L${BJ_LIB_DIR} -L${TARGET_DIR} ${BJ_ZNQ_LDFLAGS_1} 
+MC_ZNQ_LDFLAGS_1 := -L${MC_ETOOLS}/host/lib 
+MC_STD_ZNQ_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} ${MC_ZNQ_LDFLAGS_1} 
 
-BJ_STD_C_LDLIBS := -lc -lepiphany -lgcc -lg 
-BJ_STD_ZNQ_LDLIBS := -lbjz-actor -lbjz-tak-mak -lbjz-dlmalloc -le-hal -lm 
-BJ_STD_EMU_LDLIBS := -lbjm-actor -lbjm-tak-mak -lbjm-dlmalloc -lpthread
-BJ_STD_EPH_LDLIBS := -lbjk-actor -lbjk-tak-mak 
+MC_STD_C_LDLIBS := -lc -lepiphany -lgcc -lg 
+MC_STD_ZNQ_LDLIBS := -lmcz-cell -lmcz-tak-mak -lmcz-dlmalloc -le-hal -lm 
+MC_STD_EMU_LDLIBS := -lmcm-cell -lmcm-tak-mak -lmcm-dlmalloc -lpthread
+MC_STD_EPH_LDLIBS := -lmck-cell -lmck-tak-mak 
 
-BJ_CURR_DIR := $(shell pwd)
+MC_CURR_DIR := $(shell pwd)
 
-# BJ_LIB_DIR_2 := ${BJ_CURR_DIR}/../../bin
-BJ_LIB_DIR_2 := ../../../bin
+# MC_LIB_DIR_2 := ${MC_CURR_DIR}/../../bin
+MC_LIB_DIR_2 := ../../../bin
 
-BJ_ZNQ_LIBS := ${BJ_LIB_DIR_2}/libbjz-actor.a ${BJ_LIB_DIR_2}/libbjz-tak-mak.a ${BJ_LIB_DIR_2}/libbjz-dlmalloc.a
-BJ_EMU_LIBS := ${BJ_LIB_DIR_2}/libbjm-actor.a ${BJ_LIB_DIR_2}/libbjm-tak-mak.a ${BJ_LIB_DIR_2}/libbjm-dlmalloc.a
-BJ_EPH_LIBS := ${BJ_LIB_DIR_2}/libbjk-actor.a ${BJ_LIB_DIR_2}/libbjk-tak-mak.a
+MC_ZNQ_LIBS := ${MC_LIB_DIR_2}/libmcz-cell.a ${MC_LIB_DIR_2}/libmcz-tak-mak.a ${MC_LIB_DIR_2}/libmcz-dlmalloc.a
+MC_EMU_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
+MC_EPH_LIBS := ${MC_LIB_DIR_2}/libmck-cell.a ${MC_LIB_DIR_2}/libmck-tak-mak.a
 
-BJ_STD_INCDIRS := ../../actors ../../host ${BJ_ETOOLS}/host/include
+MC_STD_INCDIRS := ../../cells ../../host ${MC_ETOOLS}/host/include
 
 #	./tak_mak_test/test_tak_mak.mk \
 #	./logs_test/logs_test.mk \

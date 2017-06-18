@@ -5,7 +5,7 @@
 #include "attribute.h"
 
 #ifdef __cplusplus
-bj_c_decl {
+mc_c_decl {
 #endif
 
 extern void* all_log_tests[];

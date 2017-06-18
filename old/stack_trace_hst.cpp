@@ -12,7 +12,7 @@ stack_trace funcs.
 #include <execinfo.h>
 #include <cstdlib>
 
-//include "bj_stream.h"
+//include "mc_stream.h"
 #include "string_hst.h"
 #include "stack_trace_hst.h"
 
@@ -22,7 +22,7 @@ bjh_print_backtrace( const bjh_string_t & file, int line ){
 	return true;
 }
 
-// USE:        bj_out << get_stack_trace( __FILE__, __LINE__ ) << bj_eol;
+// USE:        mc_out << get_stack_trace( __FILE__, __LINE__ ) << mc_eol;
 
 bjh_string_t 
 bjh_get_stack_trace( const bjh_string_t & file, int line ){

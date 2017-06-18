@@ -5,14 +5,14 @@
 //include "e-lib.h"
 
 	/*
-	bj_core_id_t dst1 = bj_ro_co_to_id(0, 0);
-	bj_core_id_t dst2 = bj_ro_co_to_id(0, 1);
+	mc_core_id_t dst1 = mc_ro_co_to_id(0, 0);
+	mc_core_id_t dst2 = mc_ro_co_to_id(0, 1);
 
 	bjk_slog2("ID 0 ="); bjk_xlog(dst1); bjk_slog2("\n");
 	bjk_slog2("ID 1 ="); bjk_xlog(dst2); bjk_slog2("\n");
 
-	dst1 = bj_ro_co_to_id(0, 2);
-	dst2 = bj_ro_co_to_id(0, 3);
+	dst1 = mc_ro_co_to_id(0, 2);
+	dst2 = mc_ro_co_to_id(0, 3);
 
 	bjk_slog2("ID 2 ="); bjk_xlog(dst1); bjk_slog2("\n");
 	bjk_slog2("ID 3 ="); bjk_xlog(dst2); bjk_slog2("\n");
@@ -31,10 +31,10 @@
 
 	ivt_entry_user
 
-	bj_asm("mov r0, #0x1ff"); 
-	bj_asm("movts imask, r0");
-	bj_asm("gie");
-	//bj_asm("movts ilatst, r0");
+	mc_asm("mov r0, #0x1ff"); 
+	mc_asm("movts imask, r0");
+	mc_asm("gie");
+	//mc_asm("movts ilatst, r0");
 
 void e_irq_set(unsigned row, unsigned col, e_irq_type_t irq)
 {
@@ -62,8 +62,8 @@ E_USER_INT     = 9,
 
 
 		BJK_MARK_PLACE(START_UGLY_WAIT);
-		//while(test_send_irq2 < 1){ bj_asm("nop"); }	
-		//for(uint32_t aa = 0; aa < 1234567; aa++){ bj_asm("nop"); }
+		//while(test_send_irq2 < 1){ mc_asm("nop"); }	
+		//for(uint32_t aa = 0; aa < 1234567; aa++){ mc_asm("nop"); }
 		BJK_MARK_PLACE(END_UGLY_WAIT);
 
 */

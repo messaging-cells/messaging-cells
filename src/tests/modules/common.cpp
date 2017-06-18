@@ -1,8 +1,8 @@
 
-#include "actor.hh"
+#include "cell.hh"
 #include "common.h"
 
-long some_glb_val bj_comm_dat = 6;
+long some_glb_val mc_comm_dat = 6;
 
 
 // THE FOLLOWING COMMENTED LINE generates code of all 
@@ -11,11 +11,11 @@ long some_glb_val bj_comm_dat = 6;
 //
 // NEVER USE GLOBAL VARIABLES (EMULATOR WILL NOT WORK)
 
-//comm_cla some_comm_obj bj_comm_dat;  
+//comm_cla some_comm_obj mc_comm_dat;  
 
 // INSTED USE GLOBAL POINTER AND EXPLICITLY INITIALIZE A START UP TIME
 
-comm_cla* some_comm_obj bj_comm_dat = bj_null;
+comm_cla* some_comm_obj mc_comm_dat = mc_null;
 
 void comm_f1_core(){
 	//comm_cla oo;
@@ -24,7 +24,7 @@ void comm_f1_core(){
 }
 
 void comm_f2_core(){
-	//actor a;
+	//cell a;
 	prts("comm_f2_core \n");
 }
 

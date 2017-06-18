@@ -1,5 +1,5 @@
 
-#include "actor.hh"
+#include "cell.hh"
 #include "pru_2.h"
 #include "common.h"
 
@@ -11,7 +11,7 @@ void m2_f2_shd(){
 	prts("m2_f2_shd \n");		
 }
 
-char* msg2 bj_mod2_dat = const_cast<char*>("m2_f3_core \n");
+char* msg2 mc_mod2_dat = const_cast<char*>("m2_f3_core \n");
 void m2_f3_core(){
 	prts(msg2);
 }

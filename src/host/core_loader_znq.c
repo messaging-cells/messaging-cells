@@ -54,7 +54,7 @@ e_return_stat_t bjl_load_elf(int row, int col, load_info_t *ld_dat);
 bjl_loader_diag_t bjl_load_verbose = L_D0;
 
 void
-bj_ck_memload(uint8_t* dst, uint8_t* src, uint32_t sz){
+mc_ck_memload(uint8_t* dst, uint8_t* src, uint32_t sz){
 	bool ok = true;
 	for(long aa = 0; aa < sz; aa++){
 		if(dst[aa] != src[aa]){
@@ -65,15 +65,15 @@ bj_ck_memload(uint8_t* dst, uint8_t* src, uint32_t sz){
 	if(! ok){
 		bjh_write_file("SOURCE_shd_mem_dump.dat", src, sz, false);
 		bjh_write_file("DEST_shd_mem_dump.dat", dst, sz, false);
-		bjh_abort_func(9, "bj_ck_memload() FAILED !! CODE_LOADING_FAILED_1 !!\n");
+		bjh_abort_func(9, "mc_ck_memload() FAILED !! CODE_LOADING_FAILED_1 !!\n");
 	}
 }
 
 uint8_t*
-bj_memload(uint8_t* dest, const uint8_t* src, uint32_t sz){
+mc_memload(uint8_t* dest, const uint8_t* src, uint32_t sz){
 	uint32_t idx = 0;
 	for(idx = 0; idx < sz; idx++){
-		bj_set_off_chip_var(dest[idx], src[idx]);
+		mc_set_off_chip_var(dest[idx], src[idx]);
 	}
 	return dest;
 }
@@ -83,27 +83,27 @@ bool bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr)
 {
 	bool ok = true;
 	if(! ehdr){ 
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjl_is_epiphany_exec_elf(): ERROR_1\n"); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "bjl_is_epiphany_exec_elf(): ERROR_1\n"); }
 		return false;
 	}
 	if(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) != 0){ 
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjl_is_epiphany_exec_elf(): NOT ELFMAG\n"); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "bjl_is_epiphany_exec_elf(): NOT ELFMAG\n"); }
 		ok = false;
 	}
 	if(ehdr->e_ident[EI_CLASS] != ELFCLASS32){
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjl_is_epiphany_exec_elf(): NOT ELFCLASS32\n"); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "bjl_is_epiphany_exec_elf(): NOT ELFCLASS32\n"); }
 		ok = false;
 	}
 	if(ehdr->e_type != ET_EXEC){
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjl_is_epiphany_exec_elf(): NOT ET_EXEC\n"); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "bjl_is_epiphany_exec_elf(): NOT ET_EXEC\n"); }
 		ok = false;
 	}
 	if(ehdr->e_version != EV_CURRENT){
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjl_is_epiphany_exec_elf(): NOT EV_CURRENT\n"); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "bjl_is_epiphany_exec_elf(): NOT EV_CURRENT\n"); }
 		ok = false;
 	}
 	if(ehdr->e_machine != EM_ADAPTEVA_EPIPHANY){
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "bjl_is_epiphany_exec_elf(): NOT EM_ADAPTEVA_EPIPHANY\n"); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "bjl_is_epiphany_exec_elf(): NOT EM_ADAPTEVA_EPIPHANY\n"); }
 		ok = false;
 	}
 
@@ -130,7 +130,7 @@ static void bjl_clear_sram(e_epiphany_t *dev, unsigned row, unsigned col,unsigne
 }
 
 e_return_stat_t
-bj_start_load(load_info_t *ld_dat){
+mc_start_load(load_info_t *ld_dat){
 	int          fd;
 	struct stat  st;
 	void        *file;
@@ -139,12 +139,12 @@ bj_start_load(load_info_t *ld_dat){
 
 	const char *executable = ld_dat->executable;
 	e_epiphany_t *dev = ld_dat->dev;
-	bj_core_co_t row = ld_dat->row;
-	bj_core_co_t col = ld_dat->col;
-	bj_core_co_t rows = ld_dat->rows;
-	bj_core_co_t cols = ld_dat->cols;
+	mc_core_co_t row = ld_dat->row;
+	mc_core_co_t col = ld_dat->col;
+	mc_core_co_t rows = ld_dat->rows;
+	mc_core_co_t cols = ld_dat->cols;
 
-	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
+	mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 
 	if (!dev) {
 		warnx("ERROR: Can't connect to Epiphany or external memory.\n");
@@ -175,14 +175,14 @@ bj_start_load(load_info_t *ld_dat){
 	uint8_t* pt_file_start = (uint8_t*)(file);
 	uint8_t* pt_file_end = pt_mem_start + st.st_size;
 	bjl_diag(L_D3) {
-		fprintf(BJ_STDERR, "load_group(): mem_beg=%p end=%p file_beg=%p end=%p\n",
+		fprintf(MC_STDERR, "load_group(): mem_beg=%p end=%p file_beg=%p end=%p\n",
 				pt_mem_start, pt_mem_end, pt_file_start, pt_file_end); 
 	}
 
 	if (bjl_is_epiphany_exec_elf((Elf32_Ehdr *) file)) {
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "load_group(): loading ELF file %s ...\n", executable); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "load_group(): loading ELF file %s ...\n", executable); }
 	} else {
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "load_group(): ERROR: unidentified file format\n"); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "load_group(): ERROR: unidentified file format\n"); }
 		warnx("ERROR: Can't load executable file: unidentified format.\n");
 		munmap(file, st.st_size);
 		close(fd);
@@ -201,10 +201,10 @@ bj_start_load(load_info_t *ld_dat){
 	return E_OK;
 }
 
-int bj_load_group(load_info_t *ld_dat){
+int mc_load_group(load_info_t *ld_dat){
 
 	e_return_stat_t ret_start;
-	ret_start = bj_start_load(ld_dat);
+	ret_start = mc_start_load(ld_dat);
 	if (ret_start == E_ERR) {
 		return E_ERR;
 	}
@@ -230,7 +230,7 @@ int bj_load_group(load_info_t *ld_dat){
 		}
 	}
 
-	bjl_diag(L_D1) { fprintf(BJ_STDERR, "load_group(): done loading.\n"); }
+	bjl_diag(L_D1) { fprintf(MC_STDERR, "load_group(): done loading.\n"); }
 
 	munmap(ld_dat->file, ld_dat->f_sz);
 	close(ld_dat->fd);
@@ -240,7 +240,7 @@ int bj_load_group(load_info_t *ld_dat){
 
 static bool bjl_is_valid_addr(uint32_t addr)
 {
-	return (! bj_addr_has_id(addr))
+	return (! mc_addr_has_id(addr))
 		|| e_is_addr_on_chip((void *) addr)
 		|| e_is_addr_in_emem(addr);
 }
@@ -254,28 +254,28 @@ static bool bjl_is_valid_range(uint32_t from, uint32_t size)
 	return bjl_is_valid_addr(from) && bjl_is_valid_addr(from + size - 1);
 }
 
-bj_addr_t
-bj_znq_addr_to_eph_addr(bj_addr_t znq_addr){
+mc_addr_t
+mc_znq_addr_to_eph_addr(mc_addr_t znq_addr){
 	BJH_CK(bjh_znq_addr_in_shd_ram(znq_addr));
 
-	bj_addr_t eph_addr = znq_addr - bjh_min_shd_znq_addr + bjh_min_shd_eph_addr;
+	mc_addr_t eph_addr = znq_addr - bjh_min_shd_znq_addr + bjh_min_shd_eph_addr;
 	
 	return eph_addr;
 }
 
-bj_addr_t
-bj_eph_addr_to_znq_addr(bj_addr_t eph_addr){
+mc_addr_t
+mc_eph_addr_to_znq_addr(mc_addr_t eph_addr){
 	e_epiphany_t *dev = &bjh_glb_dev;
 
-	BJH_CK(bj_addr_has_id(eph_addr));
+	BJH_CK(mc_addr_has_id(eph_addr));
 	
-	bj_addr_t znq_addr = bj_null;
-	if (bj_addr_in_sys(eph_addr)) {
-		bj_core_id_t coreid = bj_addr_get_id(eph_addr);
-		bj_core_co_t g_ro = bj_id_to_ro(coreid);
-		bj_core_co_t g_co = bj_id_to_co(coreid);
+	mc_addr_t znq_addr = mc_null;
+	if (mc_addr_in_sys(eph_addr)) {
+		mc_core_id_t coreid = mc_addr_get_id(eph_addr);
+		mc_core_co_t g_ro = mc_id_to_ro(coreid);
+		mc_core_co_t g_co = mc_id_to_co(coreid);
 
-		znq_addr = ((bj_addr_t) dev->core[g_ro][g_co].mems.base) + bj_addr_get_disp(eph_addr);
+		znq_addr = ((mc_addr_t) dev->core[g_ro][g_co].mems.base) + mc_addr_get_disp(eph_addr);
 
 	} else {
 		znq_addr = eph_addr - bjh_min_shd_eph_addr + bjh_min_shd_znq_addr;
@@ -283,25 +283,25 @@ bj_eph_addr_to_znq_addr(bj_addr_t eph_addr){
 	return znq_addr;
 }
 
-bj_addr_t
-bj_core_eph_addr_to_znq_addr(int row, int col, bj_addr_t ld_addr){
+mc_addr_t
+mc_core_eph_addr_to_znq_addr(int row, int col, mc_addr_t ld_addr){
 	e_epiphany_t *dev = &bjh_glb_dev;
 
-	bj_addr_t dst = bj_null;
-	if (! bj_addr_has_id(ld_addr)) {
+	mc_addr_t dst = mc_null;
+	if (! mc_addr_has_id(ld_addr)) {
 		dst = ((uintptr_t) dev->core[row][col].mems.base) + ld_addr;
 	} else {
-		dst = bj_eph_addr_to_znq_addr(ld_addr);
+		dst = mc_eph_addr_to_znq_addr(ld_addr);
 	}
 	return dst;
 }
 
 char*
-bj_addr_case(bj_addr_t ld_addr){
-	if(! bj_addr_has_id(ld_addr)){
+mc_addr_case(mc_addr_t ld_addr){
+	if(! mc_addr_has_id(ld_addr)){
 		return "(local)";
 	}
-	if(bj_addr_in_sys(ld_addr)){
+	if(mc_addr_in_sys(ld_addr)){
 		return "(onchip)";
 	}
 	return "(external)";
@@ -321,7 +321,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 	uint8_t   *src = (uint8_t *) ld_dat->file;
 
 	e_epiphany_t *dev = ld_dat->dev;
-	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
+	mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 
 	uint8_t* pt_ram_base = (uint8_t*)(emem->base);
 	uint8_t* pt_end_code = (pt_ram_base + lk_dat->extnl_host_data_disp);
@@ -333,7 +333,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 	uint8_t* pt_load_end = (pt_load_dst + lk_dat->extnl_load_size);
 
 	uint8_t* pt_module_dst = pt_load_dst;
-	bj_addr_t module_sz = lk_dat->core_module_size;
+	mc_addr_t module_sz = lk_dat->core_module_size;
 
 	int module_ii = 0;
 	bjl_module_names_sz = 0;
@@ -344,12 +344,12 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 	BJL_MARK_USED(sh_strtab);
 	BJL_MARK_USED(strtab);
 
-	BJH_CK(sizeof(uint8_t*) == sizeof(bj_addr_t));
-	BJH_CK(sizeof(Elf32_Addr) == sizeof(bj_addr_t));
+	BJH_CK(sizeof(uint8_t*) == sizeof(mc_addr_t));
+	BJH_CK(sizeof(Elf32_Addr) == sizeof(mc_addr_t));
 	BJH_CK(dev == &bjh_glb_dev);
 	BJH_CK(emem == &bjh_glb_emem);
 
-	bj_core_id_t curr_id = bj_ro_co_to_id(row, col);
+	mc_core_id_t curr_id = mc_ro_co_to_id(row, col);
 	BJL_MARK_USED(curr_id);
 
 	ehdr = (Elf32_Ehdr *) &src[0];
@@ -375,7 +375,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 		Elf32_Word ld_flags = shdr[ii].sh_flags;
 
 		const char* sect_nm = &strtab[shdr[ii].sh_name];
-		bjl_diag(L_D1) { fprintf(BJ_STDERR, "%d.LOADING section %s.\n", ii, sect_nm); }
+		bjl_diag(L_D1) { fprintf(MC_STDERR, "%d.LOADING section %s.\n", ii, sect_nm); }
 
 		if(ld_sz == 0){
 			continue;
@@ -389,9 +389,9 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 			continue;
 		}
 
-		bj_addr_t ld_addr = ld_sh_addr;
+		mc_addr_t ld_addr = ld_sh_addr;
 
-		uint8_t* pt_dst = (uint8_t*)bj_core_eph_addr_to_znq_addr(row, col, ld_addr);
+		uint8_t* pt_dst = (uint8_t*)mc_core_eph_addr_to_znq_addr(row, col, ld_addr);
 		uint8_t* pt_src = &src[ld_src_off];
 		size_t blk_sz = ld_src_sz;
 
@@ -406,7 +406,7 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 			pt_module_dst += module_sz;
 		
 			if((pt_module_dst > pt_load_end) || (module_ii > (BJL_MAX_TOT_MODULES - 1))){
-				bjh_abort_func(12, "TOO MANY MODULES for BJ_VAL_EXTERNAL_LOAD_SIZE. CODE_LOADING_FAILED_3 !!\n");
+				bjh_abort_func(12, "TOO MANY MODULES for MC_VAL_EXTERNAL_LOAD_SIZE. CODE_LOADING_FAILED_3 !!\n");
 				return E_ERR;
 			}
 
@@ -417,22 +417,22 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 		bjl_diag(L_D1) { 
 			uint8_t* pt_dst_end = pt_dst + blk_sz;
 			uint8_t* pt_src_end = pt_src + blk_sz;
-			fprintf(BJ_STDERR, 
+			fprintf(MC_STDERR, 
 				"%d.LOADING(%s). row=%d col=%d dst=%p end=%p src=%p end=%p sz=%d p_vaddr=%04x (%p).\n", 
-				ii, bj_addr_case(ld_addr), row, col, pt_dst, pt_dst_end, pt_src, pt_src_end, blk_sz, ld_addr, 
+				ii, mc_addr_case(ld_addr), row, col, pt_dst, pt_dst_end, pt_src, pt_src_end, blk_sz, ld_addr, 
 				(void*)ld_addr); 
 		}
 
 		/*if(BJH_LOAD_WITH_MEMCPY){
 			memcpy(pt_dst, pt_src, blk_sz);
 		} else {
-			bj_memload(pt_dst, pt_src, blk_sz);
+			mc_memload(pt_dst, pt_src, blk_sz);
 		}*/
 
 		memcpy(pt_dst, pt_src, blk_sz);
 		BJH_CK(memcmp(pt_dst, pt_src, blk_sz) == 0);
 
-		//bj_ck_memload(pt_dst, pt_src, blk_sz);
+		//mc_ck_memload(pt_dst, pt_src, blk_sz);
 	}
 
 	bjl_module_names_sz = module_ii;
@@ -442,18 +442,18 @@ bjl_load_elf(int row, int col, load_info_t *ld_dat)
 
 void
 bjl_load_module_names(load_info_t *ld_dat){
-	bj_link_syms_data_st* lk_dat = &(BJ_EXTERNAL_RAM_LOAD_DATA);
+	mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 	e_mem_t *emem = ld_dat->emem;
 	uint8_t* pt_ram_base = (uint8_t*)(emem->base);
 	uint8_t* pt_load_dst = (pt_ram_base + lk_dat->extnl_load_disp);
 	uint8_t* pt_load_eph_dst = (uint8_t*)(lk_dat->extnl_load_orig);
-	bj_addr_t module_sz = lk_dat->core_module_size;
+	mc_addr_t module_sz = lk_dat->core_module_size;
 
 	char** pt_load_nams = (char**)(pt_load_dst + (bjl_module_names_sz * module_sz));
 
 	uint8_t* ld_str = (uint8_t*)(&(pt_load_nams[bjl_module_names_sz + 1])); 
 	for(int aa = 0; aa < bjl_module_names_sz; aa++){
-		bj_addr_t disp_str = ld_str - pt_load_dst;
+		mc_addr_t disp_str = ld_str - pt_load_dst;
 		pt_load_nams[aa] = (char*)(pt_load_eph_dst + disp_str);
 
 		char* src_str = bjl_module_names[aa];
@@ -463,20 +463,20 @@ bjl_load_module_names(load_info_t *ld_dat){
 		ld_str += (ln_str + 1);
 	}
 
-	pt_load_nams[bjl_module_names_sz] = bj_null;
+	pt_load_nams[bjl_module_names_sz] = mc_null;
 }
 
 int 
 bjl_load_root(load_info_t *ld_dat){
 
 	e_return_stat_t ret_start;
-	ret_start = bj_start_load(ld_dat);
+	ret_start = mc_start_load(ld_dat);
 	if (ret_start == E_ERR) {
 		return E_ERR;
 	}
 
-	bj_core_co_t root_ro = bj_nn_to_ro(ld_dat->root_nn);
-	bj_core_co_t root_co = bj_nn_to_co(ld_dat->root_nn);
+	mc_core_co_t root_ro = mc_nn_to_ro(ld_dat->root_nn);
+	mc_core_co_t root_co = mc_nn_to_co(ld_dat->root_nn);
 
 	e_return_stat_t retval = 
 		bjl_load_elf(root_ro, root_co, ld_dat);
@@ -490,7 +490,7 @@ bjl_load_root(load_info_t *ld_dat){
 
 	bjl_load_module_names(ld_dat);
 
-	bjl_diag(L_D1) { fprintf(BJ_STDERR, "bj_load_root(): done loading.\n"); }
+	bjl_diag(L_D1) { fprintf(MC_STDERR, "mc_load_root(): done loading.\n"); }
 
 	munmap(ld_dat->file, ld_dat->f_sz);
 	close(ld_dat->fd);

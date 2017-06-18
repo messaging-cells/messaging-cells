@@ -54,7 +54,7 @@ int main() {
 
 	int idx;
 
-	bj_memset( (uint8_t*)umm_heap, 0, sizeof(umm_heap) );
+	mc_memset( (uint8_t*)umm_heap, 0, sizeof(umm_heap) );
 
 	umm_info( umm_null, 1 );
 
@@ -105,17 +105,17 @@ int main() {
 
 	umm_info( umm_null, 1 );
 
-	bj_id_t koid = bjk_get_core_id();
-	bj_consec_t num_core = bj_id_to_nn(koid);
+	mc_id_t koid = bjk_get_core_id();
+	mc_consec_t num_core = mc_id_to_nn(koid);
 	bjk_slog("TEST_UMM OK CORE ID=");
 	bjk_xlog(koid);
 	bjk_slog(" NUM=");
 	bjk_ilog(num_core);
 	bjk_slog("\n");
 
-	bj_in_core_shd.dbg_progress_flag = 0xeee;
+	mc_in_core_shd.dbg_progress_flag = 0xeee;
 	
-	bjk_set_finished(BJ_FINISHED_VAL);
+	bjk_set_finished(MC_FINISHED_VAL);
 	return 0;
 }
 

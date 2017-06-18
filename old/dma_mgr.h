@@ -1,8 +1,8 @@
 
 // attribute.h
 
-#ifndef BJ_DMA_MGR_H
-#define BJ_DMA_MGR_H
+#ifndef MC_DMA_MGR_H
+#define MC_DMA_MGR_H
 
 #include "shared.h"
 
@@ -17,29 +17,29 @@ extern "C"
 */
 typedef enum
 {
-	BJ_DMA_ENABLE        = (1<<0),
-	BJ_DMA_MASTER        = (1<<1),
-	BJ_DMA_CHAIN         = (1<<2),
-	BJ_DMA_STARTUP       = (1<<3),
-	BJ_DMA_IRQEN         = (1<<4),
-	BJ_DMA_BYTE          = (0<<5),
-	BJ_DMA_HWORD         = (1<<5),
-	BJ_DMA_WORD          = (2<<5),
-	BJ_DMA_DWORD         = (3<<5),
-	BJ_DMA_MSGMODE       = (1<<10),
-	BJ_DMA_SHIFT_SRC_IN  = (1<<12),
-	BJ_DMA_SHIFT_DST_IN  = (1<<13),
-	BJ_DMA_SHIFT_SRC_OUT = (1<<14),
-	BJ_DMA_SHIFT_DST_OUT = (1<<15),
-} bj_dma_config_t;
+	MC_DMA_ENABLE        = (1<<0),
+	MC_DMA_MASTER        = (1<<1),
+	MC_DMA_CHAIN         = (1<<2),
+	MC_DMA_STARTUP       = (1<<3),
+	MC_DMA_IRQEN         = (1<<4),
+	MC_DMA_BYTE          = (0<<5),
+	MC_DMA_HWORD         = (1<<5),
+	MC_DMA_WORD          = (2<<5),
+	MC_DMA_DWORD         = (3<<5),
+	MC_DMA_MSGMODE       = (1<<10),
+	MC_DMA_SHIFT_SRC_IN  = (1<<12),
+	MC_DMA_SHIFT_DST_IN  = (1<<13),
+	MC_DMA_SHIFT_SRC_OUT = (1<<14),
+	MC_DMA_SHIFT_DST_OUT = (1<<15),
+} mc_dma_config_t;
 
 typedef enum
 {
-	BJ_DMA_0 = 0,
-	BJ_DMA_1 = 1,
-} bj_dma_id_t;
+	MC_DMA_0 = 0,
+	MC_DMA_1 = 1,
+} mc_dma_id_t;
 
-struct bj_align(8) bj_dma_desc_def
+struct mc_align(8) mc_dma_desc_def
 {
 	unsigned 	config;
 	unsigned 	inner_stride;
@@ -48,7 +48,7 @@ struct bj_align(8) bj_dma_desc_def
 	void* 		src_addr;
 	void* 		dst_addr;
 };
-typedef struct bj_dma_desc_def bj_dam_desc_st;
+typedef struct mc_dma_desc_def mc_dam_desc_st;
 
 /*
 void e_dma_set_desc(
@@ -78,5 +78,5 @@ void e_dma_set_desc(
 }
 #endif
 
-#endif // BJ_DMA_MGR_H
+#endif // MC_DMA_MGR_H
 

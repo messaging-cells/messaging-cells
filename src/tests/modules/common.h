@@ -7,7 +7,7 @@
 #include "attribute.h"
 
 #ifdef __cplusplus
-bj_c_decl {
+mc_c_decl {
 #endif
 
 #define prts(ss) bjk_slog2(ss)
@@ -19,19 +19,19 @@ public:
 	int aa;
 	long bb;
 
-	comm_cla() bj_comm_cod;
+	comm_cla() mc_comm_cod;
 
-	~comm_cla() bj_comm_cod;
+	~comm_cla() mc_comm_cod;
 
-	void init_comm_cla() bj_comm_cod;
+	void init_comm_cla() mc_comm_cod;
 
-	void method1() bj_comm_cod;
+	void method1() mc_comm_cod;
 };
 
-void comm_prt(char* val) bj_comm_cod;
+void comm_prt(char* val) mc_comm_cod;
 
-void comm_f1_core() bj_comm_cod;
-void comm_f2_core() bj_comm_cod;
+void comm_f1_core() mc_comm_cod;
+void comm_f2_core() mc_comm_cod;
 
 #ifdef __cplusplus
 }
