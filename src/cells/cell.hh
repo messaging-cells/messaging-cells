@@ -1,6 +1,10 @@
 
 //----------------------------------------------------------------------------
-// cell.hh
+/*! \file cell.hh
+
+\brief Write here a brief description
+
+*/
 
 #ifndef CELL_HH
 #define CELL_HH
@@ -148,8 +152,14 @@ enum bjk_signal_t : uint8_t {
 	bjk_tot_signals
 };
 
+//=============================================================================
+/*! \enum bjk_ack_t
+\brief Posible ack state (write more).
+\ingroup docgrp_API
+
+*/
 enum bjk_ack_t : uint8_t {
-	bjk_ready_ack = 30,
+	bjk_ready_ack = 30,	//!< It is ready to (write more)
 	bjk_busy_ack,
 	bjk_virgin_ack
 };
@@ -194,6 +204,7 @@ enum bjk_ack_t : uint8_t {
 	#define BJK_KERNEL kernel::get_sys()
 #endif
 
+//! Gets the local kernel
 #define bjk_get_kernel() BJK_KERNEL
 
 class mc_aligned kernel { 
@@ -433,7 +444,14 @@ public:
 };
 
 //-------------------------------------------------------------------------
-// cell class 
+/*! \class cell
+\brief Write here a brief description
+\ingroup docgrp_CDCL_classes
+
+\details Write here a detailed description
+There are two \ref cell s per variable. \ref neuron s hold references to \ref quanton s called fibres. They are used for BCP.
+*/
+
 
 typedef uint16_t bjk_token_t; 
 typedef uint8_t bjk_flags_t;

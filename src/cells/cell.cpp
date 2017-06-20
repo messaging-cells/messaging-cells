@@ -143,6 +143,15 @@ kernel::init_sys(){
 	bjk_global_irq_enable();
 }
 
+/*! 
+\brief Write here a brief description for this function
+
+\param bjs The solver object to be released.
+\details Write here the details explaining this function
+\see macro_algorithm_ben_jose.cpp
+\callgraph
+\callergraph
+*/
 void // static
 kernel::run_sys(){
 	kernel* ker = BJK_KERNEL;
