@@ -346,16 +346,16 @@ mc_core_addr_to_host_addr(mc_addr_t c_addr) mc_external_code_ram;
 	((cls_field*)(uint8_t*)(((uint8_t*)base) + mc_offsetof(&cls_base::field)))
 
 
-#define bjc_host_saddr_to_core_saddr(h_addr) \
+#define mc_host_saddr_to_core_saddr(h_addr) \
 	(BJK_GLB_SYS->eph_shd_mem_base + (((mc_addr_t)h_addr) - BJK_GLB_SYS->znq_shd_mem_base))
 
 
-#define bjc_core_saddr_to_core_saddr(c_addr) \
+#define mc_core_saddr_to_core_saddr(c_addr) \
 	(BJK_GLB_SYS->znq_shd_mem_base + (((mc_addr_t)c_addr) - BJK_GLB_SYS->eph_shd_mem_base))
 
 
-#define bjc_glb_binder_get_rgt(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_right)
-#define bjc_glb_binder_get_lft(bdr) (((binder*)bjc_host_saddr_to_core_saddr(bdr))->bn_left)
+#define mck_glb_binder_get_rgt(bdr) (((binder*)mc_host_saddr_to_core_saddr(bdr))->bn_right)
+#define mck_glb_binder_get_lft(bdr) (((binder*)mc_host_saddr_to_core_saddr(bdr))->bn_left)
 
 #ifdef __cplusplus
 }
