@@ -6,7 +6,7 @@
 
 #include "resp_conf.h"
 
-char* bjh_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
+char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
 void recv_host_handler(missive* msg);
 
@@ -35,7 +35,7 @@ recv_host_handler(missive* msg){
 	#endif 
 
 
-	bjk_get_kernel()->set_idle_exit();
+	mck_get_kernel()->set_idle_exit();
 }
 
 missive_handler_t host_handlers[] = {
@@ -53,7 +53,7 @@ send_host_main(){
 	agent_ref::separate(mc_out_num_cores);
 	agent_grp::separate(mc_out_num_cores);
 
-	//bjk_slog2("HOST started\n");
+	//mck_slog2("HOST started\n");
 	kernel::get_core_cell()->handler_idx = 0;	// was 0 but it should be inited for every cells's subclass.
 
 	mc_size_t off_all_agts = mc_offsetof(&missive_grp_t::all_agts);
@@ -71,8 +71,8 @@ send_host_main(){
 int mc_host_main(int argc, char *argv[])
 {
 	if(argc > 1){
-		bjh_epiphany_elf_path = argv[1];
-		printf("Using core executable: %s \n", bjh_epiphany_elf_path);
+		mch_epiphany_elf_path = argv[1];
+		printf("Using core executable: %s \n", mch_epiphany_elf_path);
 	}
 	if(argc > 2){
 		printf("LOADING WITH MEMCPY \n");

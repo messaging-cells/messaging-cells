@@ -11,20 +11,20 @@
 //	register uint16_t pt_jj asm("r40");
 
 int main(void) {
-	bjk_init_global();
+	mck_init_global();
 
-	mc_core_id_t koid = bjk_get_core_id();
+	mc_core_id_t koid = mck_get_core_id();
 	mc_core_nn_t num_core = mc_id_to_nn(koid);
 
 	char** john = (char**)(all_tests[num_core]);
 	long john_sz = all_tests_sz[num_core];
 	long ii;
 	for(ii = 0; ii < john_sz; ii++){
-		bjk_slog(john[ii]);
+		mck_slog(john[ii]);
 	}
 
 	mc_in_core_shd.dbg_progress_flag = 0xeee;	
-	bjk_set_finished(MC_FINISHED_VAL);
+	mck_set_finished(MC_FINISHED_VAL);
 	return 0;
 }
 

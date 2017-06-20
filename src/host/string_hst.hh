@@ -17,15 +17,15 @@ Wrapper for string class.
 #include <sstream>
 #include <fstream>	// used for mc_ofstream
 
-typedef std::string bjh_string_t;
-typedef std::ostream bjh_ostream_t;
-typedef std::ostringstream bjh_ostr_stream_t;
-typedef std::ofstream bjh_ofstream_t;
+typedef std::string mch_string_t;
+typedef std::ostream mch_ostream_t;
+typedef std::ostringstream mch_ostr_stream_t;
+typedef std::ofstream mch_ofstream_t;
 
-#define bjh_out std::cout
-#define bjh_err std::cerr
+#define mch_out std::cout
+#define mch_err std::cerr
 
-#define bjh_eol std::endl
+#define mch_eol std::endl
 
 #endif // MC_STRING_H
 

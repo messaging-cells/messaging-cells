@@ -10,43 +10,43 @@ mc_c_decl {
 #endif
 
 void mc_opt_sz_fn mc_isr_fn 
-bjk_sync_handler(void); // IVT_RESET
+mck_sync_handler(void); // IVT_RESET
 
 void mc_opt_sz_fn mc_isr_fn 
-bjk_software_exception_handler(void); // ivt_entry_software_exception
+mck_software_exception_handler(void); // ivt_entry_software_exception
 
 void mc_opt_sz_fn mc_isr_fn 
-bjk_page_miss_handler(void); // ivt_entry_page_miss
+mck_page_miss_handler(void); // ivt_entry_page_miss
 
 void mc_opt_sz_fn mc_isr_fn 
-bjk_timer0_handler(void); // ivt_entry_timer0
+mck_timer0_handler(void); // ivt_entry_timer0
 
 #ifdef MC_IS_EPH_CODE
 
 	void mc_inline_fn
-	bjk_enable_all_irq() {
+	mck_enable_all_irq() {
 		mc_asm("mov r0, #0x0"); 
 		mc_asm("movts imask, r0");
 	}
 
 	void mc_inline_fn
-	bjk_disable_all_irq() {
+	mck_disable_all_irq() {
 		mc_asm("mov r0, #0x3ff"); 
 		mc_asm("movts imask, r0");
 	}
 
 	void mc_inline_fn
-	bjk_global_irq_disable() {
+	mck_global_irq_disable() {
 		mc_asm("gid"); 
 	}
 
 	void mc_inline_fn
-	bjk_global_irq_enable() {
+	mck_global_irq_enable() {
 		mc_asm("gie"); 
 	}
 
-	#define bjk_simple_abort(func, excode) \
-		bjk_glb_sys_st* in_core_pt = BJK_GLB_SYS; \
+	#define mck_simple_abort(func, excode) \
+		mck_glb_sys_st* in_core_pt = BJK_GLB_SYS; \
 		in_core_pt->exception_code = excode; \
 		in_core_pt->dbg_error_code = (mc_addr_t)(func); \
 		mc_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt; \
@@ -60,19 +60,19 @@ bjk_timer0_handler(void); // ivt_entry_timer0
 #else 
 
 	void mc_inline_fn
-	bjk_enable_all_irq() {
+	mck_enable_all_irq() {
 	}
 
 	void mc_inline_fn
-	bjk_disable_all_irq() {
+	mck_disable_all_irq() {
 	}
 
 	void mc_inline_fn
-	bjk_global_irq_disable() {
+	mck_global_irq_disable() {
 	}
 
 	void mc_inline_fn
-	bjk_global_irq_enable() {
+	mck_global_irq_enable() {
 	}
 
 #endif	// MC_IS_EPH_CODE

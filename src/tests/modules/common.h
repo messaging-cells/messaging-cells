@@ -10,7 +10,7 @@
 mc_c_decl {
 #endif
 
-#define prts(ss) bjk_slog2(ss)
+#define prts(ss) mck_slog2(ss)
 
 //define prts(ss) comm_prt(as_pt_char(ss))
 

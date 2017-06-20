@@ -22,11 +22,11 @@
 
 #define BJM_EXTERNAL_RAM_ORIG 0x8e000000
 
-uint8_t bjm_dlmalloc_heap[BJM_DLMALLOC_HEAP_SZ];
+uint8_t mcm_dlmalloc_heap[BJM_DLMALLOC_HEAP_SZ];
 
-mspace bjm_glb_mspace;
+mspace mcm_glb_mspace;
 
-emu_info_t*	bjm_HOST_EMU_INFO = mc_null;
+emu_info_t*	mcm_HOST_EMU_INFO = mc_null;
 
 mc_addr_t
 mc_znq_addr_to_eph_addr(mc_addr_t znq_addr){
@@ -39,7 +39,7 @@ mc_eph_addr_to_znq_addr(mc_addr_t eph_addr){
 }
 
 void
-bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
+mcm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
 	void* 		trace[trace_strs_sz];
 
 	mc_memset((uint8_t*)trace, 0, trace_strs_sz * sizeof(void*));
@@ -58,40 +58,40 @@ bjm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
 }
 
 void 
-bjh_prt_core_call_stack_emu(thread_info_t& thd_inf){
-	char** trace = thd_inf.thd_emu.emu_glb_sys_data.bjk_dbg_call_nams_stack_trace;
+mch_prt_core_call_stack_emu(thread_info_t& thd_inf){
+	char** trace = thd_inf.thd_emu.emu_glb_sys_data.mck_dbg_call_nams_stack_trace;
 	if(trace == mc_null){
 		return;
 	}
 	if(trace[0] == mc_null){
 		return;
 	}
-	bjh_out << "---------------------------------------------------\n";
-	bjh_out << "STACK_TRACE for core num " << std::dec << thd_inf.thd_emu.emu_num;
-	bjh_out << " with core_id = 0x" << std::hex << thd_inf.thd_emu.emu_core_id << "\n";
+	mch_out << "---------------------------------------------------\n";
+	mch_out << "STACK_TRACE for core num " << std::dec << thd_inf.thd_emu.emu_num;
+	mch_out << " with core_id = 0x" << std::hex << thd_inf.thd_emu.emu_core_id << "\n";
 	for(int aa = 0; aa < MC_MAX_CALL_STACK_SZ; aa++){
 		if(trace[aa] == mc_null){ break; }
-		bjh_out << trace[aa] << "\n";
+		mch_out << trace[aa] << "\n";
 	}
-	bjh_out << "---------------------------------------------------\n";
+	mch_out << "---------------------------------------------------\n";
 }
 
 bool
 ck_all_core_ids(){
 	if (ALL_THREADS_INFO == NULL){
-		bjh_abort_func(0, "ck_all_core_ids. NULL ALL_THREADS_INFO \n");
+		mch_abort_func(0, "ck_all_core_ids. NULL ALL_THREADS_INFO \n");
 	}
 	for(int aa = 0; aa < TOT_THREADS; aa++){
 		mc_core_id_t koid = mc_nn_to_id(aa);
 		if(ALL_THREADS_INFO[aa].thd_emu.emu_core_id != koid){
-			bjh_abort_func(0, "ck_all_core_ids. BAD CORE ID \n");
+			mch_abort_func(0, "ck_all_core_ids. BAD CORE ID \n");
 		}
 	}
 	return true;
 }
 
 /*mc_core_id_t
-bjm_get_host_id(){
+mcm_get_host_id(){
 	//mc_core_id_t id = mc_addr_get_
 }*/
 
@@ -100,25 +100,25 @@ mc_host_init(){
 	ALL_THREADS_INFO = mc_null;
 	HOST_THREAD_ID = pthread_self();
 
-	memset(bjm_dlmalloc_heap, 0, sizeof(bjm_dlmalloc_heap));
-	bjm_glb_mspace = create_mspace_with_base(bjm_dlmalloc_heap, BJM_DLMALLOC_HEAP_SZ, 0);
+	memset(mcm_dlmalloc_heap, 0, sizeof(mcm_dlmalloc_heap));
+	mcm_glb_mspace = create_mspace_with_base(mcm_dlmalloc_heap, BJM_DLMALLOC_HEAP_SZ, 0);
 
-	bjm_HOST_EMU_INFO = mc_malloc32(emu_info_t, 1);
+	mcm_HOST_EMU_INFO = mc_malloc32(emu_info_t, 1);
 
-	mc_init_glb_sys_sz(&(bjm_HOST_EMU_INFO->emu_system_sz));
+	mc_init_glb_sys_sz(&(mcm_HOST_EMU_INFO->emu_system_sz));
 
 	mc_core_co_t max_row = mc_tot_xx_sys;
 	mc_core_co_t max_col = mc_tot_yy_sys;
 	mc_core_id_t core_id = mc_ro_co_to_id(max_row + 1, max_col + 1);
-	bjm_HOST_EMU_INFO->emu_core_id = core_id;
-	bjm_HOST_EMU_INFO->emu_num = ~0;
+	mcm_HOST_EMU_INFO->emu_core_id = core_id;
+	mcm_HOST_EMU_INFO->emu_num = ~0;
 
-	memset(&bjh_external_ram_load_data, 0, sizeof(mc_link_syms_data_st));
+	memset(&mch_external_ram_load_data, 0, sizeof(mc_link_syms_data_st));
 
 	TOT_THREADS = mc_tot_nn_sys;
 	ALL_THREADS_INFO = (thread_info_t *)calloc(TOT_THREADS, sizeof(thread_info_t));
 	if (ALL_THREADS_INFO == NULL){
-		bjh_abort_func(0, "host_main. NULL ALL_THREADS_INFO \n");
+		mch_abort_func(0, "host_main. NULL ALL_THREADS_INFO \n");
 	}
 
 	printf("TOT_THREADS = %d\n", TOT_THREADS);
@@ -136,7 +136,7 @@ mc_host_init(){
 	mc_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
 
 	pt_shd_data->wrk_sys = *sys_sz;
-	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
+	BJH_CK(mch_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	pt_shd_data->pt_host_kernel = mc_null;
 }
@@ -176,7 +176,7 @@ mc_host_run()
 				memset(&f_nm, 0, sizeof(f_nm));
 				sprintf(f_nm, "log_core_%02d.txt", num_core);
 				all_f_nam[num_core] = strdup((const char*)f_nm);
-				bjh_reset_log_file(all_f_nam[num_core]);
+				mch_reset_log_file(all_f_nam[num_core]);
 
 				// init shared data.
 				pt_shd_data->sys_cores[num_core].magic_id = MC_MAGIC_ID;
@@ -195,7 +195,7 @@ mc_host_run()
 			int ss = pthread_create(&thd_inf.thd_emu.emu_id, NULL,
 								&thread_start, &thd_inf);
 			if (ss != 0){
-				bjh_abort_func(ss, "host_main. Cannot pthread_create");
+				mch_abort_func(ss, "host_main. Cannot pthread_create");
 			}
 		}
 	}
@@ -246,24 +246,24 @@ mc_host_run()
 					//			core_id, row, col, num_core);
 				}
 
-				//bjk_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data.in_core_shd;
-				bjk_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data;
+				//mck_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data.in_core_shd;
+				mck_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data;
 
 				// wait for finish
 				if(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL){
 					has_work = true;
-					bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+					mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == MC_WAITING_ENTER){
-							bjh_get_enter(row, col);
+							mch_get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == MC_WAITING_BUFFER){
-							bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+							mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						}
 						
 						sh_dat_1->is_waiting = MC_NOT_WAITING;
 
-						thd_inf.thd_emu.emu_glb_sys_data.bjk_sync_signal = 1;	// SEND signal
+						thd_inf.thd_emu.emu_glb_sys_data.mck_sync_signal = 1;	// SEND signal
 					}
 				} else {
 					BJH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
@@ -272,22 +272,22 @@ mc_host_run()
 
 						core_finished[row][col] = true;
 
-						bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
-						BJH_CK(bjh_rr_ck_zero(&(pt_buff->rd_arr)));
+						mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+						BJH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						/*printf("Finished\n");
-						int err2 = bjh_prt_in_core_shd_dat(inco);
+						int err2 = mch_prt_in_core_shd_dat(inco);
 						if(err2){
 							break;
 						}*/
-						if(inco->exception_code != bjk_invalid_exception){
-							//bjh_prt_exception(inco);
-							bjh_prt_in_core_shd_dat(inco);
+						if(inco->exception_code != mck_invalid_exception){
+							//mch_prt_exception(inco);
+							mch_prt_in_core_shd_dat(inco);
 						}
 						if(inco->dbg_error_code != 0){
-							bjh_prt_in_core_shd_dat(inco);
+							mch_prt_in_core_shd_dat(inco);
 						}
-						bjh_prt_core_call_stack_emu(thd_inf);
+						mch_prt_core_call_stack_emu(thd_inf);
 					}
 
 				}
@@ -319,12 +319,12 @@ mc_host_finish()
 		void *res;
 		int ss = pthread_join(ALL_THREADS_INFO[tnum].thd_emu.emu_id, &res);
 		if(ss != 0){
-			bjh_abort_func(ss, "mc_host_finish. Cannot join thread.");
+			mch_abort_func(ss, "mc_host_finish. Cannot join thread.");
 		}
 	}
 
 	free(ALL_THREADS_INFO);
-	destroy_mspace(bjm_glb_mspace);
+	destroy_mspace(mcm_glb_mspace);
 }
 
 /*

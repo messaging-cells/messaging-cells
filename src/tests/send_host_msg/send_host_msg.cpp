@@ -9,10 +9,10 @@ void
 recv_core_handler(missive* msg){
 	EMU_CK(mc_addr_is_local(msg->dst));
 
-	bjk_sprt2("CORE_GOT_RESPONSE\n");
+	mck_sprt2("CORE_GOT_RESPONSE\n");
 	EMU_PRT("RCV_RESPONSE. src=%p dst=%p \n", msg->get_source(), msg->dst);
 	
-	bjk_get_kernel()->set_idle_exit();
+	mck_get_kernel()->set_idle_exit();
 }
 
 missive_handler_t core_handlers[] = {
@@ -27,11 +27,11 @@ void mc_cores_main() {
 	agent_ref::separate(mc_out_num_cores);
 	agent_grp::separate(mc_out_num_cores);
 
-	kernel* ker = bjk_get_kernel();
+	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	if(bjk_is_core(0,0)){
-		bjk_slog2("CORE (0,0) started\n");
+	if(mck_is_core(0,0)){
+		mck_slog2("CORE (0,0) started\n");
 
 		//missive_handler_t hndlers = mc_null;
 		//kernel::set_handlers(0, &hndlers);
@@ -47,9 +47,9 @@ void mc_cores_main() {
 		msv->dst = act2;
 		msv->tok = 432;
 
-		bjk_sprt2("SND_act2___");
-		bjk_xprt((mc_addr_t)(act2));
-		bjk_sprt2("___\n");
+		mck_sprt2("SND_act2___");
+		mck_xprt((mc_addr_t)(act2));
+		mck_sprt2("___\n");
 
 		BJK_CK(act2 != mc_null);
 
@@ -64,7 +64,7 @@ void mc_cores_main() {
 		kernel::run_sys();
 	}
 
-	bjk_slog2("FINISHED SEND_HOST TEST\n");	
+	mck_slog2("FINISHED SEND_HOST TEST\n");	
 
 	kernel::finish_sys();
 }

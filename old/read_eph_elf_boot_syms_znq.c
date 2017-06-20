@@ -12,7 +12,7 @@
 #include "booter.h"
 
 
-const char* bjh_link_script_syms_names[] = {
+const char* mch_link_script_syms_names[] = {
 BJH_STR_EXTER_CODE_SIZE,
 BJH_STR_EXTER_LOAD_SIZE,
 BJH_STR_EXTER_DATA_SIZE,
@@ -30,8 +30,8 @@ NULL
 void get_syms_addrs(const void *file, int addrs_sz, void** syms_addrs);
 
 int16_t 
-bjh_find_link_script_name(const char* nam){
-	const char** nams = bjh_link_script_syms_names;
+mch_find_link_script_name(const char* nam){
+	const char** nams = mch_link_script_syms_names;
 	int16_t aa = -1;
 	for(aa = 0; aa < BJH_TOT_LOAD_SYMS; aa++){
 		if(nams[aa] == NULL){
@@ -46,8 +46,8 @@ bjh_find_link_script_name(const char* nam){
 }
 
 void*
-bjh_find_link_script_addr(const char* nam, int addrs_sz, void** syms_addrs){
-	int16_t idx = bjh_find_link_script_name(nam);
+mch_find_link_script_addr(const char* nam, int addrs_sz, void** syms_addrs){
+	int16_t idx = mch_find_link_script_name(nam);
 	void* addr = NULL;
 	if(idx < addrs_sz){
 		addr = syms_addrs[idx];
@@ -55,15 +55,15 @@ bjh_find_link_script_addr(const char* nam, int addrs_sz, void** syms_addrs){
 	return addr;
 }
 
-int bjh_read_eph_elf_syms(const char *elf_nm, int addrs_sz, void** syms_addrs)
+int mch_read_eph_elf_syms(const char *elf_nm, int addrs_sz, void** syms_addrs)
 {
 	int          fd;
 	struct stat  st;
 	void        *file;
 	
-	const char** nams = bjh_link_script_syms_names;
+	const char** nams = mch_link_script_syms_names;
 	if(nams[BJH_TOT_LOAD_SYMS] != NULL){
-		printf("CODE_ERROR: bjh_read_eph_elf_syms. BAD DEFINED BJH_TOT_LOAD_SYMS\n");
+		printf("CODE_ERROR: mch_read_eph_elf_syms. BAD DEFINED BJH_TOT_LOAD_SYMS\n");
 		return 1;
 	}
 	//memset(syms_addrs, 0, addrs_sz * sizeof(void*));
@@ -163,7 +163,7 @@ get_syms_addrs(const void *file, int addrs_sz, void** syms_addrs)
 						continue;
 					}
 					
-					int16_t idx = bjh_find_link_script_name(nm2);
+					int16_t idx = mch_find_link_script_name(nm2);
 					if(idx < addrs_sz){
 						if(syms_addrs[idx] == 0){
 							syms_addrs[idx] = addr;

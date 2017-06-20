@@ -13,11 +13,11 @@ recv_cell_handler(missive* msg){
 	MC_MARK_USED(koid);
 	mc_core_nn_t konn = kernel::get_core_nn();
 	MC_MARK_USED(konn);
-	bjk_slog2("GOT MISSIVE\n");
+	mck_slog2("GOT MISSIVE\n");
 	EMU_LOG("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	EMU_PRT("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	
-	bjk_get_kernel()->set_idle_exit();
+	mck_get_kernel()->set_idle_exit();
 }
 
 missive_handler_t the_handlers[] = {
@@ -34,17 +34,17 @@ void mc_cores_main() {
 	agent_ref::separate(mc_out_num_cores);
 	agent_grp::separate(mc_out_num_cores);
 
-	kernel* ker = bjk_get_kernel();
+	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	if(bjk_is_core(0,0)){
-		bjk_slog2("CORE (0,0) started\n");
+	if(mck_is_core(0,0)){
+		mck_slog2("CORE (0,0) started\n");
 		kernel::get_core_cell()->handler_idx = 0;	// was 0 but it should be inited for every cells's subclass.
 
 		kernel::run_sys();
 	}
-	if(bjk_is_core(0,1)){
-		bjk_slog2("CORE (0,1) started\n");
+	if(mck_is_core(0,1)){
+		mck_slog2("CORE (0,1) started\n");
 		mc_core_id_t dst = mc_ro_co_to_id(0, 0);
 		
 		cell* act1 = kernel::get_core_cell();
@@ -54,15 +54,15 @@ void mc_cores_main() {
 		msv->src = act1;
 		msv->dst = act2;
 		msv->send();
-		bjk_slog2("SENT MISSIVE\n");
+		mck_slog2("SENT MISSIVE\n");
 
 		ker->set_idle_exit();
 		kernel::run_sys();
 	}
 
-	bjk_slog2("FINISHED !!\n");	
-	//bjk_xlog((mc_addr_t)ker->host_kernel);
-	//bjk_slog2(" is the HOST_KERNEL\n");	
+	mck_slog2("FINISHED !!\n");	
+	//mck_xlog((mc_addr_t)ker->host_kernel);
+	//mck_slog2(" is the HOST_KERNEL\n");	
 
 	kernel::finish_sys();
 }

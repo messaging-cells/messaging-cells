@@ -2,7 +2,7 @@
 
 /*------------------------------------------------------------
 
-bjh_stack_trace.cpp  
+mch_stack_trace.cpp  
 
 stack_trace funcs.
 
@@ -17,16 +17,16 @@ stack_trace funcs.
 #include "stack_trace_hst.h"
 
 bool
-bjh_print_backtrace( const bjh_string_t & file, int line ){
-	bjh_out << bjh_get_stack_trace(file, line) << "\n";
+mch_print_backtrace( const mch_string_t & file, int line ){
+	mch_out << mch_get_stack_trace(file, line) << "\n";
 	return true;
 }
 
 // USE:        mc_out << get_stack_trace( __FILE__, __LINE__ ) << mc_eol;
 
-bjh_string_t 
-bjh_get_stack_trace( const bjh_string_t & file, int line ){
-	bjh_ostr_stream_t result;
+mch_string_t 
+mch_get_stack_trace( const mch_string_t & file, int line ){
+	mch_ostr_stream_t result;
 	result << "Call Stack from " << file << ":" << line << "\n";
 	const size_t k_max_depth = 100;
 	void *stack_addrs[k_max_depth];

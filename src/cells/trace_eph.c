@@ -2,14 +2,14 @@
 #include "global.h"
 #include "trace.h"
 
-#define bjk_simm11_up(pt_i16)	(((pt_i16)[1] & 0x00FF) << 3)
-#define bjk_simm11_low(pt_i16)	(((pt_i16)[0] & 0x0380) >> 7)
-#define bjk_simm11_to_uint(pt_i16) (bjk_simm11_up(pt_i16) | bjk_simm11_low(pt_i16))
+#define mck_simm11_up(pt_i16)	(((pt_i16)[1] & 0x00FF) << 3)
+#define mck_simm11_low(pt_i16)	(((pt_i16)[0] & 0x0380) >> 7)
+#define mck_simm11_to_uint(pt_i16) (mck_simm11_up(pt_i16) | mck_simm11_low(pt_i16))
 
 #define mc_get_two_compl(vv) ((mc_get_bit(&(vv), 10)) ? (-((((vv) & ~0x7FF) | (~(vv) & 0x7FF)) + 1)) : (vv))
 
-#define bjk_uint_to_simm11_up(ui16)	((ui16) >> 3)
-#define bjk_uint_to_simm11_low(ui16)	(((ui16) & 0x7) << 7)
+#define mck_uint_to_simm11_up(ui16)	((ui16) >> 3)
+#define mck_uint_to_simm11_low(ui16)	(((ui16) & 0x7) << 7)
 
 //=====================================================================
 
@@ -39,7 +39,7 @@ int16_t mc_inline_fn
 get_add_simm11(uint16_t* add_cod){
 	int16_t val_simm11 = 0;
 
-	val_simm11 = bjk_simm11_to_uint(add_cod);
+	val_simm11 = mck_simm11_to_uint(add_cod);
 	val_simm11 = mc_get_two_compl(val_simm11);
 	return val_simm11;
 }
@@ -48,14 +48,14 @@ void mc_inline_fn
 get_call_opcode(uint16_t opcode[2], int16_t disp){
 	opcode[0] = 0xd47c;
 	opcode[1] = 0x2700;
-	opcode[0] |= bjk_uint_to_simm11_low(disp);
-	opcode[1] |= bjk_uint_to_simm11_up(disp);
+	opcode[0] |= mck_uint_to_simm11_low(disp);
+	opcode[1] |= mck_uint_to_simm11_up(disp);
 }
 
 uint16_t*
 find_call(uint16_t* code_addr, uint16_t opcode[2]){
 	uint16_t* addr = code_addr;
-	uint16_t* err = &(BJK_GLB_SYS->bjk_trace_err);
+	uint16_t* err = &(BJK_GLB_SYS->mck_trace_err);
 	(*err) = 0x0;
 	while(addr > 0x0){
 		if((addr[0] == opcode[0]) && (addr[1] == opcode[1])){
@@ -80,7 +80,7 @@ find_call(uint16_t* code_addr, uint16_t opcode[2]){
 uint16_t*
 find_interrupt_call(uint16_t* code_addr){
 	uint16_t* addr = code_addr;
-	uint16_t* err = &(BJK_GLB_SYS->bjk_trace_err);
+	uint16_t* err = &(BJK_GLB_SYS->mck_trace_err);
 	(*err) = 0x0;
 	while(addr > 0x0){
 		if(	(addr[0] == 0x14fc) && (addr[1] == 0x0500) && (addr[2] == 0x0512) &&
@@ -105,7 +105,7 @@ get_sp_disp(uint16_t* code_addr){
 	addr -= 2;
 	uint16_t v0 = addr[0];
 	uint16_t v1 = addr[1];
-	uint16_t* err = &(BJK_GLB_SYS->bjk_trace_err);
+	uint16_t* err = &(BJK_GLB_SYS->mck_trace_err);
 
 	(*err) = 0x0;
 	
@@ -158,7 +158,7 @@ find_rts(uint16_t* code_addr){
 
 	// changed this to work in shd mem
 	uint16_t* max_addr = code_addr + mc_max_opcodes_func;	
-	uint16_t* err = &(BJK_GLB_SYS->bjk_trace_err);
+	uint16_t* err = &(BJK_GLB_SYS->mck_trace_err);
 
 	(*err) = 0x0;
 	
@@ -196,7 +196,7 @@ find_rts(uint16_t* code_addr){
 }
 
 uint16_t
-bjk_get_call_stack_trace(int16_t sz, void** trace) {
+mck_get_call_stack_trace(int16_t sz, void** trace) {
 	// WARNING
 	// This function dissasembles to find RTS calls, next SP disp, and call addrs.
 	// If e-gcc changes the generated code this function MUST be updated.
@@ -233,7 +233,7 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 			break;
 		} 
 		if((disp % 2) != 0){ // Is disp ever odd?. If so: bad align access ...
-			bjk_abort((mc_addr_t)bjk_get_call_stack_trace, mc_null); // ***LEAVE IT mc_null*** (no recurrence)
+			mck_abort((mc_addr_t)mck_get_call_stack_trace, mc_null); // ***LEAVE IT mc_null*** (no recurrence)
 		}
 		uint8_t* aux_sp = (uint8_t*)(sp_val);
 		aux_sp += disp;
@@ -258,7 +258,7 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 		rts_addr = find_rts(pc_val);
 	}
 
-	uint16_t* err = &(BJK_GLB_SYS->bjk_trace_err);
+	uint16_t* err = &(BJK_GLB_SYS->mck_trace_err);
 	if((*err) == 0x41){
 		uint16_t* call_addr = find_interrupt_call(pc_val);
 		trace[idx++] = call_addr;
@@ -267,13 +267,13 @@ bjk_get_call_stack_trace(int16_t sz, void** trace) {
 }
 
 void 
-bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
+mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	mc_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt;
 	if(off_core_pt == mc_null){
 		return;
 	}
 	if((sz_trace > 0) && (trace != mc_null)){
-		bjk_get_call_stack_trace(sz_trace, trace);
+		mck_get_call_stack_trace(sz_trace, trace);
 	}
 	// save old_mask
 	uint16_t old_mask = 0;

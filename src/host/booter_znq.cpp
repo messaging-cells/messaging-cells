@@ -17,64 +17,64 @@
 
 //=====================================================================================
 
-mc_core_id_t bjh_first_load_core_nn = 0;
+mc_core_id_t mch_first_load_core_nn = 0;
 
 uint8_t* BJH_EXTERNAL_RAM_BASE_PT = mc_null;
 
-//char* bjh_epiphany_elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
+//char* mch_epiphany_elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
 
-mspace bjh_glb_load_mspace;
-mspace bjh_glb_alloc_mspace;
+mspace mch_glb_load_mspace;
+mspace mch_glb_alloc_mspace;
 
-e_mem_t bjh_glb_emem;
-e_epiphany_t bjh_glb_dev;
+e_mem_t mch_glb_emem;
+e_epiphany_t mch_glb_dev;
 
 void
 print_core_info(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
-	bjk_glb_sys_st* pt_inco = 
-		(bjk_glb_sys_st*)mc_core_eph_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
-	bjh_prt_in_core_shd_dat(pt_inco);
+	mck_glb_sys_st* pt_inco = 
+		(mck_glb_sys_st*)mc_core_eph_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
+	mch_prt_in_core_shd_dat(pt_inco);
 
 	if(pt_inco->dbg_stack_trace != mc_null){
 		void** 	pt_trace = (void**)mc_core_eph_addr_to_znq_addr(row, col, (mc_addr_t)(pt_inco->dbg_stack_trace));;
-		bjh_prt_core_call_stack(bjh_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
+		mch_prt_core_call_stack(mch_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
 	}
 }
 
 void
 print_exception_case(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
-	bjk_glb_sys_st* pt_inco = 
-		(bjk_glb_sys_st*)mc_core_eph_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
+	mck_glb_sys_st* pt_inco = 
+		(mck_glb_sys_st*)mc_core_eph_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
 
-	if(pt_inco->exception_code != bjk_invalid_exception){
-		//bjh_prt_exception(pt_inco);
-		bjh_prt_in_core_shd_dat(pt_inco);
+	if(pt_inco->exception_code != mck_invalid_exception){
+		//mch_prt_exception(pt_inco);
+		mch_prt_in_core_shd_dat(pt_inco);
 	}
 	if(pt_inco->dbg_error_code != 0){
-		bjh_prt_in_core_shd_dat(pt_inco);
+		mch_prt_in_core_shd_dat(pt_inco);
 	}
 	if(pt_inco->dbg_stack_trace != mc_null){
 		mc_addr_t eph_addr = (mc_addr_t)(pt_inco->dbg_stack_trace);
 		void** 	pt_trace = (void**)mc_core_eph_addr_to_znq_addr(row, col, eph_addr);
-		bjh_prt_core_call_stack(bjh_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
+		mch_prt_core_call_stack(mch_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
 	}
 }
 
 void
 mc_host_init(){
-	e_epiphany_t & dev = bjh_glb_dev;
+	e_epiphany_t & dev = mch_glb_dev;
 
 	e_platform_t platform;
 
-	bjl_module_names_sz = 0;
+	mcl_module_names_sz = 0;
 
 	mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
-	bjh_read_eph_link_syms(bjh_epiphany_elf_path, lk_dat);
+	mch_read_eph_link_syms(mch_epiphany_elf_path, lk_dat);
 
 	if(lk_dat->extnl_ram_orig == 0) {
-		printf("ERROR: Can't read external memory location from '%s'\n", bjh_epiphany_elf_path);
-		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", bjh_epiphany_elf_path);
-		bjh_abort_func(201, "host_init_1. ERROR: Bad ELF\n");
+		printf("ERROR: Can't read external memory location from '%s'\n", mch_epiphany_elf_path);
+		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", mch_epiphany_elf_path);
+		mch_abort_func(201, "host_init_1. ERROR: Bad ELF\n");
 	}
 
 	// IMPORTANT NOTE:
@@ -94,28 +94,28 @@ mc_host_init(){
 	e_reset_system();
 	e_get_platform_info(&platform);
 
-	if (e_alloc(&bjh_glb_emem, 0, lk_dat->extnl_ram_size)) {
-		bjh_abort_func(202, "host_init_2. ERROR: Can't allocate external memory buffer!\n\n");
+	if (e_alloc(&mch_glb_emem, 0, lk_dat->extnl_ram_size)) {
+		mch_abort_func(202, "host_init_2. ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
-	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)bjh_glb_emem.base);
+	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)mch_glb_emem.base);
 
-	bjz_pt_external_host_data_obj = (mc_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_host_data_disp);
+	mcz_pt_external_host_data_obj = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_host_data_disp);
 
-	uint8_t* extnl_load_base = bjh_disp_to_pt(lk_dat->extnl_load_disp);
-	uint8_t* extnl_host_alloc_base = bjh_disp_to_pt(lk_dat->extnl_host_alloc_disp);
+	uint8_t* extnl_load_base = mch_disp_to_pt(lk_dat->extnl_load_disp);
+	uint8_t* extnl_host_alloc_base = mch_disp_to_pt(lk_dat->extnl_host_alloc_disp);
 	
-	bjh_glb_load_mspace = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
-	bjh_glb_alloc_mspace = create_mspace_with_base(extnl_host_alloc_base, lk_dat->extnl_host_alloc_size, 0);
+	mch_glb_load_mspace = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
+	mch_glb_alloc_mspace = create_mspace_with_base(extnl_host_alloc_base, lk_dat->extnl_host_alloc_size, 0);
 
 	// dev init
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
 	mc_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
-	bjh_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
+	mch_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
-	mc_off_sys_st* pt_shd_data = bjz_pt_external_host_data_obj;
+	mc_off_sys_st* pt_shd_data = mcz_pt_external_host_data_obj;
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
@@ -125,7 +125,7 @@ mc_host_init(){
 	// load elf
 
 	load_info_t ld_dat;
-	ld_dat.executable = (char*)bjh_epiphany_elf_path;
+	ld_dat.executable = (char*)mch_epiphany_elf_path;
 	ld_dat.dev = &dev;
 	ld_dat.row = 0;
 	ld_dat.col = 0;
@@ -133,18 +133,18 @@ mc_host_init(){
 	ld_dat.cols = platform.cols;
 	ld_dat.all_module_names = NULL;
 	ld_dat.all_module_addrs = NULL;
-	ld_dat.root_nn = bjh_first_load_core_nn;
+	ld_dat.root_nn = mch_first_load_core_nn;
 
 	e_reset_group(&dev);
 
 	#ifdef MC_PLL_LOADING
-		int err = bjl_load_root(&ld_dat); 
+		int err = mcl_load_root(&ld_dat); 
 	#else
 		int err = mc_load_group(&ld_dat); 
 	#endif
 
 	if(err == E_ERR){
-		bjh_abort_func(203, "host_init_3. ERROR: Loading_group_failed.\n");
+		mch_abort_func(203, "host_init_3. ERROR: Loading_group_failed.\n");
 	}
 
 	// init shared data.
@@ -154,7 +154,7 @@ mc_host_init(){
 
 	pt_shd_data->pt_this_from_znq = pt_shd_data;
 	pt_shd_data->wrk_sys = *g_sys_sz;
-	BJH_CK(bjh_ck_sys_data(&(pt_shd_data->wrk_sys)));
+	BJH_CK(mch_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	pt_shd_data->znq_shared_mem_base = (mc_addr_t)BJH_EXTERNAL_RAM_BASE_PT;
 	pt_shd_data->eph_shared_mem_base = (mc_addr_t)(lk_dat->extnl_ram_orig);
@@ -162,26 +162,26 @@ mc_host_init(){
 	//printf("eph_shared_mem_base= %p \n", (void*)(pt_shd_data->eph_shared_mem_base));
 
 	pt_shd_data->pt_host_kernel = mc_null;
-	pt_shd_data->tot_modules = bjl_module_names_sz;
+	pt_shd_data->tot_modules = mcl_module_names_sz;
 
-	pt_shd_data->first_load_core_id = mc_nn_to_id(bjh_first_load_core_nn);
+	pt_shd_data->first_load_core_id = mc_nn_to_id(mch_first_load_core_nn);
 }
 
 void
 mc_start_first_core(){
-	e_epiphany_t & dev = bjh_glb_dev;
+	e_epiphany_t & dev = mch_glb_dev;
 	mc_core_co_t row, col;
-	row = mc_nn_to_ro(bjh_first_load_core_nn);
-	col = mc_nn_to_co(bjh_first_load_core_nn);
+	row = mc_nn_to_ro(mch_first_load_core_nn);
+	col = mc_nn_to_co(mch_first_load_core_nn);
 	e_start(&dev, row, col);
 }
 
 void
 mc_host_run(){
-	e_epiphany_t & dev = bjh_glb_dev;
+	e_epiphany_t & dev = mch_glb_dev;
 
 	//mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
-	mc_off_sys_st* pt_shd_data = bjz_pt_external_host_data_obj;
+	mc_off_sys_st* pt_shd_data = mcz_pt_external_host_data_obj;
 
 	mc_core_co_t row, col, max_row, max_col;
 	mc_core_nn_t tot_cores;
@@ -211,7 +211,7 @@ mc_host_run(){
 			sprintf(f_nm, "log_core_%02d.txt", num_core);
 
 			all_f_nam[num_core] = strdup((const char*)f_nm);
-			bjh_reset_log_file(all_f_nam[num_core]);
+			mch_reset_log_file(all_f_nam[num_core]);
 			
 			// init shared data.
 			pt_shd_data->sys_cores[num_core].magic_id = MC_MAGIC_ID;
@@ -282,14 +282,14 @@ mc_host_run(){
 				// wait for finish
 				if(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL){
 					has_work = true;
-					bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+					mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == MC_WAITING_ENTER){
 							print_core_info(sh_dat_1, &dev, row, col);
-							bjh_get_enter(row, col);
+							mch_get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == MC_WAITING_BUFFER){
-							bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+							mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						}
 						
 						int SYNC = (1 << E_SYNC);
@@ -305,8 +305,8 @@ mc_host_run(){
 					if(! core_finished[row][col]){
 						core_finished[row][col] = true;
 
-						bjh_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
-						BJH_CK(bjh_rr_ck_zero(&(pt_buff->rd_arr)));
+						mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+						BJH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						//printf("Finished\n");
 						//print_core_info(sh_dat_1, &dev, row, col);
@@ -344,17 +344,17 @@ mc_host_run(){
 
 void
 mc_host_finish(){
-	e_epiphany_t & dev = bjh_glb_dev;
+	e_epiphany_t & dev = mch_glb_dev;
 
 	e_reset_group(&dev); 
 	e_reset_system();
 	
 	e_close(&dev);
 	
-	destroy_mspace(bjh_glb_load_mspace);
-	destroy_mspace(bjh_glb_alloc_mspace);
+	destroy_mspace(mch_glb_load_mspace);
+	destroy_mspace(mch_glb_alloc_mspace);
 
-	e_free(&bjh_glb_emem);
+	e_free(&mch_glb_emem);
 	e_finalize();
 
 	//prt_host_aligns();
@@ -368,7 +368,7 @@ int main(int argc, char *argv[]) {
 
 void
 mc_start_all_cores(){
-	e_epiphany_t & dev = bjh_glb_dev;
+	e_epiphany_t & dev = mch_glb_dev;
 	mc_core_co_t row, col, max_row, max_col;
 
 	fprintf(stderr, "sizeof(int)=%d \n", sizeof(int));

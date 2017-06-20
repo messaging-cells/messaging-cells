@@ -2,7 +2,7 @@
 #include "cell.hh"
 
 void func_1(int aa){
-	bjk_abort((mc_addr_t)func_1, const_cast<char*>("Forced abort in backtrace test"));
+	mck_abort((mc_addr_t)func_1, const_cast<char*>("Forced abort in backtrace test"));
 }
 
 void func_2(char bb, int aa){
@@ -14,11 +14,11 @@ void func_3(char* cc, int aa){
 }
 
 void mc_cores_main() {
-	bjk_glb_init();
+	mck_glb_init();
 
-	bjk_slog2("BACKTRACE_TEST\n");	
+	mck_slog2("BACKTRACE_TEST\n");	
 	func_3(const_cast<char*>("calling func3"), 33);
 
-	bjk_glb_finish();
+	mck_glb_finish();
 }
 

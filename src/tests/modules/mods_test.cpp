@@ -36,13 +36,13 @@ print_module_nams() mc_external_code_ram;
 
 void
 print_module_nams(){
-	uint32_t to_m = bjk_get_tot_modules();
+	uint32_t to_m = mck_get_tot_modules();
 	uint32_t aa = 0;
-	bjk_sprt2("ALL_MODULE_NAMES=\n");
+	mck_sprt2("ALL_MODULE_NAMES=\n");
 	for(aa = 0; aa < to_m; aa++){
-		char* nam0 = bjk_get_module_name(aa);
-		bjk_sprt2(nam0);
-		bjk_sprt2("\n");
+		char* nam0 = mck_get_module_name(aa);
+		mck_sprt2(nam0);
+		mck_sprt2("\n");
 	}
 }
 
@@ -51,15 +51,15 @@ print_module_addrs() mc_external_code_ram;
 
 void
 print_module_addrs(){
-	uint32_t to_m = bjk_get_tot_modules();
+	uint32_t to_m = mck_get_tot_modules();
 	uint32_t aa = 0;
-	bjk_sprt2("ALL_MODULE_ADDRS=\n");
+	mck_sprt2("ALL_MODULE_ADDRS=\n");
 	for(aa = 0; aa < to_m; aa++){
 		char* nam0 = all_mod_nams[aa];
-		bjk_sprt2(nam0);
-		bjk_sprt2(" addr____");
-		bjk_xprt(all_mod_addr[aa]);
-		bjk_sprt2("____\n");
+		mck_sprt2(nam0);
+		mck_sprt2(" addr____");
+		mck_xprt(all_mod_addr[aa]);
+		mck_sprt2("____\n");
 	}
 }
 
@@ -74,18 +74,18 @@ link_all_modules_aux_fn(){
 }
 
 int main() {
-	bjk_glb_init();
-	bjk_slog2("Modules main \n");
+	mck_glb_init();
+	mck_slog2("Modules main \n");
 
 	init_module_nams();
-	uint32_t tot_m = bjk_get_tot_modules();
+	uint32_t tot_m = mck_get_tot_modules();
 	all_mod_addr = mc_malloc32(mc_addr_t, tot_m);
-	bjk_fill_module_external_addresses(all_mod_nams, all_mod_addr);
+	mck_fill_module_external_addresses(all_mod_nams, all_mod_addr);
 
 	if(BJK_GLB_SYS->the_core_nn == 0){	
 		//print_module_nams();
 		//print_module_addrs();
-		bool ok = bjk_load_module(all_mod_addr[MOD2_IDX]);
+		bool ok = mck_load_module(all_mod_addr[MOD2_IDX]);
 		if(ok){
 			m2_main();
 		}
@@ -93,7 +93,7 @@ int main() {
 	if(BJK_GLB_SYS->the_core_nn == 1){	
 		//print_module_nams();
 		//print_module_addrs();
-		bool ok = bjk_load_module(all_mod_addr[MOD1_IDX]);
+		bool ok = mck_load_module(all_mod_addr[MOD1_IDX]);
 		if(ok){
 			m1_main();
 		}
@@ -101,14 +101,14 @@ int main() {
 	if(BJK_GLB_SYS->the_core_nn == 3){	
 		//print_module_nams();
 		//print_module_addrs();
-		bool ok = bjk_load_module(all_mod_addr[MOD3_IDX]);
+		bool ok = mck_load_module(all_mod_addr[MOD3_IDX]);
 		if(ok){
 			m3_main();
 		}
 	}
-	bjk_slog2("______________________\n");
+	mck_slog2("______________________\n");
 
-	bjk_glb_finish();
+	mck_glb_finish();
 	return 0;
 }
 

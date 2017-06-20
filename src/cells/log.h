@@ -37,53 +37,53 @@ typedef enum mc_type_def mc_type_t;
 // log messages
 
 void
-bjk_aux_sout(char* msg, mc_out_type_t outt) mc_external_code_ram;
+mck_aux_sout(char* msg, mc_out_type_t outt) mc_external_code_ram;
 
 mc_inline_fn void
-bjk_slog(char* msg){
-	bjk_aux_sout(msg, MC_OUT_LOG);
+mck_slog(char* msg){
+	mck_aux_sout(msg, MC_OUT_LOG);
 }
 
-#define	bjk_slog2(msg) bjk_slog(as_pt_char(msg))
+#define	mck_slog2(msg) mck_slog(as_pt_char(msg))
 
 mc_inline_fn void
-bjk_sprt(char* msg){
-	bjk_aux_sout(msg, MC_OUT_PRT);
+mck_sprt(char* msg){
+	mck_aux_sout(msg, MC_OUT_PRT);
 }
 
-#define	bjk_sprt2(msg) bjk_sprt(as_pt_char(msg))
+#define	mck_sprt2(msg) mck_sprt(as_pt_char(msg))
 
 void
-bjk_aux_iout(uint32_t vv, mc_out_type_t outt, mc_type_t tt) mc_external_code_ram;
+mck_aux_iout(uint32_t vv, mc_out_type_t outt, mc_type_t tt) mc_external_code_ram;
 
 mc_inline_fn void
-bjk_ilog(int32_t vv){
-	bjk_aux_iout(vv, MC_OUT_LOG, MC_I32);
+mck_ilog(int32_t vv){
+	mck_aux_iout(vv, MC_OUT_LOG, MC_I32);
 }
 
 mc_inline_fn void
-bjk_ulog(uint32_t vv){
-	bjk_aux_iout(vv, MC_OUT_LOG, MC_UI32);
+mck_ulog(uint32_t vv){
+	mck_aux_iout(vv, MC_OUT_LOG, MC_UI32);
 }
 
 mc_inline_fn void
-bjk_xlog(uint32_t vv){
-	bjk_aux_iout(vv, MC_OUT_LOG, MC_X32);
+mck_xlog(uint32_t vv){
+	mck_aux_iout(vv, MC_OUT_LOG, MC_X32);
 }
 
 mc_inline_fn void
-bjk_iprt(int32_t vv){
-	bjk_aux_iout(vv, MC_OUT_PRT, MC_I32);
+mck_iprt(int32_t vv){
+	mck_aux_iout(vv, MC_OUT_PRT, MC_I32);
 }
 
 mc_inline_fn void
-bjk_uprt(uint32_t vv){
-	bjk_aux_iout(vv, MC_OUT_PRT, MC_UI32);
+mck_uprt(uint32_t vv){
+	mck_aux_iout(vv, MC_OUT_PRT, MC_UI32);
 }
 
 mc_inline_fn void
-bjk_xprt(uint32_t vv){
-	bjk_aux_iout(vv, MC_OUT_PRT, MC_X32);
+mck_xprt(uint32_t vv){
+	mck_aux_iout(vv, MC_OUT_PRT, MC_X32);
 }
 
 #ifdef __cplusplus

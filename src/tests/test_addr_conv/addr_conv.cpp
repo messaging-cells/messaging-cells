@@ -14,10 +14,10 @@
 //define NUM_OPERS 100000
 #define NUM_OPERS 10000000
 
-char* bjh_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
+char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
 #define BJT_COREID(_addr) ((_addr) >> 20)
-static inline bool bjt_is_local(uint32_t addr)
+static inline bool mct_is_local(uint32_t addr)
 {
 	return BJT_COREID(addr) == 0;
 }
@@ -43,12 +43,12 @@ mc_host_main(int argc, char *argv[])
 	}
 
 	mc_link_syms_data_st* lk_dat = &(syms);
-	bjh_read_eph_link_syms(elf_path, lk_dat);
+	mch_read_eph_link_syms(elf_path, lk_dat);
 
 	if(lk_dat->extnl_ram_orig == 0) {
 		printf("ERROR: Can't read external memory location from '%s'\n", elf_path);
 		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", elf_path);
-		bjh_abort_func(301, "301. ERROR: Bad ELF\n");
+		mch_abort_func(301, "301. ERROR: Bad ELF\n");
 	}
 
 	// sys init
@@ -58,7 +58,7 @@ mc_host_main(int argc, char *argv[])
 	e_get_platform_info(&platform);
 
 	if (e_alloc(&emem, 0, lk_dat->extnl_ram_size)) {
-		bjh_abort_func(302, "302. ERROR: Can't allocate external memory buffer!\n\n");
+		mch_abort_func(302, "302. ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
 	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
@@ -69,9 +69,9 @@ mc_host_main(int argc, char *argv[])
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
 	mc_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
-	bjh_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
+	mch_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
-	mc_off_sys_st* pt_shd_data = (mc_off_sys_st*)bjh_disp_to_pt(lk_dat->extnl_host_data_disp);
+	mc_off_sys_st* pt_shd_data = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_host_data_disp);
 	BJH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 
 	/*
@@ -128,7 +128,7 @@ mc_host_main(int argc, char *argv[])
 		uint32_t ld_addr = gg.gen_rand_int32();
 		//uint32_t ld_addr = gg.gen_rand_int32_ie(0, 1000);
 
-		bool islocal = bjt_is_local(ld_addr);
+		bool islocal = mct_is_local(ld_addr);
 		bool isonchip = islocal ? true : e_is_addr_on_chip((void *) ((uintptr_t) ld_addr));
 		bool isexternal = ((! islocal) && (! isonchip));
 

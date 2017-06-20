@@ -67,9 +67,9 @@ struct mc_aligned mc_link_syms_data_def {
 typedef struct mc_link_syms_data_def mc_link_syms_data_st;
 
 #ifdef MC_IS_EPH_CODE
-	#define MC_EXTERNAL_RAM_LOAD_DATA bjk_external_ram_load_data
+	#define MC_EXTERNAL_RAM_LOAD_DATA mck_external_ram_load_data
 #else
-	#define MC_EXTERNAL_RAM_LOAD_DATA bjh_external_ram_load_data
+	#define MC_EXTERNAL_RAM_LOAD_DATA mch_external_ram_load_data
 #endif
 
 void*
@@ -118,7 +118,7 @@ typedef struct mc_load_map_def mc_load_map_st;
 #define mc_std_e3_tree(nn, ...) BJL_TREE_NODE(lib_std_map, nn, __VA_ARGS__)
 
 void
-bjl_load_module(char* module_name) mc_external_code_ram;
+mcl_load_module(char* module_name) mc_external_code_ram;
 
 void
 mc_reset_core(mc_core_id_t id) mc_external_code_ram;

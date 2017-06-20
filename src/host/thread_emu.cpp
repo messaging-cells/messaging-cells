@@ -73,38 +73,38 @@ mc_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str) {
 // =====================================================================================
 
 uint16_t
-bjk_get_thread_idx(){
+mck_get_thread_idx(){
 	if(ALL_THREADS_INFO == mc_null){
-		bjh_abort_func(2, "get_thread_idx. NULL ALL_THREADS_INFO \n");
+		mch_abort_func(2, "get_thread_idx. NULL ALL_THREADS_INFO \n");
 		return 0;
 	}
 	pthread_t slf = pthread_self();
 	if(slf == HOST_THREAD_ID){
-		bjh_abort_func(2, "get_thread_idx. Host thread. \n");
+		mch_abort_func(2, "get_thread_idx. Host thread. \n");
 		return 0;
 	}
 
 	char thd_name[NAMELEN];
 	int rc = pthread_getname_np(slf, thd_name, NAMELEN);
 	if(rc != 0){
-		bjh_abort_func(1, "get_thread_idx. INVALID THREAD NAME \n");
+		mch_abort_func(1, "get_thread_idx. INVALID THREAD NAME \n");
 		return 0;
 	}
 	uint16_t thd_idx = mc_hex_bytes_to_uint16((uint8_t*)thd_name);
 	if((thd_idx < 0) || (thd_idx >= TOT_THREADS)){
-		bjh_abort_func(1, "get_thread_idx. INVALID thd_idx \n");
+		mch_abort_func(1, "get_thread_idx. INVALID thd_idx \n");
 		return 0;
 	}
 	return thd_idx;
 }
 
 emu_info_t*
-bjk_get_emu_info(){
+mck_get_emu_info(){
 	if(mc_is_host_thread()){
-		EMU_CK(bjm_HOST_EMU_INFO != mc_null);
-		return bjm_HOST_EMU_INFO;
+		EMU_CK(mcm_HOST_EMU_INFO != mc_null);
+		return mcm_HOST_EMU_INFO;
 	}
-	uint16_t thd_idx = bjk_get_thread_idx();
+	uint16_t thd_idx = mck_get_thread_idx();
 	emu_info_t* info = &(ALL_THREADS_INFO[thd_idx].thd_emu);
 	return info;
 }
@@ -118,40 +118,40 @@ bjk_get_emu_info(){
 		do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
 mc_core_id_t
-bjm_get_addr_core_id_fn(void* addr){
-	if(bjm_addr_in_host(addr)){
-		EMU_CK(bjm_HOST_EMU_INFO != mc_null);
-		return bjm_HOST_EMU_INFO->emu_core_id;
+mcm_get_addr_core_id_fn(void* addr){
+	if(mcm_addr_in_host(addr)){
+		EMU_CK(mcm_HOST_EMU_INFO != mc_null);
+		return mcm_HOST_EMU_INFO->emu_core_id;
 	}	
-	mc_core_nn_t idx = bjk_get_addr_idx(addr);
+	mc_core_nn_t idx = mck_get_addr_idx(addr);
 	thread_info_t* info = &(ALL_THREADS_INFO[idx]);
 	return info->thd_emu.emu_core_id;
 }
 
 void*
-bjm_addr_with_fn(mc_core_id_t core_id, void* addr){
-	if(bjm_addr_in_host(addr)){
+mcm_addr_with_fn(mc_core_id_t core_id, void* addr){
+	if(mcm_addr_in_host(addr)){
 		return mc_null;
 	}
 	mc_core_nn_t idx = mc_id_to_nn(core_id);
-	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + bjk_get_addr_offset(addr));
-	//EMU_CK((core_id != bjm_get_addr_core_id_fn(addr)) || (addr2 == addr));
+	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + mck_get_addr_offset(addr));
+	//EMU_CK((core_id != mcm_get_addr_core_id_fn(addr)) || (addr2 == addr));
 	return addr2;
 }
 
 bool 
-bjm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const char* ck_str, const char* fmt, ...)
+mcm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const char* ck_str, const char* fmt, ...)
 {
 	bool is_asst = (is_assert && ! vv_ck);
 	bool is_prt = (! is_assert && vv_ck);
 	bool do_prt = is_asst || is_prt;
 	if(do_prt){
-		emu_info_t* inf = bjk_get_emu_info();
+		emu_info_t* inf = mck_get_emu_info();
 		if(is_assert){
 			fprintf(stderr, "------------------------------------------------------------------\n");
 			fprintf(stderr, "%d:%x --> ASSERT '%s' FAILED. FILE (%d) = %s\n", 
 					inf->emu_num, inf->emu_core_id, ck_str, line, file);
-			bjh_ptr_call_stack_trace();
+			mch_ptr_call_stack_trace();
 		} 
 
 		if(fmt != NULL){
@@ -165,7 +165,7 @@ bjm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const ch
 			pp[MC_MAX_STR_SZ - 1] = '\0';
 
 			if(size < 0){ 
-				bjh_abort_func((mc_addr_t)bjm_printf, "bjm_printf. ERROR. \n");
+				mch_abort_func((mc_addr_t)mcm_printf, "mcm_printf. ERROR. \n");
 			}
 
 			fprintf(stderr, "%d:%x --> %s", inf->emu_num, inf->emu_core_id, pp);
@@ -180,7 +180,7 @@ bjm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const ch
 }
 
 void
-bjm_log(const char *fmt, ...){
+mcm_log(const char *fmt, ...){
 	//EMU_CK(! mc_is_host_thread());
 
 	char pp[MC_MAX_STR_SZ];
@@ -193,14 +193,14 @@ bjm_log(const char *fmt, ...){
 	pp[MC_MAX_STR_SZ - 1] = '\0';
 
 	if(size < 0){ 
-		bjh_abort_func((mc_addr_t)bjm_log, "bjm_log. ERROR. \n");
+		mch_abort_func((mc_addr_t)mcm_log, "mcm_log. ERROR. \n");
 	}
 
-	bjk_slog2(pp);
+	mck_slog2(pp);
 }
 
 void
-bjm_printf(const char *fmt, ...){
+mcm_printf(const char *fmt, ...){
 	//EMU_CK(! mc_is_host_thread());
 
 	char pp[MC_MAX_STR_SZ];
@@ -213,10 +213,10 @@ bjm_printf(const char *fmt, ...){
 	pp[MC_MAX_STR_SZ - 1] = '\0';
 
 	if(size < 0){ 
-		bjh_abort_func((mc_addr_t)bjm_printf, "bjm_printf. ERROR. \n");
+		mch_abort_func((mc_addr_t)mcm_printf, "mcm_printf. ERROR. \n");
 	}
 
-	emu_info_t* inf = bjk_get_emu_info();
+	emu_info_t* inf = mck_get_emu_info();
 
 	printf("%d:%x --> %s", inf->emu_num, inf->emu_core_id, pp);
 	fflush(stdout); 
@@ -230,7 +230,7 @@ thread_start(void *arg){
 
 	pthread_setname_np(slf, tinfo->thd_emu.emu_name);
 
-	//printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, bjk_get_core_id(), tinfo->thd_emu.emu_name);
+	//printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, mck_get_core_id(), tinfo->thd_emu.emu_name);
 
 	if(tinfo->thd_emu.emu_core_func != mc_null){
 		(tinfo->thd_emu.emu_core_func)();

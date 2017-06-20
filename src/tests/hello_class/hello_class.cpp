@@ -9,13 +9,13 @@ public:
 
 void 
 hello::handler_1(missive* msv){
-	bjk_slog2("HELLO_CLASS\n");	
+	mck_slog2("HELLO_CLASS\n");	
 }
 
 typedef void (cell::*mc_handler_t)(missive* msv);
 
 void mc_cores_main() {
-	bjk_glb_init();
+	mck_glb_init();
 
 	hello ob1;
 
@@ -23,6 +23,6 @@ void mc_cores_main() {
 
 	(ob1.*pt_fun)(mc_null);
 
-	bjk_glb_finish();
+	mck_glb_finish();
 }
 

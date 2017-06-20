@@ -17,20 +17,20 @@
 
 //include "test_align.h"
 
-mc_link_syms_data_st bjh_external_ram_load_data;
+mc_link_syms_data_st mch_external_ram_load_data;
 
 bool BJH_LOAD_WITH_MEMCPY = false;
 
 void 
-bjh_abort_func(long val, const char* msg){
+mch_abort_func(long val, const char* msg){
 	fprintf(stderr, "\nABORTING! ERR=%ld %s\n", val, msg);
-	EMU_CODE(bjh_ptr_call_stack_trace(););
+	EMU_CODE(mch_ptr_call_stack_trace(););
 	
 	exit(val);
 }
 
 bool 
-bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
+mch_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, const char* msg){
 	
 	if(! vv_ck){
 		fprintf(stderr, "ASSERT '%s' FAILED\nFILE= %s\nLINE=%d \n", ck_str, file, line);
@@ -45,7 +45,7 @@ bjh_call_assert(bool vv_ck, const char* file, int line, const char* ck_str, cons
 }
 
 bool
-bjh_file_append(char* the_pth, char* the_data, long the_sz){
+mch_file_append(char* the_pth, char* the_data, long the_sz){
 	int fd = 0;
 	
 	if((fd = open(the_pth, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
@@ -57,7 +57,7 @@ bjh_file_append(char* the_pth, char* the_data, long the_sz){
 	return true;
 }
 
-bool bjh_ck_sys_data(mc_sys_sz_st* sys1){
+bool mch_ck_sys_data(mc_sys_sz_st* sys1){
 	mc_sys_sz_st* sys0 = BJK_GLB_SYS_SZ;
 	BJH_CK(sys1->xx == sys0->xx);
 	BJH_CK(sys1->yy == sys0->yy);
@@ -67,18 +67,18 @@ bool bjh_ck_sys_data(mc_sys_sz_st* sys1){
 }
 
 void
-bjh_prt_exception(bjk_glb_sys_st* sh_dat){
+mch_prt_exception(mck_glb_sys_st* sh_dat){
 	for(int aa = 0; aa < 5; aa++){
-		if(sh_dat->exception_code == bjk_software_exception){
+		if(sh_dat->exception_code == mck_software_exception){
 			printf("%x. SOFTWARE EXCEPTION!!\n", sh_dat->the_core_id);
 		}
-		if(sh_dat->exception_code == bjk_memory_exception){
+		if(sh_dat->exception_code == mck_memory_exception){
 			printf("%x. MEMORY EXCEPTION!!\n", sh_dat->the_core_id);
 		}
 	}
 }
 
-int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
+int mch_prt_in_core_shd_dat(mck_glb_sys_st* sh_dat){
 	if(sh_dat->magic_id != MC_MAGIC_ID){
 		fprintf(stderr, "ERROR with inco.magic_id (0x%08x)\n", sh_dat->magic_id);
 		return 1;
@@ -105,15 +105,15 @@ int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
 	fprintf(stderr, "missive_sz=%d \n", sh_dat->missive_sz);
 	fprintf(stderr, "agent_grp_sz=%d \n", sh_dat->agent_grp_sz);
 	fprintf(stderr, "agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
-	fprintf(stderr, "bjk_glb_sys_st_sz=%d \n", sh_dat->bjk_glb_sys_st_sz);
+	fprintf(stderr, "mck_glb_sys_st_sz=%d \n", sh_dat->mck_glb_sys_st_sz);
 	*/
 
-	if(sh_dat->exception_code != bjk_invalid_exception){
+	if(sh_dat->exception_code != mck_invalid_exception){
 		for(int aa = 0; aa < 5; aa++){
-			if(sh_dat->exception_code == bjk_software_exception){
+			if(sh_dat->exception_code == mck_software_exception){
 				fprintf(stderr, "%x. SOFTWARE EXCEPTION!!\n", sh_dat->the_core_id);
 			}
-			if(sh_dat->exception_code == bjk_memory_exception){
+			if(sh_dat->exception_code == mck_memory_exception){
 				fprintf(stderr, "%x. MEMORY EXCEPTION!!\n", sh_dat->the_core_id);
 			}
 		}
@@ -125,7 +125,7 @@ int bjh_prt_in_core_shd_dat(bjk_glb_sys_st* sh_dat){
 }
 
 bool
-bjh_rr_ck_zero(mc_rrarray_st* arr){
+mch_rr_ck_zero(mc_rrarray_st* arr){
 	if(arr == mc_null){
 		return true;
 	}
@@ -140,7 +140,7 @@ bjh_rr_ck_zero(mc_rrarray_st* arr){
 }
 
 void
-bjh_rr_print(mc_rrarray_st* arr){
+mch_rr_print(mc_rrarray_st* arr){
 	if(arr == mc_null){
 		return;
 	}
@@ -168,7 +168,7 @@ bjh_rr_print(mc_rrarray_st* arr){
 }
 
 int
-bjh_type_sz(mc_type_t tt){
+mch_type_sz(mc_type_t tt){
 	int sz = 0;
 	switch(tt){
 		case MC_CHR:
@@ -192,18 +192,18 @@ bjh_type_sz(mc_type_t tt){
 }
 
 void
-bjh_reset_log_file(char* f_nm){
+mch_reset_log_file(char* f_nm){
 	int log_fd = 0;
 	if((log_fd = creat(f_nm, 0777)) == -1){
 		fprintf(stderr, "ERROR. Can NOT reset log file %s\n", f_nm);
-		bjh_abort_func(0, "ERROR. Can NOT reset log file\n");
+		mch_abort_func(0, "ERROR. Can NOT reset log file\n");
 		return;
 	}
 	close(log_fd);
 }
 
 void
-bjh_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
+mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 	int log_fd = 0;
 	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
 		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
@@ -231,7 +231,7 @@ bjh_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 				write(fd, obj + 2, omc_sz - 2);
 				continue;
 			}
-			int osz = bjh_type_sz(ot);
+			int osz = mch_type_sz(ot);
 			int tot = (omc_sz - 2) / osz;
 			int aa;
 			uint8_t* pt_num = obj + 2;
@@ -278,7 +278,7 @@ bjh_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 }
 
 uint8_t*
-bjh_read_file(char* the_pth, off_t* size){
+mch_read_file(char* the_pth, off_t* size){
 	int fd;
 	uint8_t* pt_str = NULL;
 
@@ -324,7 +324,7 @@ bjh_read_file(char* the_pth, off_t* size){
 }
 
 int
-bjh_write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once){
+mch_write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once){
 	int fd = 0;
 	
 	if(write_once){
@@ -345,7 +345,7 @@ bjh_write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once){
 }
 
 void
-bjh_get_enter(mc_core_co_t row, mc_core_co_t col){
+mch_get_enter(mc_core_co_t row, mc_core_co_t col){
 	// CONTINUE
 	printf("CORE (%d, %d) WAITING. Type enter\n", row, col);
 	getchar();
@@ -354,7 +354,7 @@ bjh_get_enter(mc_core_co_t row, mc_core_co_t col){
 #define BJH_MAX_CALL_STACK_SZ 100
 
 void
-bjh_ptr_call_stack_trace() {
+mch_ptr_call_stack_trace() {
 	void* trace[BJH_MAX_CALL_STACK_SZ];
 
 	memset((uint8_t*)trace, 0, BJH_MAX_CALL_STACK_SZ * sizeof(void*));

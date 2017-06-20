@@ -41,24 +41,24 @@ typedef void (*mc_kenel_func_t)(void);
 //-------------------------------------------------------------------------
 // cell ids
 
-#define bjk_cell_id(cls) MC_CELL_ID_##cls
+#define mck_cell_id(cls) MC_CELL_ID_##cls
 
-enum bjk_cell_id_t : uint8_t {
-	bjk_invalid_cell = 0,
+enum mck_cell_id_t : uint8_t {
+	mck_invalid_cell = 0,
 
-	bjk_cell_id(agent),
-	bjk_cell_id(cell),
-	bjk_cell_id(missive),
-	bjk_cell_id(agent_ref),
-	bjk_cell_id(agent_grp),
+	mck_cell_id(agent),
+	mck_cell_id(cell),
+	mck_cell_id(missive),
+	mck_cell_id(agent_ref),
+	mck_cell_id(agent_grp),
 
-	bjk_tot_cell_ids
+	mck_tot_cell_ids
 };
 
 //-------------------------------------------------------------------------
 // dyn mem
 
-#define bjk_all_available(nam) BJK_KERNEL->cls_available_##nam
+#define mck_all_available(nam) BJK_KERNEL->cls_available_##nam
 
 #define BJK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 void \
@@ -73,14 +73,14 @@ nam::separate(uint16_t sz){ \
 
 // end_macro
 
-#define BJK_DEFINE_SEPARATE(nam) BJK_DEFINE_SEPARATE_AVA(nam, bjk_all_available(nam))
+#define BJK_DEFINE_SEPARATE(nam) BJK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
 
 #define BJK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 nam* \
 nam::acquire_alloc(uint16_t sz){ \
 	nam* obj = mc_malloc##align(nam, sz); \
 	if(obj == mc_null){ \
-		bjk_abort((mc_addr_t)nam::acquire_alloc, err_1); \
+		mck_abort((mc_addr_t)nam::acquire_alloc, err_1); \
 	} \
 	BJK_CK(MC_IS_ALIGNED_##align(obj)); \
 	for(int bb = 0; bb < sz; bb++){ \
@@ -105,7 +105,7 @@ nam::acquire(uint16_t sz){ \
 
 // end_macro
 
-#define BJK_DEFINE_ACQUIRE(nam) BJK_DEFINE_ACQUIRE_AVA(nam, bjk_all_available(nam))
+#define BJK_DEFINE_ACQUIRE(nam) BJK_DEFINE_ACQUIRE_AVA(nam, mck_all_available(nam))
 
 #define BJK_DECLARE_MEM_METHODS(nam) \
 	static	nam*			acquire_alloc(uint16_t sz = 1) mc_external_code_ram; \
@@ -124,11 +124,11 @@ nam::acquire(uint16_t sz){ \
 //-------------------------------------------------------------------------
 // handler ids
 
-typedef uint8_t bjk_handler_idx_t;
+typedef uint8_t mck_handler_idx_t;
 
-enum bjk_core_state_t : uint8_t {
-	bjk_invalid_state = 10,
-	bjk_inited_state
+enum mck_core_state_t : uint8_t {
+	mck_invalid_state = 10,
+	mck_inited_state
 };
 
 typedef void (*missive_handler_t)(missive* msg);
@@ -136,32 +136,32 @@ typedef void (*missive_handler_t)(missive* msg);
 //-------------------------------------------------------------------------
 // kernel data
 
-enum bjk_route_t : uint8_t {
-	bjk_up_route = 0,
-	bjk_down_route,
-	bjk_left_route,
-	bjk_right_route,
-	bjk_tot_routes
+enum mck_route_t : uint8_t {
+	mck_up_route = 0,
+	mck_down_route,
+	mck_left_route,
+	mck_right_route,
+	mck_tot_routes
 };
 
-enum bjk_signal_t : uint8_t {
-	bjk_do_pw0_routes_sgnl = 0,
-	bjk_do_pw2_routes_sgnl,
-	bjk_do_pw4_routes_sgnl,
-	bjk_do_pw6_routes_sgnl,
-	bjk_tot_signals
+enum mck_signal_t : uint8_t {
+	mck_do_pw0_routes_sgnl = 0,
+	mck_do_pw2_routes_sgnl,
+	mck_do_pw4_routes_sgnl,
+	mck_do_pw6_routes_sgnl,
+	mck_tot_signals
 };
 
 //=============================================================================
-/*! \enum bjk_ack_t
+/*! \enum mck_ack_t
 \brief Posible ack state (write more).
 \ingroup docgrp_API
 
 */
-enum bjk_ack_t : uint8_t {
-	bjk_ready_ack = 30,	//!< It is ready to (write more)
-	bjk_busy_ack,
-	bjk_virgin_ack
+enum mck_ack_t : uint8_t {
+	mck_ready_ack = 30,	//!< It is ready to (write more)
+	mck_busy_ack,
+	mck_virgin_ack
 };
 
 
@@ -171,32 +171,32 @@ enum bjk_ack_t : uint8_t {
 //define mc_virgin mc_null
 #define mc_virgin ((missive_grp_t*)(~((mc_addr_t)mc_null)))
 
-#define kernel_signals_arr_sz bjk_tot_signals
+#define kernel_signals_arr_sz mck_tot_signals
 #define kernel_pw0_routed_arr_sz mc_out_num_cores
-#define kernel_pw2_routed_arr_sz bjk_tot_routes
-#define kernel_pw4_routed_arr_sz bjk_tot_routes
-#define kernel_pw6_routed_arr_sz bjk_tot_routes
+#define kernel_pw2_routed_arr_sz mck_tot_routes
+#define kernel_pw4_routed_arr_sz mck_tot_routes
+#define kernel_pw6_routed_arr_sz mck_tot_routes
 
-#define kernel_class_names_arr_sz bjk_tot_cell_ids
+#define kernel_class_names_arr_sz mck_tot_cell_ids
 
 //if defined(XXX) && !defined(YYY) 
 
 #ifdef MC_IS_EPH_CODE
 	kernel*
-	bjk_get_first_kernel() mc_external_code_ram;
+	mck_get_first_kernel() mc_external_code_ram;
 
-	extern kernel*	bjk_PT_THE_KERNEL;
-	#define BJK_FIRST_KERNEL bjk_get_first_kernel()
-	#define BJK_KERNEL (bjk_PT_THE_KERNEL)
+	extern kernel*	mck_PT_THE_KERNEL;
+	#define BJK_FIRST_KERNEL mck_get_first_kernel()
+	#define BJK_KERNEL (mck_PT_THE_KERNEL)
 #endif
 
 #ifdef MC_IS_ZNQ_CODE
 	kernel*
-	bjh_get_first_kernel();
+	mch_get_first_kernel();
 
-	extern kernel*	bjh_PT_THE_KERNEL;
-	#define BJK_FIRST_KERNEL bjh_get_first_kernel()
-	#define BJK_KERNEL (bjh_PT_THE_KERNEL)
+	extern kernel*	mch_PT_THE_KERNEL;
+	#define BJK_FIRST_KERNEL mch_get_first_kernel()
+	#define BJK_KERNEL (mch_PT_THE_KERNEL)
 #endif
 
 #ifdef MC_IS_EMU_CODE
@@ -205,14 +205,14 @@ enum bjk_ack_t : uint8_t {
 #endif
 
 //! Gets the local kernel
-#define bjk_get_kernel() BJK_KERNEL
+#define mck_get_kernel() BJK_KERNEL
 
 class mc_aligned kernel { 
 public:
 	uint32_t 	magic_id;
 	bool		is_host_kernel;
 
-	bjk_handler_idx_t 	tot_handlers;
+	mck_handler_idx_t 	tot_handlers;
 	missive_handler_t* 	all_handlers;
 
 	mc_bool_t signals_arr[kernel_signals_arr_sz];
@@ -222,13 +222,13 @@ public:
 	missive_grp_t* pw4_routed_arr[kernel_pw4_routed_arr_sz];
 	missive_grp_t* pw6_routed_arr[kernel_pw6_routed_arr_sz];
 
-	bjk_ack_t pw0_routed_ack_arr[kernel_pw0_routed_arr_sz];
-	bjk_ack_t pw2_routed_ack_arr[kernel_pw2_routed_arr_sz];
-	bjk_ack_t pw4_routed_ack_arr[kernel_pw4_routed_arr_sz];
-	bjk_ack_t pw6_routed_ack_arr[kernel_pw6_routed_arr_sz];
+	mck_ack_t pw0_routed_ack_arr[kernel_pw0_routed_arr_sz];
+	mck_ack_t pw2_routed_ack_arr[kernel_pw2_routed_arr_sz];
+	mck_ack_t pw4_routed_ack_arr[kernel_pw4_routed_arr_sz];
+	mck_ack_t pw6_routed_ack_arr[kernel_pw6_routed_arr_sz];
 
 	missive_grp_t*	routed_from_host;
-	bjk_ack_t	routed_ack_from_host;
+	mck_ack_t	routed_ack_from_host;
 
 	mc_bool_t has_from_host_work;
 	mc_bool_t has_to_host_work;
@@ -289,7 +289,7 @@ public:
 	static kernel*
 	get_sys();
 
-	static mc_inline_fn bjk_glb_sys_st& 
+	static mc_inline_fn mck_glb_sys_st& 
 	get_glb(){
 		return *BJK_GLB_SYS;
 	}
@@ -302,7 +302,7 @@ public:
 	static mc_inline_fn mc_sys_sz_st& 
 	get_sys_sz(){
 		return *BJK_GLB_SYS_SZ;
-		//return BJK_GLB_SYS->bjk_system_sz;
+		//return BJK_GLB_SYS->mck_system_sz;
 	}
 
 	static mc_inline_fn mc_core_nn_t 
@@ -348,7 +348,7 @@ public:
 	}
 
 	mc_opt_sz_fn void 
-	process_signal(binder& in_wrk, int sz, missive_grp_t** arr, bjk_ack_t* acks);
+	process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* acks);
 
 	mc_opt_sz_fn void 
 	handle_missives();
@@ -376,33 +376,33 @@ public:
 
 };
 
-#define bjk_is_valid_handler_idx(idx) ((idx >= 0) && (idx < tot_handlers))
+#define mck_is_valid_handler_idx(idx) ((idx >= 0) && (idx < tot_handlers))
 
-#define bjk_is_valid_handler_index(idx) \
-	((all_handlers != mc_null) && bjk_is_valid_handler_idx(idx) && (all_handlers[idx] != mc_null))
+#define mck_is_valid_handler_index(idx) \
+	((all_handlers != mc_null) && mck_is_valid_handler_idx(idx) && (all_handlers[idx] != mc_null))
 
 
-#define bjk_handle_missive_base(msv, hdlr_idx) \
-	if(bjk_is_valid_handler_idx(hdlr_idx)){ \
+#define mck_handle_missive_base(msv, hdlr_idx) \
+	if(mck_is_valid_handler_idx(hdlr_idx)){ \
 		(*(all_handlers[hdlr_idx]))(msv); \
 		EMU_DBG_CODE(msv->dbg_msv |= 0x2); \
 	} \
 
 // end_macro
 
-#define bjk_handle_missive(msv) \
+#define mck_handle_missive(msv) \
 	cell* hdlr_dst = (msv)->dst; \
 	EMU_CK(hdlr_dst != mc_null); \
-	bjk_handle_missive_base(msv, hdlr_dst->handler_idx) \
+	mck_handle_missive_base(msv, hdlr_dst->handler_idx) \
 
 // end_macro
 
 
 #define mc_class_name(cls) const_cast<char*>("{" #cls "}");
 
-#define bjk_is_valid_class_name_idx(id) ((id >= 0) && (id < kernel_class_names_arr_sz))
+#define mck_is_valid_class_name_idx(id) ((id >= 0) && (id < kernel_class_names_arr_sz))
 
-#define bjk_set_class_name(cls) class_names_arr[bjk_cell_id(cls)] = mc_class_name(cls)
+#define mck_set_class_name(cls) class_names_arr[mck_cell_id(cls)] = mc_class_name(cls)
 
 //-------------------------------------------------------------------------
 // agent class 
@@ -416,8 +416,8 @@ public:
 	~agent(){}
 
 	virtual mc_opt_sz_fn 
-	bjk_cell_id_t	get_cell_id(){
-		return bjk_cell_id(agent);
+	mck_cell_id_t	get_cell_id(){
+		return mck_cell_id(agent);
 	}
 
 	virtual mc_opt_sz_fn 
@@ -436,7 +436,7 @@ public:
 
 	mc_inline_fn
 	agent*	get_glb_ptr(){
-		return (agent*)bjk_as_glb_pt(this);
+		return (agent*)mck_as_glb_pt(this);
 	}
 
 	virtual
@@ -453,8 +453,8 @@ There are two \ref cell s per variable. \ref neuron s hold references to \ref qu
 */
 
 
-typedef uint16_t bjk_token_t; 
-typedef uint8_t bjk_flags_t;
+typedef uint16_t mck_token_t; 
+typedef uint8_t mck_flags_t;
 
 class mc_aligned cell: public agent {
 public:
@@ -465,8 +465,8 @@ public:
 	static
 	void			separate(uint16_t sz) mc_external_code_ram;
 
-	bjk_handler_idx_t 	handler_idx;
-	bjk_flags_t 		flags;
+	mck_handler_idx_t 	handler_idx;
+	mck_flags_t 		flags;
 
 	mc_opt_sz_fn 
 	cell(){
@@ -483,18 +483,18 @@ public:
 	}
 
 	virtual
-	mc_opt_sz_fn bjk_cell_id_t	get_cell_id(){
-		return bjk_cell_id(cell);
+	mc_opt_sz_fn mck_cell_id_t	get_cell_id(){
+		return mck_cell_id(cell);
 	}
 
 	virtual
 	mc_opt_sz_fn grip&	get_available(){
-		return bjk_all_available(cell);
+		return mck_all_available(cell);
 	}
 
 	mc_opt_sz_fn
 	void
-	respond(missive* msv, bjk_token_t tok);
+	respond(missive* msv, mck_token_t tok);
 };
 
 //-------------------------------------------------------------------------
@@ -511,7 +511,7 @@ public:
 
 	cell* 				dst;
 	cell*				src;
-	bjk_token_t 		tok;
+	mck_token_t 		tok;
 
 	EMU_DBG_CODE(uint8_t	dbg_msv);
 
@@ -540,7 +540,7 @@ public:
 		EMU_CK(dst != mc_null);
 		EMU_CK(mc_addr_in_sys((mc_addr_t)dst));
 
-		src = (cell*)bjk_as_glb_pt(src);
+		src = (cell*)mck_as_glb_pt(src);
 		BJK_KERNEL->local_work.bind_to_my_left(*this);
 	}
 
@@ -553,7 +553,7 @@ public:
 		if(! BJK_KERNEL->is_host_kernel){
 			EMU_CK(mc_addr_get_id((mc_addr_t)dst) != 0);
 			EMU_CK(! mc_addr_in_sys((mc_addr_t)dst));
-			src = (cell*)bjk_as_glb_pt(src);
+			src = (cell*)mck_as_glb_pt(src);
 			BJK_KERNEL->to_host_work.bind_to_my_left(*this);
 			BJK_KERNEL->has_to_host_work = true;
 		} else {
@@ -562,13 +562,13 @@ public:
 	}
 
 	virtual
-	mc_opt_sz_fn bjk_cell_id_t	get_cell_id(){
-		return bjk_cell_id(missive);
+	mc_opt_sz_fn mck_cell_id_t	get_cell_id(){
+		return mck_cell_id(missive);
 	}
 
 	virtual
 	mc_opt_sz_fn grip&	get_available(){
-		return bjk_all_available(missive);
+		return mck_all_available(missive);
 	}
 
 	mc_inline_fn cell*
@@ -613,13 +613,13 @@ public:
 	}
 
 	virtual
-	mc_opt_sz_fn bjk_cell_id_t	get_cell_id(){
-		return bjk_cell_id(agent_grp);
+	mc_opt_sz_fn mck_cell_id_t	get_cell_id(){
+		return mck_cell_id(agent_grp);
 	}
 
 	virtual
 	mc_opt_sz_fn grip&	get_available(){
-		return bjk_all_available(agent_grp);
+		return mck_all_available(agent_grp);
 	}
 
 	void
@@ -654,23 +654,23 @@ public:
 	}
 
 	virtual
-	mc_opt_sz_fn bjk_cell_id_t	get_cell_id(){
-		return bjk_cell_id(agent_ref);
+	mc_opt_sz_fn mck_cell_id_t	get_cell_id(){
+		return mck_cell_id(agent_ref);
 	}
 
 	virtual
 	mc_opt_sz_fn grip&	get_available(){
-		return bjk_all_available(agent_ref);
+		return mck_all_available(agent_ref);
 	}
 };
 
 #define mc_glb_binder_get_rgt(bdr, id) ((binder*)mc_addr_set_id((id), ((bdr)->bn_right)))
 #define mc_glb_binder_get_lft(bdr, id) ((binder*)mc_addr_set_id((id), ((bdr)->bn_left)))
 
-#define bjh_glb_binder_get_rgt(bdr, id) (binder*)mc_glb_binder_get_rgt((binder*)mc_core_pt_to_host_pt(bdr), id)
-#define bjh_glb_binder_get_lft(bdr, id) (binder*)mc_glb_binder_get_lft((binder*)mc_core_pt_to_host_pt(bdr), id)
+#define mch_glb_binder_get_rgt(bdr, id) (binder*)mc_glb_binder_get_rgt((binder*)mc_core_pt_to_host_pt(bdr), id)
+#define mch_glb_binder_get_lft(bdr, id) (binder*)mc_glb_binder_get_lft((binder*)mc_core_pt_to_host_pt(bdr), id)
 
-#define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(bjk_as_loc_pt(msv->dst)))->nam(msv))
+#define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(mck_as_loc_pt(msv->dst)))->nam(msv))
 
 template<typename T, typename U> constexpr mc_size_t mc_offsetof(U T::*member) mc_external_code_ram;
 
@@ -684,14 +684,14 @@ mc_c_decl {
 #endif
 
 bool
-bjk_is_id_inited(mc_core_id_t dst_id) mc_external_code_ram;
+mck_is_id_inited(mc_core_id_t dst_id) mc_external_code_ram;
 
 bool
-bjk_ck_type_sizes() mc_external_code_ram;
+mck_ck_type_sizes() mc_external_code_ram;
 
 //mc_opt_sz_fn 
 void 
-bjk_send_irq(mc_core_id_t koid, uint16_t num_irq) mc_external_code_ram;
+mck_send_irq(mc_core_id_t koid, uint16_t num_irq) mc_external_code_ram;
 
 #ifdef __cplusplus
 }

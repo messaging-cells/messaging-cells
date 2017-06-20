@@ -11,20 +11,20 @@
 //EPH_CODE(extern mc_addr_t LD_EXTERNAL_RAM_ORIG);
 
 void 
-bjk_glb_init(void) {
+mck_glb_init(void) {
 	ZNQ_CODE(
 		if(MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_orig == 0){
-			bjk_abort((mc_addr_t)bjk_glb_init, "bjk_glb_init. Use mc_host_init before.");
+			mck_abort((mc_addr_t)mck_glb_init, "mck_glb_init. Use mc_host_init before.");
 		}
 	);
 	mc_init_dyn_mem();
 
 	// basic init
-	bjk_set_irq0_handler();
+	mck_set_irq0_handler();
 	EPH_CODE(mc_add_lk_syms());
 
-	bjk_glb_sys_st* glb_dat = BJK_FIRST_GLB_SYS;
-	mc_memset((uint8_t*)glb_dat, 0, sizeof(bjk_glb_sys_st));
+	mck_glb_sys_st* glb_dat = BJK_FIRST_GLB_SYS;
+	mc_memset((uint8_t*)glb_dat, 0, sizeof(mck_glb_sys_st));
 
 	glb_dat->off_core_pt = mc_null;
 	glb_dat->write_rrarray = mc_null;
@@ -33,13 +33,13 @@ bjk_glb_init(void) {
 	mc_init_glb_sys_sz(sys_sz);
 	
 	if(BJK_PT_EXTERNAL_HOST_DATA->magic_id != MC_MAGIC_ID){
-		bjk_abort((mc_addr_t)bjk_glb_init, err_6);
+		mck_abort((mc_addr_t)mck_glb_init, err_6);
 	}
 
 	BJK_PT_EXTERNAL_HOST_DATA->pt_this_from_eph = BJK_PT_EXTERNAL_HOST_DATA;	// should be same for all cores
 	
 	// glb_sys_sz init
-	mc_core_id_t koid = bjk_get_core_id();
+	mc_core_id_t koid = mck_get_core_id();
 	mc_memset((uint8_t*)sys_sz, 0, sizeof(mc_sys_sz_st));
 	*sys_sz = BJK_PT_EXTERNAL_HOST_DATA->wrk_sys;
 
@@ -60,7 +60,7 @@ bjk_glb_init(void) {
 	if(num_core < mc_out_num_cores){
 		glb_dat->off_core_pt = &((BJK_PT_EXTERNAL_HOST_DATA->sys_cores)[num_core]);
 		if((BJK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core].magic_id != MC_MAGIC_ID){
-			bjk_abort((mc_addr_t)bjk_glb_init, err_7);
+			mck_abort((mc_addr_t)mck_glb_init, err_7);
 		}
 
 		mc_core_out_st* out_st = &((BJK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core]);
@@ -69,7 +69,7 @@ bjk_glb_init(void) {
 		mc_rr_init(glb_dat->write_rrarray, MC_OUT_BUFF_SZ, out_st->buff, 0);
 
 		if(glb_dat->off_core_pt->magic_id != MC_MAGIC_ID){
-			bjk_abort((mc_addr_t)bjk_glb_init, err_8);
+			mck_abort((mc_addr_t)mck_glb_init, err_8);
 		}
 
 		// glb_dat->off_core_pt init	
@@ -80,7 +80,7 @@ bjk_glb_init(void) {
 		mc_set_off_chip_var(glb_dat->off_core_pt->ck_core_id, koid);
 		mc_set_off_chip_var(glb_dat->off_core_pt->core_data, glb_dat_wid);
 		
-		bjk_set_finished(MC_NOT_FINISHED_VAL);
+		mck_set_finished(MC_NOT_FINISHED_VAL);
 		mc_set_off_chip_var(glb_dat->off_core_pt->is_waiting, MC_NOT_WAITING);
 	}
 
@@ -96,8 +96,8 @@ bjk_glb_init(void) {
 }
 
 void 
-bjk_glb_finish(){
-	bjk_set_finished(MC_FINISHED_VAL);
+mck_glb_finish(){
+	mck_set_finished(MC_FINISHED_VAL);
 }
 
 void

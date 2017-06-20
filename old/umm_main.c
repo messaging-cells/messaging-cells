@@ -20,7 +20,7 @@ before_mem(umm_size_t ii, umm_size_t nsz){
 	if(obj != umm_null){
 		for(aa = 0; aa < osz; aa++){
 			if(obj[aa] != vv){
-				bjk_abort((uint32_t)before_mem, 0, 0x0);
+				mck_abort((uint32_t)before_mem, 0, 0x0);
 			}
 			if(nsz == 0){
 				obj[aa] = 0;
@@ -37,7 +37,7 @@ after_mem(umm_size_t ii, umm_size_t nsz){
 	uint8_t vv = ii;
 	if(obj != umm_null){
 		if(nsz == 0){
-			bjk_abort((uint32_t)after_mem, 0, 0x0);
+			mck_abort((uint32_t)after_mem, 0, 0x0);
 		}
 		for(aa = 0; aa < nsz; aa++){
 			obj[aa] = vv;
@@ -48,7 +48,7 @@ after_mem(umm_size_t ii, umm_size_t nsz){
 
 
 int main() {
-	bjk_init_global();
+	mck_init_global();
 
 	umm_size_t ii;
 
@@ -105,17 +105,17 @@ int main() {
 
 	umm_info( umm_null, 1 );
 
-	mc_id_t koid = bjk_get_core_id();
+	mc_id_t koid = mck_get_core_id();
 	mc_consec_t num_core = mc_id_to_nn(koid);
-	bjk_slog("TEST_UMM OK CORE ID=");
-	bjk_xlog(koid);
-	bjk_slog(" NUM=");
-	bjk_ilog(num_core);
-	bjk_slog("\n");
+	mck_slog("TEST_UMM OK CORE ID=");
+	mck_xlog(koid);
+	mck_slog(" NUM=");
+	mck_ilog(num_core);
+	mck_slog("\n");
 
 	mc_in_core_shd.dbg_progress_flag = 0xeee;
 	
-	bjk_set_finished(MC_FINISHED_VAL);
+	mck_set_finished(MC_FINISHED_VAL);
 	return 0;
 }
 

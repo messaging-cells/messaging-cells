@@ -71,8 +71,8 @@ struct mc_aligned mc_sys_def {
 typedef struct mc_sys_def mc_sys_sz_st;
 
 #ifdef MC_IS_EPH_CODE
-	extern mc_sys_sz_st 	bjk_system_sz;
-	#define BJK_GLB_SYS_SZ (&bjk_system_sz)
+	extern mc_sys_sz_st 	mck_system_sz;
+	#define BJK_GLB_SYS_SZ (&mck_system_sz)
 #else
 	mc_sys_sz_st*
 	mc_get_glb_sys_sz();
@@ -100,7 +100,7 @@ mc_init_glb_sys_sz_with(mc_sys_sz_st* sys_sz, mc_core_co_t xx_val, mc_core_co_t 
 
 #define mc_e3_co_to_pw(co) ((uint8_t)log2l(co))
 
-#define bjh_init_glb_sys_sz_with_dev(sys_sz, dev) \
+#define mch_init_glb_sys_sz_with_dev(sys_sz, dev) \
 	mc_init_glb_sys_sz_with((sys_sz), (dev)->row, (dev)->col, (dev)->rows, mc_e3_co_to_pw((dev)->cols))
 	
 // end_of_macro
@@ -153,14 +153,14 @@ mc_init_glb_sys_sz_with(mc_sys_sz_st* sys_sz, mc_core_co_t xx_val, mc_core_co_t 
 
 #ifdef MC_IS_EPH_CODE
 mc_core_id_t mc_inline_fn
-bjk_get_core_id() {
+mck_get_core_id() {
 	mc_core_id_t koid = 0x0; 
 	mc_asm("movfs %0, coreid" : "=r" (koid));
 	return koid;
 }
 #else
 mc_core_id_t 
-bjk_get_core_id();
+mck_get_core_id();
 #endif
 
 bool mc_inline_fn
@@ -182,7 +182,7 @@ mc_addr_in_sys(mc_addr_t addr) {
 
 #define mc_dref(typ_nam, glb_pt, pt_field) ((typ_nam*)mc_addr_set_id(mc_addr_get_id(glb_pt), (glb_pt)->pt_field))
 
-#define bjk_is_core(row, col) \
+#define mck_is_core(row, col) \
 	((BJK_GLB_SYS->the_core_ro == (row)) && (BJK_GLB_SYS->the_core_co == (col)))
 
 
@@ -242,11 +242,11 @@ mc_v32_of_p16(uint16_t* p16){
 
 #define MC_MAX_CALL_STACK_SZ	20
 
-typedef uint8_t bjk_exception_t;
+typedef uint8_t mck_exception_t;
 
-#define bjk_invalid_exception 0
-#define bjk_software_exception 1
-#define bjk_memory_exception 2
+#define mck_invalid_exception 0
+#define mck_software_exception 1
+#define mck_memory_exception 2
 
 #define MC_NOT_FINISHED_VAL 0x21
 #define MC_FINISHED_VAL 	0xf1
@@ -331,7 +331,7 @@ mc_isprint(char cc){
 
 // end_macro
 
-#define bjk_has_off_core (BJK_GLB_SYS->off_core_pt != mc_null)
+#define mck_has_off_core (BJK_GLB_SYS->off_core_pt != mc_null)
 
 mc_addr_t
 mc_host_addr_to_core_addr(mc_addr_t h_addr) mc_external_code_ram;

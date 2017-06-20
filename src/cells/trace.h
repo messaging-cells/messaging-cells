@@ -12,10 +12,10 @@ mc_c_decl {
 #endif
 	
 uint16_t
-bjk_get_call_stack_trace(int16_t sz_trace, void** trace) mc_external_code_ram;
+mck_get_call_stack_trace(int16_t sz_trace, void** trace) mc_external_code_ram;
 
 void 
-bjk_wait_sync(uint32_t info, int16_t sz_trace, void** trace) mc_external_code_ram;
+mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace) mc_external_code_ram;
 	
 
 #ifdef __cplusplus

@@ -6,12 +6,12 @@
 
 mc_sys_sz_st*
 mc_get_glb_sys_sz(){
-	return &(bjk_get_emu_info()->emu_system_sz);
+	return &(mck_get_emu_info()->emu_system_sz);
 }
 
 mc_core_id_t 
-bjk_get_core_id(){
-	return bjk_get_emu_info()->emu_core_id;
+mck_get_core_id(){
+	return mck_get_emu_info()->emu_core_id;
 }
 
 mc_addr_t

@@ -8,14 +8,14 @@
 	mc_core_id_t dst1 = mc_ro_co_to_id(0, 0);
 	mc_core_id_t dst2 = mc_ro_co_to_id(0, 1);
 
-	bjk_slog2("ID 0 ="); bjk_xlog(dst1); bjk_slog2("\n");
-	bjk_slog2("ID 1 ="); bjk_xlog(dst2); bjk_slog2("\n");
+	mck_slog2("ID 0 ="); mck_xlog(dst1); mck_slog2("\n");
+	mck_slog2("ID 1 ="); mck_xlog(dst2); mck_slog2("\n");
 
 	dst1 = mc_ro_co_to_id(0, 2);
 	dst2 = mc_ro_co_to_id(0, 3);
 
-	bjk_slog2("ID 2 ="); bjk_xlog(dst1); bjk_slog2("\n");
-	bjk_slog2("ID 3 ="); bjk_xlog(dst2); bjk_slog2("\n");
+	mck_slog2("ID 2 ="); mck_xlog(dst1); mck_slog2("\n");
+	mck_slog2("ID 3 ="); mck_xlog(dst2); mck_slog2("\n");
 
 	*/
 

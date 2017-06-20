@@ -17,8 +17,8 @@ mc_c_decl {
 #define mc_addr_has_local_id(addr) (! mc_addr_in_sys((mc_addr_t)addr))
 #define mc_addr_is_local(addr) mc_addr_has_local_id(addr)
 
-#define bjk_as_glb_pt(pt) ((void*)(pt))
-#define bjk_as_loc_pt(pt) ((void*)(pt))
+#define mck_as_glb_pt(pt) ((void*)(pt))
+#define mck_as_loc_pt(pt) ((void*)(pt))
 
 #ifdef __cplusplus
 }

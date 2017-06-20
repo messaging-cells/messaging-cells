@@ -4,13 +4,13 @@
 #include "cell.hh"
 #include "booter.h"
 
-char* bjh_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
+char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
 int mc_host_main(int argc, char *argv[])
 {
 	if(argc > 1){
-		bjh_epiphany_elf_path = argv[1];
-		printf("Using core executable: %s \n", bjh_epiphany_elf_path);
+		mch_epiphany_elf_path = argv[1];
+		printf("Using core executable: %s \n", mch_epiphany_elf_path);
 	}
 
 	kernel::init_host_sys();
@@ -24,7 +24,7 @@ int mc_host_main(int argc, char *argv[])
 	//mc_addr_t addr_0 = mc_addr_set_id(koid, 0);
 
 	//mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
-	//mc_addr_t addr_0 = (mc_addr_t)bjh_disp_to_pt(lk_dat->extnl_host_alloc_disp);
+	//mc_addr_t addr_0 = (mc_addr_t)mch_disp_to_pt(lk_dat->extnl_host_alloc_disp);
 
 	cell* act1 = kernel::get_core_cell();
 

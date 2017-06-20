@@ -9,19 +9,19 @@ _start:
 	.balign 4
 	.global	irq1_entry
 irq1_entry:
-	b bjk_software_exception_handler
+	b mck_software_exception_handler
 ;
 	.section ivt_entry_page_miss, "ax",@progbits
 	.balign 4
 	.global	irq2_entry
 irq2_entry:
-	b bjk_page_miss_handler
+	b mck_page_miss_handler
 ;
 	.section ivt_entry_timer0, "ax",@progbits
 	.balign 4
 	.global	irq3_entry
 irq3_entry:
-	b bjk_timer0_handler
+	b mck_timer0_handler
 ;
 	.section .text
 	.balign 4

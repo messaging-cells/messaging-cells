@@ -21,14 +21,14 @@ binder class and related.
 
 class binder;
 
-typedef binder* bjk_sptr_t;
-//define bjk_pt_to_binderpt(pt) (pt)
-//define bjk_binderpt_to_pt(bptr) (bptr)
+typedef binder* mck_sptr_t;
+//define mck_pt_to_binderpt(pt) (pt)
+//define mck_binderpt_to_pt(bptr) (bptr)
 
 class mc_aligned binder {
 public:
-	bjk_sptr_t	bn_left;
-	bjk_sptr_t	bn_right;
+	mck_sptr_t	bn_left;
+	mck_sptr_t	bn_right;
 
 	binder(){
 		init_binder();

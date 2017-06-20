@@ -263,7 +263,7 @@ public:
 
 	void	set_cap(row_index min_cap){ 
 		if(min_cap <= cap){ return; }
-		bjk_abort((uint32_t)0xbad01, 0, mc_null);
+		mck_abort((uint32_t)0xbad01, 0, mc_null);
 	}
 
 	row_index	sz_in_bytes(){
@@ -276,7 +276,7 @@ public:
 
 	void	grow(row_index min_cap){
 		if(min_cap <= cap){ return; }
-		bjk_abort((uint32_t)0xbad02, 0, mc_null);
+		mck_abort((uint32_t)0xbad02, 0, mc_null);
 	}
 
 	row_index	size() const { 

@@ -25,7 +25,7 @@ uint8_t test_heap[TEST_HEAP_SZ];
 #define NUM_OPERS 1000
 
 
-char* bjh_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
+char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
 void mc_cores_main(){
 }

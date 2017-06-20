@@ -55,17 +55,17 @@ a64_free(uint8_t* ptr) mc_external_code_ram;
 
 #ifdef MC_IS_ZNQ_CODE
 	#include "dlmalloc.h"
-	extern mspace bjh_glb_alloc_mspace;
+	extern mspace mch_glb_alloc_mspace;
 
 	#define mc_init_dyn_mem()	
 
-	#define mc_malloc32(nam, sz)	(nam *)(mspace_malloc(bjh_glb_alloc_mspace, (sz * sizeof(nam))))
-	#define mc_realloc32(nam, ptr, sz)	(nam *)(mspace_realloc(bjh_glb_alloc_mspace, ((ptr), (sz * sizeof(nam)))))
-	#define mc_free32(ptr)	mspace_free(bjh_glb_alloc_mspace, ptr)
+	#define mc_malloc32(nam, sz)	(nam *)(mspace_malloc(mch_glb_alloc_mspace, (sz * sizeof(nam))))
+	#define mc_realloc32(nam, ptr, sz)	(nam *)(mspace_realloc(mch_glb_alloc_mspace, ((ptr), (sz * sizeof(nam)))))
+	#define mc_free32(ptr)	mspace_free(mch_glb_alloc_mspace, ptr)
 
-	#define mc_malloc64(nam, sz)	((nam *)(mspace_malloc(bjh_glb_alloc_mspace, (sz * sizeof(nam)))))
-	#define mc_realloc64(nam, ptr, sz)	((nam *)(mspace_realloc(bjh_glb_alloc_mspace, ((ptr), (sz * sizeof(nam))))))
-	#define mc_free64(ptr)	mspace_free(bjh_glb_alloc_mspace, ptr)
+	#define mc_malloc64(nam, sz)	((nam *)(mspace_malloc(mch_glb_alloc_mspace, (sz * sizeof(nam)))))
+	#define mc_realloc64(nam, ptr, sz)	((nam *)(mspace_realloc(mch_glb_alloc_mspace, ((ptr), (sz * sizeof(nam))))))
+	#define mc_free64(ptr)	mspace_free(mch_glb_alloc_mspace, ptr)
 #endif
 
 #ifdef MC_IS_EMU_CODE

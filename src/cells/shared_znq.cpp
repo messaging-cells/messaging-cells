@@ -3,16 +3,16 @@
 
 #include "booter.h"
 
-mc_sys_sz_st bjh_system_sz;
+mc_sys_sz_st mch_system_sz;
 
 mc_sys_sz_st*
 mc_get_glb_sys_sz(){
-	return &bjh_system_sz;
+	return &mch_system_sz;
 }
 
 
 mc_core_id_t 
-bjk_get_core_id(){
+mck_get_core_id(){
 	mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 	return mc_addr_get_id(lk_dat->extnl_host_alloc_orig);
 }

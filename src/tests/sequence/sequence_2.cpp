@@ -50,7 +50,7 @@ public:
 
 BJK_DEFINE_ACQUIRE_ALLOC(seq_core, 32)	// defines seq_core::acquire_alloc
 
-#define glb_seq_core ((seq_core*)(bjk_get_kernel()->user_data))
+#define glb_seq_core ((seq_core*)(mck_get_kernel()->user_data))
 #define glb_my_seq &(glb_seq_core->my_seq)
 
 #define get_my_seq(id) ((sequence*)mc_addr_set_id(id, glb_my_seq))
@@ -76,7 +76,7 @@ sequence::handler(missive* msv){
 	MC_MARK_USED(msv_src);
 	MC_MARK_USED(tok);
 
-	kernel* ker = bjk_get_kernel();
+	kernel* ker = mck_get_kernel();
 	mc_core_nn_t nn = ker->get_core_nn();
 
 	bool is_sender = (nn == 1);
@@ -96,14 +96,14 @@ sequence::handler(missive* msv){
 
 	bool is_last = (last_sent == MAX_MSVS);
 	if(! is_sender && is_last){
-		bjk_get_kernel()->set_idle_exit();
+		mck_get_kernel()->set_idle_exit();
 		return;
 	}
 
 	respond(msv, last_sent);
 
 	if(is_sender && is_last){
-		bjk_get_kernel()->set_idle_exit();
+		mck_get_kernel()->set_idle_exit();
 	}
 }
 
@@ -120,7 +120,7 @@ sequence::send(cell* dst, seq_tok_t tok){
 BJK_DEFINE_MEM_METHODS(sequence, 32, glb_ava_seq)
 
 void ker_func(){
-	kernel* ker = bjk_get_kernel();
+	kernel* ker = mck_get_kernel();
 	mc_core_nn_t nn = ker->get_core_nn();
 	MC_MARK_USED(ker);
 	MC_MARK_USED(nn);
@@ -128,7 +128,7 @@ void ker_func(){
 
 void mc_cores_main() {
 	kernel::init_sys();
-	kernel* ker = bjk_get_kernel();
+	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
 	mc_core_nn_t nn = ker->get_core_nn();
@@ -157,7 +157,7 @@ void mc_cores_main() {
 	kernel::run_sys();
 
 	PH_DBG("SEQ_2 finished\n");
-	bjk_slog2("SEQUENCE 2 FINISHED !!\n");	
+	mck_slog2("SEQUENCE 2 FINISHED !!\n");	
 
 	kernel::finish_sys();
 }

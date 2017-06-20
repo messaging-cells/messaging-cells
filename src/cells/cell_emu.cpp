@@ -7,12 +7,12 @@
 
 kernel* //static
 kernel::get_sys(){
-	return &(bjk_get_emu_info()->emu_THE_KERNEL);
+	return &(mck_get_emu_info()->emu_THE_KERNEL);
 }
 
 void 
-bjk_send_irq(mc_core_id_t koid, uint16_t num_irq) {
-	bjk_abort((mc_addr_t)bjk_send_irq, const_cast<char*>("bjk_send_irq abort"));
+mck_send_irq(mc_core_id_t koid, uint16_t num_irq) {
+	mck_abort((mc_addr_t)mck_send_irq, const_cast<char*>("mck_send_irq abort"));
 }
 
 kernel* //static 

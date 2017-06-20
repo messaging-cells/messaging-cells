@@ -42,16 +42,16 @@ extern "C"
 
 extern uint8_t* BJH_EXTERNAL_RAM_BASE_PT;
 
-extern e_mem_t bjh_glb_emem;
-extern e_epiphany_t bjh_glb_dev;
+extern e_mem_t mch_glb_emem;
+extern e_epiphany_t mch_glb_dev;
 
-#define bjh_min_shd_eph_addr ((mc_addr_t) bjh_glb_emem.ephy_base)
-#define bjh_max_shd_eph_addr ((mc_addr_t) (bjh_glb_emem.ephy_base + MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
-#define bjh_min_shd_znq_addr ((mc_addr_t) bjh_glb_emem.base)
-#define bjh_max_shd_znq_addr ((mc_addr_t) (bjh_glb_emem.base + MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
-#define bjh_znq_addr_in_shd_ram(znq_addr) ((bjh_min_shd_znq_addr <= znq_addr) && (znq_addr < bjh_max_shd_znq_addr))
+#define mch_min_shd_eph_addr ((mc_addr_t) mch_glb_emem.ephy_base)
+#define mch_max_shd_eph_addr ((mc_addr_t) (mch_glb_emem.ephy_base + MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
+#define mch_min_shd_znq_addr ((mc_addr_t) mch_glb_emem.base)
+#define mch_max_shd_znq_addr ((mc_addr_t) (mch_glb_emem.base + MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
+#define mch_znq_addr_in_shd_ram(znq_addr) ((mch_min_shd_znq_addr <= znq_addr) && (znq_addr < mch_max_shd_znq_addr))
 
-#define bjh_disp_to_pt(disp) (BJH_EXTERNAL_RAM_BASE_PT + disp)
+#define mch_disp_to_pt(disp) (BJH_EXTERNAL_RAM_BASE_PT + disp)
 
 typedef enum {
 	L_D0 = 0,
@@ -59,11 +59,11 @@ typedef enum {
 	L_D2 = 2,
 	L_D3 = 3,
 	L_D4 = 40,
-} bjl_loader_diag_t;
+} mcl_loader_diag_t;
 
-extern bjl_loader_diag_t bjl_load_verbose;
+extern mcl_loader_diag_t mcl_load_verbose;
 
-#define bjl_diag(vN)   if (bjl_load_verbose >= vN)
+#define mcl_diag(vN)   if (mcl_load_verbose >= vN)
 
 struct load_info_st {    
 	char *executable;
@@ -89,7 +89,7 @@ typedef struct load_info_st load_info_t;
 
 int mc_load_group(load_info_t *ld_dat);
 
-int bjl_load_root(load_info_t *ld_dat);
+int mcl_load_root(load_info_t *ld_dat);
 
 #define DBGH_CODE_SHD_SZ 20
 
@@ -98,11 +98,11 @@ extern mc_addr_t DBGH_FUNC_ADDR;
 
 #define BJL_MAX_TOT_MODULES 1000
 
-extern char* bjl_module_names[BJL_MAX_TOT_MODULES];
-extern int bjl_module_names_sz;
+extern char* mcl_module_names[BJL_MAX_TOT_MODULES];
+extern int mcl_module_names_sz;
 
 bool 
-bjl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr);
+mcl_is_epiphany_exec_elf(Elf32_Ehdr *ehdr);
 
 void
 ck_dbg_shd_code(char* msg, uint16_t* base);

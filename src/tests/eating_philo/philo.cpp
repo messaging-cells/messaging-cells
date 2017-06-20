@@ -91,7 +91,7 @@ enum philo_tok_t : uint8_t {
 			return const_cast<char*>("yes_fll");
 		break;
 		default:
-			bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
+			mck_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
 		break;
 		}
 		return const_cast<char*>("NO_TOK");
@@ -241,7 +241,7 @@ public:
 
 BJK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
 
-#define glb_philo_core ((philo_core*)(bjk_get_kernel()->user_data))
+#define glb_philo_core ((philo_core*)(mck_get_kernel()->user_data))
 
 #define glb_stick (&(glb_philo_core->stick))
 #define glb_philo (&(glb_philo_core->philo))
@@ -296,7 +296,7 @@ chopstick::handler(missive* msv){
 	last_src = msv_src;
 	last_recv = tok;
 
-	mc_core_nn_t nn = bjk_get_kernel()->get_core_nn();
+	mc_core_nn_t nn = mck_get_kernel()->get_core_nn();
 	PH_DBG_COD(
 		if(prt_recv_msgs){
 			PH_DBG("CHOP %d RECV %s \n", nn, tok_to_str(tok));
@@ -305,26 +305,26 @@ chopstick::handler(missive* msv){
 	if((nn == 0) || (nn >= 14)){
 		#ifdef PHILO_EPH_DBG
 			mc_core_id_t src_id = mc_addr_get_id(msv_src);
-			bjk_slog2("CHOP_RECV____");
-			bjk_slog2(tok_to_str(tok));
-			bjk_slog2("___");
-			bjk_xlog((mc_addr_t)msv_src);
-			bjk_slog2("___");
-			bjk_ilog(mc_id_to_nn(src_id));
-			bjk_slog2("___\n");
+			mck_slog2("CHOP_RECV____");
+			mck_slog2(tok_to_str(tok));
+			mck_slog2("___");
+			mck_xlog((mc_addr_t)msv_src);
+			mck_slog2("___");
+			mck_ilog(mc_id_to_nn(src_id));
+			mck_slog2("___\n");
 
 			if(nn == 15){
-				//kernel* ker = bjk_get_kernel();
-				bool ini0 = bjk_is_id_inited(mc_nn_to_id(0));
+				//kernel* ker = mck_get_kernel();
+				bool ini0 = mck_is_id_inited(mc_nn_to_id(0));
 				//long osz = ker->out_work.calc_size();
-				//bjk_ack_t loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[0];
-				bjk_slog2("ADDR_INI____");
-				bjk_xlog((mc_addr_t)(&(BJK_GLB_SYS->inited_core)));
-				bjk_slog2("___\n");
+				//mck_ack_t loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[0];
+				mck_slog2("ADDR_INI____");
+				mck_xlog((mc_addr_t)(&(BJK_GLB_SYS->inited_core)));
+				mck_slog2("___\n");
 
-				bjk_slog2("INI_0____");
-				bjk_ilog(ini0);
-				bjk_slog2("___\n");
+				mck_slog2("INI_0____");
+				mck_ilog(ini0);
+				mck_slog2("___\n");
 			}
 		#endif
 	}
@@ -349,11 +349,11 @@ chopstick::handler(missive* msv){
 			respond(msv, tok_droped);
 		break;
 		default:
-			bjk_abort(1, const_cast<char*>("BAD_STICK_TOK"));
+			mck_abort(1, const_cast<char*>("BAD_STICK_TOK"));
 		break;
 	}
 	
-	//bjk_get_kernel()->set_idle_exit();
+	//mck_get_kernel()->set_idle_exit();
 }
 
 void
@@ -379,7 +379,7 @@ void
 philosopher::handler(missive* msv){
 	cell* msv_src = msv->src;
 	philo_tok_t tok = (philo_tok_t)msv->tok;
-	mc_core_nn_t nn = bjk_get_kernel()->get_core_nn();
+	mc_core_nn_t nn = mck_get_kernel()->get_core_nn();
 	MC_MARK_USED(nn);
 
 	PH_DBG_COD(
@@ -411,7 +411,7 @@ philosopher::handler(missive* msv){
 	
 				#ifdef PHILO_EPH_DBG
 					if(nn == 15){
-						bjk_slog2("SENT_TAKE_RIGHT");
+						mck_slog2("SENT_TAKE_RIGHT");
 					}
 				#endif
 			}
@@ -428,9 +428,9 @@ philosopher::handler(missive* msv){
 				EMU_LOG("#BITES %d \n", num_bites);
 
 				#ifdef PHILO_EPH_DBG
-					bjk_slog2("#BITES____");
-					bjk_ilog(num_bites);
-					bjk_slog2("___\n");
+					mck_slog2("#BITES____");
+					mck_ilog(num_bites);
+					mck_slog2("___\n");
 				#endif
 
 				send(lft_stick, tok_drop);
@@ -464,9 +464,9 @@ philosopher::handler(missive* msv){
 				if(num_bites == MAX_BITES){
 					PH_DBG("I AM FULL \n");
 					EMU_LOG("I AM FULL \n");
-					bjk_sprt2("I AM FULL____");
-					bjk_iprt(bjk_get_kernel()->get_core_nn());
-					bjk_sprt2("___\n");
+					mck_sprt2("I AM FULL____");
+					mck_iprt(mck_get_kernel()->get_core_nn());
+					mck_sprt2("___\n");
 
 					PH_DBG_COD(mc_set_off_chip_var(dbg_all_full[nn], true);)
 
@@ -496,7 +496,7 @@ philosopher::handler(missive* msv){
 			}
 		break;
 		default:
-			bjk_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
+			mck_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
 		break;
 	} 
 	
@@ -511,11 +511,11 @@ philosopher::call_exit(){
 	)
 	EMU_LOG("FINISHING \n");
 
-	//bjk_sprt2("CALLING_EXIT____");
-	//bjk_iprt(bjk_get_kernel()->get_core_nn());
-	//bjk_sprt2("___\n");
+	//mck_sprt2("CALLING_EXIT____");
+	//mck_iprt(mck_get_kernel()->get_core_nn());
+	//mck_sprt2("___\n");
 
-	bjk_get_kernel()->set_idle_exit();
+	mck_get_kernel()->set_idle_exit();
 }
 
 #ifdef PHILO_WITH_DBG
@@ -607,7 +607,7 @@ void prt_all_philo(){
 }
 
 void ker_func(){
-	kernel* ker = bjk_get_kernel();
+	kernel* ker = mck_get_kernel();
 	mc_core_nn_t nn = ker->get_core_nn();
 	if(! ker->did_work && ! dbg_all_idle_prt[nn]){
 		mc_set_off_chip_var(dbg_all_idle_prt[nn], true);
@@ -631,7 +631,7 @@ void ker_func(){
 
 void mc_cores_main() {
 	kernel::init_sys();
-	kernel* ker = bjk_get_kernel();
+	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
 	mc_core_nn_t nn = ker->get_core_nn();
@@ -643,7 +643,7 @@ void mc_cores_main() {
 
 	philo_core* core_dat = philo_core::acquire_alloc();
 	if(core_dat == mc_null){
-		bjk_abort(1, const_cast<char*>("CAN NOT INIT GLB CORE DATA"));
+		mck_abort(1, const_cast<char*>("CAN NOT INIT GLB CORE DATA"));
 	}
 
 	ker->user_data = core_dat;
@@ -678,7 +678,7 @@ void mc_cores_main() {
 
 	PH_DBG("finished\n");
 	EMU_LOG("PHILOSOPHER %d FINISHED !!\n", nn);
-	bjk_slog2("PHILOSOPHERS FINISHED !!\n");	
+	mck_slog2("PHILOSOPHERS FINISHED !!\n");	
 
 	kernel::finish_sys();
 }
