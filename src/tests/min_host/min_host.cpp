@@ -18,7 +18,7 @@ int mc_host_main(int argc, char *argv[])
 	printf("STARTING min-host \n");
 
 	/*
-	kernel* ker = BJK_KERNEL;
+	kernel* ker = MCK_KERNEL;
 
 	mc_core_id_t koid = ker->get_core_id(); 
 	//mc_addr_t addr_0 = mc_addr_set_id(koid, 0);

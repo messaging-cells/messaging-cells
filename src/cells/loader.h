@@ -26,21 +26,21 @@ mc_c_decl {
 	extern mc_addr_t LD_CORE_MODULE_ORIG;
 	extern mc_addr_t LD_CORE_MODULE_SIZE;
 
-	#define BJK_LNK_SCRPT_SYM_VAL(xx) ((mc_addr_t)(&xx))
+	#define MCK_LNK_SCRPT_SYM_VAL(xx) ((mc_addr_t)(&xx))
 
-	#define MC_VAL_EXTERNAL_RAM_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_RAM_SIZE)
-	#define MC_VAL_EXTERNAL_CODE_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_CODE_SIZE)
-	#define MC_VAL_EXTERNAL_LOAD_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_LOAD_SIZE)
-	#define MC_VAL_EXTERNAL_HOST_DATA_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_DATA_SIZE)
-	#define MC_VAL_EXTERNAL_HOST_ALLOC_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_ALLOC_SIZE)
-	#define MC_VAL_EXTERNAL_RAM_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_RAM_ORIG)
-	#define MC_VAL_EXTERNAL_CODE_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_CODE_ORIG)
-	#define MC_VAL_EXTERNAL_LOAD_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_LOAD_ORIG)
-	#define MC_VAL_EXTERNAL_HOST_DATA_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_DATA_ORIG)
-	#define MC_VAL_EXTERNAL_HOST_ALLOC_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_ALLOC_ORIG)
+	#define MC_VAL_EXTERNAL_RAM_SIZE 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_RAM_SIZE)
+	#define MC_VAL_EXTERNAL_CODE_SIZE 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_CODE_SIZE)
+	#define MC_VAL_EXTERNAL_LOAD_SIZE 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_LOAD_SIZE)
+	#define MC_VAL_EXTERNAL_HOST_DATA_SIZE 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_DATA_SIZE)
+	#define MC_VAL_EXTERNAL_HOST_ALLOC_SIZE 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_ALLOC_SIZE)
+	#define MC_VAL_EXTERNAL_RAM_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_RAM_ORIG)
+	#define MC_VAL_EXTERNAL_CODE_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_CODE_ORIG)
+	#define MC_VAL_EXTERNAL_LOAD_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_LOAD_ORIG)
+	#define MC_VAL_EXTERNAL_HOST_DATA_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_DATA_ORIG)
+	#define MC_VAL_EXTERNAL_HOST_ALLOC_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_ALLOC_ORIG)
 
-	#define MC_VAL_CORE_MODULE_ORIG 	BJK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_ORIG)
-	#define MC_VAL_CORE_MODULE_SIZE 	BJK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_SIZE)
+	#define MC_VAL_CORE_MODULE_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_ORIG)
+	#define MC_VAL_CORE_MODULE_SIZE 	MCK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_SIZE)
 
 #endif
 
@@ -86,12 +86,12 @@ struct mc_aligned mc_load_map_def {
 };
 typedef struct mc_load_map_def mc_load_map_st;
 
-#define BJL_NODE_NAM(nam, aa) mc_load_ ## nam ## _node_ ## aa
+#define MCL_NODE_NAM(nam, aa) mc_load_ ## nam ## _node_ ## aa
 
-#define BJL_NODE(nam, aa) (& BJL_NODE_NAM(nam, aa))
+#define MCL_NODE(nam, aa) (& MCL_NODE_NAM(nam, aa))
 
-#define BJL_LEAF_NODE(nam, aa) \
-	mc_load_map_st BJL_NODE_NAM(nam, aa) mc_external_data_ram = { \
+#define MCL_LEAF_NODE(nam, aa) \
+	mc_load_map_st MCL_NODE_NAM(nam, aa) mc_external_data_ram = { \
 		.num_core = aa, \
 		.is_loaded = false, \
 		.childs = mc_null \
@@ -99,9 +99,9 @@ typedef struct mc_load_map_def mc_load_map_st;
 
 // end_of_macro
 
-#define BJL_TREE_NODE(nam, aa, ...) \
+#define MCL_TREE_NODE(nam, aa, ...) \
 	mc_load_map_st* childs_of_ ## nam ## aa [] mc_external_data_ram = { __VA_ARGS__ , mc_null }; \
-	mc_load_map_st BJL_NODE_NAM(nam, aa) mc_external_data_ram = { \
+	mc_load_map_st MCL_NODE_NAM(nam, aa) mc_external_data_ram = { \
 		.num_core = aa, \
 		.is_loaded = false, \
 		.childs = childs_of_ ## nam ## aa \
@@ -109,13 +109,13 @@ typedef struct mc_load_map_def mc_load_map_st;
 
 // end_of_macro
 
-#define mc_dbg_e3_node(nn) BJL_NODE(lib_dbg_map, nn)
-#define mc_dbg_e3_leaf(nn) BJL_LEAF_NODE(lib_dbg_map, nn)
-#define mc_dbg_e3_tree(nn, ...) BJL_TREE_NODE(lib_dbg_map, nn, __VA_ARGS__)
+#define mc_dbg_e3_node(nn) MCL_NODE(lib_dbg_map, nn)
+#define mc_dbg_e3_leaf(nn) MCL_LEAF_NODE(lib_dbg_map, nn)
+#define mc_dbg_e3_tree(nn, ...) MCL_TREE_NODE(lib_dbg_map, nn, __VA_ARGS__)
 
-#define mc_std_e3_node(nn) BJL_NODE(lib_std_map, nn)
-#define mc_std_e3_leaf(nn) BJL_LEAF_NODE(lib_std_map, nn)
-#define mc_std_e3_tree(nn, ...) BJL_TREE_NODE(lib_std_map, nn, __VA_ARGS__)
+#define mc_std_e3_node(nn) MCL_NODE(lib_std_map, nn)
+#define mc_std_e3_leaf(nn) MCL_LEAF_NODE(lib_std_map, nn)
+#define mc_std_e3_tree(nn, ...) MCL_TREE_NODE(lib_std_map, nn, __VA_ARGS__)
 
 void
 mcl_load_module(char* module_name) mc_external_code_ram;

@@ -30,7 +30,7 @@ void mc_cores_main() {
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	if(mck_is_core(0,0)){
+	if(mck_is_ro_co_core(0,0)){
 		mck_slog2("CORE (0,0) started\n");
 
 		//missive_handler_t hndlers = mc_null;
@@ -51,7 +51,7 @@ void mc_cores_main() {
 		mck_xprt((mc_addr_t)(act2));
 		mck_sprt2("___\n");
 
-		BJK_CK(act2 != mc_null);
+		MCK_CK(act2 != mc_null);
 
 		msv->send_to_host();
 

@@ -51,13 +51,13 @@ mc_load_map(){
 		mck_sprt("___umm_heap___");
 		mck_xprt((mc_addr_t)umm_heap);
 	)
-	//mck_sprt("___BJK_GLB_SYS___");
-	//mck_xprt((mc_addr_t)BJK_GLB_SYS);
+	//mck_sprt("___MC_CORE_INFO___");
+	//mck_xprt((mc_addr_t)MC_CORE_INFO);
 	mck_sprt("___\n");
 	*/
 
 	if(mp == mc_null){
-		if(BJK_PT_EXTERNAL_HOST_DATA->first_load_core_id != koid){
+		if(MCK_PT_EXTERNAL_HOST_DATA->first_load_core_id != koid){
 			mck_abort((mc_addr_t)err_load_map_1, err_load_map_1);
 		}
 		if(mck_first_load_map != mc_null){

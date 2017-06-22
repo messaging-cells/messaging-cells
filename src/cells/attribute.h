@@ -12,7 +12,7 @@ mc_c_decl {
 
 #define MC_PLL_LOADING
 
-#define BJK_LINK_SCRIPT_SYM_VAL(xx) ((mc_addr_t)(&xx))
+#define MCK_LINK_SCRIPT_SYM_VAL(xx) ((mc_addr_t)(&xx))
 
 #define MC_STRFY(prm) #prm
 

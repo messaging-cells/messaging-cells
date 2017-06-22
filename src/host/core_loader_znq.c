@@ -45,7 +45,7 @@
 
 extern e_platform_t e_platform;
 
-char* mcl_module_names[BJL_MAX_TOT_MODULES];
+char* mcl_module_names[MCL_MAX_TOT_MODULES];
 int mcl_module_names_sz;
 
 e_return_stat_t mcl_load_elf(int row, int col, load_info_t *ld_dat);
@@ -256,7 +256,7 @@ static bool mcl_is_valid_range(uint32_t from, uint32_t size)
 
 mc_addr_t
 mc_znq_addr_to_eph_addr(mc_addr_t znq_addr){
-	BJH_CK(mch_znq_addr_in_shd_ram(znq_addr));
+	MCH_CK(mch_znq_addr_in_shd_ram(znq_addr));
 
 	mc_addr_t eph_addr = znq_addr - mch_min_shd_znq_addr + mch_min_shd_eph_addr;
 	
@@ -267,7 +267,7 @@ mc_addr_t
 mc_eph_addr_to_znq_addr(mc_addr_t eph_addr){
 	e_epiphany_t *dev = &mch_glb_dev;
 
-	BJH_CK(mc_addr_has_id(eph_addr));
+	MCH_CK(mc_addr_has_id(eph_addr));
 	
 	mc_addr_t znq_addr = mc_null;
 	if (mc_addr_in_sys(eph_addr)) {
@@ -326,8 +326,8 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 	uint8_t* pt_ram_base = (uint8_t*)(emem->base);
 	uint8_t* pt_end_code = (pt_ram_base + lk_dat->extnl_host_data_disp);
 	uint8_t* pt_end_mem = (pt_ram_base + lk_dat->extnl_ram_size);
-	BJL_MARK_USED(pt_end_code);
-	BJL_MARK_USED(pt_end_mem);
+	MCL_MARK_USED(pt_end_code);
+	MCL_MARK_USED(pt_end_mem);
 
 	uint8_t* pt_load_dst = (pt_ram_base + lk_dat->extnl_load_disp);
 	uint8_t* pt_load_end = (pt_load_dst + lk_dat->extnl_load_size);
@@ -338,19 +338,19 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 	int module_ii = 0;
 	mcl_module_names_sz = 0;
 
-	BJL_MARK_USED(phdr);
-	BJL_MARK_USED(ihdr);
-	BJL_MARK_USED(shdr);
-	BJL_MARK_USED(sh_strtab);
-	BJL_MARK_USED(strtab);
+	MCL_MARK_USED(phdr);
+	MCL_MARK_USED(ihdr);
+	MCL_MARK_USED(shdr);
+	MCL_MARK_USED(sh_strtab);
+	MCL_MARK_USED(strtab);
 
-	BJH_CK(sizeof(uint8_t*) == sizeof(mc_addr_t));
-	BJH_CK(sizeof(Elf32_Addr) == sizeof(mc_addr_t));
-	BJH_CK(dev == &mch_glb_dev);
-	BJH_CK(emem == &mch_glb_emem);
+	MCH_CK(sizeof(uint8_t*) == sizeof(mc_addr_t));
+	MCH_CK(sizeof(Elf32_Addr) == sizeof(mc_addr_t));
+	MCH_CK(dev == &mch_glb_dev);
+	MCH_CK(emem == &mch_glb_emem);
 
 	mc_core_id_t curr_id = mc_ro_co_to_id(row, col);
-	BJL_MARK_USED(curr_id);
+	MCL_MARK_USED(curr_id);
 
 	ehdr = (Elf32_Ehdr *) &src[0];
 	phdr = (Elf32_Phdr *) &src[ehdr->e_phoff];
@@ -405,7 +405,7 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 			blk_sz = module_sz;
 			pt_module_dst += module_sz;
 		
-			if((pt_module_dst > pt_load_end) || (module_ii > (BJL_MAX_TOT_MODULES - 1))){
+			if((pt_module_dst > pt_load_end) || (module_ii > (MCL_MAX_TOT_MODULES - 1))){
 				mch_abort_func(12, "TOO MANY MODULES for MC_VAL_EXTERNAL_LOAD_SIZE. CODE_LOADING_FAILED_3 !!\n");
 				return E_ERR;
 			}
@@ -423,14 +423,14 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 				(void*)ld_addr); 
 		}
 
-		/*if(BJH_LOAD_WITH_MEMCPY){
+		/*if(MCH_LOAD_WITH_MEMCPY){
 			memcpy(pt_dst, pt_src, blk_sz);
 		} else {
 			mc_memload(pt_dst, pt_src, blk_sz);
 		}*/
 
 		memcpy(pt_dst, pt_src, blk_sz);
-		BJH_CK(memcmp(pt_dst, pt_src, blk_sz) == 0);
+		MCH_CK(memcmp(pt_dst, pt_src, blk_sz) == 0);
 
 		//mc_ck_memload(pt_dst, pt_src, blk_sz);
 	}

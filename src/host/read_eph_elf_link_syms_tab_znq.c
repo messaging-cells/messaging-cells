@@ -87,11 +87,11 @@ mch_read_sections_elf(const void *file, mc_link_syms_data_st* syms)
 	int        ihdr;
 	uint8_t   *src = (uint8_t *) file;
 
-	BJL_MARK_USED(phdr);
-	BJL_MARK_USED(ihdr);
-	BJL_MARK_USED(shdr);
-	BJL_MARK_USED(sh_strtab);
-	BJL_MARK_USED(strtab);
+	MCL_MARK_USED(phdr);
+	MCL_MARK_USED(ihdr);
+	MCL_MARK_USED(shdr);
+	MCL_MARK_USED(sh_strtab);
+	MCL_MARK_USED(strtab);
 
 	ehdr = (Elf32_Ehdr *) &src[0];
 	phdr = (Elf32_Phdr *) &src[ehdr->e_phoff];

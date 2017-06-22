@@ -29,10 +29,10 @@ extern mc_link_syms_data_st 	mch_external_ram_load_data;
 
 #define mch_disp_to_extnal_ram_pt(disp) (the_str)
 
-extern bool BJH_LOAD_WITH_MEMCPY;
+extern bool MCH_LOAD_WITH_MEMCPY;
 
-#define BJM_DLMALLOC_HEAP_SZ (10 * MBY_SZ)
-extern uint8_t mcm_dlmalloc_heap[BJM_DLMALLOC_HEAP_SZ];
+#define MCM_DLMALLOC_HEAP_SZ (10 * MBY_SZ)
+extern uint8_t mcm_dlmalloc_heap[MCM_DLMALLOC_HEAP_SZ];
 
 void 
 mch_abort_func(long val, const char* msg);
@@ -86,7 +86,7 @@ mch_ptr_call_stack_trace();
 void
 mch_read_eph_link_syms(const char *executable, mc_link_syms_data_st* syms);
 
-#define	BJH_DBG_COND_COMM(cond, comm)	\
+#define	MCH_DBG_COND_COMM(cond, comm)	\
 	MC_DBG( \
 		if(cond){ \
 			comm; \
@@ -96,10 +96,10 @@ mch_read_eph_link_syms(const char *executable, mc_link_syms_data_st* syms);
 
 //--end_of_def
 
-#define BJH_CK(prm) MC_DBG(mch_assert(prm))
+#define MCH_CK(prm) MC_DBG(mch_assert(prm))
 
-#define BJH_CK_2(prm, comms1) \
-	BJH_DBG_COND_COMM((! (prm)), \
+#define MCH_CK_2(prm, comms1) \
+	MCH_DBG_COND_COMM((! (prm)), \
 		comms1; \
 		printf("\n"); \
 		mch_assert(prm); \

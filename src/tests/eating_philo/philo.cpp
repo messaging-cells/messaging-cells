@@ -1,3 +1,14 @@
+//----------------------------------------------------------------------------
+/*! \file philo.cpp
+
+\brief The classical example of the 
+<a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem">eating philosophers</a>.
+
+\details 
+
+\include philo.cpp
+
+*/
 
 #include <new>
 #include "attribute.h"
@@ -100,7 +111,7 @@ enum philo_tok_t : uint8_t {
 
 class chopstick : public cell {
 public:
-	BJK_DECLARE_MEM_METHODS(chopstick)
+	MCK_DECLARE_MEM_METHODS(chopstick)
 
 	cell* owner;
 
@@ -128,7 +139,7 @@ public:
 
 class philosopher : public cell {
 public:
-	BJK_DECLARE_MEM_METHODS(philosopher)
+	MCK_DECLARE_MEM_METHODS(philosopher)
 
 	chopstick* left;
 	chopstick* right;
@@ -202,7 +213,7 @@ public:
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
 class philo_core {
 public:
-	BJK_DECLARE_MEM_METHODS(philo_core)
+	MCK_DECLARE_MEM_METHODS(philo_core)
 
 	philo_core(){		// NEED THIS SO THAT no memset func call
 		init_philo_core();
@@ -239,7 +250,7 @@ public:
 	}
 };
 
-BJK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
+MCK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
 
 #define glb_philo_core ((philo_core*)(mck_get_kernel()->user_data))
 
@@ -258,8 +269,8 @@ BJK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
 #define get_stick(id) ((chopstick*)mc_addr_set_id(id, glb_stick))
 #define get_philo(id) ((philosopher*)mc_addr_set_id(id, glb_philo))
 
-BJK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks)
-BJK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos)
+MCK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks)
+MCK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos)
 
 
 #ifdef PHILO_WITH_DBG
@@ -274,12 +285,12 @@ dbg_all_philo[16] mc_external_code_ram = {
 
 void 
 philosopher_handler(missive* msv){
-	BJK_CALL_HANDLER(philosopher, handler, msv);
+	MCK_CALL_HANDLER(philosopher, handler, msv);
 }
 
 void 
 chopstick_handler(missive* msv){
-	BJK_CALL_HANDLER(chopstick, handler, msv);
+	MCK_CALL_HANDLER(chopstick, handler, msv);
 }
 
 missive_handler_t the_handlers[] = {
@@ -319,7 +330,7 @@ chopstick::handler(missive* msv){
 				//long osz = ker->out_work.calc_size();
 				//mck_ack_t loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[0];
 				mck_slog2("ADDR_INI____");
-				mck_xlog((mc_addr_t)(&(BJK_GLB_SYS->inited_core)));
+				mck_xlog((mc_addr_t)(&(MC_CORE_INFO->inited_core)));
 				mck_slog2("___\n");
 
 				mck_slog2("INI_0____");

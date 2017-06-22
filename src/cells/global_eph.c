@@ -27,7 +27,7 @@ mck_get_first_glb_sys(){
 
 void
 abort(){	// Needed when optimizing for size
-	BJK_CK(0);
+	MCK_CK(0);
 	mck_abort((mc_addr_t)abort, err_5);
 	while(1);
 }
@@ -39,21 +39,24 @@ mck_set_irq0_handler(){
 	*ivt = ((((unsigned)mck_sync_handler) >> 1) << 8) | MC_B_OPCODE;
 }
 
+/*! 
+This function aborts execution. It saves the stack trace and the host will print it after aborting.
+*/
 void 
 mck_abort(mc_addr_t err, char* msg) {
 	int16_t sz_trace = -1;
 	void** trace = mc_null;
 	if(msg != mc_null){
 		sz_trace = MC_MAX_CALL_STACK_SZ;
-		trace = BJK_GLB_SYS->mck_dbg_call_stack_trace;
+		trace = MC_CORE_INFO->mck_dbg_call_stack_trace;
 	}
 	if((trace != mc_null) && (sz_trace > 0)){
 		mck_get_call_stack_trace(sz_trace, trace);
 	}
-	mck_glb_sys_st* in_shd = BJK_GLB_SYS;
+	mck_glb_sys_st* in_shd = MC_CORE_INFO;
 	in_shd->dbg_error_code = err;
 
-	mc_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt;
+	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt;
 	if((off_core_pt != mc_null) && (off_core_pt->magic_id == MC_MAGIC_ID)){
 		mc_set_off_chip_var(off_core_pt->is_finished, MC_FINISHED_VAL);
 	}

@@ -1,5 +1,10 @@
 
-// global.h
+//----------------------------------------------------------------------------
+/*! \file global.h
+
+\brief Global functions. It is included in \ref cell.hh.
+
+*/
 
 #ifndef MC_GLOBAL_H
 #define MC_GLOBAL_H
@@ -78,29 +83,29 @@ typedef struct mck_glb_sys_def mck_glb_sys_st;
 	mck_get_first_glb_sys() mc_external_code_ram;
 
 	extern mck_glb_sys_st*	mck_glb_pt_sys_data;
-	#define BJK_FIRST_GLB_SYS mck_get_first_glb_sys()
-	#define BJK_GLB_SYS (mck_glb_pt_sys_data)
+	#define MCK_FIRST_GLB_SYS mck_get_first_glb_sys()
+	#define MC_CORE_INFO (mck_glb_pt_sys_data)
 #else
 	mck_glb_sys_st*
 	mck_get_glb_sys();
 
-	#define BJK_FIRST_GLB_SYS mck_get_glb_sys()
-	#define BJK_GLB_SYS mck_get_glb_sys()
+	#define MCK_FIRST_GLB_SYS mck_get_glb_sys()
+	#define MC_CORE_INFO mck_get_glb_sys()
 #endif
 
 #ifdef MC_IS_EPH_CODE
 	extern mc_off_sys_st mck_external_host_data_obj;
-	#define BJK_PT_EXTERNAL_HOST_DATA (&mck_external_host_data_obj)
+	#define MCK_PT_EXTERNAL_HOST_DATA (&mck_external_host_data_obj)
 #endif
 
 #ifdef MC_IS_ZNQ_CODE
 	extern mc_off_sys_st* mcz_pt_external_host_data_obj;
-	#define BJK_PT_EXTERNAL_HOST_DATA mcz_pt_external_host_data_obj
+	#define MCK_PT_EXTERNAL_HOST_DATA mcz_pt_external_host_data_obj
 #endif
 
 #ifdef MC_IS_EMU_CODE
 	extern mc_off_sys_st mcm_external_host_data_obj;
-	#define BJK_PT_EXTERNAL_HOST_DATA (&mcm_external_host_data_obj)
+	#define MCK_PT_EXTERNAL_HOST_DATA (&mcm_external_host_data_obj)
 #endif
 
 
@@ -112,7 +117,7 @@ mck_abort(mc_addr_t err, char* msg) mc_external_code_ram;
 
 void mc_inline_fn
 mck_set_finished(uint8_t val) {
-	mc_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt; 
+	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt; 
 	if(off_core_pt != mc_null){
 		mc_set_off_chip_var(off_core_pt->is_finished, val);
 	}
@@ -137,29 +142,29 @@ mck_set_irq0_handler() mc_external_code_ram;
 //======================================================================
 // mc_asserts
 
-#define BJK_INCORE_ASSERT(cond) MC_DBG(if(! (cond)){ mck_abort((mc_addr_t)(void*)err_11, err_11); } )
+#define MCK_INCORE_ASSERT(cond) MC_DBG(if(! (cond)){ mck_abort((mc_addr_t)(void*)err_11, err_11); } )
 
 // end_of_macro
 
 #ifdef MC_IS_EPH_CODE
-	#define BJK_CK(cond) BJK_INCORE_ASSERT(cond)
+	#define MCK_CK(cond) MCK_INCORE_ASSERT(cond)
 #endif
 
 #ifdef MC_IS_EMU_CODE
-	#define BJK_CK(cond) EMU_CK(cond)
+	#define MCK_CK(cond) EMU_CK(cond)
 #endif
 
 #ifdef MC_IS_ZNQ_CODE
 	#include "booter.h"
-	#define BJK_CK(cond) BJH_CK(cond)
+	#define MCK_CK(cond) MCH_CK(cond)
 #endif
 
-#define BJK_MARK_PLACE(nam) MC_DBG(mc_asm(#nam ":")) 
+#define MCK_MARK_PLACE(nam) MC_DBG(mc_asm(#nam ":")) 
 
 //======================================================================
 // naked inside normal func (insted of naked attribute)
 
-#define BJK_START_NAKED_FUNC(nam) \
+#define MCK_START_NAKED_FUNC(nam) \
 	mc_asm( \
 		".section .text \n\t" \
 		".balign 4 \n\t" \
@@ -169,7 +174,7 @@ mck_set_irq0_handler() mc_external_code_ram;
 
 // end_of_macro
 
-#define BJK_END_NAKED_FUNC() \
+#define MCK_END_NAKED_FUNC() \
 	mc_asm( \
 		"trap 0x3 \n\t" \
 		".previous \n\t" \
@@ -195,20 +200,20 @@ void ck_shd_code();
 	mc_inline_fn void
 	mck_update_min_stack_pointer() {
 		mc_addr_t curr_sp = (mc_addr_t)mck_get_stack_pointer();
-		mc_addr_t min_sp = BJK_GLB_SYS->dbg_min_sp;
+		mc_addr_t min_sp = MC_CORE_INFO->dbg_min_sp;
 		if((min_sp == 0) || (curr_sp < min_sp)){
-			BJK_GLB_SYS->dbg_min_sp = curr_sp;
+			MC_CORE_INFO->dbg_min_sp = curr_sp;
 		}
 	}
-	#define BJK_UPDATE_MIN_SP() MC_DBG(mck_update_min_stack_pointer())
+	#define MCK_UPDATE_MIN_SP() MC_DBG(mck_update_min_stack_pointer())
 #else
-	#define BJK_UPDATE_MIN_SP() 
+	#define MCK_UPDATE_MIN_SP() 
 #endif
 
 mc_inline_fn 
 uint32_t 
 mck_get_tot_modules(){
-	return BJK_PT_EXTERNAL_HOST_DATA->tot_modules;
+	return MCK_PT_EXTERNAL_HOST_DATA->tot_modules;
 }
 
 mc_addr_t 
@@ -232,6 +237,29 @@ extern char* mch_epiphany_elf_path;
 extern mc_load_map_st* mck_first_load_map mc_external_data_ram;
 extern void mc_cores_main() mc_external_code_ram;
 extern int mc_host_main(int argc, char *argv[]) mc_external_code_ram;
+
+//! True if this core is in row 'ro' and column 'co'
+#define mck_is_ro_co_core(ro, co) \
+	((MC_CORE_INFO->the_core_ro == (ro)) && (MC_CORE_INFO->the_core_co == (co)))
+
+//! True if this core has number 'nn'
+#define mck_is_nn_core(nn) (MC_CORE_INFO->the_core_nn == (nn))
+
+//! True if this core has id 'id'
+#define mck_is_id_core(id) (MC_CORE_INFO->the_core_id == (id))
+
+#define mck_has_off_core (MC_CORE_INFO->off_core_pt != mc_null)
+
+#define mc_host_saddr_to_core_saddr(h_addr) \
+	(MC_CORE_INFO->eph_shd_mem_base + (((mc_addr_t)h_addr) - MC_CORE_INFO->znq_shd_mem_base))
+
+
+#define mc_core_saddr_to_core_saddr(c_addr) \
+	(MC_CORE_INFO->znq_shd_mem_base + (((mc_addr_t)c_addr) - MC_CORE_INFO->eph_shd_mem_base))
+
+
+#define mck_glb_binder_get_rgt(bdr) (((binder*)mc_host_saddr_to_core_saddr(bdr))->bn_right)
+#define mck_glb_binder_get_lft(bdr) (((binder*)mc_host_saddr_to_core_saddr(bdr))->bn_left)
 
 
 #ifdef __cplusplus

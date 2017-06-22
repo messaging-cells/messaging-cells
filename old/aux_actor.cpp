@@ -61,9 +61,9 @@ E_DMA1_INT     = 7,
 E_USER_INT     = 9,
 
 
-		BJK_MARK_PLACE(START_UGLY_WAIT);
+		MCK_MARK_PLACE(START_UGLY_WAIT);
 		//while(test_send_irq2 < 1){ mc_asm("nop"); }	
 		//for(uint32_t aa = 0; aa < 1234567; aa++){ mc_asm("nop"); }
-		BJK_MARK_PLACE(END_UGLY_WAIT);
+		MCK_MARK_PLACE(END_UGLY_WAIT);
 
 */

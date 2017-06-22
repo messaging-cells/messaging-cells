@@ -16,15 +16,15 @@
 
 char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
-#define BJT_COREID(_addr) ((_addr) >> 20)
+#define MCT_COREID(_addr) ((_addr) >> 20)
 static inline bool mct_is_local(uint32_t addr)
 {
-	return BJT_COREID(addr) == 0;
+	return MCT_COREID(addr) == 0;
 }
 
 #define addr_in_shd_mem(addr) (! (\
-	((addr) >= BJH_EXTERNAL_RAM_BASE_PT) && \
-	((addr) < (BJH_EXTERNAL_RAM_BASE_PT + lk_dat->extnl_ram_size)) \
+	((addr) >= MCH_EXTERNAL_RAM_BASE_PT) && \
+	((addr) < (MCH_EXTERNAL_RAM_BASE_PT + lk_dat->extnl_ram_size)) \
 	)) \
 
 
@@ -61,21 +61,21 @@ mc_host_main(int argc, char *argv[])
 		mch_abort_func(302, "302. ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
-	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
-	MC_MARK_USED(BJH_EXTERNAL_RAM_BASE_PT);
+	MCH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)emem.base);
+	MC_MARK_USED(MCH_EXTERNAL_RAM_BASE_PT);
 
 	// dev init
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
-	mc_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
+	mc_sys_sz_st* g_sys_sz = MC_SYS_SZ;
 	mch_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
 	mc_off_sys_st* pt_shd_data = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_host_data_disp);
-	BJH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
+	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 
 	/*
-	printf("BJH_EXTERNAL_RAM_BASE_PT=%p \n", BJH_EXTERNAL_RAM_BASE_PT);
+	printf("MCH_EXTERNAL_RAM_BASE_PT=%p \n", MCH_EXTERNAL_RAM_BASE_PT);
 	printf("pt_shd_data=%p \n", pt_shd_data);
 
 	printf("extnl_ram_size = %p \n", (void*)syms.extnl_ram_size);
@@ -100,8 +100,8 @@ mc_host_main(int argc, char *argv[])
 
 	mc_core_co_t row, col, max_row, max_col;
 
-	void* min_shd = (void*)BJH_EXTERNAL_RAM_BASE_PT;
-	void* max_shd = (void*)(BJH_EXTERNAL_RAM_BASE_PT + lk_dat->extnl_ram_size);
+	void* min_shd = (void*)MCH_EXTERNAL_RAM_BASE_PT;
+	void* max_shd = (void*)(MCH_EXTERNAL_RAM_BASE_PT + lk_dat->extnl_ram_size);
 
 	max_row = 1;
 	max_col = 2;
@@ -111,7 +111,7 @@ mc_host_main(int argc, char *argv[])
 		for (col=0; col < max_col; col++){
 			void* dst = ((void*) dev.core[row][col].mems.base);
 			printf("min=%p dst=%p max=%p\n", min_shd, dst, max_shd);
-			BJH_CK(addr_in_shd_mem(dst));
+			MCH_CK(addr_in_shd_mem(dst));
 		}
 	}
 
@@ -135,7 +135,7 @@ mc_host_main(int argc, char *argv[])
 		unsigned coreid = ld_addr >> 20;
 		mc_addr_t coreid_2 = mc_addr_get_id(ld_addr);
 
-		BJH_CK(coreid == coreid_2);
+		MCH_CK(coreid == coreid_2);
 
 		bool islocal_2 = (coreid_2 == 0);
 		bool isonchip_2 = mc_addr_in_sys(ld_addr);
@@ -144,10 +144,10 @@ mc_host_main(int argc, char *argv[])
 		//printf("%" PRIu32 " == %p  coreid=%u \n", ld_addr, (void*)ld_addr, coreid);
 		bool islocal_3 = ! mc_addr_has_id(ld_addr);
 		
-		BJH_CK(islocal == islocal_2);
-		BJH_CK(islocal == islocal_3);
-		BJH_CK(isonchip == isonchip_2);
-		BJH_CK(isexternal == isexternal_2);
+		MCH_CK(islocal == islocal_2);
+		MCH_CK(islocal == islocal_3);
+		MCH_CK(isonchip == isonchip_2);
+		MCH_CK(isexternal == isexternal_2);
 
 		if(!islocal && isonchip){
 			unsigned  globrow, globcol;
@@ -158,8 +158,8 @@ mc_host_main(int argc, char *argv[])
 			//printf("coreid=%p \n", (void*)coreid);
 			//printf("g_ro=%d globrow=%d\n", g_ro, globrow);
 
-			BJH_CK(g_ro == globrow);
-			BJH_CK(g_co == globcol);
+			MCH_CK(g_ro == globrow);
+			MCH_CK(g_co == globcol);
 		}
 
 	}

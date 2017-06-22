@@ -6,7 +6,7 @@ void cell_handler(missive* msg);
 
 void
 wait_inited_state(mc_core_id_t dst_id){
-	mck_glb_sys_st* in_shd = BJK_GLB_SYS;
+	mck_glb_sys_st* in_shd = MC_CORE_INFO;
 	uint8_t* loc_st = &(in_shd->the_core_state);
 	uint8_t* rmt_st = (uint8_t*)mc_addr_set_id(dst_id, loc_st);
 	while(*rmt_st != mck_inited_state);
@@ -14,7 +14,7 @@ wait_inited_state(mc_core_id_t dst_id){
 
 void 
 recv_cell_handler(missive* msg){
-	BJK_UPDATE_MIN_SP();
+	MCK_UPDATE_MIN_SP();
 	EMU_CK(mc_addr_is_local(msg->dst));
 	mc_core_id_t koid = kernel::get_core_id();
 	MC_MARK_USED(koid);
@@ -36,10 +36,10 @@ void mc_cores_main() {
 	agent_ref::separate(mc_out_num_cores);
 	agent_grp::separate(mc_out_num_cores);
 
-	kernel* ker = BJK_KERNEL;
+	kernel* ker = MCK_KERNEL;
 	MC_MARK_USED(ker);
 
-	if(mck_is_core(0,0)){
+	if(mck_is_ro_co_core(0,0)){
 		mck_slog2("CORE (0,0) started\n");
 		mc_core_id_t dst = mc_ro_co_to_id(0, 1);
 		wait_inited_state(dst);
@@ -51,7 +51,7 @@ void mc_cores_main() {
 			ker->handle_missives();
 		}
 	}
-	if(mck_is_core(0,1)){
+	if(mck_is_ro_co_core(0,1)){
 		mck_slog2("CORE (0,1) started\n");
 		mc_core_id_t dst = mc_ro_co_to_id(0, 0);
 		wait_inited_state(dst);

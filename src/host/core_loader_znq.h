@@ -36,11 +36,11 @@ extern "C"
 
 #include "shared.h"
 
-#ifndef BJL_MARK_USED
-#define BJL_MARK_USED(X)  ((void)(&(X)))
+#ifndef MCL_MARK_USED
+#define MCL_MARK_USED(X)  ((void)(&(X)))
 #endif
 
-extern uint8_t* BJH_EXTERNAL_RAM_BASE_PT;
+extern uint8_t* MCH_EXTERNAL_RAM_BASE_PT;
 
 extern e_mem_t mch_glb_emem;
 extern e_epiphany_t mch_glb_dev;
@@ -51,7 +51,7 @@ extern e_epiphany_t mch_glb_dev;
 #define mch_max_shd_znq_addr ((mc_addr_t) (mch_glb_emem.base + MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_size))
 #define mch_znq_addr_in_shd_ram(znq_addr) ((mch_min_shd_znq_addr <= znq_addr) && (znq_addr < mch_max_shd_znq_addr))
 
-#define mch_disp_to_pt(disp) (BJH_EXTERNAL_RAM_BASE_PT + disp)
+#define mch_disp_to_pt(disp) (MCH_EXTERNAL_RAM_BASE_PT + disp)
 
 typedef enum {
 	L_D0 = 0,
@@ -96,9 +96,9 @@ int mcl_load_root(load_info_t *ld_dat);
 extern uint16_t DBGH_CODE_SHD_1[DBGH_CODE_SHD_SZ];
 extern mc_addr_t DBGH_FUNC_ADDR;
 
-#define BJL_MAX_TOT_MODULES 1000
+#define MCL_MAX_TOT_MODULES 1000
 
-extern char* mcl_module_names[BJL_MAX_TOT_MODULES];
+extern char* mcl_module_names[MCL_MAX_TOT_MODULES];
 extern int mcl_module_names_sz;
 
 bool 

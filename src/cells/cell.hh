@@ -2,8 +2,10 @@
 //----------------------------------------------------------------------------
 /*! \file cell.hh
 
-\brief Write here a brief description
+\brief The one and only include file necessarry to use the Messagging Cells library.
 
+\callgraph
+\callergraph
 */
 
 #ifndef CELL_HH
@@ -58,9 +60,9 @@ enum mck_cell_id_t : uint8_t {
 //-------------------------------------------------------------------------
 // dyn mem
 
-#define mck_all_available(nam) BJK_KERNEL->cls_available_##nam
+#define mck_all_available(nam) MCK_KERNEL->cls_available_##nam
 
-#define BJK_DEFINE_SEPARATE_AVA(nam, all_ava) \
+#define MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 void \
 nam::separate(uint16_t sz){ \
 	grip& ava = all_ava; \
@@ -73,16 +75,16 @@ nam::separate(uint16_t sz){ \
 
 // end_macro
 
-#define BJK_DEFINE_SEPARATE(nam) BJK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
+#define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
 
-#define BJK_DEFINE_ACQUIRE_ALLOC(nam, align) \
+#define MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 nam* \
 nam::acquire_alloc(uint16_t sz){ \
 	nam* obj = mc_malloc##align(nam, sz); \
 	if(obj == mc_null){ \
 		mck_abort((mc_addr_t)nam::acquire_alloc, err_1); \
 	} \
-	BJK_CK(MC_IS_ALIGNED_##align(obj)); \
+	MCK_CK(MC_IS_ALIGNED_##align(obj)); \
 	for(int bb = 0; bb < sz; bb++){ \
 		new (&(obj[bb])) nam(); \
 	} \
@@ -91,7 +93,7 @@ nam::acquire_alloc(uint16_t sz){ \
 
 // end_macro
 
-#define BJK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
+#define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
 nam* \
 nam::acquire(uint16_t sz){ \
 	grip& ava = all_ava; \
@@ -105,25 +107,26 @@ nam::acquire(uint16_t sz){ \
 
 // end_macro
 
-#define BJK_DEFINE_ACQUIRE(nam) BJK_DEFINE_ACQUIRE_AVA(nam, mck_all_available(nam))
+#define MCK_DEFINE_ACQUIRE(nam) MCK_DEFINE_ACQUIRE_AVA(nam, mck_all_available(nam))
 
-#define BJK_DECLARE_MEM_METHODS(nam) \
+#define MCK_DECLARE_MEM_METHODS(nam) \
 	static	nam*			acquire_alloc(uint16_t sz = 1) mc_external_code_ram; \
 	static	nam*			acquire(uint16_t sz = 1); \
 	static	void			separate(uint16_t sz) mc_external_code_ram; \
 
 // end_macro
 
-#define BJK_DEFINE_MEM_METHODS(nam, align, all_ava) \
-	BJK_DEFINE_ACQUIRE_ALLOC(nam, align) \
-	BJK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
-	BJK_DEFINE_SEPARATE_AVA(nam, all_ava) \
+#define MCK_DEFINE_MEM_METHODS(nam, align, all_ava) \
+	MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
+	MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
+	MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 
 // end_macro
 
 //-------------------------------------------------------------------------
 // handler ids
 
+//! Type to identify a \ref missive handler.
 typedef uint8_t mck_handler_idx_t;
 
 enum mck_core_state_t : uint8_t {
@@ -131,6 +134,7 @@ enum mck_core_state_t : uint8_t {
 	mck_inited_state
 };
 
+//! Type for functions that handle \ref missive s (it is a pointer to the handler function).
 typedef void (*missive_handler_t)(missive* msg);
 
 //-------------------------------------------------------------------------
@@ -154,19 +158,27 @@ enum mck_signal_t : uint8_t {
 
 //=============================================================================
 /*! \enum mck_ack_t
-\brief Posible ack state (write more).
-\ingroup docgrp_API
+\brief ack state of a particular routing port.
+\ingroup docgrp_inner_working
 
 */
 enum mck_ack_t : uint8_t {
-	mck_ready_ack = 30,	//!< It is ready to (write more)
-	mck_busy_ack,
-	mck_virgin_ack
+	mck_ready_ack = 30,	//!< It is ready to route (send) again through this route.
+	mck_busy_ack, //!< It is has routed (sent) through this route and is waiting to be ready again.
+	mck_virgin_ack //!< It is has never used this route yet.
 };
 
 
 //-------------------------------------------------------------------------
-// kernel class
+/*! \class kernel
+\brief The kernel of a core that is using the library.
+\ingroup docgrp_inner_working
+
+\details 
+<p>
+Every core must have one and only one kernel inited with kernel::init_sys. 
+
+*/
 
 //define mc_virgin mc_null
 #define mc_virgin ((missive_grp_t*)(~((mc_addr_t)mc_null)))
@@ -186,8 +198,8 @@ enum mck_ack_t : uint8_t {
 	mck_get_first_kernel() mc_external_code_ram;
 
 	extern kernel*	mck_PT_THE_KERNEL;
-	#define BJK_FIRST_KERNEL mck_get_first_kernel()
-	#define BJK_KERNEL (mck_PT_THE_KERNEL)
+	#define MCK_FIRST_KERNEL mck_get_first_kernel()
+	#define MCK_KERNEL (mck_PT_THE_KERNEL)
 #endif
 
 #ifdef MC_IS_ZNQ_CODE
@@ -195,17 +207,17 @@ enum mck_ack_t : uint8_t {
 	mch_get_first_kernel();
 
 	extern kernel*	mch_PT_THE_KERNEL;
-	#define BJK_FIRST_KERNEL mch_get_first_kernel()
-	#define BJK_KERNEL (mch_PT_THE_KERNEL)
+	#define MCK_FIRST_KERNEL mch_get_first_kernel()
+	#define MCK_KERNEL (mch_PT_THE_KERNEL)
 #endif
 
 #ifdef MC_IS_EMU_CODE
-	#define BJK_FIRST_KERNEL kernel::get_sys()
-	#define BJK_KERNEL kernel::get_sys()
+	#define MCK_FIRST_KERNEL kernel::get_sys()
+	#define MCK_KERNEL kernel::get_sys()
 #endif
 
 //! Gets the local kernel
-#define mck_get_kernel() BJK_KERNEL
+#define mck_get_kernel() MCK_KERNEL
 
 class mc_aligned kernel { 
 public:
@@ -213,7 +225,7 @@ public:
 	bool		is_host_kernel;
 
 	mck_handler_idx_t 	tot_handlers;
-	missive_handler_t* 	all_handlers;
+	missive_handler_t* 	all_handlers; //!< Current array of \ref missive handlers of \ref cell s for this core.
 
 	mc_bool_t signals_arr[kernel_signals_arr_sz];
 
@@ -269,13 +281,13 @@ public:
 	void init_kernel() mc_external_code_ram;
 
 	static void
-	init_sys() mc_external_code_ram;
+	init_sys() mc_external_code_ram; //!< Static method that inits this core kernel.
 
 	static mc_opt_sz_fn void 
-	run_sys();
+	run_sys(); //!< Static method that starts handling \ref missive s. No \ref missive s are handled before.
 
 	static void
-	finish_sys() mc_external_code_ram;
+	finish_sys() mc_external_code_ram; //!< Static method that finishes this core kernel.
 
 	static void
 	init_host_sys() mc_external_code_ram;
@@ -290,44 +302,44 @@ public:
 	get_sys();
 
 	static mc_inline_fn mck_glb_sys_st& 
-	get_glb(){
-		return *BJK_GLB_SYS;
+	get_core_info(){
+		return *MC_CORE_INFO;
 	}
 
 	static mc_inline_fn mc_off_core_st& 
 	get_off_shd(){
-		return *(BJK_GLB_SYS->off_core_pt);
+		return *(MC_CORE_INFO->off_core_pt);
 	}
 
 	static mc_inline_fn mc_sys_sz_st& 
 	get_sys_sz(){
-		return *BJK_GLB_SYS_SZ;
-		//return BJK_GLB_SYS->mck_system_sz;
+		return *MC_SYS_SZ;
+		//return MC_CORE_INFO->mck_system_sz;
 	}
 
 	static mc_inline_fn mc_core_nn_t 
 	get_core_nn(){
-		return BJK_GLB_SYS->the_core_nn;
+		return MC_CORE_INFO->the_core_nn;
 	}
 
 	static mc_inline_fn mc_core_co_t 
 	get_core_ro(){
-		return BJK_GLB_SYS->the_core_ro;
+		return MC_CORE_INFO->the_core_ro;
 	}
 
 	static mc_inline_fn mc_core_co_t 
 	get_core_co(){
-		return BJK_GLB_SYS->the_core_co;
+		return MC_CORE_INFO->the_core_co;
 	}
 
 	static mc_inline_fn mc_core_id_t 
 	get_core_id(){
-		return BJK_GLB_SYS->the_core_id;
+		return MC_CORE_INFO->the_core_id;
 	}
 
 	static mc_inline_fn cell*
 	get_core_cell(){
-		return BJK_KERNEL->first_cell;
+		return MCK_KERNEL->first_cell;
 	}
 
 	static cell*
@@ -336,6 +348,7 @@ public:
 	static cell*
 	get_host_cell() mc_external_code_ram;
 
+	//! \brief This methods sets \ref kernel::all_handlers to 'hdlrs' and it must have size 'tot_hdlrs'.
 	static void
 	set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) mc_external_code_ram;
 
@@ -405,8 +418,12 @@ public:
 #define mck_set_class_name(cls) class_names_arr[mck_cell_id(cls)] = mc_class_name(cls)
 
 //-------------------------------------------------------------------------
-// agent class 
+/*! \class agent
+\brief The base class for any library object including \ref cell s, \ref missive s,  \ref agent_grp s
+and \ref agent_ref s.
+\ingroup docgrp_inner_working
 
+*/
 class mc_aligned agent: public binder{
 public:
 	mc_opt_sz_fn 
@@ -445,11 +462,18 @@ public:
 
 //-------------------------------------------------------------------------
 /*! \class cell
-\brief Write here a brief description
-\ingroup docgrp_CDCL_classes
+\brief The base class for any user processing class that wishes send \ref missive s. 
+\ingroup docgrp_messaging
 
-\details Write here a detailed description
-There are two \ref cell s per variable. \ref neuron s hold references to \ref quanton s called fibres. They are used for BCP.
+\details 
+<p>
+A cell is the fundamental unit of concurrent computation of the library. 
+
+<p>
+The user can think of it as a concurrent object (as in object oriented programming), an object that can receive \ref missive s.
+
+<p>
+Every cell has a \ref mck_handler_idx_t called \ref handler_idx .
 */
 
 
@@ -465,7 +489,7 @@ public:
 	static
 	void			separate(uint16_t sz) mc_external_code_ram;
 
-	mck_handler_idx_t 	handler_idx;
+	mck_handler_idx_t 	handler_idx; //!< The index of my handler function in \ref kernel::all_handlers.
 	mck_flags_t 		flags;
 
 	mc_opt_sz_fn 
@@ -498,7 +522,11 @@ public:
 };
 
 //-------------------------------------------------------------------------
-// missive class
+/*! \class missive
+\brief The base class for any user data class that wishes to be sent beetwen \ref cell s.
+\ingroup docgrp_messaging
+
+*/
 
 class mc_aligned missive : public agent {
 public:
@@ -541,7 +569,7 @@ public:
 		EMU_CK(mc_addr_in_sys((mc_addr_t)dst));
 
 		src = (cell*)mck_as_glb_pt(src);
-		BJK_KERNEL->local_work.bind_to_my_left(*this);
+		MCK_KERNEL->local_work.bind_to_my_left(*this);
 	}
 
 	mc_inline_fn 
@@ -550,14 +578,14 @@ public:
 		EMU_DBG_CODE(dbg_msv |= 0x1);
 
 		EMU_CK(dst != mc_null);
-		if(! BJK_KERNEL->is_host_kernel){
+		if(! MCK_KERNEL->is_host_kernel){
 			EMU_CK(mc_addr_get_id((mc_addr_t)dst) != 0);
 			EMU_CK(! mc_addr_in_sys((mc_addr_t)dst));
 			src = (cell*)mck_as_glb_pt(src);
-			BJK_KERNEL->to_host_work.bind_to_my_left(*this);
-			BJK_KERNEL->has_to_host_work = true;
+			MCK_KERNEL->to_host_work.bind_to_my_left(*this);
+			MCK_KERNEL->has_to_host_work = true;
 		} else {
-			BJK_KERNEL->local_work.bind_to_my_left(*this);
+			MCK_KERNEL->local_work.bind_to_my_left(*this);
 		}
 	}
 
@@ -583,8 +611,12 @@ public:
 };
 
 //-------------------------------------------------------------------------
-// agent_grp class 
+/*! \class agent_grp
+\brief A class that is used internally to group \ref missive s, \ref cell s or any
+\ref agent derived class. You can use it too.
+\ingroup docgrp_inner_working
 
+*/
 class mc_aligned agent_grp : public agent {
 public:
 	static
@@ -627,8 +659,13 @@ public:
 };
 
 //-------------------------------------------------------------------------
-// agent_ref class 
+/*! \class agent_ref
+\brief A class that is used internally to hold a reference 
+(local or remote ) to \ref missive s, \ref cell s or any
+\ref agent derived class. You can use it too.
+\ingroup docgrp_inner_working
 
+*/
 class mc_aligned agent_ref : public agent {
 public:
 	static
@@ -670,7 +707,7 @@ public:
 #define mch_glb_binder_get_rgt(bdr, id) (binder*)mc_glb_binder_get_rgt((binder*)mc_core_pt_to_host_pt(bdr), id)
 #define mch_glb_binder_get_lft(bdr, id) (binder*)mc_glb_binder_get_lft((binder*)mc_core_pt_to_host_pt(bdr), id)
 
-#define BJK_CALL_HANDLER(cls, nam, msv) (((cls*)(mck_as_loc_pt(msv->dst)))->nam(msv))
+#define MCK_CALL_HANDLER(cls, nam, msv) (((cls*)(mck_as_loc_pt(msv->dst)))->nam(msv))
 
 template<typename T, typename U> constexpr mc_size_t mc_offsetof(U T::*member) mc_external_code_ram;
 

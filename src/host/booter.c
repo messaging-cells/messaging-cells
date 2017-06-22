@@ -19,7 +19,7 @@
 
 mc_link_syms_data_st mch_external_ram_load_data;
 
-bool BJH_LOAD_WITH_MEMCPY = false;
+bool MCH_LOAD_WITH_MEMCPY = false;
 
 void 
 mch_abort_func(long val, const char* msg){
@@ -58,11 +58,11 @@ mch_file_append(char* the_pth, char* the_data, long the_sz){
 }
 
 bool mch_ck_sys_data(mc_sys_sz_st* sys1){
-	mc_sys_sz_st* sys0 = BJK_GLB_SYS_SZ;
-	BJH_CK(sys1->xx == sys0->xx);
-	BJH_CK(sys1->yy == sys0->yy);
-	BJH_CK(sys1->xx_sz == sys0->xx_sz);
-	BJH_CK(sys1->yy_sz_pw2 == sys0->yy_sz_pw2);
+	mc_sys_sz_st* sys0 = MC_SYS_SZ;
+	MCH_CK(sys1->xx == sys0->xx);
+	MCH_CK(sys1->yy == sys0->yy);
+	MCH_CK(sys1->xx_sz == sys0->xx_sz);
+	MCH_CK(sys1->yy_sz_pw2 == sys0->yy_sz_pw2);
 	return true;
 }
 
@@ -132,8 +132,8 @@ mch_rr_ck_zero(mc_rrarray_st* arr){
 	uint8_t* dat = arr->data;
 	while(dat != arr->end_data){
 		uint8_t cc = (uint8_t)(*dat);
-		BJH_CK(cc == 0);
-		BJH_CK(! isprint(cc));
+		MCH_CK(cc == 0);
+		MCH_CK(! isprint(cc));
 		dat++;
 	}
 	return true;
@@ -351,22 +351,22 @@ mch_get_enter(mc_core_co_t row, mc_core_co_t col){
 	getchar();
 }
 
-#define BJH_MAX_CALL_STACK_SZ 100
+#define MCH_MAX_CALL_STACK_SZ 100
 
 void
 mch_ptr_call_stack_trace() {
-	void* trace[BJH_MAX_CALL_STACK_SZ];
+	void* trace[MCH_MAX_CALL_STACK_SZ];
 
-	memset((uint8_t*)trace, 0, BJH_MAX_CALL_STACK_SZ * sizeof(void*));
+	memset((uint8_t*)trace, 0, MCH_MAX_CALL_STACK_SZ * sizeof(void*));
 
-	size_t trace_sz = backtrace(trace, BJH_MAX_CALL_STACK_SZ);
+	size_t trace_sz = backtrace(trace, MCH_MAX_CALL_STACK_SZ);
 	EMU_CODE(fprintf(stderr, "trace_size=%lu \n", trace_sz));
 	ZNQ_CODE(fprintf(stderr, "trace_size=%u \n", trace_sz));
 
 	char **stack_strings = backtrace_symbols(trace, trace_sz);
 	fprintf(stderr, "STACK_STRACE------------------------------\n");
 	for( size_t ii = 1; ii < trace_sz; ii++ ) {
-		if(ii >= BJH_MAX_CALL_STACK_SZ){ break; }
+		if(ii >= MCH_MAX_CALL_STACK_SZ){ break; }
 		fprintf(stderr, "%s \n", stack_strings[ii]);
 	}
 	fprintf(stderr, "------------------------------(to see names link with -rdynamic)\n");

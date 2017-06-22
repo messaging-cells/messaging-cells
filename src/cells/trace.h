@@ -1,8 +1,13 @@
 
-// trace.h
+//----------------------------------------------------------------------------
+/*! \file trace.h
 
-#ifndef BJK_TRACE_H
-#define BJK_TRACE_H
+\brief Trace functions.
+
+*/
+
+#ifndef MCK_TRACE_H
+#define MCK_TRACE_H
 
 #include <inttypes.h>
 #include "attribute.h"
@@ -22,5 +27,5 @@ mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace) mc_external_code_ra
 }
 #endif
 
-#endif // BJK_TRACE_H
+#endif // MCK_TRACE_H
 

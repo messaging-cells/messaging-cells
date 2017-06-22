@@ -82,7 +82,7 @@ int main() {
 	all_mod_addr = mc_malloc32(mc_addr_t, tot_m);
 	mck_fill_module_external_addresses(all_mod_nams, all_mod_addr);
 
-	if(BJK_GLB_SYS->the_core_nn == 0){	
+	if(MC_CORE_INFO->the_core_nn == 0){	
 		//print_module_nams();
 		//print_module_addrs();
 		bool ok = mck_load_module(all_mod_addr[MOD2_IDX]);
@@ -90,7 +90,7 @@ int main() {
 			m2_main();
 		}
 	}
-	if(BJK_GLB_SYS->the_core_nn == 1){	
+	if(MC_CORE_INFO->the_core_nn == 1){	
 		//print_module_nams();
 		//print_module_addrs();
 		bool ok = mck_load_module(all_mod_addr[MOD1_IDX]);
@@ -98,7 +98,7 @@ int main() {
 			m1_main();
 		}
 	}
-	if(BJK_GLB_SYS->the_core_nn == 3){	
+	if(MC_CORE_INFO->the_core_nn == 3){	
 		//print_module_nams();
 		//print_module_addrs();
 		bool ok = mck_load_module(all_mod_addr[MOD3_IDX]);

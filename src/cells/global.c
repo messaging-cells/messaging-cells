@@ -23,25 +23,25 @@ mck_glb_init(void) {
 	mck_set_irq0_handler();
 	EPH_CODE(mc_add_lk_syms());
 
-	mck_glb_sys_st* glb_dat = BJK_FIRST_GLB_SYS;
+	mck_glb_sys_st* glb_dat = MCK_FIRST_GLB_SYS;
 	mc_memset((uint8_t*)glb_dat, 0, sizeof(mck_glb_sys_st));
 
 	glb_dat->off_core_pt = mc_null;
 	glb_dat->write_rrarray = mc_null;
 
-	mc_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
+	mc_sys_sz_st* sys_sz = MC_SYS_SZ;
 	mc_init_glb_sys_sz(sys_sz);
 	
-	if(BJK_PT_EXTERNAL_HOST_DATA->magic_id != MC_MAGIC_ID){
+	if(MCK_PT_EXTERNAL_HOST_DATA->magic_id != MC_MAGIC_ID){
 		mck_abort((mc_addr_t)mck_glb_init, err_6);
 	}
 
-	BJK_PT_EXTERNAL_HOST_DATA->pt_this_from_eph = BJK_PT_EXTERNAL_HOST_DATA;	// should be same for all cores
+	MCK_PT_EXTERNAL_HOST_DATA->pt_this_from_eph = MCK_PT_EXTERNAL_HOST_DATA;	// should be same for all cores
 	
 	// glb_sys_sz init
 	mc_core_id_t koid = mck_get_core_id();
 	mc_memset((uint8_t*)sys_sz, 0, sizeof(mc_sys_sz_st));
-	*sys_sz = BJK_PT_EXTERNAL_HOST_DATA->wrk_sys;
+	*sys_sz = MCK_PT_EXTERNAL_HOST_DATA->wrk_sys;
 
 	// num_core init
 	mc_core_nn_t num_core = mc_id_to_nn(koid);
@@ -49,8 +49,8 @@ mck_glb_init(void) {
 	glb_dat->magic_id = MC_MAGIC_ID;
 	glb_dat->dbg_stack_trace = mc_null;
 	glb_dat->magic_end = MC_MAGIC_END;	
-	glb_dat->znq_shd_mem_base = BJK_PT_EXTERNAL_HOST_DATA->znq_shared_mem_base;
-	glb_dat->eph_shd_mem_base = BJK_PT_EXTERNAL_HOST_DATA->eph_shared_mem_base;
+	glb_dat->znq_shd_mem_base = MCK_PT_EXTERNAL_HOST_DATA->znq_shared_mem_base;
+	glb_dat->eph_shd_mem_base = MCK_PT_EXTERNAL_HOST_DATA->eph_shared_mem_base;
 	glb_dat->the_core_id = koid;
 	glb_dat->the_core_ro = mc_id_to_ro(koid);
 	glb_dat->the_core_co = mc_id_to_co(koid);
@@ -58,12 +58,12 @@ mck_glb_init(void) {
 	glb_dat->pt_core_kernel = mc_null;
 
 	if(num_core < mc_out_num_cores){
-		glb_dat->off_core_pt = &((BJK_PT_EXTERNAL_HOST_DATA->sys_cores)[num_core]);
-		if((BJK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core].magic_id != MC_MAGIC_ID){
+		glb_dat->off_core_pt = &((MCK_PT_EXTERNAL_HOST_DATA->sys_cores)[num_core]);
+		if((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core].magic_id != MC_MAGIC_ID){
 			mck_abort((mc_addr_t)mck_glb_init, err_7);
 		}
 
-		mc_core_out_st* out_st = &((BJK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core]);
+		mc_core_out_st* out_st = &((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core]);
 
 		glb_dat->write_rrarray = &(out_st->wr_arr);
 		mc_rr_init(glb_dat->write_rrarray, MC_OUT_BUFF_SZ, out_st->buff, 0);
@@ -85,8 +85,8 @@ mck_glb_init(void) {
 	}
 
 	EPH_CODE(
-		BJK_CK(glb_dat->eph_shd_mem_base == MC_VAL_EXTERNAL_RAM_ORIG)
-		BJK_CK(glb_dat->znq_shd_mem_base != 0);
+		MCK_CK(glb_dat->eph_shd_mem_base == MC_VAL_EXTERNAL_RAM_ORIG)
+		MCK_CK(glb_dat->znq_shd_mem_base != 0);
 	)
 
 	#if defined(MC_IS_EPH_CODE) && defined(MC_PLL_LOADING)

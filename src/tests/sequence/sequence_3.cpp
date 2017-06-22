@@ -18,7 +18,7 @@ typedef uint32_t seq_tok_t;
 
 class sequence : public cell {
 public:
-	BJK_DECLARE_MEM_METHODS(sequence)
+	MCK_DECLARE_MEM_METHODS(sequence)
 
 	seq_tok_t last_sent;
 	seq_tok_t last_recv;
@@ -43,14 +43,14 @@ public:
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
 class seq_core {
 public:
-	BJK_DECLARE_MEM_METHODS(seq_core)
+	MCK_DECLARE_MEM_METHODS(seq_core)
 
 	tak_mak gg;
 	sequence my_seq;
 	grip ava_seq;
 };
 
-BJK_DEFINE_ACQUIRE_ALLOC(seq_core, 32)	// defines seq_core::acquire_alloc
+MCK_DEFINE_ACQUIRE_ALLOC(seq_core, 32)	// defines seq_core::acquire_alloc
 
 #define glb_seq_core ((seq_core*)(mck_get_kernel()->user_data))
 
@@ -65,7 +65,7 @@ BJK_DEFINE_ACQUIRE_ALLOC(seq_core, 32)	// defines seq_core::acquire_alloc
 
 void 
 sequence_handler(missive* msv){
-	BJK_CALL_HANDLER(sequence, handler, msv);
+	MCK_CALL_HANDLER(sequence, handler, msv);
 }
 
 missive_handler_t the_handlers[] = {
@@ -133,7 +133,7 @@ sequence::send(cell* dst, seq_tok_t tok){
 	msv->send();
 }
 
-BJK_DEFINE_MEM_METHODS(sequence, 32, glb_ava_seq)
+MCK_DEFINE_MEM_METHODS(sequence, 32, glb_ava_seq)
 
 void ker_func(){
 	kernel* ker = mck_get_kernel();

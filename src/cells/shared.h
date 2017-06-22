@@ -1,5 +1,10 @@
 
-// mc_shared_data.h
+//----------------------------------------------------------------------------
+/*! \file shared.h
+
+\brief C shared structures (by host and cores). It is included in global.h and \ref cell.hh.
+
+*/
 
 #ifndef MC_SHARED_DATA_H
 #define MC_SHARED_DATA_H
@@ -72,12 +77,12 @@ typedef struct mc_sys_def mc_sys_sz_st;
 
 #ifdef MC_IS_EPH_CODE
 	extern mc_sys_sz_st 	mck_system_sz;
-	#define BJK_GLB_SYS_SZ (&mck_system_sz)
+	#define MC_SYS_SZ (&mck_system_sz)
 #else
 	mc_sys_sz_st*
 	mc_get_glb_sys_sz();
 
-	#define BJK_GLB_SYS_SZ mc_get_glb_sys_sz()
+	#define MC_SYS_SZ mc_get_glb_sys_sz()
 #endif
 
 void mc_inline_fn
@@ -111,19 +116,19 @@ mc_init_glb_sys_sz_with(mc_sys_sz_st* sys_sz, mc_core_co_t xx_val, mc_core_co_t 
 	
 // xx and yy are absolute epiphany space coordinates
 // ro and co are relative epiphany space coordinates with respect to the 
-// 		allocated running cores (BJK_GLB_SYS_SZ)
+// 		allocated running cores (MC_SYS_SZ)
 // id is the core id absolute in epiphany space 
-// nn is a consec with respect to the allocated running cores (BJK_GLB_SYS_SZ)
+// nn is a consec with respect to the allocated running cores (MC_SYS_SZ)
 
-#define mc_pw2_yy_sys (BJK_GLB_SYS_SZ->yy_sz_pw2)
+#define mc_pw2_yy_sys (MC_SYS_SZ->yy_sz_pw2)
 
-#define mc_tot_xx_sys (BJK_GLB_SYS_SZ->xx_sz)
+#define mc_tot_xx_sys (MC_SYS_SZ->xx_sz)
 #define mc_tot_yy_sys ((mc_core_co_t)(1 << mc_pw2_yy_sys))
 #define mc_tot_nn_sys (mc_tot_xx_sys * mc_tot_yy_sys)
 
-#define mc_min_xx_sys (BJK_GLB_SYS_SZ->xx)
+#define mc_min_xx_sys (MC_SYS_SZ->xx)
 #define mc_max_xx_sys (mc_min_xx_sys + mc_tot_xx_sys)
-#define mc_min_yy_sys (BJK_GLB_SYS_SZ->yy)
+#define mc_min_yy_sys (MC_SYS_SZ->yy)
 #define mc_max_yy_sys (mc_min_yy_sys + mc_tot_yy_sys)
 
 #define mc_id_to_xx(id)	(((id) >> mc_axis_bits) & mc_axis_mask)
@@ -181,9 +186,6 @@ mc_addr_in_sys(mc_addr_t addr) {
 #define mc_addr_in_host(addr) (! mc_addr_in_sys(addr))
 
 #define mc_dref(typ_nam, glb_pt, pt_field) ((typ_nam*)mc_addr_set_id(mc_addr_get_id(glb_pt), (glb_pt)->pt_field))
-
-#define mck_is_core(row, col) \
-	((BJK_GLB_SYS->the_core_ro == (row)) && (BJK_GLB_SYS->the_core_co == (col)))
 
 
 //======================================================================
@@ -331,8 +333,6 @@ mc_isprint(char cc){
 
 // end_macro
 
-#define mck_has_off_core (BJK_GLB_SYS->off_core_pt != mc_null)
-
 mc_addr_t
 mc_host_addr_to_core_addr(mc_addr_t h_addr) mc_external_code_ram;
 
@@ -345,17 +345,6 @@ mc_core_addr_to_host_addr(mc_addr_t c_addr) mc_external_code_ram;
 #define mc_dref_field(cls_base, base, cls_field, field)	\
 	((cls_field*)(uint8_t*)(((uint8_t*)base) + mc_offsetof(&cls_base::field)))
 
-
-#define mc_host_saddr_to_core_saddr(h_addr) \
-	(BJK_GLB_SYS->eph_shd_mem_base + (((mc_addr_t)h_addr) - BJK_GLB_SYS->znq_shd_mem_base))
-
-
-#define mc_core_saddr_to_core_saddr(c_addr) \
-	(BJK_GLB_SYS->znq_shd_mem_base + (((mc_addr_t)c_addr) - BJK_GLB_SYS->eph_shd_mem_base))
-
-
-#define mck_glb_binder_get_rgt(bdr) (((binder*)mc_host_saddr_to_core_saddr(bdr))->bn_right)
-#define mck_glb_binder_get_lft(bdr) (((binder*)mc_host_saddr_to_core_saddr(bdr))->bn_left)
 
 #ifdef __cplusplus
 }

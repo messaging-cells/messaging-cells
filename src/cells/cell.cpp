@@ -34,20 +34,22 @@
 
 //----------------------------------------------------------------------------
 
-BJK_DEFINE_ACQUIRE_ALLOC(cell, 32)
-BJK_DEFINE_ACQUIRE_ALLOC(missive, 32)
-BJK_DEFINE_ACQUIRE_ALLOC(agent_ref, 32)
-BJK_DEFINE_ACQUIRE_ALLOC(agent_grp, 32)
+MCK_DEFINE_ACQUIRE_ALLOC(cell, 32)
+MCK_DEFINE_ACQUIRE_ALLOC(missive, 32)
+MCK_DEFINE_ACQUIRE_ALLOC(agent_ref, 32)
+MCK_DEFINE_ACQUIRE_ALLOC(agent_grp, 32)
 
-BJK_DEFINE_ACQUIRE(cell)
-BJK_DEFINE_ACQUIRE(missive)
-BJK_DEFINE_ACQUIRE(agent_ref)
-BJK_DEFINE_ACQUIRE(agent_grp)
 
-BJK_DEFINE_SEPARATE(cell)
-BJK_DEFINE_SEPARATE(missive)
-BJK_DEFINE_SEPARATE(agent_ref)
-BJK_DEFINE_SEPARATE(agent_grp)
+MCK_DEFINE_ACQUIRE(cell) //!< This functions \ref acquires \ref cell s in dynamic memory.
+MCK_DEFINE_ACQUIRE(missive) //!< This functions \ref acquires \ref missive s in dynamic memory.
+MCK_DEFINE_ACQUIRE(agent_ref) //!< This functions \ref acquires \ref agent_ref s in dynamic memory.
+MCK_DEFINE_ACQUIRE(agent_grp) //!< This functions \ref acquires \ref agent_grp s in dynamic memory.
+
+
+MCK_DEFINE_SEPARATE(cell) //!< This functions \ref separates \ref cell s in dynamic memory.
+MCK_DEFINE_SEPARATE(missive) //!< This functions \ref separates \ref missive s in dynamic memory.
+MCK_DEFINE_SEPARATE(agent_ref) //!< This functions \ref separates \ref agent_ref s in dynamic memory.
+MCK_DEFINE_SEPARATE(agent_grp) //!< This functions \ref separates \ref agent_grp s in dynamic memory.
 
 kernel::kernel(){
 	init_kernel();
@@ -107,9 +109,9 @@ kernel::init_kernel(){
 bool
 mck_ck_type_sizes(){
 	EPH_CODE(
-	BJK_CK(sizeof(void*) == sizeof(mc_addr_t));
-	BJK_CK(sizeof(void*) == sizeof(unsigned));
-	BJK_CK(sizeof(void*) == sizeof(uint32_t));
+	MCK_CK(sizeof(void*) == sizeof(mc_addr_t));
+	MCK_CK(sizeof(void*) == sizeof(unsigned));
+	MCK_CK(sizeof(void*) == sizeof(uint32_t));
 	);
 	return true;
 }
@@ -118,15 +120,15 @@ void	// static
 kernel::init_sys(){
 	mck_glb_init();
 
-	BJK_CK(mck_ck_type_sizes());
+	MCK_CK(mck_ck_type_sizes());
 
-	kernel* ker = BJK_FIRST_KERNEL;
+	kernel* ker = MCK_FIRST_KERNEL;
 
 	new (ker) kernel(); 
 
-	ker->host_kernel = (kernel*)(BJK_PT_EXTERNAL_HOST_DATA->pt_host_kernel);
+	ker->host_kernel = (kernel*)(MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel);
 
-	mck_glb_sys_st* in_shd = BJK_GLB_SYS;
+	mck_glb_sys_st* in_shd = MC_CORE_INFO;
 
 	in_shd->binder_sz = sizeof(binder);
 	in_shd->kernel_sz = sizeof(kernel);
@@ -143,27 +145,18 @@ kernel::init_sys(){
 	mck_global_irq_enable();
 }
 
-/*! 
-\brief Write here a brief description for this function
-
-\param bjs The solver object to be released.
-\details Write here the details explaining this function
-\see macro_algorithm_ben_jose.cpp
-\callgraph
-\callergraph
-*/
 void // static
 kernel::run_sys(){
-	kernel* ker = BJK_KERNEL;
+	kernel* ker = MCK_KERNEL;
 	
 	if(! ker->is_host_kernel){
-		BJK_GLB_SYS->pt_core_kernel = (void*)mc_addr_set_id(BJK_GLB_SYS->the_core_id, ker);
-		BJK_GLB_SYS->inited_core = BJK_GLB_SYS->the_core_id;
+		MC_CORE_INFO->pt_core_kernel = (void*)mc_addr_set_id(MC_CORE_INFO->the_core_id, ker);
+		MC_CORE_INFO->inited_core = MC_CORE_INFO->the_core_id;
 		/*
 		#ifdef MC_PLL_LOADING
-			if(BJK_GLB_SYS->the_core_nn == 0){
+			if(MC_CORE_INFO->the_core_nn == 0){
 				mck_sprt2("INITED___"); 
-				mck_xprt((mc_addr_t)(&(BJK_GLB_SYS->inited_core)));
+				mck_xprt((mc_addr_t)(&(MC_CORE_INFO->inited_core)));
 				mck_sprt2("___\n");
 			}
 		#endif
@@ -191,19 +184,19 @@ void // static
 kernel::init_host_sys(){
 	mc_host_init();
 	kernel::init_sys();
-	BJK_PT_EXTERNAL_HOST_DATA->pt_host_kernel = (void*)mc_host_addr_to_core_addr((mc_addr_t)BJK_KERNEL);
-	BJK_KERNEL->is_host_kernel = true;
+	MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel = (void*)mc_host_addr_to_core_addr((mc_addr_t)MCK_KERNEL);
+	MCK_KERNEL->is_host_kernel = true;
 
-	//ZNQ_CODE(printf("init_host_sys. BJK_KERNEL = %p \n", BJK_KERNEL));
-	//ZNQ_CODE(printf("init_host_sys. pt_host_kernel = %p \n", BJK_PT_EXTERNAL_HOST_DATA->pt_host_kernel));
-	//ZNQ_CODE(printf("init_host_sys. mg=%x emg=%x \n", BJK_KERNEL->magic_id, BJK_KERNEL->end_magic_id));
-	//ZNQ_CODE(printf("init_host_sys. fst_act=%p \n", BJK_KERNEL->first_cell));
+	//ZNQ_CODE(printf("init_host_sys. MCK_KERNEL = %p \n", MCK_KERNEL));
+	//ZNQ_CODE(printf("init_host_sys. pt_host_kernel = %p \n", MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel));
+	//ZNQ_CODE(printf("init_host_sys. mg=%x emg=%x \n", MCK_KERNEL->magic_id, MCK_KERNEL->end_magic_id));
+	//ZNQ_CODE(printf("init_host_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
 }
 
 void // static
 kernel::run_host_sys(){
-	//ZNQ_CODE(printf("run_host_sys. fst_act=%p \n", BJK_KERNEL->first_cell));
-	BJK_KERNEL->host_running = true;
+	//ZNQ_CODE(printf("run_host_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
+	MCK_KERNEL->host_running = true;
 	mc_host_run();
 }
 
@@ -215,7 +208,7 @@ kernel::finish_host_sys(){
 
 char*
 agent::get_class_name(){
-	kernel* ker = BJK_KERNEL;
+	kernel* ker = MCK_KERNEL;
 	mck_cell_id_t id = get_cell_id();
 	if(mck_is_valid_class_name_idx(id)){
 		return (ker->class_names_arr)[id];
@@ -287,7 +280,7 @@ agent::init_me(int caller){
 
 cell*	//	static 
 kernel::get_core_cell(mc_core_id_t dst_id){
-	if(! BJK_KERNEL->is_host_kernel){
+	if(! MCK_KERNEL->is_host_kernel){
 		cell* loc_act = kernel::get_core_cell();
 		if(dst_id == kernel::get_core_id()){
 			return loc_act;
@@ -304,7 +297,7 @@ kernel::get_core_cell(mc_core_id_t dst_id){
 
 cell* // static 
 kernel::get_host_cell(){
-	kernel* ker = BJK_KERNEL;
+	kernel* ker = MCK_KERNEL;
 	if(ker->is_host_kernel){
 		return ker->first_cell;
 	} 
@@ -313,7 +306,7 @@ kernel::get_host_cell(){
 
 void // static 
 kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
-	kernel* ker = BJK_KERNEL;
+	kernel* ker = MCK_KERNEL;
 	ker->tot_handlers = tot_hdlrs;
 	ker->all_handlers = hdlrs;
 }
@@ -372,7 +365,7 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 
 bool
 mck_is_id_inited(mc_core_id_t dst_id){
-	mck_glb_sys_st* in_shd = BJK_GLB_SYS;
+	mck_glb_sys_st* in_shd = MC_CORE_INFO;
 	mc_core_id_t* loc_st = &(in_shd->inited_core);
 	mc_core_id_t* rmt_st = (mc_core_id_t*)mc_addr_set_id(dst_id, loc_st);
 	if((*rmt_st) != dst_id){
@@ -625,9 +618,9 @@ kernel::handle_work_to_cores(){
 
 void 
 kernel::handle_work_to_host(){
-	BJK_CK(! is_host_kernel);
-	BJK_CK(host_kernel != mc_null);
-	BJK_CK(has_to_host_work);
+	MCK_CK(! is_host_kernel);
+	MCK_CK(host_kernel != mc_null);
+	MCK_CK(has_to_host_work);
 
 	if(routed_ack_from_host != mck_ready_ack){
 		did_work |= 0x100;
@@ -664,7 +657,7 @@ kernel::handle_work_to_host(){
 void 
 kernel::handle_host_missives(){
 	//EMU_PRT("handle_host_missives ker=%p\n", this);
-	BJK_CK(is_host_kernel);
+	MCK_CK(is_host_kernel);
 	if(! host_running){
 		return;
 	}
@@ -717,9 +710,9 @@ kernel::call_host_handlers_of_group(missive_grp_t* core_mgrp){
 
 void
 kernel::handle_work_from_host(){
-	BJK_CK(! is_host_kernel);
-	BJK_CK(host_kernel != mc_null);
-	BJK_CK(has_from_host_work);
+	MCK_CK(! is_host_kernel);
+	MCK_CK(host_kernel != mc_null);
+	MCK_CK(has_from_host_work);
 
 	EMU_CK(from_host_work.is_alone());
 	process_signal(from_host_work, 1, &routed_from_host, host_kernel->pw0_routed_ack_arr);

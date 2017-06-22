@@ -14,10 +14,10 @@
 mc_c_decl {
 #endif
 
-#define mc_addr_has_local_id(addr) (mc_addr_get_id(addr) == BJK_GLB_SYS->the_core_id)
+#define mc_addr_has_local_id(addr) (mc_addr_get_id(addr) == MC_CORE_INFO->the_core_id)
 #define mc_addr_is_local(addr) ((! mc_addr_has_id(addr)) || mc_addr_has_local_id(addr))
 
-#define mck_as_glb_pt(pt) ((void*)mc_addr_set_id(BJK_GLB_SYS->the_core_id, (pt)))
+#define mck_as_glb_pt(pt) ((void*)mc_addr_set_id(MC_CORE_INFO->the_core_id, (pt)))
 #define mck_as_loc_pt(pt) ((void*)mc_addr_mask_ad(pt))
 
 #ifdef __cplusplus

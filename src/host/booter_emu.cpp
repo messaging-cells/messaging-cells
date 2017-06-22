@@ -20,9 +20,9 @@
 
 // =====================================================================================
 
-#define BJM_EXTERNAL_RAM_ORIG 0x8e000000
+#define MCM_EXTERNAL_RAM_ORIG 0x8e000000
 
-uint8_t mcm_dlmalloc_heap[BJM_DLMALLOC_HEAP_SZ];
+uint8_t mcm_dlmalloc_heap[MCM_DLMALLOC_HEAP_SZ];
 
 mspace mcm_glb_mspace;
 
@@ -101,7 +101,7 @@ mc_host_init(){
 	HOST_THREAD_ID = pthread_self();
 
 	memset(mcm_dlmalloc_heap, 0, sizeof(mcm_dlmalloc_heap));
-	mcm_glb_mspace = create_mspace_with_base(mcm_dlmalloc_heap, BJM_DLMALLOC_HEAP_SZ, 0);
+	mcm_glb_mspace = create_mspace_with_base(mcm_dlmalloc_heap, MCM_DLMALLOC_HEAP_SZ, 0);
 
 	mcm_HOST_EMU_INFO = mc_malloc32(emu_info_t, 1);
 
@@ -123,20 +123,20 @@ mc_host_init(){
 
 	printf("TOT_THREADS = %d\n", TOT_THREADS);
 
-	mc_off_sys_st* pt_shd_data = BJK_PT_EXTERNAL_HOST_DATA;
-	BJH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
+	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_HOST_DATA;
+	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 	printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data));
 
 	// init shared data.
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
 
 	pt_shd_data->magic_id = MC_MAGIC_ID;
-	BJH_CK(pt_shd_data->magic_id == MC_MAGIC_ID);
+	MCH_CK(pt_shd_data->magic_id == MC_MAGIC_ID);
 
-	mc_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
+	mc_sys_sz_st* sys_sz = MC_SYS_SZ;
 
 	pt_shd_data->wrk_sys = *sys_sz;
-	BJH_CK(mch_ck_sys_data(&(pt_shd_data->wrk_sys)));
+	MCH_CK(mch_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	pt_shd_data->pt_host_kernel = mc_null;
 }
@@ -144,8 +144,8 @@ mc_host_init(){
 void
 mc_host_run()
 {
-	mc_off_sys_st* pt_shd_data = BJK_PT_EXTERNAL_HOST_DATA;
-	//mc_sys_sz_st* sys_sz = BJK_GLB_SYS_SZ;
+	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_HOST_DATA;
+	//mc_sys_sz_st* sys_sz = MC_SYS_SZ;
 
 	mc_core_id_t core_id;
 	mc_core_co_t row, col, max_row, max_col;
@@ -180,12 +180,12 @@ mc_host_run()
 
 				// init shared data.
 				pt_shd_data->sys_cores[num_core].magic_id = MC_MAGIC_ID;
-				BJH_CK(pt_shd_data->sys_cores[num_core].magic_id == MC_MAGIC_ID);
+				MCH_CK(pt_shd_data->sys_cores[num_core].magic_id == MC_MAGIC_ID);
 
 				mc_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
 				pt_buff->magic_id = MC_MAGIC_ID;
-				BJH_CK(pt_buff->magic_id == MC_MAGIC_ID);
+				MCH_CK(pt_buff->magic_id == MC_MAGIC_ID);
 
 				mc_rr_init(&(pt_buff->rd_arr), MC_OUT_BUFF_SZ, pt_buff->buff, 1);
 			}
@@ -200,7 +200,7 @@ mc_host_run()
 		}
 	}
 
-	BJH_CK(ck_all_core_ids());
+	MCH_CK(ck_all_core_ids());
 
 	bool core_started[max_row][max_col];
 	memset(core_started, 0, sizeof(core_started));
@@ -213,7 +213,7 @@ mc_host_run()
 		sched_yield();				//yield
 		has_work = false;
 
-		kernel* ker = BJK_KERNEL;
+		kernel* ker = MCK_KERNEL;
 		if(ker != mc_null){
 			ker->handle_host_missives();
 			has_work = ker->did_work;
@@ -231,15 +231,15 @@ mc_host_run()
 				// Wait for core program execution to finish.
 				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
 					has_work = true;
-					BJH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
+					MCH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
 					continue;
 				}
 				
-				BJH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
-				BJH_CK(	(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL) ||
+				MCH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
+				MCH_CK(	(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL) ||
 						(sh_dat_1->is_finished == MC_FINISHED_VAL)
 				);
-				BJH_CK(sh_dat_1->ck_core_id == core_id);
+				MCH_CK(sh_dat_1->ck_core_id == core_id);
 				if(! core_started[row][col] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
 					core_started[row][col] = true;
 					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
@@ -266,14 +266,14 @@ mc_host_run()
 						thd_inf.thd_emu.emu_glb_sys_data.mck_sync_signal = 1;	// SEND signal
 					}
 				} else {
-					BJH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
+					MCH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
 	
 					if(! core_finished[row][col]){
 
 						core_finished[row][col] = true;
 
 						mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
-						BJH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
+						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						/*printf("Finished\n");
 						int err2 = mch_prt_in_core_shd_dat(inco);

@@ -12,11 +12,11 @@ void recv_host_handler(missive* msg);
 
 void 
 recv_host_handler(missive* msg){
-	BJK_UPDATE_MIN_SP();
+	MCK_UPDATE_MIN_SP();
 	EMU_PRT("RCV_MSV=%p \n", msg);
 	EMU_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
 	EMU_PRT("RCV_CORE_ID=%x \n", mc_addr_get_id(msg->dst));
-	EMU_PRT("RCV_GLB_CORE_ID=%x \n", BJK_GLB_SYS->the_core_id);
+	EMU_PRT("RCV_GLB_CORE_ID=%x \n", MC_CORE_INFO->the_core_id);
 	printf("HOST_RECEIVED_MSV !!!\n");
 
 	EMU_CK(mc_addr_is_local(msg->dst));
@@ -76,7 +76,7 @@ int mc_host_main(int argc, char *argv[])
 	}
 	if(argc > 2){
 		printf("LOADING WITH MEMCPY \n");
-		BJH_LOAD_WITH_MEMCPY = true;
+		MCH_LOAD_WITH_MEMCPY = true;
 	}
 
 	send_host_main();

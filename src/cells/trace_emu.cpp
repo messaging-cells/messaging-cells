@@ -13,7 +13,7 @@
 
 uint16_t
 mck_get_call_stack_trace(int16_t, void**) {
-	mck_glb_sys_st* glb = BJK_GLB_SYS;
+	mck_glb_sys_st* glb = MC_CORE_INFO;
 
 	mcm_get_call_stack_trace(MC_MAX_CALL_STACK_SZ, glb->mck_dbg_call_nams_stack_trace);
 	return 0;
@@ -21,7 +21,7 @@ mck_get_call_stack_trace(int16_t, void**) {
 
 void 
 mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
-	mc_off_core_st* off_core_pt = BJK_GLB_SYS->off_core_pt;
+	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt;
 	if(off_core_pt == mc_null){
 		return;
 	}
@@ -33,7 +33,7 @@ mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	}
 	mc_set_off_chip_var(off_core_pt->is_waiting, info);
 
-	uint8_t& sync_sg = BJK_GLB_SYS->mck_sync_signal;
+	uint8_t& sync_sg = MC_CORE_INFO->mck_sync_signal;
 	while(sync_sg == 0){
 		sched_yield();
 	}

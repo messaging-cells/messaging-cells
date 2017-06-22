@@ -8,7 +8,7 @@ a64_malloc(umm_size_t num_bytes){
 	uint8_t* tmp = (uint8_t*)umm_malloc(mem_sz);
 	if(tmp != umm_null){
 		tmp += umm_aligned_disp;
-		BJK_CK(MC_IS_ALIGNED_64(tmp));
+		MCK_CK(MC_IS_ALIGNED_64(tmp));
 	}
 	return tmp; 
 }
@@ -23,7 +23,7 @@ a64_realloc(uint8_t* ptr, umm_size_t num_bytes){
 	uint8_t* tmp = (uint8_t*)umm_realloc((void*)umm_ptr, mem_sz);
 	if(tmp != umm_null){
 		tmp += umm_aligned_disp;
-		BJK_CK(MC_IS_ALIGNED_64(tmp));
+		MCK_CK(MC_IS_ALIGNED_64(tmp));
 	}
 	return tmp; 
 }

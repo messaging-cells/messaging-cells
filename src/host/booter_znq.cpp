@@ -19,7 +19,7 @@
 
 mc_core_id_t mch_first_load_core_nn = 0;
 
-uint8_t* BJH_EXTERNAL_RAM_BASE_PT = mc_null;
+uint8_t* MCH_EXTERNAL_RAM_BASE_PT = mc_null;
 
 //char* mch_epiphany_elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
 
@@ -98,7 +98,7 @@ mc_host_init(){
 		mch_abort_func(202, "host_init_2. ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
-	BJH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)mch_glb_emem.base);
+	MCH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)mch_glb_emem.base);
 
 	mcz_pt_external_host_data_obj = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_host_data_disp);
 
@@ -112,11 +112,11 @@ mc_host_init(){
 	
 	e_open(&dev, 0, 0, platform.rows, platform.cols);
 
-	mc_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
+	mc_sys_sz_st* g_sys_sz = MC_SYS_SZ;
 	mch_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
 	mc_off_sys_st* pt_shd_data = mcz_pt_external_host_data_obj;
-	BJH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
+	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
 
@@ -150,13 +150,13 @@ mc_host_init(){
 	// init shared data.
 
 	pt_shd_data->magic_id = MC_MAGIC_ID;
-	BJH_CK(pt_shd_data->magic_id == MC_MAGIC_ID);
+	MCH_CK(pt_shd_data->magic_id == MC_MAGIC_ID);
 
 	pt_shd_data->pt_this_from_znq = pt_shd_data;
 	pt_shd_data->wrk_sys = *g_sys_sz;
-	BJH_CK(mch_ck_sys_data(&(pt_shd_data->wrk_sys)));
+	MCH_CK(mch_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
-	pt_shd_data->znq_shared_mem_base = (mc_addr_t)BJH_EXTERNAL_RAM_BASE_PT;
+	pt_shd_data->znq_shared_mem_base = (mc_addr_t)MCH_EXTERNAL_RAM_BASE_PT;
 	pt_shd_data->eph_shared_mem_base = (mc_addr_t)(lk_dat->extnl_ram_orig);
 
 	//printf("eph_shared_mem_base= %p \n", (void*)(pt_shd_data->eph_shared_mem_base));
@@ -194,7 +194,7 @@ mc_host_run(){
 	max_col = dev.cols;
 
 	tot_cores = max_row * max_col;
-	BJH_CK(tot_cores <= mc_out_num_cores);
+	MCH_CK(tot_cores <= mc_out_num_cores);
 
 	char* all_f_nam[tot_cores];
 	memset(&all_f_nam, 0, sizeof(all_f_nam));
@@ -215,12 +215,12 @@ mc_host_run(){
 			
 			// init shared data.
 			pt_shd_data->sys_cores[num_core].magic_id = MC_MAGIC_ID;
-			BJH_CK(pt_shd_data->sys_cores[num_core].magic_id == MC_MAGIC_ID);
+			MCH_CK(pt_shd_data->sys_cores[num_core].magic_id == MC_MAGIC_ID);
 
 			mc_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
 			pt_buff->magic_id = MC_MAGIC_ID;
-			BJH_CK(pt_buff->magic_id == MC_MAGIC_ID);
+			MCH_CK(pt_buff->magic_id == MC_MAGIC_ID);
 
 			mc_rr_init(&(pt_buff->rd_arr), MC_OUT_BUFF_SZ, pt_buff->buff, 1);
 
@@ -246,7 +246,7 @@ mc_host_run(){
 		sched_yield();				//yield
 		has_work = false;
 
-		kernel* ker = BJK_KERNEL;
+		kernel* ker = MCK_KERNEL;
 		if(ker != mc_null){
 			ker->handle_host_missives();
 			has_work = ker->did_work;
@@ -263,16 +263,16 @@ mc_host_run(){
 				// Wait for core program execution to start
 				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
 					has_work = true;
-					BJH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
+					MCH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
 					continue;
 				}
 				
-				BJH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
-				BJH_CK(	(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL) ||
+				MCH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
+				MCH_CK(	(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL) ||
 						(sh_dat_1->is_finished == MC_FINISHED_VAL)
 				);
 
-				BJH_CK(sh_dat_1->ck_core_id == core_id);
+				MCH_CK(sh_dat_1->ck_core_id == core_id);
 				if(! core_started[row][col] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
 					core_started[row][col] = true;
 					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
@@ -300,13 +300,13 @@ mc_host_run(){
 						}
 					}
 				} else {
-					BJH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
+					MCH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
 	
 					if(! core_finished[row][col]){
 						core_finished[row][col] = true;
 
 						mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
-						BJH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
+						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						//printf("Finished\n");
 						//print_core_info(sh_dat_1, &dev, row, col);
@@ -319,7 +319,7 @@ mc_host_run(){
 	} // while
 
 	/*
-	mc_sys_sz_st* g_sys_sz = BJK_GLB_SYS_SZ;
+	mc_sys_sz_st* g_sys_sz = MC_SYS_SZ;
 
 	printf("sys_sz->xx=%d\n", g_sys_sz->xx);
 	printf("sys_sz->yy=%d\n", g_sys_sz->yy);
@@ -373,7 +373,7 @@ mc_start_all_cores(){
 
 	fprintf(stderr, "sizeof(int)=%d \n", sizeof(int));
 	fprintf(stderr, "sizeof(uint32_t)=%d \n", sizeof(uint32_t));
-	BJH_CK(sizeof(int) == sizeof(uint32_t));
+	MCH_CK(sizeof(int) == sizeof(uint32_t));
 
 	max_row = dev.rows;
 	max_col = dev.cols;

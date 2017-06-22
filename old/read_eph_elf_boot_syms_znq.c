@@ -13,16 +13,16 @@
 
 
 const char* mch_link_script_syms_names[] = {
-BJH_STR_EXTER_CODE_SIZE,
-BJH_STR_EXTER_LOAD_SIZE,
-BJH_STR_EXTER_DATA_SIZE,
-BJH_STR_EXTER_ALLOC_SIZE,
+MCH_STR_EXTER_CODE_SIZE,
+MCH_STR_EXTER_LOAD_SIZE,
+MCH_STR_EXTER_DATA_SIZE,
+MCH_STR_EXTER_ALLOC_SIZE,
 
-BJH_STR_EXTER_ORIG,
-BJH_STR_EXTER_CODE_ORIG,
-BJH_STR_EXTER_LOAD_ORIG,
-BJH_STR_EXTER_DATA_ORIG,
-BJH_STR_EXTER_ALLOC_ORIG,
+MCH_STR_EXTER_ORIG,
+MCH_STR_EXTER_CODE_ORIG,
+MCH_STR_EXTER_LOAD_ORIG,
+MCH_STR_EXTER_DATA_ORIG,
+MCH_STR_EXTER_ALLOC_ORIG,
 
 NULL
 };
@@ -33,7 +33,7 @@ int16_t
 mch_find_link_script_name(const char* nam){
 	const char** nams = mch_link_script_syms_names;
 	int16_t aa = -1;
-	for(aa = 0; aa < BJH_TOT_LOAD_SYMS; aa++){
+	for(aa = 0; aa < MCH_TOT_LOAD_SYMS; aa++){
 		if(nams[aa] == NULL){
 			aa = -1;
 			break;
@@ -62,8 +62,8 @@ int mch_read_eph_elf_syms(const char *elf_nm, int addrs_sz, void** syms_addrs)
 	void        *file;
 	
 	const char** nams = mch_link_script_syms_names;
-	if(nams[BJH_TOT_LOAD_SYMS] != NULL){
-		printf("CODE_ERROR: mch_read_eph_elf_syms. BAD DEFINED BJH_TOT_LOAD_SYMS\n");
+	if(nams[MCH_TOT_LOAD_SYMS] != NULL){
+		printf("CODE_ERROR: mch_read_eph_elf_syms. BAD DEFINED MCH_TOT_LOAD_SYMS\n");
 		return 1;
 	}
 	//memset(syms_addrs, 0, addrs_sz * sizeof(void*));
@@ -91,7 +91,7 @@ int mch_read_eph_elf_syms(const char *elf_nm, int addrs_sz, void** syms_addrs)
 
 	/*
 	printf("SYMS_ADDDRS=[\n");
-	for(int kk = 0; kk < BJH_TOT_LOAD_SYMS; kk++){
+	for(int kk = 0; kk < MCH_TOT_LOAD_SYMS; kk++){
 		if(kk == addrs_sz){
 			break;
 		}

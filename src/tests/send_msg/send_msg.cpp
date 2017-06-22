@@ -1,27 +1,49 @@
 
+//----------------------------------------------------------------------------
+/*! \file send_msg.cpp
+
+\brief Simple send missive example.
+
+\details 
+
+\include send_msg.cpp
+
+*/
+
 #include "cell.hh"
 
+/*! 
+\brief This function will handle messages for a \ref cell when it has zero in 
+\ref cell::handler_idx and \ref kernel::all_handlers has been set to \ref the_handlers 
+with \ref kernel::set_handlers
+*/
 void recv_cell_handler(missive* msg);
-void cell_handler(missive* msg);
-
 
 void 
 recv_cell_handler(missive* msg){
-	BJK_UPDATE_MIN_SP();
-	EMU_CK(mc_addr_is_local(msg->dst));
-	mc_core_id_t koid = kernel::get_core_id();
-	MC_MARK_USED(koid);
-	mc_core_nn_t konn = kernel::get_core_nn();
-	MC_MARK_USED(konn);
+	//MCK_UPDATE_MIN_SP();
+	EMU_CODE(
+		EMU_CK(mc_addr_is_local(msg->dst));
+		mc_core_id_t koid = kernel::get_core_id();
+		MC_MARK_USED(koid);
+		mc_core_nn_t konn = kernel::get_core_nn();
+		MC_MARK_USED(konn);
+		EMU_LOG("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", 
+				koid, konn, msg->get_source(), msg->dst);
+		EMU_PRT("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", 
+				koid, konn, msg->get_source(), msg->dst);
+	)
+
 	mck_slog2("GOT MISSIVE\n");
-	EMU_LOG("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	EMU_PRT("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	
 	mck_get_kernel()->set_idle_exit();
 }
 
+/*! 
+\brief This will be \ref kernel::all_handlers when \ref kernel::set_handlers gets called.
+*/
 missive_handler_t the_handlers[] = {
-	recv_cell_handler
+	recv_cell_handler  // Index 0. Cells with zero in handler_idx will handle missives with this handler.
 };
 
 void mc_cores_main() {
@@ -37,13 +59,15 @@ void mc_cores_main() {
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	if(mck_is_core(0,0)){
+	if(mck_is_ro_co_core(0,0)){
 		mck_slog2("CORE (0,0) started\n");
-		kernel::get_core_cell()->handler_idx = 0;	// was 0 but it should be inited for every cells's subclass.
+
+		// Next line is just to remaind that every single cell should have a valid handler_idx. It was already 0.
+		kernel::get_core_cell()->handler_idx = 0;	// This is recv_cell_handler's index in the_handlers.
 
 		kernel::run_sys();
 	}
-	if(mck_is_core(0,1)){
+	if(mck_is_ro_co_core(0,1)){
 		mck_slog2("CORE (0,1) started\n");
 		mc_core_id_t dst = mc_ro_co_to_id(0, 0);
 		
@@ -61,8 +85,6 @@ void mc_cores_main() {
 	}
 
 	mck_slog2("FINISHED !!\n");	
-	//mck_xlog((mc_addr_t)ker->host_kernel);
-	//mck_slog2(" is the HOST_KERNEL\n");	
 
 	kernel::finish_sys();
 }
