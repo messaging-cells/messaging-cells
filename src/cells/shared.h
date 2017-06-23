@@ -168,12 +168,14 @@ mc_core_id_t
 mck_get_core_id();
 #endif
 
+//! Returns true if 'addr' is local to the core with id 'koid'
 bool mc_inline_fn
 mc_addr_in_core(mc_addr_t addr, mc_core_id_t koid) {
 	mc_core_id_t addr_koid = mc_addr_get_id(addr);
 	return ((addr_koid == 0) || (addr_koid == koid));
 }
 
+//! Returns true if 'addr' is in any of the cores of the epiphany system
 bool mc_inline_fn
 mc_addr_in_sys(mc_addr_t addr) {
 	mc_core_id_t addr_koid = mc_addr_get_id(addr);
@@ -183,17 +185,27 @@ mc_addr_in_sys(mc_addr_t addr) {
 	return mc_id_in_sys(addr_koid);
 }
 
+//! Returns true if 'addr' is in the host
 #define mc_addr_in_host(addr) (! mc_addr_in_sys(addr))
 
+/*! Remote dereference of a 'pt_field' of remote object pointer 'glb_pt' (with id) and 
+returns it as a 'typ_nam' pointer
+*/
 #define mc_dref(typ_nam, glb_pt, pt_field) ((typ_nam*)mc_addr_set_id(mc_addr_get_id(glb_pt), (glb_pt)->pt_field))
+
+/*! Remote dereference of a 'field' of class 'cls_field' in a remote object structure 'base' (not a pointer)
+of class 'cls_base'.
+*/
+#define mc_dref_field(cls_base, base, cls_field, field)	\
+	((cls_field*)(uint8_t*)(((uint8_t*)base) + mc_offsetof(&cls_base::field)))
 
 
 //======================================================================
 // sane alignment/access functions
 
-#define MC_IS_ALIGNED_16(ptr) ((((uintptr_t)ptr) & 0x1) == 0)
-#define MC_IS_ALIGNED_32(ptr) ((((uintptr_t)ptr) & 0x3) == 0)
-#define MC_IS_ALIGNED_64(ptr) ((((uintptr_t)ptr) & 0x7) == 0)
+#define MC_IS_ALIGNED_16(ptr) ((((uintptr_t)ptr) & 0x1) == 0)  //!< True if ptr is 16 aligned
+#define MC_IS_ALIGNED_32(ptr) ((((uintptr_t)ptr) & 0x3) == 0)  //!< True if ptr is 32 aligned
+#define MC_IS_ALIGNED_64(ptr) ((((uintptr_t)ptr) & 0x7) == 0)  //!< True if ptr is 64 aligned
 //define MC_IS_ALIGNED(ptr, agn) ((((uintptr_t)ptr) & (agn - 1)) == 0)
 
 mc_opt_sz_fn uint8_t 
@@ -300,18 +312,23 @@ struct mc_aligned mc_off_sys_shared_data_def {
 };
 typedef struct mc_off_sys_shared_data_def mc_off_sys_st;
 
+//! Library EXTERNAL RAM running version of memset
 mc_opt_sz_fn uint8_t*
 mc_memset(uint8_t* dest, uint8_t val, mc_size_t sz) mc_external_code_ram;
 
+//! Library EXTERNAL RAM running version of memcpy
 mc_opt_sz_fn uint8_t*
 mc_memcpy(uint8_t* dest, const uint8_t* src, mc_size_t sz) mc_external_code_ram;
 
+//! Library EXTERNAL RAM running version of memmove
 mc_opt_sz_fn uint8_t*
 mc_memmove(uint8_t* dest, const uint8_t* src, mc_size_t sz) mc_external_code_ram;
 
+//! Library EXTERNAL RAM running version of strlen.
 uint16_t 
 mc_strlen(char* str) mc_external_code_ram;
 
+//! Library EXTERNAL RAM running version of strcmp.
 uint8_t 
 mc_strcmp(char* str1, char* str2) mc_external_code_ram;
 
@@ -320,6 +337,7 @@ mc_isprint(char cc){
 	return ((cc >= ' ' && cc <= '~') ? true : false);
 }
 
+//! Inits an array 'arr' of objects of class 'cls' and size 'sz' with 'new' 
 #define mc_init_arr_objs(sz, arr, cls) \
 	for(int aa = 0; aa < sz; aa++){ \
 		new (&(arr[aa])) cls(); \
@@ -327,6 +345,7 @@ mc_isprint(char cc){
 
 // end_macro
 
+//! Inits an array 'arr' of objects of size 'sz' with 'val'
 #define mc_init_arr_vals(sz, arr, val) \
 	for(int aa = 0; aa < sz; aa++){ \
 		arr[aa] = (val); \
@@ -334,17 +353,19 @@ mc_isprint(char cc){
 
 // end_macro
 
+//! Maps a host addresses to a core addresses 
 mc_addr_t
 mc_host_addr_to_core_addr(mc_addr_t h_addr) mc_external_code_ram;
 
+//! Maps a core addresses to a host addresses 
 mc_addr_t
 mc_core_addr_to_host_addr(mc_addr_t c_addr) mc_external_code_ram;
 
+//! Maps a host pointer to a core pointer
 #define mc_host_pt_to_core_pt(pt) (mc_host_addr_to_core_addr((mc_addr_t)(pt)))
-#define mc_core_pt_to_host_pt(pt) (mc_core_addr_to_host_addr((mc_addr_t)(pt)))
 
-#define mc_dref_field(cls_base, base, cls_field, field)	\
-	((cls_field*)(uint8_t*)(((uint8_t*)base) + mc_offsetof(&cls_base::field)))
+//! Maps a core pointer to a host pointer
+#define mc_core_pt_to_host_pt(pt) (mc_core_addr_to_host_addr((mc_addr_t)(pt)))
 
 
 #ifdef __cplusplus

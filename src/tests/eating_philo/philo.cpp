@@ -107,6 +107,10 @@ enum philo_tok_t : uint8_t {
 	}
 //endif // END_OF_PHILO_WITH_DBG
 
+/*! \class chopstick
+\brief Class for chopsticks. 
+
+*/
 class chopstick : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS(chopstick)
@@ -135,6 +139,10 @@ public:
 	void handler(missive* msv);
 };
 
+/*! \class philosopher
+\brief Class for philosophers. 
+
+*/
 class philosopher : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS(philosopher)
@@ -248,11 +256,14 @@ public:
 	}
 };
 
-MCK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
+MCK_DEFINE_ACQUIRE_ALLOC(philo_core, 32);	// defines philo_core::acquire_alloc
 
 #define glb_philo_core ((philo_core*)(mck_get_kernel()->user_data))
 
+//! Returns the local \ref chopstick 
 #define glb_stick (&(glb_philo_core->stick))
+
+//! Returns the local \ref philosopher
 #define glb_philo (&(glb_philo_core->philo))
 
 #define glb_ava_sticks (glb_philo_core->ava_chopstick)
@@ -264,7 +275,10 @@ MCK_DEFINE_ACQUIRE_ALLOC(philo_core, 32)	// defines philo_core::acquire_alloc
 #define left_phl_nn(nn) ((nn == 0)?(15):(nn - 1))
 #define right_phl_nn(nn) ((nn == 15)?(0):(nn + 1))
 
+//! Returns the \ref chopstick in core with 'id'
 #define get_stick(id) ((chopstick*)mc_addr_set_id(id, glb_stick))
+
+//! Returns the \ref philosopher in core with 'id'
 #define get_philo(id) ((philosopher*)mc_addr_set_id(id, glb_philo))
 
 MCK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks)

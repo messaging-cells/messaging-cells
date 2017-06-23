@@ -358,6 +358,7 @@ public:
 	static kernel*
 	get_core_kernel(mc_core_id_t id) mc_external_code_ram;
 
+	//! Tells the kernel to exit \ref kernel::run_sys when no more work is pending or done (idle).
 	mc_inline_fn
 	void set_idle_exit(){
 		exit_when_idle = true;
@@ -440,6 +441,7 @@ public:
 		return mck_cell_id(agent);
 	}
 
+	//! Method that must return the available \ref grip for each \ref agent derived class.
 	virtual mc_opt_sz_fn 
 	grip&	get_available() mc_external_code_ram;
 

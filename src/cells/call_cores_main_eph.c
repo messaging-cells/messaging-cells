@@ -151,11 +151,12 @@ The first time an object is allocated the library calls external code (off-core)
 
 <p>
 Objects are never really expected to be freed (umm_free call) under normal use of the library. 
-They just get acquired (see for example \ref cell::acquire) and when finisehd using them they get 
-inited and put in a pre-class double linked list by the \ref agent::release method. 
+They just get acquired (see for example \ref cell::acquire) ; and when finisehd using them, they should
+call the \ref agent::release method to get inited and put in a one-per-class double linked list 
+(\ref grip) of available objects (see \ref agent::get_available virtual method). 
 
 <p>
-The per-class acquire and \ref agent::release are small footprint methods runned from in-core memory 
+The one-per-class acquire and the \ref agent::release are small footprint methods runned from in-core memory 
 (as opposed to the umm_malloc functions) that can be used in the user's high performance code.
 
 <p>
@@ -163,7 +164,8 @@ This double folded approach to memory managment also helps to avoid bad
 referencing of objects because a \ref cell might have been \ref agent::release d but the reference is still
 valid, so the code will not behave as expected (there is an error) but it will not hang.
 
-<p> Functions like \ref cell::separate \ref cell::acquire are provided for base classes but the user
+<p> 
+Functions like \ref cell::separate \ref cell::acquire are provided for base classes but the user
 is expected to use macro \ref MCK_DECLARE_MEM_METHODS and macro \ref MCK_DEFINE_MEM_METHODS to declare 
 and define these functions for derived classes. The macro \ref MCK_DEFINE_ACQUIRE_ALLOC can also be used for 
 classes of objects that will not get \ref agent::release d and therefore do not declare an available list.
@@ -184,6 +186,66 @@ The classical example <a href="https://en.wikipedia.org/wiki/Dining_philosophers
 \brief Module describing addressing convertion functions.
 
 \details 
+
+<p>
+Addressing is handled with the help of macros and functions that help to map beetween the different
+kinds of addressing of the Epiphany architecture.
+
+<p>
+Whether it is: 
+
+<ul>
+<li>
+From the epiphany side (hardware addresses).
+	<ol>
+	<li>
+	local-core. 
+		<ul>
+		<li>
+		Zero based (without core id).
+		<li>
+		With local core id.
+		</ul>
+	<li>
+	remote-core. 
+	<li>
+	off-core (outside of the epiphany system in the shared mem with the host)
+	</ol>
+<li>
+From the host side (linux virtual addresses mapped to hardware addresses).
+	<ol>
+	<li>
+	in-core. Inside the RAM of a core of the epiphany system (no register mem). 
+	<li>
+	off-core 
+	</ol>
+</ul>
+
+<p>
+The most used functions are in files \ref shared_eph3.h and \ref shared.h
+
+<h1>Implicit addressing symmetry</h1>
+<p>
+In the examples it is used an implicit symmetry: The fact that two objects that are allocated in 
+exactly the same order in different cores have the same local address.
+
+<p>
+For example when in the \ref mc_cores_main function of the \includedoc philo.cpp program, 
+the line:
+
+<pre>
+	philo_core* core_dat = philo_core::acquire_alloc();
+</pre>
+
+<p>
+allocates a global 'core_dat' variable it is done in every core, so all data inside will have
+the same local address in every core.
+
+<p>
+So the macro \ref glb_stick will return the same local pointer in every core and that is why by 
+calling \ref mc_addr_set_id with it and the id of another core as in the macro \ref get_stick 
+the \ref chopstick of an other core can be addressed in orther to send it \ref missive s. 
+The same happens for \ref glb_philo. 
 
 <br><br><br><br>
 
