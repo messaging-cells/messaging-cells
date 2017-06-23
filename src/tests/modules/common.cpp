@@ -1,3 +1,14 @@
+//----------------------------------------------------------------------------
+/*! \file common.cpp
+\ingroup docgrp_modules
+
+\brief Common file for all modules of the \ref docgrp_modules example.
+
+\details 
+
+\include common.cpp
+
+*/
 
 #include "cell.hh"
 #include "common.h"

@@ -207,7 +207,8 @@ mc_v32_of_p16(uint16_t* p16){
 	return v32;
 }
 
-#define mc_set_off_chip_var(var, val) \
+//! Warranted set of an off-core variable (loops until reading the value). Use only if needed.
+#define mc_set_off_core_var(var, val) \
 	(var) = (val); \
 	while((var) != (val)); \
 		

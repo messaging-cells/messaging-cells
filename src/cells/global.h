@@ -119,7 +119,7 @@ void mc_inline_fn
 mck_set_finished(uint8_t val) {
 	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt; 
 	if(off_core_pt != mc_null){
-		mc_set_off_chip_var(off_core_pt->is_finished, val);
+		mc_set_off_core_var(off_core_pt->is_finished, val);
 	}
 }
 

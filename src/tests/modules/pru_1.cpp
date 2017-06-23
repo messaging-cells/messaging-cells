@@ -1,3 +1,14 @@
+//----------------------------------------------------------------------------
+/*! \file pru_1.cpp
+\ingroup docgrp_modules
+
+\brief This is first module of the \ref docgrp_modules example.
+
+\details 
+
+\include pru_1.cpp
+
+*/
 
 #include "cell.hh"
 #include "pru_1.h"

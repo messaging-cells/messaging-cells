@@ -58,7 +58,7 @@ mck_abort(mc_addr_t err, char* msg) {
 
 	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt;
 	if((off_core_pt != mc_null) && (off_core_pt->magic_id == MC_MAGIC_ID)){
-		mc_set_off_chip_var(off_core_pt->is_finished, MC_FINISHED_VAL);
+		mc_set_off_core_var(off_core_pt->is_finished, MC_FINISHED_VAL);
 	}
 	
 	mc_asm("mov r62, %0" : : "r" (in_shd));

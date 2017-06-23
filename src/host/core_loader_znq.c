@@ -73,7 +73,7 @@ uint8_t*
 mc_memload(uint8_t* dest, const uint8_t* src, uint32_t sz){
 	uint32_t idx = 0;
 	for(idx = 0; idx < sz; idx++){
-		mc_set_off_chip_var(dest[idx], src[idx]);
+		mc_set_off_core_var(dest[idx], src[idx]);
 	}
 	return dest;
 }

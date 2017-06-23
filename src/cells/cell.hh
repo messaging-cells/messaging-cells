@@ -77,6 +77,7 @@ nam::separate(uint16_t sz){ \
 
 #define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
 
+//! Defines 'acquire_alloc' method for class 'nam' with aligment 'align' (32 or 64).
 #define MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 nam* \
 nam::acquire_alloc(uint16_t sz){ \
@@ -109,6 +110,7 @@ nam::acquire(uint16_t sz){ \
 
 #define MCK_DEFINE_ACQUIRE(nam) MCK_DEFINE_ACQUIRE_AVA(nam, mck_all_available(nam))
 
+//! Declares dynamic memory methods for class 'nam'
 #define MCK_DECLARE_MEM_METHODS(nam) \
 	static	nam*			acquire_alloc(uint16_t sz = 1) mc_external_code_ram; \
 	static	nam*			acquire(uint16_t sz = 1); \
@@ -116,6 +118,7 @@ nam::acquire(uint16_t sz){ \
 
 // end_macro
 
+//! Defines dynamic memory methods for class 'nam' with aligment 'align' (32 or 64) and available list 'all_ava'.
 #define MCK_DEFINE_MEM_METHODS(nam, align, all_ava) \
 	MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 	MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
@@ -443,6 +446,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void	init_me(int caller = 0) mc_external_code_ram;
 
+	//! Releases this \ref agent so that it can latter be acquired again.
 	mc_opt_sz_fn 
 	void	release(){
 		let_go();

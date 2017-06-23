@@ -1,12 +1,12 @@
 
+//----------------------------------------------------------------------------
+/*! \file binder.h
 
-/*------------------------------------------------------------
+\brief The base class for objects that can form duble linked lists and structures.
 
-binder.h
-
-binder class and related.
-
---------------------------------------------------------------*/
+\callgraph
+\callergraph
+*/
 
 #ifndef BINDER_H
 #define BINDER_H

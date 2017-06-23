@@ -31,14 +31,14 @@ mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	if(info == MC_NOT_WAITING){
 		info = MC_WAITING_ENTER;
 	}
-	mc_set_off_chip_var(off_core_pt->is_waiting, info);
+	mc_set_off_core_var(off_core_pt->is_waiting, info);
 
 	uint8_t& sync_sg = MC_CORE_INFO->mck_sync_signal;
 	while(sync_sg == 0){
 		sched_yield();
 	}
 
-	mc_set_off_chip_var(off_core_pt->is_waiting, MC_NOT_WAITING);
+	mc_set_off_core_var(off_core_pt->is_waiting, MC_NOT_WAITING);
 	sync_sg = 0;
 }
 

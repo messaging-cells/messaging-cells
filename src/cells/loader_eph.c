@@ -93,10 +93,10 @@ mc_load_map(){
 		mc_memcpy(dst, (uint8_t*)0x0, mc_core_tot_mem);
 
 		unsigned *ivt = (unsigned*)mc_addr_set_id(ch_id, 0x0);
-		mc_set_off_chip_var(*ivt, mck_original_ivt_0);
+		mc_set_off_core_var(*ivt, mck_original_ivt_0);
 
 		mc_load_map_st** ch_ld_map = (mc_load_map_st**)mc_addr_set_id(ch_id, pt_ld_map);
-		mc_set_off_chip_var(*ch_ld_map, ch_map);
+		mc_set_off_core_var(*ch_ld_map, ch_map);
 
 		uint32_t* rem_reg = (uint32_t*)mc_addr_set_id(ch_id, MC_REG_ILATST);
 

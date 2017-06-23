@@ -1,4 +1,24 @@
 
+//----------------------------------------------------------------------------
+/*! \file mods_test.cpp
+\ingroup docgrp_modules
+
+\brief Main file for the modules example.
+
+\details 
+
+\include mods_test.cpp
+
+*/
+
+
+/*! \defgroup docgrp_modules modules example
+\brief Modules example
+
+\details 
+The modules example has three modules.
+
+*/
 
 #include "cell.hh"
 #include "pru_1.h"

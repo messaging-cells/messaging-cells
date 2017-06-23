@@ -11,26 +11,41 @@ This selected doxy generated documentation of the <a href="https://github.com/me
 <p>
 This documentation is gruped in the following <a href="modules.html">modules</a> :
 
-<p>
+<ul>
+<li>
 \ref docgrp_debug_features
-
-<p>
+<li>
 \ref docgrp_messaging
-
-<p>
+<li>
 \ref docgrp_memory_features
-
-<p>
+<li>
 \ref docgrp_addressing_features
-
-<p>
+<li>
 \ref docgrp_linking_features
-
-<p>
+<li>
 \ref docgrp_loading_features 
+<li>
+\ref docgrp_inner_working
+</ul>
+
+<h1>Examples</h1>
 
 <p>
-\ref docgrp_inner_working
+The following examples illustrate how to use the library:
+
+<ol>
+<li>
+\includedoc hello_world.cpp
+<li>
+\includedoc send_msg.cpp
+<li>
+\includedoc philo.cpp
+<li>
+\ref docgrp_modules
+</ol>
+
+<br><br><br><br>
+
 
 */
 
@@ -53,6 +68,7 @@ Functions to get the stack trace. When calling \ref mck_get_call_stack_trace and
 <p>
 The most simple example of usage of a log function is \includedoc hello_world.cpp program.
 
+<br><br><br><br>
 
 */
 
@@ -70,9 +86,27 @@ The most simple example of messaging usage is the \includedoc send_msg.cpp progr
 
 <p>
 The classical more complex example of the 
-<a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem">eating philosophers</a> 
+<a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem" target="blank">eating philosophers</a> 
 is coded in the \includedoc philo.cpp program and shows some
 \ref docgrp_addressing_features and \ref docgrp_memory_features of the library.
+
+<p>
+Messaging has deterministic behaviour. No indeterminism. Unlike the <a href="https://en.wikipedia.org/wiki/Actor_model" target="blank">Actor Model</a>. 
+
+<p>
+For a any pair of cells Cell_A and Cell_B:
+<ul>
+<li>
+A message sent by Cell_A is always received by Cell_B only once.
+<li>
+Messages are always received by Cell_B in the same order they are sent by Cell_A.
+<li>
+Cell_A (sending) always does local core writing and Cell_B (receiving) always does remote core reading. 
+No message copying.
+</ul>
+
+<br><br><br><br>
+
 
 */
 
@@ -83,6 +117,65 @@ is coded in the \includedoc philo.cpp program and shows some
 
 \details 
 
+<h2>In-core RAM partitions</h2>
+
+<p>
+The RAM memory of each core is divided in:
+
+<ol>
+<li>
+Kernel code.
+<li>
+Stack.
+<li>
+Module code. See \ref docgrp_loading_features
+<li>
+Dynamically allocatable memory.
+</ol>
+
+<p>
+The sizes and location are configurable in the GNU link script. See \ref docgrp_linking_features.
+
+<h2>Dynamic memory</h2>
+
+<p>
+The in-core dynamic memory is handled in a two fold way:
+
+<h3>First time heap allocation</h3>
+
+<p>
+The first time an object is allocated the library calls external code (off-core) of the 
+<a href="https://github.com/dimonomid/umm_malloc" target="blank">umm_malloc</a> allocator.
+
+<h3>Reusing objects</h3>
+
+<p>
+Objects are never really expected to be freed (umm_free call) under normal use of the library. 
+They just get acquired (see for example \ref cell::acquire) and when finisehd using them they get 
+inited and put in a pre-class double linked list by the \ref agent::release method. 
+
+<p>
+The per-class acquire and \ref agent::release are small footprint methods runned from in-core memory 
+(as opposed to the umm_malloc functions) that can be used in the user's high performance code.
+
+<p>
+This double folded approach to memory managment also helps to avoid bad 
+referencing of objects because a \ref cell might have been \ref agent::release d but the reference is still
+valid, so the code will not behave as expected (there is an error) but it will not hang.
+
+<p> Functions like \ref cell::separate \ref cell::acquire are provided for base classes but the user
+is expected to use macro \ref MCK_DECLARE_MEM_METHODS and macro \ref MCK_DEFINE_MEM_METHODS to declare 
+and define these functions for derived classes. The macro \ref MCK_DEFINE_ACQUIRE_ALLOC can also be used for 
+classes of objects that will not get \ref agent::release d and therefore do not declare an available list.
+
+<h3>Eating Philosophers</h3>
+
+<p>
+The classical example <a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem" target="blank">eating philosophers</a> for synchronizing concurrency is given in the \includedoc philo.cpp example program.
+
+<br><br><br><br>
+
+
 */
 
 //============================================================
@@ -91,6 +184,8 @@ is coded in the \includedoc philo.cpp program and shows some
 \brief Module describing addressing convertion functions.
 
 \details 
+
+<br><br><br><br>
 
 */
 
@@ -110,6 +205,7 @@ The values you can set in the link script.
 THe techniques used to partition your code in modules.
 </ul>
 
+<br><br><br><br>
 
 */
 
@@ -126,6 +222,7 @@ This group corresponds to basically two main features:
 <li> The posibility to load different modules in different cores.
 </ul>
 
+<br><br><br><br>
 
 */
 
@@ -135,6 +232,8 @@ This group corresponds to basically two main features:
 \brief Module describing basic inner-working of the library.
 
 \details 
+
+<br><br><br><br>
 
 */
 

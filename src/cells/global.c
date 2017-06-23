@@ -73,15 +73,15 @@ mck_glb_init(void) {
 		}
 
 		// glb_dat->off_core_pt init	
-		//mc_set_off_chip_var(glb_dat->off_core_pt->magic_id, MC_MAGIC_ID);
+		//mc_set_off_core_var(glb_dat->off_core_pt->magic_id, MC_MAGIC_ID);
 		void* glb_dat_wid = (void*)mc_addr_set_id(koid, glb_dat);
 		MC_MARK_USED(glb_dat_wid);
 
-		mc_set_off_chip_var(glb_dat->off_core_pt->ck_core_id, koid);
-		mc_set_off_chip_var(glb_dat->off_core_pt->core_data, glb_dat_wid);
+		mc_set_off_core_var(glb_dat->off_core_pt->ck_core_id, koid);
+		mc_set_off_core_var(glb_dat->off_core_pt->core_data, glb_dat_wid);
 		
 		mck_set_finished(MC_NOT_FINISHED_VAL);
-		mc_set_off_chip_var(glb_dat->off_core_pt->is_waiting, MC_NOT_WAITING);
+		mc_set_off_core_var(glb_dat->off_core_pt->is_waiting, MC_NOT_WAITING);
 	}
 
 	EPH_CODE(

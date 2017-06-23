@@ -40,16 +40,16 @@ MCK_DEFINE_ACQUIRE_ALLOC(agent_ref, 32)
 MCK_DEFINE_ACQUIRE_ALLOC(agent_grp, 32)
 
 
-MCK_DEFINE_ACQUIRE(cell) //!< This functions \ref acquires \ref cell s in dynamic memory.
-MCK_DEFINE_ACQUIRE(missive) //!< This functions \ref acquires \ref missive s in dynamic memory.
-MCK_DEFINE_ACQUIRE(agent_ref) //!< This functions \ref acquires \ref agent_ref s in dynamic memory.
-MCK_DEFINE_ACQUIRE(agent_grp) //!< This functions \ref acquires \ref agent_grp s in dynamic memory.
+MCK_DEFINE_ACQUIRE(cell) //!< \ref acquires one or more \ref cell s in dynamic memory.
+MCK_DEFINE_ACQUIRE(missive) //!< \ref acquires one or more \ref missive s in dynamic memory.
+MCK_DEFINE_ACQUIRE(agent_ref) //!< \ref acquires one or more \ref agent_ref s in dynamic memory.
+MCK_DEFINE_ACQUIRE(agent_grp) //!< \ref acquires one or more \ref agent_grp s in dynamic memory.
 
 
-MCK_DEFINE_SEPARATE(cell) //!< This functions \ref separates \ref cell s in dynamic memory.
-MCK_DEFINE_SEPARATE(missive) //!< This functions \ref separates \ref missive s in dynamic memory.
-MCK_DEFINE_SEPARATE(agent_ref) //!< This functions \ref separates \ref agent_ref s in dynamic memory.
-MCK_DEFINE_SEPARATE(agent_grp) //!< This functions \ref separates \ref agent_grp s in dynamic memory.
+MCK_DEFINE_SEPARATE(cell) //!< \ref separates \ref cell s in memory for future \ref cell::acquire.
+MCK_DEFINE_SEPARATE(missive) //!< \ref separates \ref missive s in memory for future \ref missive::acquire.
+MCK_DEFINE_SEPARATE(agent_ref) //!< \ref separates \ref agent_ref s in memory for future \ref aget_ref::acquire.
+MCK_DEFINE_SEPARATE(agent_grp) //!< \ref separates \ref agent_grp s in memory for future \ref aget_grp::acquire.
 
 kernel::kernel(){
 	init_kernel();

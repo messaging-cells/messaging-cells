@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 /*! \file philo.cpp
 
-\brief The classical example of the 
+\brief Implementation of the classical concurrency example of the 
 <a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem">eating philosophers</a>.
 
 \details 
@@ -10,8 +10,6 @@
 
 */
 
-#include <new>
-#include "attribute.h"
 #include "cell.hh"
 
 //define PHILO_EPH_DBG
@@ -46,7 +44,7 @@
 	#define PH_DBG_COD(prm) prm
 #else
 	#define PH_DBG_COD(prm) 
-#endif
+#endif // END_OF_PHILO_WITH_DBG
 
 class chopstick;
 class philosopher;
@@ -107,7 +105,7 @@ enum philo_tok_t : uint8_t {
 		}
 		return const_cast<char*>("NO_TOK");
 	}
-//endif
+//endif // END_OF_PHILO_WITH_DBG
 
 class chopstick : public cell {
 public:
@@ -274,14 +272,14 @@ MCK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos)
 
 
 #ifdef PHILO_WITH_DBG
-philo_core* 
-dbg_all_philo[16] mc_external_code_ram = {
-	mc_null, mc_null, mc_null, mc_null, 
-	mc_null, mc_null, mc_null, mc_null, 
-	mc_null, mc_null, mc_null, mc_null, 
-	mc_null, mc_null, mc_null, mc_null
-};
-#endif
+	philo_core* 
+	dbg_all_philo[16] mc_external_code_ram = {
+		mc_null, mc_null, mc_null, mc_null, 
+		mc_null, mc_null, mc_null, mc_null, 
+		mc_null, mc_null, mc_null, mc_null, 
+		mc_null, mc_null, mc_null, mc_null
+	};
+#endif // END_OF_PHILO_WITH_DBG
 
 void 
 philosopher_handler(missive* msv){
@@ -479,7 +477,7 @@ philosopher::handler(missive* msv){
 					mck_iprt(mck_get_kernel()->get_core_nn());
 					mck_sprt2("___\n");
 
-					PH_DBG_COD(mc_set_off_chip_var(dbg_all_full[nn], true);)
+					PH_DBG_COD(mc_set_off_core_var(dbg_all_full[nn], true);)
 
 					send(lft_philo, tok_yes_full);
 					send(rgt_philo, tok_yes_full);
@@ -530,115 +528,115 @@ philosopher::call_exit(){
 }
 
 #ifdef PHILO_WITH_DBG
-void prt_idle(){
-	char full_str[500];
-	char* pt = full_str;
-	pt += sprintf(pt, "ALL_IDLE=[");
-	for(int aa = 0; aa < 16; aa++){
-		bool idl = dbg_all_idle_prt[aa];
-		if(idl){
-			pt += sprintf(pt, "%d,", aa);
+	void prt_idle(){
+		char full_str[500];
+		char* pt = full_str;
+		pt += sprintf(pt, "ALL_IDLE=[");
+		for(int aa = 0; aa < 16; aa++){
+			bool idl = dbg_all_idle_prt[aa];
+			if(idl){
+				pt += sprintf(pt, "%d,", aa);
+			}
+		}
+		pt += sprintf(pt, "]\n");
+		PH_DBG("%s", full_str);
+	}
+
+	void prt_full(){
+		char full_str[500];
+		char* pt = full_str;
+		pt += sprintf(pt, "ALL_FULL=[");
+		for(int aa = 0; aa < 16; aa++){
+			bool fll = dbg_all_full[aa];
+			if(fll){
+				pt += sprintf(pt, "%d,", aa);
+			}
+		}
+		pt += sprintf(pt, "]\n");
+		PH_DBG("%s", full_str);
+	}
+
+	void prt_ph(int aa, philosopher* ph){
+		char full_str[500];
+		char* pt = full_str;
+		bool is_fll = (ph->num_bites == MAX_BITES);
+		bool to_exit = ph->can_exit();
+		pt += sprintf(pt, "PHILO (%p) %d=[", ph, aa);
+		pt += sprintf(pt, "F%d ", is_fll);
+		pt += sprintf(pt, "X%d ", to_exit);
+		pt += sprintf(pt, "L%d ", (ph->left != mc_null)?(1):(0));
+		pt += sprintf(pt, "R%d ", (ph->right != mc_null)?(1):(0));
+		pt += sprintf(pt, "N%d ", ph->num_bites);
+		pt += sprintf(pt, "LF%d ", ph->lft_ph_full);
+		pt += sprintf(pt, "RF%d ", ph->rgt_ph_full);
+		pt += sprintf(pt, "Lsnt=%s ", tok_to_str(ph->last_sent_lft));
+		pt += sprintf(pt, "Lrcv=%s ", tok_to_str(ph->last_recv_lft));
+		pt += sprintf(pt, "Rsnt=%s ", tok_to_str(ph->last_sent_rgt));
+		pt += sprintf(pt, "Rrcv=%s ", tok_to_str(ph->last_recv_rgt));
+		pt += sprintf(pt, "]\n");
+		PH_DBG("%s", full_str);
+	}
+
+	void prt_ch(int aa, chopstick* ch){
+		char full_str[500];
+		char* pt = full_str;
+		pt += sprintf(pt, "STICK (%p) %d=[", ch, aa);
+		pt += sprintf(pt, "lst_sent=%s ", tok_to_str(ch->last_sent));
+		pt += sprintf(pt, "lst_recv=%s ", tok_to_str(ch->last_recv));
+		pt += sprintf(pt, "lst_src=%p ", ch->last_src);
+		pt += sprintf(pt, "]\n");
+		PH_DBG(full_str);
+	}
+
+	void prt_pc(int aa, philo_core* pc){
+		char full_str[500];
+		char* pt = full_str;
+		pt += sprintf(pt, "CORE %d=[", aa);
+		EMU_CODE(
+			pt += sprintf(pt, "out_work_sz=%ld ", pc->out_work_sz);
+			pt += sprintf(pt, "sent_work_sz=%ld ", pc->sent_work_sz);
+		)
+		EPH_CODE(
+			pt += sprintf(pt, "out_work_sz=%d ", pc->out_work_sz);
+			pt += sprintf(pt, "sent_work_sz=%d ", pc->sent_work_sz);
+		)
+		pt += sprintf(pt, "]\n");
+		PH_DBG(full_str);
+	}
+
+	void prt_all_philo(){
+		for(int aa = 0; aa < 16; aa++){
+			philo_core* phl = dbg_all_philo[aa];
+			if(phl != mc_null){
+				prt_ch(aa, &(phl->stick));
+				prt_ph(aa, &(phl->philo));
+				prt_pc(aa, phl);
+			}
 		}
 	}
-	pt += sprintf(pt, "]\n");
-	PH_DBG("%s", full_str);
-}
 
-void prt_full(){
-	char full_str[500];
-	char* pt = full_str;
-	pt += sprintf(pt, "ALL_FULL=[");
-	for(int aa = 0; aa < 16; aa++){
-		bool fll = dbg_all_full[aa];
-		if(fll){
-			pt += sprintf(pt, "%d,", aa);
+	void ker_func(){
+		kernel* ker = mck_get_kernel();
+		mc_core_nn_t nn = ker->get_core_nn();
+		if(! ker->did_work && ! dbg_all_idle_prt[nn]){
+			mc_set_off_core_var(dbg_all_idle_prt[nn], true);
 		}
-	}
-	pt += sprintf(pt, "]\n");
-	PH_DBG("%s", full_str);
-}
-
-void prt_ph(int aa, philosopher* ph){
-	char full_str[500];
-	char* pt = full_str;
-	bool is_fll = (ph->num_bites == MAX_BITES);
-	bool to_exit = ph->can_exit();
-	pt += sprintf(pt, "PHILO (%p) %d=[", ph, aa);
-	pt += sprintf(pt, "F%d ", is_fll);
-	pt += sprintf(pt, "X%d ", to_exit);
-	pt += sprintf(pt, "L%d ", (ph->left != mc_null)?(1):(0));
-	pt += sprintf(pt, "R%d ", (ph->right != mc_null)?(1):(0));
-	pt += sprintf(pt, "N%d ", ph->num_bites);
-	pt += sprintf(pt, "LF%d ", ph->lft_ph_full);
-	pt += sprintf(pt, "RF%d ", ph->rgt_ph_full);
-	pt += sprintf(pt, "Lsnt=%s ", tok_to_str(ph->last_sent_lft));
-	pt += sprintf(pt, "Lrcv=%s ", tok_to_str(ph->last_recv_lft));
-	pt += sprintf(pt, "Rsnt=%s ", tok_to_str(ph->last_sent_rgt));
-	pt += sprintf(pt, "Rrcv=%s ", tok_to_str(ph->last_recv_rgt));
-	pt += sprintf(pt, "]\n");
-	PH_DBG("%s", full_str);
-}
-
-void prt_ch(int aa, chopstick* ch){
-	char full_str[500];
-	char* pt = full_str;
-	pt += sprintf(pt, "STICK (%p) %d=[", ch, aa);
-	pt += sprintf(pt, "lst_sent=%s ", tok_to_str(ch->last_sent));
-	pt += sprintf(pt, "lst_recv=%s ", tok_to_str(ch->last_recv));
-	pt += sprintf(pt, "lst_src=%p ", ch->last_src);
-	pt += sprintf(pt, "]\n");
-	PH_DBG(full_str);
-}
-
-void prt_pc(int aa, philo_core* pc){
-	char full_str[500];
-	char* pt = full_str;
-	pt += sprintf(pt, "CORE %d=[", aa);
-	EMU_CODE(
-		pt += sprintf(pt, "out_work_sz=%ld ", pc->out_work_sz);
-		pt += sprintf(pt, "sent_work_sz=%ld ", pc->sent_work_sz);
-	)
-	EPH_CODE(
-		pt += sprintf(pt, "out_work_sz=%d ", pc->out_work_sz);
-		pt += sprintf(pt, "sent_work_sz=%d ", pc->sent_work_sz);
-	)
-	pt += sprintf(pt, "]\n");
-	PH_DBG(full_str);
-}
-
-void prt_all_philo(){
-	for(int aa = 0; aa < 16; aa++){
-		philo_core* phl = dbg_all_philo[aa];
-		if(phl != mc_null){
-			prt_ch(aa, &(phl->stick));
-			prt_ph(aa, &(phl->philo));
-			prt_pc(aa, phl);
+		if(ker->did_work && dbg_all_idle_prt[nn]){
+			mc_set_off_core_var(dbg_all_idle_prt[nn], false);
 		}
-	}
-}
+		philo_core* phl = dbg_all_philo[nn];
 
-void ker_func(){
-	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = ker->get_core_nn();
-	if(! ker->did_work && ! dbg_all_idle_prt[nn]){
-		mc_set_off_chip_var(dbg_all_idle_prt[nn], true);
+		phl->to_host_work_sz = ker->to_host_work.calc_size();
+		phl->in_work_sz = ker->in_work.calc_size();
+		phl->local_work_sz = ker->local_work.calc_size();
+		phl->out_work_sz = ker->out_work.calc_size();
+		phl->sent_work_sz = ker->sent_work.calc_size();
+		phl->cls_available_cell_sz = ker->cls_available_cell.calc_size();
+		phl->cls_available_missive_sz = ker->cls_available_missive.calc_size();
+		phl->cls_available_agent_ref_sz = ker->cls_available_agent_ref.calc_size();
+		phl->cls_available_agent_grp_sz = ker->cls_available_agent_grp.calc_size();
 	}
-	if(ker->did_work && dbg_all_idle_prt[nn]){
-		mc_set_off_chip_var(dbg_all_idle_prt[nn], false);
-	}
-	philo_core* phl = dbg_all_philo[nn];
-
-	phl->to_host_work_sz = ker->to_host_work.calc_size();
-	phl->in_work_sz = ker->in_work.calc_size();
-	phl->local_work_sz = ker->local_work.calc_size();
-	phl->out_work_sz = ker->out_work.calc_size();
-	phl->sent_work_sz = ker->sent_work.calc_size();
-	phl->cls_available_cell_sz = ker->cls_available_cell.calc_size();
-	phl->cls_available_missive_sz = ker->cls_available_missive.calc_size();
-	phl->cls_available_agent_ref_sz = ker->cls_available_agent_ref.calc_size();
-	phl->cls_available_agent_grp_sz = ker->cls_available_agent_grp.calc_size();
-}
-#endif
+#endif // END_OF_PHILO_WITH_DBG
 
 void mc_cores_main() {
 	kernel::init_sys();
@@ -648,8 +646,8 @@ void mc_cores_main() {
 	mc_core_nn_t nn = ker->get_core_nn();
 
 	PH_DBG_COD(
-		mc_set_off_chip_var(dbg_all_idle_prt[nn], false);
-		mc_set_off_chip_var(dbg_all_full[nn], false);
+		mc_set_off_core_var(dbg_all_idle_prt[nn], false);
+		mc_set_off_core_var(dbg_all_full[nn], false);
 	)
 
 	philo_core* core_dat = philo_core::acquire_alloc();
@@ -662,7 +660,7 @@ void mc_cores_main() {
 	PH_DBG_COD(
 		ker->user_func = ker_func;
 		dbg_all_philo[nn] = core_dat;
-	)
+	);
 
 	glb_philo->lft_stk_id = mc_nn_to_id(left_chp_nn(nn));
 	glb_philo->rgt_stk_id = mc_nn_to_id(right_chp_nn(nn));
