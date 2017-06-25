@@ -1,5 +1,12 @@
 
-// broadcast_maps.c 
+
+/*! \file broadcast_maps_eph.c 
+
+\brief Standard parallel broadcast maps (they are also used a parallel loading maps).
+
+\include broadcast_maps_eph.c 
+
+*/
 
 #include "global.h"
 

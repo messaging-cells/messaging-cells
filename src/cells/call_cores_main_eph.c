@@ -35,11 +35,11 @@ The following examples illustrate how to use the library:
 
 <ol>
 <li>
-\includedoc hello_world.cpp
+\ref hello_world.cpp
 <li>
-\includedoc send_msg.cpp
+\ref send_msg.cpp
 <li>
-\includedoc philo.cpp
+\ref philo.cpp
 <li>
 \ref docgrp_modules
 </ol>
@@ -66,7 +66,7 @@ Functions to get the stack trace. When calling \ref mck_get_call_stack_trace and
 </ul>
 
 <p>
-The most simple example of usage of a log function is \includedoc hello_world.cpp program.
+The most simple example of usage of a log function is \ref hello_world.cpp program.
 
 <br><br><br><br>
 
@@ -82,12 +82,12 @@ The most simple example of usage of a log function is \includedoc hello_world.cp
 Messagging is done beetween two \ref cell s by sending \ref missive s. So no messages ;)
 
 <p>
-The most simple example of messaging usage is the \includedoc send_msg.cpp program.
+The most simple example of messaging usage is the \ref send_msg.cpp program.
 
 <p>
 The classical more complex example of the 
 <a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem" target="blank">eating philosophers</a> 
-is coded in the \includedoc philo.cpp program and shows some
+is coded in the \ref philo.cpp program and shows some
 \ref docgrp_addressing_features and \ref docgrp_memory_features of the library.
 
 <p>
@@ -173,7 +173,7 @@ classes of objects that will not get \ref agent::release d and therefore do not 
 <h3>Eating Philosophers</h3>
 
 <p>
-The classical example <a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem" target="blank">eating philosophers</a> for synchronizing concurrency is given in the \includedoc philo.cpp example program.
+The classical example <a href="https://en.wikipedia.org/wiki/Dining_philosophers_problem" target="blank">eating philosophers</a> for synchronizing concurrency is given in the \ref philo.cpp example program.
 
 <br><br><br><br>
 
@@ -230,7 +230,7 @@ In the examples it is used an implicit symmetry: The fact that two objects that 
 exactly the same order in different cores have the same local address.
 
 <p>
-For example when in the \ref mc_cores_main function of the \includedoc philo.cpp program, 
+For example when in the \ref mc_cores_main function of the \ref philo.cpp program, 
 the line:
 
 <pre>
@@ -260,12 +260,13 @@ The same happens for \ref glb_philo.
 <p>
 This group corresponds to two main areas:
 
-<ul>
+<ol>
 <li>
-The values you can set in the link script.
+The values you can set in the link script. See example \ref mc-linker-script.ldf. See also file
+\ref loader.h
 <li>
-THe techniques used to partition your code in modules.
-</ul>
+The techniques used to partition your code in modules. See \ref docgrp_modules
+</ol>
 
 <br><br><br><br>
 
@@ -280,8 +281,8 @@ THe techniques used to partition your code in modules.
 <p>
 This group corresponds to basically two main features:
 <ul>
-<li> The posibility to customize the tree that defines the order in which the library's kernel is loaded in the cores.
-<li> The posibility to load different modules in different cores.
+<li> The posibility to customize the tree that defines the order in which the library's kernel is loaded in the cores. See \ref loader.h and \ref broadcast_maps_eph.c
+<li> The posibility to load different modules in different cores. See \ref docgrp_modules
 </ul>
 
 <br><br><br><br>
