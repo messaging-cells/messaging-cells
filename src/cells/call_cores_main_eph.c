@@ -6,10 +6,21 @@
 /*! \mainpage <h1>Introduction</h1>
 
 <p>
-This selected doxy generated documentation of the <a href="https://github.com/messaging-cells/messaging-cells" target="blank">Messaging Cells</a> Library is a description of the most releveant classes and functions that help in the understanding of the API and inner-workig of the library.
+This selected doxy generated documentation of the <a href="https://github.com/messaging-cells/messaging-cells" target="blank">Messaging Cells</a> Library is a description of the most releveant classes and functions that 
+help in the understanding of the API and inner-workig of the library. The user is encoraged to look at the source
+files when in doubt about the behaviour of the library abstractions.
+
+\warning This documentation is in alpha stage. It is missing even expected info. You are wellcome to help.
+
+<h2>Feedback</h2>
 
 <p>
-This documentation is gruped in the following <a href="modules.html">modules</a> :
+For comments, wishes or any feedback drop them in the <a href="https://github.com/messaging-cells/messaging-cells.github.io/issues">issues</a> page of the github <a href="https://github.com/messaging-cells/messaging-cells.github.io">project</a>.
+
+<h2>Documentation modules</h2>
+
+<p>
+This documentation is gruped in the following <a href="modules.html">modules</a> (do not confuse with the library feature to partition the user's code):
 
 <ul>
 <li>

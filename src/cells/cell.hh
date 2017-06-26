@@ -200,8 +200,12 @@ Every core must have one and only one kernel inited with kernel::init_sys.
 	kernel*
 	mck_get_first_kernel() mc_external_code_ram;
 
+	//! This core's kernel
 	extern kernel*	mck_PT_THE_KERNEL;
+
 	#define MCK_FIRST_KERNEL mck_get_first_kernel()
+
+	//! Returns the kernel of this core
 	#define MCK_KERNEL (mck_PT_THE_KERNEL)
 #endif
 
@@ -301,9 +305,11 @@ public:
 	static void
 	finish_host_sys() mc_external_code_ram;
 
+	//! Returns the kernel
 	static kernel*
 	get_sys();
 
+	//! Returns the core global info
 	static mc_inline_fn mck_glb_sys_st& 
 	get_core_info(){
 		return *MC_CORE_INFO;
@@ -314,40 +320,48 @@ public:
 		return *(MC_CORE_INFO->off_core_pt);
 	}
 
+	//! Returns the system size structure
 	static mc_inline_fn mc_sys_sz_st& 
 	get_sys_sz(){
 		return *MC_SYS_SZ;
 		//return MC_CORE_INFO->mck_system_sz;
 	}
 
+	//! Returns the core number
 	static mc_inline_fn mc_core_nn_t 
 	get_core_nn(){
 		return MC_CORE_INFO->the_core_nn;
 	}
 
+	//! Returns the core row
 	static mc_inline_fn mc_core_co_t 
 	get_core_ro(){
 		return MC_CORE_INFO->the_core_ro;
 	}
 
+	//! Returns the core column
 	static mc_inline_fn mc_core_co_t 
 	get_core_co(){
 		return MC_CORE_INFO->the_core_co;
 	}
 
+	//! Returns the core id
 	static mc_inline_fn mc_core_id_t 
 	get_core_id(){
 		return MC_CORE_INFO->the_core_id;
 	}
 
+	//! Returns this kernel first created \ref cell 
 	static mc_inline_fn cell*
 	get_core_cell(){
 		return MCK_KERNEL->first_cell;
 	}
 
+	//! Returns the core_cell (see \ref get_core_cell) of the core with id 'dst_id'
 	static cell*
 	get_core_cell(mc_core_id_t dst_id);
 
+	//! Returns the core_cell (see \ref get_core_cell) of the host
 	static cell*
 	get_host_cell() mc_external_code_ram;
 
@@ -566,6 +580,7 @@ public:
 		EMU_DBG_CODE(dbg_msv = 0);
 	}
 
+	//! Sends this \ref missive . It calls \ref mck_as_glb_pt with src before sending.
 	mc_inline_fn 
 	void send(){
 		EMU_CK(dbg_msv == 0);
