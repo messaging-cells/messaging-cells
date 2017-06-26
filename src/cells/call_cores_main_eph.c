@@ -10,7 +10,7 @@ This selected doxy generated documentation of the <a href="https://github.com/me
 help in the understanding of the API and inner-workig of the library. The user is encoraged to look at the source
 files when in doubt about the behaviour of the library abstractions.
 
-\warning This documentation is in alpha stage. It is missing even expected info. You are wellcome to help.
+\warning This documentation is in alpha stage. It is missing even expected info. The API is not stable yet (there might be renaming of functions, methods of even classes). 
 
 <h2>Feedback</h2>
 
