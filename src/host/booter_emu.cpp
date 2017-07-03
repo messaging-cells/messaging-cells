@@ -302,6 +302,15 @@ mc_host_run()
 	printf("sys_sz->yy_sz_pw2=%d\n", sys_sz->yy_sz_pw2);
 	*/
 	
+	int tnum;
+	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
+		void *res;
+		int ss = pthread_join(ALL_THREADS_INFO[tnum].thd_emu.emu_id, &res);
+		if(ss != 0){
+			mch_abort_func(ss, "mc_host_finish. Cannot join thread.");
+		}
+	}
+
 	int nn;
 	for (nn=0; nn < mc_out_num_cores; nn++){
 		if(all_f_nam[nn] != mc_null){
@@ -314,14 +323,6 @@ mc_host_run()
 void
 mc_host_finish()
 {
-	int tnum;
-	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
-		void *res;
-		int ss = pthread_join(ALL_THREADS_INFO[tnum].thd_emu.emu_id, &res);
-		if(ss != 0){
-			mch_abort_func(ss, "mc_host_finish. Cannot join thread.");
-		}
-	}
 
 	free(ALL_THREADS_INFO);
 	destroy_mspace(mcm_glb_mspace);

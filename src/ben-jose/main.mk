@@ -57,7 +57,8 @@ MC_STD_INCDIRS := ../../cells ../../host ${MC_ETOOLS}/host/include
 
 SUBMAKEFILES := \
 	./host_code/no_nil_host.mk \
-	./host_code/host_code.mk \
+	./host_code/bj_host_znq.mk \
+	./host_code/bj_host_emu.mk \
 	./load_cnf/load_cnf.mk \
 
 

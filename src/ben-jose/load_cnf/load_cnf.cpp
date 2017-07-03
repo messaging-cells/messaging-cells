@@ -1,15 +1,4 @@
 
-//----------------------------------------------------------------------------
-/*! \file hello_world.cpp
-
-\brief Minimal library example.
-
-\details 
-
-\include hello_world.cpp
-
-*/
-
 #include "cell.hh"
 
 void mc_cores_main() {

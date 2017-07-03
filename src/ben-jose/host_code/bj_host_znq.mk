@@ -1,18 +1,13 @@
 
-SRC_HOST_DIR := $(SRC_DIR)/host
-SRC_CELLS_DIR := $(SRC_DIR)/cells
 SRC_BJ_HOST_DIR := .
 
 # =======================================
 
-TARGET := host_code.elf
+TARGET := bj_host_znq.elf
 
 TGT_LDFLAGS := ${MC_STD_ZNQ_LDFLAGS}
-TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS} -lstdc++ -ldimacs 
+TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS} -static-libstdc++ -static-libgcc -ldimacs 
 TGT_PREREQS := ${MC_ZNQ_LIBS} libdimacs.a 
-# TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS} 
-# TGT_PREREQS := ${MC_ZNQ_LIBS} 
-
 
 TGT_CC := $(CROSS_COMPILE)gcc
 TGT_CXX := $(CROSS_COMPILE)g++
@@ -28,6 +23,6 @@ SRC_INCDIRS := \
 	$(SRC_BJ_HOST_DIR)/dimacs \
 	$(SRC_BJ_HOST_DIR)/utils 
 
-SUBMAKEFILES := ./lib-dimacs.mk 
+SUBMAKEFILES := ./lib-dimacs-znq.mk 
 
-SOURCES := host_code.cpp
+SOURCES := bj_host_code.cpp
