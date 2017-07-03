@@ -129,11 +129,6 @@ mck_glb_init() mc_external_code_ram;
 void 
 mck_glb_finish() mc_external_code_ram;
 
-#ifndef MC_IS_EMU_CODE
-void 
-abort(void) mc_external_code_ram;		// Needed when -Os flag is set
-#endif
-
 #define MC_B_OPCODE 0x000000e8 // OpCode of the B<*> instruction
 
 void 

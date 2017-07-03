@@ -22,8 +22,14 @@
   * If MSPACES is defined, declarations for mspace versions are included.
 */
 
-#ifndef MALLOC_280_H
-#define MALLOC_280_H
+#ifndef DLMALLOC_280_H
+#define DLMALLOC_280_H
+
+// MC_SPECIFIC
+#ifndef ONLY_MSPACES
+#define ONLY_MSPACES 1
+#endif
+// END MC_SPECIFIC
 
 #ifdef __cplusplus
 extern "C" {
@@ -533,4 +539,4 @@ int mspace_mallopt(int, int);
 };  /* end of extern "C" */
 #endif
 
-#endif /* MALLOC_280_H */
+#endif /* DLMALLOC_280_H */

@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <sched.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <e-hal.h>

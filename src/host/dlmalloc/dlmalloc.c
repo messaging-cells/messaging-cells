@@ -481,6 +481,13 @@ MAX_RELEASE_CHECK_RATE   default: 255 unless not HAVE_MMAP
   improvement at the expense of carrying around more memory.
 */
 
+// MC_SPECIFIC
+#ifndef ONLY_MSPACES
+#define ONLY_MSPACES 1
+#endif
+// END MC_SPECIFIC
+
+
 #ifndef WIN32
 #ifdef _WIN32
 #define WIN32 1

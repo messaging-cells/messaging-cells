@@ -25,6 +25,8 @@ mck_get_first_glb_sys(){
 	return mck_glb_pt_sys_data;
 }
 
+void abort() mc_external_code_ram;
+
 void
 abort(){	// Needed when optimizing for size
 	MCK_CK(0);

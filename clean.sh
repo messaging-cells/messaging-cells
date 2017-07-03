@@ -9,3 +9,7 @@ rm ./send_msg_sizes.txt
 cd ./src/tests
 clean.sh
 cd ../..
+
+cd ./src/ben-jose
+clean.sh
+cd ../..

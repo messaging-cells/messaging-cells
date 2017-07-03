@@ -11,9 +11,9 @@ make
 rm ./bin/log_core_*
 cd ../..
 
-PROG=src/tests/bin/send_msg_eph.elf
-e-objdump -D $PROG > send_msg_code.s
-e-objdump -h $PROG > send_msg_sizes.txt
-
+cd src/ben-jose
+make
+rm ./bin/log_core_*
+cd ../..
 
 

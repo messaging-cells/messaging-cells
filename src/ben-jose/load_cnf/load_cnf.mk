@@ -7,10 +7,11 @@ LD_IN_SECTIONS :=
 
 # =======================================
 
-TARGET := send_msg_eph.elf
+TARGET := load_cnf.elf
 
 TGT_LDFLAGS := ${MC_STD_EPH_LDFLAGS} ${LD_IN_SECTIONS} 
 TGT_LDLIBS  := ${MC_STD_EPH_LDLIBS}
+TGT_PREREQS := ${MC_EPH_LIBS}
 
 TGT_CC := e-gcc
 TGT_CXX := e-g++
@@ -28,6 +29,6 @@ SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_
 
 SRC_INCDIRS := ${MC_STD_INCDIRS}
 
-SOURCES := send_msg.cpp
+SOURCES := load_cnf.cpp
 
 
