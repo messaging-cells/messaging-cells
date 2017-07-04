@@ -72,6 +72,8 @@ mc_c_decl {
 	#endif
 
 	#define EMU_CODE(cod) 
+	#define EMU_32_CODE(cod) 
+	#define EMU_64_CODE(cod) 
 	#define EMU_DBG_CODE(cod) 
 	#define EMU_CK(prm) 
 	#define EMU_CK_PRT(vv, ...) 
@@ -122,6 +124,23 @@ mc_c_decl {
 #define mc_mod7_dat mc_section("module7_data")
 #define mc_mod8_dat mc_section("module8_data")
 #define mc_mod9_dat mc_section("module9_data")
+
+#ifdef MC_IS_EMU_CODE
+	#include <stdint.h>
+	#if UINTPTR_MAX == 0xffffffff
+		/* 32-bit */
+		#define EMU_32_CODE(cod) cod
+		#define EMU_64_CODE(cod) 
+	#elif UINTPTR_MAX == 0xffffffffffffffff
+		/* 64-bit */
+		#define EMU_32_CODE(cod) 
+		#define EMU_64_CODE(cod) cod
+	#else
+		/* wtf */
+		#define EMU_32_CODE(cod) 
+		#define EMU_64_CODE(cod) 
+	#endif
+#endif
 	
 #ifdef __cplusplus
 }

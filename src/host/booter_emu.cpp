@@ -125,7 +125,8 @@ mc_host_init(){
 
 	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_HOST_DATA;
 	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
-	printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data));
+	EMU_64_CODE(printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data)));
+	EMU_32_CODE(printf("sizeof(*pt_shd_data)=%d\n", sizeof(*pt_shd_data)));
 
 	// init shared data.
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
@@ -151,8 +152,9 @@ mc_host_run()
 	mc_core_co_t row, col, max_row, max_col;
 	char f_nm[200];
 
-	char* all_f_nam[mc_out_num_cores];
-	memset(&all_f_nam, 0, sizeof(all_f_nam));
+	mc_core_nn_t tot_cores = mc_out_num_cores;
+	char* all_f_nam[tot_cores];
+	memset(all_f_nam, 0, (sizeof(char*) * tot_cores));
 
 	max_row = 1;
 	max_col = 2;
@@ -202,11 +204,19 @@ mc_host_run()
 
 	MCH_CK(ck_all_core_ids());
 
+	bool core_started[tot_cores];
+	memset(core_started, 0, (sizeof(bool) * tot_cores));
+
+	bool core_finished[tot_cores];
+	memset(core_finished, 0, (sizeof(bool) * tot_cores));
+
+	/*
 	bool core_started[max_row][max_col];
 	memset(core_started, 0, sizeof(core_started));
 
 	bool core_finished[max_row][max_col];
 	memset(core_finished, 0, sizeof(core_finished));
+	*/
 
 	bool has_work = true;	
 	while(has_work){
@@ -240,8 +250,8 @@ mc_host_run()
 						(sh_dat_1->is_finished == MC_FINISHED_VAL)
 				);
 				MCH_CK(sh_dat_1->ck_core_id == core_id);
-				if(! core_started[row][col] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
-					core_started[row][col] = true;
+				if(! core_started[num_core] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
+					core_started[num_core] = true;
 					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
 					//			core_id, row, col, num_core);
 				}
@@ -268,9 +278,9 @@ mc_host_run()
 				} else {
 					MCH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
 	
-					if(! core_finished[row][col]){
+					if(! core_finished[num_core]){
 
-						core_finished[row][col] = true;
+						core_finished[num_core] = true;
 
 						mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));

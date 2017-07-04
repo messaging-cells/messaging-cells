@@ -92,7 +92,8 @@ int mch_prt_in_core_shd_dat(mck_glb_sys_st* sh_dat){
 	
 	ZNQ_CODE(fprintf(stderr, "min_sp=0x%08x \n", sh_dat->dbg_min_sp));
 
-	EMU_CODE(fprintf(stderr, "dbg_error_code=0x%08lx \n", sh_dat->dbg_error_code));
+	EMU_64_CODE(fprintf(stderr, "dbg_error_code=0x%08lx \n", sh_dat->dbg_error_code));
+	EMU_32_CODE(fprintf(stderr, "dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
 	ZNQ_CODE(fprintf(stderr, "dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
 
 	fprintf(stderr, "dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
@@ -360,7 +361,8 @@ mch_ptr_call_stack_trace() {
 	memset((uint8_t*)trace, 0, MCH_MAX_CALL_STACK_SZ * sizeof(void*));
 
 	size_t trace_sz = backtrace(trace, MCH_MAX_CALL_STACK_SZ);
-	EMU_CODE(fprintf(stderr, "trace_size=%lu \n", trace_sz));
+	EMU_64_CODE(fprintf(stderr, "trace_size=%lu \n", trace_sz));
+	EMU_32_CODE(fprintf(stderr, "trace_size=%u \n", trace_sz));
 	ZNQ_CODE(fprintf(stderr, "trace_size=%u \n", trace_sz));
 
 	char **stack_strings = backtrace_symbols(trace, trace_sz);

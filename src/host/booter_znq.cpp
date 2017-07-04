@@ -177,6 +177,16 @@ mc_start_first_core(){
 	e_start(&dev, row, col);
 }
 
+#define mc_init_2d_bool_arr(arr, rows, cols, val) \
+{ \
+	for(int aa = 0; aa < rows; aa++){ \
+		for(int bb = 0; bb < cols; bb++){ \
+			arr[aa][bb] = val; \
+		} \
+	} \
+} \
+
+
 void
 mc_host_run(){
 	e_epiphany_t & dev = mch_glb_dev;
@@ -198,7 +208,7 @@ mc_host_run(){
 	MCH_CK(tot_cores <= mc_out_num_cores);
 
 	char* all_f_nam[tot_cores];
-	memset(&all_f_nam, 0, sizeof(all_f_nam));
+	memset(all_f_nam, 0, (sizeof(char*) * tot_cores));
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
@@ -236,11 +246,19 @@ mc_host_run(){
 		mc_start_all_cores();
 	#endif
 
+	bool core_started[tot_cores];
+	memset(core_started, 0, (sizeof(bool) * tot_cores));
+
+	bool core_finished[tot_cores];
+	memset(core_finished, 0, (sizeof(bool) * tot_cores));
+
+	/*
 	bool core_started[max_row][max_col];
-	memset(core_started, 0, sizeof(core_started));
+	mc_init_2d_bool_arr(core_started, max_row, max_col, 0);
 
 	bool core_finished[max_row][max_col];
-	memset(core_finished, 0, sizeof(core_finished));
+	mc_init_2d_bool_arr(core_finished, max_row, max_col, 0);
+	*/
 
 	bool has_work = true;	
 	while(has_work){
@@ -274,8 +292,8 @@ mc_host_run(){
 				);
 
 				MCH_CK(sh_dat_1->ck_core_id == core_id);
-				if(! core_started[row][col] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
-					core_started[row][col] = true;
+				if(! core_started[num_core] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
+					core_started[num_core] = true;
 					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
 					//			core_id, row, col, num_core);
 				}
@@ -303,8 +321,8 @@ mc_host_run(){
 				} else {
 					MCH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
 	
-					if(! core_finished[row][col]){
-						core_finished[row][col] = true;
+					if(! core_finished[num_core]){
+						core_finished[num_core] = true;
 
 						mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
 						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
