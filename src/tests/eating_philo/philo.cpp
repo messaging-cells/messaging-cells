@@ -606,9 +606,13 @@ philosopher::call_exit(){
 		char full_str[500];
 		char* pt = full_str;
 		pt += sprintf(pt, "CORE %d=[", aa);
-		EMU_CODE(
+		EMU_64_CODE(
 			pt += sprintf(pt, "out_work_sz=%ld ", pc->out_work_sz);
 			pt += sprintf(pt, "sent_work_sz=%ld ", pc->sent_work_sz);
+		)
+		EMU_32_CODE(
+			pt += sprintf(pt, "out_work_sz=%d ", pc->out_work_sz);
+			pt += sprintf(pt, "sent_work_sz=%d ", pc->sent_work_sz);
 		)
 		EPH_CODE(
 			pt += sprintf(pt, "out_work_sz=%d ", pc->out_work_sz);

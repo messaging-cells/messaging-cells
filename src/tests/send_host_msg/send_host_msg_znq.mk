@@ -12,7 +12,7 @@ TGT_PREREQS := ${MC_ZNQ_LIBS}
 
 TGT_CC := $(CROSS_COMPILE)gcc
 TGT_CXX := $(CROSS_COMPILE)g++
-TGT_LINKER := $(CROSS_COMPILE)gcc
+TGT_LINKER := $(CROSS_COMPILE)g++
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

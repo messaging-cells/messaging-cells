@@ -40,7 +40,8 @@ MC_ZNQ_LDFLAGS_1 := -L${MC_ETOOLS}/host/lib
 MC_STD_ZNQ_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} ${MC_ZNQ_LDFLAGS_1} 
 
 MC_STD_C_LDLIBS := -lc -lepiphany -lgcc -lg 
-MC_STD_ZNQ_LDLIBS := -lmcz-cell -lmcz-tak-mak -lmcz-dlmalloc -le-hal -lm 
+# MC_STD_ZNQ_LDLIBS := -lmcz-cell -lmcz-tak-mak -lmcz-dlmalloc -le-hal -lm 
+MC_STD_ZNQ_LDLIBS := -lmcz-cell -lmcz-tak-mak -lmcz-dlmalloc -le-hal -lm -static-libstdc++ -static-libgcc 
 MC_STD_EMU_LDLIBS := -lmcm-cell -lmcm-tak-mak -lmcm-dlmalloc -lpthread
 MC_STD_EPH_LDLIBS := -lmck-cell -lmck-tak-mak 
 
