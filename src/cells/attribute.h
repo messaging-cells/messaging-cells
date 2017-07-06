@@ -4,10 +4,25 @@
 #ifndef MC_ATTRIBUTE_H
 #define MC_ATTRIBUTE_H
 
+#include <stdint.h>
 #include "debug.h"
 
 #ifdef __cplusplus
 mc_c_decl {
+#endif
+
+#if UINTPTR_MAX == 0xffffffff
+	/* 32-bit */
+	#define COD_32(cod) cod
+	#define COD_64(cod) 
+#elif UINTPTR_MAX == 0xffffffffffffffff
+	/* 64-bit */
+	#define COD_32(cod) 
+	#define COD_64(cod) cod
+#else
+	/* wtf */
+	#define COD_32(cod) 
+	#define COD_64(cod) 
 #endif
 
 #define MC_PLL_LOADING
@@ -43,8 +58,8 @@ mc_c_decl {
 
 	#define EMU_CODE(cod) cod
 	#define EMU_DBG_CODE(cod) MC_DBG(cod)
-	#define EMU_CK(vv) mcm_call_assert(true, vv, __FILE__, __LINE__, #vv, mc_null)
-	#define EMU_CK_PRT(vv, ...) mcm_call_assert(true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__)
+	#define EMU_CK(vv) MC_DBG(mcm_call_assert(true, vv, __FILE__, __LINE__, #vv, mc_null))
+	#define EMU_CK_PRT(vv, ...) MC_DBG(mcm_call_assert(true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
 	#define EMU_COND_PRT(cond, ...) mcm_call_assert(false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__)
 	#define EMU_PRT(...) mcm_printf(__VA_ARGS__)
 	#define EMU_LOG(...) mcm_log(__VA_ARGS__)
@@ -126,20 +141,8 @@ mc_c_decl {
 #define mc_mod9_dat mc_section("module9_data")
 
 #ifdef MC_IS_EMU_CODE
-	#include <stdint.h>
-	#if UINTPTR_MAX == 0xffffffff
-		/* 32-bit */
-		#define EMU_32_CODE(cod) cod
-		#define EMU_64_CODE(cod) 
-	#elif UINTPTR_MAX == 0xffffffffffffffff
-		/* 64-bit */
-		#define EMU_32_CODE(cod) 
-		#define EMU_64_CODE(cod) cod
-	#else
-		/* wtf */
-		#define EMU_32_CODE(cod) 
-		#define EMU_64_CODE(cod) 
-	#endif
+	#define EMU_32_CODE(cod) COD_32(cod)
+	#define EMU_64_CODE(cod) COD_64(cod)
 #endif
 	
 #ifdef __cplusplus

@@ -19,11 +19,17 @@ SRC_CXXFLAGS := -DMC_IS_EMU_CODE ${MC_DBG_FLAG} ${CXX_FLAGS_1}
 
 SRC_INCDIRS := \
 	${MC_STD_INCDIRS} \
+	$(SRC_BJ_HOST_DIR)/cnf_preload \
 	$(SRC_BJ_HOST_DIR)/dimacs \
 	$(SRC_BJ_HOST_DIR)/utils 
 
-SUBMAKEFILES := ./lib-dimacs-emu.mk 
+SUBMAKEFILES := ./lib-dimacs-emu.mk ./cnf_preload_emu.mk 
 
-SOURCES := bj_host_code.cpp ../load_cnf/load_cnf.cpp
+SOURCES := \
+	bj_host_code.cpp \
+	../load_cnf/load_cnf.cpp \
+
+
+
 
 
