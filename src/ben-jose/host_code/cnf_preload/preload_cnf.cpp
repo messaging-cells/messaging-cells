@@ -7,7 +7,7 @@
 
 grip ava_pre_cnf_node;
 
-pre_cnf* THE_CNF = mc_null;
+pre_load_cnf* THE_CNF = mc_null;
 
 MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node)
 
@@ -62,10 +62,47 @@ print_cnf(){
 
 void
 print_nods(){
-	printf("{");
-	for(long aa = 0; aa < THE_CNF->tot_nods; aa++){
-		pre_cnf_node* nod =  THE_CNF->all_nod[aa];
+	printf("ALL_NODS {");
+	for(long aa = 0; aa < THE_CNF->tot_sort_nods; aa++){
+		pre_cnf_node* nod =  THE_CNF->all_sort_nods[aa];
 		printf("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
+	}
+	printf("} \n");
+}
+
+void
+print_all_nods(binder& grip){
+	binder * fst, * lst, * wrk;
+	binder* grp = &(grip);
+
+	fst = grp->bn_right;
+	lst = grp;
+	for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
+		pre_cnf_node* nod = (pre_cnf_node*)wrk;
+		printf("[k%d id%ld sz%ld] ", nod->ki, nod->id, nod->sz);
+	}
+}
+
+void
+print_core_cnfs(){
+	printf("ALL_CNFS {\n");
+	for(long aa = 0; aa < THE_CNF->tot_cores; aa++){
+		core_cnf& cnf =  THE_CNF->all_cnf[aa];
+
+		printf("CNF %ld ======================================= \n", aa);
+
+		//printf("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
+		printf("\tCCLS[");
+		print_all_nods(cnf.all_ccl);
+		printf("\t] \n");
+
+		printf("\tPOS[");
+		print_all_nods(cnf.all_pos);
+		printf("\t] \n");
+
+		printf("\tNEG[");
+		print_all_nods(cnf.all_neg);
+		printf("\t] \n");
 	}
 	printf("} \n");
 }
@@ -91,11 +128,11 @@ preload_cnf(long sz, const long* arr){
 		return;
 	}
 
-	THE_CNF->tot_nods = num_ccls + (2 * num_vars);
-	long num_nods = THE_CNF->tot_nods;
+	THE_CNF->tot_sort_nods = num_ccls + num_vars;
+	long num_sort_nods = THE_CNF->tot_sort_nods;
 
 	agent_ref::separate(2 * num_lits);
-	pre_cnf_node::separate(num_nods);
+	pre_cnf_node::separate(num_ccls + (2 * num_vars));
 
 	printf("tot_lits=%ld tot_vars=%ld tot_ccls=%ld \n", 
 			THE_CNF->tot_lits, THE_CNF->tot_vars, THE_CNF->tot_ccls);
@@ -103,7 +140,7 @@ preload_cnf(long sz, const long* arr){
 	THE_CNF->all_ccl = mc_malloc32(pre_cnf_node*, num_ccls);
 	THE_CNF->all_pos = mc_malloc32(pre_cnf_node*, num_vars);
 	THE_CNF->all_neg = mc_malloc32(pre_cnf_node*, num_vars);
-	THE_CNF->all_nod = mc_malloc32(pre_cnf_node*, num_nods);
+	THE_CNF->all_sort_nods = mc_malloc32(pre_cnf_node*, num_sort_nods);
 
 	THE_CNF->all_cnf = mc_malloc32(core_cnf, num_cores);
 	for(int bb = 0; bb < num_cores; bb++){ 
@@ -114,9 +151,8 @@ preload_cnf(long sz, const long* arr){
 	init_node_arr(num_vars, THE_CNF->all_pos, nd_pos);
 	init_node_arr(num_vars, THE_CNF->all_neg, nd_neg);
 
-	memcpy(THE_CNF->all_nod, THE_CNF->all_ccl, num_ccls * sizeof(pre_cnf_node*));
-	memcpy(THE_CNF->all_nod + num_ccls, THE_CNF->all_pos, num_vars * sizeof(pre_cnf_node*));
-	memcpy(THE_CNF->all_nod + num_ccls + num_vars, THE_CNF->all_neg, num_vars * sizeof(pre_cnf_node*));
+	memcpy(THE_CNF->all_sort_nods, THE_CNF->all_ccl, num_ccls * sizeof(pre_cnf_node*));
+	memcpy(THE_CNF->all_sort_nods + num_ccls, THE_CNF->all_pos, num_vars * sizeof(pre_cnf_node*));
 
 	long nn = 0;
 
@@ -141,6 +177,11 @@ preload_cnf(long sz, const long* arr){
 			rcl->glb_agent_ptr = ccl;
 			lit->all_agts.bind_to_my_left(*rcl);
 			lit->sz++;
+
+			if(nio_id < 0){
+				pre_cnf_node* opp = get_lit(-nio_id);
+				opp->sz++;
+			}
 		} else {
 			nn++;
 			if(nn < num_ccls){
@@ -152,29 +193,34 @@ preload_cnf(long sz, const long* arr){
 		}
 	}
 
-	qsort(THE_CNF->all_nod, num_nods, sizeof(pre_cnf_node*), cmp_nodes);
+	qsort(THE_CNF->all_sort_nods, num_sort_nods, sizeof(pre_cnf_node*), cmp_nodes);
 
-	long cc = 0;
-	for(long aa = 0; aa < num_nods; aa++){
-		if(cc == num_cores){ cc = 0; }
-		pre_cnf_node* nod = THE_CNF->all_nod[aa];
-		core_cnf& cnf = THE_CNF->all_cnf[cc];
+	long kk = 0;
+	for(long aa = 0; aa < num_sort_nods; aa++){
+		if(kk == num_cores){ kk = 0; }
+		pre_cnf_node* nod = THE_CNF->all_sort_nods[aa];
+		core_cnf& cnf = THE_CNF->all_cnf[kk];
 		EMU_CK(nod->is_alone());
+		cnf.tot_rels += nod->sz;
 		switch(nod->ki){
 			case nd_pos:
+			{
 				cnf.all_pos.bind_to_my_left(*nod);
-			break;
-			case nd_neg:
-				cnf.all_neg.bind_to_my_left(*nod);
+				pre_cnf_node* opp = get_lit(-(nod->id));
+				cnf.all_neg.bind_to_my_left(*opp);
+				cnf.tot_vars++;
+			}
 			break;
 			case nd_ccl:
 				cnf.all_ccl.bind_to_my_left(*nod);
+				cnf.tot_ccls++;
+				cnf.tot_lits += nod->sz;
 			break;
 			default:
 				mck_abort(9, const_cast<char*>("Bad node cnf kind"));
 			break;
 		}
-		cc++;
+		kk++;
 	}
 }
 

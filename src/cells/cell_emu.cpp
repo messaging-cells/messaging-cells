@@ -5,8 +5,8 @@
 
 #include "thread_emu.hh"
 
-kernel* //static
-kernel::get_sys(){
+kernel*
+mcm_get_kernel(){
 	return &(mck_get_emu_info()->emu_THE_KERNEL);
 }
 

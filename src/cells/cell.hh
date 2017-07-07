@@ -219,8 +219,11 @@ Every core must have one and only one kernel inited with kernel::init_sys.
 #endif
 
 #ifdef MC_IS_EMU_CODE
-	#define MCK_FIRST_KERNEL kernel::get_sys()
-	#define MCK_KERNEL kernel::get_sys()
+	kernel*
+	mcm_get_kernel();
+
+	#define MCK_FIRST_KERNEL mcm_get_kernel()
+	#define MCK_KERNEL mcm_get_kernel()
 #endif
 
 //! Gets the local kernel
@@ -272,6 +275,8 @@ public:
 
 	cell* 	first_cell;
 
+	void*	host_load_data;
+
 	mc_kenel_func_t	user_func;
 	void*	user_data;
 
@@ -306,8 +311,8 @@ public:
 	finish_host_sys() mc_external_code_ram;
 
 	//! Returns the kernel
-	static kernel*
-	get_sys();
+	static mc_inline_fn kernel*
+	get_sys(){ return MCK_KERNEL; }
 
 	//! Returns the core global info
 	static mc_inline_fn mck_glb_sys_st& 

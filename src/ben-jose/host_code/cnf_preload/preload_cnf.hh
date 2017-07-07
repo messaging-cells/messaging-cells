@@ -41,7 +41,7 @@ Declaration of functions to preload cnfs in dimacs files.
 #include "cell.hh"
 
 class pre_cnf_node;
-class pre_cnf;
+class pre_load_cnf;
 
 extern grip ava_pre_cnf_node;
 
@@ -59,13 +59,13 @@ public:
 	node_kind_t 	ki;
 	long			id;
 	long			sz;
-	pre_cnf_node* 	opp;
+	pre_cnf_node* 	loaded;
 
 	pre_cnf_node(){
 		ki = nd_invalid;
 		id = 0;
 		sz = 0;
-		opp = mc_null;
+		loaded = mc_null;
 	}
 
 	~pre_cnf_node(){}
@@ -77,6 +77,7 @@ public:
 	long tot_ccls;
 	long tot_vars;
 	long tot_lits;
+	long tot_rels;
 
 	grip	all_ccl;
 	grip	all_pos;
@@ -86,6 +87,7 @@ public:
 		tot_ccls = 0;
 		tot_vars = 0;
 		tot_lits = 0;
+		tot_rels = 0;
 	}
 
 	~core_cnf(){}
@@ -93,8 +95,12 @@ public:
 
 typedef int (*cmp_fn)(const void *, const void *);
 
-class mc_aligned pre_cnf {
+#define PRE_CNF_MAGIC 987654
+
+class mc_aligned pre_load_cnf {
 public:
+	long MAGIC;
+
 	long tot_ccls;
 	long tot_vars;
 	long tot_lits;
@@ -103,13 +109,15 @@ public:
 	pre_cnf_node**	all_pos;
 	pre_cnf_node**	all_neg;
 
-	long tot_nods;
-	pre_cnf_node**	all_nod;
+	long tot_sort_nods;
+	pre_cnf_node**	all_sort_nods;
 
 	long tot_cores;
 	core_cnf*		all_cnf;
 
-	pre_cnf(){
+	pre_load_cnf(){
+		MAGIC = PRE_CNF_MAGIC;
+
 		tot_ccls = 0;
 		tot_vars = 0;
 		tot_lits = 0;
@@ -118,21 +126,22 @@ public:
 		all_pos = mc_null;
 		all_neg = mc_null;
 
-		tot_nods = 0;
-		all_nod = mc_null;
+		tot_sort_nods = 0;
+		all_sort_nods = mc_null;
 
 		tot_cores = 0;
 		all_cnf = mc_null;
 	}
 
-	~pre_cnf(){}
+	~pre_load_cnf(){}
 };
 
-extern pre_cnf* THE_CNF;
+extern pre_load_cnf* THE_CNF;
 
 void preload_cnf(long sz, const long* arr);
 void print_cnf();
 void print_nods();
+void print_core_cnfs();
 
 
 #endif		// PRELOAD_CNF_H

@@ -5,6 +5,8 @@ SRC_IN_SECTIONS :=
 #LD_IN_SECTIONS := --gc-sections
 LD_IN_SECTIONS := 
 
+SRC_BJ_HOST_DIR := ../host_code
+
 # =======================================
 
 TARGET := load_cnf.elf
@@ -27,7 +29,10 @@ TGT_POSTMAKE := ${POST_OPERS}
 SRC_CFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS}
 SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS}
 
-SRC_INCDIRS := ${MC_STD_INCDIRS}
+SRC_INCDIRS := \
+	${MC_STD_INCDIRS} \
+	${SRC_BJ_HOST_DIR}/cnf_preload \
+
 
 SOURCES := load_cnf.cpp
 
