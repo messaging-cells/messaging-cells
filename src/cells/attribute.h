@@ -120,6 +120,8 @@ mc_c_decl {
 #define mc_comm_cod mc_section("common_code")
 #define mc_comm_dat mc_section("common_data")
 
+#define mc_mod0_cod 
+
 #define mc_mod1_cod mc_section("module1_code")
 #define mc_mod2_cod mc_section("module2_code")
 #define mc_mod3_cod mc_section("module3_code")
@@ -129,6 +131,8 @@ mc_c_decl {
 #define mc_mod7_cod mc_section("module7_code")
 #define mc_mod8_cod mc_section("module8_code")
 #define mc_mod9_cod mc_section("module9_code")
+
+#define mc_mod0_dat
 
 #define mc_mod1_dat mc_section("module1_data")
 #define mc_mod2_dat mc_section("module2_data")

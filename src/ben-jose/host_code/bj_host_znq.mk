@@ -18,11 +18,7 @@ TGT_POSTMAKE := printf "====================================\nFinished building 
 SRC_CFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=gnu11 ${MC_DBG_FLAG}
 SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${MC_DBG_FLAG}
 
-SRC_INCDIRS := \
-	$(MC_STD_INCDIRS) \
-	$(SRC_BJ_HOST_DIR)/cnf_preload \
-	$(SRC_BJ_HOST_DIR)/dimacs \
-	$(SRC_BJ_HOST_DIR)/utils 
+SRC_INCDIRS := ${BJ_HOST_INCLUDES}
 
 SUBMAKEFILES := ./lib-dimacs-znq.mk ./cnf_preload_znq.mk 
 

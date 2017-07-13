@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd src/tests/bin
+cd bin/tests
 ./nil-host.elf hello_world.elf
 

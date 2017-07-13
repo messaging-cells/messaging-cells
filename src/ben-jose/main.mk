@@ -13,11 +13,12 @@ $(eval $(SET_CROSS_COMPILE))
 
 # -fno-extern-tls-init
 
-TARGET_DIR := ./bin
+BUILD_DIR := ../../tmp-build/ben-jose
+TARGET_DIR := ../../bin/ben-jose
 
 MC_DBG_FLAG := -DFULL_DEBUG
 
-MC_LIB_DIR := ../../bin
+MC_LIB_DIR := ../../bin/lib-cells
 
 MC_LDF=mc-linker-script.ldf
 
@@ -47,7 +48,7 @@ MC_STD_EPH_LDLIBS := -lmck-cell -lmck-tak-mak
 MC_CURR_DIR := $(shell pwd)
 
 # MC_LIB_DIR_2 := ${MC_CURR_DIR}/../../bin
-MC_LIB_DIR_2 := ../../../bin
+MC_LIB_DIR_2 := ../lib-cells
 
 MC_ZNQ_LIBS := ${MC_LIB_DIR_2}/libmcz-cell.a ${MC_LIB_DIR_2}/libmcz-tak-mak.a ${MC_LIB_DIR_2}/libmcz-dlmalloc.a
 MC_EMU_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
@@ -55,11 +56,22 @@ MC_EPH_LIBS := ${MC_LIB_DIR_2}/libmck-cell.a ${MC_LIB_DIR_2}/libmck-tak-mak.a
 
 MC_STD_INCDIRS := ../../cells ../../host ${MC_ETOOLS}/host/include
 
+SRC_BJ_DIR := ${MC_CURR_DIR}
+
+BJ_HOST_INCLUDES := \
+	${MC_STD_INCDIRS} \
+	${SRC_BJ_DIR}/load_cnf \
+	${SRC_BJ_DIR}/solver_main \
+	${SRC_BJ_DIR}/host_code/cnf_preload \
+	${SRC_BJ_DIR}/host_code/dimacs \
+	${SRC_BJ_DIR}/host_code/utils 
+
 SUBMAKEFILES := \
 	./host_code/no_nil_host.mk \
 	./host_code/bj_host_znq.mk \
 	./host_code/bj_host_emu.mk \
 	./load_cnf/load_cnf.mk \
+	./solver_main/solver.mk \
 
 
 default: all

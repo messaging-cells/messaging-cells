@@ -113,7 +113,7 @@ enum philo_tok_t : uint8_t {
 */
 class chopstick : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(chopstick)
+	MCK_DECLARE_MEM_METHODS(chopstick, mc_mod0_cod)
 
 	cell* owner;
 
@@ -145,7 +145,7 @@ public:
 */
 class philosopher : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(philosopher)
+	MCK_DECLARE_MEM_METHODS(philosopher, mc_mod0_cod)
 
 	chopstick* left;
 	chopstick* right;
@@ -219,7 +219,7 @@ public:
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
 class philo_core {
 public:
-	MCK_DECLARE_MEM_METHODS(philo_core)
+	MCK_DECLARE_MEM_METHODS(philo_core, mc_mod0_cod)
 
 	philo_core(){		// NEED THIS SO THAT no memset func call
 		init_philo_core();

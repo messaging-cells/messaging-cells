@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd src/tests/bin
+cd bin/tests
 ./nil-host.elf modules/modules.elf

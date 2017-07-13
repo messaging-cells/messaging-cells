@@ -1,15 +1,12 @@
 #!/bin/bash
 
+echo "Messagging Cells FULL clean" 
+
+CURR_DIR=$(pwd)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd $SCRIPT_DIR
 rm -rf ./bin
-rm -rf ./maker/build
+rm -rf ./tmp-build
+cd $CURR_DIR
 
-rm ./send_msg_code.s
-rm ./send_msg_sizes.txt
-
-cd ./src/tests
-clean.sh
-cd ../..
-
-cd ./src/ben-jose
-clean.sh
-cd ../..

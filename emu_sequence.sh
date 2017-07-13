@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd src/tests/bin
+cd bin/tests
 ./sequence_3_emu.elf $*

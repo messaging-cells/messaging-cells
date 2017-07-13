@@ -71,10 +71,9 @@ print_module_addrs() mc_external_code_ram;
 
 void
 print_module_addrs(){
-	uint32_t to_m = mck_get_tot_modules();
 	uint32_t aa = 0;
 	mck_sprt2("ALL_MODULE_ADDRS=\n");
-	for(aa = 0; aa < to_m; aa++){
+	for(aa = 0; aa < TOT_MODS; aa++){
 		char* nam0 = all_mod_nams[aa];
 		mck_sprt2(nam0);
 		mck_sprt2(" addr____");
@@ -98,9 +97,10 @@ int main() {
 	mck_slog2("Modules main \n");
 
 	init_module_nams();
-	uint32_t tot_m = mck_get_tot_modules();
-	all_mod_addr = mc_malloc32(mc_addr_t, tot_m);
-	mck_fill_module_external_addresses(all_mod_nams, all_mod_addr);
+	EMU_CK(mck_get_tot_modules() >= TOT_MODS);
+
+	all_mod_addr = mc_malloc32(mc_addr_t, TOT_MODS);
+	mck_fill_module_external_addresses(TOT_MODS, all_mod_nams, all_mod_addr);
 
 	if(MC_CORE_INFO->the_core_nn == 0){	
 		//print_module_nams();

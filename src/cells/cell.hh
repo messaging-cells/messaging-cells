@@ -111,9 +111,9 @@ nam::acquire(uint16_t sz){ \
 #define MCK_DEFINE_ACQUIRE(nam) MCK_DEFINE_ACQUIRE_AVA(nam, mck_all_available(nam))
 
 //! Declares dynamic memory methods for class 'nam'
-#define MCK_DECLARE_MEM_METHODS(nam) \
+#define MCK_DECLARE_MEM_METHODS(nam, module) \
 	static	nam*			acquire_alloc(uint16_t sz = 1) mc_external_code_ram; \
-	static	nam*			acquire(uint16_t sz = 1); \
+	static	nam*			acquire(uint16_t sz = 1) module; \
 	static	void			separate(uint16_t sz) mc_external_code_ram; \
 
 // end_macro

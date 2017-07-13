@@ -131,7 +131,7 @@ kernel::init_sys(){
 	ker->host_kernel = (kernel*)(MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel);
 	if(ker->host_kernel != mc_null){
 		ker->host_load_data = ker->host_kernel->host_load_data;
-		EMU_PRT("SETTING host_load_data = %p \n", ker->host_load_data);
+		//EMU_PRT("SETTING host_load_data = %p \n", ker->host_load_data);
 	}
 
 	mck_glb_sys_st* in_shd = MC_CORE_INFO;

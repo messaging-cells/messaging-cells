@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd src/ben-jose/bin
-./bj_host_znq.elf ./load_cnf.elf $*
+cd bin/ben-jose
+./bj_host_znq.elf ./ben-jose.elf $*

@@ -29,3 +29,22 @@ void
 mck_set_irq0_handler(){
 }
 
+mc_addr_t 
+mck_get_module_address(uint32_t modl_idx){
+	return mc_null;
+}
+
+char* 
+mck_get_module_name(uint32_t modl_idx){
+	return const_cast<char*>("NO_MODULE_NAME");
+}
+
+void
+mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* user_ext_addr){
+}
+
+bool
+mck_load_module(mc_addr_t ext_addr){
+	return true;
+}
+

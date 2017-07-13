@@ -218,7 +218,7 @@ char*
 mck_get_module_name(uint32_t modl_idx) mc_external_code_ram;
 
 void
-mck_fill_module_external_addresses(char** user_order, mc_addr_t* user_ext_addr) mc_external_code_ram;
+mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* user_ext_addr) mc_external_code_ram;
 
 bool
 mck_load_module(mc_addr_t ext_addr) mc_external_code_ram;

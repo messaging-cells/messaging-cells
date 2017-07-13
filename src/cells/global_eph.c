@@ -113,9 +113,9 @@ mck_get_module_name(uint32_t modl_idx){
 }
 
 void
-mck_fill_module_external_addresses(char** user_order, mc_addr_t* user_ext_addr){
+mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* user_ext_addr){
 	uint32_t tot_modls = mck_get_tot_modules();
-	for(uint32_t aa = 0; aa < tot_modls; aa++){
+	for(uint32_t aa = 0; aa < user_sz; aa++){
 		char* usr_nam = user_order[aa];
 		for(uint32_t bb = 0; bb < tot_modls; bb++){
 			char* link_nam = mck_get_module_name(bb);
@@ -128,16 +128,20 @@ mck_fill_module_external_addresses(char** user_order, mc_addr_t* user_ext_addr){
 	}
 }
 
+char dbg_glb_LOADING_module_[] mc_external_data_ram = "LOADING module idx____";
+char dbg_glb_addr_[] mc_external_data_ram = "addr____";
+char dbg_glb_addr_end[] mc_external_data_ram = "____\n";
+
 bool
 mck_load_module(mc_addr_t ext_addr){
 	uint8_t* pt_mod = (uint8_t*)ext_addr;
 	if(pt_mod == mc_null){
 		return false;
 	}
-	mck_sprt("LOADING module idx____");
-	mck_sprt("addr____");
+	mck_sprt(dbg_glb_LOADING_module_);
+	mck_sprt(dbg_glb_addr_);
 	mck_xprt((mc_addr_t)pt_mod);
-	mck_sprt("____\n");
+	mck_sprt(dbg_glb_addr_end);
 
 	mc_addr_t mod_sz = MC_VAL_CORE_MODULE_SIZE;
 	uint8_t* pt_mem_mod = (uint8_t*)MC_VAL_CORE_MODULE_ORIG;

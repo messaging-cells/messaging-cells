@@ -26,8 +26,8 @@ endef
 
 $(eval $(SET_g_FLAG))
 
-
-TARGET_DIR := ../bin
+BUILD_DIR := ../tmp-build/lib-cells
+TARGET_DIR := ../bin/lib-cells
 
 ESDK=${EPIPHANY_HOME}
 ETOOLS=${ESDK}/tools

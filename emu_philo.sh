@@ -1,6 +1,4 @@
 #!/bin/bash
 
-
-cd src/tests/bin
-# rm ./log_core_*
+cd bin/tests
 ./philo_emu.elf $*

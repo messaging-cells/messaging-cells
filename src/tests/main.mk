@@ -13,11 +13,12 @@ $(eval $(SET_CROSS_COMPILE))
 
 # -fno-extern-tls-init
 
-TARGET_DIR := ./bin
+BUILD_DIR := ../../tmp-build/tests
+TARGET_DIR := ../../bin/tests
 
 MC_DBG_FLAG := -DFULL_DEBUG
 
-MC_LIB_DIR := ../../bin
+MC_LIB_DIR := ../../bin/lib-cells
 
 MC_LDF=mc-linker-script.ldf
 
@@ -48,7 +49,7 @@ MC_STD_EPH_LDLIBS := -lmck-cell -lmck-tak-mak
 MC_CURR_DIR := $(shell pwd)
 
 # MC_LIB_DIR_2 := ${MC_CURR_DIR}/../../bin
-MC_LIB_DIR_2 := ../../../bin
+MC_LIB_DIR_2 := ../lib-cells
 
 MC_ZNQ_LIBS := ${MC_LIB_DIR_2}/libmcz-cell.a ${MC_LIB_DIR_2}/libmcz-tak-mak.a ${MC_LIB_DIR_2}/libmcz-dlmalloc.a
 MC_EMU_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
@@ -83,6 +84,7 @@ MC_STD_INCDIRS := ../../cells ../../host ${MC_ETOOLS}/host/include
 SUBMAKEFILES := \
 	./nil_host/no_nil_host.mk \
 	./nil_host/nil_host.mk \
+	./logs_test/logs_test.mk \
 	./hello_world/hello_world.mk \
 	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_emu.mk \

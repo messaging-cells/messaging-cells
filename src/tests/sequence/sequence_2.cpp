@@ -17,7 +17,7 @@ typedef uint32_t seq_tok_t;
 
 class sequence : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(sequence)
+	MCK_DECLARE_MEM_METHODS(sequence, mc_mod0_cod)
 
 	seq_tok_t last_sent;
 	seq_tok_t last_recv;
@@ -42,7 +42,7 @@ public:
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
 class seq_core {
 public:
-	MCK_DECLARE_MEM_METHODS(seq_core)
+	MCK_DECLARE_MEM_METHODS(seq_core, mc_mod0_cod)
 
 	sequence my_seq;
 	grip ava_seq;

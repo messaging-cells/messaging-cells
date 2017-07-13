@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd src/ben-jose/bin
+cd bin/ben-jose
 ./bj_host_emu.elf $*

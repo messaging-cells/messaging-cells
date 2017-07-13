@@ -24,7 +24,7 @@ uint8_t* MCH_EXTERNAL_RAM_BASE_PT = mc_null;
 
 //char* mch_epiphany_elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
 
-mspace mch_glb_load_mspace;
+//mspace mch_glb_load_mspace;
 mspace mch_glb_alloc_mspace;
 
 e_mem_t mch_glb_emem;
@@ -103,10 +103,10 @@ mc_host_init(){
 
 	mcz_pt_external_host_data_obj = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_host_data_disp);
 
-	uint8_t* extnl_load_base = mch_disp_to_pt(lk_dat->extnl_load_disp);
+	//uint8_t* extnl_load_base = mch_disp_to_pt(lk_dat->extnl_load_disp);
 	uint8_t* extnl_host_alloc_base = mch_disp_to_pt(lk_dat->extnl_host_alloc_disp);
 	
-	mch_glb_load_mspace = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
+	//mch_glb_load_mspace = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
 	mch_glb_alloc_mspace = create_mspace_with_base(extnl_host_alloc_base, lk_dat->extnl_host_alloc_size, 0);
 
 	// dev init
@@ -119,7 +119,7 @@ mc_host_init(){
 	mc_off_sys_st* pt_shd_data = mcz_pt_external_host_data_obj;
 	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 
-	printf("pt_shd_data=%p \n", pt_shd_data);
+	//printf("pt_shd_data=%p \n", pt_shd_data);
 
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
 
@@ -351,6 +351,7 @@ mc_host_run(){
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
 	*/
+	//printf("CORES FINISHED \n");
 
 	int nn;
 	for (nn=0; nn < tot_cores; nn++){
@@ -359,6 +360,7 @@ mc_host_run(){
 		}
 	}
 	
+	//printf("FREED MEM \n");
 }
 
 void
@@ -369,8 +371,8 @@ mc_host_finish(){
 	e_reset_system();
 	
 	e_close(&dev);
-	
-	destroy_mspace(mch_glb_load_mspace);
+
+	//destroy_mspace(mch_glb_load_mspace);
 	destroy_mspace(mch_glb_alloc_mspace);
 
 	e_free(&mch_glb_emem);

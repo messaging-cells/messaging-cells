@@ -40,31 +40,20 @@ Declaration of functions to preload cnfs in dimacs files.
 
 #include "cell.hh"
 
+#include "load_cnf.hh"
+
 class pre_cnf_node;
 class pre_load_cnf;
 
 extern grip ava_pre_cnf_node;
 
-enum node_kind_t : uint8_t {
-	nd_invalid = 0,
-	nd_pos,
-	nd_neg,
-	nd_ccl
-};
-
-class mc_aligned pre_cnf_node : public agent_grp {
+class mc_aligned pre_cnf_node : public cnf_node {
 public:
-	MCK_DECLARE_MEM_METHODS(pre_cnf_node)
+	MCK_DECLARE_MEM_METHODS(pre_cnf_node, bj_load_cod)
 	
-	node_kind_t 	ki;
-	long			id;
-	long			sz;
 	pre_cnf_node* 	loaded;
 
 	pre_cnf_node(){
-		ki = nd_invalid;
-		id = 0;
-		sz = 0;
 		loaded = mc_null;
 	}
 
@@ -72,30 +61,7 @@ public:
 
 };
 
-class mc_aligned core_cnf {
-public:
-	long tot_ccls;
-	long tot_vars;
-	long tot_lits;
-	long tot_rels;
-
-	grip	all_ccl;
-	grip	all_pos;
-	grip	all_neg;
-
-	core_cnf(){
-		tot_ccls = 0;
-		tot_vars = 0;
-		tot_lits = 0;
-		tot_rels = 0;
-	}
-
-	~core_cnf(){}
-};
-
 typedef int (*cmp_fn)(const void *, const void *);
-
-#define PRE_CNF_MAGIC 987654
 
 class mc_aligned pre_load_cnf {
 public:
@@ -116,7 +82,7 @@ public:
 	core_cnf*		all_cnf;
 
 	pre_load_cnf(){
-		MAGIC = PRE_CNF_MAGIC;
+		MAGIC = MAGIC_VAL;
 
 		tot_ccls = 0;
 		tot_vars = 0;

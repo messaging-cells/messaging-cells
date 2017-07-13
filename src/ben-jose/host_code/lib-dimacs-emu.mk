@@ -19,8 +19,6 @@ SOURCES := \
 	$(SRC_BASE_DIR)/utils/file_funcs.cpp \
 	$(SRC_BASE_DIR)/dimacs/dimacs.cpp \
 
-
-
 SRC_INCDIRS := \
 	$(SRC_BASE_DIR)/dimacs \
 	$(SRC_BASE_DIR)/utils 
