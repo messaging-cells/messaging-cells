@@ -51,7 +51,7 @@ mck_slog(char* msg){
 }
 
 //! Sames as \ref mck_slog but it does a const_cast<char*> for you so you can use directly it in c++.
-#define	mck_slog2(msg) mck_slog(as_pt_char(msg))
+#define	mck_slog2(msg) mck_slog(mc_cstr(msg))
 
 //! Prints a string to stdout in the host.
 mc_inline_fn void
@@ -60,7 +60,7 @@ mck_sprt(char* msg){
 }
 
 //! Sames as \ref mck_sprt but it does a const_cast<char*> for you so you can use directly it in c++.
-#define	mck_sprt2(msg) mck_sprt(as_pt_char(msg))
+#define	mck_sprt2(msg) mck_sprt(mc_cstr(msg))
 
 void
 mck_aux_iout(uint32_t vv, mc_out_type_t outt, mc_type_t tt) mc_external_code_ram;

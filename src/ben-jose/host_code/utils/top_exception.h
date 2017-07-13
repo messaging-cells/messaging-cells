@@ -41,9 +41,9 @@ Top exception class.
 
 #include "ch_string.h"
 
-#define as_pt_char(the_str) (const_cast<char *>(the_str))
+#define mc_cstr(the_str) (const_cast<char *>(the_str))
 
-void bj_abort_func(long val, const char* msg = as_pt_char("Aborting."));
+void bj_abort_func(long val, const char* msg = mc_cstr("Aborting."));
 
 #ifdef FULL_DEBUG
 #define DBG(prm) prm

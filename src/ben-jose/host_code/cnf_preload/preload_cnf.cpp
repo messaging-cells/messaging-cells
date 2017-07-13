@@ -88,10 +88,10 @@ print_all_nods(binder& grip){
 }
 
 void
-print_core_cnfs(){
+print_nervenets(){
 	printf("ALL_CNFS {\n");
 	for(long aa = 0; aa < THE_CNF->tot_cores; aa++){
-		core_cnf& cnf =  THE_CNF->all_cnf[aa];
+		nervenet& cnf =  THE_CNF->all_cnf[aa];
 
 		printf("CNF %ld ======================================= \n", aa);
 
@@ -146,9 +146,9 @@ preload_cnf(long sz, const long* arr){
 	THE_CNF->all_neg = mc_malloc32(pre_cnf_node*, num_vars);
 	THE_CNF->all_sort_nods = mc_malloc32(pre_cnf_node*, num_sort_nods);
 
-	THE_CNF->all_cnf = mc_malloc32(core_cnf, num_cores);
+	THE_CNF->all_cnf = mc_malloc32(nervenet, num_cores);
 	for(int bb = 0; bb < num_cores; bb++){ 
-		new (&(THE_CNF->all_cnf[bb])) core_cnf(); 
+		new (&(THE_CNF->all_cnf[bb])) nervenet(); 
 	} 
 
 	init_node_arr(num_ccls, THE_CNF->all_ccl, nd_ccl);
@@ -203,15 +203,23 @@ preload_cnf(long sz, const long* arr){
 	for(long aa = 0; aa < num_sort_nods; aa++){
 		if(kk == num_cores){ kk = 0; }
 		pre_cnf_node* nod = THE_CNF->all_sort_nods[aa];
-		core_cnf& cnf = THE_CNF->all_cnf[kk];
+		nervenet& cnf = THE_CNF->all_cnf[kk];
 		EMU_CK(nod->is_alone());
 		cnf.tot_rels += nod->sz;
 		switch(nod->ki){
 			case nd_pos:
 			{
-				cnf.all_pos.bind_to_my_left(*nod);
 				pre_cnf_node* opp = get_lit(-(nod->id));
+
+				nod->opp_nod = opp;
+				opp->opp_nod = nod;
+
+				EMU_CK(nod->loaded == mc_null);
+				EMU_CK(opp->loaded == mc_null);
+
+				cnf.all_pos.bind_to_my_left(*nod);
 				cnf.all_neg.bind_to_my_left(*opp);
+
 				cnf.tot_vars++;
 			}
 			break;

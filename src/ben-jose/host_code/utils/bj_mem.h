@@ -69,10 +69,10 @@ void* bj_memset(void *s, int c, size_t n){
 	return memset(s, c, n);
 }
 
-#define bj_glb_assert(vv) bj_call_assert(vv, as_pt_char(__FILE__), __LINE__, as_pt_char(#vv))
+#define bj_glb_assert(vv) bj_call_assert(vv, mc_cstr(__FILE__), __LINE__, mc_cstr(#vv))
 
 #define bj_glb_assert_2(vv, ostmsg) \
-	bj_call_assert(vv, as_pt_char(__FILE__), __LINE__, as_pt_char(#vv), (ostmsg))
+	bj_call_assert(vv, mc_cstr(__FILE__), __LINE__, mc_cstr(#vv), (ostmsg))
 
 //--end_of_def
 

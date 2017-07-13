@@ -65,6 +65,7 @@ enum mck_cell_id_t : uint8_t {
 #define MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 void \
 nam::separate(uint16_t sz){ \
+	if(sz <= 0){ return; } \
 	grip& ava = all_ava; \
 	nam* obj = nam::acquire(sz); \
 	for(int bb = 0; bb < sz; bb++){ \

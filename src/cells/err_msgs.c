@@ -2,7 +2,7 @@
 
 #include "err_msgs.h"
 
-char err_1[] mc_external_data_ram = "acquire_alloc abort\n";
+char err_1[] mc_external_data_ram = "acquire_alloc abort. NULL OBJ.\n";
 char err_2[] mc_external_data_ram = "mc_host_init abort\n";
 char err_3[] mc_external_data_ram = "mc_host_run abort\n";
 char err_4[] mc_external_data_ram = "mc_host_finish abort\n";

@@ -372,7 +372,7 @@ mc_core_addr_to_host_addr(mc_addr_t c_addr) mc_external_code_ram;
 }
 #endif
 
-#define as_pt_char(the_str) (const_cast<char *>(the_str))
+#define mc_cstr(the_str) (const_cast<char *>(the_str))
 
 #endif // MC_SHARED_DATA_H
 

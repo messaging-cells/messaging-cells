@@ -47,13 +47,21 @@ class pre_load_cnf;
 
 extern grip ava_pre_cnf_node;
 
-class mc_aligned pre_cnf_node : public cnf_node {
+class mc_aligned pre_cnf_node : public agent_grp {
 public:
 	MCK_DECLARE_MEM_METHODS(pre_cnf_node, bj_load_cod)
 	
-	pre_cnf_node* 	loaded;
+	node_kind_t 	ki;
+	long			id;
+	long			sz;
+	pre_cnf_node* 	opp_nod;
+	neupole* 		loaded;
 
 	pre_cnf_node(){
+		ki = nd_invalid;
+		id = 0;
+		sz = 0;
+		opp_nod = mc_null;
 		loaded = mc_null;
 	}
 
@@ -79,7 +87,7 @@ public:
 	pre_cnf_node**	all_sort_nods;
 
 	long tot_cores;
-	core_cnf*		all_cnf;
+	nervenet*		all_cnf;
 
 	pre_load_cnf(){
 		MAGIC = MAGIC_VAL;
@@ -107,7 +115,7 @@ extern pre_load_cnf* THE_CNF;
 void preload_cnf(long sz, const long* arr);
 void print_cnf();
 void print_nods();
-void print_core_cnfs();
+void print_nervenets();
 
 
 #endif		// PRELOAD_CNF_H

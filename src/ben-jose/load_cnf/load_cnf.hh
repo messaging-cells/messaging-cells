@@ -53,29 +53,47 @@ enum node_kind_t : uint8_t {
 	nd_ccl
 };
 
-class mc_aligned cnf_node : public agent_grp {
+class mc_aligned nervenode : public agent_grp {
 public:
-	MCK_DECLARE_MEM_METHODS(cnf_node, bj_load_cod)
-	
 	node_kind_t 	ki;
 	long			id;
 	long			sz;
 
-	cnf_node() bj_load_cod;
-	~cnf_node() bj_load_cod;
+	nervenode() bj_load_cod;
+	~nervenode() bj_load_cod;
 
+};
+
+class mc_aligned neupole : public nervenode {
+public:
+	MCK_DECLARE_MEM_METHODS(neupole, bj_load_cod)
+	
+	neupole*		opp;
+
+	neupole() bj_load_cod;
+	~neupole() bj_load_cod;
+
+};
+
+class mc_aligned neuron : public nervenode {
+public:
+	MCK_DECLARE_MEM_METHODS(neuron, bj_load_cod)
+	
+	neuron() bj_load_cod;
+	~neuron() bj_load_cod;
 };
 
 #define MAGIC_VAL 987654
 
-class mc_aligned core_cnf {
+class mc_aligned nervenet {
 public:
-	MCK_DECLARE_MEM_METHODS(core_cnf, bj_load_cod)
+	MCK_DECLARE_MEM_METHODS(nervenet, bj_load_cod)
 
 	long MAGIC;
 
-	grip		ava_cnf_node;
-	core_cnf*	shd_cnf;
+	grip		ava_neupoles;
+	grip		ava_neurons;
+	nervenet*	shd_cnf;
 
 	long tot_ccls;
 	long tot_vars;
@@ -86,25 +104,36 @@ public:
 	grip	all_pos;
 	grip	all_neg;
 
-	core_cnf();
-	~core_cnf();
+	nervenet() bj_load_cod;
+	~nervenet() bj_load_cod;
 };
 
 void bj_load_main() bj_load_cod;
 
-#define bj_core_cnf ((core_cnf*)(kernel::get_sys()->user_data))
-#define bj_ava_cnf_nodes (bj_core_cnf->ava_cnf_node)
+#define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
+#define bj_ava_neupoles (bj_nervenet->ava_neupoles)
+#define bj_ava_neurons (bj_nervenet->ava_neurons)
 
 #define BJ_DEFINE_LOAD_CNF_FUNCS() \
-cnf_node::cnf_node(){ \
+nervenode::nervenode(){ \
 		ki = nd_invalid; \
 		id = 0; \
 		sz = 0; \
 	} \
 \
-cnf_node::~cnf_node(){} \
+nervenode::~nervenode(){} \
 \
-core_cnf::core_cnf(){ \
+neupole::neupole(){ \
+		opp = mc_null; \
+	} \
+\
+neupole::~neupole(){} \
+\
+neuron::neuron(){} \
+\
+neuron::~neuron(){} \
+\
+nervenet::nervenet(){ \
 		MAGIC = MAGIC_VAL; \
 \
 		shd_cnf = mc_null; \
@@ -115,10 +144,11 @@ core_cnf::core_cnf(){ \
 		tot_rels = 0; \
 	} \
 \
-core_cnf::~core_cnf(){} \
+nervenet::~nervenet(){} \
 
-// end of BJ_DEFINE_CNF_NODE_FUNCS
+// end of BJ_DEFINE_LOAD_CNF_FUNCS
 
+void bj_load_shd_cnf() bj_load_cod;
 
 #endif		// LOAD_CNF_H
 
