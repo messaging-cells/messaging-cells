@@ -12,7 +12,7 @@ pre_load_cnf* THE_CNF = mc_null;
 MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node)
 
 #ifdef MC_IS_ZNQ_CODE
-BJ_DEFINE_LOAD_CNF_FUNCS();
+BJ_DEFINE_nervenet_methods();
 #endif
 
 void init_node_arr(long sz, pre_cnf_node** arr, node_kind_t kk){
@@ -97,7 +97,7 @@ print_nervenets(){
 
 		//printf("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
 		printf("\tCCLS[");
-		print_all_nods(cnf.all_ccl);
+		print_all_nods(cnf.all_neu);
 		printf("\t] \n");
 
 		printf("\tPOS[");
@@ -224,8 +224,8 @@ preload_cnf(long sz, const long* arr){
 			}
 			break;
 			case nd_ccl:
-				cnf.all_ccl.bind_to_my_left(*nod);
-				cnf.tot_ccls++;
+				cnf.all_neu.bind_to_my_left(*nod);
+				cnf.tot_neus++;
 				cnf.tot_lits += nod->sz;
 			break;
 			default:

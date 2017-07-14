@@ -77,7 +77,6 @@ link_all_modules_aux_fn(){
 void mc_cores_main() {
 	kernel::init_sys();
 
-	mck_slog2("SOLVER main \n");
 	EMU_PRT("SOLVER main\n");
 
 	init_module_nams();

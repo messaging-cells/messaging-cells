@@ -55,7 +55,7 @@ public:
 	long			id;
 	long			sz;
 	pre_cnf_node* 	opp_nod;
-	neupole* 		loaded;
+	void* 		loaded;
 
 	pre_cnf_node(){
 		ki = nd_invalid;

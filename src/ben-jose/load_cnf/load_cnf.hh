@@ -40,6 +40,8 @@ Declaration of functions to load cnfs in the core.
 
 #include "cell.hh"
 
+class pre_cnf_node;
+
 //define bj_load_cod mc_external_code_ram
 //define bj_load_dat mc_external_data_ram
 
@@ -62,6 +64,7 @@ public:
 	nervenode() bj_load_cod;
 	~nervenode() bj_load_cod;
 
+	void init_with(pre_cnf_node* nod) bj_load_cod;
 };
 
 class mc_aligned neupole : public nervenode {
@@ -95,12 +98,12 @@ public:
 	grip		ava_neurons;
 	nervenet*	shd_cnf;
 
-	long tot_ccls;
+	long tot_neus;
 	long tot_vars;
 	long tot_lits;
 	long tot_rels;
 
-	grip	all_ccl;
+	grip	all_neu;
 	grip	all_pos;
 	grip	all_neg;
 
@@ -114,31 +117,13 @@ void bj_load_main() bj_load_cod;
 #define bj_ava_neupoles (bj_nervenet->ava_neupoles)
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
 
-#define BJ_DEFINE_LOAD_CNF_FUNCS() \
-nervenode::nervenode(){ \
-		ki = nd_invalid; \
-		id = 0; \
-		sz = 0; \
-	} \
-\
-nervenode::~nervenode(){} \
-\
-neupole::neupole(){ \
-		opp = mc_null; \
-	} \
-\
-neupole::~neupole(){} \
-\
-neuron::neuron(){} \
-\
-neuron::~neuron(){} \
-\
+#define BJ_DEFINE_nervenet_methods() \
 nervenet::nervenet(){ \
 		MAGIC = MAGIC_VAL; \
 \
 		shd_cnf = mc_null; \
 \
-		tot_ccls = 0; \
+		tot_neus = 0; \
 		tot_vars = 0; \
 		tot_lits = 0; \
 		tot_rels = 0; \
@@ -148,7 +133,10 @@ nervenet::~nervenet(){} \
 
 // end of BJ_DEFINE_LOAD_CNF_FUNCS
 
+void bj_load_poles(grip& all_pol) bj_load_cod;
 void bj_load_shd_cnf() bj_load_cod;
+void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
+void bj_print_loaded_cnf() mc_external_code_ram;
 
 #endif		// LOAD_CNF_H
 
