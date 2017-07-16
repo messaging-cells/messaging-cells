@@ -82,7 +82,7 @@ void bj_load_poles(grip& all_pol){
 		while(sh_pol->loaded == mc_null){
 			// SPIN UNTIL SET (may be set by an other core)
 		}
-		neupole* my_pol = (neupole*)(sh_pol->loaded);
+		neupole* my_pol = (neupole*)mck_as_loc_pt(sh_pol->loaded);
 		MCK_CK(my_pol != mc_null);
 
 		binder* nn_all_snp = &(sh_pol->all_agts);
@@ -229,9 +229,9 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 
 		binder* nn_all_snp = &(my_pol->all_agts);
 
-		mck_slog2("lst2__________");
-		mck_xlog((mc_addr_t)nn_all_snp);
-		mck_slog2("__________\n");
+		//mck_slog2("lst2__________");
+		//mck_xlog((mc_addr_t)nn_all_snp);
+		//mck_slog2("__________\n");
 
 		mck_ilog(my_pol->id);
 		mck_slog2("{");
@@ -249,9 +249,9 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 			mck_ilog(my_neu->id);
 			mck_slog2(" ");
 
-			mck_slog2("nxt2__________");
-			mck_xlog((mc_addr_t)(wrk2->bn_right));
-			mck_slog2("__________\n");
+			//mck_slog2("nxt2__________");
+			//mck_xlog((mc_addr_t)(wrk2->bn_right));
+			//mck_slog2("__________\n");
 		}
 
 		mck_slog2("}\n");
