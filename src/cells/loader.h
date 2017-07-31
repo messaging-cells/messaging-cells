@@ -123,8 +123,8 @@ typedef struct mc_load_map_def mc_load_map_st;
 // end_of_macro
 
 /*! Parrallel loading tree definition macro that defines a sub-tree core 'aa' of tree named 'nam' to be loaded
-with a variable number of sub-trees to be loaded beore this core. See standard loading trees lib_dbg_map
-and lib_std_map in file \ref broadcast_maps_eph.c
+with a variable number of sub-trees to be loaded before this core. See standard loading trees lib_dbg_map
+and lib_std_map in file \ref broadcast_maps.c
 */
 #define MCL_TREE_NODE(nam, aa, ...) \
 	mc_load_map_st* childs_of_ ## nam ## aa [] mc_external_data_ram = { __VA_ARGS__ , mc_null }; \
@@ -168,8 +168,31 @@ mc_prt_load_map(mc_load_map_st* mp, int lv) mc_external_code_ram;
 void
 mc_load_map() mc_external_code_ram;
 
+#ifdef MC_IS_EPH_CODE
+	extern mc_core_id_t 	mcz_parent_broadcast_core_id;
+	extern mc_load_map_st* 	mcz_broadcast_map;
+	extern mc_core_nn_t 	mcz_tot_children;
+	#define mc_map_get_parent_core_id() mcz_parent_broadcast_core_id
+	#define mc_map_get_loaded() mcz_broadcast_map
+	#define mc_map_get_tot_children() mcz_tot_children
+#else
+	mc_core_id_t
+	mc_map_get_parent_core_id();
+
+	mc_load_map_st*
+	mc_map_get_loaded();
+
+	mc_core_nn_t
+	mc_map_get_tot_children();
+#endif
+
 mc_load_map_st*
 mc_get_first_load_map() mc_external_code_ram;
+
+mc_core_nn_t
+mc_calc_tot_children(mc_load_map_st* mp) mc_external_code_ram;
+
+extern mc_load_map_st* mck_first_load_map mc_external_data_ram;
 
 #ifdef __cplusplus
 }

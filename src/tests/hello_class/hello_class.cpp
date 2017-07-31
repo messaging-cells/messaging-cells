@@ -15,7 +15,7 @@ hello::handler_1(missive* msv){
 typedef void (cell::*mc_handler_t)(missive* msv);
 
 void mc_cores_main() {
-	mck_glb_init();
+	mck_glb_init(false);
 
 	hello ob1;
 

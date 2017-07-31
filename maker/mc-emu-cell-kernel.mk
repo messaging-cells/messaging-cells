@@ -20,6 +20,8 @@ SOURCES := \
 	$(SRC_CELLS_DIR)/err_msgs.c \
 	$(SRC_CELLS_DIR)/global.c \
 	$(SRC_CELLS_DIR)/global_emu.cpp \
+	$(SRC_CELLS_DIR)/broadcast_maps.c \
+	$(SRC_CELLS_DIR)/loader_emu.cpp \
 	$(SRC_CELLS_DIR)/rr_array.c \
 	$(SRC_CELLS_DIR)/trace_emu.cpp \
 	$(SRC_CELLS_DIR)/dyn_mem_emu.cpp \

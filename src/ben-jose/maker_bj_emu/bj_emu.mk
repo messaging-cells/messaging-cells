@@ -3,7 +3,7 @@ SRC_BJ_HOST_DIR := .
 
 # =======================================
 
-TARGET := bj_host_emu.elf
+TARGET := ben-jose-emu.elf
 
 TGT_LDFLAGS := ${MC_STD_EMU_LDFLAGS} -rdynamic
 TGT_LDLIBS  := ${MC_STD_EMU_LDLIBS} -lstdc++ -ldimacs-emu 
@@ -22,7 +22,7 @@ SRC_INCDIRS := ${BJ_HOST_INCLUDES}
 SUBMAKEFILES := ./lib-dimacs-emu.mk ./load_code_emu.mk 
 
 SOURCES := \
-	bj_host_code.cpp \
+	../host_code/bj_host_code.cpp \
 
 
 

@@ -11,6 +11,7 @@ TARGET := send_msg_emu.elf
 
 TGT_LDFLAGS := ${MC_STD_EMU_LDFLAGS} ${LD_IN_SECTIONS} -rdynamic
 TGT_LDLIBS  := ${MC_STD_EMU_LDLIBS}
+TGT_PREREQS := ${MC_EMU_LIBS}
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

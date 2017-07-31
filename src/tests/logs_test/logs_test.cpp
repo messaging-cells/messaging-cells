@@ -3,7 +3,7 @@
 #include "cell.hh"
 
 void mc_cores_main() {
-	mck_glb_init();
+	mck_glb_init(false);
 
 	mc_core_id_t koid = mck_get_core_id();
 	mc_core_nn_t num_core = mc_id_to_nn(koid);

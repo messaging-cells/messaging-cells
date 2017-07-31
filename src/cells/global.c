@@ -11,7 +11,7 @@
 //EPH_CODE(extern mc_addr_t LD_EXTERNAL_RAM_ORIG);
 
 void 
-mck_glb_init(void) {
+mck_glb_init(bool is_host) {
 	ZNQ_CODE(
 		if(MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_orig == 0){
 			mck_abort((mc_addr_t)mck_glb_init, "mck_glb_init. Use mc_host_init before.");

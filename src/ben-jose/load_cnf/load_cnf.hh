@@ -55,8 +55,23 @@ enum node_kind_t : uint8_t {
 	nd_ccl
 };
 
-class mc_aligned nervenode : public agent_grp {
+enum load_tok_t : mck_token_t {
+	tok_invalid,
+	tok_nw_syn,
+	tok_end_load
+};
+
+enum load_hdlr_idx_t : uint8_t {
+	idx_invalid,
+	idx_neupole,
+	idx_synapse,
+	idx_total
+};
+
+class mc_aligned nervenode : public cell {
 public:
+	grip			all_conn;
+
 	node_kind_t 	ki;
 	long			id;
 	long			sz;
@@ -76,6 +91,7 @@ public:
 	neupole() bj_load_cod;
 	~neupole() bj_load_cod;
 
+	void handler(missive* msv) bj_load_cod;
 };
 
 class mc_aligned neuron : public nervenode {
@@ -84,6 +100,24 @@ public:
 	
 	neuron() bj_load_cod;
 	~neuron() bj_load_cod;
+};
+
+class mc_aligned synapse : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS(synapse, bj_load_cod)
+
+	nervenode*	owner;
+	synapse*	parent;
+	void*		mate;
+
+	mc_size_t 	group_sz;
+	grip		in_group;
+	grip		sub_groups;
+
+	synapse() bj_load_cod;
+	~synapse() bj_load_cod;
+
+	void handler(missive* msv) bj_load_cod;
 };
 
 #define MAGIC_VAL 987654
@@ -96,6 +130,8 @@ public:
 
 	grip		ava_neupoles;
 	grip		ava_neurons;
+	grip		ava_synapses;
+
 	nervenet*	shd_cnf;
 
 	long tot_neus;
@@ -103,12 +139,17 @@ public:
 	long tot_lits;
 	long tot_rels;
 
+	long tot_loading;
+	long tot_loaded;
+
 	grip	all_neu;
 	grip	all_pos;
 	grip	all_neg;
 
 	nervenet() bj_load_cod;
 	~nervenet() bj_load_cod;
+
+	void init_with(nervenet* nvnet) bj_load_cod;
 };
 
 void bj_load_main() bj_load_cod;
@@ -116,6 +157,7 @@ void bj_load_main() bj_load_cod;
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_neupoles (bj_nervenet->ava_neupoles)
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
+#define bj_ava_synapses (bj_nervenet->ava_synapses)
 
 #define BJ_DEFINE_nervenet_methods() \
 nervenet::nervenet(){ \
@@ -127,13 +169,17 @@ nervenet::nervenet(){ \
 		tot_vars = 0; \
 		tot_lits = 0; \
 		tot_rels = 0; \
+\
+		tot_loading = 0; \
+		tot_loaded = 0; \
 	} \
 \
 nervenet::~nervenet(){} \
 
 // end of BJ_DEFINE_LOAD_CNF_FUNCS
 
-void bj_load_poles(grip& all_pol) bj_load_cod;
+//void bj_load_poles(grip& all_pol) bj_load_cod;
+void bj_load_init_handlers();
 void bj_load_shd_cnf() bj_load_cod;
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
 void bj_print_loaded_cnf() mc_external_code_ram;

@@ -292,7 +292,7 @@ The techniques used to partition your code in modules. See \ref docgrp_modules
 <p>
 This group corresponds to basically two main features:
 <ul>
-<li> The posibility to customize the tree that defines the order in which the library's kernel is loaded in the cores. See \ref loader.h and \ref broadcast_maps_eph.c
+<li> The posibility to customize the tree that defines the order in which the library's kernel is loaded in the cores. See \ref loader.h and \ref broadcast_maps.c
 <li> The posibility to load different modules in different cores. See \ref docgrp_modules
 </ul>
 

@@ -27,7 +27,7 @@ SOURCES := \
 	$(SRC_CELLS_DIR)/shared.c \
 	$(SRC_CELLS_DIR)/shared_eph.c \
 	$(SRC_CELLS_DIR)/loader_eph.c \
-	$(SRC_CELLS_DIR)/broadcast_maps_eph.c \
+	$(SRC_CELLS_DIR)/broadcast_maps.c \
 	$(SRC_CELLS_DIR)/err_msgs.c \
 	$(SRC_CELLS_DIR)/global.c \
 	$(SRC_CELLS_DIR)/global_eph.c \

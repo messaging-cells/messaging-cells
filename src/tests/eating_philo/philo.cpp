@@ -689,6 +689,7 @@ void mc_cores_main() {
 	glb_philo->lft_philo = get_philo(glb_philo->lft_phi_id);
 	glb_philo->rgt_philo = get_philo(glb_philo->rgt_phi_id);
 
+	EMU_PRT("the_handlers[0] = %p \n", (void*)(the_handlers[0]));
 	kernel::set_handlers(3, the_handlers);
 
 	missive::separate(mc_out_num_cores);

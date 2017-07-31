@@ -3,7 +3,7 @@
 #include "tak_mak.hh"
 
 void mc_cores_main() {
-	mck_glb_init();
+	mck_glb_init(false);
 
 	tak_mak gg(123);
 

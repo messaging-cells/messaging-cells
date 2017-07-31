@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include "interruptions_eph.h"
 #include "err_msgs.h"
+#include "loader.h"
 #include "cell.hh"
 
 //----------------------------------------------------------------------------
@@ -105,6 +106,8 @@ kernel::init_kernel(){
 	did_work = 0x80;
 	exit_when_idle = false;
 
+	reset_stop_sys(); 
+
 	end_magic_id = MC_MAGIC_ID;
 }
 
@@ -119,8 +122,8 @@ mck_ck_type_sizes(){
 }
 
 void	// static
-kernel::init_sys(){
-	mck_glb_init();
+kernel::init_sys(bool is_the_host){
+	mck_glb_init(is_the_host);
 
 	MCK_CK(mck_ck_type_sizes());
 
@@ -171,9 +174,6 @@ kernel::run_sys(){
 	while(true){
 		ker->did_work = 0x0;
 		ker->handle_missives();
-		if(ker->user_func != mc_null){
-			(* (ker->user_func))();
-		}
 		if(! ker->did_work && ker->exit_when_idle){
 			break;
 		}
@@ -189,7 +189,7 @@ kernel::finish_sys(){
 void // static
 kernel::init_host_sys(){
 	mc_host_init();
-	kernel::init_sys();
+	kernel::init_sys(true);
 	MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel = (void*)mc_host_addr_to_core_addr((mc_addr_t)MCK_KERNEL);
 	MCK_KERNEL->is_host_kernel = true;
 
@@ -310,11 +310,27 @@ kernel::get_host_cell(){
 	return ker->host_kernel->first_cell;
 }
 
+char* err_cell_07 mc_external_data_ram = 
+	mc_cstr("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs CAN NOT be mc_null. \n");
+
+char* err_cell_08 mc_external_data_ram = 
+	mc_cstr("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs[0] MUST be mc_null. \n");
+
 void // static 
 kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 	kernel* ker = MCK_KERNEL;
 	ker->tot_handlers = tot_hdlrs;
 	ker->all_handlers = hdlrs;
+	if(tot_hdlrs > 0){
+		if(hdlrs == mc_null){
+			mck_abort((mc_addr_t)err_cell_07, err_cell_07);
+		}
+		if((hdlrs[0] != mc_null) && (hdlrs[0] != mc_kernel_handler)){
+			EMU_PRT("hdlrs[0] = %p \n", (void*)(hdlrs[0]));
+			mck_abort((mc_addr_t)err_cell_08, err_cell_08);
+		}
+		hdlrs[0] = mc_kernel_handler;
+	}
 }
 
 void 
@@ -380,15 +396,18 @@ mck_is_id_inited(mc_core_id_t dst_id){
 	return true;
 }
 
+char* err_cell_06 mc_external_data_ram = 
+	mc_cstr("ABORTING. MUST call 'kernel::set_handlers' BEFORE 'kernel::run_sys'. \n");
+
 void 
 kernel::handle_missives(){
 	kernel* ker = this;
 	binder * fst, * lst, * wrk, * nxt;
 
 	if(all_handlers == mc_null){
-		mck_slog2("ABORTING. MUST call kernel::set_handlers BEFORE kernel::run_sys. \n");
-		EMU_PRT("ABORTING. MUST call kernel::set_handlers BEFORE kernel::run_sys. \n");
-		mck_abort((mc_addr_t)err_15, err_15);
+		mck_slog2(err_cell_06);
+		EMU_PRT(err_cell_06);
+		mck_abort((mc_addr_t)err_cell_06, err_cell_06);
 		return;
 	}
 
@@ -536,6 +555,14 @@ kernel::handle_missives(){
 		}
 		did_work |= 0x40;
 	}
+
+	if(ker->user_func != mc_null){
+		(* (ker->user_func))();
+	}
+
+	if(ker->stop_key != 0){
+		ker->handle_stop();
+	}
 }
 
 void
@@ -678,9 +705,6 @@ kernel::handle_host_missives(){
 	if(hdl){	
 		did_work = 0x0;
 		handle_missives();
-		if(user_func != mc_null){
-			(* (user_func))();
-		}
 		if(! did_work && exit_when_idle){
 			host_running = false;
 		}
@@ -757,4 +781,134 @@ kernel::handle_work_from_host(){
 
 	//mck_sprt2("handle_work_from_host. end_FLAG \n");
 }
+
+void 
+mc_kernel_handler(missive* msv) {
+	kernel* ker = MCK_KERNEL;
+	ker->kernel_first_cell_msv_handler(msv);
+}
+
+char* err_cell_01 mc_external_data_ram = mc_cstr("kernel::stop_sys. Invalid stop zero key.");
+char* err_cell_02 mc_external_data_ram = mc_cstr("kernel::stop_sys. Already stopping with different key.");
+char* err_cell_03 mc_external_data_ram = mc_cstr("kernel::stop_sys. Already received different stop key.");
+
+void // static
+kernel::stop_sys(mck_token_t key){
+	kernel* ker = MCK_KERNEL;
+	if(key == 0){ 
+		mck_abort((mc_addr_t)err_cell_01, err_cell_01);
+	}
+	if(ker->stop_key != 0){ 
+		if(ker->stop_key != key){
+			mck_abort((mc_addr_t)err_cell_02, err_cell_02);
+		}
+		return; 
+	}
+	if((ker->rcvd_stop_key != 0) && (ker->rcvd_stop_key != key)){ 
+		mck_abort((mc_addr_t)err_cell_03, err_cell_03);
+	}
+	ker->stop_key = key;
+
+	//EMU_PRT("START STOP CORE=%d \n", ker->get_core_nn());
+}
+
+void 
+kernel::send_stop_to_children(){
+	//mck_slog2("send_stop_to_children\n");
+
+	reset_stop_sys();
+
+	mc_load_map_st* mp = mc_map_get_loaded();
+
+	//EMU_PRT("STOP_CHILDREN CORE=%d \n", get_core_nn());
+
+	if(mp->childs != mc_null){ 
+		int aa = 0;
+		mc_load_map_st* ch_map = (mp->childs)[aa];
+		while(ch_map != mc_null){
+			//EMU_PRT("CHILD=%d \n", ch_map->num_core);
+			mc_core_nn_t chd_nn = ch_map->num_core;
+			cell* ch_cell = get_core_cell(mc_nn_to_id(chd_nn));
+
+			missive* msv = missive::acquire();
+			msv->src = get_core_cell();
+			msv->dst = ch_cell;
+			msv->tok = mck_tok_stop_sys_to_children;
+			msv->send();
+
+			aa++;
+			ch_map = (mp->childs)[aa];
+		}
+	}
+
+	set_idle_exit();
+}
+
+void 
+kernel::handle_stop(){
+	if(stop_key == 0){ return; }
+	mc_core_nn_t tot_child = mc_map_get_tot_children();
+	//EMU_CK((tot_child == 0) == ());
+	if(! sent_stop_to_parent && (num_childs_stopping == tot_child)){
+		//EMU_PRT("SENDING STOP TO PARENT CORE=%d TOT_CHLD=%d \n", get_core_nn(), tot_child);
+
+		if(user_stop_func != mc_null){
+			(*user_stop_func)();
+		}
+		sent_stop_to_parent = true;
+		mc_core_id_t pnt_koid = mc_map_get_parent_core_id();
+		if(pnt_koid != 0){
+			cell* pcell = get_core_cell(pnt_koid);
+
+			missive* msv = missive::acquire();
+			msv->src = get_core_cell();
+			msv->dst = pcell;
+			msv->tok = mck_tok_stop_sys_to_parent;
+			msv->send();
+		} else {
+			send_stop_to_children();
+		}
+	}
+}
+
+char* err_cell_04 mc_external_data_ram = 
+	mc_cstr("kernel::kernel_first_cell_msv_handler. Invalid kernel tok.");
+
+char* err_cell_05 mc_external_data_ram = 
+	mc_cstr("kernel::kernel_first_cell_msv_handler. Inconsistent received sotp key.");
+
+void 
+kernel::kernel_first_cell_msv_handler(missive* msv){
+	kernel_tok_t tok = (kernel_tok_t)msv->tok;
+
+	switch(tok){
+		case mck_tok_stop_sys_to_parent:
+		{
+			cell* msv_src = msv->src;
+			mc_core_id_t src_id = mc_addr_get_id(msv_src);
+			kernel* ker = MCK_KERNEL;
+			kernel* rem_ker = (kernel*)mc_addr_set_id(src_id, ker);
+
+			//EMU_PRT("GOT_STOP PARENT FROM CORE=%d \n", mc_id_to_nn(src_id));
+
+			mck_token_t rem_key = rem_ker->stop_key;
+			if(rcvd_stop_key == 0){
+				rcvd_stop_key = rem_key;
+			}
+			if(rcvd_stop_key != rem_key){
+				mck_abort((mc_addr_t)err_cell_05, err_cell_05);
+			}
+
+			num_childs_stopping++;
+		}
+		break;
+		case mck_tok_stop_sys_to_children:
+			send_stop_to_children();
+		break;
+		default:
+			mck_abort((mc_addr_t)err_cell_04, err_cell_04);
+		break;
+	}
+}
+
 

@@ -39,6 +39,7 @@ recv_host_handler(missive* msg){
 }
 
 missive_handler_t host_handlers[] = {
+	mc_null,
 	recv_host_handler
 };
 
@@ -46,7 +47,7 @@ void
 send_host_main(){
 	kernel::init_host_sys();
 
-	kernel::set_handlers(1, host_handlers);
+	kernel::set_handlers(2, host_handlers);
 
 	cell::separate(mc_out_num_cores);
 	missive::separate(mc_out_num_cores);
@@ -54,7 +55,7 @@ send_host_main(){
 	agent_grp::separate(mc_out_num_cores);
 
 	//mck_slog2("HOST started\n");
-	kernel::get_core_cell()->handler_idx = 0;	// was 0 but it should be inited for every cells's subclass.
+	kernel::get_core_cell()->handler_idx = 1;
 
 	mc_size_t off_all_agts = mc_offsetof(&missive_grp_t::all_agts);
 	MC_MARK_USED(off_all_agts);

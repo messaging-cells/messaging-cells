@@ -32,6 +32,8 @@ typedef agent_ref missive_ref_t;
 typedef agent_grp cell_grp_t;
 typedef agent_ref cell_ref_t;
 
+typedef uint16_t mck_token_t; 
+
 
 //-------------------------------------------------------------------------
 // casts
@@ -285,6 +287,12 @@ public:
 	uint16_t 	did_work;
 	bool 		exit_when_idle;
 
+	mck_token_t 	stop_key;
+	mc_kenel_func_t	user_stop_func;
+	bool			sent_stop_to_parent;
+	mck_token_t 	rcvd_stop_key;
+	uint32_t		num_childs_stopping;
+
 	uint32_t 	end_magic_id;
 
 	kernel() mc_external_code_ram;
@@ -294,7 +302,7 @@ public:
 	void init_kernel() mc_external_code_ram;
 
 	static void
-	init_sys() mc_external_code_ram; //!< Static method that inits this core kernel.
+	init_sys(bool is_the_host = false) mc_external_code_ram; //!< Static method that inits this core kernel.
 
 	static mc_opt_sz_fn void 
 	run_sys(); //!< Static method that starts handling \ref missive s. No \ref missive s are handled before.
@@ -357,6 +365,12 @@ public:
 		return MC_CORE_INFO->the_core_id;
 	}
 
+	//! Returns the parent core id
+	static mc_inline_fn mc_core_id_t 
+	get_parent_core_id(){
+		return mc_map_get_parent_core_id();
+	}
+
 	//! Returns this kernel first created \ref cell 
 	static mc_inline_fn cell*
 	get_core_cell(){
@@ -411,6 +425,28 @@ public:
 	void 
 	call_host_handlers_of_group(missive_grp_t* mgrp) mc_external_code_ram;
 
+	//void
+	//reset_stop_sys() mc_external_code_ram;
+
+	mc_inline_fn
+	void reset_stop_sys(){
+		stop_key = 0;
+		sent_stop_to_parent = false;
+		rcvd_stop_key = 0;
+		num_childs_stopping = 0;
+	}
+
+	void
+	send_stop_to_children() mc_external_code_ram;
+
+	static void 
+	stop_sys(mck_token_t key) mc_external_code_ram;
+
+	void 
+	handle_stop() mc_external_code_ram;
+
+	void 
+	kernel_first_cell_msv_handler(missive* msv) mc_external_code_ram;
 };
 
 #define mck_is_valid_handler_idx(idx) ((idx >= 0) && (idx < tot_handlers))
@@ -503,7 +539,6 @@ Every cell has a \ref mck_handler_idx_t called \ref handler_idx .
 */
 
 
-typedef uint16_t mck_token_t; 
 typedef uint8_t mck_flags_t;
 
 class mc_aligned cell: public agent {
@@ -727,6 +762,15 @@ public:
 		return mck_all_available(agent_ref);
 	}
 };
+
+enum kernel_tok_t : mck_token_t {
+	mck_tok_invalid,
+	mck_tok_stop_sys_to_parent,
+	mck_tok_stop_sys_to_children
+};
+
+void 
+mc_kernel_handler(missive* msv) mc_external_code_ram;
 
 #define mc_glb_binder_get_rgt(bdr, id) ((binder*)mc_addr_set_id((id), ((bdr)->bn_right)))
 #define mc_glb_binder_get_lft(bdr, id) ((binder*)mc_addr_set_id((id), ((bdr)->bn_left)))

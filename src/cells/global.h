@@ -124,7 +124,7 @@ mck_set_finished(uint8_t val) {
 }
 
 void 
-mck_glb_init() mc_external_code_ram;
+mck_glb_init(bool is_host) mc_external_code_ram;
 
 void 
 mck_glb_finish() mc_external_code_ram;
@@ -229,7 +229,6 @@ void mc_host_finish() mc_external_code_ram;
 
 extern mc_core_nn_t mch_first_load_core_nn;
 extern char* mch_epiphany_elf_path;
-extern mc_load_map_st* mck_first_load_map mc_external_data_ram;
 extern void mc_cores_main() mc_external_code_ram;
 extern int mc_host_main(int argc, char *argv[]) mc_external_code_ram;
 

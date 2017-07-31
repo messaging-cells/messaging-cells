@@ -89,7 +89,8 @@ void mc_cores_main() {
 		bj_load_main();
 	}
 
-	mck_sprt2("SOLVER ENDED\n");
+	EMU_PRT("SOLVER ENDED\n");
+	//mck_sprt2("SOLVER ENDED\n");
 
 	kernel::finish_sys();
 }

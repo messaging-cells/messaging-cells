@@ -23,6 +23,9 @@ struct emu_info_st {    // Used as argument to thread_start()
 	mc_core_id_t 	emu_core_id;	// core id as in epiphany arch
 	mc_sys_sz_st 	emu_system_sz;
 	mck_glb_sys_st	emu_glb_sys_data;
+	mc_core_id_t	emu_map_parent_core_id;
+	mc_core_nn_t	emu_map_tot_children;
+	mc_load_map_st*	emu_map_loaded;
 	kernel 			emu_THE_KERNEL;
 };
 
@@ -96,6 +99,9 @@ mc_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str);
 
 void *
 thread_start(void *arg);
+
+void
+mch_load_map();
 
 #ifdef __cplusplus
 mc_c_decl {

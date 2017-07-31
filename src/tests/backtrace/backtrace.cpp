@@ -14,7 +14,7 @@ void func_3(char* cc, int aa){
 }
 
 void mc_cores_main() {
-	mck_glb_init();
+	mck_glb_init(false);
 
 	mck_slog2("BACKTRACE_TEST\n");	
 	func_3(const_cast<char*>("calling func3"), 33);

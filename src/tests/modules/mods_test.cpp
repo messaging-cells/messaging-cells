@@ -93,7 +93,7 @@ link_all_modules_aux_fn(){
 }
 
 int main() {
-	mck_glb_init();
+	mck_glb_init(false);
 	mck_slog2("Modules main \n");
 
 	init_module_nams();

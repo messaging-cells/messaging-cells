@@ -14,8 +14,8 @@ int mc_host_main(int argc, char *argv[])
 
 	kernel::init_host_sys();
 
-	missive_handler_t hndlers = mc_null;
-	kernel::set_handlers(0, &hndlers);
+	missive_handler_t the_handlers[] = { mc_null };
+	kernel::set_handlers(0, the_handlers);
 
 	kernel::run_host_sys();
 	kernel::finish_host_sys();

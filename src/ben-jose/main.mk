@@ -69,7 +69,7 @@ BJ_HOST_INCLUDES := \
 SUBMAKEFILES := \
 	./host_code/no_nil_host.mk \
 	./host_code/bj_host_znq.mk \
-	./host_code/bj_host_emu.mk \
+	./maker_bj_emu/bj_emu.mk \
 	./load_cnf/load_cnf.mk \
 	./solver_main/solver.mk \
 

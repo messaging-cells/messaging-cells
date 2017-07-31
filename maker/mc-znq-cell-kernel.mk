@@ -12,6 +12,7 @@ SOURCES := \
 	$(SRC_CELLS_DIR)/global.c \
 	$(SRC_CELLS_DIR)/global_znq.cpp \
 	$(SRC_CELLS_DIR)/binder.cpp \
+	$(SRC_CELLS_DIR)/loader_znq.cpp \
 	$(SRC_CELLS_DIR)/cell.cpp \
 	$(SRC_CELLS_DIR)/cell_znq.cpp 
 

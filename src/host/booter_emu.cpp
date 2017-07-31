@@ -20,6 +20,8 @@
 
 // =====================================================================================
 
+mc_core_id_t mch_first_load_core_nn = 0;
+
 #define MCM_EXTERNAL_RAM_ORIG 0x8e000000
 
 uint8_t mcm_dlmalloc_heap[MCM_DLMALLOC_HEAP_SZ];
@@ -90,10 +92,44 @@ ck_all_core_ids(){
 	return true;
 }
 
-/*mc_core_id_t
-mcm_get_host_id(){
-	//mc_core_id_t id = mc_addr_get_
-}*/
+void
+mch_load_map_rec(mc_core_id_t parent, mc_load_map_st* mp){
+	MCH_CK(mp != mc_null);
+
+	mc_core_nn_t nn_core = mp->num_core;
+	mc_core_id_t koid = mc_nn_to_id(nn_core);
+
+	MCH_CK(nn_core >= 0);
+	MCH_CK(nn_core < TOT_THREADS);
+	thread_info_t& thd_inf = ALL_THREADS_INFO[nn_core];
+
+	thd_inf.thd_emu.emu_map_loaded = mp;
+	thd_inf.thd_emu.emu_map_parent_core_id = parent;
+	thd_inf.thd_emu.emu_map_tot_children = 0;
+
+	if(mp->childs == mc_null){ return; }
+
+	int aa = 0;
+	mc_load_map_st* ch_map = (mp->childs)[aa];
+	while(ch_map != mc_null){
+		mch_load_map_rec(koid, ch_map);
+
+		aa++;
+		ch_map = (mp->childs)[aa];
+	}
+	thd_inf.thd_emu.emu_map_tot_children = aa;
+}
+
+void
+mch_load_map(){
+	//return;
+	mc_load_map_st* ld_mp = mc_get_first_load_map();
+	if(mck_first_load_map != mc_null){
+		ld_mp = mck_first_load_map;
+	}
+	MCH_CK(ld_mp != mc_null);
+	mch_load_map_rec(0, ld_mp);
+}
 
 void
 mc_host_init(){
@@ -140,6 +176,8 @@ mc_host_init(){
 	MCH_CK(mch_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
 	pt_shd_data->pt_host_kernel = mc_null;
+
+	pt_shd_data->first_load_core_id = mc_nn_to_id(mch_first_load_core_nn);
 }
 
 void
@@ -156,6 +194,8 @@ mc_host_run()
 	char* all_f_nam[tot_cores];
 	memset(all_f_nam, 0, (sizeof(char*) * tot_cores));
 
+	mch_load_map();
+	
 	max_row = 1;
 	max_col = 2;
 	max_row = mc_tot_xx_sys;
@@ -358,5 +398,4 @@ int main(int argc, char *argv[]) {
 	return rr;
 	//test_dlmalloc_align();
 }
-
 

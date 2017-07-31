@@ -8,6 +8,7 @@ MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
 MCK_DEFINE_MEM_METHODS(neupole, 32, bj_ava_neupoles)
 MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons)
+MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses)
 
 BJ_DEFINE_nervenet_methods();
 
@@ -27,6 +28,7 @@ nervenode::init_with(pre_cnf_node* nod) {
 } 
 
 neupole::neupole(){ 
+	handler_idx = idx_neupole;
 	opp = mc_null; 
 } 
 
@@ -36,95 +38,63 @@ neuron::neuron(){}
 
 neuron::~neuron(){} 
 
+synapse::synapse(){
+	handler_idx = idx_synapse;
+	owner = mc_null;
+	parent = mc_null;
+	mate = mc_null;
+	group_sz = 0;
+} 
 
-void bj_load_main() {
-	//kernel* ker = kernel::get_sys();
-	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = kernel::get_core_nn();
+synapse::~synapse(){} 
 
-	//EMU_PRT("bj_load_main 1 \n");
-
-	//mck_slog2("LOAD_CNF\n");
-	if(ker->magic_id != MC_MAGIC_ID){
-		mck_slog2("BAD_MAGIC\n");
-	}
-	
-	nervenet* my_net = nervenet::acquire_alloc();
-	if(my_net == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
-	}
-	ker->user_data = my_net;
-
-	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
-
-	nervenet* nn_cnf = (nervenet*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
-	bj_nervenet->shd_cnf = nn_cnf;
-	
-	//mck_slog2("bj_nervenet_MAGIC_____");
-	//mck_ilog(bj_nervenet->MAGIC);
-	//mck_slog2("_____\n");
-
-	bj_load_shd_cnf();
-
-	bj_print_loaded_cnf();
-
-	mck_slog2("END_LOADING_CNF\n");
+void 
+neupole_handler(missive* msv){
+	MCK_CALL_HANDLER(neupole, handler, msv);
 }
 
-void bj_load_poles(grip& all_pol){
-	binder * fst, * lst, * wrk;
+void 
+synapse_handler(missive* msv){
+	MCK_CALL_HANDLER(synapse, handler, msv);
+}
 
-	binder* pt_all_pol = &(all_pol);
-	fst = (binder*)mc_host_pt_to_core_pt(pt_all_pol->bn_right);
-	lst = pt_all_pol;
-	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
-		pre_cnf_node* sh_pol = (pre_cnf_node*)wrk;
-		while(sh_pol->loaded == mc_null){
-			// SPIN UNTIL SET (may be set by an other core)
-		}
-		neupole* my_pol = (neupole*)mck_as_loc_pt(sh_pol->loaded);
-		MCK_CK(my_pol != mc_null);
+missive_handler_t the_handlers[idx_total];
 
-		binder* nn_all_snp = &(sh_pol->all_agts);
+void
+bj_load_init_handlers(){
+	mc_init_arr_vals(idx_total, the_handlers, mc_null);
+	the_handlers[idx_neupole] = neupole_handler;
+	the_handlers[idx_synapse] = synapse_handler;
+}
 
-		binder * fst2, * lst2, * wrk2;
-		fst2 = (binder*)mc_host_pt_to_core_pt(nn_all_snp->bn_right);
-		lst2 = nn_all_snp;
-		for(wrk2 = fst2; wrk2 != lst2; wrk2 = (binder*)mc_host_pt_to_core_pt(wrk2->bn_right)){
-			agent_ref* sh_snp = (agent_ref*)wrk2;
-			pre_cnf_node* sh_neu = (pre_cnf_node*)mc_host_pt_to_core_pt(sh_snp->glb_agent_ptr);
-			while(sh_neu->loaded == mc_null){
-				// SPIN UNTIL SET (may be set by an other core)
-			}
-			neuron* my_neu = (neuron*)(sh_neu->loaded);
-
-			agent_ref* my_snp = agent_ref::acquire();
-
-			my_snp->glb_agent_ptr = my_neu;
-			MCK_CK(my_snp->glb_agent_ptr != mc_null);
-
-			my_pol->all_agts.bind_to_my_left(*my_snp);
-		}
-	}
+void
+nervenet::init_with(nervenet* nvnet){
+	tot_neus = nvnet->tot_neus;
+	tot_vars = nvnet->tot_vars;
+	tot_lits = nvnet->tot_lits;
+	tot_rels = nvnet->tot_rels;
 }
 
 void bj_load_shd_cnf(){
 	nervenet* my_net = bj_nervenet;
 	nervenet* nn_cnf = bj_nervenet->shd_cnf;
 
-	long num_neus = nn_cnf->tot_neus;
-	long num_vars = nn_cnf->tot_vars;
-	long num_lits = nn_cnf->tot_lits;
+	my_net->init_with(nn_cnf);
+
+	long num_neus = my_net->tot_neus;
+	long num_vars = my_net->tot_vars;
+	//long num_lits = my_net->tot_lits;
+	long num_rels = my_net->tot_rels;
 
 	if(num_neus == 0){
 		return;
 	}
 
-	EMU_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld \n", 
-			nn_cnf->tot_lits, nn_cnf->tot_vars, nn_cnf->tot_neus);
+	//EMU_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld TOT_RELS=%ld \n", 
+	//		my_net->tot_lits, my_net->tot_vars, my_net->tot_neus, my_net->tot_rels);
 
-
-	agent_ref::separate(2 * num_lits);
+	missive::separate(2 * num_rels);
+	synapse::separate(num_rels);
 	neupole::separate(2 * num_vars);
 	neuron::separate(num_neus);
 
@@ -178,8 +148,10 @@ void bj_load_shd_cnf(){
 		neuron* my_neu = neuron::acquire();
 		my_net->all_neu.bind_to_my_left(*my_neu);
 
+		neuron* my_glb_neu = (neuron*)mck_as_glb_pt(my_neu);
+
 		my_neu->init_with(sh_neu);
-		sh_neu->loaded = mck_as_glb_pt(my_neu);
+		sh_neu->loaded = my_glb_neu;
 
 		//mck_slog2("[");
 
@@ -199,12 +171,28 @@ void bj_load_shd_cnf(){
 			
 			MCK_CK(my_pol->id == pol->id);
 
-			agent_ref* my_snp = agent_ref::acquire();
+			synapse* my_snp = synapse::acquire();
 
-			my_snp->glb_agent_ptr = my_pol;
-			MCK_CK(my_snp->glb_agent_ptr != mc_null);
+			my_snp->owner = my_glb_neu;
+			//my_snp->mate = my_pol;
+			//MCK_CK(my_snp->mate != mc_null);
 
-			my_neu->all_agts.bind_to_my_left(*my_snp);
+			my_neu->all_conn.bind_to_my_left(*my_snp);
+
+			missive* msv = missive::acquire();
+			msv->src = my_snp;
+			msv->dst = my_pol;
+			msv->tok = tok_nw_syn;
+			msv->send();
+
+			/*
+			long& tot_ld = bj_nervenet->tot_loading;
+			tot_ld++;
+			if(tot_ld == my_net->tot_lits){
+				EMU_PRT("SENT LAST------------------------ \n");
+			}
+			EMU_PRT("SND to pole %d msv from neu %d \n", my_pol->id, my_neu->id);
+			*/
 
 			//mck_ilog(my_pol->id);
 			//mck_slog2(" ");
@@ -212,9 +200,6 @@ void bj_load_shd_cnf(){
 		
 		//mck_slog2("]\n");
 	}
-	
-	bj_load_poles(nn_cnf->all_pos);
-	bj_load_poles(nn_cnf->all_neg);
 }
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
@@ -227,7 +212,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 		neupole* my_pol = (neupole*)wrk;
 		EMU_CK(my_pol->ki == ki);
 
-		binder* nn_all_snp = &(my_pol->all_agts);
+		binder* nn_all_snp = &(my_pol->all_conn);
 
 		//mck_slog2("lst2__________");
 		//mck_xlog((mc_addr_t)nn_all_snp);
@@ -240,10 +225,12 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 		fst2 = (binder*)(nn_all_snp->bn_right);
 		lst2 = nn_all_snp;
 		for(wrk2 = fst2; wrk2 != lst2; wrk2 = (binder*)(wrk2->bn_right)){
-			agent_ref* my_snp = (agent_ref*)wrk2;
-			MCK_CK(my_snp->glb_agent_ptr != mc_null);
+			synapse* my_snp = (synapse*)wrk2;
+			MCK_CK(my_snp->mate != mc_null);
 
-			neuron* my_neu = (neuron*)(my_snp->glb_agent_ptr);
+			synapse* mt_snp = (synapse*)(my_snp->mate);
+			neuron* my_neu = (neuron*)(mt_snp->owner);
+			//neuron* my_neu = (neuron*)(my_snp->mate);
 			MCK_CK(my_neu->ki == nd_ccl);
 
 			mck_ilog(my_neu->id);
@@ -271,7 +258,7 @@ bj_print_loaded_cnf() {
 		neuron* my_neu = (neuron*)wrk;
 		EMU_CK(my_neu->ki == nd_ccl);
 
-		binder* nn_all_snp = &(my_neu->all_agts);
+		binder* nn_all_snp = &(my_neu->all_conn);
 
 		mck_slog2("n");
 		mck_ilog(my_neu->id);
@@ -281,10 +268,15 @@ bj_print_loaded_cnf() {
 		fst2 = (binder*)(nn_all_snp->bn_right);
 		lst2 = nn_all_snp;
 		for(wrk2 = fst2; wrk2 != lst2; wrk2 = (binder*)(wrk2->bn_right)){
-			agent_ref* my_snp = (agent_ref*)wrk2;
-			MCK_CK(my_snp->glb_agent_ptr != mc_null);
+			synapse* my_snp = (synapse*)wrk2;
+			/*while(my_snp->mate == mc_null){
+				// SPIN UNTIL SET (may be set by an other core) // LOCKS_HERE ?
+			}*/
+			MCK_CK(my_snp->mate != mc_null);
 
-			neupole* my_pol = (neupole*)(my_snp->glb_agent_ptr);
+			synapse* mt_snp = (synapse*)(my_snp->mate);
+			neupole* my_pol = (neupole*)(mt_snp->owner);
+			//neupole* my_pol = (neupole*)(my_snp->mate);
 			MCK_CK((my_pol->id <= 0) || (my_pol->ki == nd_pos));
 			MCK_CK((my_pol->id >= 0) || (my_pol->ki == nd_neg));
 
@@ -297,5 +289,140 @@ bj_print_loaded_cnf() {
 
 	bj_print_loaded_poles(my_net->all_pos, nd_pos);
 	bj_print_loaded_poles(my_net->all_neg, nd_neg);
+}
+
+void
+neupole::handler(missive* msv){
+	cell* syn_src = msv->src;
+	load_tok_t tok = (load_tok_t)msv->tok;
+	MC_MARK_USED(syn_src);
+	MC_MARK_USED(tok);
+	MCK_CK(tok == tok_nw_syn);
+
+	synapse* mt_snp = (synapse*)syn_src;
+	synapse* my_snp = synapse::acquire();
+
+	//EMU_PRT("RCV msv pole %d from neu %d \n", id, mt_snp->owner->id);
+
+	neupole* my_glb_pol = (neupole*)mck_as_glb_pt(this);
+
+	my_snp->owner = my_glb_pol;
+	my_snp->mate = mt_snp;
+	MCK_CK(my_snp->mate != mc_null);
+
+	all_conn.bind_to_my_left(*my_snp);
+
+	missive* msv2 = missive::acquire();
+	msv2->src = my_snp;
+	msv2->dst = mt_snp;
+	msv2->tok = tok_nw_syn;
+	msv2->send();
+}
+
+void
+print_childs(){
+	mc_load_map_st* mp = mc_map_get_loaded();
+
+	mck_slog2("NUM_CORE=");
+	mck_ilog(mp->num_core);
+	mck_slog2("___\n");
+
+	//EMU_PRT("NUM_CORE=%d \n", mp->num_core);
+
+	if(mp->childs == mc_null){ 
+		mck_slog2("NULL_CHILDS\n");
+		return; 
+	}
+
+	int aa = 0;
+	mc_load_map_st* ch_map = (mp->childs)[aa];
+	while(ch_map != mc_null){
+		//EMU_PRT("CHILD=%d \n", ch_map->num_core);
+		mck_slog2("CHILD=");
+		mck_ilog(ch_map->num_core);
+		mck_slog2("___\n");
+
+		aa++;
+		ch_map = (mp->childs)[aa];
+	}
+	mck_slog2("END_PRT_CHILDS\n");
+}
+
+void
+synapse::handler(missive* msv){
+	cell* syn_src = msv->src;
+	load_tok_t tok = (load_tok_t)msv->tok;
+	MC_MARK_USED(syn_src);
+	MC_MARK_USED(tok);
+	MCK_CK(tok == tok_nw_syn);
+
+	synapse* mt_snp = (synapse*)syn_src;
+
+	mate = mt_snp;
+	MCK_CK(mate != mc_null);
+
+	nervenet* my_net = bj_nervenet;
+	long& tot_ld = my_net->tot_loaded;
+	tot_ld++;
+	if(tot_ld == my_net->tot_lits){
+		mck_slog2("ENDING_CNF_LOAD \n");
+		EMU_PRT("RCV_LAST------------------------ PARENT=%x \n", mc_map_get_parent_core_id());
+		print_childs();
+		//mck_get_kernel()->set_idle_exit();
+		kernel::stop_sys(tok_end_load);
+	}
+	EMU_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
+		owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
+}
+
+void bj_load_main() {
+	mc_core_id_t p_koid = mc_map_get_parent_core_id();
+	mck_slog2("PARENT___");
+	if(p_koid == 0){
+		mck_slog2("_IS_NULL_");
+	} else {
+		mck_ilog(mc_id_to_nn(p_koid));
+	}
+	mck_slog2("___\n");
+	print_childs();
+
+	//kernel* ker = kernel::get_sys();
+	kernel* ker = mck_get_kernel();
+	mc_core_nn_t nn = kernel::get_core_nn();
+
+	//EMU_PRT("bj_load_main 1 \n");
+
+	//mck_slog2("LOAD_CNF\n");
+	if(ker->magic_id != MC_MAGIC_ID){
+		mck_slog2("BAD_MAGIC\n");
+	}
+	
+	nervenet* my_net = nervenet::acquire_alloc();
+	if(my_net == mc_null){
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
+	}
+	ker->user_data = my_net;
+
+	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
+
+	nervenet* nn_cnf = (nervenet*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
+	bj_nervenet->shd_cnf = nn_cnf;
+	
+	//mck_slog2("bj_nervenet_MAGIC_____");
+	//mck_ilog(bj_nervenet->MAGIC);
+	//mck_slog2("_____\n");
+
+	bj_load_init_handlers();
+	kernel::set_handlers(idx_total, the_handlers);
+
+	bj_load_shd_cnf();
+
+	//EMU_PRT("END_LOAD:SHD \n");
+
+	kernel::run_sys();
+
+	bj_print_loaded_cnf();
+
+	mck_slog2("END_LOADING_CNF\n");
 }
 

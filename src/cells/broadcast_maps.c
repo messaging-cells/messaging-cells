@@ -1,10 +1,10 @@
 
 
-/*! \file broadcast_maps_eph.c 
+/*! \file broadcast_maps.c 
 
 \brief Standard parallel broadcast maps (they are also used a parallel loading maps).
 
-\include broadcast_maps_eph.c 
+\include broadcast_maps.c 
 
 */
 

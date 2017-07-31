@@ -16,6 +16,7 @@ recv_core_handler(missive* msg){
 }
 
 missive_handler_t core_handlers[] = {
+	mc_null,
 	recv_core_handler
 };
 
@@ -27,15 +28,15 @@ void mc_cores_main() {
 	agent_ref::separate(mc_out_num_cores);
 	agent_grp::separate(mc_out_num_cores);
 
+	kernel::get_core_cell()->handler_idx = 1;
+
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
 	if(mck_is_ro_co_core(0,0)){
 		mck_slog2("CORE (0,0) started\n");
 
-		//missive_handler_t hndlers = mc_null;
-		//kernel::set_handlers(0, &hndlers);
-		kernel::set_handlers(1, core_handlers);
+		kernel::set_handlers(2, core_handlers);
 
 		cell* act1 = kernel::get_core_cell();
 		cell* act2 = kernel::get_host_cell();
