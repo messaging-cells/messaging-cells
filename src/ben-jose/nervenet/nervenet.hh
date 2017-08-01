@@ -45,6 +45,9 @@ class pre_cnf_node;
 #define bj_load_cod mc_mod1_cod
 #define bj_load_dat mc_mod1_dat
 
+#define bj_stabi_cod mc_mod2_cod
+#define bj_stabi_dat mc_mod2_dat
+
 #define bj_nervenet_cod 
 #define bj_nervenet_dat 
 #define bj_nervenet_mem mc_mod0_cod
