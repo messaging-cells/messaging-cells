@@ -3,23 +3,6 @@
 
 #include "preload_cnf.hh"
 
-
-MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
-
-MCK_DEFINE_MEM_METHODS(neupole, 32, bj_ava_neupoles)
-MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons)
-MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses)
-
-BJ_DEFINE_nervenet_methods();
-
-nervenode::nervenode(){ 
-	ki = nd_invalid; 
-	id = 0; 
-	sz = 0; 
-} 
-
-nervenode::~nervenode(){} 
-
 void 
 nervenode::init_with(pre_cnf_node* nod) { 
 	ki = nod->ki; 
@@ -27,35 +10,14 @@ nervenode::init_with(pre_cnf_node* nod) {
 	sz = nod->sz; 
 } 
 
-neupole::neupole(){ 
-	handler_idx = idx_neupole;
-	opp = mc_null; 
-} 
-
-neupole::~neupole(){} 
-
-neuron::neuron(){} 
-
-neuron::~neuron(){} 
-
-synapse::synapse(){
-	handler_idx = idx_synapse;
-	owner = mc_null;
-	parent = mc_null;
-	mate = mc_null;
-	group_sz = 0;
-} 
-
-synapse::~synapse(){} 
-
 void 
 neupole_handler(missive* msv){
-	MCK_CALL_HANDLER(neupole, handler, msv);
+	MCK_CALL_HANDLER(neupole, load_handler, msv);
 }
 
 void 
 synapse_handler(missive* msv){
-	MCK_CALL_HANDLER(synapse, handler, msv);
+	MCK_CALL_HANDLER(synapse, load_handler, msv);
 }
 
 missive_handler_t the_handlers[idx_total];
@@ -292,7 +254,7 @@ bj_print_loaded_cnf() {
 }
 
 void
-neupole::handler(missive* msv){
+neupole::load_handler(missive* msv){
 	cell* syn_src = msv->src;
 	load_tok_t tok = (load_tok_t)msv->tok;
 	MC_MARK_USED(syn_src);
@@ -349,7 +311,7 @@ print_childs(){
 }
 
 void
-synapse::handler(missive* msv){
+synapse::load_handler(missive* msv){
 	cell* syn_src = msv->src;
 	load_tok_t tok = (load_tok_t)msv->tok;
 	MC_MARK_USED(syn_src);
@@ -423,6 +385,6 @@ void bj_load_main() {
 
 	bj_print_loaded_cnf();
 
-	mck_slog2("END_LOADING_CNF\n");
+	mck_slog2("END_LOADING_CNF_____________________________\n");
 }
 

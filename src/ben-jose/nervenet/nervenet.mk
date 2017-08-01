@@ -1,11 +1,10 @@
 
-TARGET := modules/libmod_1.a
+TARGET := libnervenet.a
 
-TGT_PREREQS := libcommon.a
+TGT_PREREQS := ${MC_EPH_LIBS}
 
 define POST_OPERS
-	modules/mod_make_redef_list.sh $(TARGET_DIR)/$(TARGET) m1
-	modules/mod_repl_common_syms.sh $(TARGET_DIR)/$(TARGET) m1 module1_code module1_data
+	mod_get_common_syms.sh $(TARGET_DIR)/$(TARGET)
 	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 
 endef
 
@@ -17,8 +16,24 @@ TGT_CXX := e-g++
 SRC_CFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS}
 SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS}
 
-SRC_INCDIRS := ${MC_STD_INCDIRS}
+SRC_INCDIRS := ${BJ_CORES_INCLUDES} 
 
-SOURCES := common.cpp pru_1.cpp
+SOURCES := nervenet.cpp 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

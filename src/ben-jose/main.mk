@@ -58,18 +58,26 @@ MC_STD_INCDIRS := ../../cells ../../host ${MC_ETOOLS}/host/include
 
 SRC_BJ_DIR := ${MC_CURR_DIR}
 
-BJ_HOST_INCLUDES := \
+BJ_CORES_INCLUDES := \
 	${MC_STD_INCDIRS} \
+	${SRC_BJ_DIR}/nervenet \
 	${SRC_BJ_DIR}/load_cnf \
 	${SRC_BJ_DIR}/solver_main \
+
+
+BJ_HOST_INCLUDES := \
+	${BJ_CORES_INCLUDES} \
 	${SRC_BJ_DIR}/host_code/cnf_preload \
 	${SRC_BJ_DIR}/host_code/dimacs \
 	${SRC_BJ_DIR}/host_code/utils 
+
+
 
 SUBMAKEFILES := \
 	./host_code/no_nil_host.mk \
 	./host_code/bj_host_znq.mk \
 	./maker_bj_emu/bj_emu.mk \
+	./nervenet/nervenet.mk \
 	./load_cnf/load_cnf.mk \
 	./solver_main/solver.mk \
 

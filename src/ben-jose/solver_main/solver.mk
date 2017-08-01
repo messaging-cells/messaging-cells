@@ -4,10 +4,11 @@ BJ_LDF := solver_main/bj-lk-script.ldf
 TARGET := ben-jose.elf
 
 TGT_LDFLAGS := -T ${BJ_LDF} ${MC_EPH_LDFLAGS_2} --no-check-sections -L${TARGET_DIR}
-TGT_LDLIBS  := -lload_cnf ${MC_STD_EPH_LDLIBS}
+TGT_LDLIBS  := -lload_cnf -lnervenet ${MC_STD_EPH_LDLIBS}
 
 TGT_PREREQS := \
 	${MC_EPH_LIBS} \
+	libnervenet.a \
 	libload_cnf.a \
 
 
@@ -30,10 +31,7 @@ TGT_LINKER := e-ld
 SRC_CFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS}
 SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS}
 
-SRC_INCDIRS := \
-	${MC_STD_INCDIRS} \
-	${SRC_BJ_DIR}/load_cnf \
-	${SRC_BJ_DIR}/host_code/cnf_preload \
+SRC_INCDIRS := ${BJ_CORES_INCLUDES} 
 
 
 SOURCES := solver.cpp

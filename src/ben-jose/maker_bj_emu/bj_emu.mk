@@ -19,7 +19,7 @@ SRC_CXXFLAGS := -DMC_IS_EMU_CODE ${MC_DBG_FLAG} ${CXX_FLAGS_1}
 
 SRC_INCDIRS := ${BJ_HOST_INCLUDES}
 
-SUBMAKEFILES := ./lib-dimacs-emu.mk ./load_code_emu.mk 
+SUBMAKEFILES := ./lib-dimacs-emu.mk ./all_modules_emu.mk 
 
 SOURCES := \
 	../host_code/bj_host_code.cpp \
