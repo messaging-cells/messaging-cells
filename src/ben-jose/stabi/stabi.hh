@@ -40,6 +40,7 @@ Declaration of functions to load cnfs in the core.
 
 #include "nervenet.hh"
 
+void bj_stabi_init_handlers() bj_stabi_cod;
 void bj_stabi_main() bj_stabi_cod;
 
 #endif		// STABI_H

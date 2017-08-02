@@ -43,8 +43,6 @@ Declaration of functions to load cnfs in the core.
 void bj_load_main() bj_load_cod;
 void bj_load_init_handlers() bj_load_cod;
 void bj_load_shd_cnf() bj_load_cod;
-void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
-void bj_print_loaded_cnf() mc_external_code_ram;
 
 #endif		// LOAD_CNF_H
 

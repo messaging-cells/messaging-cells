@@ -71,7 +71,9 @@ enum load_tok_t : mck_token_t {
 enum load_hdlr_idx_t : uint8_t {
 	idx_invalid,
 	idx_neupole,
+	idx_neuron,
 	idx_synapse,
+	idx_nervenet,
 	idx_total
 };
 
@@ -99,6 +101,7 @@ public:
 	~neupole() bj_nervenet_cod;
 
 	void load_handler(missive* msv) bj_load_cod;
+	void stabi_handler(missive* msv) bj_stabi_cod;
 };
 
 class mc_aligned neuron : public nervenode {
@@ -107,6 +110,8 @@ public:
 	
 	neuron() bj_nervenet_cod;
 	~neuron() bj_nervenet_cod;
+
+	void stabi_handler(missive* msv) bj_stabi_cod;
 };
 
 class mc_aligned synapse : public cell {
@@ -125,11 +130,12 @@ public:
 	~synapse() bj_nervenet_cod;
 
 	void load_handler(missive* msv) bj_load_cod;
+	void stabi_handler(missive* msv) bj_stabi_cod;
 };
 
 #define MAGIC_VAL 987654
 
-class mc_aligned nervenet {
+class mc_aligned nervenet : public cell  {
 public:
 	MCK_DECLARE_MEM_METHODS(nervenet, bj_nervenet_mem)
 
@@ -138,6 +144,8 @@ public:
 	grip		ava_neupoles;
 	grip		ava_neurons;
 	grip		ava_synapses;
+
+	missive_handler_t all_handlers[idx_total];
 
 	nervenet*	shd_cnf;
 
@@ -157,6 +165,8 @@ public:
 	~nervenet() bj_nervenet_cod;
 
 	void init_with(nervenet* nvnet) bj_load_cod;
+
+	void stabi_handler(missive* msv) bj_stabi_cod;
 };
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
@@ -164,9 +174,15 @@ public:
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
 #define bj_ava_synapses (bj_nervenet->ava_synapses)
 
+#define bj_handlers (bj_nervenet->all_handlers)
+
 #define BJ_DEFINE_nervenet_methods() \
 nervenet::nervenet(){ \
 		MAGIC = MAGIC_VAL; \
+\
+		handler_idx = idx_nervenet; \
+\
+		mc_init_arr_vals(idx_total, all_handlers, mc_null); \
 \
 		shd_cnf = mc_null; \
 \
@@ -182,6 +198,12 @@ nervenet::nervenet(){ \
 nervenet::~nervenet(){} \
 
 // end of BJ_DEFINE_nervenet_methods
+
+extern missive_handler_t bj_nil_handlers[];
+
+void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
+void bj_print_loaded_cnf() mc_external_code_ram;
+
 
 #endif		// NERVENET_H
 
