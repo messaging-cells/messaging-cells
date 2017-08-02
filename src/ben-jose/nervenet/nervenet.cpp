@@ -7,11 +7,45 @@ missive_handler_t bj_nil_handlers[1] = { mc_null };
 
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
+MCK_DEFINE_MEM_METHODS(synset, 32, bj_ava_synsets)
+MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses)
 MCK_DEFINE_MEM_METHODS(neupole, 32, bj_ava_neupoles)
 MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons)
-MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses)
 
 BJ_DEFINE_nervenet_methods();
+
+synset::synset(){
+	handler_idx = idx_synset;
+	parent = mc_null;
+	set_sz = 0;
+} 
+
+synset::~synset(){} 
+
+void 
+synset::add_synapse(synapse* snp){
+	EMU_CK(snp != mc_null);
+	set_sz++;
+	all_syn.bind_to_my_left(*snp);
+	snp->vessel = this;
+}
+
+void 
+synset::remove_synapse(synapse* snp){
+	EMU_CK(snp != mc_null);
+	set_sz--;
+	snp->let_go();
+	snp->vessel = mc_null;
+}
+
+synapse::synapse(){
+	handler_idx = idx_synapse;
+	owner = mc_null;
+	mate = mc_null;
+	vessel = mc_null;
+} 
+
+synapse::~synapse(){} 
 
 nervenode::nervenode(){ 
 	ki = nd_invalid; 
@@ -34,17 +68,6 @@ neuron::neuron(){
 
 neuron::~neuron(){} 
 
-synapse::synapse(){
-	handler_idx = idx_synapse;
-	owner = mc_null;
-	parent = mc_null;
-	mate = mc_null;
-	group_sz = 0;
-} 
-
-synapse::~synapse(){} 
-
-
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 	binder * fst, * lst, * wrk;
 
@@ -55,7 +78,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 		neupole* my_pol = (neupole*)wrk;
 		EMU_CK(my_pol->ki == ki);
 
-		binder* nn_all_snp = &(my_pol->all_conn);
+		binder* nn_all_snp = &(my_pol->all_conn.all_syn);
 
 		//mck_slog2("lst2__________");
 		//mck_xlog((mc_addr_t)nn_all_snp);
@@ -101,7 +124,7 @@ bj_print_loaded_cnf() {
 		neuron* my_neu = (neuron*)wrk;
 		EMU_CK(my_neu->ki == nd_ccl);
 
-		binder* nn_all_snp = &(my_neu->all_conn);
+		binder* nn_all_snp = &(my_neu->all_conn.all_syn);
 
 		mck_slog2("n");
 		mck_ilog(my_neu->id);

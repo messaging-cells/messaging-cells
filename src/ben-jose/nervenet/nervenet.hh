@@ -41,6 +41,11 @@ Declaration of nervenet class.
 #include "cell.hh"
 
 class pre_cnf_node;
+class synapse;
+class nervenode;
+class neupole;
+class neuron;
+class nervenet;
 
 #define bj_load_cod mc_mod1_cod
 #define bj_load_dat mc_mod1_dat
@@ -70,16 +75,51 @@ enum load_tok_t : mck_token_t {
 
 enum load_hdlr_idx_t : uint8_t {
 	idx_invalid,
+	idx_synset,
+	idx_synapse,
 	idx_neupole,
 	idx_neuron,
-	idx_synapse,
 	idx_nervenet,
 	idx_total
 };
 
+class mc_aligned synset : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS(synset, bj_nervenet_mem)
+
+	synset*		parent;
+
+	mc_size_t 	set_sz;
+	grip		all_syn;
+	grip		sub_groups;
+
+	synset() bj_nervenet_cod;
+	~synset() bj_nervenet_cod;
+
+	void add_synapse(synapse* snp);
+	void remove_synapse(synapse* snp);
+
+	void stabi_handler(missive* msv) bj_stabi_cod;
+};
+
+class mc_aligned synapse : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS(synapse, bj_nervenet_mem)
+
+	nervenode*	owner;
+	void*		mate;
+	synset*		vessel;
+
+	synapse() bj_nervenet_cod;
+	~synapse() bj_nervenet_cod;
+
+	void load_handler(missive* msv) bj_load_cod;
+	void stabi_handler(missive* msv) bj_stabi_cod;
+};
+
 class mc_aligned nervenode : public cell {
 public:
-	grip			all_conn;
+	synset			all_conn;
 
 	node_kind_t 	ki;
 	long			id;
@@ -114,25 +154,6 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 };
 
-class mc_aligned synapse : public cell {
-public:
-	MCK_DECLARE_MEM_METHODS(synapse, bj_nervenet_mem)
-
-	nervenode*	owner;
-	synapse*	parent;
-	void*		mate;
-
-	mc_size_t 	group_sz;
-	grip		in_group;
-	grip		sub_groups;
-
-	synapse() bj_nervenet_cod;
-	~synapse() bj_nervenet_cod;
-
-	void load_handler(missive* msv) bj_load_cod;
-	void stabi_handler(missive* msv) bj_stabi_cod;
-};
-
 #define MAGIC_VAL 987654
 
 class mc_aligned nervenet : public cell  {
@@ -141,9 +162,10 @@ public:
 
 	long MAGIC;
 
+	grip		ava_synsets;
+	grip		ava_synapses;
 	grip		ava_neupoles;
 	grip		ava_neurons;
-	grip		ava_synapses;
 
 	missive_handler_t all_handlers[idx_total];
 
@@ -170,9 +192,10 @@ public:
 };
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
+#define bj_ava_synsets (bj_nervenet->ava_synsets)
+#define bj_ava_synapses (bj_nervenet->ava_synapses)
 #define bj_ava_neupoles (bj_nervenet->ava_neupoles)
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
-#define bj_ava_synapses (bj_nervenet->ava_synapses)
 
 #define bj_handlers (bj_nervenet->all_handlers)
 

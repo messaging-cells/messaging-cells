@@ -140,7 +140,7 @@ void bj_load_shd_cnf(){
 			//my_snp->mate = my_pol;
 			//MCK_CK(my_snp->mate != mc_null);
 
-			my_neu->all_conn.bind_to_my_left(*my_snp);
+			my_neu->all_conn.add_synapse(my_snp);
 
 			missive* msv = missive::acquire();
 			msv->src = my_snp;
@@ -184,7 +184,7 @@ neupole::load_handler(missive* msv){
 	my_snp->mate = mt_snp;
 	MCK_CK(my_snp->mate != mc_null);
 
-	all_conn.bind_to_my_left(*my_snp);
+	all_conn.add_synapse(my_snp);
 
 	missive* msv2 = missive::acquire();
 	msv2->src = my_snp;
