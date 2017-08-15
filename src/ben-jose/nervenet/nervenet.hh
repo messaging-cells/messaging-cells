@@ -60,6 +60,8 @@ class nervenet;
 //define bj_nervenet_cod mc_comm_cod
 //define bj_nervenet_dat mc_comm_dat
 
+typedef long num_syn_t;
+
 enum node_kind_t : uint8_t {
 	nd_invalid = 0,
 	nd_pos,
@@ -89,17 +91,21 @@ public:
 
 	synset*		parent;
 
-	mc_size_t 	set_sz;
+	num_syn_t 	tot_syn;
 	grip		all_syn;
-	grip		sub_groups;
+	grip		all_grp;
 
 	synset() bj_nervenet_cod;
 	~synset() bj_nervenet_cod;
 
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0);
+
 	void add_synapse(synapse* snp);
-	void remove_synapse(synapse* snp);
 
 	void stabi_handler(missive* msv) bj_stabi_cod;
+
+	void calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
 };
 
 class mc_aligned synapse : public cell {
@@ -113,6 +119,9 @@ public:
 	synapse() bj_nervenet_cod;
 	~synapse() bj_nervenet_cod;
 
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 };
@@ -123,12 +132,22 @@ public:
 
 	node_kind_t 	ki;
 	long			id;
-	long			sz;
+	num_syn_t		sz;
+
+	num_syn_t		stabi_num_complete;
+	num_syn_t		stabi_arr_cap;
+	num_syn_t		stabi_arr_sz;
+	num_syn_t*		stabi_arr;
 
 	nervenode() bj_nervenet_cod;
 	~nervenode() bj_nervenet_cod;
 
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
 	void init_with(pre_cnf_node* nod) bj_load_cod;
+
+	void calc_stabi_arr() bj_stabi_cod;
 };
 
 class mc_aligned neupole : public nervenode {

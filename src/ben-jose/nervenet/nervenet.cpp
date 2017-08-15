@@ -15,45 +15,66 @@ MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons)
 BJ_DEFINE_nervenet_methods();
 
 synset::synset(){
-	handler_idx = idx_synset;
-	parent = mc_null;
-	set_sz = 0;
+	init_me();
 } 
 
 synset::~synset(){} 
 
+void
+synset::init_me(int caller){
+	handler_idx = idx_synset;
+	parent = mc_null;
+	tot_syn = 0;
+}
+
 void 
 synset::add_synapse(synapse* snp){
 	EMU_CK(snp != mc_null);
-	set_sz++;
+	tot_syn++;
 	all_syn.bind_to_my_left(*snp);
 	snp->vessel = this;
 }
 
+/*
 void 
 synset::remove_synapse(synapse* snp){
 	EMU_CK(snp != mc_null);
-	set_sz--;
+	tot_syn--;
 	snp->let_go();
 	snp->vessel = mc_null;
-}
+}*/
 
 synapse::synapse(){
-	handler_idx = idx_synapse;
-	owner = mc_null;
-	mate = mc_null;
-	vessel = mc_null;
+	init_me();
 } 
 
 synapse::~synapse(){} 
 
+void
+synapse::init_me(int caller){
+	handler_idx = idx_synapse;
+	owner = mc_null;
+	mate = mc_null;
+	vessel = mc_null;
+}
+
 nervenode::nervenode(){ 
-	ki = nd_invalid; 
-	id = 0; 
-	sz = 0; 
+	init_me();
 } 
 
 nervenode::~nervenode(){} 
+
+void
+nervenode::init_me(int caller){
+	ki = nd_invalid; 
+	id = 0; 
+	sz = 0; 
+
+	stabi_num_complete = 0;
+	stabi_arr_cap = 0;
+	stabi_arr_sz = 0;
+	stabi_arr = mc_null;
+}
 
 neupole::neupole(){ 
 	handler_idx = idx_neupole;

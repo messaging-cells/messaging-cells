@@ -579,6 +579,10 @@ public:
 
 	mc_opt_sz_fn
 	void
+	send(cell* des, mck_token_t tok);
+
+	mc_opt_sz_fn
+	void
 	respond(missive* msv, mck_token_t tok);
 };
 

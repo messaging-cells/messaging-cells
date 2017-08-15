@@ -40,8 +40,15 @@ Declaration of functions to load cnfs in the core.
 
 #include "nervenet.hh"
 
+#define calc_stabi_arr_cap(tot_syn) (4 * (tot_syn))
+
+#define set_stabi_arr(cap, arr, ii, val) \
+	if(ii < cap){ arr[ii] = val; } else { mck_abort(0xdeadbeaf, mc_cstr("ERROR. Invalid stabi arr set index.")); }
+
 void bj_stabi_init_handlers() bj_stabi_cod;
 void bj_stabi_main() bj_stabi_cod;
+
+int cmp_nervenodes(nervenode* nod1, nervenode* nod2) bj_stabi_cod;
 
 #endif		// STABI_H
 

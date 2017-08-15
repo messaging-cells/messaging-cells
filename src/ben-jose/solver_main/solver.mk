@@ -20,6 +20,7 @@ TGT_PREREQS := \
 
 define POST_OPERS
 	e-objdump -D $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET).s
+	e-objdump -h $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET)_sizes.txt
 	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 
 endef
 

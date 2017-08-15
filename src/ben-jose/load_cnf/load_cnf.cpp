@@ -57,6 +57,7 @@ void bj_load_shd_cnf(){
 	//		my_net->tot_lits, my_net->tot_vars, my_net->tot_neus, my_net->tot_rels);
 
 	missive::separate(2 * num_rels);
+	synset::separate(num_rels);
 	synapse::separate(num_rels);
 	neupole::separate(2 * num_vars);
 	neuron::separate(num_neus);

@@ -581,6 +581,15 @@ agent_grp::release_all_agts(){
 }
 
 void
+cell::send(cell* des, mck_token_t tok){
+	missive* msv = missive::acquire();
+	msv->src = this;
+	msv->dst = des;
+	msv->tok = tok;
+	msv->send();
+}
+
+void
 cell::respond(missive* msv_orig, mck_token_t tok){
 	missive* msv = missive::acquire();
 	msv->src = this;
