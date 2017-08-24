@@ -69,7 +69,7 @@ print_nods(){
 	printf("ALL_NODS {");
 	for(long aa = 0; aa < THE_CNF->tot_sort_nods; aa++){
 		pre_cnf_node* nod =  THE_CNF->all_sort_nods[aa];
-		printf("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
+		printf("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->pre_sz);
 	}
 	printf("} \n");
 }
@@ -83,7 +83,7 @@ print_all_nods(binder& grip){
 	lst = grp;
 	for(wrk = fst; wrk != lst; wrk = wrk->bn_right){
 		pre_cnf_node* nod = (pre_cnf_node*)wrk;
-		printf("[k%d id%ld sz%ld] ", nod->ki, nod->id, nod->sz);
+		printf("[k%d id%ld sz%ld] ", nod->ki, nod->id, nod->pre_sz);
 	}
 }
 
@@ -113,15 +113,26 @@ print_nervenets(){
 
 int 
 cmp_nodes(const void * p1, const void * p2){
-	long sz1 = (*((pre_cnf_node **)p1))->sz;
-	long sz2 = (*((pre_cnf_node **)p2))->sz;
+	long sz1 = (*((pre_cnf_node **)p1))->pre_sz;
+	long sz2 = (*((pre_cnf_node **)p2))->pre_sz;
 	if(sz1 < sz2){ return -1; }
 	if(sz1 > sz2){ return 1; }
 	return 0;
 }
 
 void
+check_node_sz(pre_node_sz_t sz){
+	if(sz > THE_CNF->max_nod_sz){
+		mck_abort(9, const_cast<char*>(
+			"CNF node too big. Variable in too many clauses or clause too big. (BJ_MAX_NODE_SZ). Fix CNF."));
+	}
+	EMU_CK(sz < THE_CNF->max_nod_sz);
+}
+
+void
 preload_cnf(long sz, const long* arr){
+
+	THE_CNF->max_nod_sz = BJ_MAX_NODE_SZ;
 
 	long num_ccls = THE_CNF->tot_ccls;
 	long num_vars = THE_CNF->tot_vars;
@@ -175,16 +186,18 @@ preload_cnf(long sz, const long* arr){
 			agent_ref* rli = agent_ref::acquire();
 			rli->glb_agent_ptr = lit;
 			ccl->all_agts.bind_to_my_left(*rli);
-			ccl->sz++;
+			ccl->pre_sz++;
+			check_node_sz(ccl->pre_sz);
 
 			agent_ref* rcl = agent_ref::acquire();
 			rcl->glb_agent_ptr = ccl;
 			lit->all_agts.bind_to_my_left(*rcl);
-			lit->sz++;
+			lit->pre_sz++;
+			check_node_sz(lit->pre_sz);
 
 			if(nio_id < 0){
 				pre_cnf_node* opp = get_lit(-nio_id);
-				opp->sz++;
+				opp->pre_sz++;
 			}
 		} else {
 			nn++;
@@ -205,7 +218,7 @@ preload_cnf(long sz, const long* arr){
 		pre_cnf_node* nod = THE_CNF->all_sort_nods[aa];
 		nervenet& cnf = THE_CNF->all_cnf[kk];
 		EMU_CK(nod->is_alone());
-		cnf.tot_rels += nod->sz;
+		cnf.tot_rels += nod->pre_sz;
 		switch(nod->ki){
 			case nd_pos:
 			{
@@ -226,7 +239,7 @@ preload_cnf(long sz, const long* arr){
 			case nd_ccl:
 				cnf.all_neu.bind_to_my_left(*nod);
 				cnf.tot_neus++;
-				cnf.tot_lits += nod->sz;
+				cnf.tot_lits += nod->pre_sz;
 			break;
 			default:
 				mck_abort(9, const_cast<char*>("Bad node cnf kind"));

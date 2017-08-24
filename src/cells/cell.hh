@@ -784,7 +784,7 @@ mc_kernel_handler(missive* msv) mc_external_code_ram;
 
 #define MCK_CALL_HANDLER(cls, nam, msv) (((cls*)(mck_as_loc_pt(msv->dst)))->nam(msv))
 
-template<typename T, typename U> constexpr mc_size_t mc_offsetof(U T::*member) mc_external_code_ram;
+//template<typename T, typename U> constexpr mc_size_t mc_offsetof(U T::*member) mc_external_code_ram;
 
 template<typename T, typename U> constexpr mc_size_t mc_offsetof(U T::*member)
 {

@@ -8,7 +8,10 @@
 
 char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
 
-int mc_host_main(int argc, char *argv[])
+void bj_test(int argc, char *argv[]) mc_external_code_ram;
+int bj_host_main(int argc, char *argv[]) mc_external_code_ram;
+
+int bj_host_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
@@ -25,6 +28,8 @@ int mc_host_main(int argc, char *argv[])
 		printf("Cannot find file %s \n", f_nam.c_str() );
 		return 1;
 	}
+
+	printf("BJ_MAX_NODE_SZ=%lu\n", BJ_MAX_NODE_SZ);
 
 	row<long> all_lits;
 	all_lits.clear();
@@ -78,9 +83,56 @@ int mc_host_main(int argc, char *argv[])
 	kernel::run_host_sys();
 	kernel::finish_host_sys();
 
-	printf("ALL FINISHED ==================================== \n");
-
 	return 0;
 }
 
+#ifdef MC_IS_EMU_CODE
+
+void bj_test(int argc, char *argv[])
+{
+	binder b1;
+	binder b2;
+	synapse s1;
+
+	s1.handler_idx = 55;
+	
+	b1.bind_to_my_left(b2);
+	b1.bind_to_my_left(s1.right_handle);
+
+	if(b1.bn_right == &b2){
+		printf("b2 is FIRST\n");
+	}
+	if(b1.bn_left == &s1.right_handle){
+		printf("syn is LAST\n");
+	}
+	binder* lft = b1.bn_left;
+	synapse* pt_s1 = bj_get_syn_of_rgt_handle(lft);
+
+	printf("syn_idx = %d\n", pt_s1->handler_idx);
+
+	printf("BJ_HOST_TESTS_FINISHED\n");
+}
+
+typedef uint16_t test_int_t;
+
+void bj_test_2(int argc, char *argv[])
+{
+	unsigned long imax = mc_maxof(test_int_t);
+
+	printf("imax = %lu\n", imax);
+}
+
+#endif
+
+int mc_host_main(int argc, char *argv[])
+{
+	int rr = 0;
+
+	//EMU_CODE(bj_test(argc, argv));
+	//EMU_CODE(bj_test_2(argc, argv));
+	rr = bj_host_main(argc, argv);
+
+	printf("HOST_CODE_FINISHED ==================================== \n");
+	return rr;
+}
 

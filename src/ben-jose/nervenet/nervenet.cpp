@@ -28,21 +28,12 @@ synset::init_me(int caller){
 }
 
 void 
-synset::add_synapse(synapse* snp){
+synset::add_left_synapse(synapse* snp){
 	EMU_CK(snp != mc_null);
 	tot_syn++;
 	all_syn.bind_to_my_left(*snp);
-	snp->vessel = this;
+	snp->left_vessel = this;
 }
-
-/*
-void 
-synset::remove_synapse(synapse* snp){
-	EMU_CK(snp != mc_null);
-	tot_syn--;
-	snp->let_go();
-	snp->vessel = mc_null;
-}*/
 
 synapse::synapse(){
 	init_me();
@@ -53,9 +44,26 @@ synapse::~synapse(){}
 void
 synapse::init_me(int caller){
 	handler_idx = idx_synapse;
+
+	left_vessel = mc_null;
+	right_vessel = mc_null;
+
 	owner = mc_null;
 	mate = mc_null;
-	vessel = mc_null;
+}
+
+neurostate::neurostate(){ 
+	init_me();
+} 
+
+neurostate::~neurostate(){} 
+
+void
+neurostate::init_me(int caller){
+	stabi_num_complete = 0;
+	stabi_arr_cap = 0;
+	stabi_arr_sz = 0;
+	stabi_arr = mc_null;
 }
 
 nervenode::nervenode(){ 
@@ -68,12 +76,7 @@ void
 nervenode::init_me(int caller){
 	ki = nd_invalid; 
 	id = 0; 
-	sz = 0; 
-
-	stabi_num_complete = 0;
-	stabi_arr_cap = 0;
-	stabi_arr_sz = 0;
-	stabi_arr = mc_null;
+	sz = 0;
 }
 
 neupole::neupole(){ 
@@ -99,7 +102,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 		neupole* my_pol = (neupole*)wrk;
 		EMU_CK(my_pol->ki == ki);
 
-		binder* nn_all_snp = &(my_pol->all_conn.all_syn);
+		binder* nn_all_snp = &(my_pol->left_side.stabi_target.all_syn);
 
 		//mck_slog2("lst2__________");
 		//mck_xlog((mc_addr_t)nn_all_snp);
@@ -145,7 +148,7 @@ bj_print_loaded_cnf() {
 		neuron* my_neu = (neuron*)wrk;
 		EMU_CK(my_neu->ki == nd_ccl);
 
-		binder* nn_all_snp = &(my_neu->all_conn.all_syn);
+		binder* nn_all_snp = &(my_neu->left_side.stabi_target.all_syn);
 
 		mck_slog2("n");
 		mck_ilog(my_neu->id);

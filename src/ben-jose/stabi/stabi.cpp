@@ -74,16 +74,16 @@ synset::calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) { // ca
 }
 
 void 
-nervenode::calc_stabi_arr() {
+neurostate::calc_stabi_arr() {
 	if(stabi_arr == mc_null){
-		stabi_arr_cap = calc_stabi_arr_cap(sz);
+		stabi_arr_cap = calc_stabi_arr_cap(stabi_target.tot_syn);
 		stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
 	}
 	stabi_arr_sz = 0;
-	all_conn.calc_stabi_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
+	stabi_target.calc_stabi_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
 }
 
-int cmp_nervenodes(nervenode* nod1, nervenode* nod2){
+int cmp_neurostate(neurostate* nod1, neurostate* nod2){
 	EMU_CK(nod1 != mc_null);
 	EMU_CK(nod2 != mc_null);
 	num_syn_t sz1 = nod1->stabi_arr_sz;

@@ -4,10 +4,10 @@
 #include "preload_cnf.hh"
 
 void 
-nervenode::init_with(pre_cnf_node* nod) { 
+nervenode::init_nervenode_with(pre_cnf_node* nod) { 
 	ki = nod->ki; 
 	id = nod->id; 
-	sz = nod->sz; 
+	sz = nod->pre_sz; 
 } 
 
 void 
@@ -31,7 +31,7 @@ bj_load_init_handlers(){
 }
 
 void
-nervenet::init_with(nervenet* nvnet){
+nervenet::init_nervenet_with(nervenet* nvnet){
 	tot_neus = nvnet->tot_neus;
 	tot_vars = nvnet->tot_vars;
 	tot_lits = nvnet->tot_lits;
@@ -42,7 +42,7 @@ void bj_load_shd_cnf(){
 	nervenet* my_net = bj_nervenet;
 	nervenet* nn_cnf = bj_nervenet->shd_cnf;
 
-	my_net->init_with(nn_cnf);
+	my_net->init_nervenet_with(nn_cnf);
 
 	long num_neus = my_net->tot_neus;
 	long num_vars = my_net->tot_vars;
@@ -83,8 +83,8 @@ void bj_load_shd_cnf(){
 		neupole* pos_nod = neupole::acquire();
 		neupole* neg_nod = neupole::acquire();
 
-		pos_nod->init_with(nod);
-		neg_nod->init_with(opp);
+		pos_nod->init_nervenode_with(nod);
+		neg_nod->init_nervenode_with(opp);
 
 		pos_nod->opp = neg_nod;
 		neg_nod->opp = pos_nod;
@@ -114,7 +114,7 @@ void bj_load_shd_cnf(){
 
 		neuron* my_glb_neu = (neuron*)mck_as_glb_pt(my_neu);
 
-		my_neu->init_with(sh_neu);
+		my_neu->init_nervenode_with(sh_neu);
 		sh_neu->loaded = my_glb_neu;
 
 		//mck_slog2("[");
@@ -141,7 +141,7 @@ void bj_load_shd_cnf(){
 			//my_snp->mate = my_pol;
 			//MCK_CK(my_snp->mate != mc_null);
 
-			my_neu->all_conn.add_synapse(my_snp);
+			my_neu->left_side.stabi_target.add_left_synapse(my_snp);
 
 			missive* msv = missive::acquire();
 			msv->src = my_snp;
@@ -185,7 +185,7 @@ neupole::load_handler(missive* msv){
 	my_snp->mate = mt_snp;
 	MCK_CK(my_snp->mate != mc_null);
 
-	all_conn.add_synapse(my_snp);
+	left_side.stabi_target.add_left_synapse(my_snp);
 
 	missive* msv2 = missive::acquire();
 	msv2->src = my_snp;

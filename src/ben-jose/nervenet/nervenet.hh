@@ -60,7 +60,10 @@ class nervenet;
 //define bj_nervenet_cod mc_comm_cod
 //define bj_nervenet_dat mc_comm_dat
 
-typedef long num_syn_t;
+typedef long num_nod_t;
+typedef uint8_t num_syn_t;
+
+#define BJ_MAX_NODE_SZ mc_maxof(num_syn_t)
 
 enum node_kind_t : uint8_t {
 	nd_invalid = 0,
@@ -101,7 +104,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	void add_synapse(synapse* snp);
+	void add_left_synapse(synapse* snp);
 
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
@@ -112,12 +115,16 @@ class mc_aligned synapse : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS(synapse, bj_nervenet_mem)
 
+	synset*		left_vessel;
+
+	binder		right_handle;
+	synset*		right_vessel;
+
 	nervenode*	owner;
 	void*		mate;
-	synset*		vessel;
 
-	synapse() bj_nervenet_cod;
-	~synapse() bj_nervenet_cod;
+	synapse() mc_external_code_ram;
+	~synapse() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
@@ -126,28 +133,43 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 };
 
-class mc_aligned nervenode : public cell {
+#define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
+
+class mc_aligned neurostate {
 public:
-	synset			all_conn;
+	synset			charged;
 
-	node_kind_t 	ki;
-	long			id;
-	num_syn_t		sz;
-
+	synset			stabi_target;
 	num_syn_t		stabi_num_complete;
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
 	num_syn_t*		stabi_arr;
 
-	nervenode() bj_nervenet_cod;
-	~nervenode() bj_nervenet_cod;
+	neurostate();
+	~neurostate();
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0);
+
+	void calc_stabi_arr() bj_stabi_cod;
+};
+
+class mc_aligned nervenode : public cell {
+public:
+	node_kind_t 	ki;
+	long			id;
+	num_syn_t		sz;
+
+	neurostate		left_side;
+	neurostate		right_side;
+
+	nervenode() mc_external_code_ram;
+	~nervenode() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 
-	void init_with(pre_cnf_node* nod) bj_load_cod;
-
-	void calc_stabi_arr() bj_stabi_cod;
+	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 };
 
 class mc_aligned neupole : public nervenode {
@@ -156,8 +178,8 @@ public:
 	
 	neupole*		opp;
 
-	neupole() bj_nervenet_cod;
-	~neupole() bj_nervenet_cod;
+	neupole() mc_external_code_ram;
+	~neupole() mc_external_code_ram;
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
@@ -167,8 +189,8 @@ class mc_aligned neuron : public nervenode {
 public:
 	MCK_DECLARE_MEM_METHODS(neuron, bj_nervenet_mem)
 	
-	neuron() bj_nervenet_cod;
-	~neuron() bj_nervenet_cod;
+	neuron() mc_external_code_ram;
+	~neuron() mc_external_code_ram;
 
 	void stabi_handler(missive* msv) bj_stabi_cod;
 };
@@ -190,22 +212,22 @@ public:
 
 	nervenet*	shd_cnf;
 
-	long tot_neus;
-	long tot_vars;
-	long tot_lits;
-	long tot_rels;
+	num_nod_t tot_neus;
+	num_nod_t tot_vars;
+	num_nod_t tot_lits;
+	num_nod_t tot_rels;
 
-	long tot_loading;
-	long tot_loaded;
+	num_nod_t tot_loading;
+	num_nod_t tot_loaded;
 
 	grip	all_neu;
 	grip	all_pos;
 	grip	all_neg;
 
-	nervenet() bj_nervenet_cod;
-	~nervenet() bj_nervenet_cod;
+	nervenet() mc_external_code_ram;
+	~nervenet() mc_external_code_ram;
 
-	void init_with(nervenet* nvnet) bj_load_cod;
+	void init_nervenet_with(nervenet* nvnet) mc_external_code_ram;
 
 	void stabi_handler(missive* msv) bj_stabi_cod;
 };

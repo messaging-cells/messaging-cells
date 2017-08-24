@@ -9,6 +9,7 @@
 #ifndef MC_SHARED_DATA_H
 #define MC_SHARED_DATA_H
 
+//include <limits.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <inttypes.h>
@@ -32,6 +33,18 @@ typedef uint8_t mc_bool_t;
 #define mc_min(v1, v2) (((v1) < (v2))?(v1):(v2))
 
 #define mc_max(v1, v2) (((v1) > (v2))?(v1):(v2))
+
+#define mc_issigned(t) (((t)(-1)) < ((t) 0))
+
+#define mc_umaxof(t) (((0x1ULL << ((sizeof(t) * 8ULL) - 1ULL)) - 1ULL) | \
+                    (0xFULL << ((sizeof(t) * 8ULL) - 4ULL)))
+
+#define mc_smaxof(t) (((0x1ULL << ((sizeof(t) * 8ULL) - 1ULL)) - 1ULL) | \
+                    (0x7ULL << ((sizeof(t) * 8ULL) - 4ULL)))
+
+//define mc_maxof(t) ((unsigned long long) (mc_issigned(t) ? mc_smaxof(t) : mc_umaxof(t)))
+#define mc_maxof(t) ((unsigned long) (mc_issigned(t) ? mc_smaxof(t) : mc_umaxof(t)))
+
 	
 //======================================================================
 // epiphany III
