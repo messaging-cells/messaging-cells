@@ -43,7 +43,7 @@ Declaration of nervenet class.
 class pre_cnf_node;
 class synapse;
 class nervenode;
-class neupole;
+class polaron;
 class neuron;
 class nervenet;
 
@@ -78,11 +78,11 @@ enum load_tok_t : mck_token_t {
 	tok_end_load
 };
 
-enum load_hdlr_idx_t : uint8_t {
+enum bj_hdlr_idx_t : uint8_t {
 	idx_invalid,
 	idx_synset,
 	idx_synapse,
-	idx_neupole,
+	idx_polaron,
 	idx_neuron,
 	idx_nervenet,
 	idx_total
@@ -172,19 +172,6 @@ public:
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 };
 
-class mc_aligned neupole : public nervenode {
-public:
-	MCK_DECLARE_MEM_METHODS(neupole, bj_nervenet_mem)
-	
-	neupole*		opp;
-
-	neupole() mc_external_code_ram;
-	~neupole() mc_external_code_ram;
-
-	void load_handler(missive* msv) bj_load_cod;
-	void stabi_handler(missive* msv) bj_stabi_cod;
-};
-
 class mc_aligned neuron : public nervenode {
 public:
 	MCK_DECLARE_MEM_METHODS(neuron, bj_nervenet_mem)
@@ -192,6 +179,27 @@ public:
 	neuron() mc_external_code_ram;
 	~neuron() mc_external_code_ram;
 
+	void stabi_handler(missive* msv) bj_stabi_cod;
+
+	void stabi_neuron_start() bj_stabi_cod;
+};
+
+class mc_aligned polaron : public nervenode {
+public:
+	MCK_DECLARE_MEM_METHODS(polaron, bj_nervenet_mem)
+	
+	polaron*		opp;
+
+	neuron*		left_src;
+	neuron*		right_src;
+
+	polaron() mc_external_code_ram;
+	~polaron() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
+	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 };
 
@@ -205,7 +213,7 @@ public:
 
 	grip		ava_synsets;
 	grip		ava_synapses;
-	grip		ava_neupoles;
+	grip		ava_polarons;
 	grip		ava_neurons;
 
 	missive_handler_t all_handlers[idx_total];
@@ -230,12 +238,14 @@ public:
 	void init_nervenet_with(nervenet* nvnet) mc_external_code_ram;
 
 	void stabi_handler(missive* msv) bj_stabi_cod;
+
+	void stabi_nervenet_start() bj_stabi_cod;
 };
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
 #define bj_ava_synapses (bj_nervenet->ava_synapses)
-#define bj_ava_neupoles (bj_nervenet->ava_neupoles)
+#define bj_ava_polarons (bj_nervenet->ava_polarons)
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
 
 #define bj_handlers (bj_nervenet->all_handlers)

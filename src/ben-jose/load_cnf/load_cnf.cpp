@@ -11,8 +11,8 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 } 
 
 void 
-neupole_handler(missive* msv){
-	MCK_CALL_HANDLER(neupole, load_handler, msv);
+polaron_handler(missive* msv){
+	MCK_CALL_HANDLER(polaron, load_handler, msv);
 }
 
 void 
@@ -24,7 +24,7 @@ void
 bj_load_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
-	hndlrs[idx_neupole] = neupole_handler;
+	hndlrs[idx_polaron] = polaron_handler;
 	hndlrs[idx_synapse] = synapse_handler;
 
 	kernel::set_handlers(idx_total, hndlrs);
@@ -59,10 +59,10 @@ void bj_load_shd_cnf(){
 	missive::separate(2 * num_rels);
 	synset::separate(num_rels);
 	synapse::separate(num_rels);
-	neupole::separate(2 * num_vars);
+	polaron::separate(2 * num_vars);
 	neuron::separate(num_neus);
 
-	EMU_PRT("Separated neupoles %ld \n", (3 * num_vars));
+	EMU_PRT("Separated polarons %ld \n", (3 * num_vars));
 
 	binder * fst, * lst, * wrk;
 
@@ -80,8 +80,8 @@ void bj_load_shd_cnf(){
 		EMU_CK(nod->id == -(opp->id));
 		//pre_cnf_node* opp = nod->opp_nod;
 
-		neupole* pos_nod = neupole::acquire();
-		neupole* neg_nod = neupole::acquire();
+		polaron* pos_nod = polaron::acquire();
+		polaron* neg_nod = polaron::acquire();
 
 		pos_nod->init_nervenode_with(nod);
 		neg_nod->init_nervenode_with(opp);
@@ -131,7 +131,7 @@ void bj_load_shd_cnf(){
 			while(pol->loaded == mc_null){
 				// SPIN UNTIL SET (may be set by an other core)
 			}
-			neupole* my_pol = (neupole*)(pol->loaded);
+			polaron* my_pol = (polaron*)(pol->loaded);
 			
 			MCK_CK(my_pol->id == pol->id);
 
@@ -167,7 +167,7 @@ void bj_load_shd_cnf(){
 }
 
 void
-neupole::load_handler(missive* msv){
+polaron::load_handler(missive* msv){
 	cell* syn_src = msv->src;
 	load_tok_t tok = (load_tok_t)msv->tok;
 	MC_MARK_USED(syn_src);
@@ -179,7 +179,7 @@ neupole::load_handler(missive* msv){
 
 	//EMU_PRT("RCV msv pole %d from neu %d \n", id, mt_snp->owner->id);
 
-	neupole* my_glb_pol = (neupole*)mck_as_glb_pt(this);
+	polaron* my_glb_pol = (polaron*)mck_as_glb_pt(this);
 
 	my_snp->owner = my_glb_pol;
 	my_snp->mate = mt_snp;

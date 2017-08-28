@@ -40,6 +40,13 @@ Declaration of functions to load cnfs in the core.
 
 #include "nervenet.hh"
 
+enum stabi_tok_t : mck_token_t {
+	tok_stabi_invalid,
+	tok_stabi_start,
+	tok_stabi_propag
+};
+
+
 #define calc_stabi_arr_cap(tot_syn) (4 * (tot_syn))
 
 #define set_stabi_arr(cap, arr, ii, val) \

@@ -4,8 +4,8 @@
 #include "stabi.hh"
 
 void 
-neupole_stabi_handler(missive* msv){
-	MCK_CALL_HANDLER(neupole, stabi_handler, msv);
+polaron_stabi_handler(missive* msv){
+	MCK_CALL_HANDLER(polaron, stabi_handler, msv);
 }
 
 void 
@@ -28,7 +28,7 @@ bj_stabi_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
-	hndlrs[idx_neupole] = neupole_stabi_handler;
+	hndlrs[idx_polaron] = polaron_stabi_handler;
 	hndlrs[idx_neuron] = neuron_stabi_handler;
 	hndlrs[idx_synapse] = synapse_stabi_handler;
 	hndlrs[idx_nervenet] = nervenet_stabi_handler;
@@ -104,11 +104,25 @@ int cmp_neurostate(neurostate* nod1, neurostate* nod2){
 }
 
 void
-neupole::stabi_handler(missive* msv){
+polaron::stabi_handler(missive* msv){
 }
 
 void
 neuron::stabi_handler(missive* msv){
+	cell* msv_src = msv->src;
+	stabi_tok_t tok = (stabi_tok_t)msv->tok;
+	MC_MARK_USED(msv_src);
+	MC_MARK_USED(tok);
+
+	//nervenet* my_net = bj_nervenet;
+	switch(tok){
+		case tok_stabi_start:
+			stabi_neuron_start();
+		break;
+		default:
+			mck_abort(1, const_cast<char*>("BAD_STABI_TOK"));
+		break;
+	}
 }
 
 void
@@ -117,5 +131,39 @@ synapse::stabi_handler(missive* msv){
 
 void
 nervenet::stabi_handler(missive* msv){
+	cell* msv_src = msv->src;
+	stabi_tok_t tok = (stabi_tok_t)msv->tok;
+	MC_MARK_USED(msv_src);
+	MC_MARK_USED(tok);
+
+	//nervenet* my_net = bj_nervenet;
+	switch(tok){
+		case tok_stabi_start:
+			stabi_nervenet_start();
+		break;
+		default:
+			mck_abort(1, const_cast<char*>("BAD_STABI_TOK"));
+		break;
+	}
+}
+
+void
+nervenet::stabi_nervenet_start(){
+	nervenet* my_net = this;
+
+	binder * fst, * lst, * wrk;
+
+	binder* pt_all_neu = &(all_neu);
+	fst = (binder*)(pt_all_neu->bn_right);
+	lst = pt_all_neu;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		neuron* my_neu = (neuron*)wrk;
+		EMU_CK(my_neu->ki == nd_ccl);
+		my_net->send(my_neu, tok_stabi_start);
+	}
+}
+
+void
+neuron::stabi_neuron_start(){
 }
 

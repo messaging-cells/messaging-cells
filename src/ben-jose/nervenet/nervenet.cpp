@@ -9,7 +9,7 @@ MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
 MCK_DEFINE_MEM_METHODS(synset, 32, bj_ava_synsets)
 MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses)
-MCK_DEFINE_MEM_METHODS(neupole, 32, bj_ava_neupoles)
+MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons)
 MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons)
 
 BJ_DEFINE_nervenet_methods();
@@ -79,12 +79,20 @@ nervenode::init_me(int caller){
 	sz = 0;
 }
 
-neupole::neupole(){ 
-	handler_idx = idx_neupole;
-	opp = mc_null; 
+polaron::polaron(){ 
+	init_me();
 } 
 
-neupole::~neupole(){} 
+polaron::~polaron(){} 
+
+void
+polaron::init_me(int caller){
+	handler_idx = idx_polaron;
+	opp = mc_null; 
+
+	left_src = mc_null;
+	right_src = mc_null;
+}
 
 neuron::neuron(){
 	handler_idx = idx_neuron;
@@ -99,7 +107,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 	fst = (binder*)(pt_all_pol->bn_right);
 	lst = pt_all_pol;
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		neupole* my_pol = (neupole*)wrk;
+		polaron* my_pol = (polaron*)wrk;
 		EMU_CK(my_pol->ki == ki);
 
 		binder* nn_all_snp = &(my_pol->left_side.stabi_target.all_syn);
@@ -165,8 +173,8 @@ bj_print_loaded_cnf() {
 			MCK_CK(my_snp->mate != mc_null);
 
 			synapse* mt_snp = (synapse*)(my_snp->mate);
-			neupole* my_pol = (neupole*)(mt_snp->owner);
-			//neupole* my_pol = (neupole*)(my_snp->mate);
+			polaron* my_pol = (polaron*)(mt_snp->owner);
+			//polaron* my_pol = (polaron*)(my_snp->mate);
 			MCK_CK((my_pol->id <= 0) || (my_pol->ki == nd_pos));
 			MCK_CK((my_pol->id >= 0) || (my_pol->ki == nd_neg));
 
