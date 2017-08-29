@@ -56,13 +56,19 @@ void bj_load_shd_cnf(){
 	//EMU_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld TOT_RELS=%ld \n", 
 	//		my_net->tot_lits, my_net->tot_vars, my_net->tot_neus, my_net->tot_rels);
 
-	missive::separate(2 * num_rels);
-	synset::separate(num_rels);
-	synapse::separate(num_rels);
-	polaron::separate(2 * num_vars);
-	neuron::separate(num_neus);
+	long sep_msvs = 3 * num_rels;	// almost (lft + rgt)
+	long sep_ssts = 2 * num_rels;	// lft + rgt
+	long sep_snps = 2 * num_rels;	// lft + rgt
+	long sep_pols = 2 * num_vars;
+	long sep_neus = num_neus;
 
-	EMU_PRT("Separated polarons %ld \n", (3 * num_vars));
+	missive::separate(sep_msvs);
+	synset::separate(sep_ssts);
+	synapse::separate(sep_snps);
+	polaron::separate(sep_pols);
+	neuron::separate(sep_neus);
+
+	EMU_PRT("Separated polarons %ld \n", sep_pols);
 
 	binder * fst, * lst, * wrk;
 
@@ -128,9 +134,12 @@ void bj_load_shd_cnf(){
 			agent_ref* sh_snp = (agent_ref*)wrk2;
 			pre_cnf_node* pol = (pre_cnf_node*)mc_host_pt_to_core_pt(sh_snp->glb_agent_ptr);
 
+			//EMU_CK(pol->loaded != mc_null);
 			while(pol->loaded == mc_null){
 				// SPIN UNTIL SET (may be set by an other core)
+				EMU_CODE(sched_yield());
 			}
+			EMU_CK(pol->loaded != mc_null);
 			polaron* my_pol = (polaron*)(pol->loaded);
 			
 			MCK_CK(my_pol->id == pol->id);
@@ -141,7 +150,7 @@ void bj_load_shd_cnf(){
 			//my_snp->mate = my_pol;
 			//MCK_CK(my_snp->mate != mc_null);
 
-			my_neu->left_side.stabi_target.add_left_synapse(my_snp);
+			my_neu->left_side.stabi_set.add_left_synapse(my_snp);
 
 			missive* msv = missive::acquire();
 			msv->src = my_snp;
@@ -185,7 +194,7 @@ polaron::load_handler(missive* msv){
 	my_snp->mate = mt_snp;
 	MCK_CK(my_snp->mate != mc_null);
 
-	left_side.stabi_target.add_left_synapse(my_snp);
+	left_side.stabi_set.add_left_synapse(my_snp);
 
 	missive* msv2 = missive::acquire();
 	msv2->src = my_snp;

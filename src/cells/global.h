@@ -9,6 +9,10 @@
 #ifndef MC_GLOBAL_H
 #define MC_GLOBAL_H
 
+#ifdef MC_IS_EMU_CODE
+	#include <sched.h>
+#endif
+
 #include "debug.h"
 #include "err_msgs.h"
 #include "shared.h"

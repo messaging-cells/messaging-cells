@@ -110,7 +110,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 		polaron* my_pol = (polaron*)wrk;
 		EMU_CK(my_pol->ki == ki);
 
-		binder* nn_all_snp = &(my_pol->left_side.stabi_target.all_syn);
+		binder* nn_all_snp = &(my_pol->left_side.stabi_set.all_syn);
 
 		//mck_slog2("lst2__________");
 		//mck_xlog((mc_addr_t)nn_all_snp);
@@ -156,7 +156,7 @@ bj_print_loaded_cnf() {
 		neuron* my_neu = (neuron*)wrk;
 		EMU_CK(my_neu->ki == nd_ccl);
 
-		binder* nn_all_snp = &(my_neu->left_side.stabi_target.all_syn);
+		binder* nn_all_snp = &(my_neu->left_side.stabi_set.all_syn);
 
 		mck_slog2("n");
 		mck_ilog(my_neu->id);

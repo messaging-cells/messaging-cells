@@ -76,11 +76,11 @@ synset::calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) { // ca
 void 
 neurostate::calc_stabi_arr() {
 	if(stabi_arr == mc_null){
-		stabi_arr_cap = calc_stabi_arr_cap(stabi_target.tot_syn);
+		stabi_arr_cap = calc_stabi_arr_cap(stabi_set.tot_syn);
 		stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
 	}
 	stabi_arr_sz = 0;
-	stabi_target.calc_stabi_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
+	stabi_set.calc_stabi_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
 }
 
 int cmp_neurostate(neurostate* nod1, neurostate* nod2){
@@ -165,5 +165,44 @@ nervenet::stabi_nervenet_start(){
 
 void
 neuron::stabi_neuron_start(){
+}
+
+neurostate& 
+nervenode::get_side(net_side_t sd){
+	EMU_CK(sd != side_invalid);
+	if(sd == side_left){
+		return left_side;
+	}
+	return right_side;
+}
+
+void
+synset::stabi_send_snps(mck_token_t tok){
+	binder* nn_all_snp = &(all_syn);
+
+	binder * fst, * lst, * wrk;
+
+	fst = (binder*)(nn_all_snp->bn_right);
+	lst = nn_all_snp;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synapse* my_snp = (synapse*)wrk;
+		my_snp->send(my_snp->mate, tok);
+	}
+}
+
+void
+synset::stabi_rec_send_all(mck_token_t tok){
+	stabi_send_snps(tok);
+
+	binder * fst, * lst, * wrk;
+
+	binder* grps = &(all_grp);
+	fst = (binder*)(grps->bn_right);
+	lst = grps;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synset* sub_grp = (synset*)wrk;
+		EMU_CK(sub_grp->parent == this);
+		sub_grp->stabi_rec_send_all(tok);
+	}
 }
 

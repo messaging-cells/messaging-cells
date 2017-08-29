@@ -43,6 +43,7 @@ Declaration of nervenet class.
 class pre_cnf_node;
 class synapse;
 class nervenode;
+class neurostate;
 class polaron;
 class neuron;
 class nervenet;
@@ -64,6 +65,12 @@ typedef long num_nod_t;
 typedef uint8_t num_syn_t;
 
 #define BJ_MAX_NODE_SZ mc_maxof(num_syn_t)
+
+enum net_side_t : uint8_t {
+	side_invalid,
+	side_left,
+	side_right
+};
 
 enum node_kind_t : uint8_t {
 	nd_invalid = 0,
@@ -109,6 +116,9 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
+
+	void stabi_send_snps(mck_token_t tok) bj_stabi_cod;
+	void stabi_rec_send_all(mck_token_t tok) bj_stabi_cod;
 };
 
 class mc_aligned synapse : public cell {
@@ -121,7 +131,7 @@ public:
 	synset*		right_vessel;
 
 	nervenode*	owner;
-	void*		mate;
+	synapse*	mate;
 
 	synapse() mc_external_code_ram;
 	~synapse() mc_external_code_ram;
@@ -139,7 +149,7 @@ class mc_aligned neurostate {
 public:
 	synset			charged;
 
-	synset			stabi_target;
+	synset			stabi_set;
 	num_syn_t		stabi_num_complete;
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
@@ -170,6 +180,8 @@ public:
 	void init_me(int caller = 0) mc_external_code_ram;
 
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
+
+	neurostate& get_side(net_side_t sd) bj_stabi_cod;
 };
 
 class mc_aligned neuron : public nervenode {
