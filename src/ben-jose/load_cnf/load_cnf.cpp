@@ -62,7 +62,8 @@ void bj_load_shd_cnf(){
 	long sep_pols = 2 * num_vars;
 	long sep_neus = num_neus;
 
-	missive::separate(sep_msvs);
+	transmitter::separate(sep_msvs);
+	//missive::separate(sep_msvs);
 	synset::separate(sep_ssts);
 	synapse::separate(sep_snps);
 	polaron::separate(sep_pols);
@@ -150,9 +151,11 @@ void bj_load_shd_cnf(){
 			//my_snp->mate = my_pol;
 			//MCK_CK(my_snp->mate != mc_null);
 
-			my_neu->left_side.stabi_set.add_left_synapse(my_snp);
+			my_neu->left_side.stabi_active_set.add_left_synapse(my_snp);
 
-			missive* msv = missive::acquire();
+			transmitter* msv = transmitter::acquire();
+			EMU_CK(msv->wrk_side == side_invalid);
+			//missive* msv = missive::acquire();
 			msv->src = my_snp;
 			msv->dst = my_pol;
 			msv->tok = tok_nw_syn;
@@ -194,9 +197,11 @@ polaron::load_handler(missive* msv){
 	my_snp->mate = mt_snp;
 	MCK_CK(my_snp->mate != mc_null);
 
-	left_side.stabi_set.add_left_synapse(my_snp);
+	left_side.stabi_active_set.add_left_synapse(my_snp);
 
-	missive* msv2 = missive::acquire();
+	transmitter* msv2 = transmitter::acquire();
+	EMU_CK(msv2->wrk_side == side_invalid);
+	//missive* msv2 = missive::acquire();
 	msv2->src = my_snp;
 	msv2->dst = mt_snp;
 	msv2->tok = tok_nw_syn;

@@ -41,6 +41,7 @@ Declaration of nervenet class.
 #include "cell.hh"
 
 class pre_cnf_node;
+class transmitter;
 class synapse;
 class nervenode;
 class neurostate;
@@ -76,13 +77,21 @@ enum node_kind_t : uint8_t {
 	nd_invalid = 0,
 	nd_pos,
 	nd_neg,
-	nd_ccl
+	nd_neu
 };
 
 enum load_tok_t : mck_token_t {
 	tok_invalid,
 	tok_nw_syn,
 	tok_end_load
+};
+
+enum stabi_tok_t : mck_token_t {
+	tok_stabi_invalid,
+	tok_stabi_start,
+	tok_stabi_propag,
+	tok_stabi_charge,
+	tok_stabi_step_propag
 };
 
 enum bj_hdlr_idx_t : uint8_t {
@@ -94,6 +103,8 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_nervenet,
 	idx_total
 };
+
+typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd);
 
 class mc_aligned synset : public cell {
 public:
@@ -117,8 +128,21 @@ public:
 
 	void calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
 
-	void stabi_send_snps(mck_token_t tok) bj_stabi_cod;
-	void stabi_rec_send_all(mck_token_t tok) bj_stabi_cod;
+	void stabi_send_snps(bj_callee_t mth, net_side_t sd) bj_stabi_cod;
+	void stabi_rec_send_all(bj_callee_t mth, net_side_t sd) bj_stabi_cod;
+};
+
+class mc_aligned transmitter : public missive {
+public:
+	MCK_DECLARE_MEM_METHODS(transmitter, bj_nervenet_mem)
+
+	net_side_t wrk_side;
+
+	transmitter() mc_external_code_ram;
+	~transmitter() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
 };
 
 class mc_aligned synapse : public cell {
@@ -141,15 +165,17 @@ public:
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
+
+	void send_transmitter(stabi_tok_t tok, net_side_t sd) bj_stabi_cod;
 };
 
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
 
 class mc_aligned neurostate {
 public:
-	synset			charged;
+	synset			stabi_charged_set;
 
-	synset			stabi_set;
+	synset			stabi_active_set;
 	num_syn_t		stabi_num_complete;
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
@@ -163,6 +189,14 @@ public:
 
 	void calc_stabi_arr() bj_stabi_cod;
 };
+
+/*
+#define bj_get_node_as_lft(pt_state) ((nervenode*)(((uint8_t*)pt_state) - mc_offsetof(&nervenode::left_side)))
+#define bj_get_node_as_rgt(pt_state) ((nervenode*)(((uint8_t*)pt_state) - mc_offsetof(&nervenode::right_side)))
+
+#define bj_get_node(pt_state) \
+	((pt_state->side_kind == side_left)?(bj_get_node_as_lft(pt_state)):(bj_get_node_as_rgt(pt_state)))
+*/
 
 class mc_aligned nervenode : public cell {
 public:
@@ -181,12 +215,16 @@ public:
 
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 
-	neurostate& get_side(net_side_t sd) bj_stabi_cod;
+	mc_inline_fn synset& get_charged_set(net_side_t sd) bj_stabi_cod;
+	mc_inline_fn synset& get_active_set(net_side_t sd) bj_stabi_cod;
+	mc_inline_fn neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
 };
 
 class mc_aligned neuron : public nervenode {
 public:
 	MCK_DECLARE_MEM_METHODS(neuron, bj_nervenet_mem)
+
+	//EMU_CODE(int pru_attr);
 	
 	neuron() mc_external_code_ram;
 	~neuron() mc_external_code_ram;
@@ -194,6 +232,13 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void stabi_neuron_start() bj_stabi_cod;
+
+	void stabi_send_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_step_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
+
+	void pru_callee(synapse* snp, net_side_t sd) mc_external_code_ram;
+
+	void stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd) bj_stabi_cod;
 };
 
 class mc_aligned polaron : public nervenode {
@@ -213,6 +258,8 @@ public:
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
+
+	void stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd) bj_stabi_cod;
 };
 
 #define MAGIC_VAL 987654
@@ -223,6 +270,7 @@ public:
 
 	long MAGIC;
 
+	grip		ava_transmitters;
 	grip		ava_synsets;
 	grip		ava_synapses;
 	grip		ava_polarons;
@@ -255,6 +303,7 @@ public:
 };
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
+#define bj_ava_transmitters (bj_nervenet->ava_transmitters)
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
 #define bj_ava_synapses (bj_nervenet->ava_synapses)
 #define bj_ava_polarons (bj_nervenet->ava_polarons)

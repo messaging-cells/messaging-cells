@@ -7,12 +7,25 @@ missive_handler_t bj_nil_handlers[1] = { mc_null };
 
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
+MCK_DEFINE_MEM_METHODS(transmitter, 32, bj_ava_transmitters)
 MCK_DEFINE_MEM_METHODS(synset, 32, bj_ava_synsets)
 MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses)
 MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons)
 MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons)
 
 BJ_DEFINE_nervenet_methods();
+
+transmitter::transmitter(){
+	//init_me();
+} 
+
+transmitter::~transmitter(){} 
+
+void
+transmitter::init_me(int caller){
+	missive::init_me(caller);
+	wrk_side = side_invalid;
+}
 
 synset::synset(){
 	init_me();
@@ -60,6 +73,7 @@ neurostate::~neurostate(){}
 
 void
 neurostate::init_me(int caller){
+	//side_kind = side_invalid;
 	stabi_num_complete = 0;
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
@@ -77,6 +91,9 @@ nervenode::init_me(int caller){
 	ki = nd_invalid; 
 	id = 0; 
 	sz = 0;
+
+	//left_side.side_kind = side_left;
+	//right_side.side_kind = side_right;
 }
 
 polaron::polaron(){ 
@@ -110,7 +127,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 		polaron* my_pol = (polaron*)wrk;
 		EMU_CK(my_pol->ki == ki);
 
-		binder* nn_all_snp = &(my_pol->left_side.stabi_set.all_syn);
+		binder* nn_all_snp = &(my_pol->left_side.stabi_active_set.all_syn);
 
 		//mck_slog2("lst2__________");
 		//mck_xlog((mc_addr_t)nn_all_snp);
@@ -129,7 +146,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 			synapse* mt_snp = (synapse*)(my_snp->mate);
 			neuron* my_neu = (neuron*)(mt_snp->owner);
 			//neuron* my_neu = (neuron*)(my_snp->mate);
-			MCK_CK(my_neu->ki == nd_ccl);
+			MCK_CK(my_neu->ki == nd_neu);
 
 			mck_ilog(my_neu->id);
 			mck_slog2(" ");
@@ -154,9 +171,9 @@ bj_print_loaded_cnf() {
 	lst = pt_all_neu;
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		neuron* my_neu = (neuron*)wrk;
-		EMU_CK(my_neu->ki == nd_ccl);
+		EMU_CK(my_neu->ki == nd_neu);
 
-		binder* nn_all_snp = &(my_neu->left_side.stabi_set.all_syn);
+		binder* nn_all_snp = &(my_neu->left_side.stabi_active_set.all_syn);
 
 		mck_slog2("n");
 		mck_ilog(my_neu->id);

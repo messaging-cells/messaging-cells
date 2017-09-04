@@ -3,6 +3,52 @@
 
 #include "stabi.hh"
 
+synset& 
+nervenode::get_charged_set(net_side_t sd){
+	EMU_CK(sd != side_invalid);
+
+	synset* out_set = &left_side.stabi_charged_set;
+	if(sd == side_right){
+		out_set = &right_side.stabi_charged_set;
+	}
+	EMU_CK(out_set != mc_null);
+	return *out_set;
+}
+
+synset& 
+nervenode::get_active_set(net_side_t sd){
+	EMU_CK(sd != side_invalid);
+
+	synset* out_set = &left_side.stabi_active_set;
+	if(sd == side_right){
+		out_set = &right_side.stabi_active_set;
+	}
+	EMU_CK(out_set != mc_null);
+	return *out_set;
+}
+
+neurostate& 
+nervenode::get_neurostate(net_side_t sd){
+	EMU_CK(sd != side_invalid);
+
+	neurostate* out_stt = &left_side;
+	if(sd == side_right){
+		out_stt = &right_side;
+	}
+	EMU_CK(out_stt != mc_null);
+	return *out_stt;
+}
+
+void
+synapse::send_transmitter(stabi_tok_t tok, net_side_t sd){
+	transmitter* trm = transmitter::acquire();
+	trm->src = this;
+	trm->dst = mate;
+	trm->tok = tok;
+	trm->wrk_side = sd;
+	trm->send();
+}
+
 void 
 polaron_stabi_handler(missive* msv){
 	MCK_CALL_HANDLER(polaron, stabi_handler, msv);
@@ -76,11 +122,11 @@ synset::calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) { // ca
 void 
 neurostate::calc_stabi_arr() {
 	if(stabi_arr == mc_null){
-		stabi_arr_cap = calc_stabi_arr_cap(stabi_set.tot_syn);
+		stabi_arr_cap = calc_stabi_arr_cap(stabi_active_set.tot_syn);
 		stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
 	}
 	stabi_arr_sz = 0;
-	stabi_set.calc_stabi_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
+	stabi_active_set.calc_stabi_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
 }
 
 int cmp_neurostate(neurostate* nod1, neurostate* nod2){
@@ -127,6 +173,19 @@ neuron::stabi_handler(missive* msv){
 
 void
 synapse::stabi_handler(missive* msv){
+	transmitter* trm = (transmitter*)msv;
+	stabi_tok_t tok = (stabi_tok_t)trm->tok;
+	net_side_t sd = trm->wrk_side;
+	MC_MARK_USED(tok);
+
+	if(owner->ki == nd_neu){
+		neuron* neu = (neuron*)owner;
+		neu->stabi_recv_propag(this, tok, sd);
+	} else {
+		EMU_CK(owner->ki != nd_invalid);
+		polaron* pol = (polaron*)owner;
+		pol->stabi_recv_propag(this, tok, sd);
+	}
 }
 
 void
@@ -158,26 +217,14 @@ nervenet::stabi_nervenet_start(){
 	lst = pt_all_neu;
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		neuron* my_neu = (neuron*)wrk;
-		EMU_CK(my_neu->ki == nd_ccl);
+		EMU_CK(my_neu->ki == nd_neu);
 		my_net->send(my_neu, tok_stabi_start);
 	}
 }
 
 void
-neuron::stabi_neuron_start(){
-}
-
-neurostate& 
-nervenode::get_side(net_side_t sd){
-	EMU_CK(sd != side_invalid);
-	if(sd == side_left){
-		return left_side;
-	}
-	return right_side;
-}
-
-void
-synset::stabi_send_snps(mck_token_t tok){
+synset::stabi_send_snps(bj_callee_t mth, net_side_t sd){
+	EMU_CK(mth != mc_null);
 	binder* nn_all_snp = &(all_syn);
 
 	binder * fst, * lst, * wrk;
@@ -185,14 +232,20 @@ synset::stabi_send_snps(mck_token_t tok){
 	fst = (binder*)(nn_all_snp->bn_right);
 	lst = nn_all_snp;
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		synapse* my_snp = (synapse*)wrk;
-		my_snp->send(my_snp->mate, tok);
+		synapse* my_snp = mc_null;
+		if(sd == side_left){
+			my_snp = (synapse*)wrk;
+		} else {
+			EMU_CK(sd == side_right);
+			my_snp = bj_get_syn_of_rgt_handle(wrk);
+		}
+		(my_snp->owner->*mth)(my_snp, sd);
 	}
 }
 
 void
-synset::stabi_rec_send_all(mck_token_t tok){
-	stabi_send_snps(tok);
+synset::stabi_rec_send_all(bj_callee_t mth, net_side_t sd){
+	stabi_send_snps(mth, sd);
 
 	binder * fst, * lst, * wrk;
 
@@ -202,7 +255,46 @@ synset::stabi_rec_send_all(mck_token_t tok){
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		synset* sub_grp = (synset*)wrk;
 		EMU_CK(sub_grp->parent == this);
-		sub_grp->stabi_rec_send_all(tok);
+		sub_grp->stabi_rec_send_all(mth, sd);
 	}
+}
+
+void
+neuron::stabi_neuron_start(){
+	EMU_CK(left_side.stabi_charged_set.all_syn.is_alone());
+	EMU_CK(left_side.stabi_charged_set.all_grp.is_alone());
+	EMU_CK(left_side.stabi_active_set.all_grp.is_alone());
+
+	EMU_CK(right_side.stabi_charged_set.all_syn.is_alone());
+	EMU_CK(right_side.stabi_charged_set.all_grp.is_alone());
+	EMU_CK(right_side.stabi_active_set.all_syn.is_alone());
+	EMU_CK(right_side.stabi_active_set.all_grp.is_alone());
+
+	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_propag), side_left);
+	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_step_propag), side_left);
+}
+
+void 
+neuron::stabi_send_propag(synapse* snp, net_side_t sd){
+	synset& active = get_active_set(sd);
+	EMU_CK(active.tot_syn != 0);
+	if(active.tot_syn == 1){
+		snp->send_transmitter(tok_stabi_charge, sd);
+	} else {
+		snp->send_transmitter(tok_stabi_propag, sd);
+	}
+}
+
+void 
+neuron::stabi_send_step_propag(synapse* snp, net_side_t sd){
+	snp->send_transmitter(tok_stabi_step_propag, sd);
+}
+
+void
+neuron::stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd){
+}
+
+void
+polaron::stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd){
 }
 

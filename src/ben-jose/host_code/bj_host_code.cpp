@@ -122,6 +122,29 @@ void bj_test_2(int argc, char *argv[])
 	printf("imax = %lu\n", imax);
 }
 
+void call_nerv_pt_fn(nervenode* nn, synapse* snp, bj_callee_t mth){
+	(nn->*mth)(snp, side_right);
+}
+
+void 
+neuron::pru_callee(synapse* snp, net_side_t sd){
+	//printf("pru_callee %ld %d \n", id, pru_attr);
+	printf("pru_callee %ld \n", id);
+}
+
+void bj_test_3(int argc, char *argv[])
+{
+	neuron nn1;
+	synapse snp1;
+
+	//nn1.pru_attr = 321;
+	nn1.id = 1234;
+	snp1.owner = &nn1;
+
+	call_nerv_pt_fn(&nn1, &snp1, (bj_callee_t)(&neuron::pru_callee));
+	//call_nerv_pt_fn(&nn1, &snp1, &neuron::pru_callee);
+}
+
 #endif
 
 int mc_host_main(int argc, char *argv[])
@@ -130,6 +153,7 @@ int mc_host_main(int argc, char *argv[])
 
 	//EMU_CODE(bj_test(argc, argv));
 	//EMU_CODE(bj_test_2(argc, argv));
+	//EMU_CODE(bj_test_3(argc, argv));
 	rr = bj_host_main(argc, argv);
 
 	printf("HOST_CODE_FINISHED ==================================== \n");

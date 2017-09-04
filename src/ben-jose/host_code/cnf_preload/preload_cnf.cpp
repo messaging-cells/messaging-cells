@@ -162,7 +162,7 @@ preload_cnf(long sz, const long* arr){
 		new (&(THE_CNF->all_cnf[bb])) nervenet(); 
 	} 
 
-	init_node_arr(num_ccls, THE_CNF->all_ccl, nd_ccl);
+	init_node_arr(num_ccls, THE_CNF->all_ccl, nd_neu);
 	init_node_arr(num_vars, THE_CNF->all_pos, nd_pos);
 	init_node_arr(num_vars, THE_CNF->all_neg, nd_neg);
 
@@ -236,7 +236,7 @@ preload_cnf(long sz, const long* arr){
 				cnf.tot_vars++;
 			}
 			break;
-			case nd_ccl:
+			case nd_neu:
 				cnf.all_neu.bind_to_my_left(*nod);
 				cnf.tot_neus++;
 				cnf.tot_lits += nod->pre_sz;
