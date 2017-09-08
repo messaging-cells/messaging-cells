@@ -64,8 +64,11 @@ class nervenet;
 
 typedef long num_nod_t;
 typedef uint8_t num_syn_t;
+typedef uint32_t num_step_t;
 
 #define BJ_MAX_NODE_SZ mc_maxof(num_syn_t)
+
+#define BJ_INVALID_STEP ~((uint32_t)0x0)
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -106,7 +109,8 @@ enum bj_hdlr_idx_t : uint8_t {
 
 typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd);
 
-class mc_aligned synset : public cell {
+//class mc_aligned synset : public cell {
+class mc_aligned synset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(synset, bj_nervenet_mem)
 
@@ -123,6 +127,7 @@ public:
 	void init_me(int caller = 0);
 
 	void add_left_synapse(synapse* snp);
+	void add_right_synapse(synapse* snp);
 
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
@@ -130,6 +135,8 @@ public:
 
 	void stabi_send_snps(bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 	void stabi_rec_send_all(bj_callee_t mth, net_side_t sd) bj_stabi_cod;
+
+	void stabi_rec_reset() bj_stabi_cod;
 };
 
 class mc_aligned transmitter : public missive {
@@ -137,6 +144,7 @@ public:
 	MCK_DECLARE_MEM_METHODS(transmitter, bj_nervenet_mem)
 
 	net_side_t wrk_side;
+	num_step_t wrk_step;
 
 	transmitter() mc_external_code_ram;
 	~transmitter() mc_external_code_ram;
@@ -173,6 +181,8 @@ public:
 
 class mc_aligned neurostate {
 public:
+	num_step_t		stabi_step;
+	nervenode*		stabi_source;
 	synset			stabi_charged_set;
 
 	synset			stabi_active_set;
@@ -203,6 +213,7 @@ public:
 	node_kind_t 	ki;
 	long			id;
 	num_syn_t		sz;
+	num_step_t		creat_step;
 
 	neurostate		left_side;
 	neurostate		right_side;
@@ -238,7 +249,7 @@ public:
 
 	void pru_callee(synapse* snp, net_side_t sd) mc_external_code_ram;
 
-	void stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd) bj_stabi_cod;
+	void stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd, num_step_t stp) bj_stabi_cod;
 };
 
 class mc_aligned polaron : public nervenode {
@@ -246,9 +257,6 @@ public:
 	MCK_DECLARE_MEM_METHODS(polaron, bj_nervenet_mem)
 	
 	polaron*		opp;
-
-	neuron*		left_src;
-	neuron*		right_src;
 
 	polaron() mc_external_code_ram;
 	~polaron() mc_external_code_ram;
@@ -259,7 +267,11 @@ public:
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
-	void stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd) bj_stabi_cod;
+	void stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd, num_step_t stp) bj_stabi_cod;
+
+	void stabi_charge(synapse* snp, net_side_t sd, num_step_t stp) bj_stabi_cod;
+	void stabi_propag(synapse* snp, net_side_t sd, num_step_t stp) bj_stabi_cod;
+	void stabi_step_propag(synapse* snp, net_side_t sd, num_step_t stp) bj_stabi_cod;
 };
 
 #define MAGIC_VAL 987654

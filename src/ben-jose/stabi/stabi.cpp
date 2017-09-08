@@ -46,6 +46,7 @@ synapse::send_transmitter(stabi_tok_t tok, net_side_t sd){
 	trm->dst = mate;
 	trm->tok = tok;
 	trm->wrk_side = sd;
+	trm->wrk_step = owner->get_neurostate(sd).stabi_step;
 	trm->send();
 }
 
@@ -176,15 +177,15 @@ synapse::stabi_handler(missive* msv){
 	transmitter* trm = (transmitter*)msv;
 	stabi_tok_t tok = (stabi_tok_t)trm->tok;
 	net_side_t sd = trm->wrk_side;
-	MC_MARK_USED(tok);
+	num_step_t stp = trm->wrk_step;
 
 	if(owner->ki == nd_neu){
 		neuron* neu = (neuron*)owner;
-		neu->stabi_recv_propag(this, tok, sd);
+		neu->stabi_recv_propag(this, tok, sd, stp);
 	} else {
 		EMU_CK(owner->ki != nd_invalid);
 		polaron* pol = (polaron*)owner;
-		pol->stabi_recv_propag(this, tok, sd);
+		pol->stabi_recv_propag(this, tok, sd, stp);
 	}
 }
 
@@ -291,10 +292,57 @@ neuron::stabi_send_step_propag(synapse* snp, net_side_t sd){
 }
 
 void
-neuron::stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd){
+neuron::stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd, num_step_t stp){
 }
 
 void
-polaron::stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd){
+polaron::stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd, num_step_t stp){
+	//nervenet* my_net = bj_nervenet;
+	//neurostate& stt = get_neurostate(sd);
+	switch(tok){
+		case tok_stabi_charge:
+			stabi_charge(snp, sd, stp);
+		break;
+		case tok_stabi_propag:
+			stabi_propag(snp, sd, stp);
+		break;
+		case tok_stabi_step_propag:
+			stabi_step_propag(snp, sd, stp);
+		break;
+		default:
+			mck_abort(1, const_cast<char*>("polaron::stabi_recv_propag. BAD_STABI_TOK"));
+		break;
+	}
 }
 
+void
+synset::stabi_rec_reset(){
+	while(! all_grp.is_alone()){
+		synset* sub_grp = (synset*)(binder*)(all_grp.bn_right);
+		EMU_CK(sub_grp->parent == this);
+		sub_grp->stabi_rec_reset();
+
+		EMU_CK(sub_grp->all_grp.is_alone());
+		all_syn.move_all_to_my_right(sub_grp->all_syn);
+		sub_grp->release();
+	}
+}
+
+void
+polaron::stabi_charge(synapse* snp, net_side_t sd, num_step_t stp){
+	EMU_CK(sd != side_invalid);
+	neurostate& stt = get_neurostate(sd);
+	neuron* neu = (neuron*)(snp->mate->owner);
+
+	EMU_CK(stp > stt.stabi_step);
+	stt.stabi_step = stp + 1;
+	stt.stabi_source = neu;
+}
+
+void
+polaron::stabi_propag(synapse* snp, net_side_t sd, num_step_t stp){
+}
+
+void
+polaron::stabi_step_propag(synapse* snp, net_side_t sd, num_step_t stp){
+}

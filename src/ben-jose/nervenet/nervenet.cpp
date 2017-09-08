@@ -25,6 +25,7 @@ void
 transmitter::init_me(int caller){
 	missive::init_me(caller);
 	wrk_side = side_invalid;
+	wrk_step = BJ_INVALID_STEP;
 }
 
 synset::synset(){
@@ -35,7 +36,7 @@ synset::~synset(){}
 
 void
 synset::init_me(int caller){
-	handler_idx = idx_synset;
+	//handler_idx = idx_synset;
 	parent = mc_null;
 	tot_syn = 0;
 }
@@ -46,6 +47,14 @@ synset::add_left_synapse(synapse* snp){
 	tot_syn++;
 	all_syn.bind_to_my_left(*snp);
 	snp->left_vessel = this;
+}
+
+void 
+synset::add_right_synapse(synapse* snp){
+	EMU_CK(snp != mc_null);
+	tot_syn++;
+	all_syn.bind_to_my_left(snp->right_handle);
+	snp->right_vessel = this;
 }
 
 synapse::synapse(){
@@ -74,6 +83,8 @@ neurostate::~neurostate(){}
 void
 neurostate::init_me(int caller){
 	//side_kind = side_invalid;
+	stabi_step = 0;
+	stabi_source = mc_null;
 	stabi_num_complete = 0;
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
@@ -91,6 +102,7 @@ nervenode::init_me(int caller){
 	ki = nd_invalid; 
 	id = 0; 
 	sz = 0;
+	creat_step = 0;
 
 	//left_side.side_kind = side_left;
 	//right_side.side_kind = side_right;
@@ -106,9 +118,6 @@ void
 polaron::init_me(int caller){
 	handler_idx = idx_polaron;
 	opp = mc_null; 
-
-	left_src = mc_null;
-	right_src = mc_null;
 }
 
 neuron::neuron(){
