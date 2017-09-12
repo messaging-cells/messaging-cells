@@ -197,6 +197,14 @@ void ck_shd_code();
 	}
 
 	mc_inline_fn void
+	mck_check_stack_pointer() {
+		mc_addr_t curr_sp = (mc_addr_t)mck_get_stack_pointer();
+		if(curr_sp < MC_VAL_CORE_STACK_ORIG){
+			mck_abort((mc_addr_t)(void*)err_16, err_16);
+		}
+	}
+
+	mc_inline_fn void
 	mck_update_min_stack_pointer() {
 		mc_addr_t curr_sp = (mc_addr_t)mck_get_stack_pointer();
 		mc_addr_t min_sp = MC_CORE_INFO->dbg_min_sp;
@@ -205,8 +213,10 @@ void ck_shd_code();
 		}
 	}
 	#define MCK_UPDATE_MIN_SP() MC_DBG(mck_update_min_stack_pointer())
+	#define MCK_CHECK_SP() MC_DBG(mck_check_stack_pointer())
 #else
 	#define MCK_UPDATE_MIN_SP() 
+	#define MCK_CHECK_SP()
 #endif
 
 mc_inline_fn 

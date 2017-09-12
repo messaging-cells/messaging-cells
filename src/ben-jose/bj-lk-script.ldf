@@ -36,13 +36,13 @@ LD_EXTERNAL_HOST_ALLOC_SIZE = 8M;
 /*! Core interrupts vector table size */
 LD_CORE_IVT_SIZE = 0x30;
 /*! Core kernel + central user code size */
-LD_CORE_CODE_SIZE = 5k - LD_CORE_IVT_SIZE;
+LD_CORE_CODE_SIZE = 9k - LD_CORE_IVT_SIZE;
 /*! Core stack size */
-LD_CORE_STACK_SIZE = 8k - LD_CORE_CODE_SIZE - LD_CORE_IVT_SIZE;
+LD_CORE_STACK_SIZE = 12k - LD_CORE_CODE_SIZE - LD_CORE_IVT_SIZE;
 /*! Core module size */
-LD_CORE_MODULE_SIZE = 12k;
+LD_CORE_MODULE_SIZE = 10k;
 /*! Core dynamic allocatable memory size */
-LD_CORE_ALLOC_SIZE = 12k;
+LD_CORE_ALLOC_SIZE = 10k;
 
 /* =============================================================================================== */
 
@@ -118,8 +118,9 @@ SECTIONS
 
 	.text : { *(.text*) } > CODE_RAM
 	.data : { *(.data*) } > CODE_RAM
+	/* .rodata : { *(.rodata*) } > CODE_RAM */
 	.rodata : { *(.rodata*) } > LD_EXTERNAL_CODE_RAM
-	.bss : { *(.bss*) } > CODE_RAM
+	.bss : { *(.bss*) } > CODE_RAM 
 
 	module1 : { *(module1*) } > MODULE_1
 	module2 : { *(module2*) } > MODULE_2

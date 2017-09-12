@@ -1,5 +1,5 @@
 
-BJ_LDF := solver_main/bj-lk-script.ldf
+BJ_LDF := bj-lk-script.ldf
 
 TARGET := ben-jose.elf
 

@@ -32,6 +32,7 @@ mc_c_decl {
 	extern mc_addr_t LD_EXTERNAL_HOST_DATA_ORIG;
 	extern mc_addr_t LD_EXTERNAL_HOST_ALLOC_ORIG;
 
+	extern mc_addr_t LD_CORE_STACK_ORIG;
 	extern mc_addr_t LD_CORE_MODULE_ORIG;
 	extern mc_addr_t LD_CORE_MODULE_SIZE;
 
@@ -58,6 +59,8 @@ mc_c_decl {
 	//! Value of linker script variable LD_EXTERNAL_HOST_ALLOC_ORIG
 	#define MC_VAL_EXTERNAL_HOST_ALLOC_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_HOST_ALLOC_ORIG)
 
+	//! Value of linker script variable LD_CORE_STACK_ORIG
+	#define MC_VAL_CORE_STACK_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_CORE_STACK_ORIG)
 	//! Value of linker script variable LD_CORE_MODULE_ORIG
 	#define MC_VAL_CORE_MODULE_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_ORIG)
 	//! Value of linker script variable LD_CORE_MODULE_SIZE

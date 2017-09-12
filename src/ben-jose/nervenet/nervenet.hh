@@ -64,11 +64,11 @@ class nervenet;
 
 typedef long num_nod_t;
 typedef uint8_t num_syn_t;
-typedef uint32_t num_step_t;
+typedef uint32_t num_tier_t;
 
 #define BJ_MAX_NODE_SZ mc_maxof(num_syn_t)
 
-#define BJ_INVALID_STEP ~((uint32_t)0x0)
+#define BJ_INVALID_TIER ~((uint32_t)0x0)
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -93,13 +93,15 @@ enum stabi_tok_t : mck_token_t {
 	tok_stabi_invalid,
 	tok_stabi_start,
 	tok_stabi_propag,
-	tok_stabi_charge,
-	tok_stabi_step_propag
+	tok_stabi_charge_all,
+	tok_stabi_charge_src,
+	tok_stabi_tier_propag
 };
 
 enum bj_hdlr_idx_t : uint8_t {
 	idx_invalid,
 	idx_synset,
+	idx_tierset,
 	idx_synapse,
 	idx_polaron,
 	idx_neuron,
@@ -139,12 +141,25 @@ public:
 	void stabi_rec_reset() bj_stabi_cod;
 };
 
+class mc_aligned tierset : public synset {
+public:
+	MCK_DECLARE_MEM_METHODS(tierset, bj_nervenet_mem)
+
+	num_tier_t num_tier;
+
+	tierset();
+	~tierset();
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0);
+};
+
 class mc_aligned transmitter : public missive {
 public:
 	MCK_DECLARE_MEM_METHODS(transmitter, bj_nervenet_mem)
 
 	net_side_t wrk_side;
-	num_step_t wrk_step;
+	num_tier_t wrk_tier;
 
 	transmitter() mc_external_code_ram;
 	~transmitter() mc_external_code_ram;
@@ -181,7 +196,7 @@ public:
 
 class mc_aligned neurostate {
 public:
-	num_step_t		stabi_step;
+	num_tier_t		stabi_tier;
 	nervenode*		stabi_source;
 	synset			stabi_charged_set;
 
@@ -208,12 +223,21 @@ public:
 	((pt_state->side_kind == side_left)?(bj_get_node_as_lft(pt_state)):(bj_get_node_as_rgt(pt_state)))
 */
 
+struct mc_aligned propag_data {
+public:
+	transmitter* trm;
+	synapse* snp;
+	stabi_tok_t tok;
+	net_side_t sd;
+	num_tier_t ti;
+};
+
 class mc_aligned nervenode : public cell {
 public:
 	node_kind_t 	ki;
 	long			id;
 	num_syn_t		sz;
-	num_step_t		creat_step;
+	num_tier_t		creat_tier;
 
 	neurostate		left_side;
 	neurostate		right_side;
@@ -229,6 +253,12 @@ public:
 	mc_inline_fn synset& get_charged_set(net_side_t sd) bj_stabi_cod;
 	mc_inline_fn synset& get_active_set(net_side_t sd) bj_stabi_cod;
 	mc_inline_fn neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
+
+	void stabi_recv_propag(propag_data* dat) bj_stabi_cod;
+	void stabi_charge_all(propag_data* dat) bj_stabi_cod;
+	void stabi_charge_one(propag_data* dat) bj_stabi_cod;
+	void stabi_propag(propag_data* dat) bj_stabi_cod;
+	void stabi_tier_propag(propag_data* dat) bj_stabi_cod;
 };
 
 class mc_aligned neuron : public nervenode {
@@ -245,11 +275,9 @@ public:
 	void stabi_neuron_start() bj_stabi_cod;
 
 	void stabi_send_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_step_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_tier_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
 
 	void pru_callee(synapse* snp, net_side_t sd) mc_external_code_ram;
-
-	void stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd, num_step_t stp) bj_stabi_cod;
 };
 
 class mc_aligned polaron : public nervenode {
@@ -266,12 +294,6 @@ public:
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
-
-	void stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd, num_step_t stp) bj_stabi_cod;
-
-	void stabi_charge(synapse* snp, net_side_t sd, num_step_t stp) bj_stabi_cod;
-	void stabi_propag(synapse* snp, net_side_t sd, num_step_t stp) bj_stabi_cod;
-	void stabi_step_propag(synapse* snp, net_side_t sd, num_step_t stp) bj_stabi_cod;
 };
 
 #define MAGIC_VAL 987654
@@ -284,6 +306,7 @@ public:
 
 	grip		ava_transmitters;
 	grip		ava_synsets;
+	grip		ava_tiersets;
 	grip		ava_synapses;
 	grip		ava_polarons;
 	grip		ava_neurons;
@@ -317,6 +340,7 @@ public:
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_transmitters (bj_nervenet->ava_transmitters)
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
+#define bj_ava_tiersets (bj_nervenet->ava_tiersets)
 #define bj_ava_synapses (bj_nervenet->ava_synapses)
 #define bj_ava_polarons (bj_nervenet->ava_polarons)
 #define bj_ava_neurons (bj_nervenet->ava_neurons)

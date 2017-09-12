@@ -9,6 +9,7 @@ MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
 MCK_DEFINE_MEM_METHODS(transmitter, 32, bj_ava_transmitters)
 MCK_DEFINE_MEM_METHODS(synset, 32, bj_ava_synsets)
+MCK_DEFINE_MEM_METHODS(tierset, 32, bj_ava_tiersets)
 MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses)
 MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons)
 MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons)
@@ -25,7 +26,7 @@ void
 transmitter::init_me(int caller){
 	missive::init_me(caller);
 	wrk_side = side_invalid;
-	wrk_step = BJ_INVALID_STEP;
+	wrk_tier = BJ_INVALID_TIER;
 }
 
 synset::synset(){
@@ -57,6 +58,17 @@ synset::add_right_synapse(synapse* snp){
 	snp->right_vessel = this;
 }
 
+tierset::tierset(){
+	init_me();
+} 
+
+tierset::~tierset(){} 
+
+void
+tierset::init_me(int caller){
+	synset::init_me(caller);
+}
+
 synapse::synapse(){
 	init_me();
 } 
@@ -83,7 +95,7 @@ neurostate::~neurostate(){}
 void
 neurostate::init_me(int caller){
 	//side_kind = side_invalid;
-	stabi_step = 0;
+	stabi_tier = 0;
 	stabi_source = mc_null;
 	stabi_num_complete = 0;
 	stabi_arr_cap = 0;
@@ -102,7 +114,7 @@ nervenode::init_me(int caller){
 	ki = nd_invalid; 
 	id = 0; 
 	sz = 0;
-	creat_step = 0;
+	creat_tier = 0;
 
 	//left_side.side_kind = side_left;
 	//right_side.side_kind = side_right;

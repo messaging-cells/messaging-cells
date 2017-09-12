@@ -46,7 +46,7 @@ synapse::send_transmitter(stabi_tok_t tok, net_side_t sd){
 	trm->dst = mate;
 	trm->tok = tok;
 	trm->wrk_side = sd;
-	trm->wrk_step = owner->get_neurostate(sd).stabi_step;
+	trm->wrk_tier = owner->get_neurostate(sd).stabi_tier;
 	trm->send();
 }
 
@@ -174,18 +174,20 @@ neuron::stabi_handler(missive* msv){
 
 void
 synapse::stabi_handler(missive* msv){
-	transmitter* trm = (transmitter*)msv;
-	stabi_tok_t tok = (stabi_tok_t)trm->tok;
-	net_side_t sd = trm->wrk_side;
-	num_step_t stp = trm->wrk_step;
+	propag_data dat;
+	dat.trm = (transmitter*)msv;
+	dat.snp = this;
+	dat.tok = (stabi_tok_t)(dat.trm)->tok;
+	dat.sd = (dat.trm)->wrk_side;
+	dat.ti = (dat.trm)->wrk_tier;
 
 	if(owner->ki == nd_neu){
 		neuron* neu = (neuron*)owner;
-		neu->stabi_recv_propag(this, tok, sd, stp);
+		neu->stabi_recv_propag(&dat);
 	} else {
 		EMU_CK(owner->ki != nd_invalid);
 		polaron* pol = (polaron*)owner;
-		pol->stabi_recv_propag(this, tok, sd, stp);
+		pol->stabi_recv_propag(&dat);
 	}
 }
 
@@ -246,6 +248,7 @@ synset::stabi_send_snps(bj_callee_t mth, net_side_t sd){
 
 void
 synset::stabi_rec_send_all(bj_callee_t mth, net_side_t sd){
+	MCK_CHECK_SP();
 	stabi_send_snps(mth, sd);
 
 	binder * fst, * lst, * wrk;
@@ -272,7 +275,7 @@ neuron::stabi_neuron_start(){
 	EMU_CK(right_side.stabi_active_set.all_grp.is_alone());
 
 	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_propag), side_left);
-	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_step_propag), side_left);
+	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_tier_propag), side_left);
 }
 
 void 
@@ -280,43 +283,40 @@ neuron::stabi_send_propag(synapse* snp, net_side_t sd){
 	synset& active = get_active_set(sd);
 	EMU_CK(active.tot_syn != 0);
 	if(active.tot_syn == 1){
-		snp->send_transmitter(tok_stabi_charge, sd);
+		snp->send_transmitter(tok_stabi_charge_all, sd);
 	} else {
 		snp->send_transmitter(tok_stabi_propag, sd);
 	}
 }
 
 void 
-neuron::stabi_send_step_propag(synapse* snp, net_side_t sd){
-	snp->send_transmitter(tok_stabi_step_propag, sd);
+neuron::stabi_send_tier_propag(synapse* snp, net_side_t sd){
+	snp->send_transmitter(tok_stabi_tier_propag, sd);
 }
 
 void
-neuron::stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd, num_step_t stp){
-}
-
-void
-polaron::stabi_recv_propag(synapse* snp, stabi_tok_t tok, net_side_t sd, num_step_t stp){
+nervenode::stabi_recv_propag(propag_data* dat){
 	//nervenet* my_net = bj_nervenet;
 	//neurostate& stt = get_neurostate(sd);
-	switch(tok){
-		case tok_stabi_charge:
-			stabi_charge(snp, sd, stp);
+	switch(dat->tok){
+		case tok_stabi_charge_all:
+			stabi_charge_all(dat);
 		break;
 		case tok_stabi_propag:
-			stabi_propag(snp, sd, stp);
+			stabi_propag(dat);
 		break;
-		case tok_stabi_step_propag:
-			stabi_step_propag(snp, sd, stp);
+		case tok_stabi_tier_propag:
+			stabi_tier_propag(dat);
 		break;
 		default:
-			mck_abort(1, const_cast<char*>("polaron::stabi_recv_propag. BAD_STABI_TOK"));
+			mck_abort(1, const_cast<char*>("nervenode::stabi_recv_propag. BAD_STABI_TOK"));
 		break;
 	}
 }
 
 void
 synset::stabi_rec_reset(){
+	MCK_CHECK_SP();
 	while(! all_grp.is_alone()){
 		synset* sub_grp = (synset*)(binder*)(all_grp.bn_right);
 		EMU_CK(sub_grp->parent == this);
@@ -329,20 +329,32 @@ synset::stabi_rec_reset(){
 }
 
 void
-polaron::stabi_charge(synapse* snp, net_side_t sd, num_step_t stp){
-	EMU_CK(sd != side_invalid);
-	neurostate& stt = get_neurostate(sd);
-	neuron* neu = (neuron*)(snp->mate->owner);
+nervenode::stabi_charge_all(propag_data* dat){
+	EMU_CK(dat != mc_null);
+	EMU_CK(dat->sd != side_invalid);
+	neurostate& stt = get_neurostate(dat->sd);
 
-	EMU_CK(stp > stt.stabi_step);
-	stt.stabi_step = stp + 1;
-	stt.stabi_source = neu;
+	if(stt.stabi_source == mc_null){
+		neuron* neu = (neuron*)(dat->snp->mate->owner);
+
+		EMU_CK(dat->ti > stt.stabi_tier);
+		stt.stabi_tier = dat->ti + 1;
+		stt.stabi_source = neu;
+
+		stt.stabi_active_set.stabi_rec_reset();
+
+		synset* sub_grp = synset::acquire();
+		EMU_CK(sub_grp->all_syn.is_alone());
+		sub_grp->all_syn.move_all_to_my_right(stt.stabi_active_set.all_syn);
+		
+		stt.stabi_charged_set.all_grp.bind_to_my_left(*sub_grp);
+	}
 }
 
 void
-polaron::stabi_propag(synapse* snp, net_side_t sd, num_step_t stp){
+nervenode::stabi_propag(propag_data* dat){
 }
 
 void
-polaron::stabi_step_propag(synapse* snp, net_side_t sd, num_step_t stp){
+nervenode::stabi_tier_propag(propag_data* dat){
 }

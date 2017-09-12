@@ -24,6 +24,7 @@ extern char err_12[] mc_external_data_ram;
 extern char err_13[] mc_external_data_ram;
 extern char err_14[] mc_external_data_ram;
 extern char err_15[] mc_external_data_ram;
+extern char err_16[] mc_external_data_ram;
 
 #ifdef __cplusplus
 }
