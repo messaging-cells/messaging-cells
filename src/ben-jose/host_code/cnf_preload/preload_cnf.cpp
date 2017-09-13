@@ -9,7 +9,7 @@ grip ava_pre_cnf_node;
 
 pre_load_cnf* THE_CNF = mc_null;
 
-MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node)
+MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node, 0)
 
 #ifdef MC_IS_ZNQ_CODE
 BJ_DEFINE_nervenet_methods();

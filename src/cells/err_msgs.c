@@ -18,4 +18,5 @@ char err_13[] mc_external_data_ram = "mc_core_addr_to_host_addr abort\n";
 char err_14[] mc_external_data_ram = "kernel::get_core_kernel abort\n";
 char err_15[] mc_external_data_ram = "kernel::run_sys abort. MUST call set_handlers BEFORE run_sys. \n";
 char err_16[] mc_external_data_ram = "Error. Stack overflow. \n";
+char err_17[] mc_external_data_ram = "Error. Invalid separate current value. \n";
 

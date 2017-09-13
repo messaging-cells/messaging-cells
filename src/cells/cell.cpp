@@ -35,6 +35,12 @@
 
 //----------------------------------------------------------------------------
 
+MCK_DEFINE_MEM_METHODS(cell, 32, mck_all_available(cell), 0)
+MCK_DEFINE_MEM_METHODS(missive, 32, mck_all_available(missive), 0)
+MCK_DEFINE_MEM_METHODS(agent_ref, 32, mck_all_available(agent_ref), 0)
+MCK_DEFINE_MEM_METHODS(agent_grp, 32, mck_all_available(agent_grp), 0)
+
+/*
 MCK_DEFINE_ACQUIRE_ALLOC(cell, 32)
 MCK_DEFINE_ACQUIRE_ALLOC(missive, 32)
 MCK_DEFINE_ACQUIRE_ALLOC(agent_ref, 32)
@@ -51,6 +57,8 @@ MCK_DEFINE_SEPARATE(cell) //!< \ref separates \ref cell s in memory for future \
 MCK_DEFINE_SEPARATE(missive) //!< \ref separates \ref missive s in memory for future \ref missive::acquire.
 MCK_DEFINE_SEPARATE(agent_ref) //!< \ref separates \ref agent_ref s in memory for future \ref aget_ref::acquire.
 MCK_DEFINE_SEPARATE(agent_grp) //!< \ref separates \ref agent_grp s in memory for future \ref aget_grp::acquire.
+
+*/
 
 kernel::kernel(){
 	init_kernel();
@@ -94,6 +102,8 @@ kernel::init_kernel(){
 
 	host_kernel = mc_null;
 
+	EMU_CK(cell::get_curr_separate_sz() == 1);
+	//EMU_PRT("CURR_SEP_SIZE=%u \n\n", cell::get_curr_separate_sz());
 	first_cell = cell::acquire();
 	//ZNQ_CODE(printf("INITED_first_cell = %p \n", first_cell));
 

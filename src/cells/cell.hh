@@ -64,29 +64,13 @@ enum mck_cell_id_t : uint8_t {
 
 #define mck_all_available(nam) MCK_KERNEL->cls_available_##nam
 
-#define MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
-void \
-nam::separate(uint16_t sz){ \
-	if(sz <= 0){ return; } \
-	grip& ava = all_ava; \
-	nam* obj = nam::acquire(sz); \
-	for(int bb = 0; bb < sz; bb++){ \
-		obj[bb].let_go(); \
-		ava.bind_to_my_left(obj[bb]); \
-	} \
-} \
-
-// end_macro
-
-#define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
-
 //! Defines 'acquire_alloc' method for class 'nam' with aligment 'align' (32 or 64).
 #define MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 nam* \
 nam::acquire_alloc(uint16_t sz){ \
 	nam* obj = mc_malloc##align(nam, sz); \
 	if(obj == mc_null){ \
-		mck_abort((mc_addr_t)nam::acquire_alloc, err_1); \
+		mck_abort((mc_addr_t)sz, err_1); \
 	} \
 	MCK_CK(MC_IS_ALIGNED_##align(obj)); \
 	for(int bb = 0; bb < sz; bb++){ \
@@ -97,11 +81,65 @@ nam::acquire_alloc(uint16_t sz){ \
 
 // end_macro
 
-#define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
+#define MCK_DEFINE_NXT_SEPARATE_SZ(nam, curr_sep_sz) \
+uint16_t \
+nam::get_next_separate_sz(){ \
+	curr_sep_sz <<= 1; \
+	return curr_sep_sz; \
+} \
+
+// end_macro
+
+#define MCK_DEFINE_CURR_SEPARATE_SZ(nam, curr_sep_sz) \
+uint16_t \
+nam::get_curr_separate_sz(){ \
+	if(curr_sep_sz <= 0){ return 1; } \
+	return curr_sep_sz; \
+} \
+
+// end_macro
+
+#define MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
+void \
+nam::separate(uint16_t sz){ \
+	if(sz == 0){ return; } \
+	if(sz == ((uint16_t)(-1))){ sz = nam::get_curr_separate_sz(); } \
+	grip& ava = all_ava; \
+	nam* obj = nam::acquire_alloc(sz); \
+	for(int bb = 0; bb < sz; bb++){ \
+		obj[bb].let_go(); \
+		ava.bind_to_my_left(obj[bb]); \
+	} \
+} \
+
+// end_macro
+
+#define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
+
+/*
+define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
 nam* \
 nam::acquire(uint16_t sz){ \
 	grip& ava = all_ava; \
 	if((sz == 1) && (! ava.is_alone())){ \
+		binder* fst = ava.bn_right; \
+		fst->let_go(); \
+		return (nam *)fst; \
+	} \
+	return nam::acquire_alloc(sz); \
+} \
+
+// end_macro
+*/
+
+#define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
+nam* \
+nam::acquire(uint16_t sz){ \
+	grip& ava = all_ava; \
+	if(sz == 1){ \
+		if(ava.is_alone()){ \
+			separate(-1); \
+		} \
 		binder* fst = ava.bn_right; \
 		fst->let_go(); \
 		return (nam *)fst; \
@@ -115,6 +153,7 @@ nam::acquire(uint16_t sz){ \
 
 //! Declares dynamic memory methods for class 'nam'
 #define MCK_DECLARE_MEM_METHODS(nam, module) \
+	static	uint16_t		get_curr_separate_sz() mc_external_code_ram; \
 	static	nam*			acquire_alloc(uint16_t sz = 1) mc_external_code_ram; \
 	static	nam*			acquire(uint16_t sz = 1) module; \
 	static	void			separate(uint16_t sz) mc_external_code_ram; \
@@ -122,7 +161,8 @@ nam::acquire(uint16_t sz){ \
 // end_macro
 
 //! Defines dynamic memory methods for class 'nam' with aligment 'align' (32 or 64) and available list 'all_ava'.
-#define MCK_DEFINE_MEM_METHODS(nam, align, all_ava) \
+#define MCK_DEFINE_MEM_METHODS(nam, align, all_ava, curr_sep_sz) \
+	MCK_DEFINE_CURR_SEPARATE_SZ(nam, curr_sep_sz) \
 	MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 	MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
 	MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
@@ -543,12 +583,7 @@ typedef uint8_t mck_flags_t;
 
 class mc_aligned cell: public agent {
 public:
-	static
-	cell*			acquire_alloc(uint16_t sz) mc_external_code_ram;
-	static
-	cell*			acquire(uint16_t sz = 1);
-	static
-	void			separate(uint16_t sz) mc_external_code_ram;
+	MCK_DECLARE_MEM_METHODS(cell, mc_mod0_cod);
 
 	mck_handler_idx_t 	handler_idx; //!< The index of my handler function in \ref kernel::all_handlers.
 	mck_flags_t 		flags;
@@ -595,12 +630,7 @@ public:
 
 class mc_aligned missive : public agent {
 public:
-	static
-	missive*		acquire_alloc(uint16_t sz) mc_external_code_ram;
-	static
-	missive*		acquire(uint16_t sz = 1);
-	static
-	void			separate(uint16_t sz) mc_external_code_ram;
+	MCK_DECLARE_MEM_METHODS(missive, mc_mod0_cod);
 
 	cell* 				dst;
 	cell*				src;
@@ -685,12 +715,7 @@ public:
 */
 class mc_aligned agent_grp : public agent {
 public:
-	static
-	agent_grp*		acquire_alloc(uint16_t sz) mc_external_code_ram;
-	static
-	agent_grp*		acquire(uint16_t sz = 1);
-	static
-	void			separate(uint16_t sz) mc_external_code_ram;
+	MCK_DECLARE_MEM_METHODS(agent_grp, mc_mod0_cod);
 
 	grip		all_agts;
 	uint8_t 	tot_agts;	// optional use
@@ -734,12 +759,7 @@ public:
 */
 class mc_aligned agent_ref : public agent {
 public:
-	static
-	agent_ref*		acquire_alloc(uint16_t sz) mc_external_code_ram;
-	static
-	agent_ref* 		acquire(uint16_t sz = 1);
-	static
-	void			separate(uint16_t sz) mc_external_code_ram;
+	MCK_DECLARE_MEM_METHODS(agent_ref, mc_mod0_cod);
 
 	agent* 		glb_agent_ptr;
 

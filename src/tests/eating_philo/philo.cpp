@@ -281,8 +281,8 @@ MCK_DEFINE_ACQUIRE_ALLOC(philo_core, 32);	// defines philo_core::acquire_alloc
 //! Returns the \ref philosopher in core with 'id'
 #define get_philo(id) ((philosopher*)mc_addr_set_id(id, glb_philo))
 
-MCK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks)
-MCK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos)
+MCK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks, 0)
+MCK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos, 0)
 
 
 #ifdef PHILO_WITH_DBG

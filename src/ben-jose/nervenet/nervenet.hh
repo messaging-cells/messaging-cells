@@ -141,11 +141,12 @@ public:
 	void stabi_rec_reset() bj_stabi_cod;
 };
 
-class mc_aligned tierset : public synset {
+class mc_aligned tierset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(tierset, bj_nervenet_mem)
 
-	num_tier_t num_tier;
+	num_tier_t 	num_tier;
+	grip		all_syn;
 
 	tierset();
 	~tierset();
@@ -198,7 +199,7 @@ class mc_aligned neurostate {
 public:
 	num_tier_t		stabi_tier;
 	nervenode*		stabi_source;
-	synset			stabi_charged_set;
+	grip			stabi_tiers;
 
 	synset			stabi_active_set;
 	num_syn_t		stabi_num_complete;
@@ -250,13 +251,12 @@ public:
 
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 
-	mc_inline_fn synset& get_charged_set(net_side_t sd) bj_stabi_cod;
 	mc_inline_fn synset& get_active_set(net_side_t sd) bj_stabi_cod;
 	mc_inline_fn neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
 
 	void stabi_recv_propag(propag_data* dat) bj_stabi_cod;
 	void stabi_charge_all(propag_data* dat) bj_stabi_cod;
-	void stabi_charge_one(propag_data* dat) bj_stabi_cod;
+	void stabi_charge_src(propag_data* dat) bj_stabi_cod;
 	void stabi_propag(propag_data* dat) bj_stabi_cod;
 	void stabi_tier_propag(propag_data* dat) bj_stabi_cod;
 };

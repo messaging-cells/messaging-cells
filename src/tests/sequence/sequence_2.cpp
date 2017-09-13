@@ -117,7 +117,7 @@ sequence::send(cell* dst, seq_tok_t tok){
 	msv->send();
 }
 
-MCK_DEFINE_MEM_METHODS(sequence, 32, glb_ava_seq)
+MCK_DEFINE_MEM_METHODS(sequence, 32, glb_ava_seq, 0)
 
 void ker_func(){
 	kernel* ker = mck_get_kernel();

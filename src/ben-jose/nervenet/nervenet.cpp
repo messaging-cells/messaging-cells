@@ -7,12 +7,12 @@ missive_handler_t bj_nil_handlers[1] = { mc_null };
 
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
-MCK_DEFINE_MEM_METHODS(transmitter, 32, bj_ava_transmitters)
-MCK_DEFINE_MEM_METHODS(synset, 32, bj_ava_synsets)
-MCK_DEFINE_MEM_METHODS(tierset, 32, bj_ava_tiersets)
-MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses)
-MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons)
-MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons)
+MCK_DEFINE_MEM_METHODS(transmitter, 32, bj_ava_transmitters, 0)
+MCK_DEFINE_MEM_METHODS(synset, 32, bj_ava_synsets, 0)
+MCK_DEFINE_MEM_METHODS(tierset, 32, bj_ava_tiersets, 0)
+MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses, 0)
+MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons, 0)
+MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons, 0)
 
 BJ_DEFINE_nervenet_methods();
 
@@ -37,7 +37,6 @@ synset::~synset(){}
 
 void
 synset::init_me(int caller){
-	//handler_idx = idx_synset;
 	parent = mc_null;
 	tot_syn = 0;
 }
@@ -66,7 +65,7 @@ tierset::~tierset(){}
 
 void
 tierset::init_me(int caller){
-	synset::init_me(caller);
+	num_tier = BJ_INVALID_TIER;
 }
 
 synapse::synapse(){

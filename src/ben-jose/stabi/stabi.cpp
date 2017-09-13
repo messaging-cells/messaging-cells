@@ -4,18 +4,6 @@
 #include "stabi.hh"
 
 synset& 
-nervenode::get_charged_set(net_side_t sd){
-	EMU_CK(sd != side_invalid);
-
-	synset* out_set = &left_side.stabi_charged_set;
-	if(sd == side_right){
-		out_set = &right_side.stabi_charged_set;
-	}
-	EMU_CK(out_set != mc_null);
-	return *out_set;
-}
-
-synset& 
 nervenode::get_active_set(net_side_t sd){
 	EMU_CK(sd != side_invalid);
 
@@ -265,12 +253,10 @@ synset::stabi_rec_send_all(bj_callee_t mth, net_side_t sd){
 
 void
 neuron::stabi_neuron_start(){
-	EMU_CK(left_side.stabi_charged_set.all_syn.is_alone());
-	EMU_CK(left_side.stabi_charged_set.all_grp.is_alone());
+	EMU_CK(left_side.stabi_tiers.is_alone());
 	EMU_CK(left_side.stabi_active_set.all_grp.is_alone());
 
-	EMU_CK(right_side.stabi_charged_set.all_syn.is_alone());
-	EMU_CK(right_side.stabi_charged_set.all_grp.is_alone());
+	EMU_CK(right_side.stabi_tiers.is_alone());
 	EMU_CK(right_side.stabi_active_set.all_syn.is_alone());
 	EMU_CK(right_side.stabi_active_set.all_grp.is_alone());
 
@@ -301,6 +287,9 @@ nervenode::stabi_recv_propag(propag_data* dat){
 	switch(dat->tok){
 		case tok_stabi_charge_all:
 			stabi_charge_all(dat);
+		break;
+		case tok_stabi_charge_src:
+			stabi_charge_src(dat);
 		break;
 		case tok_stabi_propag:
 			stabi_propag(dat);
@@ -343,11 +332,31 @@ nervenode::stabi_charge_all(propag_data* dat){
 
 		stt.stabi_active_set.stabi_rec_reset();
 
-		synset* sub_grp = synset::acquire();
-		EMU_CK(sub_grp->all_syn.is_alone());
-		sub_grp->all_syn.move_all_to_my_right(stt.stabi_active_set.all_syn);
+		tierset* ti_grp = tierset::acquire();
+		EMU_CK(ti_grp->all_syn.is_alone());
+		ti_grp->all_syn.move_all_to_my_right(stt.stabi_active_set.all_syn);
 		
-		stt.stabi_charged_set.all_grp.bind_to_my_left(*sub_grp);
+		stt.stabi_tiers.bind_to_my_left(*ti_grp);
+	}
+}
+
+void
+nervenode::stabi_charge_src(propag_data* dat){
+	EMU_CK(dat != mc_null);
+	EMU_CK(dat->sd != side_invalid);
+	neurostate& stt = get_neurostate(dat->sd);
+	num_tier_t chg_tier = dat->ti + 1;
+	tierset* ti_grp = mc_null;
+
+	stt.stabi_active_set.stabi_rec_reset();
+
+	if(! stt.stabi_tiers.is_alone()){
+		ti_grp = (tierset*)(binder*)(stt.stabi_tiers.bn_right);
+		if(ti_grp->num_tier != chg_tier){
+			ti_grp = mc_null;
+		}
+	}
+	if(ti_grp == mc_null){
 	}
 }
 
