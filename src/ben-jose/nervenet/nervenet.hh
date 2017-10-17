@@ -111,6 +111,8 @@ enum bj_hdlr_idx_t : uint8_t {
 
 typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd);
 
+void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
+
 //class mc_aligned synset : public cell {
 class mc_aligned synset : public agent {
 public:
@@ -135,10 +137,11 @@ public:
 
 	void calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
 
-	void stabi_send_snps(bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 	void stabi_rec_send_all(bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 
 	void stabi_rec_reset() bj_stabi_cod;
+
+	bool is_empty() bj_stabi_cod;
 };
 
 class mc_aligned tierset : public agent {
@@ -191,9 +194,15 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void send_transmitter(stabi_tok_t tok, net_side_t sd) bj_stabi_cod;
+
+	mc_inline_fn binder& get_side_binder(net_side_t sd) bj_stabi_cod;
 };
 
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
+
+#define	bj_stt_stabi_flag mc_flag0
+#define	bj_stt_charge_all_flag mc_flag1
+#define	bj_stt_charge_src_flag mc_flag2
 
 class mc_aligned neurostate {
 public:
@@ -202,6 +211,9 @@ public:
 	grip			stabi_tiers;
 
 	synset			stabi_active_set;
+
+	mc_flags_t		stabi_flags;
+
 	num_syn_t		stabi_num_complete;
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
@@ -214,6 +226,7 @@ public:
 	void init_me(int caller = 0);
 
 	void calc_stabi_arr() bj_stabi_cod;
+	bool charge_all() bj_stabi_cod;
 };
 
 /*
@@ -259,6 +272,9 @@ public:
 	void stabi_charge_src(propag_data* dat) bj_stabi_cod;
 	void stabi_propag(propag_data* dat) bj_stabi_cod;
 	void stabi_tier_propag(propag_data* dat) bj_stabi_cod;
+
+	virtual 
+	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
 };
 
 class mc_aligned neuron : public nervenode {
@@ -277,6 +293,9 @@ public:
 	void stabi_send_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
 	void stabi_send_tier_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
 
+	virtual 
+	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
+
 	void pru_callee(synapse* snp, net_side_t sd) mc_external_code_ram;
 };
 
@@ -294,6 +313,13 @@ public:
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
+
+	void stabi_send_charge_all(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_charge_src(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
+
+	virtual 
+	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
 };
 
 #define MAGIC_VAL 987654
@@ -303,6 +329,8 @@ public:
 	MCK_DECLARE_MEM_METHODS(nervenet, bj_nervenet_mem)
 
 	long MAGIC;
+
+	mc_alloc_size_t	num_sep_tiersets;
 
 	grip		ava_transmitters;
 	grip		ava_synsets;
@@ -337,6 +365,8 @@ public:
 	void stabi_nervenet_start() bj_stabi_cod;
 };
 
+#define bj_num_sep_tiersets (bj_nervenet->num_sep_tiersets)
+
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_transmitters (bj_nervenet->ava_transmitters)
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
@@ -350,6 +380,8 @@ public:
 #define BJ_DEFINE_nervenet_methods() \
 nervenet::nervenet(){ \
 		MAGIC = MAGIC_VAL; \
+\
+		num_sep_tiersets = 10; \
 \
 		handler_idx = idx_nervenet; \
 \

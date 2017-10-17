@@ -97,12 +97,12 @@ void bj_test(int argc, char *argv[])
 	s1.handler_idx = 55;
 	
 	b1.bind_to_my_left(b2);
-	b1.bind_to_my_left(s1.right_handle);
+	b1.bind_to_my_left(s1.right_handle); // test
 
 	if(b1.bn_right == &b2){
 		printf("b2 is FIRST\n");
 	}
-	if(b1.bn_left == &s1.right_handle){
+	if(b1.bn_left == &s1.right_handle){ // test
 		printf("syn is LAST\n");
 	}
 	binder* lft = b1.bn_left;
@@ -145,6 +145,14 @@ void bj_test_3(int argc, char *argv[])
 	//call_nerv_pt_fn(&nn1, &snp1, &neuron::pru_callee);
 }
 
+void bj_test_4(int argc, char *argv[])
+{
+	long aa = 1234;
+	long bb = (aa >> 3);
+
+	printf("aa = %ld bb = %ld\n", aa, bb);
+}
+
 #endif
 
 int mc_host_main(int argc, char *argv[])
@@ -154,6 +162,7 @@ int mc_host_main(int argc, char *argv[])
 	//EMU_CODE(bj_test(argc, argv));
 	//EMU_CODE(bj_test_2(argc, argv));
 	//EMU_CODE(bj_test_3(argc, argv));
+	//EMU_CODE(bj_test_4(argc, argv));
 	rr = bj_host_main(argc, argv);
 
 	printf("HOST_CODE_FINISHED ==================================== \n");

@@ -46,7 +46,6 @@ void bj_load_shd_cnf(){
 
 	long num_neus = my_net->tot_neus;
 	long num_vars = my_net->tot_vars;
-	//long num_lits = my_net->tot_lits;
 	long num_rels = my_net->tot_rels;
 
 	if(num_neus == 0){
@@ -58,13 +57,18 @@ void bj_load_shd_cnf(){
 
 	long sep_msvs = 3 * num_rels;	// almost (lft + rgt)
 	long sep_ssts = 2 * num_rels;	// lft + rgt
+	long sep_tsts = (num_vars >> 3);
 	long sep_snps = 2 * num_rels;	// lft + rgt
 	long sep_pols = 2 * num_vars;
 	long sep_neus = num_neus;
 
+	if(sep_tsts > my_net->num_sep_tiersets){
+		my_net->num_sep_tiersets = sep_tsts;
+	}
+
 	transmitter::separate(sep_msvs);
-	//missive::separate(sep_msvs);
 	synset::separate(sep_ssts);
+	tierset::separate(-1);
 	synapse::separate(sep_snps);
 	polaron::separate(sep_pols);
 	neuron::separate(sep_neus);
@@ -155,7 +159,6 @@ void bj_load_shd_cnf(){
 
 			transmitter* msv = transmitter::acquire();
 			EMU_CK(msv->wrk_side == side_invalid);
-			//missive* msv = missive::acquire();
 			msv->src = my_snp;
 			msv->dst = my_pol;
 			msv->tok = tok_nw_syn;
@@ -201,7 +204,6 @@ polaron::load_handler(missive* msv){
 
 	transmitter* msv2 = transmitter::acquire();
 	EMU_CK(msv2->wrk_side == side_invalid);
-	//missive* msv2 = missive::acquire();
 	msv2->src = my_snp;
 	msv2->dst = mt_snp;
 	msv2->tok = tok_nw_syn;

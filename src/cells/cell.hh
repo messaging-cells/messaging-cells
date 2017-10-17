@@ -33,6 +33,7 @@ typedef agent_grp cell_grp_t;
 typedef agent_ref cell_ref_t;
 
 typedef uint16_t mck_token_t; 
+typedef uint16_t mc_alloc_size_t; 
 
 
 //-------------------------------------------------------------------------
@@ -67,7 +68,7 @@ enum mck_cell_id_t : uint8_t {
 //! Defines 'acquire_alloc' method for class 'nam' with aligment 'align' (32 or 64).
 #define MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 nam* \
-nam::acquire_alloc(uint16_t sz){ \
+nam::acquire_alloc(mc_alloc_size_t sz){ \
 	nam* obj = mc_malloc##align(nam, sz); \
 	if(obj == mc_null){ \
 		mck_abort((mc_addr_t)sz, err_1); \
@@ -82,7 +83,7 @@ nam::acquire_alloc(uint16_t sz){ \
 // end_macro
 
 #define MCK_DEFINE_NXT_SEPARATE_SZ(nam, curr_sep_sz) \
-uint16_t \
+mc_alloc_size_t \
 nam::get_next_separate_sz(){ \
 	curr_sep_sz <<= 1; \
 	return curr_sep_sz; \
@@ -91,7 +92,7 @@ nam::get_next_separate_sz(){ \
 // end_macro
 
 #define MCK_DEFINE_CURR_SEPARATE_SZ(nam, curr_sep_sz) \
-uint16_t \
+mc_alloc_size_t \
 nam::get_curr_separate_sz(){ \
 	if(curr_sep_sz <= 0){ return 1; } \
 	return curr_sep_sz; \
@@ -101,9 +102,9 @@ nam::get_curr_separate_sz(){ \
 
 #define MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 void \
-nam::separate(uint16_t sz){ \
+nam::separate(mc_alloc_size_t sz){ \
 	if(sz == 0){ return; } \
-	if(sz == ((uint16_t)(-1))){ sz = nam::get_curr_separate_sz(); } \
+	if(sz == ((mc_alloc_size_t)(-1))){ sz = nam::get_curr_separate_sz(); } \
 	grip& ava = all_ava; \
 	nam* obj = nam::acquire_alloc(sz); \
 	for(int bb = 0; bb < sz; bb++){ \
@@ -116,25 +117,9 @@ nam::separate(uint16_t sz){ \
 
 #define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
 
-/*
-define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
-nam* \
-nam::acquire(uint16_t sz){ \
-	grip& ava = all_ava; \
-	if((sz == 1) && (! ava.is_alone())){ \
-		binder* fst = ava.bn_right; \
-		fst->let_go(); \
-		return (nam *)fst; \
-	} \
-	return nam::acquire_alloc(sz); \
-} \
-
-// end_macro
-*/
-
 #define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
 nam* \
-nam::acquire(uint16_t sz){ \
+nam::acquire(mc_alloc_size_t sz){ \
 	grip& ava = all_ava; \
 	if(sz == 1){ \
 		if(ava.is_alone()){ \
@@ -153,10 +138,10 @@ nam::acquire(uint16_t sz){ \
 
 //! Declares dynamic memory methods for class 'nam'
 #define MCK_DECLARE_MEM_METHODS(nam, module) \
-	static	uint16_t		get_curr_separate_sz() mc_external_code_ram; \
-	static	nam*			acquire_alloc(uint16_t sz = 1) mc_external_code_ram; \
-	static	nam*			acquire(uint16_t sz = 1) module; \
-	static	void			separate(uint16_t sz) mc_external_code_ram; \
+	static	mc_alloc_size_t	get_curr_separate_sz() mc_external_code_ram; \
+	static	nam*			acquire_alloc(mc_alloc_size_t sz = 1) mc_external_code_ram; \
+	static	nam*			acquire(mc_alloc_size_t sz = 1) module; \
+	static	void			separate(mc_alloc_size_t sz) mc_external_code_ram; \
 
 // end_macro
 
@@ -578,15 +563,53 @@ The user can think of it as a concurrent object (as in object oriented programmi
 Every cell has a \ref mck_handler_idx_t called \ref handler_idx .
 */
 
+//======================================================================
+// flags
 
-typedef uint8_t mck_flags_t;
+typedef uint8_t mc_flags_t;
+
+#define	mc_flag0	((mc_flags_t)0x01)
+#define	mc_flag1	((mc_flags_t)0x02)
+#define	mc_flag2	((mc_flags_t)0x04)
+#define	mc_flag3	((mc_flags_t)0x08)
+#define	mc_flag4	((mc_flags_t)0x10)
+#define	mc_flag5	((mc_flags_t)0x20)
+#define	mc_flag6	((mc_flags_t)0x40)
+#define	mc_flag7	((mc_flags_t)0x80)
+
+static mc_inline_fn
+mc_flags_t	mc_set_flag(mc_flags_t& flgs, mc_flags_t bit_flag){
+	flgs = (mc_flags_t)(flgs | bit_flag);
+	return flgs;
+}
+
+static mc_inline_fn
+mc_flags_t 	mc_reset_flag(mc_flags_t& flgs, mc_flags_t bit_flag){
+	flgs = (mc_flags_t)(flgs & ~bit_flag);
+	return flgs;
+}
+
+static mc_inline_fn
+bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
+	mc_flags_t  resp  = (mc_flags_t)(flgs & bit_flag);
+	return (resp != 0);
+}
+
+#define	mc_usr_flag0 mc_flag0
+#define	mc_usr_flag1 mc_flag1
+#define	mc_usr_flag2 mc_flag2
+#define	mc_usr_flag3 mc_flag3
+#define	mc_usr_flag4 mc_flag4
+#define	mc_usr_flag5 mc_flag5
+#define	mc_usr_flag6 mc_flag6
+#define	mc_usr_flag7 mc_flag7
 
 class mc_aligned cell: public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(cell, mc_mod0_cod);
 
 	mck_handler_idx_t 	handler_idx; //!< The index of my handler function in \ref kernel::all_handlers.
-	mck_flags_t 		flags;
+	mc_flags_t 		flags;
 
 	mc_opt_sz_fn 
 	cell(){
