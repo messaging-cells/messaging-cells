@@ -11,6 +11,11 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 } 
 
 void 
+nervenet_handler(missive* msv){
+	MCK_CALL_HANDLER(nervenet, load_handler, msv);
+}
+
+void 
 polaron_handler(missive* msv){
 	MCK_CALL_HANDLER(polaron, load_handler, msv);
 }
@@ -24,6 +29,7 @@ void
 bj_load_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_nervenet] = nervenet_handler;
 	hndlrs[idx_polaron] = polaron_handler;
 	hndlrs[idx_synapse] = synapse_handler;
 
@@ -44,13 +50,15 @@ void bj_load_shd_cnf(){
 
 	my_net->init_nervenet_with(nn_cnf);
 
+	//EMU_PRT("%ld local tot_vars\n", my_net->tot_vars);
+
 	long num_neus = my_net->tot_neus;
 	long num_vars = my_net->tot_vars;
 	long num_rels = my_net->tot_rels;
 
-	if(num_neus == 0){
+	/*if(num_neus == 0){
 		return;
-	}
+	}*/
 
 	//EMU_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld TOT_RELS=%ld \n", 
 	//		my_net->tot_lits, my_net->tot_vars, my_net->tot_neus, my_net->tot_rels);
@@ -73,7 +81,7 @@ void bj_load_shd_cnf(){
 	polaron::separate(sep_pols);
 	neuron::separate(sep_neus);
 
-	EMU_PRT("Separated polarons %ld \n", sep_pols);
+	EMU_PRT("Separated polarons %ld\n", sep_pols);
 
 	binder * fst, * lst, * wrk;
 
@@ -179,6 +187,26 @@ void bj_load_shd_cnf(){
 		
 		//mck_slog2("]\n");
 	}
+
+	if(my_net->tot_lits == 0){
+		transmitter* msv = transmitter::acquire();
+		EMU_CK(msv->wrk_side == side_invalid);
+		msv->src = my_net;
+		msv->dst = my_net;
+		msv->tok = tok_no_lits;
+		msv->send();
+	}
+}
+
+void
+nervenet::load_handler(missive* msv){
+	load_tok_t tok = (load_tok_t)msv->tok;
+	MC_MARK_USED(tok);
+	MCK_CK(tok == tok_no_lits);
+
+	EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
+	EMU_PRT("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	kernel::stop_sys(tok_end_load);
 }
 
 void
@@ -257,7 +285,8 @@ synapse::load_handler(missive* msv){
 	tot_ld++;
 	if(tot_ld == my_net->tot_lits){
 		//mck_slog2("ENDING_CNF_LOAD \n");
-		//EMU_PRT("RCV_LAST------------------------ PARENT=%x \n", mc_map_get_parent_core_id());
+		EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
+		EMU_PRT("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 		//print_childs();
 		//mck_get_kernel()->set_idle_exit();
 		kernel::stop_sys(tok_end_load);

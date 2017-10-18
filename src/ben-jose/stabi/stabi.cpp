@@ -324,6 +324,7 @@ neurostate::charge_all(){
 		
 		stabi_tiers.bind_to_my_left(*ti_grp);
 	}
+	EMU_CK(stabi_active_set.is_empty());
 	return resp;
 }
 
@@ -332,9 +333,10 @@ nervenode::stabi_charge_all(propag_data* dat){
 	EMU_CK(dat != mc_null);
 	EMU_CK(dat->sd != side_invalid);
 
-	EMU_PRT("CHARGE_ALL %s \n", node_kind_to_str(ki));
-
 	neurostate& stt = get_neurostate(dat->sd);
+
+	EMU_PRT("CHARGE_ALL %s %ld %s src=%p\n", node_kind_to_str(ki), id, net_side_to_str(dat->sd), stt.stabi_source);
+
 
 	if(stt.stabi_source == mc_null){
 		nervenode* src = dat->snp->mate->owner;
@@ -393,10 +395,13 @@ nervenode::stabi_propag(propag_data* dat){
 
 void
 nervenode::stabi_tier_end(propag_data* dat){
+
 	neurostate& stt = get_neurostate(dat->sd);
 	stt.stabi_num_complete++;
 	if(stt.stabi_num_complete == stt.stabi_active_set.tot_syn){
-		stabi_end_tier(dat);
+		EMU_PRT("TIER_END %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
+
+		//stabi_end_tier(dat);
 	}
 }
 

@@ -226,6 +226,22 @@ bj_print_loaded_cnf() {
 	bj_print_loaded_poles(my_net->all_neg, nd_neg);
 }
 
+char* net_side_to_str(net_side_t sd){
+	char* resp = mc_null;
+	switch(sd){
+	case side_invalid:
+		resp = mc_cstr("side_invalid");
+	break;
+	case side_left:
+		resp = mc_cstr("side_left");
+	break;
+	case side_right:
+		resp = mc_cstr("side_right");
+	break;
+	}
+	return resp;
+}
+
 char* node_kind_to_str(node_kind_t ki){
 	char* resp = mc_null;
 	switch(ki){
@@ -240,6 +256,31 @@ char* node_kind_to_str(node_kind_t ki){
 	break;
 	case nd_neu:
 		resp = mc_cstr("nd_neu");
+	break;
+	}
+	return resp;
+}
+
+char* stabi_tok_to_str(stabi_tok_t tok){
+	char* resp = mc_null;
+	switch(tok){
+	case tok_stabi_invalid:
+		resp = mc_cstr("tok_stabi_invalid");
+	break;
+	case tok_stabi_start:
+		resp = mc_cstr("tok_stabi_start");
+	break;
+	case tok_stabi_propag:
+		resp = mc_cstr("tok_stabi_propag");
+	break;
+	case tok_stabi_charge_all:
+		resp = mc_cstr("tok_stabi_charge_all");
+	break;
+	case tok_stabi_charge_src:
+		resp = mc_cstr("tok_stabi_charge_src");
+	break;
+	case tok_stabi_tier_end:
+		resp = mc_cstr("tok_stabi_tier_end");
 	break;
 	}
 	return resp;

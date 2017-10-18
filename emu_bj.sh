@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd bin/ben-jose
-./ben-jose-emu.elf $*
+./ben-jose-emu.elf xxx $*

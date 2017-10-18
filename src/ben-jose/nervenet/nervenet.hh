@@ -86,6 +86,7 @@ enum node_kind_t : uint8_t {
 enum load_tok_t : mck_token_t {
 	tok_invalid,
 	tok_nw_syn,
+	tok_no_lits,
 	tok_end_load
 };
 
@@ -111,7 +112,9 @@ enum bj_hdlr_idx_t : uint8_t {
 
 typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd);
 
+char* net_side_to_str(net_side_t sd) mc_external_code_ram;
 char* node_kind_to_str(node_kind_t ki) mc_external_code_ram;
+char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
 void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 
@@ -362,6 +365,7 @@ public:
 
 	void init_nervenet_with(nervenet* nvnet) mc_external_code_ram;
 
+	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void stabi_nervenet_start() bj_stabi_cod;
