@@ -73,37 +73,37 @@ enum philo_tok_t : uint8_t {
 	tok_to_str(philo_tok_t tok){
 		switch(tok){
 		case tok_invalid:
-			return const_cast<char*>("invalid");
+			return mc_cstr("invalid");
 		break;
 		case tok_eat:
-			return const_cast<char*>("eat");
+			return mc_cstr("eat");
 		break;
 		case tok_take:
-			return const_cast<char*>("take");
+			return mc_cstr("take");
 		break;
 		case tok_taken:
-			return const_cast<char*>("taken");
+			return mc_cstr("taken");
 		break;
 		case tok_not_taken:
-			return const_cast<char*>("not_taken");
+			return mc_cstr("not_taken");
 		break;
 		case tok_drop:
-			return const_cast<char*>("drop");
+			return mc_cstr("drop");
 		break;
 		case tok_droped:
-			return const_cast<char*>("droped");
+			return mc_cstr("droped");
 		break;
 		case tok_not_droped:
-			return const_cast<char*>("not_droped");
+			return mc_cstr("not_droped");
 		break;
 		case tok_yes_full:
-			return const_cast<char*>("yes_fll");
+			return mc_cstr("yes_fll");
 		break;
 		default:
-			mck_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
+			mck_abort(1, mc_cstr("BAD_PHILO_TOK"));
 		break;
 		}
-		return const_cast<char*>("NO_TOK");
+		return mc_cstr("NO_TOK");
 	}
 //endif // END_OF_PHILO_WITH_DBG
 
@@ -372,7 +372,7 @@ chopstick::handler(missive* msv){
 			respond(msv, tok_droped);
 		break;
 		default:
-			mck_abort(1, const_cast<char*>("BAD_STICK_TOK"));
+			mck_abort(1, mc_cstr("BAD_STICK_TOK"));
 		break;
 	}
 	
@@ -519,7 +519,7 @@ philosopher::handler(missive* msv){
 			}
 		break;
 		default:
-			mck_abort(1, const_cast<char*>("BAD_PHILO_TOK"));
+			mck_abort(1, mc_cstr("BAD_PHILO_TOK"));
 		break;
 	} 
 	
@@ -670,7 +670,7 @@ void mc_cores_main() {
 
 	philo_core* core_dat = philo_core::acquire_alloc();
 	if(core_dat == mc_null){
-		mck_abort(1, const_cast<char*>("CAN NOT INIT GLB CORE DATA"));
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
 	}
 
 	ker->user_data = core_dat;

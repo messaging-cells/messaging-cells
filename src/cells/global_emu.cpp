@@ -36,7 +36,7 @@ mck_get_module_address(uint32_t modl_idx){
 
 char* 
 mck_get_module_name(uint32_t modl_idx){
-	return const_cast<char*>("NO_MODULE_NAME");
+	return mc_cstr("NO_MODULE_NAME");
 }
 
 void

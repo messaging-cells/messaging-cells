@@ -430,11 +430,11 @@ public:
 		bj_ostream& os, 
 		bool with_lims = true,
 
-		char* sep = mc_cstr(" "), 
+		char* sep = bj_cstr(" "), 
 		bit_rw_idx low = INVALID_IDX, 
 		bit_rw_idx hi = INVALID_IDX,
 		bit_rw_idx grp_sz = -1,
-		char* grp_sep = mc_cstr("\n")
+		char* grp_sep = bj_cstr("\n")
 		);
 
 	bool	equal_to(bit_row& rw2, bit_rw_idx first_ii = 0, bit_rw_idx last_ii = -1){
@@ -547,7 +547,7 @@ rot_rgt_idx(bit_rw_idx pos, bit_rw_idx row_sz, long num_rot){
 
 inline 
 bj_ostream&	operator << (bj_ostream& os, bit_row& rr){
-	rr.print_bit_row(os, true, mc_cstr(" "));
+	rr.print_bit_row(os, true, bj_cstr(" "));
 	return os;
 }
 

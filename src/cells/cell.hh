@@ -496,7 +496,7 @@ public:
 // end_macro
 
 
-#define mc_class_name(cls) const_cast<char*>("{" #cls "}");
+#define mc_class_name(cls) mc_cstr("{" #cls "}");
 
 #define mck_is_valid_class_name_idx(id) ((id >= 0) && (id < kernel_class_names_arr_sz))
 

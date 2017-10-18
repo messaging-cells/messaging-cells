@@ -123,7 +123,7 @@ cmp_nodes(const void * p1, const void * p2){
 void
 check_node_sz(pre_node_sz_t sz){
 	if(sz > THE_CNF->max_nod_sz){
-		mck_abort(9, const_cast<char*>(
+		mck_abort(9, mc_cstr(
 			"CNF node too big. Variable in too many clauses or clause too big. (BJ_MAX_NODE_SZ). Fix CNF."));
 	}
 	EMU_CK(sz < THE_CNF->max_nod_sz);
@@ -242,7 +242,7 @@ preload_cnf(long sz, const long* arr){
 				cnf.tot_lits += nod->pre_sz;
 			break;
 			default:
-				mck_abort(9, const_cast<char*>("Bad node cnf kind"));
+				mck_abort(9, mc_cstr("Bad node cnf kind"));
 			break;
 		}
 		kk++;

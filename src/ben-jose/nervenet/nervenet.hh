@@ -95,7 +95,7 @@ enum stabi_tok_t : mck_token_t {
 	tok_stabi_propag,
 	tok_stabi_charge_all,
 	tok_stabi_charge_src,
-	tok_stabi_tier_propag
+	tok_stabi_tier_end
 };
 
 enum bj_hdlr_idx_t : uint8_t {
@@ -110,6 +110,8 @@ enum bj_hdlr_idx_t : uint8_t {
 };
 
 typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd);
+
+char* node_kind_to_str(node_kind_t ki) mc_external_code_ram;
 
 void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 
@@ -271,7 +273,7 @@ public:
 	void stabi_charge_all(propag_data* dat) bj_stabi_cod;
 	void stabi_charge_src(propag_data* dat) bj_stabi_cod;
 	void stabi_propag(propag_data* dat) bj_stabi_cod;
-	void stabi_tier_propag(propag_data* dat) bj_stabi_cod;
+	void stabi_tier_end(propag_data* dat) bj_stabi_cod;
 
 	virtual 
 	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
@@ -291,7 +293,7 @@ public:
 	void stabi_neuron_start() bj_stabi_cod;
 
 	void stabi_send_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_tier_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_tier_end(synapse* snp, net_side_t sd) bj_stabi_cod;
 
 	virtual 
 	void stabi_end_tier(propag_data* dat) bj_stabi_cod;

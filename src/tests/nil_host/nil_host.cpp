@@ -4,7 +4,7 @@
 //include "booter.h"
 #include "cell.hh"
 
-char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
+char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 int mc_host_main(int argc, char *argv[])
 {

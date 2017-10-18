@@ -226,3 +226,22 @@ bj_print_loaded_cnf() {
 	bj_print_loaded_poles(my_net->all_neg, nd_neg);
 }
 
+char* node_kind_to_str(node_kind_t ki){
+	char* resp = mc_null;
+	switch(ki){
+	case nd_invalid:
+		resp = mc_cstr("nd_invalid");
+	break;
+	case nd_pos:
+		resp = mc_cstr("nd_pos");
+	break;
+	case nd_neg:
+		resp = mc_cstr("nd_neg");
+	break;
+	case nd_neu:
+		resp = mc_cstr("nd_neu");
+	break;
+	}
+	return resp;
+}
+

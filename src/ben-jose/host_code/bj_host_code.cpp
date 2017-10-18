@@ -6,7 +6,7 @@
 #include "preload_cnf.hh"
 #include "file_funcs.h"
 
-char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
+char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 void bj_test(int argc, char *argv[]) mc_external_code_ram;
 int bj_host_main(int argc, char *argv[]) mc_external_code_ram;

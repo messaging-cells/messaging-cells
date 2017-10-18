@@ -22,7 +22,7 @@ mc_core_id_t mch_first_load_core_nn = 0;
 
 uint8_t* MCH_EXTERNAL_RAM_BASE_PT = mc_null;
 
-//char* mch_epiphany_elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
+//char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 //mspace mch_glb_load_mspace;
 mspace mch_glb_alloc_mspace;

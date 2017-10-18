@@ -14,7 +14,7 @@
 //define NUM_OPERS 100000
 #define NUM_OPERS 10000000
 
-char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
+char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 #define MCT_COREID(_addr) ((_addr) >> 20)
 static inline bool mct_is_local(uint32_t addr)
@@ -35,7 +35,7 @@ mc_host_main(int argc, char *argv[])
 	e_epiphany_t dev;
 	e_platform_t platform;
 	mc_link_syms_data_st syms;
-	char* elf_path = (const_cast<char *>("the_epiphany_executable.elf"));
+	char* elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 	if(argc > 1){
 		elf_path = argv[1];

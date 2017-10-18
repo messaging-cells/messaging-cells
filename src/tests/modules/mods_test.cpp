@@ -27,9 +27,9 @@ The modules example has three modules.
 
 mc_c_decl int main();
 
-char* m1_nam mc_external_data_ram = const_cast<char*>("module1");
-char* m2_nam mc_external_data_ram = const_cast<char*>("module2");
-char* m3_nam mc_external_data_ram = const_cast<char*>("module3");
+char* m1_nam mc_external_data_ram = mc_cstr("module1");
+char* m2_nam mc_external_data_ram = mc_cstr("module2");
+char* m3_nam mc_external_data_ram = mc_cstr("module3");
 
 #define TOT_MODS 3
 

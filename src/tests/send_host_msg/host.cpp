@@ -6,7 +6,7 @@
 
 #include "resp_conf.h"
 
-char* mch_epiphany_elf_path = (const_cast<char*>("the_epiphany_executable.elf"));
+char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 void recv_host_handler(missive* msg);
 

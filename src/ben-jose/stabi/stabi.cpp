@@ -155,7 +155,7 @@ neuron::stabi_handler(missive* msv){
 			stabi_neuron_start();
 		break;
 		default:
-			mck_abort(1, const_cast<char*>("BAD_STABI_TOK"));
+			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
 		break;
 	}
 }
@@ -169,14 +169,7 @@ synapse::stabi_handler(missive* msv){
 	dat.sd = (dat.trm)->wrk_side;
 	dat.ti = (dat.trm)->wrk_tier;
 
-	if(owner->ki == nd_neu){
-		neuron* neu = (neuron*)owner;
-		neu->stabi_recv_propag(&dat);
-	} else {
-		EMU_CK(owner->ki != nd_invalid);
-		polaron* pol = (polaron*)owner;
-		pol->stabi_recv_propag(&dat);
-	}
+	owner->stabi_recv_propag(&dat);
 }
 
 void
@@ -192,7 +185,7 @@ nervenet::stabi_handler(missive* msv){
 			stabi_nervenet_start();
 		break;
 		default:
-			mck_abort(1, const_cast<char*>("BAD_STABI_TOK"));
+			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
 		break;
 	}
 }
@@ -260,7 +253,7 @@ neuron::stabi_neuron_start(){
 	EMU_CK(right_side.stabi_active_set.all_grp.is_alone());
 
 	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_propag), side_left);
-	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_tier_propag), side_left);
+	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_tier_end), side_left);
 }
 
 void 
@@ -275,14 +268,12 @@ neuron::stabi_send_propag(synapse* snp, net_side_t sd){
 }
 
 void 
-neuron::stabi_send_tier_propag(synapse* snp, net_side_t sd){
-	snp->send_transmitter(tok_stabi_tier_propag, sd);
+neuron::stabi_send_tier_end(synapse* snp, net_side_t sd){
+	snp->send_transmitter(tok_stabi_tier_end, sd);
 }
 
 void
 nervenode::stabi_recv_propag(propag_data* dat){
-	//nervenet* my_net = bj_nervenet;
-	//neurostate& stt = get_neurostate(sd);
 	switch(dat->tok){
 		case tok_stabi_charge_all:
 			stabi_charge_all(dat);
@@ -293,11 +284,11 @@ nervenode::stabi_recv_propag(propag_data* dat){
 		case tok_stabi_propag:
 			stabi_propag(dat);
 		break;
-		case tok_stabi_tier_propag:
-			stabi_tier_propag(dat);
+		case tok_stabi_tier_end:
+			stabi_tier_end(dat);
 		break;
 		default:
-			mck_abort(1, const_cast<char*>("nervenode::stabi_recv_propag. BAD_STABI_TOK"));
+			mck_abort(1, mc_cstr("nervenode::stabi_recv_propag. BAD_STABI_TOK"));
 		break;
 	}
 }
@@ -340,6 +331,9 @@ void
 nervenode::stabi_charge_all(propag_data* dat){
 	EMU_CK(dat != mc_null);
 	EMU_CK(dat->sd != side_invalid);
+
+	EMU_PRT("CHARGE_ALL %s \n", node_kind_to_str(ki));
+
 	neurostate& stt = get_neurostate(dat->sd);
 
 	if(stt.stabi_source == mc_null){
@@ -398,7 +392,7 @@ nervenode::stabi_propag(propag_data* dat){
 }
 
 void
-nervenode::stabi_tier_propag(propag_data* dat){
+nervenode::stabi_tier_end(propag_data* dat){
 	neurostate& stt = get_neurostate(dat->sd);
 	stt.stabi_num_complete++;
 	if(stt.stabi_num_complete == stt.stabi_active_set.tot_syn){
@@ -434,7 +428,7 @@ synset::is_empty(){
 
 void
 nervenode::stabi_end_tier(propag_data* dat){
-	mck_abort(1, const_cast<char*>("nervenode::stabi_end_tier"));
+	mck_abort(1, mc_cstr("nervenode::stabi_end_tier"));
 }
 
 void

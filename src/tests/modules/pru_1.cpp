@@ -22,7 +22,7 @@ void m1_f2_shd(){
 	prts("m1_f2_shd \n");
 }
 
-char* msg1 mc_mod1_dat = const_cast<char*>("m1_f3_core \n");
+char* msg1 mc_mod1_dat = mc_cstr("m1_f3_core \n");
 void m1_f3_core(){
 	prts(msg1);
 }
