@@ -37,16 +37,16 @@ bj_load_init_handlers(){
 }
 
 void
-nervenet::init_nervenet_with(nervenet* nvnet){
-	tot_neus = nvnet->tot_neus;
-	tot_vars = nvnet->tot_vars;
-	tot_lits = nvnet->tot_lits;
-	tot_rels = nvnet->tot_rels;
+nervenet::init_nervenet_with(pre_cnf_net* pre_net){
+	tot_neus = pre_net->tot_pre_neus;
+	tot_vars = pre_net->tot_pre_vars;
+	tot_lits = pre_net->tot_pre_lits;
+	tot_rels = pre_net->tot_pre_rels;
 }
 
 void bj_load_shd_cnf(){
 	nervenet* my_net = bj_nervenet;
-	nervenet* nn_cnf = bj_nervenet->shd_cnf;
+	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 
 	my_net->init_nervenet_with(nn_cnf);
 
@@ -85,7 +85,7 @@ void bj_load_shd_cnf(){
 
 	binder * fst, * lst, * wrk;
 
-	binder* nn_all_pos = &(nn_cnf->all_pos);
+	binder* nn_all_pos = &(nn_cnf->all_pre_pos);
 	fst = (binder*)mc_host_pt_to_core_pt(nn_all_pos->bn_right);
 	lst = nn_all_pos;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
@@ -122,7 +122,7 @@ void bj_load_shd_cnf(){
 		opp->loaded = mck_as_glb_pt(neg_nod);
 	}
 
-	binder* nn_all_neu = &(nn_cnf->all_neu);
+	binder* nn_all_neu = &(nn_cnf->all_pre_neu);
 	fst = (binder*)mc_host_pt_to_core_pt(nn_all_neu->bn_right);
 	lst = nn_all_neu;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
@@ -329,7 +329,7 @@ void bj_load_main() {
 
 	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
 
-	nervenet* nn_cnf = (nervenet*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
+	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
 	bj_nervenet->shd_cnf = nn_cnf;
 	
 	//mck_slog2("bj_nervenet_MAGIC_____");

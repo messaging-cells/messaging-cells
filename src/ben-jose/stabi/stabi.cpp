@@ -531,7 +531,7 @@ void bj_stabi_main() {
 	nervenet* my_net = bj_nervenet;
 	my_net->dbg_stabi_init_sys();
 	my_net->send(my_net, tok_stabi_start);
-	kernel::run_sys();
+	//kernel::run_sys();
 
 	EMU_PRT("...............................END_STABI\n");
 	mck_slog2("END_STABI___");

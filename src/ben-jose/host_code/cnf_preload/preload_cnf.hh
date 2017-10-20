@@ -116,7 +116,7 @@ public:
 	pre_cnf_node**	all_sort_nods;
 
 	long tot_cores;
-	nervenet*		all_cnf;	//!< Array of \ref nervenet s to load in each core.
+	pre_cnf_net*		all_cnf;	//!< Array of \ref pre_cnf_net s to load in each core.
 
 	pre_load_cnf(){
 		MAGIC = MAGIC_VAL;
@@ -146,7 +146,7 @@ extern pre_load_cnf* THE_CNF;
 void preload_cnf(long sz, const long* arr);
 void print_cnf();
 void print_nods();
-void print_nervenets();
+void print_pre_cnf_nets();
 
 
 #endif		// PRELOAD_CNF_H

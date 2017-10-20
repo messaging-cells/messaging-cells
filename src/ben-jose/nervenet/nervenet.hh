@@ -41,6 +41,8 @@ Declaration of nervenet class.
 #include "cell.hh"
 
 class pre_cnf_node;
+class pre_cnf_net;
+
 class transmitter;
 class synapse;
 class nervenode;
@@ -366,7 +368,7 @@ public:
 
 	missive_handler_t all_handlers[idx_total];
 
-	nervenet*	shd_cnf;
+	pre_cnf_net*	shd_cnf;
 
 	num_nod_t tot_neus;
 	num_nod_t tot_vars;
@@ -388,7 +390,7 @@ public:
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
 
-	void init_nervenet_with(nervenet* nvnet) mc_external_code_ram;
+	void init_nervenet_with(pre_cnf_net* pre_net) mc_external_code_ram;
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;

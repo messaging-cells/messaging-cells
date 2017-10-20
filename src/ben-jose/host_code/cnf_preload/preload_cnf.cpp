@@ -14,7 +14,7 @@ MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node, 0)
 MCK_DEFINE_MEM_METHODS(pre_cnf_net, 32, ava_pre_cnf_net, 0)
 
 #ifdef MC_IS_ZNQ_CODE
-BJ_DEFINE_nervenet_methods();
+//BJ_DEFINE_nervenet_methods();
 #endif
 
 void init_node_arr(long sz, pre_cnf_node** arr, node_kind_t kk){
@@ -90,24 +90,24 @@ print_all_nods(binder& grip){
 }
 
 void
-print_nervenets(){
+print_pre_cnf_nets(){
 	printf("ALL_CNFS {\n");
 	for(long aa = 0; aa < THE_CNF->tot_cores; aa++){
-		nervenet& cnf =  THE_CNF->all_cnf[aa];
+		pre_cnf_net& cnf =  THE_CNF->all_cnf[aa];
 
 		printf("CNF %ld ======================================= \n", aa);
 
 		//printf("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
 		printf("\tCCLS[");
-		print_all_nods(cnf.all_neu);
+		print_all_nods(cnf.all_pre_neu);
 		printf("\t] \n");
 
 		printf("\tPOS[");
-		print_all_nods(cnf.all_pos);
+		print_all_nods(cnf.all_pre_pos);
 		printf("\t] \n");
 
 		printf("\tNEG[");
-		print_all_nods(cnf.all_neg);
+		print_all_nods(cnf.all_pre_neg);
 		printf("\t] \n");
 	}
 	printf("} \n");
@@ -159,9 +159,9 @@ preload_cnf(long sz, const long* arr){
 	THE_CNF->all_neg = mc_malloc32(pre_cnf_node*, num_vars);
 	THE_CNF->all_sort_nods = mc_malloc32(pre_cnf_node*, num_sort_nods);
 
-	THE_CNF->all_cnf = mc_malloc32(nervenet, num_cores);
+	THE_CNF->all_cnf = mc_malloc32(pre_cnf_net, num_cores);
 	for(int bb = 0; bb < num_cores; bb++){ 
-		new (&(THE_CNF->all_cnf[bb])) nervenet(); 
+		new (&(THE_CNF->all_cnf[bb])) pre_cnf_net(); 
 	} 
 
 	init_node_arr(num_ccls, THE_CNF->all_ccl, nd_neu);
@@ -218,9 +218,9 @@ preload_cnf(long sz, const long* arr){
 	for(long aa = 0; aa < num_sort_nods; aa++){
 		if(kk == num_cores){ kk = 0; }
 		pre_cnf_node* nod = THE_CNF->all_sort_nods[aa];
-		nervenet& cnf = THE_CNF->all_cnf[kk];
+		pre_cnf_net& cnf = THE_CNF->all_cnf[kk];
 		EMU_CK(nod->is_alone());
-		cnf.tot_rels += nod->pre_sz;
+		cnf.tot_pre_rels += nod->pre_sz;
 		switch(nod->ki){
 			case nd_pos:
 			{
@@ -232,16 +232,16 @@ preload_cnf(long sz, const long* arr){
 				EMU_CK(nod->loaded == mc_null);
 				EMU_CK(opp->loaded == mc_null);
 
-				cnf.all_pos.bind_to_my_left(*nod);
-				cnf.all_neg.bind_to_my_left(*opp);
+				cnf.all_pre_pos.bind_to_my_left(*nod);
+				cnf.all_pre_neg.bind_to_my_left(*opp);
 
-				cnf.tot_vars++;
+				cnf.tot_pre_vars++;
 			}
 			break;
 			case nd_neu:
-				cnf.all_neu.bind_to_my_left(*nod);
-				cnf.tot_neus++;
-				cnf.tot_lits += nod->pre_sz;
+				cnf.all_pre_neu.bind_to_my_left(*nod);
+				cnf.tot_pre_neus++;
+				cnf.tot_pre_lits += nod->pre_sz;
 			break;
 			default:
 				mck_abort(9, mc_cstr("Bad node cnf kind"));
