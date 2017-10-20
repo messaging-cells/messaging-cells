@@ -40,6 +40,34 @@ Declaration of main bj solver function.
 
 #include "cell.hh"
 
+#define bj_load_cod mc_mod1_cod
+#define bj_load_dat mc_mod1_dat
+
+#define bj_stabi_cod mc_mod2_cod
+#define bj_stabi_dat mc_mod2_dat
+
+#define bj_nervenet_cod 
+#define bj_nervenet_dat 
+#define bj_nervenet_mem mc_mod0_cod
+
+//define bj_nervenet_cod mc_comm_cod
+//define bj_nervenet_dat mc_comm_dat
+
+typedef long num_nod_t;
+typedef uint8_t num_syn_t;
+typedef uint32_t num_tier_t;
+
+#define BJ_MAX_NODE_SZ mc_maxof(num_syn_t)
+
+#define MAGIC_VAL 987654
+
+enum node_kind_t : uint8_t {
+	nd_invalid = 0,
+	nd_pos,
+	nd_neg,
+	nd_neu
+};
+
 
 #endif		// SOLVER_H
 

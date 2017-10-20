@@ -27,6 +27,18 @@ nervenode::get_neurostate(net_side_t sd){
 	return *out_stt;
 }
 
+netstate& 
+nervenet::get_active_netstate(net_side_t sd){
+	EMU_CK(sd != side_invalid);
+
+	netstate* out_stt = &act_left_side;
+	if(sd == side_right){
+		out_stt = &act_right_side;
+	}
+	EMU_CK(out_stt != mc_null);
+	return *out_stt;
+}
+
 void
 synapse::send_transmitter(stabi_tok_t tok, net_side_t sd){
 	transmitter* trm = transmitter::acquire();
@@ -173,7 +185,7 @@ nervenet::stabi_handler(missive* msv){
 
 void
 nervenet::stabi_nervenet_start(){
-	EMU_LOG("stabi_nervenet_start tot_rcv_pol=%d\n", tot_rcv_pol);
+	EMU_LOG("stabi_nervenet_start tot_rcv_pol=%d\n", first_stt.tot_rcv_pol);
 
 	nervenet* my_net = this;
 
@@ -485,11 +497,11 @@ neuron::stabi_end_tier(propag_data* dat){
 }
 
 void 
-nervenet::dbg_stabi_stop_sys(propag_data* dat, nervenode* nod){
+netstate::dbg_stabi_stop_sys(propag_data* dat, nervenode* nod){
 	node_kind_t 	nod_ki = nd_invalid;
 	long			nod_id = 0;
 	MC_MARK_USED(nod_id);
-	
+
 	if(nod != mc_null){
 		nod_ki = nod->ki;
 		nod_id = nod->id;
@@ -499,22 +511,53 @@ nervenet::dbg_stabi_stop_sys(propag_data* dat, nervenode* nod){
 			EMU_CK(nod_ki != nd_invalid);
 			dbg_num_pol++;
 		}
-		EMU_LOG("dbg_stabi_stop_sys neus(%d==%d) pols(%d==%d)\n", dbg_num_neu, tot_neus, dbg_num_pol, tot_rcv_pol);
+		EMU_LOG("dbg_stabi_stop_sys neus(%d==%d) pols(%d==%d)\n", 
+			dbg_num_neu, tot_neus, dbg_num_pol, tot_rcv_pol);
 	}
+	bool stp_1 = false;
 	if((tot_neus > 0) && (dbg_num_neu == tot_neus)){
-		EMU_LOG("STOP_SYS(neus) %s %ld (%d==%d)\n", node_kind_to_str(nod_ki), nod_id, dbg_num_neu, tot_neus);
-		kernel::stop_sys(tok_end_stabi);
+		EMU_LOG("STOP_SYS(neus) %s %ld (%d==%d)\n", node_kind_to_str(nod_ki), nod_id, 
+			dbg_num_neu, tot_neus);
+		stp_1 = true;
 	}
+	bool stp_2 = false;
 	if((tot_neus == 0) && (dbg_num_pol == tot_rcv_pol)){
-		EMU_LOG("STOP_SYS(pols) %s %ld (%d==%d)\n", node_kind_to_str(nod_ki), nod_id, dbg_num_pol, tot_rcv_pol);
-		kernel::stop_sys(tok_end_stabi);
+		EMU_LOG("STOP_SYS(pols) %s %ld (%d==%d)\n", node_kind_to_str(nod_ki), nod_id, 
+			dbg_num_pol, tot_rcv_pol);
+		stp_2 = true;
+	}
+	bool stp_sys = (stp_1 || stp_2);
+	if(! dbg_stp_sys && stp_sys){
+		dbg_stp_sys = true;
 	}
 }
 
 void 
-nervenet::dbg_stabi_init_sys(){
+netstate::dbg_stabi_init_sys(){
 	dbg_num_neu = 0;
 	dbg_num_pol = 0;
+	dbg_stp_sys = false;
+}
+
+void 
+nervenet::dbg_stabi_init_sys(){
+	first_stt.dbg_stabi_init_sys();
+	act_left_side.dbg_stabi_init_sys();
+	act_right_side.dbg_stabi_init_sys();
+}
+
+void 
+nervenet::dbg_stabi_stop_sys(propag_data* dat, nervenode* nod){
+	if(dat == mc_null){
+		act_left_side.dbg_stabi_stop_sys(dat, nod);
+		act_right_side.dbg_stabi_stop_sys(dat, nod);
+	} else {
+		get_active_netstate(dat->sd).dbg_stabi_stop_sys(dat, nod);
+	}
+	//if(act_left_side.dbg_stp_sys && act_right_side.dbg_stp_sys){
+	if(act_left_side.dbg_stp_sys){	// FIX_THIS_CODE
+		kernel::stop_sys(tok_end_stabi);
+	}
 }
 
 void bj_stabi_main() {
@@ -531,7 +574,7 @@ void bj_stabi_main() {
 	nervenet* my_net = bj_nervenet;
 	my_net->dbg_stabi_init_sys();
 	my_net->send(my_net, tok_stabi_start);
-	//kernel::run_sys();
+	kernel::run_sys();
 
 	EMU_PRT("...............................END_STABI\n");
 	mck_slog2("END_STABI___");

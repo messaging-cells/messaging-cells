@@ -39,8 +39,7 @@ Declaration of functions to preload cnfs in dimacs files.
 #define PRELOAD_CNF_H
 
 #include "cell.hh"
-
-#include "load_cnf.hh"
+#include "solver.hh"
 
 class pre_cnf_node;
 class pre_cnf_net;

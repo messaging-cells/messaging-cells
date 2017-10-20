@@ -14,7 +14,22 @@ MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses, 0)
 MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons, 0)
 MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons, 0)
 
-BJ_DEFINE_nervenet_methods();
+nervenet::nervenet(){
+	MAGIC = MAGIC_VAL;
+
+	num_sep_tiersets = 10;
+
+	handler_idx = idx_nervenet;
+
+	mc_init_arr_vals(idx_total, all_handlers, mc_null);
+
+	shd_cnf = mc_null;
+
+	tot_loading = 0;
+	tot_loaded = 0;
+}
+
+nervenet::~nervenet(){} 
 
 transmitter::transmitter(){
 	//init_me();
@@ -297,14 +312,24 @@ netstate::~netstate(){}
 
 void
 netstate::init_me(int caller){
-	tot_act_neus = 0;
-	tot_act_vars = 0;
-	tot_act_lits = 0;
-	tot_act_rels = 0;
+	tot_neus = 0;
+	tot_vars = 0;
+	tot_lits = 0;
+	tot_rels = 0;
 
-	tot_act_rcv_pol = 0;
+	tot_rcv_pol = 0;
 
 	dbg_num_neu = 0;
 	dbg_num_pol = 0;
+}
+
+void
+netstate::init_with(netstate& stt){
+	tot_neus = stt.tot_neus;
+	tot_vars = stt.tot_vars;
+	tot_lits = stt.tot_lits;
+	tot_rels = stt.tot_rels;
+
+	tot_rcv_pol = stt.tot_rcv_pol;
 }
 

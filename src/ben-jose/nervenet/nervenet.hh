@@ -39,6 +39,7 @@ Declaration of nervenet class.
 #define NERVENET_H
 
 #include "cell.hh"
+#include "solver.hh"
 
 class pre_cnf_node;
 class pre_cnf_net;
@@ -51,38 +52,12 @@ class polaron;
 class neuron;
 class nervenet;
 
-#define bj_load_cod mc_mod1_cod
-#define bj_load_dat mc_mod1_dat
-
-#define bj_stabi_cod mc_mod2_cod
-#define bj_stabi_dat mc_mod2_dat
-
-#define bj_nervenet_cod 
-#define bj_nervenet_dat 
-#define bj_nervenet_mem mc_mod0_cod
-
-//define bj_nervenet_cod mc_comm_cod
-//define bj_nervenet_dat mc_comm_dat
-
-typedef long num_nod_t;
-typedef uint8_t num_syn_t;
-typedef uint32_t num_tier_t;
-
-#define BJ_MAX_NODE_SZ mc_maxof(num_syn_t)
-
 #define BJ_INVALID_TIER ~((uint32_t)0x0)
 
 enum net_side_t : uint8_t {
 	side_invalid,
 	side_left,
 	side_right
-};
-
-enum node_kind_t : uint8_t {
-	nd_invalid = 0,
-	nd_pos,
-	nd_neg,
-	nd_neu
 };
 
 enum load_tok_t : mck_token_t {
@@ -330,25 +305,30 @@ public:
 	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
 };
 
-#define MAGIC_VAL 987654
-
 class mc_aligned netstate {
 public:
-	num_nod_t tot_act_neus;
-	num_nod_t tot_act_vars;
-	num_nod_t tot_act_lits;
-	num_nod_t tot_act_rels;
+	num_nod_t tot_neus;
+	num_nod_t tot_vars;
+	num_nod_t tot_lits;
+	num_nod_t tot_rels;
 
-	num_nod_t tot_act_rcv_pol;
+	num_nod_t tot_rcv_pol;
 
 	num_nod_t dbg_num_neu;
 	num_nod_t dbg_num_pol;
+	bool	  dbg_stp_sys;
 
 	netstate() mc_external_code_ram;
 	~netstate() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
+
+	void init_netstate_with(pre_cnf_net* pre_net) mc_external_code_ram;
+	void init_with(netstate& stt) mc_external_code_ram;
+
+	void dbg_stabi_init_sys() mc_external_code_ram;
+	void dbg_stabi_stop_sys(propag_data* dat, nervenode* nod) mc_external_code_ram;
 };
 
 class mc_aligned nervenet : public cell  {
@@ -370,13 +350,6 @@ public:
 
 	pre_cnf_net*	shd_cnf;
 
-	num_nod_t tot_neus;
-	num_nod_t tot_vars;
-	num_nod_t tot_lits;
-	num_nod_t tot_rels;
-
-	num_nod_t tot_rcv_pol;
-
 	num_nod_t tot_loading;
 	num_nod_t tot_loaded;
 
@@ -384,18 +357,19 @@ public:
 	grip	all_pos;
 	grip	all_neg;
 
-	num_nod_t dbg_num_neu;
-	num_nod_t dbg_num_pol;
+	netstate	first_stt;
+	netstate	act_left_side;
+	netstate	act_right_side;
 
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
-
-	void init_nervenet_with(pre_cnf_net* pre_net) mc_external_code_ram;
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void stabi_nervenet_start() bj_stabi_cod;
+
+	mc_inline_fn netstate& get_active_netstate(net_side_t sd) bj_stabi_cod;
 
 	void dbg_stabi_init_sys() mc_external_code_ram;
 	void dbg_stabi_stop_sys(propag_data* dat, nervenode* nod) mc_external_code_ram;
@@ -412,33 +386,6 @@ public:
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
 
 #define bj_handlers (bj_nervenet->all_handlers)
-
-#define BJ_DEFINE_nervenet_methods() \
-nervenet::nervenet(){ \
-		MAGIC = MAGIC_VAL; \
-\
-		num_sep_tiersets = 10; \
-\
-		handler_idx = idx_nervenet; \
-\
-		mc_init_arr_vals(idx_total, all_handlers, mc_null); \
-\
-		shd_cnf = mc_null; \
-\
-		tot_neus = 0; \
-		tot_vars = 0; \
-		tot_lits = 0; \
-		tot_rels = 0; \
-\
-		tot_rcv_pol = 0; \
-\
-		tot_loading = 0; \
-		tot_loaded = 0; \
-	} \
-\
-nervenet::~nervenet(){} \
-
-// end of BJ_DEFINE_nervenet_methods
 
 extern missive_handler_t bj_nil_handlers[];
 

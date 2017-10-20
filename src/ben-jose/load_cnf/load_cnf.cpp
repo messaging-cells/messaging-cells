@@ -1,6 +1,7 @@
 
 #include "cell.hh"
 
+#include "load_cnf.hh"
 #include "preload_cnf.hh"
 
 void 
@@ -37,7 +38,7 @@ bj_load_init_handlers(){
 }
 
 void
-nervenet::init_nervenet_with(pre_cnf_net* pre_net){
+netstate::init_netstate_with(pre_cnf_net* pre_net){
 	tot_neus = pre_net->tot_pre_neus;
 	tot_vars = pre_net->tot_pre_vars;
 	tot_lits = pre_net->tot_pre_lits;
@@ -48,20 +49,21 @@ void bj_load_shd_cnf(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 
-	my_net->init_nervenet_with(nn_cnf);
+	my_net->first_stt.init_netstate_with(nn_cnf);
+	netstate& tots = my_net->first_stt;
 
 	//EMU_PRT("%ld local tot_vars\n", my_net->tot_vars);
 
-	long num_neus = my_net->tot_neus;
-	long num_vars = my_net->tot_vars;
-	long num_rels = my_net->tot_rels;
+	long num_neus = tots.tot_neus;
+	long num_vars = tots.tot_vars;
+	long num_rels = tots.tot_rels;
 
 	/*if(num_neus == 0){
 		return;
 	}*/
 
 	//EMU_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld TOT_RELS=%ld \n", 
-	//		my_net->tot_lits, my_net->tot_vars, my_net->tot_neus, my_net->tot_rels);
+	//		tots.tot_lits, tots.tot_vars, tots.tot_neus, tots.tot_rels);
 
 	long sep_msvs = 3 * num_rels;	// almost (lft + rgt)
 	long sep_ssts = 2 * num_rels;	// lft + rgt
@@ -175,7 +177,7 @@ void bj_load_shd_cnf(){
 			/*
 			long& tot_ld = bj_nervenet->tot_loading;
 			tot_ld++;
-			if(tot_ld == my_net->tot_lits){
+			if(tot_ld == tots.tot_lits){
 				EMU_PRT("SENT LAST------------------------ \n");
 			}
 			EMU_PRT("SND to pole %d msv from neu %d \n", my_pol->id, my_neu->id);
@@ -188,7 +190,7 @@ void bj_load_shd_cnf(){
 		//mck_slog2("]\n");
 	}
 
-	if(my_net->tot_lits == 0){
+	if(tots.tot_lits == 0){
 		transmitter* msv = transmitter::acquire();
 		EMU_CK(msv->wrk_side == side_invalid);
 		msv->src = my_net;
@@ -230,7 +232,7 @@ polaron::load_handler(missive* msv){
 
 	left_side.stabi_active_set.add_left_synapse(my_snp);
 
-	bj_nervenet->tot_rcv_pol++;
+	bj_nervenet->first_stt.tot_rcv_pol++;
 
 	transmitter* msv2 = transmitter::acquire();
 	EMU_CK(msv2->wrk_side == side_invalid);
@@ -285,7 +287,7 @@ synapse::load_handler(missive* msv){
 	nervenet* my_net = bj_nervenet;
 	long& tot_ld = my_net->tot_loaded;
 	tot_ld++;
-	if(tot_ld == my_net->tot_lits){
+	if(tot_ld == my_net->first_stt.tot_lits){
 		//mck_slog2("ENDING_CNF_LOAD \n");
 		EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
 		EMU_PRT("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
@@ -294,7 +296,7 @@ synapse::load_handler(missive* msv){
 		kernel::stop_sys(tok_end_load);
 	}
 	EMU_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
-		owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
+		owner->id, mt_snp->owner->id, tot_ld, my_net->first_stt.tot_lits);
 }
 
 void bj_load_main() {
@@ -343,6 +345,9 @@ void bj_load_main() {
 	//EMU_PRT("END_LOAD:SHD \n");
 
 	kernel::run_sys();
+
+	my_net->act_left_side.init_with(my_net->first_stt);
+	my_net->act_right_side.init_with(my_net->first_stt);
 
 	//bj_print_loaded_cnf();
 

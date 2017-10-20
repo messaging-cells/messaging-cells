@@ -13,10 +13,6 @@ pre_load_cnf* THE_CNF = mc_null;
 MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node, 0)
 MCK_DEFINE_MEM_METHODS(pre_cnf_net, 32, ava_pre_cnf_net, 0)
 
-#ifdef MC_IS_ZNQ_CODE
-//BJ_DEFINE_nervenet_methods();
-#endif
-
 void init_node_arr(long sz, pre_cnf_node** arr, node_kind_t kk){
 	for(long aa = 0; aa < sz; aa++){
 		arr[aa] = pre_cnf_node::acquire();

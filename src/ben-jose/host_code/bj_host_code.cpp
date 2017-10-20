@@ -3,6 +3,7 @@
 
 #include "cell.hh"
 #include "dimacs.h"
+#include "load_cnf.hh"
 #include "preload_cnf.hh"
 #include "file_funcs.h"
 
