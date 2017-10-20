@@ -417,9 +417,11 @@ public:
 	static kernel*
 	get_core_kernel(mc_core_id_t id) mc_external_code_ram;
 
+	void dbg_set_idle() mc_external_code_ram;
+
 	//! Tells the kernel to exit \ref kernel::run_sys when no more work is pending or done (idle).
-	mc_inline_fn
-	void set_idle_exit(){
+	mc_inline_fn void set_idle_exit(){
+		//dbg_set_idle();
 		exit_when_idle = true;
 	}
 

@@ -51,16 +51,18 @@ mc_c_decl {
 
 	#include <stdbool.h>
 
-	bool mcm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const char* ck_str, 
-							const char* fmt, ...);
+	void mch_ptr_call_stack_trace();
+	bool mcm_call_assert(bool is_assert, bool prt_stck, bool vv_ck, 
+					const char* file, int line, const char* ck_str, const char* fmt, ...);
 	void mcm_printf(const char *format, ...);
 	void mcm_log(const char *fmt, ...);
 
 	#define EMU_CODE(cod) cod
 	#define EMU_DBG_CODE(cod) MC_DBG(cod)
-	#define EMU_CK(vv) MC_DBG(mcm_call_assert(true, vv, __FILE__, __LINE__, #vv, mc_null))
-	#define EMU_CK_PRT(vv, ...) MC_DBG(mcm_call_assert(true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
-	#define EMU_COND_PRT(cond, ...) mcm_call_assert(false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__)
+	#define EMU_CK(vv) MC_DBG(mcm_call_assert(true, true, vv, __FILE__, __LINE__, #vv, mc_null))
+	#define EMU_CK_PRT(vv, ...) MC_DBG(mcm_call_assert(true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
+	#define EMU_COND_PRT(cond, ...) mcm_call_assert(false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__)
+	#define EMU_PRT_STACK(cond, ...) mcm_call_assert(false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__)
 	#define EMU_PRT(...) mcm_printf(__VA_ARGS__)
 	#define EMU_LOG(...) mcm_log(__VA_ARGS__)
 	#define EPH_CODE(cod) 
@@ -93,6 +95,7 @@ mc_c_decl {
 	#define EMU_CK(prm) 
 	#define EMU_CK_PRT(vv, ...) 
 	#define EMU_COND_PRT(cond, ...)
+	#define EMU_PRT_STACK(cond, ...)
 	#define EMU_PRT(...) 
 	#define EMU_LOG(...) 
 

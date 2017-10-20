@@ -181,6 +181,7 @@ kernel::run_sys(){
 		#endif
 		*/
 	}
+	ker->exit_when_idle = false;
 	while(true){
 		ker->did_work = 0x0;
 		ker->handle_missives();
@@ -828,7 +829,7 @@ kernel::stop_sys(mck_token_t key){
 	}
 	ker->stop_key = key;
 
-	//EMU_PRT("START STOP CORE=%d \n", ker->get_core_nn());
+	//EMU_PRT("START_STOP_CORE=%d \n", ker->get_core_nn());
 }
 
 void 
@@ -845,9 +846,11 @@ kernel::send_stop_to_children(){
 		int aa = 0;
 		mc_load_map_st* ch_map = (mp->childs)[aa];
 		while(ch_map != mc_null){
-			//EMU_PRT("CHILD=%d \n", ch_map->num_core);
+			//EMU_PRT("send_stop to CHILD=%d \n", ch_map->num_core);
 			mc_core_nn_t chd_nn = ch_map->num_core;
 			cell* ch_cell = get_core_cell(mc_nn_to_id(chd_nn));
+
+			//EMU_PRT_STACK(true, "mck_tok_stop_sys_to_children CORE=%d \n", get_core_nn());
 
 			missive* msv = missive::acquire();
 			msv->src = get_core_cell();
@@ -930,4 +933,7 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 	}
 }
 
-
+void
+kernel::dbg_set_idle(){
+	//EMU_PRT_STACK(true, "CALLING kernel::set_idle_exit");
+}

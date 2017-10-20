@@ -230,6 +230,8 @@ polaron::load_handler(missive* msv){
 
 	left_side.stabi_active_set.add_left_synapse(my_snp);
 
+	bj_nervenet->tot_rcv_pol++;
+
 	transmitter* msv2 = transmitter::acquire();
 	EMU_CK(msv2->wrk_side == side_invalid);
 	msv2->src = my_snp;

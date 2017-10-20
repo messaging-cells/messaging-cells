@@ -282,7 +282,29 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case tok_stabi_tier_end:
 		resp = mc_cstr("tok_stabi_tier_end");
 	break;
+	case tok_end_stabi:
+		resp = mc_cstr("tok_end_stabi");
+	break;
 	}
 	return resp;
+}
+
+netstate::netstate(){ 
+	init_me();
+} 
+
+netstate::~netstate(){} 
+
+void
+netstate::init_me(int caller){
+	tot_act_neus = 0;
+	tot_act_vars = 0;
+	tot_act_lits = 0;
+	tot_act_rels = 0;
+
+	tot_act_rcv_pol = 0;
+
+	dbg_num_neu = 0;
+	dbg_num_pol = 0;
 }
 

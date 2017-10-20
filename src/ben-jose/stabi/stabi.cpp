@@ -71,25 +71,6 @@ bj_stabi_init_handlers(){
 	kernel::set_handlers(idx_total, bj_handlers);
 }
 
-void bj_stabi_main() {
-	//kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = kernel::get_core_nn();
-
-	kernel::set_handlers(1, bj_nil_handlers);
-	bj_stabi_init_handlers();
-
-	//kernel::run_sys();
-
-	mck_slog2("STABI___\n");
-
-	bj_print_loaded_cnf();
-
-	mck_slog2("END_STABI___");
-	mck_ilog(nn);
-	mck_slog2("_________________________\n");
-
-}
-
 void 
 synset::calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) { // careful with stack usage
 	set_stabi_arr(cap, arr, ii++, tot_syn);
@@ -192,6 +173,8 @@ nervenet::stabi_handler(missive* msv){
 
 void
 nervenet::stabi_nervenet_start(){
+	EMU_LOG("stabi_nervenet_start tot_rcv_pol=%d\n", tot_rcv_pol);
+
 	nervenet* my_net = this;
 
 	binder * fst, * lst, * wrk;
@@ -204,6 +187,8 @@ nervenet::stabi_nervenet_start(){
 		EMU_CK(my_neu->ki == nd_neu);
 		my_net->send(my_neu, tok_stabi_start);
 	}
+
+	dbg_stabi_stop_sys(mc_null, mc_null);
 }
 
 void 
@@ -254,6 +239,8 @@ neuron::stabi_neuron_start(){
 
 	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_propag), side_left);
 	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_tier_end), side_left);
+
+	bj_nervenet->dbg_stabi_stop_sys(mc_null, this);
 }
 
 void 
@@ -337,11 +324,11 @@ nervenode::stabi_charge_all(propag_data* dat){
 
 	EMU_PRT("CHARGE_ALL %s %ld %s src=%p\n", node_kind_to_str(ki), id, net_side_to_str(dat->sd), stt.stabi_source);
 
-
 	if(stt.stabi_source == mc_null){
 		nervenode* src = dat->snp->mate->owner;
 
-		EMU_CK(dat->ti > stt.stabi_tier);
+		EMU_CK((dat->ti + 1) > stt.stabi_tier);
+
 		stt.stabi_tier = dat->ti + 1;
 		stt.stabi_source = src;
 
@@ -390,6 +377,7 @@ nervenode::stabi_charge_src(propag_data* dat){
 
 void
 nervenode::stabi_propag(propag_data* dat){
+	EMU_PRT("PROPAG %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
 	// normal stab
 }
 
@@ -398,9 +386,13 @@ nervenode::stabi_tier_end(propag_data* dat){
 
 	neurostate& stt = get_neurostate(dat->sd);
 	stt.stabi_num_complete++;
-	if(stt.stabi_num_complete == stt.stabi_active_set.tot_syn){
-		EMU_PRT("TIER_END %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
 
+	EMU_LOG("ADD_TIER_END %s %ld %s (%d==%d)?\n", node_kind_to_str(ki), id, net_side_to_str(dat->sd), 
+			stt.stabi_num_complete, stt.stabi_active_set.tot_syn);
+
+	if(stt.stabi_num_complete >= stt.stabi_active_set.tot_syn){
+		EMU_LOG("TIER_END %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
+		bj_nervenet->dbg_stabi_stop_sys(dat, this);
 		//stabi_end_tier(dat);
 	}
 }
@@ -490,5 +482,61 @@ neuron::stabi_end_tier(propag_data* dat){
 		tierset* ti_grp = (tierset*)stt.stabi_tiers.bn_left;
 		send_all_synapses(&(ti_grp->all_syn), (bj_callee_t)(&polaron::stabi_send_charge_src), dat->sd);
 	}
+}
+
+void 
+nervenet::dbg_stabi_stop_sys(propag_data* dat, nervenode* nod){
+	node_kind_t 	nod_ki = nd_invalid;
+	long			nod_id = 0;
+	MC_MARK_USED(nod_id);
+	
+	if(nod != mc_null){
+		nod_ki = nod->ki;
+		nod_id = nod->id;
+		if(nod_ki == nd_neu){
+			dbg_num_neu++;
+		} else {
+			EMU_CK(nod_ki != nd_invalid);
+			dbg_num_pol++;
+		}
+		EMU_LOG("dbg_stabi_stop_sys neus(%d==%d) pols(%d==%d)\n", dbg_num_neu, tot_neus, dbg_num_pol, tot_rcv_pol);
+	}
+	if((tot_neus > 0) && (dbg_num_neu == tot_neus)){
+		EMU_LOG("STOP_SYS(neus) %s %ld (%d==%d)\n", node_kind_to_str(nod_ki), nod_id, dbg_num_neu, tot_neus);
+		kernel::stop_sys(tok_end_stabi);
+	}
+	if((tot_neus == 0) && (dbg_num_pol == tot_rcv_pol)){
+		EMU_LOG("STOP_SYS(pols) %s %ld (%d==%d)\n", node_kind_to_str(nod_ki), nod_id, dbg_num_pol, tot_rcv_pol);
+		kernel::stop_sys(tok_end_stabi);
+	}
+}
+
+void 
+nervenet::dbg_stabi_init_sys(){
+	dbg_num_neu = 0;
+	dbg_num_pol = 0;
+}
+
+void bj_stabi_main() {
+	//kernel* ker = mck_get_kernel();
+	mc_core_nn_t nn = kernel::get_core_nn();
+
+	kernel::set_handlers(1, bj_nil_handlers);
+	bj_stabi_init_handlers();
+
+	mck_slog2("STABI___\n");
+
+	bj_print_loaded_cnf();
+
+	nervenet* my_net = bj_nervenet;
+	my_net->dbg_stabi_init_sys();
+	my_net->send(my_net, tok_stabi_start);
+	kernel::run_sys();
+
+	EMU_PRT("...............................END_STABI\n");
+	mck_slog2("END_STABI___");
+	mck_ilog(nn);
+	mck_slog2("_________________________\n");
+
 }
 

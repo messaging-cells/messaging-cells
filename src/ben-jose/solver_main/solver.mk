@@ -16,18 +16,10 @@ TGT_PREREQS := \
 
 #	${TARGET_DIR}/libload_cnf.a \
 
-#	ln -s ../../../tests-ben-jose/cnfs/ .
-
-#	e-objdump -h $(TARGET) > $(TARGET)_sizes.txt
-#	e-objdump -D $(TARGET) > $(TARGET).s
-#	cd $(MC_CURR_DIR)
-
-#	e-objdump -h $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET)_sizes.txt
-#	e-objdump -D $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET).s
+CNFS_LNK := $(TARGET_DIR)/cnfs
 
 define POST_OPERS
-	rm $(TARGET_DIR)/cnfs
-	ln -s ../../../tests-ben-jose/cnfs/ $(TARGET_DIR)
+	if [ ! -e $(CNFS_LNK) ]; then ln -s ../../../tests-ben-jose/cnfs/ $(TARGET_DIR); fi;
 	e-objdump -h $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET)_sizes.txt
 	e-objdump -D $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET).s
 	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 

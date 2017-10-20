@@ -140,10 +140,11 @@ mcm_addr_with_fn(mc_core_id_t core_id, void* addr){
 }
 
 bool 
-mcm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const char* ck_str, const char* fmt, ...)
+mcm_call_assert(bool is_assert, bool prt_stck, bool cond, 
+		const char* file, int line, const char* ck_str, const char* fmt, ...)
 {
-	bool is_asst = (is_assert && ! vv_ck);
-	bool is_prt = (! is_assert && vv_ck);
+	bool is_asst = (is_assert && ! cond);
+	bool is_prt = (! is_assert && cond);
 	bool do_prt = is_asst || is_prt;
 	if(do_prt){
 		emu_info_t* inf = mck_get_emu_info();
@@ -151,8 +152,10 @@ mcm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const ch
 			fprintf(stderr, "------------------------------------------------------------------\n");
 			fprintf(stderr, "%d:%x --> ASSERT '%s' FAILED. FILE (%d) = %s\n", 
 					inf->emu_num, inf->emu_core_id, ck_str, line, file);
-			mch_ptr_call_stack_trace();
 		} 
+		if(prt_stck){
+			mch_ptr_call_stack_trace();
+		}
 
 		if(fmt != NULL){
 			char pp[MC_MAX_STR_SZ];
@@ -174,9 +177,9 @@ mcm_call_assert(bool is_assert, bool vv_ck, const char* file, int line, const ch
 		fprintf(stderr, "------------------------------------------------------------------\n");
 	}
 	if(is_assert){
-		assert(vv_ck);
+		assert(cond);
 	}
-	return vv_ck;
+	return cond;
 }
 
 void

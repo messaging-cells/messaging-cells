@@ -43,9 +43,11 @@ Declaration of functions to preload cnfs in dimacs files.
 #include "load_cnf.hh"
 
 class pre_cnf_node;
+class pre_cnf_net;
 class pre_load_cnf;
 
 extern grip ava_pre_cnf_node;
+extern grip ava_pre_cnf_net;
 
 typedef unsigned long pre_node_sz_t;
 
@@ -69,6 +71,29 @@ public:
 
 	~pre_cnf_node(){}
 
+};
+
+class mc_aligned pre_cnf_net : public agent_grp {
+public:
+	MCK_DECLARE_MEM_METHODS(pre_cnf_net, bj_load_cod)
+
+	num_nod_t tot_pre_neus;
+	num_nod_t tot_pre_vars;
+	num_nod_t tot_pre_lits;
+	num_nod_t tot_pre_rels;
+
+	grip	all_pre_neu;
+	grip	all_pre_pos;
+	grip	all_pre_neg;
+	
+	pre_cnf_net(){
+		tot_pre_neus = 0;
+		tot_pre_vars = 0;
+		tot_pre_lits = 0;
+		tot_pre_rels = 0;
+	}
+
+	~pre_cnf_net(){}
 };
 
 typedef int (*cmp_fn)(const void *, const void *);

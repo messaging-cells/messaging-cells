@@ -96,7 +96,8 @@ enum stabi_tok_t : mck_token_t {
 	tok_stabi_propag,
 	tok_stabi_charge_all,
 	tok_stabi_charge_src,
-	tok_stabi_tier_end
+	tok_stabi_tier_end,
+	tok_end_stabi
 };
 
 enum bj_hdlr_idx_t : uint8_t {
@@ -329,6 +330,25 @@ public:
 
 #define MAGIC_VAL 987654
 
+class mc_aligned netstate {
+public:
+	num_nod_t tot_act_neus;
+	num_nod_t tot_act_vars;
+	num_nod_t tot_act_lits;
+	num_nod_t tot_act_rels;
+
+	num_nod_t tot_act_rcv_pol;
+
+	num_nod_t dbg_num_neu;
+	num_nod_t dbg_num_pol;
+
+	netstate() mc_external_code_ram;
+	~netstate() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+};
+
 class mc_aligned nervenet : public cell  {
 public:
 	MCK_DECLARE_MEM_METHODS(nervenet, bj_nervenet_mem)
@@ -353,12 +373,17 @@ public:
 	num_nod_t tot_lits;
 	num_nod_t tot_rels;
 
+	num_nod_t tot_rcv_pol;
+
 	num_nod_t tot_loading;
 	num_nod_t tot_loaded;
 
 	grip	all_neu;
 	grip	all_pos;
 	grip	all_neg;
+
+	num_nod_t dbg_num_neu;
+	num_nod_t dbg_num_pol;
 
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
@@ -369,6 +394,9 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void stabi_nervenet_start() bj_stabi_cod;
+
+	void dbg_stabi_init_sys() mc_external_code_ram;
+	void dbg_stabi_stop_sys(propag_data* dat, nervenode* nod) mc_external_code_ram;
 };
 
 #define bj_num_sep_tiersets (bj_nervenet->num_sep_tiersets)
@@ -399,6 +427,8 @@ nervenet::nervenet(){ \
 		tot_vars = 0; \
 		tot_lits = 0; \
 		tot_rels = 0; \
+\
+		tot_rcv_pol = 0; \
 \
 		tot_loading = 0; \
 		tot_loaded = 0; \
