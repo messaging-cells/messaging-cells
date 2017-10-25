@@ -35,6 +35,8 @@
 
 //----------------------------------------------------------------------------
 
+missive_handler_t mc_nil_handlers[1] = { mc_null };
+
 MCK_DEFINE_MEM_METHODS(cell, 32, mck_all_available(cell), 0)
 MCK_DEFINE_MEM_METHODS(missive, 32, mck_all_available(missive), 0)
 MCK_DEFINE_MEM_METHODS(agent_ref, 32, mck_all_available(agent_ref), 0)
@@ -66,6 +68,15 @@ kernel::kernel(){
 
 kernel::~kernel(){}
 
+void 
+kernel::init_router_ack_arrays(){
+	//EMU_PRT("kernel::init_router_ack_arrays\n");
+	mc_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_ack_arr, mck_virgin_ack);
+	mc_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_ack_arr, mck_virgin_ack);
+	mc_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_ack_arr, mck_virgin_ack);
+	mc_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_ack_arr, mck_virgin_ack);
+}
+
 void
 kernel::init_kernel(){
 	magic_id = MC_MAGIC_ID;
@@ -81,10 +92,7 @@ kernel::init_kernel(){
 	mc_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_arr, mc_null);
 	mc_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_arr, mc_null);
 
-	mc_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_ack_arr, mck_virgin_ack);
-	mc_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_ack_arr, mck_virgin_ack);
-	mc_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_ack_arr, mck_virgin_ack);
-	mc_init_arr_vals(kernel_pw6_routed_arr_sz, pw6_routed_ack_arr, mck_virgin_ack);
+	init_router_ack_arrays();
 
 	routed_from_host = mc_null;
 	routed_ack_from_host = mck_ready_ack;
@@ -169,6 +177,7 @@ kernel::run_sys(){
 	kernel* ker = MCK_KERNEL;
 	
 	if(! ker->is_host_kernel){
+		ker->reset_stop_sys();
 		MC_CORE_INFO->pt_core_kernel = (void*)mc_addr_set_id(MC_CORE_INFO->the_core_id, ker);
 		MC_CORE_INFO->inited_core = MC_CORE_INFO->the_core_id;
 		/*
@@ -190,6 +199,10 @@ kernel::run_sys(){
 		}
 		EMU_CODE(sched_yield());
 	}
+
+	MC_CORE_INFO->inited_core = 0;
+
+	ker->init_router_ack_arrays();
 }
 
 void	// static
@@ -321,17 +334,14 @@ kernel::get_host_cell(){
 	return ker->host_kernel->first_cell;
 }
 
-char* err_cell_07 mc_external_data_ram = 
+char* err_cell_07 = 
 	mc_cstr("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs CAN NOT be mc_null. \n");
 
-char* err_cell_08 mc_external_data_ram = 
+char* err_cell_08 = 
 	mc_cstr("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs[0] MUST be mc_null. \n");
 
-void // static 
-kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
-	kernel* ker = MCK_KERNEL;
-	ker->tot_handlers = tot_hdlrs;
-	ker->all_handlers = hdlrs;
+void // static
+kernel::fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 	if(tot_hdlrs > 0){
 		if(hdlrs == mc_null){
 			mck_abort((mc_addr_t)err_cell_07, err_cell_07);
@@ -342,6 +352,14 @@ kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 		}
 		hdlrs[0] = mc_kernel_handler;
 	}
+}
+
+void // static 
+kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
+	kernel* ker = MCK_KERNEL;
+	kernel::fix_handlers(tot_hdlrs, hdlrs);
+	ker->tot_handlers = tot_hdlrs;
+	ker->all_handlers = hdlrs;
 }
 
 void 
@@ -397,6 +415,20 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 }
 
 bool
+mck_has_same_module(mc_core_id_t dst_id){
+	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	mc_addr_t* loc_mdl = &(in_shd->current_module_addr);
+	mc_addr_t* rmt_mdl = (mc_addr_t*)mc_addr_set_id(dst_id, loc_mdl);
+	if((*rmt_mdl) != (*loc_mdl)){
+		EMU_PRT("DIFF MODULES %s != %s \n", 
+			(char*)(*loc_mdl), (char*)(*rmt_mdl));
+		return false;
+	}
+
+	return true;
+}
+
+bool
 mck_is_id_inited(mc_core_id_t dst_id){
 	mck_glb_sys_st* in_shd = MC_CORE_INFO;
 	mc_core_id_t* loc_st = &(in_shd->inited_core);
@@ -404,6 +436,7 @@ mck_is_id_inited(mc_core_id_t dst_id){
 	if((*rmt_st) != dst_id){
 		return false;
 	}
+
 	return true;
 }
 
@@ -520,6 +553,12 @@ kernel::handle_missives(){
 			// Have never sent missives
 			if(! mck_is_id_inited(dst_id)){
 				did_work |= 0x08;
+				continue;
+			}
+			if(! mck_has_same_module(dst_id)){
+				did_work |= 0x08;
+				EMU_PRT("SKIP msg %d => %d tok=%d \n", 
+					MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			loc_dst_ack_pt = mck_ready_ack;
@@ -827,6 +866,7 @@ kernel::stop_sys(mck_token_t key){
 	if((ker->rcvd_stop_key != 0) && (ker->rcvd_stop_key != key)){ 
 		mck_abort((mc_addr_t)err_cell_03, err_cell_03);
 	}
+
 	ker->stop_key = key;
 
 	//EMU_PRT("START_STOP_CORE=%d \n", ker->get_core_nn());
@@ -836,7 +876,7 @@ void
 kernel::send_stop_to_children(){
 	//mck_slog2("send_stop_to_children\n");
 
-	reset_stop_sys();
+	//reset_stop_sys();
 
 	mc_load_map_st* mp = mc_map_get_loaded();
 
@@ -937,3 +977,4 @@ void
 kernel::dbg_set_idle(){
 	//EMU_PRT_STACK(true, "CALLING kernel::set_idle_exit");
 }
+

@@ -67,6 +67,7 @@ struct mc_aligned mck_glb_sys_def {
 	mc_rrarray_st* 	write_rrarray;
 	uint8_t 		dbg_out_str[MC_MAX_STR_SZ];
 
+	mc_addr_t		current_module_addr;
 	void*			pt_core_kernel;
 
 	EPH_CODE(

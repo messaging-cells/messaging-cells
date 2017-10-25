@@ -148,10 +148,15 @@ mcm_call_assert(bool is_assert, bool prt_stck, bool cond,
 	bool do_prt = is_asst || is_prt;
 	if(do_prt){
 		emu_info_t* inf = mck_get_emu_info();
-		if(is_assert){
+		if(is_assert || prt_stck){
 			fprintf(stderr, "------------------------------------------------------------------\n");
-			fprintf(stderr, "%d:%x --> ASSERT '%s' FAILED. FILE (%d) = %s\n", 
-					inf->emu_num, inf->emu_core_id, ck_str, line, file);
+		}
+		if(file != mc_null){
+			fprintf(stderr, "FILE %s(%d): ", file, line);
+		}
+		fprintf(stderr, "%d:%x --> ", inf->emu_num, inf->emu_core_id);
+		if(is_assert){
+			fprintf(stderr, "ASSERT '%s' FAILED.\n", ck_str);
 		} 
 		if(prt_stck){
 			mch_ptr_call_stack_trace();
@@ -171,10 +176,12 @@ mcm_call_assert(bool is_assert, bool prt_stck, bool cond,
 				mch_abort_func((mc_addr_t)mcm_printf, "mcm_printf. ERROR. \n");
 			}
 
-			fprintf(stderr, "%d:%x --> %s", inf->emu_num, inf->emu_core_id, pp);
-			fflush(stderr); 
+			fprintf(stderr, "%s", pp);
 		}
-		fprintf(stderr, "------------------------------------------------------------------\n");
+		if(is_assert || prt_stck){
+			fprintf(stderr, "------------------------------------------------------------------\n");
+		}
+		fflush(stderr); 
 	}
 	if(is_assert){
 		assert(cond);

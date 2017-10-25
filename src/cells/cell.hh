@@ -168,6 +168,8 @@ enum mck_core_state_t : uint8_t {
 //! Type for functions that handle \ref missive s (it is a pointer to the handler function).
 typedef void (*missive_handler_t)(missive* msg);
 
+extern missive_handler_t mc_nil_handlers[];
+
 //-------------------------------------------------------------------------
 // kernel data
 
@@ -257,12 +259,19 @@ Every core must have one and only one kernel inited with kernel::init_sys.
 //! Gets the local kernel
 #define mck_get_kernel() MCK_KERNEL
 
+void mc_kernel_handler(missive* msv);
+
+void emu_dbg_prt_ack_arr(int sz, mck_ack_t* arr);
+
+extern char* err_cell_07 mc_external_data_ram;
+extern char* err_cell_08 mc_external_data_ram;
+
 class mc_aligned kernel { 
 public:
 	uint32_t 	magic_id;
 	bool		is_host_kernel;
 
-	mck_handler_idx_t 	tot_handlers;
+	mck_handler_idx_t 	tot_handlers; //!< \ref kernel::all_handlers size.
 	missive_handler_t* 	all_handlers; //!< Current array of \ref missive handlers of \ref cell s for this core.
 
 	mc_bool_t signals_arr[kernel_signals_arr_sz];
@@ -325,6 +334,8 @@ public:
 	~kernel() mc_external_code_ram;
 
 	void init_kernel() mc_external_code_ram;
+
+	void init_router_ack_arrays() mc_external_code_ram;
 
 	static void
 	init_sys(bool is_the_host = false) mc_external_code_ram; //!< Static method that inits this core kernel.
@@ -419,6 +430,8 @@ public:
 
 	void dbg_set_idle() mc_external_code_ram;
 
+	static void fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) mc_external_code_ram;
+
 	//! Tells the kernel to exit \ref kernel::run_sys when no more work is pending or done (idle).
 	mc_inline_fn void set_idle_exit(){
 		//dbg_set_idle();
@@ -451,9 +464,6 @@ public:
 
 	void 
 	call_host_handlers_of_group(missive_grp_t* mgrp) mc_external_code_ram;
-
-	//void
-	//reset_stop_sys() mc_external_code_ram;
 
 	mc_inline_fn
 	void reset_stop_sys(){
@@ -815,7 +825,8 @@ public:
 enum kernel_tok_t : mck_token_t {
 	mck_tok_invalid,
 	mck_tok_stop_sys_to_parent,
-	mck_tok_stop_sys_to_children
+	mck_tok_stop_sys_to_children,
+	mck_tok_last
 };
 
 void 
@@ -839,6 +850,9 @@ template<typename T, typename U> constexpr mc_size_t mc_offsetof(U T::*member)
 #ifdef __cplusplus
 mc_c_decl {
 #endif
+
+bool
+mck_has_same_module(mc_core_id_t dst_id) mc_external_code_ram;
 
 bool
 mck_is_id_inited(mc_core_id_t dst_id) mc_external_code_ram;

@@ -45,6 +45,11 @@ netstate::init_netstate_with(pre_cnf_net* pre_net){
 	tot_rels = pre_net->tot_pre_rels;
 }
 
+void
+neurostate::update_prev_tot_active(){
+	prev_tot_active = stabi_active_set.tot_syn;
+}
+
 void bj_load_shd_cnf(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
@@ -166,12 +171,13 @@ void bj_load_shd_cnf(){
 			//MCK_CK(my_snp->mate != mc_null);
 
 			my_neu->left_side.stabi_active_set.add_left_synapse(my_snp);
+			my_neu->left_side.update_prev_tot_active();
 
 			transmitter* msv = transmitter::acquire();
 			EMU_CK(msv->wrk_side == side_invalid);
 			msv->src = my_snp;
 			msv->dst = my_pol;
-			msv->tok = tok_nw_syn;
+			msv->tok = bj_tok_load_nw_syn;
 			msv->send();
 
 			/*
@@ -195,7 +201,7 @@ void bj_load_shd_cnf(){
 		EMU_CK(msv->wrk_side == side_invalid);
 		msv->src = my_net;
 		msv->dst = my_net;
-		msv->tok = tok_no_lits;
+		msv->tok = bj_tok_load_no_lits;
 		msv->send();
 	}
 }
@@ -204,11 +210,11 @@ void
 nervenet::load_handler(missive* msv){
 	load_tok_t tok = (load_tok_t)msv->tok;
 	MC_MARK_USED(tok);
-	MCK_CK(tok == tok_no_lits);
+	MCK_CK(tok == bj_tok_load_no_lits);
 
 	EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
 	EMU_PRT("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
-	kernel::stop_sys(tok_end_load);
+	kernel::stop_sys(bj_tok_load_end);
 }
 
 void
@@ -217,7 +223,7 @@ polaron::load_handler(missive* msv){
 	load_tok_t tok = (load_tok_t)msv->tok;
 	MC_MARK_USED(syn_src);
 	MC_MARK_USED(tok);
-	MCK_CK(tok == tok_nw_syn);
+	MCK_CK(tok == bj_tok_load_nw_syn);
 
 	synapse* mt_snp = (synapse*)syn_src;
 	synapse* my_snp = synapse::acquire();
@@ -231,6 +237,7 @@ polaron::load_handler(missive* msv){
 	MCK_CK(my_snp->mate != mc_null);
 
 	left_side.stabi_active_set.add_left_synapse(my_snp);
+	left_side.update_prev_tot_active();
 
 	bj_nervenet->first_stt.tot_rcv_pol++;
 
@@ -238,7 +245,7 @@ polaron::load_handler(missive* msv){
 	EMU_CK(msv2->wrk_side == side_invalid);
 	msv2->src = my_snp;
 	msv2->dst = mt_snp;
-	msv2->tok = tok_nw_syn;
+	msv2->tok = bj_tok_load_nw_syn;
 	msv2->send();
 }
 
@@ -277,12 +284,13 @@ synapse::load_handler(missive* msv){
 	load_tok_t tok = (load_tok_t)msv->tok;
 	MC_MARK_USED(syn_src);
 	MC_MARK_USED(tok);
-	MCK_CK(tok == tok_nw_syn);
+	EMU_CK_PRT(tok == bj_tok_load_nw_syn, "BAD_TOK= %s (%d) (%s)\n\n", load_tok_to_str(tok), tok, 
+			stabi_tok_to_str((stabi_tok_t)(msv->tok)));
 
 	synapse* mt_snp = (synapse*)syn_src;
 
 	mate = mt_snp;
-	MCK_CK(mate != mc_null);
+	EMU_CK(mate != mc_null);
 
 	nervenet* my_net = bj_nervenet;
 	long& tot_ld = my_net->tot_loaded;
@@ -293,7 +301,7 @@ synapse::load_handler(missive* msv){
 		EMU_PRT("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 		//print_childs();
 		//mck_get_kernel()->set_idle_exit();
-		kernel::stop_sys(tok_end_load);
+		kernel::stop_sys(bj_tok_load_end);
 	}
 	EMU_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
 		owner->id, mt_snp->owner->id, tot_ld, my_net->first_stt.tot_lits);

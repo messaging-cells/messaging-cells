@@ -146,6 +146,8 @@ mck_load_module(mc_addr_t ext_addr){
 	mc_addr_t mod_sz = MC_VAL_CORE_MODULE_SIZE;
 	uint8_t* pt_mem_mod = (uint8_t*)MC_VAL_CORE_MODULE_ORIG;
 	mc_memcpy(pt_mem_mod, pt_mod, mod_sz);
+
+	MC_CORE_INFO->current_module_addr = ext_addr;
 	return true;
 }
 

@@ -55,6 +55,7 @@ mck_glb_init(bool is_host) {
 	glb_dat->the_core_ro = mc_id_to_ro(koid);
 	glb_dat->the_core_co = mc_id_to_co(koid);
 	glb_dat->the_core_nn = num_core;
+	glb_dat->current_module_addr = (mc_addr_t)mc_null;
 	glb_dat->pt_core_kernel = mc_null;
 
 	if(num_core < mc_out_num_cores){

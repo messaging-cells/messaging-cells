@@ -41,10 +41,16 @@ mck_get_module_name(uint32_t modl_idx){
 
 void
 mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* user_ext_addr){
+	for(int aa = 0; aa < user_sz; aa++){
+		char* usr_nam = user_order[aa];
+		user_ext_addr[aa] = (mc_addr_t)usr_nam;
+	}
 }
 
 bool
 mck_load_module(mc_addr_t ext_addr){
+	EMU_PRT("LOADING MODULE %p %s \n", (void*)ext_addr, (char*)ext_addr);
+	MC_CORE_INFO->current_module_addr = ext_addr;
 	return true;
 }
 

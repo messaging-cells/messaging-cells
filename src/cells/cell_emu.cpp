@@ -21,7 +21,19 @@ kernel::get_core_kernel(mc_core_id_t id){
 	EMU_CK((0 <= nn) && (nn < TOT_THREADS));
 	thread_info_t* info = &(ALL_THREADS_INFO[nn]);
 	if(info->thd_emu.emu_glb_sys_data.inited_core != id){
+		EMU_PRT("kernel::get_core_kernel ID=%p ------------\n", (void*)(uintptr_t)id);
 		return mc_null;
 	}
 	return &(info->thd_emu.emu_THE_KERNEL);
 }
+
+void 
+emu_dbg_prt_ack_arr(int sz, mck_ack_t* arr){
+	fprintf(stderr, "{"); 
+	for(int aa = 0; aa < sz; aa++){ 
+		fprintf(stderr, "%d ", arr[aa]); 
+	} 
+	fprintf(stderr, "}\n"); 
+	fflush(stderr);
+}
+

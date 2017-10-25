@@ -109,8 +109,14 @@ neurostate::~neurostate(){}
 void
 neurostate::init_me(int caller){
 	//side_kind = side_invalid;
-	stabi_tier = 0;
+	stabi_num_tier = 0;
+
 	stabi_source = mc_null;
+
+	prev_tot_active = 0;
+
+	stabi_flags = 0;
+
 	stabi_num_complete = 0;
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
@@ -276,29 +282,50 @@ char* node_kind_to_str(node_kind_t ki){
 	return resp;
 }
 
-char* stabi_tok_to_str(stabi_tok_t tok){
-	char* resp = mc_null;
+char* load_tok_to_str(load_tok_t tok){
+	char* resp = mc_cstr("UNKNOWN_LOAD_TOK");
+	
 	switch(tok){
-	case tok_stabi_invalid:
-		resp = mc_cstr("tok_stabi_invalid");
+	case bj_tok_load_invalid:
+		resp = mc_cstr("bj_tok_load_invalid");
 	break;
-	case tok_stabi_start:
-		resp = mc_cstr("tok_stabi_start");
+	case bj_tok_load_nw_syn:
+		resp = mc_cstr("bj_tok_load_nw_syn");
 	break;
-	case tok_stabi_propag:
-		resp = mc_cstr("tok_stabi_propag");
+	case bj_tok_load_no_lits:
+		resp = mc_cstr("bj_tok_load_no_lits");
 	break;
-	case tok_stabi_charge_all:
-		resp = mc_cstr("tok_stabi_charge_all");
+	case bj_tok_load_end:
+		resp = mc_cstr("bj_tok_load_end");
 	break;
-	case tok_stabi_charge_src:
-		resp = mc_cstr("tok_stabi_charge_src");
+	}
+	return resp;
+}
+
+char* stabi_tok_to_str(stabi_tok_t tok){
+	char* resp = mc_cstr("UNKNOWN_STABI_TOK");
+
+	switch(tok){
+	case bj_tok_stabi_invalid:
+		resp = mc_cstr("bj_tok_stabi_invalid");
 	break;
-	case tok_stabi_tier_end:
-		resp = mc_cstr("tok_stabi_tier_end");
+	case bj_tok_stabi_start:
+		resp = mc_cstr("bj_tok_stabi_start");
 	break;
-	case tok_end_stabi:
-		resp = mc_cstr("tok_end_stabi");
+	case bj_tok_stabi_propag:
+		resp = mc_cstr("bj_tok_stabi_propag");
+	break;
+	case bj_tok_stabi_charge_all:
+		resp = mc_cstr("bj_tok_stabi_charge_all");
+	break;
+	case bj_tok_stabi_charge_src:
+		resp = mc_cstr("bj_tok_stabi_charge_src");
+	break;
+	case bj_tok_stabi_tier_end:
+		resp = mc_cstr("bj_tok_stabi_tier_end");
+	break;
+	case bj_tok_stabi_end:
+		resp = mc_cstr("bj_tok_stabi_end");
 	break;
 	}
 	return resp;
@@ -321,6 +348,10 @@ netstate::init_me(int caller){
 
 	dbg_num_neu = 0;
 	dbg_num_pol = 0;
+	dbg_stp_sys = false;
+
+	curr_tier = 0;
+	tot_tier_charged = 0;
 }
 
 void
@@ -331,5 +362,8 @@ netstate::init_with(netstate& stt){
 	tot_rels = stt.tot_rels;
 
 	tot_rcv_pol = stt.tot_rcv_pol;
+
+	curr_tier = 0;
+	tot_tier_charged = 0;
 }
 

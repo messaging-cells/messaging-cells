@@ -61,20 +61,20 @@ enum net_side_t : uint8_t {
 };
 
 enum load_tok_t : mck_token_t {
-	tok_invalid,
-	tok_nw_syn,
-	tok_no_lits,
-	tok_end_load
+	bj_tok_load_invalid = mck_tok_last + 1,
+	bj_tok_load_nw_syn,
+	bj_tok_load_no_lits,
+	bj_tok_load_end
 };
 
 enum stabi_tok_t : mck_token_t {
-	tok_stabi_invalid,
-	tok_stabi_start,
-	tok_stabi_propag,
-	tok_stabi_charge_all,
-	tok_stabi_charge_src,
-	tok_stabi_tier_end,
-	tok_end_stabi
+	bj_tok_stabi_invalid = bj_tok_load_end + 1,
+	bj_tok_stabi_start,
+	bj_tok_stabi_propag,
+	bj_tok_stabi_charge_all,
+	bj_tok_stabi_charge_src,
+	bj_tok_stabi_tier_end,
+	bj_tok_stabi_end
 };
 
 enum bj_hdlr_idx_t : uint8_t {
@@ -92,6 +92,7 @@ typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd);
 
 char* net_side_to_str(net_side_t sd) mc_external_code_ram;
 char* node_kind_to_str(node_kind_t ki) mc_external_code_ram;
+char* load_tok_to_str(load_tok_t tok) mc_external_code_ram;
 char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
 void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
@@ -189,10 +190,12 @@ public:
 
 class mc_aligned neurostate {
 public:
-	num_tier_t		stabi_tier;
+	num_tier_t		stabi_num_tier;
+
 	nervenode*		stabi_source;
 	grip			stabi_tiers;
 
+	num_syn_t 		prev_tot_active;
 	synset			stabi_active_set;
 
 	mc_flags_t		stabi_flags;
@@ -200,7 +203,7 @@ public:
 	num_syn_t		stabi_num_complete;
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
-	num_syn_t*		stabi_arr;
+	num_syn_t*  	stabi_arr;
 
 	neurostate();
 	~neurostate();
@@ -210,6 +213,8 @@ public:
 
 	void calc_stabi_arr() bj_stabi_cod;
 	bool charge_all() bj_stabi_cod;
+
+	mc_inline_fn void update_prev_tot_active() bj_load_cod;
 };
 
 /*
@@ -317,6 +322,9 @@ public:
 	num_nod_t dbg_num_neu;
 	num_nod_t dbg_num_pol;
 	bool	  dbg_stp_sys;
+
+	num_tier_t	curr_tier;
+	num_nod_t 	tot_tier_charged;
 
 	netstate() mc_external_code_ram;
 	~netstate() mc_external_code_ram;
