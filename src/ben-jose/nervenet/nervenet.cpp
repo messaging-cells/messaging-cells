@@ -13,11 +13,18 @@ MCK_DEFINE_MEM_METHODS(tierset, 32, bj_ava_tiersets, bj_num_sep_tiersets)
 MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses, 0)
 MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons, 0)
 MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons, 0)
+MCK_DEFINE_MEM_METHODS(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
 
 nervenet::nervenet(){
 	MAGIC = MAGIC_VAL;
 
+	tot_neus = 0;
+	tot_vars = 0;
+	tot_lits = 0;
+	tot_rels = 0;
+
 	num_sep_tiersets = 10;
+	num_sep_tierdatas = 10;
 
 	handler_idx = idx_nervenet;
 
@@ -80,7 +87,7 @@ tierset::~tierset(){}
 
 void
 tierset::init_me(int caller){
-	num_tier = BJ_INVALID_TIER;
+	ti_id = BJ_INVALID_TIER;
 }
 
 synapse::synapse(){
@@ -153,10 +160,15 @@ polaron::init_me(int caller){
 }
 
 neuron::neuron(){
-	handler_idx = idx_neuron;
+	init_me();
 } 
 
 neuron::~neuron(){} 
+
+void
+neuron::init_me(int caller){
+	handler_idx = idx_neuron;
+}
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 	binder * fst, * lst, * wrk;
@@ -339,31 +351,26 @@ netstate::~netstate(){}
 
 void
 netstate::init_me(int caller){
-	tot_neus = 0;
-	tot_vars = 0;
-	tot_lits = 0;
-	tot_rels = 0;
-
-	tot_rcv_pol = 0;
-
-	dbg_num_neu = 0;
-	dbg_num_pol = 0;
 	dbg_stp_sys = false;
-
-	curr_tier = 0;
-	tot_tier_charged = 0;
 }
 
+tierdata::tierdata(){
+	init_me();
+} 
+
+tierdata::~tierdata(){} 
+
 void
-netstate::init_with(netstate& stt){
-	tot_neus = stt.tot_neus;
-	tot_vars = stt.tot_vars;
-	tot_lits = stt.tot_lits;
-	tot_rels = stt.tot_rels;
+tierdata::init_me(int caller){
+	ti_id = BJ_INVALID_TIER;
 
-	tot_rcv_pol = stt.tot_rcv_pol;
+	inp_neus = 0;
+	inp_pols = 0;
 
-	curr_tier = 0;
-	tot_tier_charged = 0;
+	off_neus = 0;
+	off_pols = 0;
+
+	rcv_neus = 0;
+	rcv_pols = 0;
 }
 

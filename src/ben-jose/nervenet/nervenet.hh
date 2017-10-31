@@ -84,6 +84,7 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_synapse,
 	idx_polaron,
 	idx_neuron,
+	idx_tierdata,
 	idx_nervenet,
 	idx_total
 };
@@ -108,8 +109,8 @@ public:
 	grip		all_syn;
 	grip		all_grp;
 
-	synset() bj_nervenet_cod;
-	~synset() bj_nervenet_cod;
+	synset() mc_external_code_ram;
+	~synset() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
@@ -132,11 +133,11 @@ class mc_aligned tierset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(tierset, bj_nervenet_mem)
 
-	num_tier_t 	num_tier;
-	grip		all_syn;
+	num_tier_t 	ti_id;
+	grip		ti_all;	//!< \ref synapse s in this tier
 
-	tierset();
-	~tierset();
+	tierset() mc_external_code_ram;
+	~tierset() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
@@ -153,7 +154,7 @@ public:
 	~transmitter() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0) mc_external_code_ram;
+	void init_me(int caller = 0);
 };
 
 class mc_aligned synapse : public cell {
@@ -172,7 +173,7 @@ public:
 	~synapse() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0) mc_external_code_ram;
+	void init_me(int caller = 0);
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
@@ -205,8 +206,8 @@ public:
 	num_syn_t		stabi_arr_sz;
 	num_syn_t*  	stabi_arr;
 
-	neurostate();
-	~neurostate();
+	neurostate() mc_external_code_ram;
+	~neurostate() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
@@ -248,11 +249,21 @@ public:
 	~nervenode() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0) mc_external_code_ram;
+	void init_me(int caller = 0);
 
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 
-	mc_inline_fn synset& get_active_set(net_side_t sd) bj_stabi_cod;
+	mc_inline_fn synset& get_active_set(net_side_t sd){
+		EMU_CK(sd != side_invalid);
+
+		synset* out_set = &left_side.stabi_active_set;
+		if(sd == side_right){
+			out_set = &right_side.stabi_active_set;
+		}
+		EMU_CK(out_set != mc_null);
+		return *out_set;
+	}
+
 	mc_inline_fn neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
 
 	void stabi_recv_propag(propag_data* dat) bj_stabi_cod;
@@ -273,6 +284,9 @@ public:
 	
 	neuron() mc_external_code_ram;
 	~neuron() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0);
 
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
@@ -310,21 +324,61 @@ public:
 	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
 };
 
+class mc_aligned tierdata : public agent {
+public:
+	MCK_DECLARE_MEM_METHODS(tierdata, bj_nervenet_mem)
+
+	num_tier_t	ti_id;
+
+	num_nod_t inp_neus;
+	num_nod_t inp_pols;
+
+	num_nod_t off_neus;
+	num_nod_t off_pols;
+
+	num_nod_t rcv_neus;
+	num_nod_t rcv_pols;
+
+	tierdata() mc_external_code_ram;
+	~tierdata() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0);
+
+	void add_all_inp_from(grip& grp, net_side_t sd) mc_external_code_ram;
+
+	mc_inline_fn void inc_rcv(node_kind_t kk){
+		switch(kk){
+			case nd_neu:
+				rcv_neus++;
+			break;
+			case nd_pos:
+			case nd_neg:
+				rcv_pols++;
+			break;
+			default:
+			break;
+		}
+	}
+
+	mc_inline_fn bool got_all_neus(){
+		return (inp_neus == rcv_neus);
+	}
+
+	mc_inline_fn bool got_all_pols(){
+		return (inp_pols == rcv_pols);
+	}
+
+	mc_inline_fn bool got_all(){
+		return (got_all_neus() && got_all_pols());
+	}
+};
+
 class mc_aligned netstate {
 public:
-	num_nod_t tot_neus;
-	num_nod_t tot_vars;
-	num_nod_t tot_lits;
-	num_nod_t tot_rels;
-
-	num_nod_t tot_rcv_pol;
-
-	num_nod_t dbg_num_neu;
-	num_nod_t dbg_num_pol;
 	bool	  dbg_stp_sys;
 
-	num_tier_t	curr_tier;
-	num_nod_t 	tot_tier_charged;
+	grip 	all_tiers;
 
 	netstate() mc_external_code_ram;
 	~netstate() mc_external_code_ram;
@@ -332,11 +386,16 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 
-	void init_netstate_with(pre_cnf_net* pre_net) mc_external_code_ram;
-	void init_with(netstate& stt) mc_external_code_ram;
+	void init_tiers(nervenet& nnt) mc_external_code_ram;
+	void inc_tier() bj_stabi_cod;
+
+	mc_inline_fn tierdata& get_tier(){
+		EMU_CK(! all_tiers.is_alone());
+		return *((tierdata*)(all_tiers.bn_left));
+	}
 
 	void dbg_stabi_init_sys() mc_external_code_ram;
-	void dbg_stabi_stop_sys(propag_data* dat, nervenode* nod) mc_external_code_ram;
+	void dbg_stabi_st_stop_sys(propag_data* dat, nervenode* nod) mc_external_code_ram;
 };
 
 class mc_aligned nervenet : public cell  {
@@ -345,7 +404,13 @@ public:
 
 	long MAGIC;
 
+	num_nod_t tot_neus;
+	num_nod_t tot_vars;
+	num_nod_t tot_lits;
+	num_nod_t tot_rels;
+
 	mc_alloc_size_t	num_sep_tiersets;
+	mc_alloc_size_t	num_sep_tierdatas;
 
 	grip		ava_transmitters;
 	grip		ava_synsets;
@@ -353,6 +418,7 @@ public:
 	grip		ava_synapses;
 	grip		ava_polarons;
 	grip		ava_neurons;
+	grip		ava_tierdatas;
 
 	missive_handler_t all_handlers[idx_total];
 
@@ -365,12 +431,13 @@ public:
 	grip	all_pos;
 	grip	all_neg;
 
-	netstate	first_stt;
 	netstate	act_left_side;
 	netstate	act_right_side;
 
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
+
+	void init_nervenet_with(pre_cnf_net* pre_net) mc_external_code_ram;
 
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
@@ -384,6 +451,7 @@ public:
 };
 
 #define bj_num_sep_tiersets (bj_nervenet->num_sep_tiersets)
+#define bj_num_sep_tierdatas (bj_nervenet->num_sep_tierdatas)
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_transmitters (bj_nervenet->ava_transmitters)
@@ -392,6 +460,7 @@ public:
 #define bj_ava_synapses (bj_nervenet->ava_synapses)
 #define bj_ava_polarons (bj_nervenet->ava_polarons)
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
+#define bj_ava_tierdatas (bj_nervenet->ava_tierdatas)
 
 #define bj_handlers (bj_nervenet->all_handlers)
 

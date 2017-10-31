@@ -38,7 +38,7 @@ bj_load_init_handlers(){
 }
 
 void
-netstate::init_netstate_with(pre_cnf_net* pre_net){
+nervenet::init_nervenet_with(pre_cnf_net* pre_net){
 	tot_neus = pre_net->tot_pre_neus;
 	tot_vars = pre_net->tot_pre_vars;
 	tot_lits = pre_net->tot_pre_lits;
@@ -54,8 +54,8 @@ void bj_load_shd_cnf(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 
-	my_net->first_stt.init_netstate_with(nn_cnf);
-	netstate& tots = my_net->first_stt;
+	my_net->init_nervenet_with(nn_cnf);
+	nervenet& tots = *my_net;
 
 	//EMU_PRT("%ld local tot_vars\n", my_net->tot_vars);
 
@@ -239,8 +239,6 @@ polaron::load_handler(missive* msv){
 	left_side.stabi_active_set.add_left_synapse(my_snp);
 	left_side.update_prev_tot_active();
 
-	bj_nervenet->first_stt.tot_rcv_pol++;
-
 	transmitter* msv2 = transmitter::acquire();
 	EMU_CK(msv2->wrk_side == side_invalid);
 	msv2->src = my_snp;
@@ -295,7 +293,7 @@ synapse::load_handler(missive* msv){
 	nervenet* my_net = bj_nervenet;
 	long& tot_ld = my_net->tot_loaded;
 	tot_ld++;
-	if(tot_ld == my_net->first_stt.tot_lits){
+	if(tot_ld == my_net->tot_lits){
 		//mck_slog2("ENDING_CNF_LOAD \n");
 		EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
 		EMU_PRT("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
@@ -304,7 +302,7 @@ synapse::load_handler(missive* msv){
 		kernel::stop_sys(bj_tok_load_end);
 	}
 	EMU_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
-		owner->id, mt_snp->owner->id, tot_ld, my_net->first_stt.tot_lits);
+		owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
 }
 
 void bj_load_main() {
@@ -354,11 +352,52 @@ void bj_load_main() {
 
 	kernel::run_sys();
 
-	my_net->act_left_side.init_with(my_net->first_stt);
-	my_net->act_right_side.init_with(my_net->first_stt);
+	my_net->act_left_side.init_tiers(*my_net);
+
+	EMU_CODE(
+		tierdata& dat = my_net->act_left_side.get_tier();
+		num_nod_t n1 = dat.inp_neus;
+		num_nod_t n2 = dat.inp_pols;
+	);
+	EMU_LOG("inp_neu=%ld inp_pol=%ld \n\n", n1, n2);
 
 	//bj_print_loaded_cnf();
 
 	//mck_slog2("END_LOADING_CNF_____________________________\n");
+}
+
+void
+tierdata::add_all_inp_from(grip& grp, net_side_t sd){
+	binder * fst, * lst, * wrk;
+
+	binder* pt_grp = &(grp);
+	fst = (binder*)(pt_grp->bn_right);
+	lst = pt_grp;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		nervenode* my_nod = (nervenode*)wrk;
+		num_syn_t tsn = my_nod->get_active_set(sd).tot_syn;
+		//EMU_LOG("ADD_NOD %s %ld tot_syn=%ld\n", node_kind_to_str(my_nod->ki), my_nod->id, tsn);
+		if(tsn > 0){
+			if(my_nod->ki == nd_neu){
+				inp_neus++;
+			} else {
+				EMU_CK(my_nod->ki != nd_invalid);
+				inp_pols++;
+			}
+		}
+	}
+}
+
+void
+netstate::init_tiers(nervenet& my_net){
+	tierdata* ti_dat = tierdata::acquire();
+	all_tiers.bind_to_my_left(*ti_dat);
+
+	EMU_CK(ti_dat->inp_neus == 0);
+	EMU_CK(ti_dat->inp_pols == 0);
+
+	ti_dat->add_all_inp_from(my_net.all_neu, side_left);
+	ti_dat->add_all_inp_from(my_net.all_pos, side_left);
+	ti_dat->add_all_inp_from(my_net.all_neg, side_left);
 }
 

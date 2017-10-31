@@ -179,7 +179,8 @@ mcm_call_assert(bool is_assert, bool prt_stck, bool cond,
 			fprintf(stderr, "%s", pp);
 		}
 		if(is_assert || prt_stck){
-			fprintf(stderr, "------------------------------------------------------------------\n");
+			fprintf(stderr, "%d:%x ------------------------------------------------------------------\n",
+				inf->emu_num, inf->emu_core_id);
 		}
 		fflush(stderr); 
 	}
