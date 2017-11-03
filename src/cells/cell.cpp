@@ -908,7 +908,7 @@ kernel::send_stop_to_children(){
 
 void 
 kernel::handle_stop(){
-	if(stop_key == 0){ return; }
+	EMU_CK(stop_key != 0);
 	mc_core_nn_t tot_child = mc_map_get_tot_children();
 	//EMU_CK((tot_child == 0) == ());
 	if(! sent_stop_to_parent && (num_childs_stopping == tot_child)){

@@ -48,7 +48,7 @@ void
 transmitter::init_me(int caller){
 	missive::init_me(caller);
 	wrk_side = side_invalid;
-	wrk_tier = BJ_INVALID_TIER;
+	wrk_tier = BJ_INVALID_NUM_TIER;
 }
 
 synset::synset(){
@@ -87,7 +87,7 @@ tierset::~tierset(){}
 
 void
 tierset::init_me(int caller){
-	ti_id = BJ_INVALID_TIER;
+	ti_id = BJ_INVALID_NUM_TIER;
 }
 
 synapse::synapse(){
@@ -125,6 +125,8 @@ neurostate::init_me(int caller){
 	stabi_flags = 0;
 
 	stabi_num_complete = 0;
+	stabi_num_still = 0;
+
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
 	stabi_arr = mc_null;
@@ -336,6 +338,12 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_tier_end:
 		resp = mc_cstr("bj_tok_stabi_tier_end");
 	break;
+	case bj_tok_stabi_conflict:
+		resp = mc_cstr("bj_tok_stabi_conflict");
+	break;
+	case bj_tok_stabi_end_forward:
+		resp = mc_cstr("bj_tok_stabi_end_forward");
+	break;
 	case bj_tok_stabi_end:
 		resp = mc_cstr("bj_tok_stabi_end");
 	break;
@@ -351,7 +359,8 @@ netstate::~netstate(){}
 
 void
 netstate::init_me(int caller){
-	dbg_stp_sys = false;
+	curr_ti_still_neus = 0;
+	curr_ti_still_pols = 0;
 }
 
 tierdata::tierdata(){
@@ -362,15 +371,26 @@ tierdata::~tierdata(){}
 
 void
 tierdata::init_me(int caller){
-	ti_id = BJ_INVALID_TIER;
+	ti_id = BJ_INVALID_NUM_TIER;
 
-	inp_neus = 0;
-	inp_pols = 0;
+	inp_neus = BJ_INVALID_NUM_NODE;
+	inp_pols = BJ_INVALID_NUM_NODE;
 
 	off_neus = 0;
 	off_pols = 0;
 
 	rcv_neus = 0;
 	rcv_pols = 0;
+}
+
+void
+nervenet::stabi_init_sync(){
+	sync_tot_child = mc_map_get_tot_children();
+	sync_parent_id = mc_map_get_parent_core_id();
+	sync_map = mc_map_get_loaded();
+
+	sync_tier = 0;
+	sync_tot_stopping_child = 0;
+	sync_sent_stop_to_parent = false;
 }
 

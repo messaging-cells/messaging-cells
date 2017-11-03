@@ -57,6 +57,10 @@ typedef long num_nod_t;
 typedef uint8_t num_syn_t;
 typedef uint32_t num_tier_t;
 
+#define BJ_INVALID_NUM_NODE (-1)
+#define BJ_INVALID_NUM_SYNAPSE ~((uint8_t)0x0)
+#define BJ_INVALID_NUM_TIER ~((uint32_t)0x0)
+
 #define BJ_MAX_NODE_SZ mc_maxof(num_syn_t)
 
 #define MAGIC_VAL 987654

@@ -391,7 +391,10 @@ tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 void
 netstate::init_tiers(nervenet& my_net){
 	tierdata* ti_dat = tierdata::acquire();
-	all_tiers.bind_to_my_left(*ti_dat);
+
+	ti_dat->ti_id = 0;
+	ti_dat->inp_neus = 0;
+	ti_dat->inp_pols = 0;
 
 	EMU_CK(ti_dat->inp_neus == 0);
 	EMU_CK(ti_dat->inp_pols == 0);
@@ -399,5 +402,7 @@ netstate::init_tiers(nervenet& my_net){
 	ti_dat->add_all_inp_from(my_net.all_neu, side_left);
 	ti_dat->add_all_inp_from(my_net.all_pos, side_left);
 	ti_dat->add_all_inp_from(my_net.all_neg, side_left);
+
+	all_tiers.bind_to_my_left(*ti_dat);
 }
 
