@@ -106,6 +106,8 @@ char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
 void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 
+net_side_t opp_side_of(net_side_t sd) bj_stabi_cod;
+
 //class mc_aligned synset : public cell {
 class mc_aligned synset : public agent {
 public:
@@ -224,6 +226,7 @@ public:
 
 	void calc_stabi_arr() bj_stabi_cod;
 	bool charge_all() bj_stabi_cod;
+	void reset_complete() bj_stabi_cod;
 
 	mc_inline_fn void update_prev_tot_active() bj_load_cod;
 };
@@ -333,6 +336,8 @@ public:
 	void stabi_send_charge_all(synapse* snp, net_side_t sd) bj_stabi_cod;
 	void stabi_send_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
 
+	void stabi_end_tier_side(net_side_t sd, neurostate& pol_stt, neurostate& opp_stt) bj_stabi_cod;
+
 	virtual 
 	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
 };
@@ -341,7 +346,7 @@ class mc_aligned tierdata : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(tierdata, bj_nervenet_mem)
 
-	num_tier_t	ti_id;
+	num_tier_t	tdt_id;
 
 	num_nod_t inp_neus;
 	num_nod_t inp_pols;
@@ -391,6 +396,7 @@ public:
 
 class mc_aligned netstate {
 public:
+	net_side_t my_side;
 	num_nod_t curr_ti_still_neus;
 	num_nod_t curr_ti_still_pols;
 
@@ -450,7 +456,11 @@ public:
 	mc_core_id_t sync_parent_id;
 	mc_load_map_st* sync_map;
 
-	num_tier_t	sync_tier;
+	net_side_t	sync_side_out;
+	num_tier_t	sync_tier_out;
+	net_side_t	sync_side_in;
+	num_tier_t	sync_tier_in;
+
 	mc_core_nn_t sync_tot_stopping_child;
 	bool 		sync_sent_stop_to_parent;
 
@@ -468,8 +478,11 @@ public:
 	void stabi_init_sync() mc_external_code_ram;
 	void stabi_nervenet_start() bj_stabi_cod;
 
+	void reset_sync(net_side_t	rem_sd, num_tier_t rem_ti) bj_stabi_cod;
 	void handle_sync() bj_stabi_cod;
-	void send_sync_to_children() mc_external_code_ram;
+	void send_sync_to_children() bj_stabi_cod;
+	void update_sync_tier_out() bj_stabi_cod;
+	bool is_propag_over() bj_stabi_cod;
 
 	nervenet* get_nervenet(mc_core_id_t core_id) mc_external_code_ram;
 

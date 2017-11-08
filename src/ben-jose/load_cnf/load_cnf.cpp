@@ -353,6 +353,7 @@ void bj_load_main() {
 	kernel::run_sys();
 
 	my_net->act_left_side.init_tiers(*my_net);
+	my_net->act_right_side.init_tiers(*my_net);
 
 	EMU_CODE(
 		tierdata& dat = my_net->act_left_side.get_tier();
@@ -392,16 +393,19 @@ void
 netstate::init_tiers(nervenet& my_net){
 	tierdata* ti_dat = tierdata::acquire();
 
-	ti_dat->ti_id = 0;
+	ti_dat->tdt_id = 0;
 	ti_dat->inp_neus = 0;
 	ti_dat->inp_pols = 0;
 
 	EMU_CK(ti_dat->inp_neus == 0);
 	EMU_CK(ti_dat->inp_pols == 0);
 
-	ti_dat->add_all_inp_from(my_net.all_neu, side_left);
-	ti_dat->add_all_inp_from(my_net.all_pos, side_left);
-	ti_dat->add_all_inp_from(my_net.all_neg, side_left);
+	ti_dat->add_all_inp_from(my_net.all_neu, my_side);
+	ti_dat->add_all_inp_from(my_net.all_pos, my_side);
+	ti_dat->add_all_inp_from(my_net.all_neg, my_side);
+
+	EMU_CK((my_side != side_right) || (ti_dat->inp_neus == 0));
+	EMU_CK((my_side != side_right) || (ti_dat->inp_pols == 0));
 
 	all_tiers.bind_to_my_left(*ti_dat);
 }

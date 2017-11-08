@@ -34,6 +34,9 @@ nervenet::nervenet(){
 
 	tot_loading = 0;
 	tot_loaded = 0;
+
+	act_left_side.my_side = side_left;
+	act_right_side.my_side = side_right;
 }
 
 nervenet::~nervenet(){} 
@@ -371,7 +374,7 @@ tierdata::~tierdata(){}
 
 void
 tierdata::init_me(int caller){
-	ti_id = BJ_INVALID_NUM_TIER;
+	tdt_id = BJ_INVALID_NUM_TIER;
 
 	inp_neus = BJ_INVALID_NUM_NODE;
 	inp_pols = BJ_INVALID_NUM_NODE;
@@ -389,8 +392,14 @@ nervenet::stabi_init_sync(){
 	sync_parent_id = mc_map_get_parent_core_id();
 	sync_map = mc_map_get_loaded();
 
-	sync_tier = 0;
+	sync_side_out = side_invalid;
+	sync_tier_out = BJ_INVALID_NUM_TIER;
+	sync_side_in = side_invalid;
+	sync_tier_in = BJ_INVALID_NUM_TIER;
+
 	sync_tot_stopping_child = 0;
 	sync_sent_stop_to_parent = false;
+
+	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d \n", sync_tot_child, sync_tot_stopping_child);
 }
 
