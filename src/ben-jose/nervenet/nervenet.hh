@@ -411,6 +411,22 @@ public:
 	void init_tiers(nervenet& nnt) mc_external_code_ram;
 	void inc_tier() bj_stabi_cod;
 
+	mc_inline_fn void inc_still(node_kind_t kk){
+		switch(kk){
+			case nd_neu:
+				curr_ti_still_neus++;
+			break;
+			case nd_pos:
+			case nd_neg:
+				curr_ti_still_pols++;
+			break;
+			default:
+			break;
+		}
+	}
+
+	bool is_propag_over() bj_stabi_cod;
+
 	mc_inline_fn tierdata& get_tier(){
 		EMU_CK(! all_tiers.is_alone());
 		return *((tierdata*)(all_tiers.bn_left));
@@ -482,7 +498,6 @@ public:
 	void handle_sync() bj_stabi_cod;
 	void send_sync_to_children() bj_stabi_cod;
 	void update_sync_tier_out() bj_stabi_cod;
-	bool is_propag_over() bj_stabi_cod;
 
 	nervenet* get_nervenet(mc_core_id_t core_id) mc_external_code_ram;
 

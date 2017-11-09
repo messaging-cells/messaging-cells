@@ -219,8 +219,7 @@ nervenet::stabi_nervenet_start(){
 		my_net->send(my_neu, bj_tok_stabi_start);
 	}
 
-	//update_sync_tier_out();
-	dbg_stabi_stop_sys(mc_null, mc_null);
+	update_sync_tier_out();
 }
 
 void 
@@ -272,8 +271,7 @@ neuron::stabi_neuron_start(){
 	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_propag), side_left);
 	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&neuron::stabi_send_tier_end), side_left);
 
-	//bj_nervenet->update_sync_tier_out();
-	bj_nervenet->dbg_stabi_stop_sys(mc_null, this);
+	bj_nervenet->update_sync_tier_out();
 }
 
 void 
@@ -429,6 +427,9 @@ nervenode::stabi_tier_end(propag_data* dat){
 		node_kind_to_str(ki), id, net_side_to_str(dat->sd), (dat->ti + 1), stt.stabi_num_tier);
 
 	stt.stabi_num_complete++;
+	if(dat->tok == bj_tok_stabi_propag){
+		stt.stabi_num_still++;
+	}
 
 	EMU_LOG("ADD_TIER_END %s %ld %s (%d==%d)?\n", node_kind_to_str(ki), id, net_side_to_str(dat->sd), 
 			stt.stabi_num_complete, stt.prev_tot_active);
@@ -440,8 +441,12 @@ nervenode::stabi_tier_end(propag_data* dat){
 				stt.stabi_num_complete);
 		//bj_nervenet->get_active_netstate(dat->sd).get_tier().inc_rcv(ki);
 
+		// order of this is important:
 		bj_nervenet->get_active_netstate(dat->sd).get_tier(dat->ti).inc_rcv(ki);
-		bj_nervenet->dbg_stabi_stop_sys(dat, this);
+		if(stt.stabi_num_still == stt.prev_tot_active){
+			bj_nervenet->get_active_netstate(dat->sd).inc_still(ki);
+		}
+		bj_nervenet->update_sync_tier_out();
 	
 		//stabi_end_tier(dat);
 		//bj_nervenet->update_sync_tier_out();
@@ -604,15 +609,13 @@ neuron::stabi_end_tier(propag_data* dat){
 
 void 
 nervenet::dbg_stabi_stop_sys(propag_data* dat, nervenode* nod){
-	/*
+	
 	tierdata& tda = act_left_side.get_tier();
 	EMU_CK((dat == mc_null) || (dat->sd == side_left));
 	if(tda.got_all_pols()){
 		EMU_LOG("STOP_SYS(pols) (%d==%d)\n", tda.inp_pols, tda.rcv_pols);
 		kernel::stop_sys(bj_tok_stabi_end);
 	}
-	*/
-	update_sync_tier_out();
 }
 
 void bj_stabi_main() {
@@ -700,6 +703,9 @@ netstate::inc_tier(){
 	ti_dat->tdt_id = lti.tdt_id + 1;
 	all_tiers.bind_to_my_left(*ti_dat);
 
+	curr_ti_still_neus = 0;
+	curr_ti_still_pols = 0;
+
 	ti_dat->update();
 }
 
@@ -734,7 +740,8 @@ nervenet::send_sync_to_children(){
 		}
 	}
 
-	kernel::stop_sys(bj_tok_stabi_end);
+	mck_get_kernel()->set_idle_exit();
+	//kernel::stop_sys(bj_tok_stabi_end);
 }
 
 void bj_kernel_func(){
@@ -777,7 +784,12 @@ nervenet::handle_sync(){
 }
 
 bool
-nervenet::is_propag_over(){
+netstate::is_propag_over(){
+	/*tierdata& cti = get_tier();
+	bool all_neus_still = (curr_ti_still_neus == cti.inp_neus);
+	bool all_pols_still = (curr_ti_still_pols == cti.inp_pols);
+	return (all_neus_still && all_pols_still);
+	*/
 	return true;
 }
 
@@ -786,7 +798,7 @@ nervenet::update_sync_tier_out(){
 	tierdata& lft = act_left_side.get_tier();
 	tierdata& rgt = act_right_side.get_tier();
 	//if(lft.got_all() && rgt.got_all() && is_propag_over()){
-	if(lft.got_all_pols() && rgt.got_all() && is_propag_over()){
+	if(lft.got_all_pols() && rgt.got_all() && act_left_side.is_propag_over() && act_right_side.is_propag_over()){
 		if(rgt.tdt_id > lft.tdt_id){
 			sync_side_out = side_right;
 			sync_tier_out = rgt.tdt_id;
