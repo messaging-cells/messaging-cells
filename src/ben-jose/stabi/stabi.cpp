@@ -238,6 +238,11 @@ send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd){
 			EMU_CK(sd == side_right);
 			my_snp = bj_get_syn_of_rgt_handle(wrk);
 		}
+		//EMU_PRT("send_all_synapses cls=%s \n\n", my_snp->get_class_name());
+		EMU_CK(my_snp != mc_null);
+		EMU_CK(bj_is_synapse(my_snp));
+		//EMU_PRT("send_all_synapses snp=%p \n\n", (void*)my_snp);
+
 		(my_snp->owner->*mth)(my_snp, sd);
 	}
 }
@@ -295,9 +300,11 @@ nervenode::stabi_recv_propag(propag_data* dat){
 
 	if(dat->tok != bj_tok_stabi_tier_end){
 		neurostate& stt = get_neurostate(dat->sd);
+		/*
 		EMU_CODE(bool ok_1 = ((dat->ti + 1) == stt.stabi_num_tier) || (dat->ti == stt.stabi_num_tier));
 		EMU_CK_PRT(ok_1, "%s %s %ld %s (%d > %d)", stabi_tok_to_str(dat->tok),
 			node_kind_to_str(ki), id, net_side_to_str(dat->sd), (dat->ti + 1), stt.stabi_num_tier);
+		*/
 
 		stt.stabi_num_tier = dat->ti + 1;
 
@@ -355,6 +362,7 @@ neurostate::charge_all(){
 		stabi_tiers.bind_to_my_left(*ti_grp);
 	}
 	EMU_CK(stabi_active_set.is_empty());
+	resp = (resp && ! stabi_tiers.is_alone()); 
 	return resp;
 }
 
@@ -439,7 +447,6 @@ nervenode::stabi_tier_end(propag_data* dat){
 				stt.stabi_num_complete);
 		EMU_PRT("TIER_END TI=%d %s %ld %s tot=%ld \n", dat->ti, node_kind_to_str(ki), id, net_side_to_str(dat->sd), 
 				stt.stabi_num_complete);
-		//bj_nervenet->get_active_netstate(dat->sd).get_tier().inc_rcv(ki);
 
 		// order of this is important:
 		bj_nervenet->get_active_netstate(dat->sd).get_tier(dat->ti).inc_rcv(ki);
@@ -448,9 +455,7 @@ nervenode::stabi_tier_end(propag_data* dat){
 		}
 		bj_nervenet->update_sync_tier_out();
 	
-		//stabi_end_tier(dat);
-		//bj_nervenet->update_sync_tier_out();
-
+		//stabi_end_tier(dat);  // FIX_THIS
 		stt.reset_complete();
 	}
 }
@@ -472,6 +477,8 @@ nervenode::stabi_send_end_forward(synapse* snp, net_side_t sd){
 
 void 
 polaron::stabi_send_charge_all(synapse* snp, net_side_t sd){
+	EMU_PRT("polaron::stabi_send_charge_all mate=%p cls=%s \n\n", (void*)(snp->mate), 
+		snp->mate->get_class_name());
 	snp->send_transmitter(bj_tok_stabi_charge_all, sd);
 }
 
@@ -532,10 +539,8 @@ polaron::stabi_end_tier(propag_data* dat){
 	pol_stt.reset_complete();
 	opp_stt.reset_complete();
 
-	net_side_t opp_sd = opp_side_of(dat->sd);
-
 	stabi_end_tier_side(dat->sd, pol_stt, opp_stt);
-	stabi_end_tier_side(opp_sd, opp_stt, pol_stt);
+	stabi_end_tier_side(dat->sd, opp_stt, pol_stt);
 }
 
 void
@@ -566,6 +571,7 @@ polaron::stabi_end_tier_side(net_side_t sd, neurostate& pol_stt, neurostate& opp
 		}
 
 		tierset* ti_grp = (tierset*)pol_stt.stabi_tiers.bn_left;
+		//EMU_PRT("polaron::stabi_end_tier_side 001 cls=%s \n\n", ti_grp->get_class_name());
 		send_all_synapses(&(ti_grp->ti_all), (bj_callee_t)(&polaron::stabi_send_charge_all), sd);
 	} else {
 		if(! opp_chg){
@@ -574,6 +580,7 @@ polaron::stabi_end_tier_side(net_side_t sd, neurostate& pol_stt, neurostate& opp
 				bool ok = opp_stt.charge_all();
 				if(ok){
 					tierset* opp_ti_grp = (tierset*)opp_stt.stabi_tiers.bn_left;
+					//EMU_PRT("polaron::stabi_end_tier_side 002 cls=%s \n\n", opp_ti_grp->get_class_name());
 					send_all_synapses(&(opp_ti_grp->ti_all), (bj_callee_t)(&polaron::stabi_send_charge_all), sd);
 				}
 			} else {
@@ -633,6 +640,8 @@ void bj_stabi_main() {
 
 	nervenet* my_net = bj_nervenet;
 	my_net->stabi_init_sync();
+
+	EMU_CODE(if(kernel::get_core_nn() == 0){ emu_prt_tok_codes(); });
 
 	my_net->send(my_net, bj_tok_stabi_start);
 	kernel::run_sys();
@@ -740,6 +749,8 @@ nervenet::send_sync_to_children(){
 		}
 	}
 
+	EMU_PRT("SYNC_SET_IDLE CORE=%d \n", kernel::get_core_nn());
+
 	mck_get_kernel()->set_idle_exit();
 	//kernel::stop_sys(bj_tok_stabi_end);
 }
@@ -785,7 +796,8 @@ nervenet::handle_sync(){
 
 bool
 netstate::is_propag_over(){
-	/*tierdata& cti = get_tier();
+	/* FIX_THIS
+	tierdata& cti = get_tier();
 	bool all_neus_still = (curr_ti_still_neus == cti.inp_neus);
 	bool all_pols_still = (curr_ti_still_pols == cti.inp_pols);
 	return (all_neus_still && all_pols_still);
@@ -797,7 +809,7 @@ void
 nervenet::update_sync_tier_out(){
 	tierdata& lft = act_left_side.get_tier();
 	tierdata& rgt = act_right_side.get_tier();
-	//if(lft.got_all() && rgt.got_all() && is_propag_over()){
+
 	if(lft.got_all_pols() && rgt.got_all() && act_left_side.is_propag_over() && act_right_side.is_propag_over()){
 		if(rgt.tdt_id > lft.tdt_id){
 			sync_side_out = side_right;

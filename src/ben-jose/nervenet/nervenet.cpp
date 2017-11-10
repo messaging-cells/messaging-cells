@@ -15,6 +15,16 @@ MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons, 0)
 MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons, 0)
 MCK_DEFINE_MEM_METHODS(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
 
+BJ_DEFINE_GET_CLS_NAM(synset)
+BJ_DEFINE_GET_CLS_NAM(tierset)
+BJ_DEFINE_GET_CLS_NAM(transmitter)
+BJ_DEFINE_GET_CLS_NAM(synapse)
+BJ_DEFINE_GET_CLS_NAM(nervenode)
+BJ_DEFINE_GET_CLS_NAM(neuron)
+BJ_DEFINE_GET_CLS_NAM(polaron)
+BJ_DEFINE_GET_CLS_NAM(tierdata)
+BJ_DEFINE_GET_CLS_NAM(nervenet)
+
 nervenet::nervenet(){
 	MAGIC = MAGIC_VAL;
 
@@ -203,7 +213,6 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 
 			synapse* mt_snp = (synapse*)(my_snp->mate);
 			neuron* my_neu = (neuron*)(mt_snp->owner);
-			//neuron* my_neu = (neuron*)(my_snp->mate);
 			MCK_CK(my_neu->ki == nd_neu);
 
 			mck_ilog(my_neu->id);
@@ -242,14 +251,10 @@ bj_print_loaded_cnf() {
 		lst2 = nn_all_snp;
 		for(wrk2 = fst2; wrk2 != lst2; wrk2 = (binder*)(wrk2->bn_right)){
 			synapse* my_snp = (synapse*)wrk2;
-			/*while(my_snp->mate == mc_null){
-				// SPIN UNTIL SET (may be set by an other core) // LOCKS_HERE ?
-			}*/
 			MCK_CK(my_snp->mate != mc_null);
 
 			synapse* mt_snp = (synapse*)(my_snp->mate);
 			polaron* my_pol = (polaron*)(mt_snp->owner);
-			//polaron* my_pol = (polaron*)(my_snp->mate);
 			MCK_CK((my_pol->id <= 0) || (my_pol->ki == nd_pos));
 			MCK_CK((my_pol->id >= 0) || (my_pol->ki == nd_neg));
 
@@ -294,6 +299,26 @@ char* node_kind_to_str(node_kind_t ki){
 	break;
 	case nd_neu:
 		resp = mc_cstr("nd_neu");
+	break;
+	}
+	return resp;
+}
+
+char* sync_tok_to_str(sync_tok_t tok){
+	char* resp = mc_cstr("UNKNOWN_SYNC_TOK");
+	
+	switch(tok){
+	case bj_tok_sync_invalid:
+		resp = mc_cstr("bj_tok_sync_invalid");
+	break;
+	case bj_tok_sync_to_parent:
+		resp = mc_cstr("bj_tok_sync_to_parent");
+	break;
+	case bj_tok_sync_to_children:
+		resp = mc_cstr("bj_tok_sync_to_children");
+	break;
+	case bj_tok_sync_end:
+		resp = mc_cstr("bj_tok_sync_end");
 	break;
 	}
 	return resp;
@@ -401,5 +426,20 @@ nervenet::stabi_init_sync(){
 	sync_sent_stop_to_parent = false;
 
 	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d \n", sync_tot_child, sync_tot_stopping_child);
+}
+
+void 
+emu_prt_tok_codes(){
+	for(mck_token_t aa = bj_tok_sync_invalid; aa <= bj_tok_stabi_end; aa++){
+		if(is_sync_tok(aa)){
+			EMU_PRT("%d: %s \n", aa, sync_tok_to_str((sync_tok_t)aa));
+		}
+		else if(is_load_tok(aa)){
+			EMU_PRT("%d: %s \n", aa, load_tok_to_str((load_tok_t)aa));
+		}
+		else if(is_stabi_tok(aa)){
+			EMU_PRT("%d: %s \n", aa, stabi_tok_to_str((stabi_tok_t)aa));
+		}
+	}
 }
 

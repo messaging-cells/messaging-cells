@@ -99,14 +99,58 @@ enum bj_hdlr_idx_t : uint8_t {
 
 typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd);
 
+void emu_prt_tok_codes() mc_external_code_ram;
+
 char* net_side_to_str(net_side_t sd) mc_external_code_ram;
 char* node_kind_to_str(node_kind_t ki) mc_external_code_ram;
+
+
+mc_inline_fn bool is_sync_tok(mck_token_t tok){
+	return ((bj_tok_sync_invalid <= tok) && (tok <= bj_tok_sync_end));
+}
+
+mc_inline_fn bool is_load_tok(mck_token_t tok){
+	return ((bj_tok_load_invalid <= tok) && (tok <= bj_tok_load_end));
+}
+
+mc_inline_fn bool is_stabi_tok(mck_token_t tok){
+	return ((bj_tok_stabi_invalid <= tok) && (tok <= bj_tok_stabi_end));
+}
+
+
+char* sync_tok_to_str(sync_tok_t tok) mc_external_code_ram;
 char* load_tok_to_str(load_tok_t tok) mc_external_code_ram;
 char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
 void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 
 net_side_t opp_side_of(net_side_t sd) bj_stabi_cod;
+
+#define BJ_DECLARE_CLS_NAM(cnam) \
+extern char cnam##_cls_nam[] mc_external_data_ram; \
+bool bj_is_##cnam(agent* pt_obj); \
+
+// end_of_macro
+
+#define BJ_DEFINE_GET_CLS_NAM(cnam) \
+char cnam##_cls_nam[] = "{" #cnam "}"; \
+char* cnam::get_class_name(){ return cnam##_cls_nam; } \
+bool bj_is_##cnam(agent* pt_obj){ \
+	if(pt_obj != mc_null){ return (pt_obj->get_class_name() == cnam##_cls_nam); } \
+	return false; \
+} \
+
+// end_of_macro
+
+BJ_DECLARE_CLS_NAM(synset)
+BJ_DECLARE_CLS_NAM(tierset)
+BJ_DECLARE_CLS_NAM(transmitter)
+BJ_DECLARE_CLS_NAM(synapse)
+BJ_DECLARE_CLS_NAM(nervenode)
+BJ_DECLARE_CLS_NAM(neuron)
+BJ_DECLARE_CLS_NAM(polaron)
+BJ_DECLARE_CLS_NAM(tierdata)
+BJ_DECLARE_CLS_NAM(nervenet)
 
 //class mc_aligned synset : public cell {
 class mc_aligned synset : public agent {
@@ -137,6 +181,9 @@ public:
 	void stabi_rec_reset() bj_stabi_cod;
 
 	bool is_empty() bj_stabi_cod;
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 class mc_aligned tierset : public agent {
@@ -151,6 +198,9 @@ public:
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 class mc_aligned transmitter : public missive {
@@ -165,6 +215,9 @@ public:
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 class mc_aligned synapse : public cell {
@@ -191,6 +244,9 @@ public:
 	void send_transmitter(stabi_tok_t tok, net_side_t sd) bj_stabi_cod;
 
 	mc_inline_fn binder& get_side_binder(net_side_t sd) bj_stabi_cod;
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
@@ -230,14 +286,6 @@ public:
 
 	mc_inline_fn void update_prev_tot_active() bj_load_cod;
 };
-
-/*
-#define bj_get_node_as_lft(pt_state) ((nervenode*)(((uint8_t*)pt_state) - mc_offsetof(&nervenode::left_side)))
-#define bj_get_node_as_rgt(pt_state) ((nervenode*)(((uint8_t*)pt_state) - mc_offsetof(&nervenode::right_side)))
-
-#define bj_get_node(pt_state) \
-	((pt_state->side_kind == side_left)?(bj_get_node_as_lft(pt_state)):(bj_get_node_as_rgt(pt_state)))
-*/
 
 struct mc_aligned propag_data {
 public:
@@ -291,6 +339,9 @@ public:
 
 	virtual 
 	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 class mc_aligned neuron : public nervenode {
@@ -316,6 +367,9 @@ public:
 	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
 
 	void pru_callee(synapse* snp, net_side_t sd) mc_external_code_ram;
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 class mc_aligned polaron : public nervenode {
@@ -340,6 +394,9 @@ public:
 
 	virtual 
 	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 class mc_aligned tierdata : public agent {
@@ -392,6 +449,9 @@ public:
 	}
 
 	void update() bj_stabi_cod;
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 class mc_aligned netstate {
@@ -504,6 +564,9 @@ public:
 	mc_inline_fn netstate& get_active_netstate(net_side_t sd) bj_stabi_cod;
 
 	void dbg_stabi_stop_sys(propag_data* dat, nervenode* nod) mc_external_code_ram;
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
 };
 
 #define bj_num_sep_tiersets (bj_nervenet->num_sep_tiersets)

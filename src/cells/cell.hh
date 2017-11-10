@@ -491,12 +491,18 @@ public:
 #define mck_is_valid_handler_index(idx) \
 	((all_handlers != mc_null) && mck_is_valid_handler_idx(idx) && (all_handlers[idx] != mc_null))
 
+/*
+	EMU_CK_PRT(mck_is_valid_handler_idx(hdlr_idx), "WARNING !. Invalid handler_idx %d with %s dst=%p \n\n", \
+		hdlr_idx, (((msv != mc_null) && (msv->dst != mc_null))?(msv->dst->get_class_name()):("UNKNOW CLASS")), \
+		(void*)(msv->dst)); \
+*/
 
 #define mck_handle_missive_base(msv, hdlr_idx) \
+	EMU_CK(mck_is_valid_handler_idx(hdlr_idx)); \
 	if(mck_is_valid_handler_idx(hdlr_idx)){ \
 		(*(all_handlers[hdlr_idx]))(msv); \
-		EMU_DBG_CODE(msv->dbg_msv |= 0x2); \
 	} \
+	EMU_DBG_CODE(msv->dbg_msv |= 0x2); \
 
 // end_macro
 
@@ -543,9 +549,9 @@ public:
 
 	//! Releases this \ref agent so that it can latter be acquired again.
 	mc_opt_sz_fn 
-	void	release(){
+	void	release(int dbg_caller = 1){
 		let_go();
-		init_me(1);
+		init_me(dbg_caller);
 		grip& ava = get_available();
 		ava.bind_to_my_left(*this);
 	}
@@ -682,8 +688,10 @@ public:
 	~missive(){}
 
 	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0){
-		EMU_CK((caller != 1) || (! (dbg_msv & 0x1)) || (dbg_msv & 0x2));
+	void init_me(int dbg_caller = 0){
+		EMU_CK_PRT((dbg_caller == 0) || (! (dbg_msv & 0x1)) || (dbg_msv & 0x2), 
+			"cll=%d dbg=%p tok=%d src=%p dst=%p\n", 
+			dbg_caller, (void*)(uintptr_t)dbg_msv, tok, (void*)src, (void*)dst);
 		dst = mc_null;
 		src = mc_null;
 		tok = 0;

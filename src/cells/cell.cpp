@@ -241,9 +241,13 @@ agent::get_class_name(){
 	kernel* ker = MCK_KERNEL;
 	mck_cell_id_t id = get_cell_id();
 	if(mck_is_valid_class_name_idx(id)){
-		return (ker->class_names_arr)[id];
+		char* cnm = (ker->class_names_arr)[id];
+		if(cnm == mc_null){
+			return mc_cstr("NULL_CLASS_NAME");
+		}
+		return cnm;
 	}
-	return mc_null;
+	return mc_cstr("INVALID_CLASS_NAME");
 }
 
 void 
@@ -498,7 +502,7 @@ kernel::handle_missives(){
 			call_host_handlers_of_group(remote_grp);
 		}
 
-		fst_ref->release();
+		fst_ref->release(2);
 		EMU_CK(fst_ref->glb_agent_ptr == mc_null);
 		did_work |= 0x02;
 	}
@@ -517,7 +521,7 @@ kernel::handle_missives(){
 		cell* dst = fst_msg->dst;
 		if(mc_addr_is_local(dst)){
 			mck_handle_missive(fst_msg);
-			fst_msg->release();
+			fst_msg->release(3);
 		} else {
 			add_out_missive(out_msvs, *fst_msg);
 			EMU_CK(! fst_msg->is_alone());
@@ -601,7 +605,7 @@ kernel::handle_missives(){
 
 		if(mgrp->handled){
 			mgrp->release_all_agts();
-			mgrp->release();
+			mgrp->release(4);
 		}
 		did_work |= 0x40;
 	}
@@ -626,7 +630,7 @@ agent_grp::release_all_agts(){
 		agent* agt = (agent*)wrk;
 		nxt = wrk->bn_right;
 
-		agt->release();
+		agt->release(5);
 	}
 }
 
@@ -832,7 +836,7 @@ kernel::handle_work_from_host(){
 
 	host_mgrp->handled = mc_true;
 
-	fst_ref->release();
+	fst_ref->release(6);
 	EMU_CK(fst_ref->glb_agent_ptr == mc_null);
 	did_work |= 0x1000;
 

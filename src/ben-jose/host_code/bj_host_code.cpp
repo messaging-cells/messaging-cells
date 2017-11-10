@@ -89,7 +89,7 @@ int bj_host_main(int argc, char *argv[])
 
 #ifdef MC_IS_EMU_CODE
 
-void bj_test(int argc, char *argv[])
+void bj_test_1(int argc, char *argv[])
 {
 	binder b1;
 	binder b2;
@@ -109,6 +109,7 @@ void bj_test(int argc, char *argv[])
 	binder* lft = b1.bn_left;
 	synapse* pt_s1 = bj_get_syn_of_rgt_handle(lft);
 
+	EMU_CK(bj_is_synapse(pt_s1));
 	printf("syn_idx = %d\n", pt_s1->handler_idx);
 
 	printf("BJ_HOST_TESTS_FINISHED\n");
@@ -160,7 +161,7 @@ int mc_host_main(int argc, char *argv[])
 {
 	int rr = 0;
 
-	//EMU_CODE(bj_test(argc, argv));
+	//EMU_CODE(bj_test_1(argc, argv));
 	//EMU_CODE(bj_test_2(argc, argv));
 	//EMU_CODE(bj_test_3(argc, argv));
 	//EMU_CODE(bj_test_4(argc, argv));
