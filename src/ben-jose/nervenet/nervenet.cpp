@@ -138,7 +138,7 @@ neurostate::init_me(int caller){
 	stabi_flags = 0;
 
 	stabi_num_complete = 0;
-	stabi_num_still = 0;
+	stabi_num_ping = 0;
 
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
@@ -286,7 +286,7 @@ char* net_side_to_str(net_side_t sd){
 }
 
 char* node_kind_to_str(node_kind_t ki){
-	char* resp = mc_null;
+	char* resp = mc_cstr("UNDEFINED_NODE_KIND !!!");
 	switch(ki){
 	case nd_invalid:
 		resp = mc_cstr("nd_invalid");
@@ -354,8 +354,8 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_start:
 		resp = mc_cstr("bj_tok_stabi_start");
 	break;
-	case bj_tok_stabi_propag:
-		resp = mc_cstr("bj_tok_stabi_propag");
+	case bj_tok_stabi_ping:
+		resp = mc_cstr("bj_tok_stabi_ping");
 	break;
 	case bj_tok_stabi_charge_all:
 		resp = mc_cstr("bj_tok_stabi_charge_all");
@@ -363,8 +363,8 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_charge_src:
 		resp = mc_cstr("bj_tok_stabi_charge_src");
 	break;
-	case bj_tok_stabi_tier_end:
-		resp = mc_cstr("bj_tok_stabi_tier_end");
+	case bj_tok_stabi_tier_done:
+		resp = mc_cstr("bj_tok_stabi_tier_done");
 	break;
 	case bj_tok_stabi_conflict:
 		resp = mc_cstr("bj_tok_stabi_conflict");

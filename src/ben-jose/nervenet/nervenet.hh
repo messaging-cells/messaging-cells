@@ -76,10 +76,10 @@ enum load_tok_t : mck_token_t {
 enum stabi_tok_t : mck_token_t {
 	bj_tok_stabi_invalid = bj_tok_load_end + 1,
 	bj_tok_stabi_start,
-	bj_tok_stabi_propag,
+	bj_tok_stabi_ping,
 	bj_tok_stabi_charge_all,
 	bj_tok_stabi_charge_src,
-	bj_tok_stabi_tier_end,
+	bj_tok_stabi_tier_done,
 	bj_tok_stabi_conflict,
 	bj_tok_stabi_end_forward,
 	bj_tok_stabi_end
@@ -249,6 +249,15 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+struct mc_aligned propag_data {
+public:
+	transmitter* trm;
+	synapse* snp;
+	stabi_tok_t tok;
+	net_side_t sd;
+	num_tier_t ti;
+};
+
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
 
 #define	bj_stt_stabi_flag mc_flag0
@@ -257,18 +266,17 @@ public:
 
 class mc_aligned neurostate {
 public:
-	num_tier_t		stabi_num_tier;
+	num_tier_t		stabi_num_tier;  // FIX_THIS
 
-	nervenode*		stabi_source;
+	synapse*		stabi_source;
 	grip			stabi_tiers;
 
 	num_syn_t 		prev_tot_active;
 	synset			stabi_active_set;
 
 	mc_flags_t		stabi_flags;
-
 	num_syn_t		stabi_num_complete;
-	num_syn_t		stabi_num_still;
+	num_syn_t		stabi_num_ping;
 
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
@@ -281,19 +289,21 @@ public:
 	void init_me(int caller = 0);
 
 	void calc_stabi_arr() bj_stabi_cod;
-	bool charge_all() bj_stabi_cod;
+	bool charge_all(propag_data* dat) bj_stabi_cod;
 	void reset_complete() bj_stabi_cod;
 
-	mc_inline_fn void update_prev_tot_active() bj_load_cod;
-};
+	tierset*	get_tiset(num_tier_t nti = BJ_INVALID_NUM_TIER) bj_stabi_cod;
+	tierset&	add_tiset(num_tier_t nti) bj_stabi_cod;
 
-struct mc_aligned propag_data {
-public:
-	transmitter* trm;
-	synapse* snp;
-	stabi_tok_t tok;
-	net_side_t sd;
-	num_tier_t ti;
+	mc_inline_fn void update_prev_tot_active() bj_load_cod;
+
+	bool is_mono(num_tier_t nti) bj_stabi_cod;
+
+	void charge_all_and_start_nxt_ti(propag_data* dat, neurostate& opp_stt) bj_stabi_cod;
+	void send_all_propag(nervenode* nd, propag_data* dat) bj_stabi_cod;
+
+	void update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
+	void send_all_ti_done(nervenode* nd, net_side_t sd) bj_stabi_cod;
 };
 
 class mc_aligned nervenode : public cell {
@@ -327,18 +337,22 @@ public:
 
 	mc_inline_fn neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
 
-	void stabi_recv_propag(propag_data* dat) bj_stabi_cod;
-	void stabi_charge_all(propag_data* dat) bj_stabi_cod;
-	void stabi_charge_src(propag_data* dat) bj_stabi_cod;
-	void stabi_propag(propag_data* dat) bj_stabi_cod;
-	void stabi_tier_end(propag_data* dat) bj_stabi_cod;
-
-	void stabi_send_charge_src(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_conflict(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_end_forward(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_recv_transmitter(propag_data* dat) bj_stabi_cod;
+	void stabi_recv_charge_all(propag_data* dat) bj_stabi_cod;
+	void stabi_recv_charge_src(propag_data* dat) bj_stabi_cod;
+	void stabi_recv_ping(propag_data* dat) bj_stabi_cod;
+	void stabi_recv_tier_done(propag_data* dat) bj_stabi_cod;
 
 	virtual 
-	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
+	void stabi_send_snp_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
+
+	void stabi_send_snp_charge_src(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_snp_conflict(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_snp_end_forward(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_snp_tier_done(synapse* snp, net_side_t sd) bj_stabi_cod;
+
+	virtual 
+	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -360,11 +374,11 @@ public:
 
 	void stabi_neuron_start() bj_stabi_cod;
 
-	void stabi_send_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_tier_end(synapse* snp, net_side_t sd) bj_stabi_cod;
+	virtual 
+	void stabi_send_snp_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
 
 	virtual 
-	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
+	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
 	void pru_callee(synapse* snp, net_side_t sd) mc_external_code_ram;
 
@@ -387,13 +401,10 @@ public:
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
-	void stabi_send_charge_all(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
-
-	void stabi_end_tier_side(net_side_t sd, neurostate& pol_stt, neurostate& opp_stt) bj_stabi_cod;
+	void stabi_send_snp_charge_all(synapse* snp, net_side_t sd) bj_stabi_cod;
 
 	virtual 
-	void stabi_end_tier(propag_data* dat) bj_stabi_cod;
+	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
