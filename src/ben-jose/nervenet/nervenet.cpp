@@ -422,10 +422,12 @@ nervenet::stabi_init_sync(){
 	sync_side_in = side_invalid;
 	sync_tier_in = BJ_INVALID_NUM_TIER;
 
-	sync_tot_stopping_child = 0;
+	sync_tot_empty_children = 0;
+	sync_tot_stopping_children = 0;
 	sync_sent_stop_to_parent = false;
 
-	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d \n", sync_tot_child, sync_tot_stopping_child);
+	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d EMPTY=%d \n", 
+	//			sync_tot_child, sync_tot_stopping_children, sync_tot_empty_children);
 }
 
 void 

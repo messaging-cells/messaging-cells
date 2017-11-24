@@ -367,7 +367,8 @@ void bj_load_main() {
 		num_nod_t n1 = dat.inp_neus;
 		num_nod_t n2 = dat.inp_pols;
 	);
-	EMU_LOG("inp_neu=%ld inp_pol=%ld \n\n", n1, n2);
+	EMU_LOG("\n=========================================================================\n");
+	EMU_LOG("inp_neu=%ld inp_pol=%ld \n", n1, n2);
 
 	//bj_print_loaded_cnf();
 
@@ -411,8 +412,8 @@ netstate::init_tiers(nervenet& my_net){
 	ti_dat->add_all_inp_from(my_net.all_pos, my_side);
 	ti_dat->add_all_inp_from(my_net.all_neg, my_side);
 
-	EMU_CK((my_side != side_right) || (ti_dat->inp_neus == 0));
-	EMU_CK((my_side != side_right) || (ti_dat->inp_pols == 0));
+	//EMU_CK((my_side != side_right) || (ti_dat->inp_neus == 0));
+	//EMU_CK((my_side != side_right) || (ti_dat->inp_pols == 0));
 
 	all_tiers.bind_to_my_left(*ti_dat);
 }

@@ -289,7 +289,7 @@ public:
 	void init_me(int caller = 0);
 
 	void calc_stabi_arr() bj_stabi_cod;
-	bool charge_all(propag_data* dat) bj_stabi_cod;
+	bool charge_all_active(propag_data* dat, node_kind_t ki) bj_stabi_cod;
 	void reset_complete() bj_stabi_cod;
 
 	tierset*	get_tiset(num_tier_t nti = BJ_INVALID_NUM_TIER) bj_stabi_cod;
@@ -299,7 +299,6 @@ public:
 
 	bool is_mono(num_tier_t nti) bj_stabi_cod;
 
-	void charge_all_and_start_nxt_ti(propag_data* dat, neurostate& opp_stt) bj_stabi_cod;
 	void send_all_propag(nervenode* nd, propag_data* dat) bj_stabi_cod;
 
 	void update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
@@ -403,6 +402,8 @@ public:
 
 	void stabi_send_snp_charge_all(synapse* snp, net_side_t sd) bj_stabi_cod;
 
+	void charge_all_and_start_nxt_ti(propag_data* dat) bj_stabi_cod;
+
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
@@ -441,6 +442,20 @@ public:
 			case nd_pos:
 			case nd_neg:
 				rcv_pols++;
+			break;
+			default:
+			break;
+		}
+	}
+
+	mc_inline_fn void inc_off(node_kind_t kk){
+		switch(kk){
+			case nd_neu:
+				off_neus++;
+			break;
+			case nd_pos:
+			case nd_neg:
+				off_pols++;
 			break;
 			default:
 			break;
@@ -548,7 +563,8 @@ public:
 	net_side_t	sync_side_in;
 	num_tier_t	sync_tier_in;
 
-	mc_core_nn_t sync_tot_stopping_child;
+	mc_core_nn_t sync_tot_empty_children;
+	mc_core_nn_t sync_tot_stopping_children;
 	bool 		sync_sent_stop_to_parent;
 
 	netstate	act_left_side;
