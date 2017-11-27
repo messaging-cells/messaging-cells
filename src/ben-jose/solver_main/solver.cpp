@@ -98,7 +98,8 @@ void mc_cores_main() {
 	}
 	bj_stabi_main();
 
-	EMU_PRT("SOLVER ENDED\n");
+	EMU_PRT("SOLVER_ENDED\n");
+	EMU_LOG("SOLVER_ENDED\n");
 
 	kernel::finish_sys();
 }

@@ -61,6 +61,7 @@ enum net_side_t : uint8_t {
 
 enum sync_tok_t : mck_token_t {
 	bj_tok_sync_invalid = mck_tok_last + 1,
+	bj_tok_sync_empty_child,
 	bj_tok_sync_to_parent,
 	bj_tok_sync_to_children,
 	bj_tok_sync_end
@@ -447,20 +448,8 @@ public:
 			break;
 		}
 	}
-
-	mc_inline_fn void inc_off(node_kind_t kk){
-		switch(kk){
-			case nd_neu:
-				off_neus++;
-			break;
-			case nd_pos:
-			case nd_neg:
-				off_pols++;
-			break;
-			default:
-			break;
-		}
-	}
+ 
+	void inc_off(net_side_t sd, node_kind_t kk) bj_stabi_cod;
 
 	mc_inline_fn bool got_all_neus(){
 		return (inp_neus == rcv_neus);
@@ -474,7 +463,9 @@ public:
 		return (got_all_neus() && got_all_pols());
 	}
 
-	void update() bj_stabi_cod;
+	void update_tidat() bj_stabi_cod;
+
+	void update_parent_num_empty(net_side_t sd) bj_stabi_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -483,8 +474,12 @@ public:
 class mc_aligned netstate {
 public:
 	net_side_t my_side;
+
 	num_nod_t curr_ti_still_neus;
 	num_nod_t curr_ti_still_pols;
+
+	num_tier_t	sync_sent_tier_empty;
+	mc_core_nn_t sync_tot_empty_children;
 
 	grip 	all_tiers;
 
@@ -554,7 +549,7 @@ public:
 	grip	all_pos;
 	grip	all_neg;
 
-	mc_core_nn_t sync_tot_child;
+	mc_core_nn_t sync_tot_children;
 	mc_core_id_t sync_parent_id;
 	mc_load_map_st* sync_map;
 
@@ -563,7 +558,6 @@ public:
 	net_side_t	sync_side_in;
 	num_tier_t	sync_tier_in;
 
-	mc_core_nn_t sync_tot_empty_children;
 	mc_core_nn_t sync_tot_stopping_children;
 	bool 		sync_sent_stop_to_parent;
 
@@ -581,14 +575,17 @@ public:
 	void stabi_init_sync() mc_external_code_ram;
 	void stabi_nervenet_start() bj_stabi_cod;
 
+	bool has_work_children() bj_stabi_cod;
+
 	void reset_sync(net_side_t	rem_sd, num_tier_t rem_ti) bj_stabi_cod;
 	void handle_sync() bj_stabi_cod;
-	void send_sync_to_children() bj_stabi_cod;
-	void update_sync_tier_out() bj_stabi_cod;
+	void send_sync_to_children() mc_external_code_ram;
+	void update_sync_ti_out() bj_stabi_cod;
+	void send_parent_tok_empty_child(net_side_t sd) bj_stabi_cod;
 
 	nervenet* get_nervenet(mc_core_id_t core_id) mc_external_code_ram;
 
-	mc_inline_fn netstate& get_active_netstate(net_side_t sd) bj_stabi_cod;
+	netstate& get_active_netstate(net_side_t sd) bj_stabi_cod;
 
 	void dbg_stabi_stop_sys(propag_data* dat, nervenode* nod) mc_external_code_ram;
 

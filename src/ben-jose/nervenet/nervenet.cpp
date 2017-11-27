@@ -311,6 +311,9 @@ char* sync_tok_to_str(sync_tok_t tok){
 	case bj_tok_sync_invalid:
 		resp = mc_cstr("bj_tok_sync_invalid");
 	break;
+	case bj_tok_sync_empty_child:
+		resp = mc_cstr("bj_tok_sync_empty_child");
+	break;
 	case bj_tok_sync_to_parent:
 		resp = mc_cstr("bj_tok_sync_to_parent");
 	break;
@@ -387,8 +390,14 @@ netstate::~netstate(){}
 
 void
 netstate::init_me(int caller){
+	my_side = side_invalid;
+
 	curr_ti_still_neus = 0;
 	curr_ti_still_pols = 0;
+
+	sync_sent_tier_empty = BJ_INVALID_NUM_TIER;
+	sync_tot_empty_children = 0;
+
 }
 
 tierdata::tierdata(){
@@ -413,7 +422,7 @@ tierdata::init_me(int caller){
 
 void
 nervenet::stabi_init_sync(){
-	sync_tot_child = mc_map_get_tot_children();
+	sync_tot_children = mc_map_get_tot_children();
 	sync_parent_id = mc_map_get_parent_core_id();
 	sync_map = mc_map_get_loaded();
 
@@ -422,12 +431,11 @@ nervenet::stabi_init_sync(){
 	sync_side_in = side_invalid;
 	sync_tier_in = BJ_INVALID_NUM_TIER;
 
-	sync_tot_empty_children = 0;
 	sync_tot_stopping_children = 0;
 	sync_sent_stop_to_parent = false;
 
-	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d EMPTY=%d \n", 
-	//			sync_tot_child, sync_tot_stopping_children, sync_tot_empty_children);
+	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d \n", 
+	//			sync_tot_children, sync_tot_stopping_children);
 }
 
 void 
