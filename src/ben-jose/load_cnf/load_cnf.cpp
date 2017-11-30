@@ -363,7 +363,7 @@ void bj_load_main() {
 	my_net->act_right_side.init_tiers(*my_net);
 
 	EMU_CODE(
-		tierdata& dat = my_net->act_left_side.get_tier();
+		tierdata& dat = my_net->act_left_side.get_last_tier();
 		num_nod_t n1 = dat.inp_neus;
 		num_nod_t n2 = dat.inp_pols;
 	);

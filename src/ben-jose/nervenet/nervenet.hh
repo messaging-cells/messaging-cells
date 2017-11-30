@@ -125,7 +125,7 @@ char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
 void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 
-net_side_t opp_side_of(net_side_t sd) bj_stabi_cod;
+//net_side_t opp_side_of(net_side_t sd) bj_stabi_cod;
 
 #define BJ_DECLARE_CLS_NAM(cnam) \
 extern char cnam##_cls_nam[] mc_external_data_ram; \
@@ -324,18 +324,9 @@ public:
 
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 
-	mc_inline_fn synset& get_active_set(net_side_t sd){
-		EMU_CK(sd != side_invalid);
+	synset& get_active_set(net_side_t sd) bj_stabi_cod;
 
-		synset* out_set = &left_side.stabi_active_set;
-		if(sd == side_right){
-			out_set = &right_side.stabi_active_set;
-		}
-		EMU_CK(out_set != mc_null);
-		return *out_set;
-	}
-
-	mc_inline_fn neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
+	neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
 
 	void stabi_recv_transmitter(propag_data* dat) bj_stabi_cod;
 	void stabi_recv_charge_all(propag_data* dat) bj_stabi_cod;
@@ -435,20 +426,7 @@ public:
 
 	void add_all_inp_from(grip& grp, net_side_t sd) mc_external_code_ram;
 
-	mc_inline_fn void inc_rcv(node_kind_t kk){
-		switch(kk){
-			case nd_neu:
-				rcv_neus++;
-			break;
-			case nd_pos:
-			case nd_neg:
-				rcv_pols++;
-			break;
-			default:
-			break;
-		}
-	}
- 
+	void inc_rcv(node_kind_t kk) bj_stabi_cod;
 	void inc_off(net_side_t sd, node_kind_t kk) bj_stabi_cod;
 
 	mc_inline_fn bool got_all_neus(){
@@ -467,8 +445,15 @@ public:
 
 	void update_parent_num_empty(net_side_t sd) bj_stabi_cod;
 
+	mc_inline_fn bool is_tidat_empty(){
+		return ( 	(inp_neus != BJ_INVALID_NUM_NODE) && (off_neus == inp_neus) && 
+					(inp_pols != BJ_INVALID_NUM_NODE) && (off_pols == inp_pols));
+	}
+
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
+
+	char* to_str() mc_external_code_ram;
 };
 
 class mc_aligned netstate {
@@ -491,29 +476,23 @@ public:
 
 	void init_tiers(nervenet& nnt) mc_external_code_ram;
 	void inc_tier() bj_stabi_cod;
-
-	mc_inline_fn void inc_still(node_kind_t kk){
-		switch(kk){
-			case nd_neu:
-				curr_ti_still_neus++;
-			break;
-			case nd_pos:
-			case nd_neg:
-				curr_ti_still_pols++;
-			break;
-			default:
-			break;
-		}
-	}
+	void inc_still(node_kind_t kk) bj_stabi_cod;
 
 	bool is_propag_over() bj_stabi_cod;
 
-	mc_inline_fn tierdata& get_tier(){
+	mc_inline_fn tierdata& get_last_tier(){
 		EMU_CK(! all_tiers.is_alone());
 		return *((tierdata*)(all_tiers.bn_left));
 	}
 
-	tierdata& get_tier(num_tier_t	id) bj_stabi_cod;
+	tierdata& get_sync_tier() bj_stabi_cod;
+
+	tierdata& get_tier(num_tier_t nti = BJ_INVALID_NUM_TIER) bj_stabi_cod;
+
+	mc_inline_fn num_tier_t get_ti_id(){
+		return get_last_tier().tdt_id;
+	}
+
 };
 
 class mc_aligned nervenet : public cell  {
@@ -582,6 +561,11 @@ public:
 	void send_sync_to_children() mc_external_code_ram;
 	void update_sync_ti_out() bj_stabi_cod;
 	void send_parent_tok_empty_child(net_side_t sd) bj_stabi_cod;
+
+	mc_inline_fn bool is_nervnet_empty(){
+		return ( 	act_left_side.get_last_tier().is_tidat_empty() && 
+					act_right_side.get_last_tier().is_tidat_empty());
+	}
 
 	nervenet* get_nervenet(mc_core_id_t core_id) mc_external_code_ram;
 
