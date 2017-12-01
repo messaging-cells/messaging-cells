@@ -365,10 +365,9 @@ void bj_load_main() {
 	EMU_CODE(
 		tierdata& dat = my_net->act_left_side.get_last_tier();
 		num_nod_t n1 = dat.inp_neus;
-		num_nod_t n2 = dat.inp_pols;
 	);
 	EMU_LOG("\n=========================================================================\n");
-	EMU_LOG("inp_neu=%ld inp_pol=%ld \n", n1, n2);
+	EMU_LOG("inp_neu=%ld \n", n1);
 
 	//bj_print_loaded_cnf();
 
@@ -386,13 +385,8 @@ tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 		nervenode* my_nod = (nervenode*)wrk;
 		num_syn_t tsn = my_nod->get_active_set(sd).tot_syn;
 		//EMU_LOG("ADD_NOD %s %ld tot_syn=%ld\n", node_kind_to_str(my_nod->ki), my_nod->id, tsn);
-		if(tsn > 0){
-			if(my_nod->ki == nd_neu){
-				inp_neus++;
-			} else {
-				EMU_CK(my_nod->ki != nd_invalid);
-				inp_pols++;
-			}
+		if((tsn > 0) && (my_nod->ki == nd_neu)){
+			inp_neus++;
 		}
 	}
 }
@@ -403,17 +397,14 @@ netstate::init_tiers(nervenet& my_net){
 
 	ti_dat->tdt_id = 0;
 	ti_dat->inp_neus = 0;
-	ti_dat->inp_pols = 0;
 
 	EMU_CK(ti_dat->inp_neus == 0);
-	EMU_CK(ti_dat->inp_pols == 0);
 
 	ti_dat->add_all_inp_from(my_net.all_neu, my_side);
 	ti_dat->add_all_inp_from(my_net.all_pos, my_side);
 	ti_dat->add_all_inp_from(my_net.all_neg, my_side);
 
 	//EMU_CK((my_side != side_right) || (ti_dat->inp_neus == 0));
-	//EMU_CK((my_side != side_right) || (ti_dat->inp_pols == 0));
 
 	all_tiers.bind_to_my_left(*ti_dat);
 }

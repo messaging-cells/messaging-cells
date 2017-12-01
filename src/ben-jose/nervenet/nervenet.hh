@@ -410,13 +410,8 @@ public:
 	num_tier_t	tdt_id;
 
 	num_nod_t inp_neus;
-	num_nod_t inp_pols;
-
 	num_nod_t off_neus;
-	num_nod_t off_pols;
-
 	num_nod_t rcv_neus;
-	num_nod_t rcv_pols;
 
 	tierdata() mc_external_code_ram;
 	~tierdata() mc_external_code_ram;
@@ -429,16 +424,8 @@ public:
 	void inc_rcv(node_kind_t kk) bj_stabi_cod;
 	void inc_off(net_side_t sd, node_kind_t kk) bj_stabi_cod;
 
-	mc_inline_fn bool got_all_neus(){
-		return (inp_neus == rcv_neus);
-	}
-
-	mc_inline_fn bool got_all_pols(){
-		return (inp_pols == rcv_pols);
-	}
-
 	mc_inline_fn bool got_all(){
-		return (got_all_neus() && got_all_pols());
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == rcv_neus));
 	}
 
 	void update_tidat() bj_stabi_cod;
@@ -446,8 +433,7 @@ public:
 	void update_parent_num_empty(net_side_t sd) bj_stabi_cod;
 
 	mc_inline_fn bool is_tidat_empty(){
-		return ( 	(inp_neus != BJ_INVALID_NUM_NODE) && (off_neus == inp_neus) && 
-					(inp_pols != BJ_INVALID_NUM_NODE) && (off_pols == inp_pols));
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == off_neus));
 	}
 
 	virtual
@@ -461,7 +447,6 @@ public:
 	net_side_t my_side;
 
 	num_nod_t curr_ti_still_neus;
-	num_nod_t curr_ti_still_pols;
 
 	num_tier_t	sync_sent_tier_empty;
 	mc_core_nn_t sync_tot_empty_children;
@@ -485,9 +470,7 @@ public:
 		return *((tierdata*)(all_tiers.bn_left));
 	}
 
-	tierdata& get_sync_tier() bj_stabi_cod;
-
-	tierdata& get_tier(num_tier_t nti = BJ_INVALID_NUM_TIER) bj_stabi_cod;
+	tierdata& get_tier(num_tier_t nti) bj_stabi_cod;
 
 	mc_inline_fn num_tier_t get_ti_id(){
 		return get_last_tier().tdt_id;

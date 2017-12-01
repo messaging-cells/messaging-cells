@@ -393,7 +393,6 @@ netstate::init_me(int caller){
 	my_side = side_invalid;
 
 	curr_ti_still_neus = 0;
-	curr_ti_still_pols = 0;
 
 	sync_sent_tier_empty = BJ_INVALID_NUM_TIER;
 	sync_tot_empty_children = 0;
@@ -411,13 +410,8 @@ tierdata::init_me(int caller){
 	tdt_id = BJ_INVALID_NUM_TIER;
 
 	inp_neus = BJ_INVALID_NUM_NODE;
-	inp_pols = BJ_INVALID_NUM_NODE;
-
 	off_neus = 0;
-	off_pols = 0;
-
 	rcv_neus = 0;
-	rcv_pols = 0;
 }
 
 void

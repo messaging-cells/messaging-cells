@@ -30,16 +30,18 @@ nervenet::get_active_netstate(net_side_t sd){
 void
 synapse::send_transmitter(stabi_tok_t tok, net_side_t sd){
 	EMU_CODE(nervenode* rem_nd = mate->owner);
-	EMU_LOG("::send_transmitter %s [%s %ld ->> %s %ld] %s nod_TI=%d  \n", stabi_tok_to_str(tok), 
+	num_tier_t ti = owner->get_neurostate(sd).stabi_num_tier;
+	EMU_LOG("::send_transmitter %s [%s %ld ->> %s %ld] %s wrk_TI=%d  \n", stabi_tok_to_str(tok), 
 		node_kind_to_str(owner->ki), owner->id, node_kind_to_str(rem_nd->ki), rem_nd->id, 
-		net_side_to_str(sd), owner->get_neurostate(sd).stabi_num_tier);
+		net_side_to_str(sd), ti);
+	
 
 	transmitter* trm = transmitter::acquire();
 	trm->src = this;
 	trm->dst = mate;
 	trm->tok = tok;
 	trm->wrk_side = sd;
-	trm->wrk_tier = owner->get_neurostate(sd).stabi_num_tier;
+	trm->wrk_tier = ti;
 	trm->send();
 }
 
@@ -616,48 +618,18 @@ nervenode::get_active_set(net_side_t sd){
 
 void 
 tierdata::inc_rcv(node_kind_t kk){
-	switch(kk){
-		case nd_neu:
-			rcv_neus++;
-		break;
-		case nd_pos:
-		case nd_neg:
-			rcv_pols++;
-		break;
-		default:
-		break;
-	}
+	if(kk == nd_neu){ rcv_neus++; }
 }
 
 void
 tierdata::inc_off(net_side_t sd, node_kind_t kk){
-	switch(kk){
-		case nd_neu:
-			off_neus++;
-		break;
-		case nd_pos:
-		case nd_neg:
-			off_pols++;
-		break;
-		default:
-		break;
-	}
+	if(kk == nd_neu){ off_neus++; }
 	update_parent_num_empty(sd);
 }
 
 void 
 netstate::inc_still(node_kind_t kk){
-	switch(kk){
-		case nd_neu:
-			curr_ti_still_neus++;
-		break;
-		case nd_pos:
-		case nd_neg:
-			curr_ti_still_pols++;
-		break;
-		default:
-		break;
-	}
+	if(kk == nd_neu){ curr_ti_still_neus++; }
 }
 
 void
@@ -829,14 +801,7 @@ neuron::stabi_start_nxt_tier(propag_data* dat){
 }
 
 void 
-nervenet::dbg_stabi_stop_sys(propag_data* dat, nervenode* nod){
-	
-	tierdata& tda = act_left_side.get_last_tier();
-	EMU_CK((dat == mc_null) || (dat->sd == side_left));
-	if(tda.got_all_pols()){
-		EMU_LOG("STOP_SYS(pols) (%d==%d)\n", tda.inp_pols, tda.rcv_pols);
-		kernel::stop_sys(bj_tok_stabi_end);
-	}
+nervenet::dbg_stabi_stop_sys(propag_data* dat, nervenode* nod){	
 }
 
 void bj_stabi_main() {
@@ -870,10 +835,7 @@ void bj_stabi_main() {
 tierdata&
 netstate::get_tier(num_tier_t nti){
 	EMU_CK(! all_tiers.is_alone());
-
-	if(nti == BJ_INVALID_NUM_TIER){
-		return get_last_tier();
-	}
+	EMU_CK(nti != BJ_INVALID_NUM_TIER);
 
 	tierdata* dat = mc_null;
 	binder * fst, * lst, * wrk;
@@ -910,16 +872,13 @@ tierdata::update_tidat(){
 		return;
 	}
 	if(inp_neus != BJ_INVALID_NUM_NODE){
-		EMU_CK(inp_pols != BJ_INVALID_NUM_NODE);
 		return;
 	}
 	tierdata* prv = (tierdata*)(bn_left);
 	if(prv->got_all()){
 		inp_neus = prv->inp_neus - prv->off_neus;
-		inp_pols = prv->inp_pols - prv->off_pols;
 		EMU_CK(inp_neus != BJ_INVALID_NUM_NODE);
-		EMU_CK(inp_pols != BJ_INVALID_NUM_NODE);
-		EMU_CK((inp_neus + inp_pols) > 0);
+		//EMU_CK(inp_neus > 0);
 	}
 }
 
@@ -934,7 +893,6 @@ netstate::inc_tier(){
 	EMU_LOG("INC_NET_TIER %d %s nw_ti=%d \n", kernel::get_core_nn(), net_side_to_str(my_side), ti_dat->tdt_id);
 
 	curr_ti_still_neus = 0;
-	curr_ti_still_pols = 0;
 
 	ti_dat->update_tidat();
 }
@@ -970,7 +928,7 @@ nervenet::send_sync_to_children(){
 		}
 	}
 
-	EMU_PRT("SYNC_SET_IDLE CORE=%d \n", kernel::get_core_nn());
+	EMU_LOG("SYNC_SET_IDLE CORE=%d \n", kernel::get_core_nn());
 
 	mck_get_kernel()->set_idle_exit();
 	//kernel::stop_sys(bj_tok_stabi_end);
@@ -1091,22 +1049,14 @@ netstate::is_propag_over(){
 
 	if(! cti.got_all()){ return false; }
 
-	//cti.update_parent_num_empty(my_side);
-
-	//if((cti.inp_neus == 0) && (cti.inp_pols != 0) && (cti.tdt_id == 0)){ return false; }
-
-	bool all_neus_still = ((cti.inp_neus != BJ_INVALID_NUM_NODE) && (curr_ti_still_neus == cti.inp_neus));
-	bool all_pols_still = ((cti.inp_pols != BJ_INVALID_NUM_NODE) && (curr_ti_still_pols == cti.inp_pols));
-	bool all_over = (all_neus_still && all_pols_still);
+	bool all_over = ((cti.inp_neus != BJ_INVALID_NUM_NODE) && (curr_ti_still_neus == cti.inp_neus));
 
 	if(all_over){
 		cti.update_parent_num_empty(my_side);
 	}
 
-	EMU_LOG("IS_NET_PROPAG_OVER %s %d == ((%d == %d) && (%d == %d)) net_ti=%d \n", 
-		net_side_to_str(my_side), all_over, 
-		curr_ti_still_neus, cti.inp_neus, 
-		curr_ti_still_pols, cti.inp_pols, cti.tdt_id);
+	EMU_LOG("IS_NET_PROPAG_OVER %s %d == (%d == %d) net_ti=%d \n", 
+		net_side_to_str(my_side), all_over, curr_ti_still_neus, cti.inp_neus, cti.tdt_id);
 
 	return all_over;
 }
@@ -1116,45 +1066,42 @@ nervenet::update_sync_ti_out(){
 
 	if(act_left_side.is_propag_over() && act_right_side.is_propag_over())
 	{
+		sync_sent_stop_to_parent = false;
+
 		tierdata& lft = act_left_side.get_last_tier();
 		tierdata& rgt = act_right_side.get_last_tier();
-		//tierdata& lft = act_left_side.get_sync_tier();
-		//tierdata& rgt = act_right_side.get_sync_tier();
 
-		sync_sent_stop_to_parent = false;
-		if(rgt.tdt_id > lft.tdt_id){
+		bool lft_mpty = lft.is_tidat_empty();
+		bool rgt_mpty = rgt.is_tidat_empty();
+
+		if(lft_mpty && rgt_mpty){
+			sync_side_out = sync_side_in;
+			sync_tier_out = sync_tier_in;
+		} 
+		else if(! rgt_mpty && (rgt.tdt_id > lft.tdt_id)){
 			sync_side_out = side_right;
 			sync_tier_out = rgt.tdt_id;
-		} else {
+		} 
+		else {
+			sync_side_out = side_left;
+			sync_tier_out = lft.tdt_id;
+		}
+
+		if(sync_tier_out == BJ_INVALID_NUM_TIER){
 			sync_side_out = side_left;
 			sync_tier_out = lft.tdt_id;
 		}
 
 		EMU_CK(sync_side_out != side_invalid);
 		EMU_CK(sync_tier_out != BJ_INVALID_NUM_TIER);
-
 		EMU_CODE(netstate& nst = get_active_netstate(sync_side_out));
-		//EMU_PRT("SYNC_SET STOP sd=%s tier=%d stopping=%d of %d \n", net_side_to_str(sync_side_out), 
-		//			sync_tier_out, sync_tot_stopping_children, sync_tot_children);
 		EMU_LOG("SYNC_STARTING_STOP %s IS_EMPTY=%d TOT_CHDN=%d empty_chdn=%d stopping=%d " 
 				"out_ti=%d in_ti=%d net_ti=%d pnt_nn=%d \n", 
 			net_side_to_str(sync_side_out), is_nervnet_empty(),
 			sync_tot_children, nst.sync_tot_empty_children, sync_tot_stopping_children, 
 			sync_tier_out, sync_tier_in, 
 			nst.get_ti_id(), mc_id_to_nn(sync_parent_id));
+		
 	}
 }
 
-tierdata&
-netstate::get_sync_tier(){
-	tierdata& cti = get_last_tier();
-	if((cti.inp_neus == 0) && (cti.inp_pols != 0)){
-		EMU_CK(cti.tdt_id > 0);
-		EMU_CK(cti.bn_left != &all_tiers);
-		EMU_LOG("SYNC_ONLY_POLS \n");
-		return *((tierdata*)(cti.bn_left));
-	}
-	return cti;
-}
-
-// sync_tot_stopping_children
