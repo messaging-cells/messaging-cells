@@ -428,6 +428,8 @@ nervenet::stabi_init_sync(){
 	sync_tot_stopping_children = 0;
 	sync_sent_stop_to_parent = false;
 
+	sync_ending_propag = false;
+
 	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d \n", 
 	//			sync_tot_children, sync_tot_stopping_children);
 }

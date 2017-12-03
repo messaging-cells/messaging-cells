@@ -522,6 +522,8 @@ public:
 
 	mc_core_nn_t sync_tot_stopping_children;
 	bool 		sync_sent_stop_to_parent;
+	
+	bool sync_ending_propag;
 
 	netstate	act_left_side;
 	netstate	act_right_side;

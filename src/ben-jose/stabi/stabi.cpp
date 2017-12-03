@@ -47,21 +47,25 @@ synapse::send_transmitter(stabi_tok_t tok, net_side_t sd){
 
 void 
 polaron_stabi_handler(missive* msv){
+	if(bj_nervenet->sync_ending_propag){ return; }
 	MCK_CALL_HANDLER(polaron, stabi_handler, msv);
 }
 
 void 
 neuron_stabi_handler(missive* msv){
+	if(bj_nervenet->sync_ending_propag){ return; }
 	MCK_CALL_HANDLER(neuron, stabi_handler, msv);
 }
 
 void 
 synapse_stabi_handler(missive* msv){
+	if(bj_nervenet->sync_ending_propag){ return; }
 	MCK_CALL_HANDLER(synapse, stabi_handler, msv);
 }
 
 void 
 nervenet_stabi_handler(missive* msv){
+	if(bj_nervenet->sync_ending_propag){ return; }
 	MCK_CALL_HANDLER(nervenet, stabi_handler, msv);
 }
 
@@ -928,10 +932,12 @@ nervenet::send_sync_to_children(){
 		}
 	}
 
-	EMU_LOG("SYNC_SET_IDLE CORE=%d \n", kernel::get_core_nn());
+	EMU_LOG("SYNC_ENDING_PROPAG CORE=%d \n", kernel::get_core_nn());
 
-	mck_get_kernel()->set_idle_exit();
-	//kernel::stop_sys(bj_tok_stabi_end);
+	bj_nervenet->sync_ending_propag = true;
+
+	//mck_get_kernel()->set_idle_exit();
+	kernel::stop_sys(bj_tok_stabi_end);
 }
 
 void bj_kernel_func(){
@@ -950,6 +956,15 @@ nervenet::has_work_children(){
 
 void 
 nervenet::handle_sync(){
+	if(bj_nervenet->sync_ending_propag){
+		/*kernel* ker = mck_get_kernel();
+		if(! ker->did_work){ 
+			EMU_LOG("SYNC_SET_IDLE CORE=%d \n", kernel::get_core_nn());
+			ker->set_idle_exit(); 
+		}*/
+		return; 
+	}
+
 	if(sync_tier_out == BJ_INVALID_NUM_TIER){
 		return;
 	}
