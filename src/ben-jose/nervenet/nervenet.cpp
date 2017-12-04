@@ -396,6 +396,7 @@ netstate::init_me(int caller){
 
 	sync_sent_tier_empty = BJ_INVALID_NUM_TIER;
 	sync_tot_empty_children = 0;
+	sync_sent_ti_empty = false;
 
 }
 

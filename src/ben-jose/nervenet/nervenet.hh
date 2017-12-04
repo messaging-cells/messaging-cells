@@ -450,6 +450,7 @@ public:
 
 	num_tier_t	sync_sent_tier_empty;
 	mc_core_nn_t sync_tot_empty_children;
+	bool	sync_sent_ti_empty;
 
 	grip 	all_tiers;
 
@@ -545,6 +546,7 @@ public:
 	void handle_sync() bj_stabi_cod;
 	void send_sync_to_children() mc_external_code_ram;
 	void update_sync_ti_out() bj_stabi_cod;
+	void start_send_empty_child(net_side_t sd) bj_stabi_cod;
 	void send_parent_tok_empty_child(net_side_t sd) bj_stabi_cod;
 
 	mc_inline_fn bool is_nervnet_empty(){
