@@ -452,7 +452,16 @@ public:
 	mc_core_nn_t sync_tot_empty_children;
 	bool	sync_sent_ti_empty;
 
+	num_tier_t	sync_tier_out;
+	num_tier_t	sync_tier_in;
+
+	mc_core_nn_t sync_tot_stopping_children;
+	bool 		sync_sent_stop_to_parent;
+	
+	bool sync_ending_propag;
+
 	grip 	all_tiers;
+
 
 	netstate() mc_external_code_ram;
 	~netstate() mc_external_code_ram;
@@ -465,6 +474,21 @@ public:
 	void inc_still(node_kind_t kk) bj_stabi_cod;
 
 	bool is_propag_over() bj_stabi_cod;
+
+	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti, 
+			mc_core_nn_t dbg_dst_nn) bj_stabi_cod;
+
+	bool has_work_children() bj_stabi_cod;
+	void handle_my_sync() bj_stabi_cod;
+	void send_sync_to_children() mc_external_code_ram;
+	void update_sync_ti_out() bj_stabi_cod;
+	void reset_sync(num_tier_t rem_ti) bj_stabi_cod;
+
+
+	mc_inline_fn bool is_last_empty(){
+		return (get_last_tier().is_tidat_empty());
+	}
+
 
 	mc_inline_fn tierdata& get_last_tier(){
 		EMU_CK(! all_tiers.is_alone());
@@ -516,16 +540,6 @@ public:
 	mc_core_id_t sync_parent_id;
 	mc_load_map_st* sync_map;
 
-	net_side_t	sync_side_out;
-	num_tier_t	sync_tier_out;
-	net_side_t	sync_side_in;
-	num_tier_t	sync_tier_in;
-
-	mc_core_nn_t sync_tot_stopping_children;
-	bool 		sync_sent_stop_to_parent;
-	
-	bool sync_ending_propag;
-
 	netstate	act_left_side;
 	netstate	act_right_side;
 
@@ -540,19 +554,9 @@ public:
 	void stabi_init_sync() mc_external_code_ram;
 	void stabi_nervenet_start() bj_stabi_cod;
 
-	bool has_work_children() bj_stabi_cod;
-
-	void reset_sync(net_side_t	rem_sd, num_tier_t rem_ti) bj_stabi_cod;
 	void handle_sync() bj_stabi_cod;
-	void send_sync_to_children() mc_external_code_ram;
-	void update_sync_ti_out() bj_stabi_cod;
 	void start_send_empty_child(net_side_t sd) bj_stabi_cod;
 	void send_parent_tok_empty_child(net_side_t sd) bj_stabi_cod;
-
-	mc_inline_fn bool is_nervnet_empty(){
-		return ( 	act_left_side.get_last_tier().is_tidat_empty() && 
-					act_right_side.get_last_tier().is_tidat_empty());
-	}
 
 	nervenet* get_nervenet(mc_core_id_t core_id) mc_external_code_ram;
 

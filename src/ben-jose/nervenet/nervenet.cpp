@@ -398,6 +398,16 @@ netstate::init_me(int caller){
 	sync_tot_empty_children = 0;
 	sync_sent_ti_empty = false;
 
+	sync_tier_out = BJ_INVALID_NUM_TIER;
+	sync_tier_in = BJ_INVALID_NUM_TIER;
+
+	sync_tot_stopping_children = 0;
+	sync_sent_stop_to_parent = false;
+
+	sync_ending_propag = false;
+
+	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d \n", 
+	//			sync_tot_children, sync_tot_stopping_children);
 }
 
 tierdata::tierdata(){
@@ -420,19 +430,6 @@ nervenet::stabi_init_sync(){
 	sync_tot_children = mc_map_get_tot_children();
 	sync_parent_id = mc_map_get_parent_core_id();
 	sync_map = mc_map_get_loaded();
-
-	sync_side_out = side_invalid;
-	sync_tier_out = BJ_INVALID_NUM_TIER;
-	sync_side_in = side_invalid;
-	sync_tier_in = BJ_INVALID_NUM_TIER;
-
-	sync_tot_stopping_children = 0;
-	sync_sent_stop_to_parent = false;
-
-	sync_ending_propag = false;
-
-	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d \n", 
-	//			sync_tot_children, sync_tot_stopping_children);
 }
 
 void 
