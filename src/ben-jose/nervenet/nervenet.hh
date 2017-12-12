@@ -123,6 +123,8 @@ char* sync_tok_to_str(sync_tok_t tok) mc_external_code_ram;
 char* load_tok_to_str(load_tok_t tok) mc_external_code_ram;
 char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
+void dbg_call_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) mc_external_code_ram;
+
 void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 
 //net_side_t opp_side_of(net_side_t sd) bj_stabi_cod;
@@ -176,6 +178,8 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
+
+	void dbg_rec_call_all(bj_callee_t mth, net_side_t sd) mc_external_code_ram;
 
 	void stabi_rec_send_all(bj_callee_t mth, net_side_t sd) bj_stabi_cod;
 
@@ -293,6 +297,8 @@ public:
 	bool charge_all_active(propag_data* dat, node_kind_t ki) bj_stabi_cod;
 	void reset_complete() bj_stabi_cod;
 
+	tierset*	dbg_get_tiset(num_tier_t nti) mc_external_code_ram;
+
 	tierset*	get_tiset(num_tier_t nti = BJ_INVALID_NUM_TIER) bj_stabi_cod;
 	tierset&	add_tiset(num_tier_t nti) bj_stabi_cod;
 
@@ -344,6 +350,11 @@ public:
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
+
+	void dbg_prt_syn(synapse* snp, net_side_t sd) mc_external_code_ram;
+
+	void dbg_prt_nod(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, 
+					num_tier_t num_ti) mc_external_code_ram;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -588,6 +599,9 @@ void bj_kernel_func();
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
 void bj_print_loaded_cnf() mc_external_code_ram;
+
+void bj_print_active_cnf(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, 
+			num_tier_t num_ti) mc_external_code_ram;
 
 
 #endif		// NERVENET_H

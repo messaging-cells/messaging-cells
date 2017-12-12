@@ -447,3 +447,145 @@ emu_prt_tok_codes(){
 	}
 }
 
+tierset*
+neurostate::dbg_get_tiset(num_tier_t nti){
+	if(stabi_tiers.is_alone()){
+		return mc_null;
+	}
+
+	if(nti == BJ_INVALID_NUM_TIER){
+		return mc_null;
+	}
+
+	if(nti == BJ_LAST_TIER){
+		EMU_CK(((tierset*)stabi_tiers.bn_left)->ti_id != BJ_INVALID_NUM_TIER);
+		return (tierset*)stabi_tiers.bn_left;
+	}
+
+	tierset* dat = mc_null;
+	binder * fst, * lst, * wrk;
+
+	binder* tis = &(stabi_tiers);
+	fst = (binder*)(tis->bn_left);
+	lst = tis;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_left)){
+		tierset* tidat = (tierset*)wrk;
+		if(tidat->ti_id >= nti){
+			dat = tidat;
+		}
+		if(tidat->ti_id < nti){
+			break;
+		}
+	}
+
+	return dat;
+}
+
+void 
+dbg_call_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd){
+	EMU_CK(mth != mc_null);
+
+	binder * fst, * lst, * wrk;
+
+	fst = (binder*)(nn_all_snp->bn_right);
+	lst = nn_all_snp;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synapse* my_snp = mc_null;
+		if(sd == side_left){
+			my_snp = (synapse*)wrk;
+		} else {
+			EMU_CK(sd == side_right);
+			my_snp = bj_get_syn_of_rgt_handle(wrk);
+		}
+		EMU_CK(my_snp != mc_null);
+		EMU_CK(bj_is_synapse(my_snp));
+
+		(my_snp->owner->*mth)(my_snp, sd);
+	}
+}
+
+void
+synset::dbg_rec_call_all(bj_callee_t mth, net_side_t sd){
+	MCK_CHECK_SP();
+	dbg_call_all_synapses(&(all_syn), mth, sd);
+
+	binder * fst, * lst, * wrk;
+
+	binder* grps = &(all_grp);
+	fst = (binder*)(grps->bn_right);
+	lst = grps;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synset* sub_grp = (synset*)wrk;
+		EMU_CK(sub_grp->parent == this);
+		sub_grp->dbg_rec_call_all(mth, sd);
+	}
+}
+
+void
+nervenode::dbg_prt_syn(synapse* my_snp, net_side_t sd){
+	MCK_CK(my_snp->mate != mc_null);
+
+	synapse* mt_snp = (synapse*)(my_snp->mate);
+	nervenode* the_nod = mt_snp->owner;
+
+	mck_ilog(the_nod->id);
+	mck_slog2(" ");
+}
+
+void
+nervenode::dbg_prt_nod(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, num_tier_t num_ti){
+	bj_callee_t mth = &nervenode::dbg_prt_syn;
+
+	neurostate& ne_stt = get_neurostate(sd);
+	tierset* all_ti = ne_stt.dbg_get_tiset(num_ti);
+
+	bool is_mpty = ((all_ti == mc_null) && ne_stt.stabi_active_set.is_empty());
+
+	if(is_mpty){
+		return;
+	}
+
+	mck_slog2("i");
+	mck_ilog(prt_id);
+	mck_slog2("p");
+	mck_ilog(num_pul);
+	mck_slog2("n");
+	mck_ilog(id);
+	mck_slog2(" [");
+
+	if(all_ti != mc_null){
+		binder * fst_2, * lst_2, * wrk_2;
+
+		binder* tis = &(ne_stt.stabi_tiers);
+		fst_2 = (binder*)(all_ti);
+		lst_2 = tis;
+		for(wrk_2 = fst_2; wrk_2 != lst_2; wrk_2 = (binder*)(wrk_2->bn_right)){
+			tierset* tidat = (tierset*)wrk_2;
+			dbg_call_all_synapses(&(tidat->ti_all), mth, sd);
+			mck_slog2("+ ");
+		}
+	}
+
+	ne_stt.stabi_active_set.dbg_rec_call_all(mth, sd);
+
+	mck_slog2("]\n");
+}
+
+//	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&nervenode::stabi_send_snp_propag), side_left);
+
+void 
+bj_print_active_cnf(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, num_tier_t num_ti){
+	nervenet* my_net = bj_nervenet;
+
+	binder * fst, * lst, * wrk;
+
+	binder* pt_all_neu = &(my_net->all_neu);
+	fst = (binder*)(pt_all_neu->bn_right);
+	lst = pt_all_neu;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		neuron* my_neu = (neuron*)wrk;
+		EMU_CK(my_neu->ki == nd_neu);
+
+		my_neu->dbg_prt_nod(sd, prt_id, num_pul, num_ti);
+	}
+}

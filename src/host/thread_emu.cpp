@@ -140,28 +140,36 @@ mcm_addr_with_fn(mc_core_id_t core_id, void* addr){
 }
 
 bool 
-mcm_call_assert(bool is_assert, bool prt_stck, bool cond, 
-		const char* file, int line, const char* ck_str, const char* fmt, ...)
+mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond, 
+		const char* fnam, int line, const char* ck_str, const char* fmt, ...)
 {
+	FILE* out_file = stderr;
+	if(out_fnam != mc_null){
+		out_file = fopen(out_fnam, "a");
+		if(out_file == NULL){
+			out_file = stderr;
+		}
+	}
+
 	bool is_asst = (is_assert && ! cond);
 	bool is_prt = (! is_assert && cond);
 	bool do_prt = is_asst || is_prt;
 	if(do_prt){
 		flockfile(stdout);
-		flockfile(stderr);
+		flockfile(out_file);
 		fflush(stdout); 
-		fflush(stderr); 
+		fflush(out_file); 
 
 		emu_info_t* inf = mck_get_emu_info();
 		if(is_assert || prt_stck){
-			fprintf(stderr, "\n------------------------------------------------------------------\n");
+			fprintf(out_file, "\n------------------------------------------------------------------\n");
 		}
-		fprintf(stderr, "%d:%x --> ", inf->emu_num, inf->emu_core_id);
-		if(file != mc_null){
-			fprintf(stderr, "FILE %s(%d): ", file, line);
+		fprintf(out_file, "%d:%x --> ", inf->emu_num, inf->emu_core_id);
+		if(fnam != mc_null){
+			fprintf(out_file, "FILE %s(%d): ", fnam, line);
 		}
 		if(is_assert){
-			fprintf(stderr, "ASSERT '%s' FAILED.\n", ck_str);
+			fprintf(out_file, "ASSERT '%s' FAILED.\n", ck_str);
 		} 
 		if(prt_stck){
 			mch_ptr_call_stack_trace();
@@ -181,20 +189,35 @@ mcm_call_assert(bool is_assert, bool prt_stck, bool cond,
 				mch_abort_func((mc_addr_t)mcm_printf, "mcm_printf. ERROR. \n");
 			}
 
-			fprintf(stderr, "%s", pp);
+			fprintf(out_file, "%s", pp);
 		}
 		if(is_assert || prt_stck){
-			fprintf(stderr, "\n------------------------------------------------------------------\n\n");
+			fprintf(out_file, "\n------------------------------------------------------------------\n\n");
 		}
-		fflush(stderr); 
+		fflush(out_file); 
 
 		funlockfile(stdout);
-		funlockfile(stderr);
+		funlockfile(out_file);
 	}
+
+	if((out_fnam != mc_null) && (out_file != stderr)){
+		fclose(out_file);
+	}
+
 	if(is_assert){
 		assert(cond);
 	}
 	return cond;
+}
+
+char*
+mcm_get_emu_log_fnam(){
+	if(mc_is_host_thread()){
+		return mc_null;
+	}
+	uint16_t thd_idx = mck_get_thread_idx();
+	char* log_fnam = ALL_THREADS_INFO[thd_idx].thd_log_fnam;
+	return log_fnam;
 }
 
 void

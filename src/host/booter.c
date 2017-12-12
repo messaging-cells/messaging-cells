@@ -205,8 +205,13 @@ mch_reset_log_file(char* f_nm){
 
 void
 mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
-	int log_fd = 0;
+	/*int log_fd = 0;
 	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
+		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
+		return;
+	}*/
+	FILE* flog = fopen(f_nm, "a");
+	if(flog == NULL){
 		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
 		return;
 	}
@@ -223,13 +228,16 @@ mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
 				continue;
 			}
-			int fd = STDOUT_FILENO;
+			//int fd = STDOUT_FILENO;	
+			FILE* fpt = stdout;
 			if(obj[0] == MC_OUT_LOG){
-				fd = log_fd;
+				fpt = flog;
+				//fd = log_fd;
 			} 
 			mc_type_t ot = (mc_type_t)obj[1];
 			if(ot == MC_CHR){
-				write(fd, obj + 2, omc_sz - 2);
+				//write(fd, obj + 2, omc_sz - 2);
+				fwrite(obj + 2, omc_sz - 2, 1, fpt);
 				continue;
 			}
 			int osz = mch_type_sz(ot);
@@ -271,11 +279,13 @@ mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 						break;
 				}
 				int sz2 = strlen(istr);
-				write(fd, istr, sz2);
+				//write(fd, istr, sz2);
+				fwrite(istr, sz2, 1, fpt);
 			}
 		}
 	}
-	close(log_fd);
+	//close(log_fd);
+	fclose(flog);
 }
 
 uint8_t*

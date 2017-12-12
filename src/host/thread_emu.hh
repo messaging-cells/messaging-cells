@@ -33,7 +33,7 @@ typedef struct emu_info_st emu_info_t;
 
 struct thread_info_st {    // Used as argument to thread_start() 
 	emu_info_t		thd_emu;
-
+	char*			thd_log_fnam;
 	umm_block 		thd_umm_heap[UMM_HEAP_NUM_BLOCKS];
 };
 

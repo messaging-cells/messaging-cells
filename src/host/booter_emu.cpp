@@ -211,6 +211,7 @@ mc_host_run()
 			mc_uint16_to_hex_bytes(thd_inf.thd_emu.emu_num, (uint8_t*)(thd_inf.thd_emu.emu_name));
 			thd_inf.thd_emu.emu_core_id = core_id;
 			thd_inf.thd_emu.emu_core_func = &mc_cores_main;
+			thd_inf.thd_log_fnam = mc_null;
 
 			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
@@ -218,6 +219,7 @@ mc_host_run()
 				memset(&f_nm, 0, sizeof(f_nm));
 				sprintf(f_nm, "log_core_%02d.txt", num_core);
 				all_f_nam[num_core] = strdup((const char*)f_nm);
+				thd_inf.thd_log_fnam = strdup((const char*)f_nm);
 				mch_reset_log_file(all_f_nam[num_core]);
 
 				// init shared data.
