@@ -416,6 +416,11 @@ neurostate::charge_all_active(propag_data* dat, node_kind_t ki){
 	return resp;
 }
 
+bool
+polaron::can_chg_all(){
+	return true;
+}
+
 void
 nervenode::stabi_recv_charge_all(propag_data* dat){
 	EMU_CK(dat != mc_null);
@@ -426,19 +431,29 @@ nervenode::stabi_recv_charge_all(propag_data* dat){
 	EMU_LOG("nervenode::stabi_recv_charge_all %s %ld %s stb_src=%p \n", 
 			node_kind_to_str(ki), id, net_side_to_str(dat->sd), stt.stabi_source);
 
-	if(stt.stabi_source == mc_null){
-		EMU_CODE(nervenode* stb_src = dat->snp->mate->owner);
-		EMU_CK(stb_src != mc_null);
-
-		EMU_LOG("SET_STB_SRC %s %ld %s stb_src: %s %ld \n", 
-				node_kind_to_str(ki), id, net_side_to_str(dat->sd), 
-				node_kind_to_str(stb_src->ki), stb_src->id);
-
-		EMU_CK_PRT(! stt.stabi_active_set.is_empty(), "::stabi_recv_charge_all EMPTY_ACTIVE !!!");
-
-		mc_set_flag(stt.stabi_flags, bj_stt_charge_all_flag);
-		stt.stabi_source = dat->snp;
+	if(stt.stabi_source != mc_null){
+		return;
 	}
+
+	if(bj_is_pol(ki) && stt.stabi_active_set.is_empty()){
+		EMU_CODE(neurostate& ott = ((polaron*)this)->opp->get_neurostate(dat->sd));
+		EMU_CK((ott.stabi_source != mc_null) && ott.stabi_active_set.is_empty());
+		return;
+	}
+
+	EMU_CODE(nervenode* stb_src = dat->snp->mate->owner);
+	EMU_CK(stb_src != mc_null);
+
+	EMU_LOG("SET_STB_SRC %s %ld %s stb_src: %s %ld \n", 
+			node_kind_to_str(ki), id, net_side_to_str(dat->sd), 
+			node_kind_to_str(stb_src->ki), stb_src->id);
+
+	EMU_CK_LOG(! stt.stabi_active_set.is_empty(), 
+		"::stabi_recv_charge_all EMPTY_ACTIVE !!! stb_src: %s %ld \n", 
+		node_kind_to_str(stb_src->ki), stb_src->id);
+
+	mc_set_flag(stt.stabi_flags, bj_stt_charge_all_flag);
+	stt.stabi_source = dat->snp;	
 }
 
 binder&
@@ -808,8 +823,7 @@ void bj_stabi_main() {
 	EMU_LOG("STABI___ %d \n", nn);
 
 	bj_print_loaded_cnf();
-	mck_slog2("LOADED_CNF___\n");
-	bj_print_active_cnf(side_left, 1, 2, 0);
+	bj_print_active_cnf(side_left, mc_cstr("LOADED "), 1, 2, 0);
 
 	kernel* ker = mck_get_kernel();
 	ker->user_func = bj_kernel_func;
@@ -822,9 +836,8 @@ void bj_stabi_main() {
 	my_net->send(my_net, bj_tok_stabi_start);
 	kernel::run_sys();
 
-	mck_slog2("REDUCED_CNF___\n");
-	bj_print_active_cnf(side_left, 1, 3, 0);
-	bj_print_active_cnf(side_left, 1, 4, BJ_INVALID_NUM_TIER);
+	bj_print_active_cnf(side_left, mc_cstr("REDUCED "), 1, 3, 0);
+	bj_print_active_cnf(side_left, mc_null, 1, 4, BJ_INVALID_NUM_TIER);
 
 	EMU_PRT("...............................END_STABI\n");
 	mck_slog2("END_STABI___");

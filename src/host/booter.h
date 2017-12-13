@@ -34,6 +34,8 @@ extern bool MCH_LOAD_WITH_MEMCPY;
 #define MCM_DLMALLOC_HEAP_SZ (10 * MBY_SZ)
 extern uint8_t mcm_dlmalloc_heap[MCM_DLMALLOC_HEAP_SZ];
 
+extern bool MCH_ABORT_EXEC;
+
 void 
 mch_abort_func(long val, const char* msg);
 
@@ -81,7 +83,7 @@ void
 mch_get_enter(mc_core_co_t row, mc_core_co_t col);
 
 void
-mch_ptr_call_stack_trace();
+mch_ptr_call_stack_trace(FILE* out_fp);
 
 void
 mch_read_eph_link_syms(const char *executable, mc_link_syms_data_st* syms);

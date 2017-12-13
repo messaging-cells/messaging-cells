@@ -353,7 +353,7 @@ public:
 
 	void dbg_prt_syn(synapse* snp, net_side_t sd) mc_external_code_ram;
 
-	void dbg_prt_nod(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, 
+	void dbg_prt_nod(net_side_t sd, char* prefix, dbg_consec_t prt_id, num_pulse_t num_pul, 
 					num_tier_t num_ti) mc_external_code_ram;
 
 	virtual
@@ -406,6 +406,8 @@ public:
 	void stabi_send_snp_charge_all(synapse* snp, net_side_t sd) bj_stabi_cod;
 
 	void charge_all_and_start_nxt_ti(propag_data* dat) bj_stabi_cod;
+
+	bool can_chg_all() bj_stabi_cod;
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
@@ -600,8 +602,8 @@ void bj_kernel_func();
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
 void bj_print_loaded_cnf() mc_external_code_ram;
 
-void bj_print_active_cnf(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, 
-			num_tier_t num_ti) mc_external_code_ram;
+void bj_print_active_cnf(net_side_t sd, char* prefix, dbg_consec_t prt_id, num_pulse_t num_pul, 
+			num_tier_t num_ti, bool with_pols = false) mc_external_code_ram;
 
 
 #endif		// NERVENET_H

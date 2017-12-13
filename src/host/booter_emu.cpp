@@ -265,6 +265,10 @@ mc_host_run()
 		sched_yield();				//yield
 		has_work = false;
 
+		if(MCH_ABORT_EXEC){
+			mch_abort_func(0, "ABORT CALLED FROM EMULATION THREAD \n");
+		}
+
 		kernel* ker = MCK_KERNEL;
 		if(ker != mc_null){
 			ker->handle_host_missives();

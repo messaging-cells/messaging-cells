@@ -51,7 +51,6 @@ mc_c_decl {
 
 	#include <stdbool.h>
 
-	void mch_ptr_call_stack_trace();
 	char* mcm_get_emu_log_fnam();
 	bool mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool vv_ck, 
 					const char* file, int line, const char* ck_str, const char* fmt, ...);

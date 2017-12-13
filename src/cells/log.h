@@ -20,7 +20,7 @@ mc_c_decl {
 enum mc_out_omc_type_def {
 	MC_OUT_LOG,
 	MC_OUT_PRT,
-	MC_OUT_MSG
+	MC_OUT_ABORT
 };
 typedef enum mc_out_omc_type_def mc_out_type_t;
 
@@ -64,6 +64,12 @@ mck_sprt(char* msg){
 
 void
 mck_aux_iout(uint32_t vv, mc_out_type_t outt, mc_type_t tt) mc_external_code_ram;
+
+//! Aborts emulation
+mc_inline_fn void
+mc_out_abort_emu(){
+	mck_aux_iout(0, MC_OUT_ABORT, MC_X32);
+}
 
 //! Logs an int32_t in this core log file
 mc_inline_fn void

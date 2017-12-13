@@ -533,7 +533,7 @@ nervenode::dbg_prt_syn(synapse* my_snp, net_side_t sd){
 }
 
 void
-nervenode::dbg_prt_nod(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, num_tier_t num_ti){
+nervenode::dbg_prt_nod(net_side_t sd, char* prefix, dbg_consec_t prt_id, num_pulse_t num_pul, num_tier_t num_ti){
 	bj_callee_t mth = &nervenode::dbg_prt_syn;
 
 	neurostate& ne_stt = get_neurostate(sd);
@@ -543,6 +543,10 @@ nervenode::dbg_prt_nod(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, 
 
 	if(is_mpty){
 		return;
+	}
+
+	if(prefix != mc_null){
+		mck_slog2(prefix);
 	}
 
 	mck_slog2("i");
@@ -574,7 +578,9 @@ nervenode::dbg_prt_nod(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, 
 //	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&nervenode::stabi_send_snp_propag), side_left);
 
 void 
-bj_print_active_cnf(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, num_tier_t num_ti){
+bj_print_active_cnf(net_side_t sd, char* prefix, dbg_consec_t prt_id, num_pulse_t num_pul, num_tier_t num_ti,
+		bool with_pols)
+{
 	nervenet* my_net = bj_nervenet;
 
 	binder * fst, * lst, * wrk;
@@ -586,6 +592,6 @@ bj_print_active_cnf(net_side_t sd, dbg_consec_t prt_id, num_pulse_t num_pul, num
 		neuron* my_neu = (neuron*)wrk;
 		EMU_CK(my_neu->ki == nd_neu);
 
-		my_neu->dbg_prt_nod(sd, prt_id, num_pul, num_ti);
+		my_neu->dbg_prt_nod(sd, prefix, prt_id, num_pul, num_ti);
 	}
 }

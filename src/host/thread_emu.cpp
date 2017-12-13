@@ -172,24 +172,24 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 			fprintf(out_file, "ASSERT '%s' FAILED.\n", ck_str);
 		} 
 		if(prt_stck){
-			mch_ptr_call_stack_trace();
+			mch_ptr_call_stack_trace(out_file);
 		}
 
 		if(fmt != NULL){
-			char pp[MC_MAX_STR_SZ];
+			char prt_buff[MC_MAX_STR_SZ];
 			va_list ap;
 
 			va_start(ap, fmt);
-			int size = vsnprintf(pp, MC_MAX_STR_SZ, fmt, ap);
+			int size = vsnprintf(prt_buff, MC_MAX_STR_SZ, fmt, ap);
 			va_end(ap);
 
-			pp[MC_MAX_STR_SZ - 1] = '\0';
+			prt_buff[MC_MAX_STR_SZ - 1] = '\0';
 
 			if(size < 0){ 
 				mch_abort_func((mc_addr_t)mcm_printf, "mcm_printf. ERROR. \n");
 			}
 
-			fprintf(out_file, "%s", pp);
+			fprintf(out_file, "%s", prt_buff);
 		}
 		if(is_assert || prt_stck){
 			fprintf(out_file, "\n------------------------------------------------------------------\n\n");
@@ -204,8 +204,9 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 		fclose(out_file);
 	}
 
-	if(is_assert){
-		assert(cond);
+	if(is_assert && ! cond){
+		//assert(cond);
+		thread_abort();
 	}
 	return cond;
 }
@@ -268,8 +269,12 @@ thread_start(void *arg){
 
 	thread_info_t *tinfo = (thread_info_t *)arg;
 	pthread_t slf = pthread_self();
+	int old_cancel;
 
 	pthread_setname_np(slf, tinfo->thd_emu.emu_name);
+
+	pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &old_cancel);
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_cancel);
 
 	//printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, mck_get_core_id(), tinfo->thd_emu.emu_name);
 
@@ -278,5 +283,19 @@ thread_start(void *arg){
 	}
 
 	return mc_null;
+}
+
+void 
+thread_abort(){
+	if(mc_is_host_thread()){
+		abort();
+	}
+	mc_out_abort_emu();
+
+	emu_info_t* info = mck_get_emu_info();
+	if(pthread_cancel(info->emu_id) != 0){
+		assert(false && "CANNOT_CANCEL_THREAD !!!!!");
+	}
+	pause();
 }
 

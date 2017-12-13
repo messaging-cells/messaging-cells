@@ -21,10 +21,12 @@ mc_link_syms_data_st mch_external_ram_load_data;
 
 bool MCH_LOAD_WITH_MEMCPY = false;
 
+bool MCH_ABORT_EXEC = false;
+
 void 
 mch_abort_func(long val, const char* msg){
 	fprintf(stderr, "\nABORTING! ERR=%ld %s\n", val, msg);
-	EMU_CODE(mch_ptr_call_stack_trace(););
+	EMU_CODE(mch_ptr_call_stack_trace(mc_null););
 	
 	exit(val);
 }
@@ -228,6 +230,11 @@ mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 				fprintf(stderr, "ERROR. Got unhandled obj in buffer for %s\n", f_nm);
 				continue;
 			}
+			if(obj[0] == MC_OUT_ABORT){
+				MCH_ABORT_EXEC = true;
+				continue;
+				//mch_abort_func(0, "ABORT CALLED FROM EMULATION THREAD \n");
+			}
 			//int fd = STDOUT_FILENO;	
 			FILE* fpt = stdout;
 			if(obj[0] == MC_OUT_LOG){
@@ -365,23 +372,28 @@ mch_get_enter(mc_core_co_t row, mc_core_co_t col){
 #define MCH_MAX_CALL_STACK_SZ 100
 
 void
-mch_ptr_call_stack_trace() {
-	void* trace[MCH_MAX_CALL_STACK_SZ];
+mch_ptr_call_stack_trace(FILE* out_fp) {
+	if(out_fp == mc_null){
+		out_fp = stderr;
+	}
 
+	void* trace[MCH_MAX_CALL_STACK_SZ];
 	memset((uint8_t*)trace, 0, MCH_MAX_CALL_STACK_SZ * sizeof(void*));
 
 	size_t trace_sz = backtrace(trace, MCH_MAX_CALL_STACK_SZ);
-	EMU_64_CODE(fprintf(stderr, "trace_size=%lu \n", trace_sz));
-	EMU_32_CODE(fprintf(stderr, "trace_size=%u \n", trace_sz));
-	ZNQ_CODE(fprintf(stderr, "trace_size=%u \n", trace_sz));
+
+	EMU_64_CODE(fprintf(out_fp, "trace_size=%lu \n", trace_sz));
+	EMU_32_CODE(fprintf(out_fp, "trace_size=%u \n", trace_sz));
+	ZNQ_CODE(fprintf(out_fp, "trace_size=%u \n", trace_sz));
 
 	char **stack_strings = backtrace_symbols(trace, trace_sz);
-	fprintf(stderr, "STACK_STRACE------------------------------\n");
+	fprintf(out_fp, "STACK_STRACE------------------------------\n");
 	for( size_t ii = 1; ii < trace_sz; ii++ ) {
 		if(ii >= MCH_MAX_CALL_STACK_SZ){ break; }
-		fprintf(stderr, "%s \n", stack_strings[ii]);
+		fprintf(out_fp, "%s \n", stack_strings[ii]);
 	}
-	fprintf(stderr, "------------------------------(to see names link with -rdynamic)\n");
+	fprintf(out_fp, "------------------------------(to see names link with -rdynamic)\n");
 	free( stack_strings );
+	fflush(out_fp);
 }
 

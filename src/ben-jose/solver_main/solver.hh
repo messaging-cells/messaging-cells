@@ -76,6 +76,8 @@ enum node_kind_t : uint8_t {
 	nd_neu
 };
 
+#define bj_is_pol(ki) ((ki == nd_pos) || (ki == nd_neg))
+
 
 #endif		// SOLVER_H
 

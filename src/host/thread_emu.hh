@@ -100,6 +100,9 @@ mc_uint16_to_hex_bytes(uint16_t ival, uint8_t* hex_str);
 void *
 thread_start(void *arg);
 
+void 
+thread_abort();
+
 void
 mch_load_map();
 
