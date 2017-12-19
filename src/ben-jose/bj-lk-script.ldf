@@ -33,16 +33,21 @@ LD_EXTERNAL_HOST_DATA_SIZE = 8M;
 /*! External RAM used dynamic allocated shared data with the host */
 LD_EXTERNAL_HOST_ALLOC_SIZE = 8M;	
 
+/* Following sizes MUST ADD at most 32k 
+32k >= (LD_CORE_IVT_SIZE + LD_CORE_CODE_SIZE + LD_CORE_STACK_SIZE + LD_CORE_MODULE_SIZE + LD_CORE_ALLOC_SIZE)
+*/
+
 /*! Core interrupts vector table size */
 LD_CORE_IVT_SIZE = 0x30;
 /*! Core kernel + central user code size */
-LD_CORE_CODE_SIZE = 9k - LD_CORE_IVT_SIZE;
+LD_CORE_CODE_SIZE = 8k - LD_CORE_IVT_SIZE;
 /*! Core stack size */
-LD_CORE_STACK_SIZE = 12k - LD_CORE_CODE_SIZE - LD_CORE_IVT_SIZE;
+LD_CORE_STACK_SIZE = 2k;
 /*! Core module size */
-LD_CORE_MODULE_SIZE = 10k;
+LD_CORE_MODULE_SIZE = 12k;
 /*! Core dynamic allocatable memory size */
 LD_CORE_ALLOC_SIZE = 10k;
+
 
 /* =============================================================================================== */
 

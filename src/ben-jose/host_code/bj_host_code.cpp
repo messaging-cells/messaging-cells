@@ -125,11 +125,11 @@ void bj_test_2(int argc, char *argv[])
 }
 
 void call_nerv_pt_fn(nervenode* nn, synapse* snp, bj_callee_t mth){
-	(nn->*mth)(snp, side_right);
+	(nn->*mth)(snp, side_right, false);
 }
 
 void 
-neuron::pru_callee(synapse* snp, net_side_t sd){
+neuron::pru_callee(synapse* snp, net_side_t sd, bool from_rec){
 	//printf("pru_callee %ld %d \n", id, pru_attr);
 	printf("pru_callee %ld \n", id);
 }
@@ -155,6 +155,17 @@ void bj_test_4(int argc, char *argv[])
 	printf("aa = %ld bb = %ld\n", aa, bb);
 }
 
+void bj_test_5(int argc, char *argv[])
+{
+	mc_flags_t ff = 0;
+
+	mc_set_flag(ff, mc_flag1);
+	printf("flags=%p ff_pt=%p \n", (void*)(uintptr_t)ff, (void*)(&ff));
+	mc_set_flag(ff, mc_flag3);
+	printf("flags=%p ff_pt=%p \n", (void*)(uintptr_t)ff, (void*)(&ff));
+}
+
+
 #endif
 
 int mc_host_main(int argc, char *argv[])
@@ -165,6 +176,7 @@ int mc_host_main(int argc, char *argv[])
 	//EMU_CODE(bj_test_2(argc, argv));
 	//EMU_CODE(bj_test_3(argc, argv));
 	//EMU_CODE(bj_test_4(argc, argv));
+	//EMU_CODE(bj_test_5(argc, argv));
 	rr = bj_host_main(argc, argv);
 
 	printf("HOST_CODE_FINISHED ==================================== \n");

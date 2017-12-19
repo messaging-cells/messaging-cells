@@ -98,7 +98,14 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_total
 };
 
-typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd);
+struct mc_aligned callee_prms {
+public:
+	synapse* snp;
+	net_side_t sd;
+	bool rec;
+};
+
+typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd, bool from_rec);
 
 void emu_prt_tok_codes() mc_external_code_ram;
 
@@ -123,9 +130,9 @@ char* sync_tok_to_str(sync_tok_t tok) mc_external_code_ram;
 char* load_tok_to_str(load_tok_t tok) mc_external_code_ram;
 char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
-void dbg_call_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) mc_external_code_ram;
+void dbg_call_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec) mc_external_code_ram;
 
-void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd) bj_stabi_cod;
+void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec = false) bj_stabi_cod;
 
 //net_side_t opp_side_of(net_side_t sd) bj_stabi_cod;
 
@@ -246,7 +253,7 @@ public:
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
-	void send_transmitter(stabi_tok_t tok, net_side_t sd) bj_stabi_cod;
+	void send_transmitter(stabi_tok_t tok, net_side_t sd, bool dbg_is_forced = false) bj_stabi_cod;
 
 	mc_inline_fn binder& get_side_binder(net_side_t sd) bj_stabi_cod;
 
@@ -330,8 +337,6 @@ public:
 
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 
-	synset& get_active_set(net_side_t sd) bj_stabi_cod;
-
 	neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
 
 	void stabi_recv_transmitter(propag_data* dat) bj_stabi_cod;
@@ -341,20 +346,19 @@ public:
 	void stabi_recv_tier_done(propag_data* dat) bj_stabi_cod;
 
 	virtual 
-	void stabi_send_snp_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
-	void stabi_send_snp_charge_src(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_snp_conflict(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_snp_end_forward(synapse* snp, net_side_t sd) bj_stabi_cod;
-	void stabi_send_snp_tier_done(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_snp_charge_src(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
+	void stabi_send_snp_conflict(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
+	void stabi_send_snp_end_forward(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
+	void stabi_send_snp_tier_done(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
-	void dbg_prt_syn(synapse* snp, net_side_t sd) mc_external_code_ram;
+	void dbg_prt_syn(synapse* snp, net_side_t sd, bool from_rec) mc_external_code_ram;
 
-	void dbg_prt_nod(net_side_t sd, char* prefix, dbg_consec_t prt_id, num_pulse_t num_pul, 
-					num_tier_t num_ti) mc_external_code_ram;
+	void dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tier_t num_ti) mc_external_code_ram;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -377,12 +381,12 @@ public:
 	void stabi_neuron_start() bj_stabi_cod;
 
 	virtual 
-	void stabi_send_snp_propag(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
-	void pru_callee(synapse* snp, net_side_t sd) mc_external_code_ram;
+	void pru_callee(synapse* snp, net_side_t sd, bool from_rec) mc_external_code_ram;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -403,7 +407,7 @@ public:
 	void load_handler(missive* msv) bj_load_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
-	void stabi_send_snp_charge_all(synapse* snp, net_side_t sd) bj_stabi_cod;
+	void stabi_send_snp_charge_all(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
 	void charge_all_and_start_nxt_ti(propag_data* dat) bj_stabi_cod;
 
@@ -425,6 +429,11 @@ public:
 	num_nod_t inp_neus;
 	num_nod_t off_neus;
 	num_nod_t rcv_neus;
+	num_nod_t stl_neus;
+
+	num_nod_t inp_pols;
+	num_nod_t off_pols;
+	num_nod_t rcv_pols;
 
 	tierdata() mc_external_code_ram;
 	~tierdata() mc_external_code_ram;
@@ -437,16 +446,24 @@ public:
 	void inc_rcv(node_kind_t kk) bj_stabi_cod;
 	void inc_off(net_side_t sd, node_kind_t kk) bj_stabi_cod;
 
-	mc_inline_fn bool got_all(){
+	mc_inline_fn bool got_all_neus(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == rcv_neus));
+	}
+
+	mc_inline_fn bool got_all_pols(){
+		return ((inp_pols != BJ_INVALID_NUM_NODE) && (inp_pols == rcv_pols));
 	}
 
 	void update_tidat() bj_stabi_cod;
 
-	void update_parent_num_empty(net_side_t sd) bj_stabi_cod;
+	//void update_parent_num_empty(net_side_t sd) bj_stabi_cod;
 
 	mc_inline_fn bool is_tidat_empty(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == off_neus));
+	}
+
+	mc_inline_fn bool all_neu_still(){
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
 	}
 
 	virtual
@@ -459,12 +476,10 @@ class mc_aligned netstate {
 public:
 	net_side_t my_side;
 
-	num_nod_t curr_ti_still_neus;
-
-	num_tier_t	sync_sent_tier_empty;
 	mc_core_nn_t sync_tot_empty_children;
 	bool	sync_sent_ti_empty;
 
+	num_tier_t	sync_wait_tier;
 	num_tier_t	sync_tier_out;
 	num_tier_t	sync_tier_in;
 
@@ -484,19 +499,16 @@ public:
 
 	void init_tiers(nervenet& nnt) mc_external_code_ram;
 	void inc_tier() bj_stabi_cod;
-	void inc_still(node_kind_t kk) bj_stabi_cod;
 
-	bool is_propag_over() bj_stabi_cod;
+	//bool is_propag_over() bj_stabi_cod;
 
 	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti, 
 			mc_core_nn_t dbg_dst_nn) bj_stabi_cod;
 
 	bool has_work_children() bj_stabi_cod;
 	void handle_my_sync() bj_stabi_cod;
-	void send_sync_to_children() mc_external_code_ram;
-	void update_sync_ti_out() bj_stabi_cod;
+	void send_sync_to_children(transmitter* tmt) mc_external_code_ram;
 	void reset_sync(num_tier_t rem_ti) bj_stabi_cod;
-
 
 	mc_inline_fn bool is_last_empty(){
 		return (get_last_tier().is_tidat_empty());
@@ -568,10 +580,10 @@ public:
 	void stabi_nervenet_start() bj_stabi_cod;
 
 	void handle_sync() bj_stabi_cod;
-	void start_send_empty_child(net_side_t sd) bj_stabi_cod;
+	//void start_send_empty_child(net_side_t sd) bj_stabi_cod;
 	void send_parent_tok_empty_child(net_side_t sd) bj_stabi_cod;
 
-	nervenet* get_nervenet(mc_core_id_t core_id) mc_external_code_ram;
+	nervenet* get_nervenet(mc_core_id_t core_id) bj_stabi_cod;
 
 	netstate& get_active_netstate(net_side_t sd) bj_stabi_cod;
 
@@ -602,7 +614,7 @@ void bj_kernel_func();
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
 void bj_print_loaded_cnf() mc_external_code_ram;
 
-void bj_print_active_cnf(net_side_t sd, char* prefix, dbg_consec_t prt_id, num_pulse_t num_pul, 
+void bj_print_active_cnf(net_side_t sd, char* prefix, num_pulse_t num_pul, 
 			num_tier_t num_ti, bool with_pols = false) mc_external_code_ram;
 
 
