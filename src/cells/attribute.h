@@ -66,11 +66,14 @@ mc_c_decl {
 	#define EMU_CK_LOG(vv, ...) \
 		MC_DBG(mcm_call_assert(mcm_get_emu_log_fnam(), true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
 
+	#define EMU_COND_LOG(cond, ...) \
+		MC_DBG(mcm_call_assert(mcm_get_emu_log_fnam(), false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+
 	#define EMU_COND_PRT(cond, ...) \
-		mcm_call_assert(mc_null, false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__)
+		MC_DBG(mcm_call_assert(mc_null, false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
 	#define EMU_PRT_STACK(cond, ...) \
-		mcm_call_assert(mc_null, false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__)
+		MC_DBG(mcm_call_assert(mc_null, false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
 	#define EMU_PRT(...) mcm_printf(__VA_ARGS__)
 	#define EMU_LOG(...) mcm_log(__VA_ARGS__)
@@ -104,6 +107,7 @@ mc_c_decl {
 	#define EMU_CK(prm) 
 	#define EMU_CK_PRT(vv, ...) 
 	#define EMU_CK_LOG(vv, ...) 
+	#define EMU_COND_LOG(cond, ...)
 	#define EMU_COND_PRT(cond, ...)
 	#define EMU_PRT_STACK(cond, ...)
 	#define EMU_PRT(...) 

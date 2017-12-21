@@ -392,21 +392,17 @@ void
 netstate::init_me(int caller){
 	my_side = side_invalid;
 
-	//sync_sent_tier_empty = BJ_INVALID_NUM_TIER;
-	sync_tot_empty_children = 0;
 	sync_sent_ti_empty = false;
 
 	sync_wait_tier = 0;
 	sync_tier_out = BJ_INVALID_NUM_TIER;
 	sync_tier_in = BJ_INVALID_NUM_TIER;
 
-	sync_tot_stopping_children = 0;
 	sync_sent_stop_to_parent = false;
 
 	sync_ending_propag = false;
 
-	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d STOPPING=%d \n", 
-	//			sync_tot_children, sync_tot_stopping_children);
+	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d \n", sync_tot_children);
 }
 
 tierdata::tierdata(){
@@ -418,6 +414,9 @@ tierdata::~tierdata(){}
 void
 tierdata::init_me(int caller){
 	tdt_id = BJ_INVALID_NUM_TIER;
+
+	ety_chdn = 0;
+	stp_chdn = 0;
 
 	inp_neus = BJ_INVALID_NUM_NODE;
 	off_neus = 0;

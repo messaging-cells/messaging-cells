@@ -426,6 +426,9 @@ public:
 
 	num_tier_t	tdt_id;
 
+	mc_core_nn_t ety_chdn;
+	mc_core_nn_t stp_chdn;
+
 	num_nod_t inp_neus;
 	num_nod_t off_neus;
 	num_nod_t rcv_neus;
@@ -459,7 +462,11 @@ public:
 	//void update_parent_num_empty(net_side_t sd) bj_stabi_cod;
 
 	mc_inline_fn bool is_tidat_empty(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == off_neus));
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == 0));
+	}
+
+	mc_inline_fn bool is_tdt_just_empty(){
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus > 0) && (inp_neus == off_neus));
 	}
 
 	mc_inline_fn bool all_neu_still(){
@@ -476,14 +483,12 @@ class mc_aligned netstate {
 public:
 	net_side_t my_side;
 
-	mc_core_nn_t sync_tot_empty_children;
 	bool	sync_sent_ti_empty;
 
 	num_tier_t	sync_wait_tier;
 	num_tier_t	sync_tier_out;
 	num_tier_t	sync_tier_in;
 
-	mc_core_nn_t sync_tot_stopping_children;
 	bool 		sync_sent_stop_to_parent;
 	
 	bool sync_ending_propag;
@@ -505,10 +510,9 @@ public:
 	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti, 
 			mc_core_nn_t dbg_dst_nn) bj_stabi_cod;
 
-	bool has_work_children() bj_stabi_cod;
+	//bool has_work_children() bj_stabi_cod;
 	void handle_my_sync() bj_stabi_cod;
 	void send_sync_to_children(transmitter* tmt) mc_external_code_ram;
-	void reset_sync(num_tier_t rem_ti) bj_stabi_cod;
 
 	mc_inline_fn bool is_last_empty(){
 		return (get_last_tier().is_tidat_empty());
@@ -521,6 +525,8 @@ public:
 	}
 
 	tierdata& get_tier(num_tier_t nti) bj_stabi_cod;
+
+	void inc_ety_chdn(num_tier_t nti) mc_external_code_ram;
 
 	mc_inline_fn num_tier_t get_ti_id(){
 		return get_last_tier().tdt_id;
