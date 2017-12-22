@@ -473,6 +473,10 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
 	}
 
+	mc_inline_fn tierdata& prv_tier(){
+		return *((tierdata*)bn_left);
+	}
+
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 
@@ -513,11 +517,6 @@ public:
 	//bool has_work_children() bj_stabi_cod;
 	void handle_my_sync() bj_stabi_cod;
 	void send_sync_to_children(transmitter* tmt) mc_external_code_ram;
-
-	mc_inline_fn bool is_last_empty(){
-		return (get_last_tier().is_tidat_empty());
-	}
-
 
 	mc_inline_fn tierdata& get_last_tier(){
 		EMU_CK(! all_tiers.is_alone());
