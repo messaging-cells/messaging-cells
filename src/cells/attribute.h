@@ -170,5 +170,11 @@ mc_c_decl {
 }
 #endif
 
+#ifdef __cplusplus
+#define mc_cstr(the_str) (const_cast<char *>(the_str))
+#else
+#define mc_cstr(the_str) the_str
+#endif
+
 #endif // MC_ATTRIBUTE_H
 

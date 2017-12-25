@@ -20,6 +20,8 @@ mc_c_decl {
 enum mc_out_omc_type_def {
 	MC_OUT_LOG,
 	MC_OUT_PRT,
+	MC_OUT_LOCK_LOG,
+	MC_OUT_UNLOCK_LOG,
 	MC_OUT_ABORT
 };
 typedef enum mc_out_omc_type_def mc_out_type_t;
@@ -43,6 +45,18 @@ typedef enum mc_type_def mc_type_t;
 
 void
 mck_aux_sout(char* msg, mc_out_type_t outt) mc_external_code_ram;
+
+//! Locks this core log file
+mc_inline_fn void
+mck_lock_log(){
+	mck_aux_sout(mc_cstr("lck"), MC_OUT_LOCK_LOG);
+}
+
+//! Unocks this core log file
+mc_inline_fn void
+mck_unlock_log(){
+	mck_aux_sout(mc_cstr("ulk"), MC_OUT_UNLOCK_LOG);
+}
 
 //! Logs a string in this core log file
 mc_inline_fn void

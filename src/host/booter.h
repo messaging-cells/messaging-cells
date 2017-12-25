@@ -68,7 +68,7 @@ void
 mch_reset_log_file(char* f_nm);
 
 void
-mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core);
+mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core);
 
 uint8_t*
 mch_read_file(char* the_pth, off_t* size);

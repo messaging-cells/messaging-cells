@@ -548,6 +548,8 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 		return;
 	}
 
+	mck_lock_log();
+
 	if(prefix != mc_null){
 		mck_slog2(prefix);
 	}
@@ -576,6 +578,8 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 	ne_stt.stabi_active_set.dbg_rec_call_all(mth, sd);
 
 	mck_slog2("]\n");
+
+	mck_unlock_log();
 }
 
 //	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&nervenode::stabi_send_snp_propag), side_left);

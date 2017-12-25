@@ -206,15 +206,11 @@ mch_reset_log_file(char* f_nm){
 }
 
 void
-mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
-	/*int log_fd = 0;
-	if((log_fd = open(f_nm, O_RDWR|O_CREAT|O_APPEND, 0777)) == -1){
-		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
-		return;
-	}*/
-	FILE* flog = fopen(f_nm, "a");
-	if(flog == NULL){
-		fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
+mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
+	//FILE* flog = fopen(f_nm, "a");
+	if((flog == NULL) || (lock == NULL)){
+		fprintf(stderr, "ERROR. NULL file pointer for file %s\n", f_nm);
+		mch_abort_func(0, "ERROR. NULL file pointer\n");
 		return;
 	}
 
@@ -235,15 +231,27 @@ mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 				continue;
 				//mch_abort_func(0, "ABORT CALLED FROM EMULATION THREAD \n");
 			}
-			//int fd = STDOUT_FILENO;	
+			if(obj[0] == MC_OUT_LOCK_LOG){
+				if(! (*lock)){
+					flockfile(flog);
+					(*lock) = true;
+				}
+				continue;
+			}
+			if(obj[0] == MC_OUT_UNLOCK_LOG){
+				if(*lock){
+					funlockfile(flog);
+					(*lock) = false;
+				}
+				continue;
+			}
+
 			FILE* fpt = stdout;
 			if(obj[0] == MC_OUT_LOG){
 				fpt = flog;
-				//fd = log_fd;
 			} 
 			mc_type_t ot = (mc_type_t)obj[1];
 			if(ot == MC_CHR){
-				//write(fd, obj + 2, omc_sz - 2);
 				fwrite(obj + 2, omc_sz - 2, 1, fpt);
 				continue;
 			}
@@ -286,13 +294,12 @@ mch_print_out_buffer(mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core){
 						break;
 				}
 				int sz2 = strlen(istr);
-				//write(fd, istr, sz2);
 				fwrite(istr, sz2, 1, fpt);
 			}
 		}
 	}
-	//close(log_fd);
-	fclose(flog);
+
+	//fclose(flog);
 }
 
 uint8_t*

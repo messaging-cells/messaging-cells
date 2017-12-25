@@ -208,7 +208,12 @@ mc_host_run(){
 	MCH_CK(tot_cores <= mc_out_num_cores);
 
 	char* all_f_nam[tot_cores];
+	FILE* all_fps[tot_cores];
+	bool all_f_locks[tot_cores];
+
 	memset(all_f_nam, 0, (sizeof(char*) * tot_cores));
+	memset(all_fps, 0, (sizeof(FILE*) * tot_cores));
+	memset(all_f_locks, false, (sizeof(bool) * tot_cores));
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
@@ -223,6 +228,13 @@ mc_host_run(){
 
 			all_f_nam[num_core] = strdup((const char*)f_nm);
 			mch_reset_log_file(all_f_nam[num_core]);
+
+			FILE* flog = fopen(f_nm, "a");
+			if(flog == NULL){
+				fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
+				return;
+			}
+			all_fps[num_core] = flog;
 			
 			// init shared data.
 			pt_shd_data->sys_cores[num_core].magic_id = MC_MAGIC_ID;
@@ -301,14 +313,18 @@ mc_host_run(){
 				// wait for finish
 				if(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL){
 					has_work = true;
-					mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+
+					mch_print_out_buffer(all_fps[num_core], &(all_f_locks[num_core]), 
+							&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == MC_WAITING_ENTER){
 							print_core_info(sh_dat_1, &dev, row, col);
 							mch_get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == MC_WAITING_BUFFER){
-							mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+							mch_print_out_buffer(all_fps[num_core], &(all_f_locks[num_core]), &(pt_buff->rd_arr), 
+										all_f_nam[num_core], num_core);
 						}
 						
 						int SYNC = (1 << E_SYNC);
@@ -324,7 +340,9 @@ mc_host_run(){
 					if(! core_finished[num_core]){
 						core_finished[num_core] = true;
 
-						mch_print_out_buffer(&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+						mch_print_out_buffer(all_fps[num_core], &(all_f_locks[num_core]), 
+								&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+
 						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						//printf("Finished\n");
@@ -357,6 +375,9 @@ mc_host_run(){
 	for (nn=0; nn < tot_cores; nn++){
 		if(all_f_nam[nn] != mc_null){
 			free(all_f_nam[nn]);
+		}
+		if(all_fps[nn] != NULL){
+			fclose(all_fps[nn]);
 		}
 	}
 	
