@@ -62,6 +62,8 @@ enum net_side_t : uint8_t {
 enum sync_tok_t : mck_token_t {
 	bj_tok_sync_invalid = mck_tok_last + 1,
 	bj_tok_sync_empty_child,
+	bj_tok_sync_alive_child,
+	bj_tok_sync_still_child,
 	bj_tok_sync_to_parent,
 	bj_tok_sync_to_children,
 	bj_tok_sync_end
@@ -427,6 +429,8 @@ public:
 	num_tier_t	tdt_id;
 
 	mc_core_nn_t ety_chdn;
+	mc_core_nn_t alv_chdn;
+	mc_core_nn_t stl_chdn;
 	mc_core_nn_t stp_chdn;
 
 	num_nod_t inp_neus;
@@ -448,6 +452,14 @@ public:
 
 	void inc_rcv(node_kind_t kk) bj_stabi_cod;
 	void inc_off(net_side_t sd, node_kind_t kk) bj_stabi_cod;
+
+	mc_inline_fn bool has_neus(){
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus > 0));
+	}
+
+	mc_inline_fn bool has_pols(){
+		return ((inp_pols != BJ_INVALID_NUM_NODE) && (inp_pols > 0));
+	}
 
 	mc_inline_fn bool got_all_neus(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == rcv_neus));

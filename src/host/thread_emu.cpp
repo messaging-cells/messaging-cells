@@ -168,7 +168,7 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 		if(fnam != mc_null){
 			fprintf(out_file, "FILE %s(%d): ", fnam, line);
 		}
-		if(is_assert){
+		if(is_assert && (ck_str != mc_null)){
 			fprintf(out_file, "ASSERT '%s' FAILED.\n", ck_str);
 		} 
 		if(prt_stck){
@@ -186,7 +186,7 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 			prt_buff[MC_MAX_STR_SZ - 1] = '\0';
 
 			if(size < 0){ 
-				mch_abort_func((mc_addr_t)mcm_printf, "mcm_printf. ERROR. \n");
+				mch_abort_func((mc_addr_t)mcm_call_assert, "mcm_call_assert._ERROR_. \n");
 			}
 
 			fprintf(out_file, "%s", prt_buff);
@@ -221,6 +221,7 @@ mcm_get_emu_log_fnam(){
 	return log_fnam;
 }
 
+/*
 void
 mcm_log(const char *fmt, ...){
 	//EMU_CK(! mc_is_host_thread());
@@ -263,6 +264,7 @@ mcm_printf(const char *fmt, ...){
 	printf("%d:%x --> %s", inf->emu_num, inf->emu_core_id, pp);
 	fflush(stdout); 
 }
+*/
 
 void *
 thread_start(void *arg){

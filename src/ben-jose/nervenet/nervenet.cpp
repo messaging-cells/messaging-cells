@@ -314,6 +314,12 @@ char* sync_tok_to_str(sync_tok_t tok){
 	case bj_tok_sync_empty_child:
 		resp = mc_cstr("bj_tok_sync_empty_child");
 	break;
+	case bj_tok_sync_alive_child:
+		resp = mc_cstr("bj_tok_sync_alive_child");
+	break;
+	case bj_tok_sync_still_child:
+		resp = mc_cstr("bj_tok_sync_still_child");
+	break;
 	case bj_tok_sync_to_parent:
 		resp = mc_cstr("bj_tok_sync_to_parent");
 	break;
@@ -416,6 +422,8 @@ tierdata::init_me(int caller){
 	tdt_id = BJ_INVALID_NUM_TIER;
 
 	ety_chdn = 0;
+	alv_chdn = 0;
+	stl_chdn = 0;
 	stp_chdn = 0;
 
 	inp_neus = BJ_INVALID_NUM_NODE;

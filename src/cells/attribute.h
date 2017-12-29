@@ -54,29 +54,35 @@ mc_c_decl {
 	char* mcm_get_emu_log_fnam();
 	bool mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool vv_ck, 
 					const char* file, int line, const char* ck_str, const char* fmt, ...);
-	void mcm_printf(const char *format, ...);
-	void mcm_log(const char *fmt, ...);
+
+	//void mcm_printf(const char *format, ...);
+	//void mcm_log(const char *fmt, ...);
 
 	#define EMU_CODE(cod) cod
 	#define EMU_DBG_CODE(cod) MC_DBG(cod)
-	#define EMU_CK(vv) MC_DBG(mcm_call_assert(mc_null, true, true, vv, __FILE__, __LINE__, #vv, mc_null))
-	#define EMU_CK_PRT(vv, ...) \
-		MC_DBG(mcm_call_assert(mc_null, true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
 
-	#define EMU_CK_LOG(vv, ...) \
-		MC_DBG(mcm_call_assert(mcm_get_emu_log_fnam(), true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
+	#define EMU_CK(vv) MC_DBG( \
+		mcm_call_assert(mc_null, true, true, vv, __FILE__, __LINE__, #vv, mc_null))
 
-	#define EMU_COND_LOG(cond, ...) \
-		MC_DBG(mcm_call_assert(mcm_get_emu_log_fnam(), false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+	#define EMU_CK_PRT(vv, ...) MC_DBG( \
+		mcm_call_assert(mc_null, true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
 
-	#define EMU_COND_PRT(cond, ...) \
-		MC_DBG(mcm_call_assert(mc_null, false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+	#define EMU_CK_LOG(vv, ...) MC_DBG( \
+		mcm_call_assert(mcm_get_emu_log_fnam(), true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
 
-	#define EMU_PRT_STACK(cond, ...) \
-		MC_DBG(mcm_call_assert(mc_null, false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+	#define EMU_COND_LOG(cond, ...) MC_DBG( \
+		mcm_call_assert(mcm_get_emu_log_fnam(), false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
-	#define EMU_PRT(...) mcm_printf(__VA_ARGS__)
-	#define EMU_LOG(...) mcm_log(__VA_ARGS__)
+	#define EMU_LOG(...) EMU_COND_LOG(true, __VA_ARGS__)
+
+	#define EMU_COND_PRT(cond, ...) MC_DBG( \
+		mcm_call_assert(mc_null, false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+
+	#define EMU_PRT(...) EMU_COND_PRT(true, __VA_ARGS__)
+
+	#define EMU_PRT_STACK(cond, ...) MC_DBG( \
+		mcm_call_assert(mc_null, false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+
 	#define EPH_CODE(cod) 
 
 #else //NOT  MC_IS_EMU_CODE :
