@@ -320,9 +320,6 @@ char* sync_tok_to_str(sync_tok_t tok){
 	case bj_tok_sync_still_child:
 		resp = mc_cstr("bj_tok_sync_still_child");
 	break;
-	case bj_tok_sync_to_parent:
-		resp = mc_cstr("bj_tok_sync_to_parent");
-	break;
 	case bj_tok_sync_to_children:
 		resp = mc_cstr("bj_tok_sync_to_children");
 	break;
@@ -398,7 +395,7 @@ void
 netstate::init_me(int caller){
 	my_side = side_invalid;
 
-	sync_sent_ti_empty = false;
+	sync_is_inactive = false;
 
 	sync_wait_tier = 0;
 	sync_tier_out = BJ_INVALID_NUM_TIER;
