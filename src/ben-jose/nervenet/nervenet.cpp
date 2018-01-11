@@ -8,6 +8,7 @@ missive_handler_t bj_nil_handlers[1] = { mc_null };
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
 MCK_DEFINE_MEM_METHODS(transmitter, 32, bj_ava_transmitters, 0)
+MCK_DEFINE_MEM_METHODS(sync_transmitter, 32, bj_ava_sync_transmitters, 0)
 MCK_DEFINE_MEM_METHODS(synset, 32, bj_ava_synsets, 0)
 MCK_DEFINE_MEM_METHODS(tierset, 32, bj_ava_tiersets, bj_num_sep_tiersets)
 MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses, 0)
@@ -18,6 +19,7 @@ MCK_DEFINE_MEM_METHODS(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
 BJ_DEFINE_GET_CLS_NAM(synset)
 BJ_DEFINE_GET_CLS_NAM(tierset)
 BJ_DEFINE_GET_CLS_NAM(transmitter)
+BJ_DEFINE_GET_CLS_NAM(sync_transmitter)
 BJ_DEFINE_GET_CLS_NAM(synapse)
 BJ_DEFINE_GET_CLS_NAM(nervenode)
 BJ_DEFINE_GET_CLS_NAM(neuron)
@@ -60,6 +62,19 @@ transmitter::~transmitter(){}
 void
 transmitter::init_me(int caller){
 	missive::init_me(caller);
+	wrk_side = side_invalid;
+	wrk_tier = BJ_INVALID_NUM_TIER;
+}
+
+sync_transmitter::sync_transmitter(){
+	//init_me();
+} 
+
+sync_transmitter::~sync_transmitter(){} 
+
+void
+sync_transmitter::init_me(int caller){
+	transmitter::init_me(caller);
 	wrk_side = side_invalid;
 	wrk_tier = BJ_INVALID_NUM_TIER;
 }
@@ -320,6 +335,9 @@ char* sync_tok_to_str(sync_tok_t tok){
 	case bj_tok_sync_still_child:
 		resp = mc_cstr("bj_tok_sync_still_child");
 	break;
+	case bj_tok_sync_confl:
+		resp = mc_cstr("bj_tok_sync_confl");
+	break;
 	case bj_tok_sync_to_children:
 		resp = mc_cstr("bj_tok_sync_to_children");
 	break;
@@ -371,9 +389,6 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	break;
 	case bj_tok_stabi_tier_done:
 		resp = mc_cstr("bj_tok_stabi_tier_done");
-	break;
-	case bj_tok_stabi_conflict:
-		resp = mc_cstr("bj_tok_stabi_conflict");
 	break;
 	case bj_tok_stabi_end_forward:
 		resp = mc_cstr("bj_tok_stabi_end_forward");

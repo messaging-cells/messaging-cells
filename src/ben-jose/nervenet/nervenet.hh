@@ -45,6 +45,7 @@ class pre_cnf_node;
 class pre_cnf_net;
 
 class transmitter;
+class sync_transmitter;
 class synapse;
 class nervenode;
 class neurostate;
@@ -52,6 +53,13 @@ class polaron;
 class neuron;
 class nervenet;
 
+//define SYNC_CODE(prm) EMU_CODE(prm)
+//define SYNC_COND_LOG(cond, ...) EMU_COND_LOG(cond, __VA_ARGS__)
+//define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
+
+#define SYNC_CODE(prm) 
+#define SYNC_COND_LOG(cond, ...) 
+#define SYNC_LOG(...) 
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -64,6 +72,7 @@ enum sync_tok_t : mck_token_t {
 	bj_tok_sync_empty_child,
 	bj_tok_sync_alive_child,
 	bj_tok_sync_still_child,
+	bj_tok_sync_confl,
 	bj_tok_sync_to_children,
 	bj_tok_sync_end
 };
@@ -82,7 +91,6 @@ enum stabi_tok_t : mck_token_t {
 	bj_tok_stabi_charge_all,
 	bj_tok_stabi_charge_src,
 	bj_tok_stabi_tier_done,
-	bj_tok_stabi_conflict,
 	bj_tok_stabi_end_forward,
 	bj_tok_stabi_end
 };
@@ -156,6 +164,7 @@ bool bj_is_##cnam(agent* pt_obj){ \
 BJ_DECLARE_CLS_NAM(synset)
 BJ_DECLARE_CLS_NAM(tierset)
 BJ_DECLARE_CLS_NAM(transmitter)
+BJ_DECLARE_CLS_NAM(sync_transmitter)
 BJ_DECLARE_CLS_NAM(synapse)
 BJ_DECLARE_CLS_NAM(nervenode)
 BJ_DECLARE_CLS_NAM(neuron)
@@ -233,6 +242,22 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+class mc_aligned sync_transmitter : public transmitter {
+public:
+	MCK_DECLARE_MEM_METHODS(sync_transmitter, bj_nervenet_mem)
+
+	nervenode* cfl_src;
+
+	sync_transmitter() mc_external_code_ram;
+	~sync_transmitter() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0);
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
 class mc_aligned synapse : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS(synapse, bj_nervenet_mem)
@@ -279,7 +304,7 @@ public:
 
 class mc_aligned neurostate {
 public:
-	num_tier_t		stabi_num_tier;  // FIX_THIS
+	num_tier_t		stabi_num_tier;
 
 	synapse*		stabi_source;
 	grip			stabi_tiers;
@@ -350,7 +375,6 @@ public:
 	void stabi_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
 	void stabi_send_snp_charge_src(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
-	void stabi_send_snp_conflict(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 	void stabi_send_snp_end_forward(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 	void stabi_send_snp_tier_done(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
@@ -410,6 +434,7 @@ public:
 
 	void stabi_send_snp_charge_all(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
+	void confl_charge_all_and_start_nxt_ti(propag_data* dat) mc_external_code_ram;
 	void charge_all_and_start_nxt_ti(propag_data* dat) bj_stabi_cod;
 
 	bool can_chg_all() bj_stabi_cod;
@@ -526,13 +551,13 @@ public:
 
 	//bool is_propag_over() bj_stabi_cod;
 
-	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti, 
-			mc_core_nn_t dbg_dst_nn) bj_stabi_cod;
+	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
+			nervenode* cfl_src = mc_null) bj_stabi_cod;
 
 	//bool has_work_children() bj_stabi_cod;
 	void update_sync() bj_stabi_cod;
 	void handle_my_sync() bj_stabi_cod;
-	void send_sync_to_children(transmitter* tmt) mc_external_code_ram;
+	void send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, nervenode* cfl_src) mc_external_code_ram;
 
 	mc_inline_fn tierdata& get_last_tier(){
 		EMU_CK(! all_tiers.is_alone());
@@ -564,6 +589,7 @@ public:
 	mc_alloc_size_t	num_sep_tierdatas;
 
 	grip		ava_transmitters;
+	grip		ava_sync_transmitters;
 	grip		ava_synsets;
 	grip		ava_tiersets;
 	grip		ava_synapses;
@@ -619,6 +645,7 @@ public:
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_transmitters (bj_nervenet->ava_transmitters)
+#define bj_ava_sync_transmitters (bj_nervenet->ava_sync_transmitters)
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
 #define bj_ava_tiersets (bj_nervenet->ava_tiersets)
 #define bj_ava_synapses (bj_nervenet->ava_synapses)
