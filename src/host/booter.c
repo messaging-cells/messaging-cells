@@ -25,10 +25,10 @@ bool MCH_ABORT_EXEC = false;
 
 void 
 mch_abort_func(long val, const char* msg){
-	fprintf(stderr, "\nABORTING! ERR=%ld %s\n", val, msg);
+	fprintf(stderr, "\nABORTING_WITH_ERR=%ld %s\n", val, msg);
 	EMU_CODE(mch_ptr_call_stack_trace(mc_null););
 	
-	exit(val);
+	exit(EXIT_FAILURE);
 }
 
 bool 
@@ -199,7 +199,7 @@ mch_reset_log_file(char* f_nm){
 	int log_fd = 0;
 	if((log_fd = creat(f_nm, 0777)) == -1){
 		fprintf(stderr, "ERROR. Can NOT reset log file %s\n", f_nm);
-		mch_abort_func(0, "ERROR. Can NOT reset log file\n");
+		mch_abort_func(1, "ERROR. Can NOT reset log file\n");
 		return;
 	}
 	close(log_fd);
@@ -210,7 +210,7 @@ mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_
 	//FILE* flog = fopen(f_nm, "a");
 	if((flog == NULL) || (lock == NULL)){
 		fprintf(stderr, "ERROR. NULL file pointer for file %s\n", f_nm);
-		mch_abort_func(0, "ERROR. NULL file pointer\n");
+		mch_abort_func(1, "ERROR. NULL file pointer\n");
 		return;
 	}
 
@@ -229,7 +229,7 @@ mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_
 			if(obj[0] == MC_OUT_ABORT){
 				MCH_ABORT_EXEC = true;
 				continue;
-				//mch_abort_func(0, "ABORT CALLED FROM EMULATION THREAD \n");
+				//mch_abort_func(1, "ABORT CALLED FROM EMULATION THREAD \n");
 			}
 			if(obj[0] == MC_OUT_LOCK_LOG){
 				if(! (*lock)){

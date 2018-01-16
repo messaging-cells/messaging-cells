@@ -443,9 +443,9 @@ tierdata::init_me(int caller){
 	rcv_neus = 0;
 	stl_neus = 0;
 
-	inp_pols = BJ_INVALID_NUM_NODE;
-	off_pols = 0;
-	rcv_pols = 0;
+	//inp_pols = BJ_INVALID_NUM_NODE;
+	//off_pols = 0;
+	//rcv_pols = 0;
 }
 
 void

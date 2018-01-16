@@ -81,12 +81,12 @@ mch_prt_core_call_stack_emu(thread_info_t& thd_inf){
 bool
 ck_all_core_ids(){
 	if (ALL_THREADS_INFO == NULL){
-		mch_abort_func(0, "ck_all_core_ids. NULL ALL_THREADS_INFO \n");
+		mch_abort_func(1, "ck_all_core_ids. NULL ALL_THREADS_INFO \n");
 	}
 	for(int aa = 0; aa < TOT_THREADS; aa++){
 		mc_core_id_t koid = mc_nn_to_id(aa);
 		if(ALL_THREADS_INFO[aa].thd_emu.emu_core_id != koid){
-			mch_abort_func(0, "ck_all_core_ids. BAD CORE ID \n");
+			mch_abort_func(1, "ck_all_core_ids. BAD CORE ID \n");
 		}
 	}
 	return true;
@@ -154,7 +154,7 @@ mc_host_init(){
 	TOT_THREADS = mc_tot_nn_sys;
 	ALL_THREADS_INFO = (thread_info_t *)calloc(TOT_THREADS, sizeof(thread_info_t));
 	if (ALL_THREADS_INFO == NULL){
-		mch_abort_func(0, "host_main. NULL ALL_THREADS_INFO \n");
+		mch_abort_func(1, "host_main. NULL ALL_THREADS_INFO \n");
 	}
 
 	printf("TOT_THREADS = %d\n", TOT_THREADS);
@@ -279,7 +279,7 @@ mc_host_run()
 		has_work = false;
 
 		if(MCH_ABORT_EXEC){
-			mch_abort_func(0, "ABORT CALLED FROM EMULATION THREAD \n");
+			mch_abort_func(1, "ABORT_CALLED_FROM_EMULATION_THREAD \n");
 		}
 
 		kernel* ker = MCK_KERNEL;

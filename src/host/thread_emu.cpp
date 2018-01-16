@@ -299,5 +299,6 @@ thread_abort(){
 		assert(false && "CANNOT_CANCEL_THREAD !!!!!");
 	}
 	pause();
+	assert(false && "CANNOT_CANCEL_THREAD 2 !!!!!");
 }
 

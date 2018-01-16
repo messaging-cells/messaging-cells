@@ -921,18 +921,18 @@ tierdata::update_tidat(){
 	if(tdt_id == 0){
 		return;
 	}
-	if((inp_neus != BJ_INVALID_NUM_NODE) && (inp_pols != BJ_INVALID_NUM_NODE)){
-		return;
-	}
+	//if((inp_neus != BJ_INVALID_NUM_NODE) && (inp_pols != BJ_INVALID_NUM_NODE)){
+	//	return;
+	//}
 	tierdata* prv = (tierdata*)(bn_left);
 	if((inp_neus == BJ_INVALID_NUM_NODE) && prv->got_all_neus()){
 		inp_neus = prv->inp_neus - prv->off_neus;
 		EMU_CK(inp_neus != BJ_INVALID_NUM_NODE);
 	}
-	if((inp_pols == BJ_INVALID_NUM_NODE) && prv->got_all_pols()){
-		inp_pols = prv->inp_pols - prv->off_pols;
-		EMU_CK(inp_pols != BJ_INVALID_NUM_NODE);
-	}
+	//if((inp_pols == BJ_INVALID_NUM_NODE) && prv->got_all_pols()){
+	//	inp_pols = prv->inp_pols - prv->off_pols;
+	//	EMU_CK(inp_pols != BJ_INVALID_NUM_NODE);
+	//}
 }
 
 void
@@ -988,8 +988,8 @@ netstate::send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_
 
 	trm->send();
 
-	SYNC_CODE(mc_core_nn_t dbg_dst_nn = mc_id_to_nn(mc_addr_get_id(the_dst)));
-	SYNC_LOG(" SYNC_send_transmitter_%s_t%d_%s_ [%ld ->> %ld] \n", 
+	SYNC_CODE_2(mc_core_nn_t dbg_dst_nn = mc_id_to_nn(mc_addr_get_id(the_dst)));
+	SYNC_LOG_2(" SYNC_send_transmitter_%s_t%d_%s_ [%ld ->> %ld] \n", 
 		net_side_to_str(my_side), the_ti, sync_tok_to_str(the_tok), kernel::get_core_nn(), dbg_dst_nn);
 	EMU_CK(the_ti != BJ_INVALID_NUM_TIER);
 }
@@ -1018,7 +1018,7 @@ netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, nervenode
 	}
 
 	if(the_tok == bj_tok_sync_to_children){
-		SYNC_LOG(" SYNC_END_%s CORE=%d out_ti=%d tmt_TI=%d \n", 
+		SYNC_LOG_2(" SYNC_END_%s CORE=%d out_ti=%d tmt_TI=%d \n", 
 				net_side_to_str(my_side), kernel::get_core_nn(), sync_tier_out, the_ti);
 
 		sync_ending_propag = true;

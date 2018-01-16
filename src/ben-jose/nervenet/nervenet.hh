@@ -61,6 +61,9 @@ class nervenet;
 #define SYNC_COND_LOG(cond, ...) 
 #define SYNC_LOG(...) 
 
+#define SYNC_CODE_2(prm) EMU_CODE(prm)
+#define SYNC_LOG_2(...) EMU_LOG(__VA_ARGS__)
+
 enum net_side_t : uint8_t {
 	side_invalid,
 	side_left,
@@ -462,9 +465,9 @@ public:
 	num_nod_t rcv_neus;
 	num_nod_t stl_neus;
 
-	num_nod_t inp_pols;
-	num_nod_t off_pols;
-	num_nod_t rcv_pols;
+	//num_nod_t inp_pols;
+	//num_nod_t off_pols;
+	//num_nod_t rcv_pols;
 
 	tierdata() mc_external_code_ram;
 	~tierdata() mc_external_code_ram;
@@ -481,9 +484,9 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus > 0));
 	}
 
-	mc_inline_fn bool has_pols(){
-		return ((inp_pols != BJ_INVALID_NUM_NODE) && (inp_pols > 0));
-	}
+	//mc_inline_fn bool has_pols(){
+	//	return ((inp_pols != BJ_INVALID_NUM_NODE) && (inp_pols > 0));
+	//}
 
 	mc_inline_fn mc_core_nn_t tot_rcv_chdn(){
 		return (ety_chdn + alv_chdn + stl_chdn);
@@ -493,9 +496,9 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == rcv_neus));
 	}
 
-	mc_inline_fn bool got_all_pols(){
-		return ((inp_pols != BJ_INVALID_NUM_NODE) && (inp_pols == rcv_pols));
-	}
+	//mc_inline_fn bool got_all_pols(){
+	//	return ((inp_pols != BJ_INVALID_NUM_NODE) && (inp_pols == rcv_pols));
+	//}
 
 	void update_tidat() bj_stabi_cod;
 
