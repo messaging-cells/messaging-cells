@@ -402,6 +402,9 @@ netstate::init_tiers(nervenet& my_net){
 
 	ti_dat->tdt_id = 0;
 	ti_dat->inp_neus = 0;
+
+	ti_dat->neu_prv_stl = 0;
+
 	//ti_dat->inp_pols = 0;
 
 	ti_dat->add_all_inp_from(my_net.all_neu, my_side);

@@ -316,8 +316,8 @@ neuron::stabi_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec){
 	EMU_CK(stt.stabi_active_set.tot_syn != 0);
 	if(stt.stabi_active_set.tot_syn == 1){
 		EMU_LOG("FORCING %s %ld %s  TI=%d flags=%p flgs_pt=%p \n", node_kind_to_str(ki), id, 
-				net_side_to_str(sd), get_neurostate(sd).stabi_num_tier, (void*)(uintptr_t)stt.stabi_flags,
-				(void*)(&stt.stabi_flags));
+				net_side_to_str(sd), get_neurostate(sd).stabi_num_tier, bj_flags_to_hex_pt(stt.stabi_flags),
+				bj_get_pt(stt.stabi_flags));
 
 		snp->send_transmitter(bj_tok_stabi_charge_all, sd, from_rec /*IS_FORCED*/);
 	} else {
@@ -328,7 +328,20 @@ neuron::stabi_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec){
 void 
 nervenode::stabi_send_snp_tier_done(synapse* snp, net_side_t sd, bool from_rec){
 	EMU_CK(snp->owner == this);
-	snp->send_transmitter(bj_tok_stabi_tier_done, sd);
+
+	neurostate& stt = get_neurostate(sd);
+	bool was_still = mc_get_flag(stt.stabi_flags, bj_stt_was_still_flag);
+	bool is_still = mc_get_flag(stt.stabi_flags, bj_stt_is_still_flag);
+
+	if(! was_still && is_still){
+		snp->send_transmitter(bj_tok_stabi_inc_still_tier_done, sd);
+	}
+	else if(was_still && ! is_still){
+		snp->send_transmitter(bj_tok_stabi_dec_still_tier_done, sd);
+	}
+	else {
+		snp->send_transmitter(bj_tok_stabi_tier_done, sd);
+	}
 }
 
 void
@@ -376,7 +389,9 @@ nervenode::stabi_recv_transmitter(propag_data* dat){
 		case bj_tok_stabi_ping:
 			stabi_recv_ping(dat);
 		break;
-		case bj_tok_stabi_tier_done:
+		case bj_tok_stabi_tier_done:			
+		case bj_tok_stabi_inc_still_tier_done:
+		case bj_tok_stabi_dec_still_tier_done:
 			stabi_recv_tier_done(dat);
 		break;
 		default:
@@ -477,7 +492,6 @@ nervenode::stabi_recv_charge_src(propag_data* dat){
 	neurostate& stt = get_neurostate(dat->sd);
 
 	stt.stabi_active_set.stabi_rec_reset();
-	mc_set_flag(stt.stabi_flags, bj_stt_charge_src_flag);
 
 	if(! stt.stabi_active_set.is_empty()){
 
@@ -512,6 +526,17 @@ nervenode::stabi_recv_tier_done(propag_data* dat){
 
 	stt.stabi_num_complete++;
 
+	switch(dat->tok){
+		case bj_tok_stabi_inc_still_tier_done:
+			stt.stabi_nxt_still++;
+		break;
+		case bj_tok_stabi_dec_still_tier_done:
+			stt.stabi_nxt_still--;
+		break;
+		default:
+		break;
+	}
+
 	EMU_LOG("ADD_TIER_END %s %ld %s compl(%d of %d) TI=%d \n", 
 			node_kind_to_str(ki), id, net_side_to_str(dat->sd), 
 			stt.stabi_num_complete, stt.prev_tot_active, dat->ti);
@@ -537,33 +562,52 @@ void
 neurostate::update_stills(nervenode* nd, propag_data* dat){
 	EMU_CK(nd != mc_null);
 	EMU_CK(dat != mc_null);
+	if(nd->ki == nd_neu){
+		neu_update_stills(nd, dat);
+	}
+}
+
+void
+neurostate::neu_update_stills(nervenode* nd, propag_data* dat){
+	EMU_CK(nd != mc_null);
+	EMU_CK(dat != mc_null);
+	EMU_CK(nd->ki == nd_neu);
+
 	EMU_LOG("update_stills %s %ld %s still(%ld == %ld) TI=%d \n", 
 			node_kind_to_str(nd->ki), nd->id, net_side_to_str(dat->sd), 
 			stabi_num_ping, stabi_active_set.tot_syn, dat->ti);
 
-	//tierdata& lst_tidat = bj_nervenet->get_active_netstate(dat->sd).get_last_tier();
 	tierdata& lst_tidat = bj_nervenet->get_active_netstate(dat->sd).get_tier(dat->ti);
-
 	EMU_CK(lst_tidat.tdt_id == dat->ti);
 	
-	//if((nd->ki == nd_neu) && (prev_tot_active > 0) && (stabi_num_ping == stabi_active_set.tot_syn) &&
-	//	(stabi_active_set.tot_syn != 1))
-	bool inc_stl_ne = ((nd->ki == nd_neu) && (prev_tot_active > 1) && 
-				(stabi_num_ping == stabi_active_set.tot_syn));
+	bool inc_stl_ne = ((prev_tot_active > 1) && (stabi_num_ping == stabi_active_set.tot_syn));
+
+	bool was_stl = mc_get_flag(stabi_flags, bj_stt_is_still_flag);
+	mc_set_val_flag(stabi_flags, was_stl, bj_stt_was_still_flag);
 
 	if(inc_stl_ne){
 		/*EMU_LOG("INC_STILL %s %ld %s  TI=%d flags=%p flgs_pt=%p #prv=%d #pings=%d \n", 
 				node_kind_to_str(nd->ki), nd->id, 
-				net_side_to_str(dat->sd), dat->ti, (void*)(uintptr_t)stabi_flags, (void*)(&stabi_flags), 
+				net_side_to_str(dat->sd), dat->ti, bj_flags_to_hex_pt(stabi_flags), (void*)(&stabi_flags), 
 				prev_tot_active, stabi_num_ping);*/
 
 		lst_tidat.stl_neus++;
+
+		if(! was_stl){
+			mc_set_flag(stabi_flags, bj_stt_is_still_flag);
+			lst_tidat.neu_add_stl++;
+		} 
+	} else {
+		EMU_LOG("SKIP_inc_still_%s_t%d_  %s %ld flags=%p flgs_pt=%p #prv=%d #pings=%d \n", 
+				net_side_to_str(dat->sd), dat->ti, node_kind_to_str(nd->ki), nd->id, 
+				bj_flags_to_hex_pt(stabi_flags), (void*)(&stabi_flags), prev_tot_active, stabi_num_ping);
+
+		if(was_stl){
+			mc_reset_flag(stabi_flags, bj_stt_is_still_flag);
+			lst_tidat.neu_rmv_stl++;
+		} 
 	}
 
-	EMU_COND_LOG(((nd->ki == nd_neu) && ! inc_stl_ne), 
-			"SKIP_inc_still_%s_t%d_  %s %ld flags=%p flgs_pt=%p #prv=%d #pings=%d \n", 
-			net_side_to_str(dat->sd), dat->ti, node_kind_to_str(nd->ki), nd->id, 
-			(void*)(uintptr_t)stabi_flags, (void*)(&stabi_flags), prev_tot_active, stabi_num_ping);
 }
 
 void 
@@ -649,12 +693,17 @@ tierdata::inc_off(net_side_t sd, node_kind_t kk){
 
 void
 neurostate::reset_complete(){
-	EMU_LOG("::reset_complete flags=%p flgs_pt=%p \n", (void*)(uintptr_t)stabi_flags, 
+	EMU_LOG("::reset_complete flags=%p flgs_pt=%p \n", bj_flags_to_hex_pt(stabi_flags), 
 			(void*)(&stabi_flags));
 
-	stabi_flags = 0;
+	//stabi_flags = 0;
+	mc_reset_flag(stabi_flags, bj_stt_charge_all_flag);
+
 	stabi_num_complete = 0;
 	stabi_num_ping = 0;
+
+	stabi_num_still = stabi_nxt_still;
+
 	prev_tot_active = stabi_active_set.tot_syn;
 }
 
@@ -928,6 +977,9 @@ tierdata::update_tidat(){
 	if((inp_neus == BJ_INVALID_NUM_NODE) && prv->got_all_neus()){
 		inp_neus = prv->inp_neus - prv->off_neus;
 		EMU_CK(inp_neus != BJ_INVALID_NUM_NODE);
+
+		neu_prv_stl = prv->neu_nxt_stl();
+		EMU_CK(neu_prv_stl == prv->stl_neus);
 	}
 	//if((inp_pols == BJ_INVALID_NUM_NODE) && prv->got_all_pols()){
 	//	inp_pols = prv->inp_pols - prv->off_pols;
