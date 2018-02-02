@@ -613,13 +613,6 @@ bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
 	return (resp != 0);
 }
 
-static mc_inline_fn
-mc_flags_t	mc_set_val_flag(mc_flags_t& flgs, bool val, mc_flags_t bit_flag){
-	if(val){ return mc_set_flag(flgs, bit_flag); }
-	return mc_reset_flag(flgs, bit_flag);
-}
-
-
 #define	mc_usr_flag0 mc_flag0
 #define	mc_usr_flag1 mc_flag1
 #define	mc_usr_flag2 mc_flag2

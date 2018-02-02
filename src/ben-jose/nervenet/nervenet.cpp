@@ -155,9 +155,6 @@ neurostate::init_me(int caller){
 	stabi_num_complete = 0;
 	stabi_num_ping = 0;
 
-	//stabi_num_still = 0;
-	//stabi_nxt_still = 0;
-
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
 	stabi_arr = mc_null;
@@ -303,22 +300,6 @@ char* net_side_to_str(net_side_t sd){
 	return resp;
 }
 
-char net_side_to_char(net_side_t sd){
-	char resp = 'x';
-	switch(sd){
-	case side_invalid:
-		resp = 'i';
-	break;
-	case side_left:
-		resp = 'L';
-	break;
-	case side_right:
-		resp = 'R';
-	break;
-	}
-	return resp;
-}
-
 char* node_kind_to_str(node_kind_t ki){
 	char* resp = mc_cstr("UNDEFINED_NODE_KIND !!!");
 	switch(ki){
@@ -333,25 +314,6 @@ char* node_kind_to_str(node_kind_t ki){
 	break;
 	case nd_neu:
 		resp = mc_cstr("nd_neu");
-	break;
-	}
-	return resp;
-}
-
-char node_kind_to_char(node_kind_t ki){
-	char resp = 'x';
-	switch(ki){
-	case nd_invalid:
-		resp = 'i';
-	break;
-	case nd_pos:
-		resp = '+';
-	break;
-	case nd_neg:
-		resp = '-';
-	break;
-	case nd_neu:
-		resp = 'N';
 	break;
 	}
 	return resp;
@@ -428,12 +390,6 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_tier_done:
 		resp = mc_cstr("bj_tok_stabi_tier_done");
 	break;
-	case bj_tok_stabi_inc_still_tier_done:
-		resp = mc_cstr("bj_tok_stabi_inc_still_tier_done");
-	break;
-	case bj_tok_stabi_dec_still_tier_done:
-		resp = mc_cstr("bj_tok_stabi_dec_still_tier_done");
-	break;
 	case bj_tok_stabi_end_forward:
 		resp = mc_cstr("bj_tok_stabi_end_forward");
 	break;
@@ -486,10 +442,6 @@ tierdata::init_me(int caller){
 	off_neus = 0;
 	rcv_neus = 0;
 	stl_neus = 0;
-
-	neu_prv_stl = BJ_INVALID_NUM_NODE;
-	neu_add_stl = 0;
-	neu_rmv_stl = 0;
 
 	//inp_pols = BJ_INVALID_NUM_NODE;
 	//off_pols = 0;
@@ -622,9 +574,6 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 		mck_slog2(prefix);
 	}
 
-	char sd_ch = net_side_to_char(sd);
-
-	mck_clog(sd_ch);
 	mck_slog2("t");
 	mck_ilog(num_ti);
 	mck_slog2("p");

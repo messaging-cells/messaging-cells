@@ -94,8 +94,6 @@ enum stabi_tok_t : mck_token_t {
 	bj_tok_stabi_charge_all,
 	bj_tok_stabi_charge_src,
 	bj_tok_stabi_tier_done,
-	bj_tok_stabi_inc_still_tier_done,
-	bj_tok_stabi_dec_still_tier_done,
 	bj_tok_stabi_end_forward,
 	bj_tok_stabi_end
 };
@@ -124,9 +122,7 @@ typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd, bool from_re
 void emu_prt_tok_codes() mc_external_code_ram;
 
 char* net_side_to_str(net_side_t sd) mc_external_code_ram;
-char net_side_to_char(net_side_t sd) mc_external_code_ram;
 char* node_kind_to_str(node_kind_t ki) mc_external_code_ram;
-char node_kind_to_char(node_kind_t ki) mc_external_code_ram;
 
 
 mc_inline_fn bool is_sync_tok(mck_token_t tok){
@@ -305,14 +301,9 @@ public:
 
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
 
-#define bj_get_pt(ff) ((void*)(&(ff)))
-
-#define bj_flags_to_hex_pt(flg) ((void*)(uintptr_t)(flg))
-
-#define	bj_stt_charge_all_flag mc_flag0
-#define	bj_stt_is_still_flag mc_flag1
-#define	bj_stt_was_still_flag mc_flag2
-#define	bj_stt_sending_charged_flag mc_flag3
+#define	bj_stt_stabi_flag mc_flag0
+#define	bj_stt_charge_all_flag mc_flag1
+#define	bj_stt_charge_src_flag mc_flag2
 
 class mc_aligned neurostate {
 public:
@@ -327,9 +318,6 @@ public:
 	mc_flags_t		stabi_flags;
 	num_syn_t		stabi_num_complete;
 	num_syn_t		stabi_num_ping;
-
-	//num_syn_t		stabi_num_still;
-	//num_syn_t		stabi_nxt_still;
 
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
@@ -357,8 +345,6 @@ public:
 	void send_all_propag(nervenode* nd, propag_data* dat) bj_stabi_cod;
 
 	void update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
-	void neu_update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
-
 	void send_all_ti_done(nervenode* nd, net_side_t sd) bj_stabi_cod;
 };
 
@@ -479,10 +465,6 @@ public:
 	num_nod_t rcv_neus;
 	num_nod_t stl_neus;
 
-	num_nod_t neu_prv_stl;
-	num_nod_t neu_add_stl;
-	num_nod_t neu_rmv_stl;
-
 	//num_nod_t inp_pols;
 	//num_nod_t off_pols;
 	//num_nod_t rcv_pols;
@@ -500,11 +482,6 @@ public:
 
 	mc_inline_fn bool has_neus(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus > 0));
-	}
-
-	mc_inline_fn num_nod_t neu_nxt_stl(){
-		EMU_CK(neu_prv_stl != BJ_INVALID_NUM_NODE);
-		return (neu_prv_stl + neu_add_stl - neu_rmv_stl);
 	}
 
 	//mc_inline_fn bool has_pols(){
