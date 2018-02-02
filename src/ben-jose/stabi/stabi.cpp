@@ -357,7 +357,11 @@ nervenode::stabi_recv_transmitter(propag_data* dat){
 		EMU_CK_PRT(ok_1, "%s %s %ld %s (%d > %d)", stabi_tok_to_str(dat->tok),
 			node_kind_to_str(ki), id, net_side_to_str(dat->sd), (dat->ti + 1), stt.stabi_num_tier);
 
-		EMU_CK(dat->ti < BJ_DBG_MAX_TIER); // debug_purposes_only
+		//EMU_CK(dat->ti < BJ_DBG_MAX_TIER); // debug_purposes_only
+		EMU_CK(	(bj_nervenet->sync_parent_id != 0) ||
+				bj_nervenet->get_active_netstate(dat->sd).sync_is_inactive ||
+				(dat->ti < BJ_DBG_MAX_TIER)
+		); // debug_purposes_only
 
 		nervenode* rem_nd = dat->snp->mate->owner;
 		EMU_LOG("::stabi_recv_transmitter %s [%s %ld <<- %s %ld] %s dat_TI=%d nod_TI=%d \n", 
