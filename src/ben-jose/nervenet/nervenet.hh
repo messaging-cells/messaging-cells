@@ -312,6 +312,7 @@ public:
 #define	bj_stt_charge_all_flag mc_flag0
 #define	bj_stt_is_still_flag mc_flag1
 #define	bj_stt_was_still_flag mc_flag2
+#define	bj_stt_sending_charged_flag mc_flag3
 
 class mc_aligned neurostate {
 public:
@@ -327,8 +328,8 @@ public:
 	num_syn_t		stabi_num_complete;
 	num_syn_t		stabi_num_ping;
 
-	num_syn_t		stabi_num_still;
-	num_syn_t		stabi_nxt_still;
+	//num_syn_t		stabi_num_still;
+	//num_syn_t		stabi_nxt_still;
 
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;

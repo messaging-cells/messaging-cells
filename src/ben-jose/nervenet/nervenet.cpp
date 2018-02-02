@@ -155,8 +155,8 @@ neurostate::init_me(int caller){
 	stabi_num_complete = 0;
 	stabi_num_ping = 0;
 
-	stabi_num_still = 0;
-	stabi_nxt_still = 0;
+	//stabi_num_still = 0;
+	//stabi_nxt_still = 0;
 
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
