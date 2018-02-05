@@ -212,8 +212,17 @@ nervenet::stabi_handler(missive* msv){
 			tdt.stl_chdn++;
 		}
 		break;
-		case bj_tok_sync_confl:
-			nst.send_sync_to_children(bj_tok_sync_confl, sy_tmt->wrk_tier, sy_tmt->cfl_src);
+		case bj_tok_sync_confl_up_neu:
+			nst.send_up_confl_tok(bj_tok_sync_confl_up_neu, sy_tmt->wrk_tier, sy_tmt->cfl_src);
+		break;
+		case bj_tok_sync_confl_up_pol:
+			nst.send_up_confl_tok(bj_tok_sync_confl_up_pol, sy_tmt->wrk_tier, sy_tmt->cfl_src);
+		break;
+		case bj_tok_sync_confl_down_neu:
+			nst.send_sync_to_children(bj_tok_sync_confl_down_neu, sy_tmt->wrk_tier, sy_tmt->cfl_src);
+		break;
+		case bj_tok_sync_confl_down_pol:
+			nst.send_sync_to_children(bj_tok_sync_confl_down_pol, sy_tmt->wrk_tier, sy_tmt->cfl_src);
 		break;
 		case bj_tok_sync_to_children:
 			nst.send_sync_to_children(bj_tok_sync_to_children, sy_tmt->wrk_tier, mc_null);
@@ -728,10 +737,11 @@ polaron::stabi_start_nxt_tier(propag_data* dat){
 	EMU_CK(! opp_chg || (opp_stt.stabi_source != mc_null));
 
 	if(pol_chg && opp_chg){
-		EMU_LOG("POL CONFLICT %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
-		EMU_CK(false && "POL_CONFLIT_CASE"); // CODE_THIS_CASE
-		// conflict. start backpropag.
-		confl_charge_all_and_start_nxt_ti(dat);
+		EMU_LOG("POL_CONFLICT %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
+		//EMU_CK(false && "POL_CONFLIT_CASE"); // CODE_THIS_CASE
+		// conflict. continue propag.
+		send_confl_tok(dat, bj_tok_sync_confl_up_pol);
+		charge_all_confl_and_start_nxt_ti(dat);
 
 	} else 
 	if(pol_chg && ! opp_chg){
@@ -767,17 +777,34 @@ polaron::stabi_start_nxt_tier(propag_data* dat){
 	opp_stt.send_all_ti_done(opp, dat->sd);
 }
 
-void
-polaron::confl_charge_all_and_start_nxt_ti(propag_data* dat){
+void 
+netstate::send_up_confl_tok(sync_tok_t the_tok, num_tier_t the_ti, nervenode* the_cfl)
+{
+	EMU_CK((the_tok == bj_tok_sync_confl_up_neu) || (the_tok == bj_tok_sync_confl_up_pol));
+
 	mc_core_id_t pnt_id = bj_nervenet->sync_parent_id;
 	nervenet* pnt_net = bj_nervenet->get_nervenet(pnt_id);
-	netstate& nstt = bj_nervenet->get_active_netstate(dat->sd);
 	if(pnt_id != 0){
-		nstt.send_sync_transmitter(pnt_net, bj_tok_sync_confl, dat->ti, this);
+		send_sync_transmitter(pnt_net, the_tok, the_ti, the_cfl);
 	} else {
-		nstt.send_sync_to_children(bj_tok_sync_confl, dat->ti, this);
+		if(the_tok == bj_tok_sync_confl_up_neu){
+			the_tok = bj_tok_sync_confl_down_neu;
+		}
+		if(the_tok == bj_tok_sync_confl_up_pol){
+			the_tok = bj_tok_sync_confl_down_pol;
+		}
+		send_sync_to_children(the_tok, the_ti, the_cfl);
 	}
+}
 
+void
+nervenode::send_confl_tok(propag_data* dat, sync_tok_t the_tok){
+	netstate& nstt = bj_nervenet->get_active_netstate(dat->sd);
+	nstt.send_up_confl_tok(the_tok, dat->ti, this);
+}
+
+void
+polaron::charge_all_confl_and_start_nxt_ti(propag_data* dat){
 	neurostate& pol_stt = get_neurostate(dat->sd);
 	neurostate& opp_stt = opp->get_neurostate(dat->sd);
 
@@ -829,8 +856,9 @@ neuron::stabi_start_nxt_tier(propag_data* dat){
 		}
 	} else {
 		if(stt.stabi_active_set.is_empty() && (stt.stabi_source == mc_null)){
-			EMU_LOG("NEU CONFLICT %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
-			EMU_CK(false && "NEU_CONFLIT_CASE");
+			EMU_LOG("NEU_CONFLICT %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
+			//EMU_CK(false && "NEU_CONFLIT_CASE");
+			send_confl_tok(dat, bj_tok_sync_confl_up_neu);
 		} else {
 			stt.send_all_propag(this, dat);
 		}
@@ -1005,6 +1033,17 @@ netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, nervenode
 			sync_tier_out);
 
 	EMU_CK(the_ti != BJ_INVALID_NUM_TIER);
+
+	if(the_cfl != mc_null){
+		EMU_CK((the_tok == bj_tok_sync_confl_down_neu) || (the_tok == bj_tok_sync_confl_down_pol));
+		tok_confl = the_tok;
+		nod_confl = the_cfl;
+		ti_confl = the_ti;
+
+		EMU_LOG(" SYNC_CONFLICT_%s_t%d_%s confl_pt=%p \n", 
+				net_side_to_str(my_side), ti_confl, 
+				sync_tok_to_str(bj_tok_sync_confl_down_pol), (void*)nod_confl);
+	}
 
 	mc_load_map_st** my_children = bj_nervenet->sync_map->childs;
 	if(my_children != mc_null){ 

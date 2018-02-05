@@ -335,8 +335,17 @@ char* sync_tok_to_str(sync_tok_t tok){
 	case bj_tok_sync_still_child:
 		resp = mc_cstr("bj_tok_sync_still_child");
 	break;
-	case bj_tok_sync_confl:
-		resp = mc_cstr("bj_tok_sync_confl");
+	case bj_tok_sync_confl_up_neu:
+		resp = mc_cstr("bj_tok_sync_confl_up_neu");
+	break;
+	case bj_tok_sync_confl_up_pol:
+		resp = mc_cstr("bj_tok_sync_confl_up_pol");
+	break;
+	case bj_tok_sync_confl_down_neu:
+		resp = mc_cstr("bj_tok_sync_confl_down_neu");
+	break;
+	case bj_tok_sync_confl_down_pol:
+		resp = mc_cstr("bj_tok_sync_confl_down_pol");
 	break;
 	case bj_tok_sync_to_children:
 		resp = mc_cstr("bj_tok_sync_to_children");
@@ -419,6 +428,10 @@ netstate::init_me(int caller){
 	sync_sent_stop_to_parent = false;
 
 	sync_ending_propag = false;
+
+	tok_confl = bj_tok_sync_invalid;
+	nod_confl = mc_null;
+	ti_confl = BJ_INVALID_NUM_TIER;
 
 	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d \n", sync_tot_children);
 }

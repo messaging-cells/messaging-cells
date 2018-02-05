@@ -75,7 +75,10 @@ enum sync_tok_t : mck_token_t {
 	bj_tok_sync_empty_child,
 	bj_tok_sync_alive_child,
 	bj_tok_sync_still_child,
-	bj_tok_sync_confl,
+	bj_tok_sync_confl_up_neu,
+	bj_tok_sync_confl_up_pol,
+	bj_tok_sync_confl_down_neu,
+	bj_tok_sync_confl_down_pol,
 	bj_tok_sync_to_children,
 	bj_tok_sync_end
 };
@@ -381,6 +384,8 @@ public:
 	void stabi_send_snp_end_forward(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 	void stabi_send_snp_tier_done(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
+	void send_confl_tok(propag_data* dat, sync_tok_t the_tok) mc_external_code_ram;
+
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
@@ -437,7 +442,7 @@ public:
 
 	void stabi_send_snp_charge_all(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
-	void confl_charge_all_and_start_nxt_ti(propag_data* dat) mc_external_code_ram;
+	void charge_all_confl_and_start_nxt_ti(propag_data* dat) mc_external_code_ram;
 	void charge_all_and_start_nxt_ti(propag_data* dat) bj_stabi_cod;
 
 	bool can_chg_all() bj_stabi_cod;
@@ -542,6 +547,9 @@ public:
 
 	grip 	all_tiers;
 
+	sync_tok_t  tok_confl;
+	nervenode*	nod_confl;
+	num_tier_t	ti_confl;
 
 	netstate() mc_external_code_ram;
 	~netstate() mc_external_code_ram;
@@ -561,6 +569,7 @@ public:
 	void update_sync() bj_stabi_cod;
 	void handle_my_sync() bj_stabi_cod;
 	void send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, nervenode* cfl_src) mc_external_code_ram;
+	void send_up_confl_tok(sync_tok_t the_tok, num_tier_t the_ti, nervenode* the_cfl) mc_external_code_ram;
 
 	mc_inline_fn tierdata& get_last_tier(){
 		EMU_CK(! all_tiers.is_alone());
