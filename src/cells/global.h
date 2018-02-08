@@ -38,6 +38,7 @@ struct mc_aligned mck_glb_sys_def {
 	
 	mc_addr_t 	dbg_min_sp;
 	mc_addr_t 	dbg_error_code;
+	char* 		dbg_error_str;
 	uint32_t 	dbg_progress_flag;
 
 	mc_addr_t	znq_shd_mem_base;

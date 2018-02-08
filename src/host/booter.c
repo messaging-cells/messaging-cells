@@ -98,6 +98,16 @@ int mch_prt_in_core_shd_dat(mck_glb_sys_st* sh_dat){
 	EMU_32_CODE(fprintf(stderr, "dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
 	ZNQ_CODE(fprintf(stderr, "dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
 
+	if(sh_dat->dbg_error_str != mc_null){
+		char* the_str = (char*)mc_core_pt_to_host_pt(sh_dat->dbg_error_str);
+		char buff[100];
+		memset(buff, '\0', 100);
+		int ll = strnlen(the_str, 90);
+		strncpy(buff, the_str, ll);
+
+		fprintf(stderr, "dbg_error_str=%s \n", buff);
+	}
+
 	fprintf(stderr, "dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
 	fprintf(stderr, "binder_sz=%d \n", sh_dat->binder_sz);

@@ -37,6 +37,9 @@ public:
 
 	void handler(missive* msv);
 	void send(cell* dst, seq_tok_t tok);
+
+	virtual 
+	grip&	get_available();
 };
 
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
@@ -118,6 +121,11 @@ sequence::send(cell* dst, seq_tok_t tok){
 }
 
 MCK_DEFINE_MEM_METHODS(sequence, 32, glb_ava_seq, 0)
+
+grip&
+sequence::get_available(){
+	return glb_ava_seq;
+}
 
 void ker_func(){
 	kernel* ker = mck_get_kernel();

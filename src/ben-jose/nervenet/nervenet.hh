@@ -181,7 +181,7 @@ BJ_DECLARE_CLS_NAM(nervenet)
 //class mc_aligned synset : public cell {
 class mc_aligned synset : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS(synset, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synset, bj_nervenet_mem)
 
 	synset*		parent;
 
@@ -216,7 +216,7 @@ public:
 
 class mc_aligned tierset : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS(tierset, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(tierset, bj_nervenet_mem)
 
 	num_tier_t 	ti_id;
 	grip		ti_all;	//!< \ref synapse s in this tier
@@ -233,7 +233,7 @@ public:
 
 class mc_aligned transmitter : public missive {
 public:
-	MCK_DECLARE_MEM_METHODS(transmitter, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(transmitter, bj_nervenet_mem)
 
 	net_side_t wrk_side;
 	num_tier_t wrk_tier;
@@ -244,13 +244,18 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
+	/*EMU_DBG_CODE(
+		virtual mc_opt_sz_fn 
+		void	dbg_release(int dbg_caller) mc_external_code_ram;
+	);*/
+
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
 
 class mc_aligned sync_transmitter : public transmitter {
 public:
-	MCK_DECLARE_MEM_METHODS(sync_transmitter, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sync_transmitter, bj_nervenet_mem)
 
 	nervenode* cfl_src;
 
@@ -266,7 +271,7 @@ public:
 
 class mc_aligned synapse : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(synapse, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synapse, bj_nervenet_mem)
 
 	synset*		left_vessel;
 
@@ -369,7 +374,7 @@ public:
 
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 
-	neurostate& get_neurostate(net_side_t sd) bj_stabi_cod;
+	neurostate& get_neurostate(net_side_t sd);	// Used in loading. It has to common code.
 
 	void stabi_recv_transmitter(propag_data* dat) bj_stabi_cod;
 	void stabi_recv_charge_all(propag_data* dat) bj_stabi_cod;
@@ -399,7 +404,7 @@ public:
 
 class mc_aligned neuron : public nervenode {
 public:
-	MCK_DECLARE_MEM_METHODS(neuron, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(neuron, bj_nervenet_mem)
 
 	//EMU_CODE(int pru_attr);
 	
@@ -427,7 +432,7 @@ public:
 
 class mc_aligned polaron : public nervenode {
 public:
-	MCK_DECLARE_MEM_METHODS(polaron, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(polaron, bj_nervenet_mem)
 	
 	polaron*		opp;
 
@@ -456,7 +461,7 @@ public:
 
 class mc_aligned tierdata : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS(tierdata, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(tierdata, bj_nervenet_mem)
 
 	num_tier_t	tdt_id;
 
@@ -626,6 +631,11 @@ public:
 
 	netstate	act_left_side;
 	netstate	act_right_side;
+
+	mc_alloc_size_t dbg_tot_transmitters_new;
+	mc_alloc_size_t dbg_tot_transmitters_alloc;
+	mc_alloc_size_t dbg_tot_transmitters_acquire;
+	mc_alloc_size_t dbg_tot_transmitters_release;
 
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;

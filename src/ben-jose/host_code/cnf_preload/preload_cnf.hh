@@ -52,7 +52,7 @@ typedef unsigned long pre_node_sz_t;
 
 class mc_aligned pre_cnf_node : public agent_grp {
 public:
-	MCK_DECLARE_MEM_METHODS(pre_cnf_node, bj_load_cod)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_cnf_node, bj_load_cod)
 	
 	node_kind_t 	ki;
 	long			id;
@@ -69,12 +69,11 @@ public:
 	}
 
 	~pre_cnf_node(){}
-
 };
 
 class mc_aligned pre_cnf_net : public agent_grp {
 public:
-	MCK_DECLARE_MEM_METHODS(pre_cnf_net, bj_load_cod)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_cnf_net, bj_load_cod)
 
 	num_nod_t tot_pre_neus;
 	num_nod_t tot_pre_vars;

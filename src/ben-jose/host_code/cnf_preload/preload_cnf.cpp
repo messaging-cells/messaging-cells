@@ -10,8 +10,8 @@ grip ava_pre_cnf_net;
 
 pre_load_cnf* THE_CNF = mc_null;
 
-MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node, 0)
-MCK_DEFINE_MEM_METHODS(pre_cnf_net, 32, ava_pre_cnf_net, 0)
+MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_cnf_node, 32, ava_pre_cnf_node, 0)
+MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_cnf_net, 32, ava_pre_cnf_net, 0)
 
 void init_node_arr(long sz, pre_cnf_node** arr, node_kind_t kk){
 	for(long aa = 0; aa < sz; aa++){

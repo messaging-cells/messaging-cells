@@ -89,6 +89,7 @@ void bj_load_shd_cnf(){
 	neuron::separate(sep_neus);
 
 	EMU_PRT("Separated polarons %ld\n", sep_pols);
+	EMU_LOG("Separated transmitters %ld\n", sep_msvs);
 
 	binder * fst, * lst, * wrk;
 
@@ -312,17 +313,33 @@ synapse::load_handler(missive* msv){
 		owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
 }
 
-void bj_load_main() {
-	/*
-	mc_core_id_t p_koid = mc_map_get_parent_core_id();
-	mck_slog2("PARENT___");
-	if(p_koid == 0){
-		mck_slog2("_IS_NULL_");
-	} else {
-		mck_ilog(mc_id_to_nn(p_koid));
+void dbg_acquire_test() mc_external_code_ram;
+
+void dbg_acquire_test() {
+	if(kernel::get_core_nn() == 15){
+		EMU_LOG("before test (%d)\n", bj_ava_transmitters.is_alone());
+		transmitter* tmt = transmitter::acquire();
+		EMU_LOG("acquire 1 (%d)\n", bj_ava_transmitters.is_alone());
+		tmt->release();
+		EMU_LOG("release 1 (%d)\n", bj_ava_transmitters.is_alone());
+		transmitter* tmt2 = transmitter::acquire();
+		EMU_LOG("acquire 2 (%d)\n", bj_ava_transmitters.is_alone());
+		tmt2->release();
+		EMU_LOG("release 2 (%d)\n", bj_ava_transmitters.is_alone());
 	}
-	mck_slog2("___\n");
-	*/
+}
+
+void bj_load_main() {
+	
+	//mc_core_id_t p_koid = mc_map_get_parent_core_id();
+	//mck_slog2("PARENT___");
+	//if(p_koid == 0){
+	//	mck_slog2("_IS_NULL_");
+	//} else {
+	//	mck_ilog(mc_id_to_nn(p_koid));
+	//}
+	//mck_slog2("___\n");
+	
 	//print_childs();
 
 	//kernel* ker = kernel::get_sys();
@@ -341,6 +358,8 @@ void bj_load_main() {
 		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
 	}
 	ker->user_data = my_net;
+
+	//EMU_DBG_CODE(dbg_acquire_test());
 
 	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
 
@@ -379,6 +398,7 @@ tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 	binder* pt_grp = &(grp);
 	fst = (binder*)(pt_grp->bn_right);
 	lst = pt_grp;
+
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		nervenode* my_nod = (nervenode*)wrk;
 		neurostate& stt = my_nod->get_neurostate(sd);
@@ -402,13 +422,13 @@ netstate::init_tiers(nervenet& my_net){
 
 	ti_dat->tdt_id = 0;
 	ti_dat->inp_neus = 0;
-	//ti_dat->inp_pols = 0;
+	//ti_dat->inp_pols = 0;		// OLD
 
 	ti_dat->add_all_inp_from(my_net.all_neu, my_side);
 	ti_dat->add_all_inp_from(my_net.all_pos, my_side);
 	ti_dat->add_all_inp_from(my_net.all_neg, my_side);
 
-	//EMU_CK((my_side != side_right) || (ti_dat->inp_neus == 0));
+	//EMU_CK((my_side != side_right) || (ti_dat->inp_neus == 0));	// OLD
 
 	all_tiers.bind_to_my_left(*ti_dat);
 }

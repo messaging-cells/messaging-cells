@@ -7,6 +7,7 @@
 
 #define BJ_DBG_MAX_TIER 10
 
+
 neurostate& 
 nervenode::get_neurostate(net_side_t sd){
 	EMU_CK(sd != side_invalid);
@@ -44,7 +45,7 @@ synapse::send_transmitter(stabi_tok_t tok, net_side_t sd, bool dbg_is_forced){
 		mc_id_to_nn(mc_addr_get_id(mate)), ti);
 
 
-	transmitter* trm = transmitter::acquire();
+	transmitter* trm = transmitter::acquire();	// FIX_THIS for parallella (throws NULL_OBJ).
 	trm->src = this;
 	trm->dst = mate;
 	trm->tok = tok;
@@ -738,6 +739,7 @@ polaron::stabi_start_nxt_tier(propag_data* dat){
 
 	if(pol_chg && opp_chg){
 		EMU_LOG("POL_CONFLICT %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
+		EMU_CODE(dbg_prt_nod(dat->sd, mc_cstr("POL_CONFLICT__"), 7, dat->ti));
 		//EMU_CK(false && "POL_CONFLIT_CASE"); // CODE_THIS_CASE
 		// conflict. continue propag.
 		send_confl_tok(dat, bj_tok_sync_confl_up_pol);
@@ -857,6 +859,7 @@ neuron::stabi_start_nxt_tier(propag_data* dat){
 	} else {
 		if(stt.stabi_active_set.is_empty() && (stt.stabi_source == mc_null)){
 			EMU_LOG("NEU_CONFLICT %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
+			EMU_CODE(dbg_prt_nod(dat->sd, mc_cstr("NEU_CONFLICT__"), 7, dat->ti));
 			//EMU_CK(false && "NEU_CONFLIT_CASE");
 			send_confl_tok(dat, bj_tok_sync_confl_up_neu);
 		} else {

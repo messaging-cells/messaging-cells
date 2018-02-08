@@ -83,6 +83,9 @@ mc_c_decl {
 	#define EMU_PRT_STACK(cond, ...) MC_DBG( \
 		mcm_call_assert(mc_null, false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
+	#define EMU_LOG_STACK(cond, ...) MC_DBG( \
+		mcm_call_assert(mcm_get_emu_log_fnam(), false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+
 	#define EPH_CODE(cod) 
 
 #else //NOT  MC_IS_EMU_CODE :
@@ -116,6 +119,7 @@ mc_c_decl {
 	#define EMU_COND_LOG(cond, ...)
 	#define EMU_COND_PRT(cond, ...)
 	#define EMU_PRT_STACK(cond, ...)
+	#define EMU_LOG_STACK(cond, ...)
 	#define EMU_PRT(...) 
 	#define EMU_LOG(...) 
 

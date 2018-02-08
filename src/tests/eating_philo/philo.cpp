@@ -137,6 +137,9 @@ public:
 	}
 
 	void handler(missive* msv);
+
+	virtual 
+	grip&	get_available();
 };
 
 /*! \class philosopher
@@ -214,6 +217,9 @@ public:
 	}
 
 	void call_exit();
+
+	virtual 
+	grip&	get_available();
 };
 
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
@@ -283,6 +289,16 @@ MCK_DEFINE_ACQUIRE_ALLOC(philo_core, 32);	// defines philo_core::acquire_alloc
 
 MCK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks, 0)
 MCK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos, 0)
+
+grip&
+chopstick::get_available(){
+	return glb_ava_sticks;
+}
+
+grip&
+philosopher::get_available(){
+	return glb_ava_philos;
+}
 
 
 #ifdef PHILO_WITH_DBG

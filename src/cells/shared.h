@@ -315,7 +315,7 @@ typedef struct mc_core_out_def mc_core_out_st;
 
 struct mc_aligned mc_off_sys_shared_data_def { 
 	uint32_t 		magic_id;
-	uint32_t 		dbg_error_code;
+	//uint32_t 		dbg_error_code;
 	void* 			pt_this_from_znq;
 	void* 			pt_this_from_eph;
 	void* 			pt_host_kernel;

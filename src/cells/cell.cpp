@@ -42,25 +42,6 @@ MCK_DEFINE_MEM_METHODS(missive, 32, mck_all_available(missive), 0)
 MCK_DEFINE_MEM_METHODS(agent_ref, 32, mck_all_available(agent_ref), 0)
 MCK_DEFINE_MEM_METHODS(agent_grp, 32, mck_all_available(agent_grp), 0)
 
-/*
-MCK_DEFINE_ACQUIRE_ALLOC(cell, 32)
-MCK_DEFINE_ACQUIRE_ALLOC(missive, 32)
-MCK_DEFINE_ACQUIRE_ALLOC(agent_ref, 32)
-MCK_DEFINE_ACQUIRE_ALLOC(agent_grp, 32)
-
-
-MCK_DEFINE_ACQUIRE(cell) //!< \ref acquires one or more \ref cell s in dynamic memory.
-MCK_DEFINE_ACQUIRE(missive) //!< \ref acquires one or more \ref missive s in dynamic memory.
-MCK_DEFINE_ACQUIRE(agent_ref) //!< \ref acquires one or more \ref agent_ref s in dynamic memory.
-MCK_DEFINE_ACQUIRE(agent_grp) //!< \ref acquires one or more \ref agent_grp s in dynamic memory.
-
-
-MCK_DEFINE_SEPARATE(cell) //!< \ref separates \ref cell s in memory for future \ref cell::acquire.
-MCK_DEFINE_SEPARATE(missive) //!< \ref separates \ref missive s in memory for future \ref missive::acquire.
-MCK_DEFINE_SEPARATE(agent_ref) //!< \ref separates \ref agent_ref s in memory for future \ref aget_ref::acquire.
-MCK_DEFINE_SEPARATE(agent_grp) //!< \ref separates \ref agent_grp s in memory for future \ref aget_grp::acquire.
-
-*/
 
 kernel::kernel(){
 	init_kernel();

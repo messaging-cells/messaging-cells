@@ -57,6 +57,7 @@ mck_abort(mc_addr_t err, char* msg) {
 	}
 	mck_glb_sys_st* in_shd = MC_CORE_INFO;
 	in_shd->dbg_error_code = err;
+	in_shd->dbg_error_str = msg;
 
 	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt;
 	if((off_core_pt != mc_null) && (off_core_pt->magic_id == MC_MAGIC_ID)){

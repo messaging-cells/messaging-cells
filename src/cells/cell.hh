@@ -63,13 +63,17 @@ enum mck_cell_id_t : uint8_t {
 //-------------------------------------------------------------------------
 // dyn mem
 
+typedef void (*mc_dbg_alloc_func_t)(void* obj, mc_alloc_size_t sz);
+
 #define mck_all_available(nam) MCK_KERNEL->cls_available_##nam
 
 //! Defines 'acquire_alloc' method for class 'nam' with aligment 'align' (32 or 64).
 #define MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
+EMU_DBG_CODE(mc_dbg_alloc_func_t nam##_alloc_hook = mc_null); \
 nam* \
 nam::acquire_alloc(mc_alloc_size_t sz){ \
 	nam* obj = mc_malloc##align(nam, sz); \
+	EMU_DBG_CODE(if(nam##_alloc_hook != mc_null){ (*nam##_alloc_hook)(obj, sz); }); \
 	if(obj == mc_null){ \
 		mck_abort((mc_addr_t)sz, err_1); \
 	} \
@@ -110,23 +114,33 @@ nam::separate(mc_alloc_size_t sz){ \
 	for(int bb = 0; bb < sz; bb++){ \
 		obj[bb].let_go(); \
 		ava.bind_to_my_left(obj[bb]); \
+		EMU_CODE( \
+			if(bb == 0){ \
+				grip& ava2 = obj[bb].get_available(); \
+				EMU_CK_PRT(((&ava) == (&ava2)), "You MUST define %s::get_available() returning %s \n", \
+							#nam, #all_ava); \
+			} \
+		); \
 	} \
 } \
 
 // end_macro
 
-#define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
+//define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
 
 #define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
+EMU_DBG_CODE(mc_dbg_alloc_func_t nam##_acquire_hook = mc_null); \
 nam* \
 nam::acquire(mc_alloc_size_t sz){ \
 	grip& ava = all_ava; \
 	if(sz == 1){ \
+		EMU_DBG_CODE(bool was_alone = ava.is_alone()); \
 		if(ava.is_alone()){ \
 			separate(-1); \
 		} \
 		binder* fst = ava.bn_right; \
 		fst->let_go(); \
+		EMU_DBG_CODE(if(! was_alone && (nam##_acquire_hook != mc_null)){ (*nam##_acquire_hook)(fst, sz); }); \
 		return (nam *)fst; \
 	} \
 	return nam::acquire_alloc(sz); \
@@ -134,7 +148,7 @@ nam::acquire(mc_alloc_size_t sz){ \
 
 // end_macro
 
-#define MCK_DEFINE_ACQUIRE(nam) MCK_DEFINE_ACQUIRE_AVA(nam, mck_all_available(nam))
+//define MCK_DEFINE_ACQUIRE(nam) MCK_DEFINE_ACQUIRE_AVA(nam, mck_all_available(nam))
 
 //! Declares dynamic memory methods for class 'nam'
 #define MCK_DECLARE_MEM_METHODS(nam, module) \
@@ -153,6 +167,25 @@ nam::acquire(mc_alloc_size_t sz){ \
 	MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 
 // end_macro
+
+#define MCK_DECLARE_GET_AVAILABLE() virtual grip& get_available();
+
+#define MCK_DEFINE_GET_AVAILABLE(nam, all_ava) grip& nam::get_available(){ return all_ava; }
+
+//! Calls MCK_DECLARE_MEM_METHODS and MCK_DECLARE_GET_AVAILABLE
+#define MCK_DECLARE_MEM_METHODS_AND_GET_AVA(nam, module) \
+	MCK_DECLARE_MEM_METHODS(nam, module) \
+	MCK_DECLARE_GET_AVAILABLE() \
+
+// end_macro
+
+//! Calls MCK_DEFINE_MEM_METHODS and MCK_DEFINE_GET_AVAILABLE
+#define MCK_DEFINE_MEM_METHODS_AND_GET_AVA(nam, align, all_ava, curr_sep_sz) \
+	MCK_DEFINE_MEM_METHODS(nam, align, all_ava, curr_sep_sz) \
+	MCK_DEFINE_GET_AVAILABLE(nam, all_ava) \
+
+// end_macro
+
 
 //-------------------------------------------------------------------------
 // handler ids
@@ -547,6 +580,11 @@ public:
 	virtual mc_opt_sz_fn 
 	void	init_me(int caller = 0) mc_external_code_ram;
 
+	EMU_DBG_CODE(
+		virtual mc_opt_sz_fn 
+		void	dbg_release(int dbg_caller){}
+	);
+
 	//! Releases this \ref agent so that it can latter be acquired again.
 	mc_opt_sz_fn 
 	void	release(int dbg_caller = 1){
@@ -554,6 +592,7 @@ public:
 		init_me(dbg_caller);
 		grip& ava = get_available();
 		ava.bind_to_my_left(*this);
+		EMU_DBG_CODE(dbg_release(dbg_caller));
 	}
 
 	mc_inline_fn
