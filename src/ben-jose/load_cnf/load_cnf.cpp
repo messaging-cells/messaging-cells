@@ -313,22 +313,6 @@ synapse::load_handler(missive* msv){
 		owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
 }
 
-void dbg_acquire_test() mc_external_code_ram;
-
-void dbg_acquire_test() {
-	if(kernel::get_core_nn() == 15){
-		EMU_LOG("before test (%d)\n", bj_ava_transmitters.is_alone());
-		transmitter* tmt = transmitter::acquire();
-		EMU_LOG("acquire 1 (%d)\n", bj_ava_transmitters.is_alone());
-		tmt->release();
-		EMU_LOG("release 1 (%d)\n", bj_ava_transmitters.is_alone());
-		transmitter* tmt2 = transmitter::acquire();
-		EMU_LOG("acquire 2 (%d)\n", bj_ava_transmitters.is_alone());
-		tmt2->release();
-		EMU_LOG("release 2 (%d)\n", bj_ava_transmitters.is_alone());
-	}
-}
-
 void bj_load_main() {
 	
 	//mc_core_id_t p_koid = mc_map_get_parent_core_id();
@@ -358,8 +342,6 @@ void bj_load_main() {
 		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
 	}
 	ker->user_data = my_net;
-
-	//EMU_DBG_CODE(dbg_acquire_test());
 
 	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
 

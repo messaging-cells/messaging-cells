@@ -178,7 +178,6 @@ BJ_DECLARE_CLS_NAM(polaron)
 BJ_DECLARE_CLS_NAM(tierdata)
 BJ_DECLARE_CLS_NAM(nervenet)
 
-//class mc_aligned synset : public cell {
 class mc_aligned synset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synset, bj_nervenet_mem)
@@ -591,6 +590,28 @@ public:
 
 };
 
+class mc_aligned dbg_stats {
+public:
+	mc_alloc_size_t dbg_tot_new_synset;
+	mc_alloc_size_t dbg_tot_new_tierset;
+	mc_alloc_size_t dbg_tot_new_transmitter;
+	mc_alloc_size_t dbg_tot_new_sync_transmitter;
+	mc_alloc_size_t dbg_tot_new_synapse;
+	mc_alloc_size_t dbg_tot_new_neurostate;
+	mc_alloc_size_t dbg_tot_new_nervenode;
+	mc_alloc_size_t dbg_tot_new_neuron;
+	mc_alloc_size_t dbg_tot_new_polaron;
+	mc_alloc_size_t dbg_tot_new_tierdata;
+
+	dbg_stats() mc_external_code_ram;
+	~dbg_stats() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
+	void dbg_prt_all() mc_external_code_ram;
+};
+
 class mc_aligned nervenet : public cell  {
 public:
 	MCK_DECLARE_MEM_METHODS(nervenet, bj_nervenet_mem)
@@ -632,10 +653,7 @@ public:
 	netstate	act_left_side;
 	netstate	act_right_side;
 
-	mc_alloc_size_t dbg_tot_transmitters_new;
-	mc_alloc_size_t dbg_tot_transmitters_alloc;
-	mc_alloc_size_t dbg_tot_transmitters_acquire;
-	mc_alloc_size_t dbg_tot_transmitters_release;
+	EMU_DBG_CODE(dbg_stats all_dbg_dat);
 
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;

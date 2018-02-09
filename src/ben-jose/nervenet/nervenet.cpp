@@ -50,18 +50,13 @@ nervenet::nervenet(){
 	act_left_side.my_side = side_left;
 	act_right_side.my_side = side_right;
 
-	dbg_tot_transmitters_new = 0;
-	dbg_tot_transmitters_alloc = 0;
-	dbg_tot_transmitters_acquire = 0;
-	dbg_tot_transmitters_release = 0;
 }
 
 nervenet::~nervenet(){} 
 
 transmitter::transmitter(){
 	EMU_CK(bj_nervenet != mc_null);
-	bj_nervenet->dbg_tot_transmitters_new ++;
-	EMU_LOG_STACK((kernel::get_core_nn() == 15), "NEW_TRANSMITTER (%p) \n", (void*)this); 
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_transmitter ++);
 	//init_me();
 } 
 
@@ -76,6 +71,8 @@ transmitter::init_me(int caller){
 }
 
 sync_transmitter::sync_transmitter(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_sync_transmitter ++);
 	//init_me();
 } 
 
@@ -89,6 +86,8 @@ sync_transmitter::init_me(int caller){
 }
 
 synset::synset(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_synset ++);
 	init_me();
 } 
 
@@ -117,6 +116,8 @@ synset::add_right_synapse(synapse* snp){
 }
 
 tierset::tierset(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_tierset ++);
 	init_me();
 } 
 
@@ -128,6 +129,8 @@ tierset::init_me(int caller){
 }
 
 synapse::synapse(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_synapse ++);
 	init_me();
 } 
 
@@ -145,6 +148,8 @@ synapse::init_me(int caller){
 }
 
 neurostate::neurostate(){ 
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_neurostate ++);
 	init_me();
 } 
 
@@ -170,6 +175,8 @@ neurostate::init_me(int caller){
 }
 
 nervenode::nervenode(){ 
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_nervenode ++);
 	init_me();
 } 
 
@@ -187,6 +194,8 @@ nervenode::init_me(int caller){
 }
 
 polaron::polaron(){ 
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_polaron ++);
 	init_me();
 } 
 
@@ -199,6 +208,8 @@ polaron::init_me(int caller){
 }
 
 neuron::neuron(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_neuron ++);
 	init_me();
 } 
 
@@ -446,6 +457,8 @@ netstate::init_me(int caller){
 }
 
 tierdata::tierdata(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_tierdata ++);
 	init_me();
 } 
 
@@ -644,3 +657,38 @@ bj_print_active_cnf(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tier_t
 		my_neu->dbg_prt_nod(sd, prefix, num_pul, num_ti);
 	}
 }
+
+dbg_stats::dbg_stats(){
+	init_me();
+}
+
+dbg_stats::~dbg_stats(){}
+
+void
+dbg_stats::init_me(int caller){
+	dbg_tot_new_synset = 0;
+	dbg_tot_new_tierset = 0;
+	dbg_tot_new_transmitter = 0;
+	dbg_tot_new_sync_transmitter = 0;
+	dbg_tot_new_synapse = 0;
+	dbg_tot_new_neurostate = 0;
+	dbg_tot_new_nervenode = 0;
+	dbg_tot_new_neuron = 0;
+	dbg_tot_new_polaron = 0;
+	dbg_tot_new_tierdata = 0;
+}
+
+void
+dbg_stats::dbg_prt_all(){
+	EMU_LOG("dbg_tot_new_synset = %d \n", dbg_tot_new_synset);
+	EMU_LOG("dbg_tot_new_tierset = %d \n", dbg_tot_new_tierset);
+	EMU_LOG("dbg_tot_new_transmitter = %d \n", dbg_tot_new_transmitter);
+	EMU_LOG("dbg_tot_new_sync_transmitter = %d \n", dbg_tot_new_sync_transmitter);
+	EMU_LOG("dbg_tot_new_synapse = %d \n", dbg_tot_new_synapse);
+	EMU_LOG("dbg_tot_new_neurostate = %d \n", dbg_tot_new_neurostate);
+	EMU_LOG("dbg_tot_new_nervenode = %d \n", dbg_tot_new_nervenode);
+	EMU_LOG("dbg_tot_new_neuron = %d \n", dbg_tot_new_neuron);
+	EMU_LOG("dbg_tot_new_polaron = %d \n", dbg_tot_new_polaron);
+	EMU_LOG("dbg_tot_new_tierdata = %d \n", dbg_tot_new_tierdata);
+}
+

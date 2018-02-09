@@ -4,46 +4,6 @@
 #include "load_cnf.hh"
 #include "stabi.hh"
 
-//-------------------------------------------------------------------------------
-#ifdef MC_IS_EMU_CODE	// dbg_transmitter_alloc
-#ifdef FULL_DEBUG
-
-/*
-extern mc_dbg_alloc_func_t transmitter_alloc_hook;
-extern mc_dbg_alloc_func_t transmitter_acquire_hook;
-
-void bj_dbg_transmmitter_alloc(mc_alloc_size_t sz) mc_external_code_ram;
-void bj_dbg_transmmitter_acquire(void* obj, mc_alloc_size_t sz) mc_external_code_ram;
-
-void 
-bj_dbg_transmmitter_alloc(void* obj, mc_alloc_size_t sz){
-	EMU_CK(bj_nervenet != mc_null);
-	bj_nervenet->dbg_tot_transmitters_alloc += sz;
-	EMU_LOG_STACK((kernel::get_core_nn() == 15), "ALLOC_TRANSMITTER (%p) sz=%d \n", 
-		(void*)obj, sz); 
-}
-
-void 
-bj_dbg_transmmitter_acquire(void* obj, mc_alloc_size_t sz){
-	EMU_CK(bj_nervenet != mc_null);
-	bj_nervenet->dbg_tot_transmitters_acquire += sz;
-	EMU_LOG_STACK((kernel::get_core_nn() == 15), "ACQUIRE_TRANSMITTER (%p) sz=%d \n", 
-		(void*)obj, sz); 
-}
-
-void
-transmitter::dbg_release(int dbg_caller){
-	EMU_CK(bj_nervenet != mc_null);
-	bj_nervenet->dbg_tot_transmitters_release ++;
-	EMU_LOG_STACK((kernel::get_core_nn() == 15), "RELEASE_TRANSMITTER (%p) caller=%d \n", 
-		(void*)this, dbg_caller); 
-}
-*/
-
-#endif
-#endif	// dbg_transmitter_alloc
-//-------------------------------------------------------------------------------
-
 mc_c_decl int main();
 
 char load_module_nam[] mc_external_data_ram = "module1";
@@ -142,10 +102,7 @@ void mc_cores_main() {
 	}
 	bj_stabi_main();
 
-	EMU_LOG("dbg_tot_transmitters_new = %d \n", bj_nervenet->dbg_tot_transmitters_new);
-	EMU_LOG("dbg_tot_transmitters_alloc = %d \n", bj_nervenet->dbg_tot_transmitters_alloc);
-	EMU_LOG("dbg_tot_transmitters_acquire = %d \n", bj_nervenet->dbg_tot_transmitters_acquire);
-	EMU_LOG("dbg_tot_transmitters_release = %d \n", bj_nervenet->dbg_tot_transmitters_release);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
 
 	EMU_PRT("SOLVER_ENDED\n");
 	//EMU_LOG("SOLVER_ENDED\n");
