@@ -11,7 +11,6 @@
 
 //include <limits.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <inttypes.h>
 
 #include "attribute.h"
@@ -21,9 +20,6 @@
 #ifdef __cplusplus
 mc_c_decl {
 #endif
-
-#define mc_false 0x00
-#define mc_true 0xff
 
 typedef uint8_t mc_bool_t;
 

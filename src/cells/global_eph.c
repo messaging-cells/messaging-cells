@@ -48,6 +48,7 @@ void
 mck_abort(mc_addr_t err, char* msg) {
 	int16_t sz_trace = -1;
 	void** trace = mc_null;
+
 	if(msg != mc_null){
 		sz_trace = MC_MAX_CALL_STACK_SZ;
 		trace = MC_CORE_INFO->mck_dbg_call_stack_trace;

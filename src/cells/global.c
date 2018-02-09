@@ -110,4 +110,12 @@ mc_extnl_ram_load_data_fill(mc_link_syms_data_st* syms){
 	syms->extnl_host_alloc_disp = syms->extnl_host_alloc_orig - ex_orig;
 }
 
+void 
+mck_set_finished(uint8_t val) {
+	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt; 
+	if(off_core_pt != mc_null){
+		mc_set_off_core_var(off_core_pt->is_finished, val);
+	}
+}
+
 

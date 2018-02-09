@@ -35,6 +35,8 @@ typedef agent_ref cell_ref_t;
 typedef uint16_t mck_token_t; 
 typedef uint16_t mc_alloc_size_t; 
 
+#define BJ_INVALID_TOKEN ((mck_token_t)(~((mck_token_t)0x0)))
+#define BJ_INVALID_ALLOC_SZ ((mc_alloc_size_t)(~((mc_alloc_size_t)0x0)))
 
 //-------------------------------------------------------------------------
 // casts
@@ -72,9 +74,14 @@ typedef void (*mc_dbg_alloc_func_t)(void* obj, mc_alloc_size_t sz);
 EMU_DBG_CODE(mc_dbg_alloc_func_t nam##_alloc_hook = mc_null); \
 nam* \
 nam::acquire_alloc(mc_alloc_size_t sz){ \
+	MCK_CK(sz != BJ_INVALID_ALLOC_SZ); \
 	nam* obj = mc_malloc##align(nam, sz); \
 	EMU_DBG_CODE(if(nam##_alloc_hook != mc_null){ (*nam##_alloc_hook)(obj, sz); }); \
 	if(obj == mc_null){ \
+		mck_slog2(#nam); \
+		mck_slog2("_OUT_OF_MEM.acquire_alloc_NULL_OBJECT.\n"); \
+		mck_sprt2(#nam); \
+		mck_sprt2("_OUT_OF_MEM.acquire_alloc_NULL_OBJECT.\n"); \
 		mck_abort((mc_addr_t)sz, err_1); \
 	} \
 	MCK_CK(MC_IS_ALIGNED_##align(obj)); \
@@ -108,7 +115,7 @@ nam::get_curr_separate_sz(){ \
 void \
 nam::separate(mc_alloc_size_t sz){ \
 	if(sz == 0){ return; } \
-	if(sz == ((mc_alloc_size_t)(-1))){ sz = nam::get_curr_separate_sz(); } \
+	if(sz == BJ_INVALID_ALLOC_SZ){ sz = nam::get_curr_separate_sz(); } \
 	grip& ava = all_ava; \
 	nam* obj = nam::acquire_alloc(sz); \
 	for(int bb = 0; bb < sz; bb++){ \
@@ -136,7 +143,7 @@ nam::acquire(mc_alloc_size_t sz){ \
 	if(sz == 1){ \
 		EMU_DBG_CODE(bool was_alone = ava.is_alone()); \
 		if(ava.is_alone()){ \
-			separate(-1); \
+			separate(BJ_INVALID_ALLOC_SZ); \
 		} \
 		binder* fst = ava.bn_right; \
 		fst->let_go(); \

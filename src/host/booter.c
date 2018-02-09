@@ -309,6 +309,7 @@ mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_
 		}
 	}
 
+	fflush(flog);
 	//fclose(flog);
 }
 

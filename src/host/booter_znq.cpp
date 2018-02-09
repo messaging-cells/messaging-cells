@@ -1,9 +1,11 @@
 
 
+
 #include <math.h>
 #include <sched.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <e-hal.h>
 #include <epiphany-hal-api-local.h>
@@ -345,7 +347,7 @@ mc_host_run(){
 
 						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
-						//printf("Finished\n");
+						printf("Finished %d %p \n", num_core, (void*)(uintptr_t)(sh_dat_1->is_finished));
 						//print_core_info(sh_dat_1, &dev, row, col);
 						print_exception_case(sh_dat_1, &dev, row, col);
 					}

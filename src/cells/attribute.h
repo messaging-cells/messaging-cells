@@ -4,12 +4,16 @@
 #ifndef MC_ATTRIBUTE_H
 #define MC_ATTRIBUTE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "debug.h"
 
 #ifdef __cplusplus
 mc_c_decl {
 #endif
+
+#define mc_false 0x00
+#define mc_true 0xff
 
 #if UINTPTR_MAX == 0xffffffff
 	/* 32-bit */

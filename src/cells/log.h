@@ -44,33 +44,42 @@ typedef enum mc_type_def mc_type_t;
 // log messages
 
 void
-mck_aux_sout(char* msg, mc_out_type_t outt) mc_external_code_ram;
+mck_aux_sout(bool cond, char* msg, mc_out_type_t outt) mc_external_code_ram;
 
 //! Locks this core log file
 mc_inline_fn void
 mck_lock_log(){
-	mck_aux_sout(mc_cstr("lck"), MC_OUT_LOCK_LOG);
+	mck_aux_sout(mc_true, mc_cstr("lck"), MC_OUT_LOCK_LOG);
 }
 
 //! Unocks this core log file
 mc_inline_fn void
 mck_unlock_log(){
-	mck_aux_sout(mc_cstr("ulk"), MC_OUT_UNLOCK_LOG);
+	mck_aux_sout(mc_true, mc_cstr("ulk"), MC_OUT_UNLOCK_LOG);
 }
 
 //! Logs a string in this core log file
 mc_inline_fn void
 mck_slog(char* msg){
-	mck_aux_sout(msg, MC_OUT_LOG);
+	mck_aux_sout(mc_true, msg, MC_OUT_LOG);
 }
 
 //! Sames as \ref mck_slog but it does a const_cast<char *> for you so you can use directly it in c++.
 #define	mck_slog2(msg) mck_slog(mc_cstr(msg))
 
+//! Conditionally logs a string in this core log file
+mc_inline_fn void
+mck_cond_slog(bool cond, char* msg){
+	mck_aux_sout(cond, msg, MC_OUT_LOG);
+}
+
+//! Sames as \ref mck_cond_slog but it does a const_cast<char *> for you so you can use directly it in c++.
+#define	mck_cond_slog2(cond, msg) mck_cond_slog(cond, mc_cstr(msg))
+
 //! Prints a string to stdout in the host.
 mc_inline_fn void
 mck_sprt(char* msg){
-	mck_aux_sout(msg, MC_OUT_PRT);
+	mck_aux_sout(mc_true, msg, MC_OUT_PRT);
 }
 
 //! Sames as \ref mck_sprt but it does a const_cast<char *> for you so you can use directly it in c++.

@@ -121,13 +121,8 @@ typedef struct mck_glb_sys_def mck_glb_sys_st;
 void 
 mck_abort(mc_addr_t err, char* msg) mc_external_code_ram;
 
-void mc_inline_fn
-mck_set_finished(uint8_t val) {
-	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt; 
-	if(off_core_pt != mc_null){
-		mc_set_off_core_var(off_core_pt->is_finished, val);
-	}
-}
+void 
+mck_set_finished(uint8_t val) mc_external_code_ram;
 
 void 
 mck_glb_init(bool is_host) mc_external_code_ram;

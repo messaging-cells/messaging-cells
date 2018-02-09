@@ -447,6 +447,7 @@ nervenode::stabi_recv_charge_all(propag_data* dat){
 
 	neurostate& stt = get_neurostate(dat->sd);
 
+	mck_slog2("dbg1.chg_all\n");
 	EMU_LOG("nervenode::stabi_recv_charge_all %s %ld %s stb_src=%p \n", 
 			node_kind_to_str(ki), id, net_side_to_str(dat->sd), stt.stabi_source);
 
@@ -473,6 +474,8 @@ nervenode::stabi_recv_charge_all(propag_data* dat){
 
 	mc_set_flag(stt.stabi_flags, bj_stt_charge_all_flag);
 	stt.stabi_source = dat->snp;	
+
+	mck_slog2("dbg1.chg_all2\n");
 }
 
 binder&
@@ -515,6 +518,7 @@ nervenode::stabi_recv_ping(propag_data* dat){
 	neurostate& stt = get_neurostate(dat->sd);
 	stt.stabi_num_ping++;
 
+	mck_slog2("dbg1.inc_ping\n");
 	EMU_LOG("INC_PINGS %s %ld %s #pings=%d TI=%d \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd), 
 			stt.stabi_num_ping, dat->ti);
 }
@@ -876,6 +880,7 @@ neuron::stabi_start_nxt_tier(propag_data* dat){
 	stt.send_all_ti_done(this, dat->sd);
 
 	EMU_CODE(dbg_prt_nod(dat->sd, mc_cstr("TIER__"), 7, dat->ti));
+	mck_slog2("dbg1.reset\n");
 
 	netstate& nst = bj_nervenet->get_active_netstate(dat->sd);
 	nst.update_sync();
@@ -904,6 +909,9 @@ void bj_stabi_main() {
 
 	EMU_CODE(if(kernel::get_core_nn() == 0){ emu_prt_tok_codes(); });
 
+	mck_ilog(sizeof(mck_glb_sys_st));
+	mck_slog2("__dbg1.stabi\n");
+
 	my_net->send(my_net, bj_tok_stabi_start);
 	kernel::run_sys();
 
@@ -914,6 +922,7 @@ void bj_stabi_main() {
 	mck_slog2("END_STABI___");
 	mck_ilog(nn);
 	mck_slog2("_________________________\n");
+	mck_sprt2("dbg1.stabi.end\n");
 
 }
 

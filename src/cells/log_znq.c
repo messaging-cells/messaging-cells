@@ -4,7 +4,7 @@
 #include "global.h"
 
 void
-mck_aux_sout(char* msg, mc_out_type_t outt){ 
+mck_aux_sout(bool cond, char* msg, mc_out_type_t outt){ 
 }
 
 void
