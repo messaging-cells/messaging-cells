@@ -9,7 +9,6 @@
 
 #include <stddef.h>
 #include "interruptions_eph.h"
-#include "err_msgs.h"
 #include "loader.h"
 #include "cell.hh"
 
@@ -284,13 +283,13 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 
 grip&	
 agent::get_available(){
-	mck_abort((mc_addr_t)err_9, err_9);
+	mck_abort(__LINE__, MC_ABORT_MSG("Invalid agent::get_available func call\n"));
 	return *((grip*)mc_null);
 }
 
 void
 agent::init_me(int caller){
-	mck_abort((mc_addr_t)err_10, err_10);
+	mck_abort(__LINE__, MC_ABORT_MSG("Invalid agent::init_me func call\n"));
 }
 
 cell*	//	static 
@@ -319,21 +318,17 @@ kernel::get_host_cell(){
 	return ker->host_kernel->first_cell;
 }
 
-char* err_cell_07 = 
-	mc_cstr("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs CAN NOT be mc_null. \n");
-
-char* err_cell_08 = 
-	mc_cstr("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs[0] MUST be mc_null. \n");
-
 void // static
 kernel::fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 	if(tot_hdlrs > 0){
 		if(hdlrs == mc_null){
-			mck_abort((mc_addr_t)err_cell_07, err_cell_07);
+			mck_abort(__LINE__, 
+				MC_ABORT_MSG("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs CAN NOT be mc_null. \n"));
 		}
 		if((hdlrs[0] != mc_null) && (hdlrs[0] != mc_kernel_handler)){
 			EMU_PRT("hdlrs[0] = %p \n", (void*)(hdlrs[0]));
-			mck_abort((mc_addr_t)err_cell_08, err_cell_08);
+			mck_abort(__LINE__, 
+				MC_ABORT_MSG("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs[0] MUST be mc_null. \n"));
 		}
 		hdlrs[0] = mc_kernel_handler;
 	}
@@ -425,8 +420,7 @@ mck_is_id_inited(mc_core_id_t dst_id){
 	return true;
 }
 
-char* err_cell_06 mc_external_data_ram = 
-	mc_cstr("ABORTING. MUST call 'kernel::set_handlers' BEFORE 'kernel::run_sys'. \n");
+#define MC_ERR_CELL_01 "ABORTING. MUST call 'kernel::set_handlers' BEFORE 'kernel::run_sys'. \n"
 
 void 
 kernel::handle_missives(){
@@ -434,9 +428,9 @@ kernel::handle_missives(){
 	binder * fst, * lst, * wrk, * nxt;
 
 	if(all_handlers == mc_null){
-		mck_slog2(err_cell_06);
-		EMU_PRT(err_cell_06);
-		mck_abort((mc_addr_t)err_cell_06, err_cell_06);
+		mck_slog2(MC_ERR_CELL_01);
+		EMU_PRT(MC_ERR_CELL_01);
+		mck_abort(__LINE__, MC_ABORT_MSG(MC_ERR_CELL_01));
 		return;
 	}
 
@@ -832,24 +826,20 @@ mc_kernel_handler(missive* msv) {
 	ker->kernel_first_cell_msv_handler(msv);
 }
 
-char* err_cell_01 mc_external_data_ram = mc_cstr("kernel::stop_sys. Invalid stop zero key.");
-char* err_cell_02 mc_external_data_ram = mc_cstr("kernel::stop_sys. Already stopping with different key.");
-char* err_cell_03 mc_external_data_ram = mc_cstr("kernel::stop_sys. Already received different stop key.");
-
 void // static
 kernel::stop_sys(mck_token_t key){
 	kernel* ker = MCK_KERNEL;
 	if(key == 0){ 
-		mck_abort((mc_addr_t)err_cell_01, err_cell_01);
+		mck_abort(__LINE__, MC_ABORT_MSG("kernel::stop_sys. Invalid stop zero key.\n"));
 	}
 	if(ker->stop_key != 0){ 
 		if(ker->stop_key != key){
-			mck_abort((mc_addr_t)err_cell_02, err_cell_02);
+			mck_abort(__LINE__, MC_ABORT_MSG("kernel::stop_sys. Already stopping with different key.\n"));
 		}
 		return; 
 	}
 	if((ker->rcvd_stop_key != 0) && (ker->rcvd_stop_key != key)){ 
-		mck_abort((mc_addr_t)err_cell_03, err_cell_03);
+		mck_abort(__LINE__, MC_ABORT_MSG("kernel::stop_sys. Already received different stop key.\n"));
 	}
 
 	ker->stop_key = key;
@@ -918,12 +908,6 @@ kernel::handle_stop(){
 	}
 }
 
-char* err_cell_04 mc_external_data_ram = 
-	mc_cstr("kernel::kernel_first_cell_msv_handler. Invalid kernel tok.");
-
-char* err_cell_05 mc_external_data_ram = 
-	mc_cstr("kernel::kernel_first_cell_msv_handler. Inconsistent received sotp key.");
-
 void 
 kernel::kernel_first_cell_msv_handler(missive* msv){
 	kernel_tok_t tok = (kernel_tok_t)msv->tok;
@@ -943,7 +927,8 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 				rcvd_stop_key = rem_key;
 			}
 			if(rcvd_stop_key != rem_key){
-				mck_abort((mc_addr_t)err_cell_05, err_cell_05);
+				mck_abort(__LINE__, 
+					MC_ABORT_MSG("kernel::kernel_first_cell_msv_handler. Inconsistent received sotp key.\n"));
 			}
 
 			num_childs_stopping++;
@@ -953,7 +938,8 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 			send_stop_to_children();
 		break;
 		default:
-			mck_abort((mc_addr_t)err_cell_04, err_cell_04);
+			mck_abort(__LINE__, 
+				MC_ABORT_MSG("kernel::kernel_first_cell_msv_handler. Invalid kernel tok.\n"));
 		break;
 	}
 }

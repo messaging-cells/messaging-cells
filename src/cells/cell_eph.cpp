@@ -3,7 +3,6 @@
 
 #include "all_regs.h"
 
-#include "err_msgs.h"
 #include "cell.hh"
 #include "dyn_mem.h"
 
@@ -23,6 +22,6 @@ mck_send_irq(mc_core_id_t koid, uint16_t num_irq) {
 
 kernel* //static 
 kernel::get_core_kernel(mc_core_id_t id){
-	mck_abort((mc_addr_t)&(kernel::get_core_kernel), err_14);
+	mck_abort(__LINE__, MC_ABORT_MSG("Invalid kernel::get_core_kernel func call\n"));
 	return mc_null;
 }

@@ -8,7 +8,6 @@ SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_CELLS_DIR)
 
 SOURCES := \
 	$(SRC_CELLS_DIR)/log_znq.c \
-	$(SRC_CELLS_DIR)/err_msgs.c \
 	$(SRC_CELLS_DIR)/global.c \
 	$(SRC_CELLS_DIR)/global_znq.cpp \
 	$(SRC_CELLS_DIR)/binder.cpp \

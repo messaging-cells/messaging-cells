@@ -93,7 +93,7 @@ void bj_load_shd_cnf(){
 
 	binder * fst, * lst, * wrk;
 
-	binder* nn_all_pos = &(nn_cnf->all_pre_pos);
+	binder* nn_all_pos = &(nn_cnf->all_pre_pos); // nn_cnf is already core_pt so nn_all_pos is core_pt
 	fst = (binder*)mc_host_pt_to_core_pt(nn_all_pos->bn_right);
 	lst = nn_all_pos;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
@@ -130,7 +130,7 @@ void bj_load_shd_cnf(){
 		opp->loaded = mck_as_glb_pt(neg_nod);
 	}
 
-	binder* nn_all_neu = &(nn_cnf->all_pre_neu);
+	binder* nn_all_neu = &(nn_cnf->all_pre_neu); // nn_cnf is already core_pt so nn_all_neu is core_pt
 	fst = (binder*)mc_host_pt_to_core_pt(nn_all_neu->bn_right);
 	lst = nn_all_neu;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
@@ -313,66 +313,6 @@ synapse::load_handler(missive* msv){
 		owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
 }
 
-void bj_load_main() {
-	
-	//mc_core_id_t p_koid = mc_map_get_parent_core_id();
-	//mck_slog2("PARENT___");
-	//if(p_koid == 0){
-	//	mck_slog2("_IS_NULL_");
-	//} else {
-	//	mck_ilog(mc_id_to_nn(p_koid));
-	//}
-	//mck_slog2("___\n");
-	
-	//print_childs();
-
-	//kernel* ker = kernel::get_sys();
-	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = kernel::get_core_nn();
-
-	//EMU_PRT("bj_load_main 1 \n");
-
-	//mck_slog2("LOAD_CNF\n");
-	if(ker->magic_id != MC_MAGIC_ID){
-		mck_slog2("BAD_MAGIC\n");
-	}
-	
-	nervenet* my_net = nervenet::acquire_alloc();
-	if(my_net == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
-	}
-	ker->user_data = my_net;
-
-	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
-
-	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
-	bj_nervenet->shd_cnf = nn_cnf;
-	
-	//mck_slog2("bj_nervenet_MAGIC_____");
-	//mck_ilog(bj_nervenet->MAGIC);
-	//mck_slog2("_____\n");
-
-	bj_load_shd_cnf();
-
-	bj_load_init_handlers();
-
-	//EMU_PRT("END_LOAD:SHD \n");
-
-	kernel::run_sys();
-
-	my_net->act_left_side.init_tiers(*my_net);
-	my_net->act_right_side.init_tiers(*my_net);
-
-	EMU_CODE(tierdata& dat = my_net->act_left_side.get_last_tier());
-	EMU_LOG("\n=========================================================================\n");
-	//EMU_LOG("inp_neu=%ld inp_pol=%ld \n", dat.inp_neus, dat.inp_pols);
-	EMU_LOG("inp_neu=%ld \n", dat.inp_neus);
-
-	//bj_print_loaded_cnf();
-
-	//mck_slog2("END_LOADING_CNF_____________________________\n");
-}
-
 void
 tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 	binder * fst, * lst, * wrk;
@@ -414,4 +354,65 @@ netstate::init_tiers(nervenet& my_net){
 
 	all_tiers.bind_to_my_left(*ti_dat);
 }
+
+void bj_test_func_1() mc_external_code_ram;
+void bj_test_func_2(binder* pt_1) mc_external_code_ram;
+
+void bj_load_main() {
+	kernel* ker = mck_get_kernel();
+	mc_core_nn_t nn = kernel::get_core_nn();
+
+	if(ker->magic_id != MC_MAGIC_ID){
+		mck_slog2("BAD_MAGIC\n");
+	}
+	
+	nervenet* my_net = nervenet::acquire_alloc();
+	if(my_net == mc_null){
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
+	}
+	ker->user_data = my_net;
+
+	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
+
+	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
+	bj_nervenet->shd_cnf = nn_cnf;
+	
+	bj_load_shd_cnf();
+
+	bj_load_init_handlers();
+
+	//MC_DBG(if(kernel::get_core_nn() == 0){ bj_test_func_1(); });
+
+	kernel::run_sys();
+
+	my_net->act_left_side.init_tiers(*my_net);
+	my_net->act_right_side.init_tiers(*my_net);
+
+	EMU_CODE(tierdata& dat = my_net->act_left_side.get_last_tier());
+	EMU_LOG("\n=========================================================================\n");
+	EMU_LOG("inp_neu=%ld \n", dat.inp_neus);
+}
+
+void bj_test_func_1(){
+	neuron* neu2 = neuron::acquire();
+	binder* sy1_n2 = (&(neu2->left_side.stabi_active_set.all_syn));
+	MCK_CK(! mc_addr_has_id(sy1_n2));
+	bj_test_func_2(sy1_n2);
+
+	neuron* gl_neu2 = (neuron*)mck_as_glb_pt(neu2);
+	binder* sy2_n2 = (&(gl_neu2->left_side.stabi_active_set.all_syn));
+	//MCK_CK(! mc_addr_has_id(sy2_n2));
+	bj_test_func_2(sy2_n2);
+}
+
+void bj_test_func_2(binder* pt_1){
+	binder *lst = pt_1;
+	MC_MARK_USED(lst);
+
+	MCK_CK(mc_addr_is_local(lst));
+	MCK_CK(! mc_addr_has_id(lst));
+	mck_slog2("TEST_OK\n");
+	// mck_as_loc_pt(pt)
+}
+
 

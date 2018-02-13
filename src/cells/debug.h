@@ -6,6 +6,11 @@
 
 #define mc_c_decl extern "C"
 
+#define MC_STRINGIFY(x) #x
+#define MC_TOSTRING(x) MC_STRINGIFY(x)
+
+#define MC_ABORT_MSG(msg) mc_cstr("ABORTING. '" msg "' at " __FILE__ "(" MC_TOSTRING(__LINE__) ")")
+
 #ifdef __cplusplus
 mc_c_decl {
 #endif

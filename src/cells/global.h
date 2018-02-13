@@ -14,7 +14,6 @@
 #endif
 
 #include "debug.h"
-#include "err_msgs.h"
 #include "shared.h"
 #include "loader.h"
 #include "trace.h"
@@ -138,7 +137,13 @@ mck_set_irq0_handler() mc_external_code_ram;
 //======================================================================
 // mc_asserts
 
-#define MCK_INCORE_ASSERT(cond) MC_DBG(if(! (cond)){ mck_abort((mc_addr_t)(void*)err_11, err_11); } )
+#define MC_ASSERT_MSG(cond) mc_cstr("ASSERT (" #cond ") failed at " __FILE__ "(" MC_TOSTRING(__LINE__) ")")
+//define MC_ASSERT_MSG(cond) mc_cstr(#cond)
+
+#define MCK_INCORE_ASSERT(cond) MC_DBG( \
+	if(! (cond)){ \
+		mck_abort(0xdeadbeaf, MC_ASSERT_MSG(cond)); \
+	} )
 
 // end_of_macro
 
@@ -197,7 +202,7 @@ void ck_shd_code();
 	mck_check_stack_pointer() {
 		mc_addr_t curr_sp = (mc_addr_t)mck_get_stack_pointer();
 		if(curr_sp < MC_VAL_CORE_STACK_ORIG){
-			mck_abort((mc_addr_t)(void*)err_16, err_16);
+			mck_abort(__LINE__, MC_ABORT_MSG("Stack_overflow_error"));
 		}
 	}
 

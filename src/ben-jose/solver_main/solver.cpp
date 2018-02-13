@@ -81,6 +81,8 @@ void mc_cores_main() {
 	EMU_PRT("SOLVER main (KER=%p)\n", (void*)MCK_KERNEL);
 	mck_slog2("SOLVER_STARTED\n");	
 
+	bj_print_class_szs();
+
 	//EMU_DBG_CODE(transmitter_alloc_hook = bj_dbg_transmmitter_alloc);
 	//EMU_DBG_CODE(transmitter_acquire_hook = bj_dbg_transmmitter_acquire);
 

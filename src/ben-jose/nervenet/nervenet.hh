@@ -312,15 +312,16 @@ public:
 #define	bj_stt_charge_all_flag mc_flag1
 #define	bj_stt_charge_src_flag mc_flag2
 
+//class neurostate {
 class mc_aligned neurostate {
 public:
+	synset			stabi_active_set;
 	num_tier_t		stabi_num_tier;
 
 	synapse*		stabi_source;
 	grip			stabi_tiers;
 
 	num_syn_t 		prev_tot_active;
-	synset			stabi_active_set;
 
 	mc_flags_t		stabi_flags;
 	num_syn_t		stabi_num_complete;
@@ -705,6 +706,7 @@ void bj_print_loaded_cnf() mc_external_code_ram;
 void bj_print_active_cnf(net_side_t sd, char* prefix, num_pulse_t num_pul, 
 			num_tier_t num_ti, bool with_pols = false) mc_external_code_ram;
 
+void bj_print_class_szs() mc_external_code_ram;
 
 #endif		// NERVENET_H
 

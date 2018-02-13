@@ -17,7 +17,6 @@ SOURCES := \
 	$(SRC_CELLS_DIR)/log.c \
 	$(SRC_CELLS_DIR)/shared.c \
 	$(SRC_CELLS_DIR)/shared_emu.cpp \
-	$(SRC_CELLS_DIR)/err_msgs.c \
 	$(SRC_CELLS_DIR)/global.c \
 	$(SRC_CELLS_DIR)/global_emu.cpp \
 	$(SRC_CELLS_DIR)/broadcast_maps.c \

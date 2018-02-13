@@ -1,6 +1,5 @@
 
 #include "interruptions_eph.h"
-#include "err_msgs.h"
 #include "global.h"
 #include "dyn_mem.h"
 
@@ -30,7 +29,7 @@ void abort() mc_external_code_ram;
 void
 abort(){	// Needed when optimizing for size
 	MCK_CK(0);
-	mck_abort((mc_addr_t)abort, err_5);
+	mck_abort(__LINE__, MC_ABORT_MSG("abort() func.\n"));
 	while(1);
 }
 
@@ -76,19 +75,19 @@ mck_abort(mc_addr_t err, char* msg) {
 void
 mc_host_init(){
 	// a core must never call this
-	mck_abort((mc_addr_t)mc_host_init, err_2);
+	mck_abort(__LINE__, MC_ABORT_MSG("mc_host_init abort\n"));
 }
 
 void
 mc_host_run(){
 	// a core must never call this
-	mck_abort((mc_addr_t)mc_host_run, err_3);
+	mck_abort(__LINE__, MC_ABORT_MSG("mc_host_run abort\n"));
 }
 
 void
 mc_host_finish(){
 	// a core must never call this
-	mck_abort((mc_addr_t)mc_host_finish, err_4);
+	mck_abort(__LINE__, MC_ABORT_MSG("mc_host_finish abort\n"));
 }
 
 mc_addr_t 

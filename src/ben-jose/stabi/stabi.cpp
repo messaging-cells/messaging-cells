@@ -38,12 +38,13 @@ synapse::send_transmitter(stabi_tok_t tok, net_side_t sd, bool dbg_is_forced){
 
 	num_tier_t ti = owner->get_neurostate(sd).stabi_num_tier;
 
+	MC_DBG(node_kind_t the_ki = owner->ki);
+	MCK_CK((the_ki == nd_pos) || (the_ki == nd_neg) || (the_ki == nd_neu));
 	EMU_CODE(nervenode* rem_nd = mate->owner);
 	EMU_LOG("::send_transmitter %s %s [%s %ld ->> %s %s %ld k%d] wrk_TI=%d  \n", stabi_tok_to_str(tok), 
  		net_side_to_str(sd), node_kind_to_str(owner->ki), owner->id, 
 		((dbg_is_forced)?("FORCED"):("")), node_kind_to_str(rem_nd->ki), rem_nd->id, 
 		mc_id_to_nn(mc_addr_get_id(mate)), ti);
-
 
 	transmitter* trm = transmitter::acquire();	// FIX_THIS for parallella (throws NULL_OBJ).
 	trm->src = this;
@@ -95,7 +96,7 @@ synset::calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) { // ca
 
 	binder* grps = &(all_grp);
 	fst = (binder*)(grps->bn_right);
-	lst = grps;
+	lst = (binder*)mck_as_loc_pt(grps);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		synset* sub_grp = (synset*)wrk;
 		EMU_CK(sub_grp->parent == this);
@@ -246,7 +247,7 @@ nervenet::stabi_nervenet_start(){
 
 	binder* pt_all_neu = &(all_neu);
 	fst = (binder*)(pt_all_neu->bn_right);
-	lst = pt_all_neu;
+	lst = (binder*)mck_as_loc_pt(pt_all_neu);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		neuron* my_neu = (neuron*)wrk;
 		EMU_CK(my_neu->ki == nd_neu);
@@ -261,12 +262,13 @@ nervenet::stabi_nervenet_start(){
 
 void 
 send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec){
+	//MCK_CK(! mc_addr_has_id(nn_all_snp));
 	EMU_CK(mth != mc_null);
 
 	binder * fst, * lst, * wrk;
 
 	fst = (binder*)(nn_all_snp->bn_right);
-	lst = nn_all_snp;
+	lst = (binder*)mck_as_loc_pt(nn_all_snp);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		synapse* my_snp = mc_null;
 		if(sd == side_left){
@@ -279,6 +281,7 @@ send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_
 		EMU_CK(my_snp != mc_null);
 		EMU_CK(bj_is_synapse(my_snp));
 		//EMU_PRT("send_all_synapses snp=%p \n\n", (void*)my_snp);
+		MCK_CK(my_snp->owner->ki != nd_invalid);
 
 		(my_snp->owner->*mth)(my_snp, sd, from_rec);
 	}
@@ -287,13 +290,16 @@ send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_
 void
 synset::stabi_rec_send_all(bj_callee_t mth, net_side_t sd){
 	MCK_CHECK_SP();
+	//MCK_CK(! mc_addr_has_id(this));
+	//MCK_CK(! mc_addr_has_id(&(all_syn)));
+	//MCK_CK(! mc_addr_has_id(&(all_grp)));
 	send_all_synapses(&(all_syn), mth, sd, true /* IS_FROM_REC */);
 
 	binder * fst, * lst, * wrk;
 
 	binder* grps = &(all_grp);
 	fst = (binder*)(grps->bn_right);
-	lst = grps;
+	lst = (binder*)mck_as_loc_pt(grps);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		synset* sub_grp = (synset*)wrk;
 		EMU_CK(sub_grp->parent == this);
@@ -936,7 +942,7 @@ netstate::get_tier(num_tier_t nti){
 
 	binder* tis = &(all_tiers);
 	fst = (binder*)(tis->bn_left);
-	lst = tis;
+	lst = (binder*)mck_as_loc_pt(tis);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_left)){
 		tierdata* tidat = (tierdata*)wrk;
 		if(tidat->tdt_id == nti){
@@ -1008,7 +1014,7 @@ netstate::inc_ety_chdn(num_tier_t nti){
 
 	binder* tis = &(all_tiers);
 	fst = (binder*)(&dat);
-	lst = tis;
+	lst = (binder*)mck_as_loc_pt(tis);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		tierdata* tidat = (tierdata*)wrk;
 		tidat->ety_chdn++;
@@ -1192,3 +1198,5 @@ netstate::update_sync(){
 		wt_tdt.inp_neus, wt_tdt.stl_neus);*/
 }
 
+	// mc_addr_is_local(addr)
+	// mck_as_loc_pt(pt)

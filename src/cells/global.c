@@ -1,5 +1,4 @@
 
-#include "err_msgs.h"
 #include "global.h"
 #include "dyn_mem.h"
 
@@ -14,7 +13,7 @@ void
 mck_glb_init(bool is_host) {
 	ZNQ_CODE(
 		if(MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_orig == 0){
-			mck_abort((mc_addr_t)mck_glb_init, "mck_glb_init. Use mc_host_init before.");
+			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init. Use mc_host_init before.\n"));
 		}
 	);
 	mc_init_dyn_mem();
@@ -33,7 +32,7 @@ mck_glb_init(bool is_host) {
 	mc_init_glb_sys_sz(sys_sz);
 	
 	if(MCK_PT_EXTERNAL_HOST_DATA->magic_id != MC_MAGIC_ID){
-		mck_abort((mc_addr_t)mck_glb_init, err_6);
+		mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_1.\n"));
 	}
 
 	MCK_PT_EXTERNAL_HOST_DATA->pt_this_from_eph = MCK_PT_EXTERNAL_HOST_DATA;	// should be same for all cores
@@ -61,7 +60,7 @@ mck_glb_init(bool is_host) {
 	if(num_core < mc_out_num_cores){
 		glb_dat->off_core_pt = &((MCK_PT_EXTERNAL_HOST_DATA->sys_cores)[num_core]);
 		if((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core].magic_id != MC_MAGIC_ID){
-			mck_abort((mc_addr_t)mck_glb_init, err_7);
+			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_2.\n"));
 		}
 
 		mc_core_out_st* out_st = &((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core]);
@@ -70,7 +69,7 @@ mck_glb_init(bool is_host) {
 		mc_rr_init(glb_dat->write_rrarray, MC_OUT_BUFF_SZ, out_st->buff, 0);
 
 		if(glb_dat->off_core_pt->magic_id != MC_MAGIC_ID){
-			mck_abort((mc_addr_t)mck_glb_init, err_8);
+			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_3.\n"));
 		}
 
 		// glb_dat->off_core_pt init	

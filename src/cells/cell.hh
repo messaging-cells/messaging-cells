@@ -14,7 +14,6 @@
 #include <new>
 #include "dyn_mem.h"
 #include "binder.hh"
-#include "err_msgs.h"
 #include "global.h"
 //include "cores_main.h"
 
@@ -82,7 +81,7 @@ nam::acquire_alloc(mc_alloc_size_t sz){ \
 		mck_slog2("_OUT_OF_MEM.acquire_alloc_NULL_OBJECT.\n"); \
 		mck_sprt2(#nam); \
 		mck_sprt2("_OUT_OF_MEM.acquire_alloc_NULL_OBJECT.\n"); \
-		mck_abort((mc_addr_t)sz, err_1); \
+		mck_abort(sz, MC_ABORT_MSG("acquire_alloc abort. NULL OBJ.\n")); \
 	} \
 	MCK_CK(MC_IS_ALIGNED_##align(obj)); \
 	for(int bb = 0; bb < sz; bb++){ \
