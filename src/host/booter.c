@@ -90,7 +90,7 @@ int mch_prt_in_core_shd_dat(mck_glb_sys_st* sh_dat){
 		return 1;
 	}
 	fprintf(stderr, "----------------------------------------------------------------------------\n");
-	fprintf(stderr, "InCORE 0x%03x \n", sh_dat->the_core_id);
+	fprintf(stderr, "InCORE 0x%03x (%d)\n", sh_dat->the_core_id, sh_dat->the_core_nn);
 	
 	ZNQ_CODE(fprintf(stderr, "min_sp=0x%08x \n", sh_dat->dbg_min_sp));
 

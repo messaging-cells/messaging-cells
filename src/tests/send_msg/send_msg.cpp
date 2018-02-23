@@ -21,7 +21,6 @@ void recv_cell_handler(missive* msg);
 
 void 
 recv_cell_handler(missive* msg){
-	//MCK_UPDATE_MIN_SP();
 	EMU_CODE(
 		EMU_CK(mc_addr_is_local(msg->dst));
 		mc_core_id_t koid = kernel::get_core_id();

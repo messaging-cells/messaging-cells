@@ -39,27 +39,31 @@ public:
 
 	mc_opt_sz_fn
 	void		init_binder(){
-		bn_left = this;
-		bn_right = this;
+		binder* loc_ths = (binder*)mck_as_loc_pt(this);
+		bn_left = loc_ths;
+		bn_right = loc_ths;
 	}
 
 	mc_opt_sz_fn
 	bool	is_alone(){
-		return ((bn_left == this) && (bn_right == this));
+		binder* loc_ths = (binder*)mck_as_loc_pt(this);
+		return ((bn_left == loc_ths) && (bn_right == loc_ths));
 	}
 
 	mc_opt_sz_fn //virtual // mem expensive
 	void	let_go(){
+		binder* loc_ths = (binder*)mck_as_loc_pt(this);
 		bn_left->bn_right = bn_right;
 		bn_right->bn_left = bn_left;
-		bn_left = this;
-		bn_right = this;
+		bn_left = loc_ths;
+		bn_right = loc_ths;
 	}
 
 	mc_opt_sz_fn
 	bool	ck_binder(){
-		BINDER_CK(bn_right->bn_left == this);
-		BINDER_CK(bn_left->bn_right == this);
+		EMU_CODE(binder* loc_ths = (binder*)mck_as_loc_pt(this));
+		BINDER_CK(bn_right->bn_left == loc_ths);
+		BINDER_CK(bn_left->bn_right == loc_ths);
 		return true;
 	}
 
@@ -85,11 +89,12 @@ public:
 
 	mc_opt_sz_fn
 	void	bind_to_my_right(binder& the_rgt){
+		binder* loc_ths = (binder*)mck_as_loc_pt(this);
 		BINDER_CK(the_rgt.is_alone());
 		BINDER_CK(ck_binder());
 
 		the_rgt.bn_right = bn_right;
-		the_rgt.bn_left = this;
+		the_rgt.bn_left = loc_ths;
 		bn_right->bn_left = &the_rgt;
 		bn_right = &the_rgt;
 
@@ -99,11 +104,12 @@ public:
 
 	mc_opt_sz_fn
 	void	bind_to_my_left(binder& the_lft){
+		binder* loc_ths = (binder*)mck_as_loc_pt(this);
 		BINDER_CK(the_lft.is_alone());
 		BINDER_CK(ck_binder());
 
 		the_lft.bn_left = bn_left;
-		the_lft.bn_right = this;
+		the_lft.bn_right = loc_ths;
 		bn_left->bn_right = &the_lft;
 		bn_left = &the_lft;
 
@@ -126,6 +132,7 @@ public:
 		if(grp.is_alone()){
 			return;
 		}
+		binder* loc_ths = (binder*)mck_as_loc_pt(this);
 
 		BINDER_CK(ck_binder());
 
@@ -137,7 +144,7 @@ public:
 		grp.bn_left = &grp;
 
 		bn_right = new_rgt;
-		bn_right->bn_left = this;
+		bn_right->bn_left = loc_ths;
 
 		new_mid->bn_right = old_rgt;
 		new_mid->bn_right->bn_left = new_mid;
@@ -154,6 +161,7 @@ public:
 		if(grp.is_alone()){
 			return;
 		}
+		binder* loc_ths = (binder*)mck_as_loc_pt(this);
 
 		BINDER_CK(ck_binder());
 
@@ -165,7 +173,7 @@ public:
 		grp.bn_left = &grp;
 
 		bn_left = new_lft;
-		bn_left->bn_right = this;
+		bn_left->bn_right = loc_ths;
 
 		new_mid->bn_left = old_lft;
 		new_mid->bn_left->bn_right = new_mid;

@@ -581,7 +581,7 @@ public:
 		return *((tierdata*)(all_tiers.bn_left));
 	}
 
-	tierdata& get_tier(num_tier_t nti) bj_stabi_cod;
+	tierdata& get_tier(num_tier_t nti, int dbg_caller) bj_stabi_cod;
 
 	void inc_ety_chdn(num_tier_t nti) mc_external_code_ram;
 

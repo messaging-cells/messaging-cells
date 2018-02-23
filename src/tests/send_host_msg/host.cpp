@@ -12,7 +12,6 @@ void recv_host_handler(missive* msg);
 
 void 
 recv_host_handler(missive* msg){
-	MCK_UPDATE_MIN_SP();
 	EMU_PRT("RCV_MSV=%p \n", msg);
 	EMU_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
 	EMU_PRT("RCV_CORE_ID=%x \n", mc_addr_get_id(msg->dst));

@@ -191,33 +191,22 @@ void test_link_shd_code() mc_external_code_ram;
 void ck_shd_code();
 
 #ifdef MC_IS_EPH_CODE
-	mc_inline_fn uint16_t*
+	mc_inline_fn mc_addr_t
 	mck_get_stack_pointer() {
 		uint16_t* sp_val = 0;
 		mc_asm("mov %0, sp" : "=r" (sp_val));
-		return sp_val;
+		return ((mc_addr_t)sp_val);
 	}
 
-	mc_inline_fn void
-	mck_check_stack_pointer() {
-		mc_addr_t curr_sp = (mc_addr_t)mck_get_stack_pointer();
-		if(curr_sp < MC_VAL_CORE_STACK_ORIG){
-			mck_abort(__LINE__, MC_ABORT_MSG("Stack_overflow_error"));
-		}
-	}
+	#define MCK_CHECK_SP() MC_DBG( \
+		if(mck_get_stack_pointer() < MC_VAL_CORE_STACK_ORIG){ \
+			mck_abort(__LINE__, MC_ABORT_MSG("Stack_overflow_error")); \
+		} \
+	) \
 
-	mc_inline_fn void
-	mck_update_min_stack_pointer() {
-		mc_addr_t curr_sp = (mc_addr_t)mck_get_stack_pointer();
-		mc_addr_t min_sp = MC_CORE_INFO->dbg_min_sp;
-		if((min_sp == 0) || (curr_sp < min_sp)){
-			MC_CORE_INFO->dbg_min_sp = curr_sp;
-		}
-	}
-	#define MCK_UPDATE_MIN_SP() MC_DBG(mck_update_min_stack_pointer())
-	#define MCK_CHECK_SP() MC_DBG(mck_check_stack_pointer())
+	// end_of_macro
+
 #else
-	#define MCK_UPDATE_MIN_SP() 
 	#define MCK_CHECK_SP()
 #endif
 
