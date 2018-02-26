@@ -55,7 +55,7 @@ cell__24__
 missive__32__
 agent_ref__24__
 agent_grp__32__
-test_cls__72__
+test_cls__??__
 -------------------------------------------------------------
 */
 
@@ -273,10 +273,6 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 
 		binder* nn_all_snp = &(my_pol->left_side.stabi_active_set.all_syn);
 
-		//mck_slog2("lst2__________");
-		//mck_xlog((mc_addr_t)nn_all_snp);
-		//mck_slog2("__________\n");
-
 		mck_ilog(my_pol->id);
 		mck_slog2("{");
 
@@ -457,11 +453,11 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_charge_src:
 		resp = mc_cstr("bj_tok_stabi_charge_src");
 	break;
+	case bj_tok_stabi_all_still:
+		resp = mc_cstr("bj_tok_stabi_all_still");
+	break;
 	case bj_tok_stabi_tier_done:
 		resp = mc_cstr("bj_tok_stabi_tier_done");
-	break;
-	case bj_tok_stabi_end_forward:
-		resp = mc_cstr("bj_tok_stabi_end_forward");
 	break;
 	case bj_tok_stabi_end:
 		resp = mc_cstr("bj_tok_stabi_end");
@@ -639,7 +635,7 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 	neurostate& ne_stt = get_neurostate(sd);
 	tierset* all_ti = ne_stt.dbg_get_tiset(num_ti);
 
-	bool is_mpty = ((all_ti == mc_null) && ne_stt.stabi_active_set.is_empty());
+	bool is_mpty = ((all_ti == mc_null) && ne_stt.stabi_active_set.is_synset_empty());
 
 	if(is_mpty){
 		return;
@@ -678,8 +674,6 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 
 	mck_unlock_log();
 }
-
-//	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&nervenode::stabi_send_snp_propag), side_left);
 
 void 
 bj_print_active_cnf(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tier_t num_ti,
@@ -734,24 +728,9 @@ dbg_stats::dbg_prt_all(){
 	EMU_LOG("dbg_tot_new_tierdata = %d \n", dbg_tot_new_tierdata);
 }
 
-//class mc_aligned test_cls {
-//class test_cls {
 class mc_aligned test_cls {
 public:
-	synset			stabi_active_set;
-	grip			stabi_tiers;
-	num_syn_t*  	stabi_arr;
-	synapse*		stabi_source;
-	num_tier_t		stabi_num_tier;
-
-	mc_flags_t		stabi_flags;
-	num_syn_t 		prev_tot_active;
-
-	num_syn_t		stabi_num_complete;
-	num_syn_t		stabi_num_ping;
-
-	num_syn_t		stabi_arr_cap;
-	num_syn_t		stabi_arr_sz;
+	num_syn_t		field_1;
 
 	test_cls(){};
 	~test_cls(){};

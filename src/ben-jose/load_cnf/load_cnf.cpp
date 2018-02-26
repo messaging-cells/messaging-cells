@@ -46,7 +46,7 @@ nervenet::init_nervenet_with(pre_cnf_net* pre_net){
 }
 
 void
-neurostate::update_prev_tot_active(){
+neurostate::update_prv_tot_active(){
 	prev_tot_active = stabi_active_set.tot_syn;
 }
 
@@ -171,7 +171,7 @@ void bj_load_shd_cnf(){
 
 			MCK_CK(my_neu->left_side.stabi_active_set.parent == mc_null);
 			my_neu->left_side.stabi_active_set.add_left_synapse(my_snp);
-			my_neu->left_side.update_prev_tot_active();
+			my_neu->left_side.update_prv_tot_active();
 
 			transmitter* msv = transmitter::acquire();
 			EMU_CK(msv->wrk_side == side_invalid);
@@ -241,7 +241,7 @@ polaron::load_handler(missive* msv){
 
 	MCK_CK(left_side.stabi_active_set.parent == mc_null);
 	left_side.stabi_active_set.add_left_synapse(my_snp);
-	left_side.update_prev_tot_active();
+	left_side.update_prv_tot_active();
 
 	transmitter* msv2 = transmitter::acquire();
 	EMU_CK(msv2->wrk_side == side_invalid);
