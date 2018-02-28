@@ -310,6 +310,7 @@ public:
 
 #define	bj_stt_stabi_flag mc_flag0
 #define	bj_stt_charge_all_flag mc_flag1
+#define	bj_stt_all_ping_flag mc_flag2
 
 //class neurostate {
 class mc_aligned neurostate {
@@ -359,7 +360,11 @@ public:
 	void send_all_propag(nervenode* nd, propag_data* dat) bj_stabi_cod;
 
 	//void update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
-	void neu_update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
+	//void neu_update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
+
+	mc_inline_fn bool is_full(){
+		return (stabi_num_complete == prev_tot_active);
+	}
 
 	void send_all_ti_done(nervenode* nd, net_side_t sd) bj_stabi_cod;
 };
@@ -398,6 +403,12 @@ public:
 	void stabi_send_snp_tier_done(synapse* snp, net_side_t sd, bool from_rec) bj_stabi_cod;
 
 	void send_confl_tok(propag_data* dat, sync_tok_t the_tok) mc_external_code_ram;
+
+	virtual 
+	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
+
+	void stabi_update_net_tier_counters(propag_data* dat) bj_stabi_cod;
+	void stabi_update_net_tier_counters_2(propag_data* dat) mc_external_code_ram;
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
@@ -461,6 +472,9 @@ public:
 	bool can_chg_all() bj_stabi_cod;
 
 	virtual 
+	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
+
+	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
 	virtual
@@ -493,8 +507,8 @@ public:
 
 	void add_all_inp_from(grip& grp, net_side_t sd) mc_external_code_ram;
 
-	void inc_rcv(node_kind_t kk) bj_stabi_cod;
-	void inc_off(net_side_t sd, node_kind_t kk) bj_stabi_cod;
+	mc_inline_fn void inc_rcv(){ rcv_neus++; }
+	mc_inline_fn void inc_off(){ off_neus++; }
 
 	mc_inline_fn bool has_neus(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus > 0));
