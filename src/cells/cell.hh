@@ -672,7 +672,7 @@ public:
 	MCK_DECLARE_MEM_METHODS(cell, mc_mod0_cod);
 
 	mck_handler_idx_t 	handler_idx; //!< The index of my handler function in \ref kernel::all_handlers.
-	mc_flags_t 		flags;
+	mc_flags_t 		filaments;
 
 	mc_opt_sz_fn 
 	cell(){
@@ -685,7 +685,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0){
 		handler_idx = 0;
-		flags = 0;
+		filaments = 0;
 	}
 
 	virtual

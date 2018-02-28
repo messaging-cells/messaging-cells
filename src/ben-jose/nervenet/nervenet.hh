@@ -310,7 +310,6 @@ public:
 
 #define	bj_stt_stabi_flag mc_flag0
 #define	bj_stt_charge_all_flag mc_flag1
-#define	bj_stt_charge_src_flag mc_flag2
 
 //class neurostate {
 class mc_aligned neurostate {
@@ -331,6 +330,8 @@ public:
 	num_syn_t		stabi_arr_sz;
 	num_syn_t*  	stabi_arr;
 
+	EMU_DBG_CODE(bool was_all_pg);
+
 	neurostate() mc_external_code_ram;
 	~neurostate() mc_external_code_ram;
 
@@ -350,9 +351,14 @@ public:
 
 	bool is_mono(num_tier_t nti) bj_stabi_cod;
 
+	mc_inline_fn bool all_ping(){
+		bool all_pg = ((prev_tot_active > 1) && (stabi_num_ping == stabi_active_set.tot_syn));
+		return all_pg;
+	}
+
 	void send_all_propag(nervenode* nd, propag_data* dat) bj_stabi_cod;
 
-	void update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
+	//void update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
 	void neu_update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
 
 	void send_all_ti_done(nervenode* nd, net_side_t sd) bj_stabi_cod;
@@ -461,25 +467,23 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+#define	bj_all_stl_neus_flag mc_flag0
+
 class mc_aligned tierdata : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(tierdata, bj_nervenet_mem)
 
 	num_tier_t	tdt_id;
+	mc_flags_t	tdt_flags;
 
 	mc_core_nn_t ety_chdn;
 	mc_core_nn_t alv_chdn;
 	mc_core_nn_t stl_chdn;
-	mc_core_nn_t stp_chdn;
 
 	num_nod_t inp_neus;
 	num_nod_t off_neus;
 	num_nod_t rcv_neus;
 	num_nod_t stl_neus;
-
-	//num_nod_t inp_pols;
-	//num_nod_t off_pols;
-	//num_nod_t rcv_pols;
 
 	tierdata() mc_external_code_ram;
 	~tierdata() mc_external_code_ram;
@@ -512,6 +516,12 @@ public:
 
 	mc_inline_fn bool all_neu_still(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
+	}
+
+	mc_inline_fn void reset_stl_neus(){
+		EMU_CK(got_all_neus());
+		mc_set_flag(tdt_flags, bj_all_stl_neus_flag);
+		stl_neus = 0;
 	}
 
 	mc_inline_fn tierdata& prv_tier(){

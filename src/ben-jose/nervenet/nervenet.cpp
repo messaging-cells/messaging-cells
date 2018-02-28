@@ -505,20 +505,16 @@ tierdata::~tierdata(){}
 void
 tierdata::init_me(int caller){
 	tdt_id = BJ_INVALID_NUM_TIER;
+	tdt_flags = 0;
 
 	ety_chdn = 0;
 	alv_chdn = 0;
 	stl_chdn = 0;
-	stp_chdn = 0;
 
 	inp_neus = BJ_INVALID_NUM_NODE;
 	off_neus = 0;
 	rcv_neus = 0;
 	stl_neus = 0;
-
-	//inp_pols = BJ_INVALID_NUM_NODE;
-	//off_pols = 0;
-	//rcv_pols = 0;
 }
 
 void
