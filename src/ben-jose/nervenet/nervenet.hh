@@ -53,13 +53,8 @@ class polaron;
 class neuron;
 class nervenet;
 
-//define SYNC_CODE(prm) EMU_CODE(prm)
-//define SYNC_COND_LOG(cond, ...) EMU_COND_LOG(cond, __VA_ARGS__)
-//define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
-
-#define SYNC_CODE(prm) 
-#define SYNC_COND_LOG(cond, ...) 
-#define SYNC_LOG(...) 
+#define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
+//define SYNC_LOG(...) 
 
 #define SYNC_CODE_2(prm) EMU_CODE(prm)
 #define SYNC_LOG_2(...) EMU_LOG(__VA_ARGS__)
@@ -308,9 +303,8 @@ public:
 
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
 
-#define	bj_stt_stabi_flag mc_flag0
+#define	bj_stt_all_ping_flag mc_flag0
 #define	bj_stt_charge_all_flag mc_flag1
-#define	bj_stt_all_ping_flag mc_flag2
 
 //class neurostate {
 class mc_aligned neurostate {
@@ -366,7 +360,7 @@ public:
 		return (stabi_num_complete == prev_tot_active);
 	}
 
-	void send_all_ti_done(nervenode* nd, net_side_t sd) bj_stabi_cod;
+	void send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_stabi_cod;
 };
 
 class mc_aligned nervenode : public cell {
@@ -407,8 +401,11 @@ public:
 	virtual 
 	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
 
-	void stabi_update_net_tier_counters(propag_data* dat) bj_stabi_cod;
-	void stabi_update_net_tier_counters_2(propag_data* dat) mc_external_code_ram;
+	virtual 
+	void restore_tiers(propag_data* dat) bj_stabi_cod;
+
+	void neu_update_net_tier_counters(propag_data* dat) mc_external_code_ram;
+	void neu_update_tier_counters(propag_data* dat) bj_stabi_cod;
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
@@ -475,6 +472,9 @@ public:
 	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
 
 	virtual 
+	void restore_tiers(propag_data* dat) bj_stabi_cod;
+
+	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
 	virtual
@@ -519,7 +519,8 @@ public:
 	}
 
 	mc_inline_fn bool got_all_neus(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == rcv_neus));
+		//return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == rcv_neus));
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
 	}
 
 	void update_tidat() bj_stabi_cod;
@@ -532,11 +533,11 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
 	}
 
-	mc_inline_fn void reset_stl_neus(){
+	/*mc_inline_fn void reset_stl_neus(){
 		EMU_CK(got_all_neus());
 		mc_set_flag(tdt_flags, bj_all_stl_neus_flag);
 		stl_neus = 0;
-	}
+	}*/
 
 	mc_inline_fn tierdata& prv_tier(){
 		return *((tierdata*)bn_left);
