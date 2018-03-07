@@ -115,8 +115,8 @@ sync_transmitter::~sync_transmitter(){}
 void
 sync_transmitter::init_me(int caller){
 	transmitter::init_me(caller);
-	wrk_side = side_invalid;
-	wrk_tier = BJ_INVALID_NUM_TIER;
+	num_chdn = 0;
+	cfl_src = mc_null;
 }
 
 synset::synset(){
@@ -383,6 +383,21 @@ char* sync_tok_to_str(sync_tok_t tok){
 	case bj_tok_sync_invalid:
 		resp = mc_cstr("bj_tok_sync_invalid");
 	break;
+	case bj_tok_sync2_inc_bsy_chdn:
+		resp = mc_cstr("bj_tok_sync2_inc_bsy_chdn");
+	break;
+	case bj_tok_sync2_dec_bsy_chdn:
+		resp = mc_cstr("bj_tok_sync2_dec_bsy_chdn");
+	break;
+	case bj_tok_sync2_got_bsy_chdn:
+		resp = mc_cstr("bj_tok_sync2_got_bsy_chdn");
+	break;
+	case bj_tok_sync2_refresh_down_bsy_chdn:
+		resp = mc_cstr("bj_tok_sync2_refresh_down_bsy_chdn");
+	break;
+	case bj_tok_sync2_refresh_up_bsy_chdn:
+		resp = mc_cstr("bj_tok_sync2_refresh_up_bsy_chdn");
+	break;
 	case bj_tok_sync_empty_child:
 		resp = mc_cstr("bj_tok_sync_empty_child");
 	break;
@@ -506,6 +521,11 @@ void
 tierdata::init_me(int caller){
 	tdt_id = BJ_INVALID_NUM_TIER;
 	tdt_flags = 0;
+
+	num_rfsh_chdn = 0;
+	tot_bsy_rfsh_chdn = 0;
+
+	init_busy();
 
 	ety_chdn = 0;
 	alv_chdn = 0;
