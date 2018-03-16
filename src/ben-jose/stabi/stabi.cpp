@@ -1604,16 +1604,18 @@ netstate::update_prop_sync(){ // new_sync. replaces update_sync
 	if(has_to_send_bsy){
 		bool is_bsy = wt_tdt.is_busy();
 		bool was_bsy = mc_get_flag(sync_flags, bj_is_bsy_flag);
+		bool rfshing = mc_get_flag(wt_tdt.tdt_flags, bj_refreshing_flag);
 
-		SYNC_LOG(" SYNC2_set_bj_sent_got_bsy_flag_%s_t%d_ bsy=%d was=%d %d %d %d\n", 
-				net_side_to_str(my_side), wt_tdt.tdt_id, is_bsy, was_bsy,
+		SYNC_LOG(" SYNC2_set_bj_sent_got_bsy_flag_%s_t%d_ rfr=%d bsy=%d was=%d %d %d %d\n", 
+				net_side_to_str(my_side), wt_tdt.tdt_id, rfshing, is_bsy, was_bsy,
 				wt_tdt.inc_bsy_chdn, wt_tdt.dec_bsy_chdn, wt_tdt.rcv_bsy_chdn);
 
 		mc_set_flag(wt_tdt.tdt_flags, bj_sent_got_bsy_flag);
 
 		if(pnt_id == 0){
-			bool rfshing = mc_get_flag(wt_tdt.tdt_flags, bj_refreshing_flag);
+			//bool rfshing = mc_get_flag(wt_tdt.tdt_flags, bj_refreshing_flag);
 			if(! rfshing && (wt_tdt.rcv_bsy_chdn == 0) && ! is_bsy){
+				SYNC_LOG(" SYNC2_ROOT_start_refresh_%s_t%d_ \n", net_side_to_str(my_side), wt_tdt.tdt_id);
 				EMU_CK(wt_tdt.prv_bsy_chdn == wt_tdt.dec_bsy_chdn);
 
 				mc_set_flag(wt_tdt.tdt_flags, bj_refreshing_flag);

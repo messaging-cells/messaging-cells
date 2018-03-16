@@ -528,8 +528,6 @@ tierdata::init_me(int caller){
 	tdt_id = BJ_INVALID_NUM_TIER;
 	tdt_flags = 0;
 
-	mc_set_flag(tdt_flags, bj_refreshing_flag);
-
 	num_rfsh_chdn = 0;
 	tot_bsy_rfsh_chdn = 0;
 
