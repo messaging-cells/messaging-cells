@@ -337,8 +337,12 @@ bj_print_loaded_cnf() {
 		mck_slog2("]\n");
 	}
 
+	mck_lock_log();
+	mck_slog2("LD_POLARONS={\n");
 	bj_print_loaded_poles(my_net->all_pos, nd_pos);
 	bj_print_loaded_poles(my_net->all_neg, nd_neg);
+	mck_slog2("\n}\n");
+	mck_unlock_log();
 }
 
 char* net_side_to_str(net_side_t sd){
@@ -491,6 +495,8 @@ void
 netstate::init_me(int caller){
 	my_side = side_invalid;
 
+	sync_flags = 0;
+
 	sync_is_inactive = false;
 
 	sync_wait_tier = 0;
@@ -521,6 +527,8 @@ void
 tierdata::init_me(int caller){
 	tdt_id = BJ_INVALID_NUM_TIER;
 	tdt_flags = 0;
+
+	mc_set_flag(tdt_flags, bj_refreshing_flag);
 
 	num_rfsh_chdn = 0;
 	tot_bsy_rfsh_chdn = 0;
@@ -669,7 +677,11 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 	mck_ilog(num_pul);
 	mck_slog2("n");
 	mck_ilog(id);
-	mck_slog2(" [");
+	if(ki == nd_neu){
+		mck_slog2(" [");
+	} else {
+		mck_slog2(" {");
+	}
 
 	if(all_ti != mc_null){
 		binder * fst_2, * lst_2, * wrk_2;
@@ -686,7 +698,22 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 
 	ne_stt.stabi_active_set.dbg_rec_call_all(mth, sd);
 
-	mck_slog2("]\n");
+	if(ki == nd_neu){
+		mck_slog2("]");
+	} else {
+		mck_slog2("}");
+	}
+
+	bool was_ap = mc_get_flag(ne_stt.stabi_flags, bj_stt_all_ping_flag);
+	if(was_ap){ mck_slog2("_"); }
+
+	bool ap = false;
+	if(ki == nd_neu){ ne_stt.neu_all_ping(); }
+	else{ ne_stt.pol_all_ping(); }
+
+	if(ap){ mck_slog2("*"); }
+
+	mck_slog2("\n");
 
 	mck_unlock_log();
 }
@@ -708,6 +735,36 @@ bj_print_active_cnf(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tier_t
 
 		my_neu->dbg_prt_nod(sd, prefix, num_pul, num_ti);
 	}
+
+	if(! with_pols){ return; }
+
+	mck_lock_log();
+	mck_slog2("ALL_POL={\n");
+
+	binder* pt_all_pol = &(my_net->all_pos);
+	fst = (binder*)(pt_all_pol->bn_right);
+	lst = (binder*)mck_as_loc_pt(pt_all_pol);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		polaron* my_pos = (polaron*)wrk;
+		EMU_CK(my_pos->ki == nd_pos);
+
+		mck_ilog(my_pos->id);
+		mck_slog2(" ");
+	}
+
+	pt_all_pol = &(my_net->all_neg);
+	fst = (binder*)(pt_all_pol->bn_right);
+	lst = (binder*)mck_as_loc_pt(pt_all_pol);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		polaron* my_neg = (polaron*)wrk;
+		EMU_CK(my_neg->ki == nd_neg);
+
+		mck_ilog(my_neg->id);
+		mck_slog2(" ");
+	}
+
+	mck_slog2("\n}\n");
+	mck_unlock_log();
 }
 
 dbg_stats::dbg_stats(){

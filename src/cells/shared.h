@@ -70,6 +70,8 @@ typedef uint8_t mc_bool_t;
 	#include "shared_znq.h"
 #endif
 
+#define MC_INVALID_CORE_NN ((mc_core_nn_t)(~((mc_core_nn_t)0x0)))
+
 typedef mc_addr_t mc_size_t;
 	
 //======================================================================
