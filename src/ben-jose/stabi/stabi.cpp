@@ -373,6 +373,8 @@ neurostate::send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti){
 	EMU_CK((dbg_ti == BJ_INVALID_NUM_TIER) || (stabi_num_tier == BJ_INVALID_NUM_TIER) || 
 				(nd->ki == nd_neu) || (dbg_ti == stabi_num_tier /*undd*/));
 
+	
+	DBG_TIER(dbg_num_tier++);
 	if(stabi_num_tier != BJ_INVALID_NUM_TIER){ 
 		stabi_num_tier++;
 	}
@@ -909,7 +911,9 @@ neuron::stabi_start_nxt_tier(propag_data* dat){
 		);
 	}
 
-	EMU_CODE(dbg_prt_nod(dat->sd, mc_cstr("TIER__"), 7, dat->ti));
+	//EMU_CODE(dbg_prt_nod(dat->sd, mc_cstr("TIER__"), 7, dat->ti));
+	EMU_CK((dat->ti == BJ_INVALID_NUM_TIER) || (dat->ti == stt.dbg_neu_tier()));
+	EMU_CODE(dbg_prt_nod(dat->sd, mc_cstr("TIER__"), 7, stt.dbg_neu_tier()));
 
 	stt.reset_complete();
 	stt.send_all_ti_done(this, dat->sd, dat->ti);
@@ -918,6 +922,14 @@ neuron::stabi_start_nxt_tier(propag_data* dat){
 
 	OLD_SYNC_MTH(nst.update_sync());
 	NEW_SYNC_MTH(nst.update_prop_sync());
+}
+
+num_tier_t
+neurostate::dbg_neu_tier(){
+	num_tier_t vv = stabi_num_tier;
+	if(vv != BJ_INVALID_NUM_TIER){ vv--; }
+	DBG_TIER(vv = dbg_num_tier - 1);
+	return vv;
 }
 
 void 
@@ -1111,6 +1123,9 @@ netstate::send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_
 	trm->num_chdn = the_num_chdn;
 
 	trm->send();
+
+	//SYNC_LOG_2(" SYNC_send_tmt_%s_t%d_%s_ %p\n", 
+	//	net_side_to_str(my_side), the_ti, sync_tok_to_str(the_tok), the_dst);
 
 	SYNC_CODE_2(mc_core_nn_t dbg_dst_nn = mc_id_to_nn(mc_addr_get_id(the_dst)));
 	SYNC_LOG_2(" SYNC_send_transmitter_%s_t%d_%s_ [%ld ->> %ld] \n", 
@@ -1412,11 +1427,11 @@ tierdata::update_refresh(net_side_t sd, bool going_down){ // new_sync.
 		rfr_ok = true;
 		mc_set_flag(tdt_flags, bj_refreshed_flag);
 
-		init_busy();
-		prv_bsy_chdn = tot_bsy_rfsh_chdn;
+		dec_bsy_chdn = 0;
 		rcv_bsy_chdn = tot_bsy_rfsh_chdn;
-		SYNC_LOG(" SYNC2_refresh_set_prv_bsy_chdn_%s_t%d_ (%d == (%d+%d)) \n", 
-			net_side_to_str(sd), tdt_id, prv_bsy_chdn, rcv_bsy_chdn, dec_bsy_chdn);
+		prv_bsy_chdn = tot_bsy_rfsh_chdn;
+		SYNC_LOG(" SYNC2_refresh_set_prv_bsy_chdn_%s_t%d_ (%d == (%d+%d)) inc=%d \n", 
+			net_side_to_str(sd), tdt_id, prv_bsy_chdn, rcv_bsy_chdn, dec_bsy_chdn, inc_bsy_chdn);
 
 
 		netstate& nst = the_net->get_active_netstate(sd);
@@ -1464,11 +1479,11 @@ nervenet::stabi_sync_handler(missive* msv){ // new_sync. replaces  stabi_nn_hand
 	netstate& nst = get_active_netstate(tmt_sd);
 	tierdata& tdt = nst.get_tier(tmt_ti, 12);
 
-	SYNC_LOG(" SYNC2_RECV_%s_t%d_%s_ [%d <<- %d] (%d == (%d+%d)) inc=%d #=%d cf=%p\n", 
+	SYNC_LOG(" SYNC2_RECV_%s_t%d_%s_ [%d <<- %d] (%d == (%d+%d)) inc=%d #=%d cf=%p chdn=(%d of %d)\n", 
 		net_side_to_str(tmt_sd), tmt_ti, sync_tok_to_str((sync_tok_t)(msv_tok)), 
 		kernel::get_core_nn(), mc_id_to_nn(mc_addr_get_id(msv->src)), 
 		tdt.prv_bsy_chdn, tdt.rcv_bsy_chdn, tdt.dec_bsy_chdn, tdt.inc_bsy_chdn, 
-		tmt_chdn, tmt_cfl
+		tmt_chdn, tmt_cfl, tdt.num_rfsh_chdn, bj_nervenet->sync_tot_children
 	);
 
 	switch(msv_tok){
@@ -1476,8 +1491,10 @@ nervenet::stabi_sync_handler(missive* msv){ // new_sync. replaces  stabi_nn_hand
 		{
 			nst.inc_bsy_chdn(tmt_ti, tmt_chdn);
 			mc_core_id_t pnt_id = bj_nervenet->sync_parent_id;
-			nervenet* pnt_net = bj_nervenet->get_nervenet(pnt_id);
-			nst.send_sync_transmitter(pnt_net, bj_tok_sync2_inc_bsy_chdn, tmt_ti, mc_null, tmt_chdn);
+			if(pnt_id != 0){
+				nervenet* pnt_net = bj_nervenet->get_nervenet(pnt_id);
+				nst.send_sync_transmitter(pnt_net, bj_tok_sync2_inc_bsy_chdn, tmt_ti, mc_null, tmt_chdn);
+			}
 		}
 		break;
 		case bj_tok_sync2_dec_bsy_chdn:
@@ -1498,6 +1515,7 @@ nervenet::stabi_sync_handler(missive* msv){ // new_sync. replaces  stabi_nn_hand
 			EMU_CK(! mc_get_flag(tdt.tdt_flags, bj_refreshed_flag));
 			tdt.num_rfsh_chdn++;
 			tdt.tot_bsy_rfsh_chdn += tmt_chdn;
+			tdt.update_refresh(tmt_sd, false);
 		}
 		break;
 		case bj_tok_sync2_refresh_down_bsy_chdn:
@@ -1606,9 +1624,10 @@ netstate::update_prop_sync(){ // new_sync. replaces update_sync
 		bool was_bsy = mc_get_flag(sync_flags, bj_is_bsy_flag);
 		bool rfshing = mc_get_flag(wt_tdt.tdt_flags, bj_refreshing_flag);
 
-		SYNC_LOG(" SYNC2_set_bj_sent_got_bsy_flag_%s_t%d_ rfr=%d bsy=%d was=%d %d %d %d\n", 
+		SYNC_LOG(" SYNC2_set_bj_sent_got_bsy_flag_%s_t%d_ rfr=%d bsy=%d was=%d %d %d %d off=%d\n", 
 				net_side_to_str(my_side), wt_tdt.tdt_id, rfshing, is_bsy, was_bsy,
-				wt_tdt.inc_bsy_chdn, wt_tdt.dec_bsy_chdn, wt_tdt.rcv_bsy_chdn);
+				wt_tdt.inc_bsy_chdn, wt_tdt.dec_bsy_chdn, wt_tdt.rcv_bsy_chdn,
+				wt_tdt.off_neus);
 
 		mc_set_flag(wt_tdt.tdt_flags, bj_sent_got_bsy_flag);
 

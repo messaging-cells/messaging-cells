@@ -63,8 +63,10 @@ class nervenet;
 #define SYNC_CODE_2(prm) EMU_CODE(prm)
 #define SYNC_LOG_2(...) EMU_LOG(__VA_ARGS__)
 
-#define OLD_SYNC_MTH(prm) 
-#define NEW_SYNC_MTH(prm) prm
+#define DBG_TIER(prm) EMU_DBG_CODE(prm)
+
+#define OLD_SYNC_MTH(prm) prm
+#define NEW_SYNC_MTH(prm) 
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -325,6 +327,8 @@ public:
 	synset			stabi_active_set;
 	num_tier_t		stabi_num_tier;
 
+	DBG_TIER(num_tier_t		dbg_num_tier);
+
 	synapse*		stabi_source;
 	grip			stabi_tiers;
 
@@ -380,6 +384,8 @@ public:
 	}
 
 	void send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_stabi_cod;
+
+	num_tier_t dbg_neu_tier() mc_external_code_ram;
 };
 
 class mc_aligned nervenode : public cell {
@@ -575,7 +581,8 @@ public:
 	}
 
 	mc_inline_fn bool is_busy(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus != 0) && (inp_neus != stl_neus));
+		//return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus != 0) && (inp_neus != stl_neus));
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus != 0) && (inp_neus != (stl_neus + off_neus)));
 	}
 
 	mc_inline_fn tierdata& prv_tier(){

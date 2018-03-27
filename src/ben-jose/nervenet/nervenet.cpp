@@ -198,6 +198,8 @@ neurostate::init_me(int caller){
 	//side_kind = side_invalid;
 	stabi_num_tier = 0;
 
+	DBG_TIER(dbg_num_tier = 0);
+
 	stabi_source = mc_null;
 
 	prev_tot_active = 0;
@@ -652,11 +654,15 @@ nervenode::dbg_prt_syn(synapse* my_snp, net_side_t sd, bool from_rec){
 
 void
 nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tier_t num_ti){
+	if(num_ti == BJ_INVALID_NUM_TIER){
+		return;
+	}
+
 	bj_callee_t mth = &nervenode::dbg_prt_syn;
 
 	neurostate& ne_stt = get_neurostate(sd);
 	tierset* all_ti = ne_stt.dbg_get_tiset(num_ti);
-
+	
 	bool is_mpty = ((all_ti == mc_null) && ne_stt.stabi_active_set.is_synset_empty());
 
 	if(is_mpty){
