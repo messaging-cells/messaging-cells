@@ -342,9 +342,6 @@ void
 netstate::init_tiers(nervenet& my_net){
 	tierdata* ti_dat = tierdata::acquire();
 
-	//ti_dat->prv_bsy_chdn = 0;
-	mc_set_flag(ti_dat->tdt_flags, bj_refreshing_flag);
-
 	ti_dat->tdt_id = 0;
 	ti_dat->inp_neus = 0;
 	//ti_dat->inp_pols = 0;		// OLD

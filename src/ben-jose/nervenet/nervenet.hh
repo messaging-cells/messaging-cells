@@ -65,8 +65,8 @@ class nervenet;
 
 #define DBG_TIER(prm) EMU_DBG_CODE(prm)
 
-#define OLD_SYNC_MTH(prm) prm
-#define NEW_SYNC_MTH(prm) 
+#define OLD_SYNC_MTH(prm) 
+#define NEW_SYNC_MTH(prm) prm
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -76,11 +76,8 @@ enum net_side_t : uint8_t {
 
 enum sync_tok_t : mck_token_t {
 	bj_tok_sync_invalid = mck_tok_last + 1,
-	bj_tok_sync2_inc_bsy_chdn, // new_sync
-	bj_tok_sync2_dec_bsy_chdn, // new_sync
-	bj_tok_sync2_got_bsy_chdn, // new_sync
-	bj_tok_sync2_refresh_down_bsy_chdn, // new_sync
-	bj_tok_sync2_refresh_up_bsy_chdn, // new_sync
+	bj_tok_sync2_add_tier,
+	bj_tok_sync2_inert_child,
 	bj_tok_sync_empty_child,
 	bj_tok_sync_alive_child,
 	bj_tok_sync_still_child,
@@ -266,7 +263,6 @@ public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sync_transmitter, bj_nervenet_mem)
 
 	nervenode* 	 cfl_src;
-	mc_core_nn_t num_chdn; // new_sync
 
 	sync_transmitter() mc_external_code_ram;
 	~sync_transmitter() mc_external_code_ram;
@@ -506,9 +502,7 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-#define	bj_sent_got_bsy_flag mc_flag0
-#define	bj_refreshing_flag mc_flag1
-#define	bj_refreshed_flag mc_flag2
+#define	bj_sent_inert_flag mc_flag0
 
 class mc_aligned tierdata : public agent {
 public:
@@ -517,13 +511,7 @@ public:
 	num_tier_t	tdt_id;
 	mc_flags_t	tdt_flags;
 
-	mc_core_nn_t num_rfsh_chdn; // new_sync
-	mc_core_nn_t tot_bsy_rfsh_chdn; // new_sync
-
-	mc_core_nn_t inc_bsy_chdn; // new_sync
-	mc_core_nn_t dec_bsy_chdn; // new_sync
-	mc_core_nn_t rcv_bsy_chdn; // new_sync
-	mc_core_nn_t prv_bsy_chdn; // new_sync
+	mc_core_nn_t num_inert_chdn; // new_sync
 
 	mc_core_nn_t ety_chdn;
 	mc_core_nn_t alv_chdn;
@@ -539,13 +527,6 @@ public:
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
-
-	mc_inline_fn void init_busy(){
-		inc_bsy_chdn = 0;
-		dec_bsy_chdn = 0;
-		rcv_bsy_chdn = 0;
-		prv_bsy_chdn = MC_INVALID_CORE_NN;
-	}
 
 	void add_all_inp_from(grip& grp, net_side_t sd) mc_external_code_ram;
 
@@ -564,13 +545,7 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
 	}
 
-	mc_inline_fn bool got_all_busy(){
-		return ((prv_bsy_chdn != MC_INVALID_CORE_NN) && (prv_bsy_chdn == (rcv_bsy_chdn + dec_bsy_chdn)));
-	}
-
 	void update_tidat(netstate& nst) bj_stabi_cod;
-
-	bool update_refresh(net_side_t sd, bool going_down) mc_external_code_ram;
 
 	mc_inline_fn bool is_tidat_empty(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == 0));
@@ -578,6 +553,10 @@ public:
 
 	mc_inline_fn bool all_neu_still(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
+	}
+
+	mc_inline_fn bool is_inert(){
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (stl_neus + off_neus) ));
 	}
 
 	mc_inline_fn bool is_busy(){
@@ -592,8 +571,6 @@ public:
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
-
-#define	bj_is_bsy_flag mc_flag0
 
 class mc_aligned netstate {
 public:
@@ -624,15 +601,16 @@ public:
 	void init_me(int caller = 0) mc_external_code_ram;
 
 	void init_tiers(nervenet& nnt) mc_external_code_ram;
+	void broadcast_last_tier(int dbg_caller) bj_stabi_cod;
 	void inc_tier(int dbg_caller) bj_stabi_cod;
 
 	//bool is_propag_over() bj_stabi_cod;
 
 	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
-			nervenode* cfl_src = mc_null, mc_core_nn_t num_chdn = 0) bj_stabi_cod;
+			nervenode* cfl_src = mc_null) bj_stabi_cod;
 
 	//bool has_work_children() bj_stabi_cod;
-	void update_prop_sync() mc_external_code_ram;
+	void update_prop_sync() bj_stabi_cod;
 	void update_sync() mc_external_code_ram;
 
 	void handle_my_sync() bj_stabi_cod;
@@ -652,12 +630,6 @@ public:
 	tierdata& get_tier(num_tier_t nti, int dbg_caller) bj_stabi_cod;
 
 	void inc_ety_chdn(num_tier_t nti) mc_external_code_ram;
-
-	void inc_bsy_chdn(num_tier_t nti, mc_core_nn_t num_bsy_chdn) bj_stabi_cod;
-
-	mc_inline_fn num_tier_t get_ti_id(){
-		return get_last_tier().tdt_id;
-	}
 
 	bool dbg_prt_all_tiers() mc_external_code_ram;
 
