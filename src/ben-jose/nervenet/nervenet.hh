@@ -65,8 +65,9 @@ class nervenet;
 
 #define DBG_TIER(prm) EMU_DBG_CODE(prm)
 
-#define OLD_SYNC_MTH(prm) 
-#define NEW_SYNC_MTH(prm) prm
+#define SYNC_MTH1(prm) 
+#define SYNC_MTH2(prm) 
+#define SYNC_MTH3(prm) prm
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -305,11 +306,11 @@ public:
 
 struct mc_aligned propag_data {
 public:
-	transmitter* trm;
-	synapse* snp;
-	stabi_tok_t tok;
-	net_side_t sd;
-	num_tier_t ti;
+	transmitter* trm = mc_null;
+	synapse* snp = mc_null;
+	stabi_tok_t tok = bj_tok_stabi_invalid;
+	net_side_t sd = side_invalid;
+	num_tier_t ti = BJ_INVALID_NUM_TIER;
 };
 
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
@@ -318,7 +319,7 @@ public:
 #define	bj_stt_charge_all_flag mc_flag1
 
 //class neurostate {
-class mc_aligned neurostate {
+class mc_aligned neurostate : public binder {
 public:
 	synset			stabi_active_set;
 	num_tier_t		stabi_num_tier;
@@ -381,6 +382,8 @@ public:
 
 	void send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_stabi_cod;
 
+	bool neu_is_to_delay(net_side_t sd, int dbg_caller) bj_stabi_cod;
+
 	num_tier_t dbg_neu_tier() mc_external_code_ram;
 };
 
@@ -423,10 +426,10 @@ public:
 	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
 
 	virtual 
-	void restore_tiers(propag_data* dat) bj_stabi_cod;
+	void restore_tiers(propag_data* dat) mc_external_code_ram;
 
-	void neu_update_net_tier_counters(propag_data* dat) mc_external_code_ram;
-	void neu_update_tier_counters(propag_data* dat) bj_stabi_cod;
+	void neu_update_ti_cters1(propag_data* dat) mc_external_code_ram;
+	void neu_update_ti_cters2(propag_data* dat) mc_external_code_ram;
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
@@ -438,6 +441,9 @@ public:
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
+
+#define bj_get_nod_of_pt_lft_st(bdr) ((nervenode*)(((uint8_t*)bdr) - mc_offsetof(&nervenode::left_side)))
+#define bj_get_nod_of_pt_rgt_st(bdr) ((nervenode*)(((uint8_t*)bdr) - mc_offsetof(&nervenode::right_side)))
 
 class mc_aligned neuron : public nervenode {
 public:
@@ -493,7 +499,7 @@ public:
 	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
 
 	virtual 
-	void restore_tiers(propag_data* dat) bj_stabi_cod;
+	void restore_tiers(propag_data* dat) mc_external_code_ram;
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
@@ -511,7 +517,9 @@ public:
 	num_tier_t	tdt_id;
 	mc_flags_t	tdt_flags;
 
-	mc_core_nn_t num_inert_chdn; // new_sync
+	binder	all_delayed;
+
+	mc_core_nn_t num_inert_chdn; // sync_mth2
 
 	mc_core_nn_t ety_chdn;
 	mc_core_nn_t alv_chdn;
@@ -521,6 +529,7 @@ public:
 	num_nod_t off_neus;
 	num_nod_t rcv_neus;
 	num_nod_t stl_neus;
+	num_nod_t dff_neus;
 
 	tierdata() mc_external_code_ram;
 	~tierdata() mc_external_code_ram;
@@ -556,17 +565,16 @@ public:
 	}
 
 	mc_inline_fn bool is_inert(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (stl_neus + off_neus) ));
-	}
-
-	mc_inline_fn bool is_busy(){
-		//return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus != 0) && (inp_neus != stl_neus));
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus != 0) && (inp_neus != (stl_neus + off_neus)));
+		SYNC_MTH1(return false;)
+		SYNC_MTH2(return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (stl_neus + dff_neus))););
+		SYNC_MTH3(return all_neu_still(););
 	}
 
 	mc_inline_fn tierdata& prv_tier(){
 		return *((tierdata*)bn_left);
 	}
+
+	void proc_delayed(net_side_t sd) bj_stabi_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -604,14 +612,11 @@ public:
 	void broadcast_last_tier(int dbg_caller) bj_stabi_cod;
 	void inc_tier(int dbg_caller) bj_stabi_cod;
 
-	//bool is_propag_over() bj_stabi_cod;
-
 	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
 			nervenode* cfl_src = mc_null) bj_stabi_cod;
 
-	//bool has_work_children() bj_stabi_cod;
-	void update_prop_sync() bj_stabi_cod;
-	void update_sync() mc_external_code_ram;
+	void update_sync_mth1() mc_external_code_ram;
+	void update_sync_mth2() bj_stabi_cod;
 
 	void handle_my_sync() bj_stabi_cod;
 	void send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, nervenode* cfl_src) mc_external_code_ram;

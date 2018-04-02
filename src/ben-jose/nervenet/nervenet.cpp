@@ -274,6 +274,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 
 		binder* nn_all_snp = &(my_pol->left_side.stabi_active_set.all_syn);
 
+		mck_slog2("LDPOL.");
 		mck_ilog(my_pol->id);
 		mck_slog2("{");
 
@@ -353,10 +354,10 @@ char* net_side_to_str(net_side_t sd){
 		resp = mc_cstr("side_invalid");
 	break;
 	case side_left:
-		resp = mc_cstr("side_left");
+		resp = mc_cstr("lft");
 	break;
 	case side_right:
-		resp = mc_cstr("side_right");
+		resp = mc_cstr("rgt");
 	break;
 	}
 	return resp;
@@ -530,6 +531,7 @@ tierdata::init_me(int caller){
 	off_neus = 0;
 	rcv_neus = 0;
 	stl_neus = 0;
+	dff_neus = 0;
 }
 
 void
@@ -662,9 +664,10 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 		mck_slog2(prefix);
 	}
 
-	mck_slog2("t");
+	mck_slog2(net_side_to_str(sd));
+	mck_slog2("_t");
 	mck_ilog(num_ti);
-	mck_slog2("p");
+	mck_slog2("_p");
 	mck_ilog(num_pul);
 	mck_slog2("n");
 	mck_ilog(id);
