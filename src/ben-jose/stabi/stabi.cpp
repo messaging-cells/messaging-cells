@@ -178,7 +178,8 @@ synapse::stabi_handler(missive* msv){
 
 	//if(bj_nervenet->get_active_netstate(dat.sd).sync_ending_propag){ return; }
 
-	owner->stabi_recv_transmitter(&dat);
+	nervenode* owr = (nervenode*)(mck_as_loc_pt(owner));
+	owr->stabi_recv_transmitter(&dat);
 }
 
 void
@@ -277,7 +278,11 @@ send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_
 
 	fst = (binder*)(nn_all_snp->bn_right);
 	lst = (binder*)mck_as_loc_pt(nn_all_snp);
+
+	//MCK_CK(mc_addr_is_local((mc_addr_t)fst));
+	//MCK_CK(mc_addr_is_local((mc_addr_t)lst));
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		MCK_CK(mc_addr_is_local((mc_addr_t)wrk));
 		synapse* my_snp = mc_null;
 		if(sd == side_left){
 			my_snp = (synapse*)wrk;
@@ -324,7 +329,9 @@ neuron::stabi_neuron_start(){
 	EMU_CK(right_side.stabi_active_set.all_syn.is_alone());
 	EMU_CK(right_side.stabi_active_set.all_grp.is_alone());
 
+	mck_slog2("dbg1.bef_rec_send_1 \n");
 	left_side.stabi_active_set.stabi_rec_send_all((bj_callee_t)(&nervenode::stabi_send_snp_propag), side_left);
+	mck_slog2("dbg1.aft_rec_send_1 \n");
 
 	left_side.send_all_ti_done(this, side_left, BJ_INVALID_NUM_TIER);
 	left_side.reset_complete();
@@ -363,11 +370,15 @@ neurostate::send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti){
 		if(c_ti != mc_null){
 			EMU_LOG("::send_all_ti_done WITH_PRV_TI %s %ld %s \n", node_kind_to_str(nd->ki), 
 					nd->id, net_side_to_str(sd));
+			mck_slog2("dbg1.bef_syn_send_1 \n");
 			send_all_synapses(&(c_ti->ti_all), (bj_callee_t)(&nervenode::stabi_send_snp_tier_done), sd);
+			mck_slog2("dbg1.aft_syn_send_1 \n");
 		}
 	}
 
+	mck_slog2("dbg1.bef_rec_send_2 \n");
 	stabi_active_set.stabi_rec_send_all((bj_callee_t)(&nervenode::stabi_send_snp_tier_done), sd);
+	mck_slog2("dbg1.aft_rec_send_2 \n");
 
 	EMU_CK((dbg_ti == BJ_INVALID_NUM_TIER) || (stabi_num_tier == BJ_INVALID_NUM_TIER) || 
 				(nd->ki != nd_neu) || ((dbg_ti + 1) == stabi_num_tier /*undd*/));
@@ -749,7 +760,9 @@ neurostate::send_all_propag(nervenode* nd, propag_data* dat){
 		send_all_synapses(&(c_ti->ti_all), (bj_callee_t)(&nervenode::stabi_send_snp_propag), dat->sd);
 	}
 
+	mck_slog2("dbg1.bef_rec_send_3 \n");
 	stabi_active_set.stabi_rec_send_all((bj_callee_t)(&nervenode::stabi_send_snp_propag), dat->sd);
+	mck_slog2("dbg1.aft_rec_send_3 \n");
 }
 
 void
@@ -937,7 +950,7 @@ neuron::stabi_start_nxt_tier(propag_data* dat){
 
 	//EMU_CODE(dbg_prt_nod(dat->sd, mc_cstr("TIER__"), 7, dat->ti));
 	EMU_CK((dat->ti == BJ_INVALID_NUM_TIER) || (dat->ti == stt.dbg_neu_tier()));
-	EMU_CODE(dbg_prt_nod(dat->sd, mc_cstr("TIER__"), 7, stt.dbg_neu_tier()));
+	MC_DBG(dbg_prt_nod(dat->sd, mc_cstr("TIER__"), 7, stt.dbg_neu_tier()));
 
 	stt.send_all_ti_done(this, dat->sd, dat->ti);
 	stt.reset_complete();
