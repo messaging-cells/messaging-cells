@@ -389,20 +389,11 @@ char* sync_tok_to_str(sync_tok_t tok){
 	case bj_tok_sync_invalid:
 		resp = mc_cstr("bj_tok_sync_invalid");
 	break;
-	case bj_tok_sync2_add_tier:
-		resp = mc_cstr("bj_tok_sync2_add_tier");
+	case bj_tok_sync_add_tier:
+		resp = mc_cstr("bj_tok_sync_add_tier");
 	break;
-	case bj_tok_sync2_inert_child:
-		resp = mc_cstr("bj_tok_sync2_inert_child");
-	break;
-	case bj_tok_sync_empty_child:
-		resp = mc_cstr("bj_tok_sync_empty_child");
-	break;
-	case bj_tok_sync_alive_child:
-		resp = mc_cstr("bj_tok_sync_alive_child");
-	break;
-	case bj_tok_sync_still_child:
-		resp = mc_cstr("bj_tok_sync_still_child");
+	case bj_tok_sync_inert_child:
+		resp = mc_cstr("bj_tok_sync_inert_child");
 	break;
 	case bj_tok_sync_confl_up_neu:
 		resp = mc_cstr("bj_tok_sync_confl_up_neu");
@@ -465,9 +456,6 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_charge_src:
 		resp = mc_cstr("bj_tok_stabi_charge_src");
 	break;
-	case bj_tok_stabi_all_still:
-		resp = mc_cstr("bj_tok_stabi_all_still");
-	break;
 	case bj_tok_stabi_tier_done:
 		resp = mc_cstr("bj_tok_stabi_tier_done");
 	break;
@@ -523,15 +511,10 @@ tierdata::init_me(int caller){
 
 	num_inert_chdn = 0;
 
-	ety_chdn = 0;
-	alv_chdn = 0;
-	stl_chdn = 0;
-
 	inp_neus = BJ_INVALID_NUM_NODE;
 	off_neus = 0;
 	rcv_neus = 0;
 	stl_neus = 0;
-	dff_neus = 0;
 }
 
 void
@@ -698,14 +681,9 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 		mck_slog2("}");
 	}
 
-	bool was_ap = mc_get_flag(ne_stt.stabi_flags, bj_stt_all_ping_flag);
-	if(was_ap){ mck_slog2("_"); }
-
-	bool ap = false;
-	if(ki == nd_neu){ ne_stt.neu_all_ping(); }
-	else{ ne_stt.pol_all_ping(); }
-
-	if(ap){ mck_slog2("*"); }
+	if((ki == nd_neu) && ne_stt.neu_all_ping()){
+		mck_slog2("*");
+	}
 
 	mck_slog2("\n");
 

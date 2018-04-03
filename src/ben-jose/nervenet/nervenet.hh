@@ -65,10 +65,6 @@ class nervenet;
 
 #define DBG_TIER(prm) EMU_DBG_CODE(prm)
 
-#define SYNC_MTH1(prm) 
-#define SYNC_MTH2(prm) 
-#define SYNC_MTH3(prm) prm
-
 enum net_side_t : uint8_t {
 	side_invalid,
 	side_left,
@@ -77,11 +73,8 @@ enum net_side_t : uint8_t {
 
 enum sync_tok_t : mck_token_t {
 	bj_tok_sync_invalid = mck_tok_last + 1,
-	bj_tok_sync2_add_tier,
-	bj_tok_sync2_inert_child,
-	bj_tok_sync_empty_child,
-	bj_tok_sync_alive_child,
-	bj_tok_sync_still_child,
+	bj_tok_sync_add_tier,
+	bj_tok_sync_inert_child,
 	bj_tok_sync_confl_up_neu,
 	bj_tok_sync_confl_up_pol,
 	bj_tok_sync_confl_down_neu,
@@ -103,7 +96,6 @@ enum stabi_tok_t : mck_token_t {
 	bj_tok_stabi_ping,
 	bj_tok_stabi_charge_all,
 	bj_tok_stabi_charge_src,
-	bj_tok_stabi_all_still,
 	bj_tok_stabi_tier_done,
 	bj_tok_stabi_end
 };
@@ -315,7 +307,6 @@ public:
 
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
 
-#define	bj_stt_all_ping_flag mc_flag0
 #define	bj_stt_charge_all_flag mc_flag1
 
 //class neurostate {
@@ -365,16 +356,7 @@ public:
 		return all_pg;
 	}
 
-	mc_inline_fn bool pol_all_ping(){
-		//bool all_pg = ((prev_tot_active > 0) && (stabi_num_ping == prev_tot_active));
-		bool all_pg = (stabi_num_ping == prev_tot_active);
-		return all_pg;
-	}
-
 	void send_all_propag(nervenode* nd, propag_data* dat) bj_stabi_cod;
-
-	//void update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
-	//void neu_update_stills(nervenode* nd, propag_data* dat) bj_stabi_cod;
 
 	mc_inline_fn bool is_full(){
 		return (stabi_num_complete == prev_tot_active);
@@ -424,12 +406,6 @@ public:
 
 	virtual 
 	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
-
-	virtual 
-	void restore_tiers(propag_data* dat) mc_external_code_ram;
-
-	void neu_update_ti_cters1(propag_data* dat) mc_external_code_ram;
-	void neu_update_ti_cters2(propag_data* dat) mc_external_code_ram;
 
 	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
@@ -499,9 +475,6 @@ public:
 	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
 
 	virtual 
-	void restore_tiers(propag_data* dat) mc_external_code_ram;
-
-	virtual 
 	void stabi_start_nxt_tier(propag_data* dat) bj_stabi_cod;
 
 	virtual
@@ -519,17 +492,12 @@ public:
 
 	binder	all_delayed;
 
-	mc_core_nn_t num_inert_chdn; // sync_mth2
-
-	mc_core_nn_t ety_chdn;
-	mc_core_nn_t alv_chdn;
-	mc_core_nn_t stl_chdn;
+	mc_core_nn_t num_inert_chdn;
 
 	num_nod_t inp_neus;
 	num_nod_t off_neus;
 	num_nod_t rcv_neus;
 	num_nod_t stl_neus;
-	num_nod_t dff_neus;
 
 	tierdata() mc_external_code_ram;
 	~tierdata() mc_external_code_ram;
@@ -542,14 +510,6 @@ public:
 	mc_inline_fn void inc_rcv(){ rcv_neus++; }
 	mc_inline_fn void inc_off(){ off_neus++; }
 
-	mc_inline_fn bool has_neus(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus > 0));
-	}
-
-	mc_inline_fn mc_core_nn_t tot_rcv_chdn(){
-		return (ety_chdn + alv_chdn + stl_chdn);
-	}
-
 	mc_inline_fn bool got_all_neus(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
 	}
@@ -560,14 +520,8 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == 0));
 	}
 
-	mc_inline_fn bool all_neu_still(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
-	}
-
 	mc_inline_fn bool is_inert(){
-		SYNC_MTH1(return false;)
-		SYNC_MTH2(return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (stl_neus + dff_neus))););
-		SYNC_MTH3(return all_neu_still(););
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
 	}
 
 	mc_inline_fn tierdata& prv_tier(){
@@ -615,8 +569,7 @@ public:
 	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
 			nervenode* cfl_src = mc_null) bj_stabi_cod;
 
-	void update_sync_mth1() mc_external_code_ram;
-	void update_sync_mth2() bj_stabi_cod;
+	void update_sync_inert() bj_stabi_cod;
 
 	void handle_my_sync() bj_stabi_cod;
 	void send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, nervenode* cfl_src) mc_external_code_ram;
@@ -633,8 +586,6 @@ public:
 	}
 
 	tierdata& get_tier(num_tier_t nti, int dbg_caller) bj_stabi_cod;
-
-	void inc_ety_chdn(num_tier_t nti) mc_external_code_ram;
 
 	bool dbg_prt_all_tiers() mc_external_code_ram;
 
@@ -711,7 +662,6 @@ public:
 	void init_nervenet_with(pre_cnf_net* pre_net) mc_external_code_ram;
 
 	void load_handler(missive* msv) bj_load_cod;
-	void stabi_nn_handler(missive* msv) mc_external_code_ram;
 	void stabi_sync_handler(missive* msv) bj_stabi_cod;
 
 	void stabi_init_sync() mc_external_code_ram;
