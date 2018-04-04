@@ -197,8 +197,6 @@ neurostate::init_me(int caller){
 	//side_kind = side_invalid;
 	stabi_num_tier = 0;
 
-	DBG_TIER(dbg_num_tier = 0);
-
 	stabi_source = mc_null;
 
 	prev_tot_active = 0;

@@ -54,16 +54,14 @@ class neuron;
 class netstate;
 class nervenet;
 
-#define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
-//define SYNC_LOG(...) 
+//define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
+#define SYNC_LOG(...) 
 
 #define SYNC_COND_LOG(cond, ...) EMU_COND_LOG(cond, __VA_ARGS__)
 //define SYNC_COND_LOG(cond, ...) 
 
 #define SYNC_CODE_2(prm) EMU_CODE(prm)
 #define SYNC_LOG_2(...) EMU_LOG(__VA_ARGS__)
-
-#define DBG_TIER(prm) EMU_DBG_CODE(prm)
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -315,8 +313,6 @@ public:
 	synset			stabi_active_set;
 	num_tier_t		stabi_num_tier;
 
-	DBG_TIER(num_tier_t		dbg_num_tier);
-
 	synapse*		stabi_source;
 	grip			stabi_tiers;
 
@@ -365,8 +361,6 @@ public:
 	void send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_stabi_cod;
 
 	bool neu_is_to_delay(net_side_t sd, int dbg_caller) bj_stabi_cod;
-
-	num_tier_t dbg_neu_tier() mc_external_code_ram;
 };
 
 class mc_aligned nervenode : public cell {
@@ -469,7 +463,7 @@ public:
 	void charge_all_confl_and_start_nxt_ti(propag_data* dat) mc_external_code_ram;
 	void charge_all_and_start_nxt_ti(propag_data* dat) bj_stabi_cod;
 
-	bool can_chg_all() bj_stabi_cod;
+	//bool can_chg_all() bj_stabi_cod;
 
 	virtual 
 	bool is_tier_complete(propag_data* dat) bj_stabi_cod;
@@ -673,8 +667,6 @@ public:
 	nervenet* get_nervenet(mc_core_id_t core_id) bj_stabi_cod;
 
 	netstate& get_active_netstate(net_side_t sd) bj_stabi_cod;
-
-	void dbg_stabi_stop_sys(propag_data* dat, nervenode* nod) mc_external_code_ram;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
