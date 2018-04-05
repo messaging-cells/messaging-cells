@@ -12,7 +12,7 @@ SOURCES := \
 	../host_code/cnf_preload/preload_cnf.cpp \
 	../nervenet/nervenet.cpp \
 	../load_cnf/load_cnf.cpp \
-	../stabi/stabi.cpp \
+	../propag/propag.cpp \
 	../solver_main/solver.cpp \
 
 

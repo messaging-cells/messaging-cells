@@ -47,7 +47,7 @@ nervenet::init_nervenet_with(pre_cnf_net* pre_net){
 
 void
 neurostate::update_prv_tot_active(){
-	prev_tot_active = stabi_active_set.tot_syn;
+	prev_tot_active = propag_active_set.tot_syn;
 }
 
 void bj_load_shd_cnf(){
@@ -169,8 +169,8 @@ void bj_load_shd_cnf(){
 
 			my_snp->owner = my_glb_neu;
 
-			MCK_CK(my_neu->left_side.stabi_active_set.parent == mc_null);
-			my_neu->left_side.stabi_active_set.add_left_synapse(my_snp);
+			MCK_CK(my_neu->left_side.propag_active_set.parent == mc_null);
+			my_neu->left_side.propag_active_set.add_left_synapse(my_snp);
 			my_neu->left_side.update_prv_tot_active();
 
 			transmitter* msv = transmitter::acquire();
@@ -239,8 +239,8 @@ polaron::load_handler(missive* msv){
 	my_snp->mate = mt_snp;
 	MCK_CK(my_snp->mate != mc_null);
 
-	MCK_CK(left_side.stabi_active_set.parent == mc_null);
-	left_side.stabi_active_set.add_left_synapse(my_snp);
+	MCK_CK(left_side.propag_active_set.parent == mc_null);
+	left_side.propag_active_set.add_left_synapse(my_snp);
 	left_side.update_prv_tot_active();
 
 	transmitter* msv2 = transmitter::acquire();
@@ -287,7 +287,7 @@ synapse::load_handler(missive* msv){
 	MC_MARK_USED(syn_src);
 	MC_MARK_USED(tok);
 	EMU_CK_PRT(tok == bj_tok_load_nw_syn, "BAD_TOK= %s (%d) (%s)\n\n", load_tok_to_str(tok), tok, 
-			stabi_tok_to_str((stabi_tok_t)(msv->tok)));
+			propag_tok_to_str((propag_tok_t)(msv->tok)));
 
 	synapse* mt_snp = (synapse*)syn_src;
 
@@ -324,7 +324,7 @@ tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		nervenode* my_nod = (nervenode*)wrk;
 		neurostate& stt = my_nod->get_neurostate(sd);
-		num_syn_t tsn = stt.stabi_active_set.tot_syn;
+		num_syn_t tsn = stt.propag_active_set.tot_syn;
 		//EMU_LOG("ADD_NOD %s %ld tot_syn=%ld\n", node_kind_to_str(my_nod->ki), my_nod->id, tsn);
 		if(tsn > 0){
 			if(my_nod->ki == nd_neu){
@@ -395,12 +395,12 @@ void bj_load_main() {
 
 void bj_test_func_1(){
 	neuron* neu2 = neuron::acquire();
-	binder* sy1_n2 = (&(neu2->left_side.stabi_active_set.all_syn));
+	binder* sy1_n2 = (&(neu2->left_side.propag_active_set.all_syn));
 	MCK_CK(! mc_addr_has_id(sy1_n2));
 	bj_test_func_2(sy1_n2);
 
 	neuron* gl_neu2 = (neuron*)mck_as_glb_pt(neu2);
-	binder* sy2_n2 = (&(gl_neu2->left_side.stabi_active_set.all_syn));
+	binder* sy2_n2 = (&(gl_neu2->left_side.propag_active_set.all_syn));
 	//MCK_CK(! mc_addr_has_id(sy2_n2));
 	bj_test_func_2(sy2_n2);
 }

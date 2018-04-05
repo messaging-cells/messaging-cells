@@ -29,27 +29,27 @@ Our Resurrected and Living, both in Body and Spirit,
 
 ------------------------------------------------------------
 
-stabi.hh
+propag.hh
 
 Declaration of functions to load cnfs in the core.
 
 --------------------------------------------------------------*/
 
-#ifndef STABI_H
-#define STABI_H
+#ifndef PROPAG_H
+#define PROPAG_H
 
 #include "nervenet.hh"
 
-#define calc_stabi_arr_cap(tot_syn) (4 * (tot_syn))
+#define calc_propag_arr_cap(tot_syn) (4 * (tot_syn))
 
-#define set_stabi_arr(cap, arr, ii, val) \
-	if(ii < cap){ arr[ii] = val; } else { mck_abort(0xdeadbeaf, mc_cstr("ERROR. Invalid stabi arr set index.")); }
+#define set_propag_arr(cap, arr, ii, val) \
+	if(ii < cap){ arr[ii] = val; } else { mck_abort(0xdeadbeaf, mc_cstr("ERROR. Invalid_propag_arr_set_index.")); }
 
-void bj_stabi_init_handlers() bj_stabi_cod;
-void bj_stabi_main() bj_stabi_cod;
+void bj_propag_init_handlers() bj_propag_cod;
+void bj_propag_main() bj_propag_cod;
 
-int cmp_nervenodes(nervenode* nod1, nervenode* nod2) bj_stabi_cod;
+int cmp_nervenodes(nervenode* nod1, nervenode* nod2) bj_propag_cod;
 
-#endif		// STABI_H
+#endif		// PROPAG_H
 
 

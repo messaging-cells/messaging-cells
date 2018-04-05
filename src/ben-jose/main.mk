@@ -62,7 +62,7 @@ BJ_CORES_INCLUDES := \
 	${MC_STD_INCDIRS} \
 	${SRC_BJ_DIR}/nervenet \
 	${SRC_BJ_DIR}/load_cnf \
-	${SRC_BJ_DIR}/stabi \
+	${SRC_BJ_DIR}/propag \
 	${SRC_BJ_DIR}/solver_main \
 
 
@@ -80,7 +80,7 @@ SUBMAKEFILES := \
 	./maker_bj_emu/bj_emu.mk \
 	./nervenet/nervenet.mk \
 	./load_cnf/load_cnf.mk \
-	./stabi/stabi.mk \
+	./propag/propag.mk \
 	./solver_main/solver.mk \
 
 

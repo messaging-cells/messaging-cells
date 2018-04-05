@@ -2,18 +2,18 @@
 #include "solver.hh"
 
 #include "load_cnf.hh"
-#include "stabi.hh"
+#include "propag.hh"
 
 mc_c_decl int main();
 
 char load_module_nam[] mc_external_data_ram = "module1";
-char stabi_module_nam[] mc_external_data_ram = "module2";
+char propag_module_nam[] mc_external_data_ram = "module2";
 char m3_nam[] mc_external_data_ram = "module3";
 
 #define TOT_MODS 2
 
 #define CNF_LOADER_IDX 0
-#define STABI_IDX 1
+#define PROPAG_IDX 1
 #define MOD3_IDX 2
 #define MOD_MAX_IDX 0
 
@@ -26,7 +26,7 @@ init_module_nams() mc_external_code_ram;
 void
 init_module_nams(){
 	all_mod_nams[CNF_LOADER_IDX] = load_module_nam;
-	all_mod_nams[STABI_IDX] = stabi_module_nam;
+	all_mod_nams[PROPAG_IDX] = propag_module_nam;
 	//all_mod_nams[MOD3_IDX] = m3_nam;
 }
 
@@ -98,11 +98,11 @@ void mc_cores_main() {
 	}
 	bj_load_main();
 
-	ok = mck_load_module(all_mod_addr[STABI_IDX]);
+	ok = mck_load_module(all_mod_addr[PROPAG_IDX]);
 	if(! ok){
-		mck_abort(1, mc_cstr("mck_load_module failed for STABI_IDX. \n"));
+		mck_abort(1, mc_cstr("mck_load_module_failed_for_PROPAG_IDX. \n"));
 	}
-	bj_stabi_main();
+	bj_propag_main();
 
 	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
 
