@@ -206,9 +206,9 @@ neurostate::init_me(int caller){
 	propag_num_complete = 0;
 	propag_num_ping = 0;
 
-	propag_arr_cap = 0;
-	propag_arr_sz = 0;
-	propag_arr = mc_null;
+	stabi_arr_cap = 0;
+	stabi_arr_sz = 0;
+	stabi_arr = mc_null;
 }
 
 nervenode::nervenode(){ 
@@ -864,4 +864,46 @@ void bj_print_class_szs(){
 
 		mck_slog2("-------------------------------------------------------------\n");
 	}
+}
+
+void
+synset::propag_rec_reset(){
+	MCK_CHECK_SP();
+	while(! all_grp.is_alone()){
+		synset* sub_grp = (synset*)(binder*)(all_grp.bn_right);
+		EMU_CK(sub_grp->parent == this);
+		sub_grp->propag_rec_reset();
+
+		EMU_CK(sub_grp->all_grp.is_alone());
+		all_syn.move_all_to_my_right(sub_grp->all_syn);
+		sub_grp->release();
+	}
+}
+
+neurostate& 
+nervenode::get_neurostate(net_side_t sd){
+	EMU_CK(sd != side_invalid);
+
+	neurostate* out_stt = &left_side;
+	if(sd == side_right){
+		out_stt = &right_side;
+	}
+	EMU_CK(out_stt != mc_null);
+	return *out_stt;
+}
+
+synapse*
+get_synapse_from_binder(net_side_t sd, binder* bdr){
+	EPH_CODE(MCK_CK(! mc_addr_has_id(bdr)));
+	synapse* my_snp = mc_null;
+	if(sd == side_left){
+		my_snp = (synapse*)bdr;
+	} else {
+		EMU_CK(sd == side_right);
+		my_snp = bj_get_syn_of_rgt_handle(bdr);
+	}
+	EMU_CK(my_snp != mc_null);
+	EMU_CK(bj_is_synapse(my_snp));
+	MCK_CK(my_snp->owner->ki != nd_invalid);
+	return my_snp;
 }

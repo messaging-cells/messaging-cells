@@ -3,19 +3,15 @@
 
 #include "load_cnf.hh"
 #include "propag.hh"
+#include "mirrow.hh"
 
 mc_c_decl int main();
 
-char load_module_nam[] mc_external_data_ram = "module1";
-char propag_module_nam[] mc_external_data_ram = "module2";
-char m3_nam[] mc_external_data_ram = "module3";
-
-#define TOT_MODS 2
+#define TOT_MODS 3
 
 #define CNF_LOADER_IDX 0
 #define PROPAG_IDX 1
-#define MOD3_IDX 2
-#define MOD_MAX_IDX 0
+#define MIRROW_IDX 2
 
 char* all_mod_nams[TOT_MODS] mc_external_data_ram;
 mc_addr_t* all_mod_addr;
@@ -25,9 +21,9 @@ init_module_nams() mc_external_code_ram;
 
 void
 init_module_nams(){
-	all_mod_nams[CNF_LOADER_IDX] = load_module_nam;
-	all_mod_nams[PROPAG_IDX] = propag_module_nam;
-	//all_mod_nams[MOD3_IDX] = m3_nam;
+	all_mod_nams[CNF_LOADER_IDX] = mc_cstr("module1");
+	all_mod_nams[PROPAG_IDX] = mc_cstr("module2");
+	all_mod_nams[MIRROW_IDX] = mc_cstr("module3");
 }
 
 void
@@ -50,20 +46,16 @@ print_module_nams(){
 void
 print_module_addrs() mc_external_code_ram;
 
-char dbg_slvr2[] mc_external_data_ram = "ALL_MODULE_ADDRS=\n";
-char dbg_slvr3[] mc_external_data_ram = " addr____";
-char dbg_slvr4[] mc_external_data_ram = "____\n";
-
 void
 print_module_addrs(){
 	uint32_t aa = 0;
-	mck_sprt2(dbg_slvr2);
+	mck_sprt2("ALL_MODULE_ADDRS=\n");
 	for(aa = 0; aa < TOT_MODS; aa++){
 		char* nam0 = all_mod_nams[aa];
 		mck_sprt2(nam0);
-		mck_sprt2(dbg_slvr3);
+		mck_sprt2(" addr____");
 		mck_xprt(all_mod_addr[aa]);
-		mck_sprt2(dbg_slvr4);
+		mck_sprt2("____\n");
 	}
 }
 
@@ -103,6 +95,12 @@ void mc_cores_main() {
 		mck_abort(1, mc_cstr("mck_load_module_failed_for_PROPAG_IDX. \n"));
 	}
 	bj_propag_main();
+
+	ok = mck_load_module(all_mod_addr[MIRROW_IDX]);
+	if(! ok){
+		mck_abort(1, mc_cstr("mck_load_module_failed_for_MIRROW_IDX. \n"));
+	}
+	bj_mirrow_main();
 
 	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
 

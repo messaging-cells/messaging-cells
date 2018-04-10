@@ -4,18 +4,6 @@
 
 #define BJ_DBG_MAX_TIER 10
 
-neurostate& 
-nervenode::get_neurostate(net_side_t sd){
-	EMU_CK(sd != side_invalid);
-
-	neurostate* out_stt = &left_side;
-	if(sd == side_right){
-		out_stt = &right_side;
-	}
-	EMU_CK(out_stt != mc_null);
-	return *out_stt;
-}
-
 netstate& 
 nervenet::get_active_netstate(net_side_t sd){
 	EMU_CK(sd != side_invalid);
@@ -82,58 +70,6 @@ bj_propag_init_handlers(){
 	hndlrs[idx_nervenet] = nervenet_propag_handler;
 
 	kernel::set_handlers(idx_total, bj_handlers);
-}
-
-/*
-void 
-synset::calc_propag_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) { // careful with stack usage
-	set_propag_arr(cap, arr, ii++, tot_syn);
-
-	binder * fst, * lst, * wrk;
-
-	binder* grps = &(all_grp);
-	fst = (binder*)(grps->bn_right);
-	lst = (binder*)mck_as_loc_pt(grps);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		synset* sub_grp = (synset*)wrk;
-		EMU_CK(sub_grp->parent == this);
-		sub_grp->calc_propag_arr_rec(cap, arr, ii);
-	}
-
-	//set_propag_arr(cap, arr, ii++, tot_grp);
-}
-
-// mc_addr_is_local(addr)
-
-void 
-neurostate::calc_propag_arr() {
-	if(propag_arr == mc_null){
-		propag_arr_cap = calc_propag_arr_cap(propag_active_set.tot_syn);
-		propag_arr = mc_malloc32(num_syn_t, propag_arr_cap);
-	}
-	propag_arr_sz = 0;
-	propag_active_set.calc_propag_arr_rec(propag_arr_cap, propag_arr, propag_arr_sz);
-}
-*/
-
-int cmp_neurostate(neurostate* nod1, neurostate* nod2){
-	EMU_CK(nod1 != mc_null);
-	EMU_CK(nod2 != mc_null);
-	num_syn_t sz1 = nod1->propag_arr_sz;
-	num_syn_t sz2 = nod2->propag_arr_sz;
-	num_syn_t* arr1 = nod1->propag_arr;
-	num_syn_t* arr2 = nod2->propag_arr;
-
-	num_syn_t msz = mc_min(sz1, sz2);
-	for(num_syn_t aa = 0; aa < msz; aa++){
-		num_syn_t v1 = arr1[aa];
-		num_syn_t v2 = arr2[aa];
-		if(v1 < v2){ return -1; }
-		if(v1 > v2){ return 1; }
-	}
-	if(sz1 < sz2){ return -1; }
-	if(sz1 > sz2){ return 1; }
-	return 0;
 }
 
 void
@@ -206,17 +142,7 @@ send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_
 	fst = (binder*)(nn_all_snp->bn_right);
 	lst = (binder*)mck_as_loc_pt(nn_all_snp);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		MCK_CK(mc_addr_is_local((mc_addr_t)wrk));
-		synapse* my_snp = mc_null;
-		if(sd == side_left){
-			my_snp = (synapse*)wrk;
-		} else {
-			EMU_CK(sd == side_right);
-			my_snp = bj_get_syn_of_rgt_handle(wrk);
-		}
-		EMU_CK(my_snp != mc_null);
-		EMU_CK(bj_is_synapse(my_snp));
-		MCK_CK(my_snp->owner->ki != nd_invalid);
+		synapse* my_snp = get_synapse_from_binder(sd, wrk);
 
 		(my_snp->owner->*mth)(my_snp, sd, from_rec);
 	}
@@ -362,20 +288,6 @@ nervenode::propag_recv_transmitter(propag_data* dat){
 		default:
 			mck_abort(1, mc_cstr("nervenode::propag_recv_propag. BAD_PROPAG_TOK"));
 		break;
-	}
-}
-
-void
-synset::propag_rec_reset(){
-	MCK_CHECK_SP();
-	while(! all_grp.is_alone()){
-		synset* sub_grp = (synset*)(binder*)(all_grp.bn_right);
-		EMU_CK(sub_grp->parent == this);
-		sub_grp->propag_rec_reset();
-
-		EMU_CK(sub_grp->all_grp.is_alone());
-		all_syn.move_all_to_my_right(sub_grp->all_syn);
-		sub_grp->release();
 	}
 }
 

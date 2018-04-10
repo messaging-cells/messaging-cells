@@ -12,17 +12,17 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 } 
 
 void 
-nervenet_handler(missive* msv){
+nervenet_load_handler(missive* msv){
 	MCK_CALL_HANDLER(nervenet, load_handler, msv);
 }
 
 void 
-polaron_handler(missive* msv){
+polaron_load_handler(missive* msv){
 	MCK_CALL_HANDLER(polaron, load_handler, msv);
 }
 
 void 
-synapse_handler(missive* msv){
+synapse_load_handler(missive* msv){
 	MCK_CALL_HANDLER(synapse, load_handler, msv);
 }
 
@@ -30,9 +30,9 @@ void
 bj_load_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
-	hndlrs[idx_nervenet] = nervenet_handler;
-	hndlrs[idx_polaron] = polaron_handler;
-	hndlrs[idx_synapse] = synapse_handler;
+	hndlrs[idx_nervenet] = nervenet_load_handler;
+	hndlrs[idx_polaron] = polaron_load_handler;
+	hndlrs[idx_synapse] = synapse_load_handler;
 
 	kernel::set_handlers(idx_total, hndlrs);
 }

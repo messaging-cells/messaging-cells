@@ -98,6 +98,12 @@ enum propag_tok_t : mck_token_t {
 	bj_tok_propag_end
 };
 
+enum mirrow_tok_t : mck_token_t {
+	bj_tok_mirrow_invalid = bj_tok_propag_end + 1,
+	bj_tok_mirrow_start,
+	bj_tok_mirrow_end
+};
+
 enum bj_hdlr_idx_t : uint8_t {
 	idx_invalid,
 	idx_synset,
@@ -196,13 +202,13 @@ public:
 
 	void propag_handler(missive* msv) bj_propag_cod;
 
-	//void calc_propag_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_propag_cod;
+	void calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_mirrow_cod;
 
 	void dbg_rec_call_all(bj_callee_t mth, net_side_t sd) mc_external_code_ram;
 
 	void propag_rec_send_all(bj_callee_t mth, net_side_t sd) bj_propag_cod;
 
-	void propag_rec_reset() bj_propag_cod;
+	void propag_rec_reset();
 
 	bool is_synset_empty() bj_propag_cod;
 
@@ -222,6 +228,8 @@ public:
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
+
+	void mirrow_tiset(tierset& tis, net_side_t src_sd) bj_mirrow_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -294,6 +302,8 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+synapse* get_synapse_from_binder(net_side_t sd, binder* bdr);
+
 struct mc_aligned propag_data {
 public:
 	transmitter* trm = mc_null;
@@ -322,9 +332,9 @@ public:
 	num_syn_t		propag_num_complete;
 	num_syn_t		propag_num_ping;
 
-	num_syn_t		propag_arr_cap;
-	num_syn_t		propag_arr_sz;
-	num_syn_t*  	propag_arr;
+	num_syn_t		stabi_arr_cap;
+	num_syn_t		stabi_arr_sz;
+	num_syn_t*  	stabi_arr;
 
 	EMU_DBG_CODE(bool was_all_pg);
 
@@ -334,7 +344,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	//void calc_propag_arr() bj_propag_cod;
+	void calc_stabi_arr() bj_mirrow_cod;
 	bool charge_all_active(propag_data* dat, node_kind_t ki) bj_propag_cod;
 	void reset_complete() bj_propag_cod;
 
@@ -361,7 +371,11 @@ public:
 	void send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_propag_cod;
 
 	bool neu_is_to_delay(net_side_t sd, int dbg_caller) bj_propag_cod;
+
+	void reset_all_tiers(grip& tmp_ti) bj_mirrow_cod;
 };
+
+int cmp_neurostate(neurostate* nod1, neurostate* nod2) bj_mirrow_cod;
 
 class mc_aligned nervenode : public cell {
 public:
@@ -397,6 +411,9 @@ public:
 	void propag_send_snp_tier_done(synapse* snp, net_side_t sd, bool from_rec) bj_propag_cod;
 
 	void send_confl_tok(propag_data* dat, sync_tok_t the_tok) mc_external_code_ram;
+
+	void mirrow_handler(missive* msv) bj_mirrow_cod;
+	void mirrow_sides(net_side_t sd) bj_mirrow_cod;
 
 	virtual 
 	bool is_tier_complete(propag_data* dat) bj_propag_cod;
@@ -657,9 +674,13 @@ public:
 
 	void load_handler(missive* msv) bj_load_cod;
 	void propag_sync_handler(missive* msv) bj_propag_cod;
+	void mirrow_handler(missive* msv) bj_mirrow_cod;
 
 	void propag_init_sync() mc_external_code_ram;
 	void propag_nervenet_start() bj_propag_cod;
+
+	void mirrow_nervenet_start() bj_propag_cod;
+	void mirrow_start_all_nods(grip& all_nod, net_side_t sd) bj_propag_cod;
 
 	void handle_sync() bj_propag_cod;
 	void send_parent_tok_empty_child(net_side_t sd) bj_propag_cod;

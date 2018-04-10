@@ -40,11 +40,6 @@ Declaration of functions to load cnfs in the core.
 
 #include "nervenet.hh"
 
-#define calc_propag_arr_cap(tot_syn) (4 * (tot_syn))
-
-#define set_propag_arr(cap, arr, ii, val) \
-	if(ii < cap){ arr[ii] = val; } else { mck_abort(0xdeadbeaf, mc_cstr("ERROR. Invalid_propag_arr_set_index.")); }
-
 void bj_propag_init_handlers() bj_propag_cod;
 void bj_propag_main() bj_propag_cod;
 
