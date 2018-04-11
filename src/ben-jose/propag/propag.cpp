@@ -4,18 +4,6 @@
 
 #define BJ_DBG_MAX_TIER 10
 
-netstate& 
-nervenet::get_active_netstate(net_side_t sd){
-	EMU_CK(sd != side_invalid);
-
-	netstate* out_stt = &act_left_side;
-	if(sd == side_right){
-		out_stt = &act_right_side;
-	}
-	EMU_CK(out_stt != mc_null);
-	return *out_stt;
-}
-
 void
 synapse::send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced){
 	if(bj_nervenet->get_active_netstate(sd).sync_ending_propag){ return; }
@@ -846,12 +834,9 @@ netstate::send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_
 	trm->src = bj_nervenet;
 	trm->dst = the_dst;
 	trm->tok = the_tok;
-
 	trm->wrk_side = my_side;
 	trm->wrk_tier = the_ti;
-
 	trm->cfl_src = the_cfl_src;
-
 	trm->send();
 
 	SYNC_CODE_2(mc_core_nn_t dbg_dst_nn = mc_id_to_nn(mc_addr_get_id(the_dst)));

@@ -679,7 +679,7 @@ public:
 	void propag_init_sync() mc_external_code_ram;
 	void propag_nervenet_start() bj_propag_cod;
 
-	void mirrow_nervenet_start() bj_propag_cod;
+	void mirrow_nervenet() bj_propag_cod;
 	void mirrow_start_all_nods(grip& all_nod, net_side_t sd) bj_propag_cod;
 
 	void handle_sync() bj_propag_cod;
@@ -687,7 +687,7 @@ public:
 
 	nervenet* get_nervenet(mc_core_id_t core_id) bj_propag_cod;
 
-	netstate& get_active_netstate(net_side_t sd) bj_propag_cod;
+	netstate& get_active_netstate(net_side_t sd);
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;

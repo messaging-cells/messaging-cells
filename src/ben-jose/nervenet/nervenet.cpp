@@ -880,6 +880,18 @@ synset::propag_rec_reset(){
 	}
 }
 
+netstate& 
+nervenet::get_active_netstate(net_side_t sd){
+	EMU_CK(sd != side_invalid);
+
+	netstate* out_stt = &act_left_side;
+	if(sd == side_right){
+		out_stt = &act_right_side;
+	}
+	EMU_CK(out_stt != mc_null);
+	return *out_stt;
+}
+
 neurostate& 
 nervenode::get_neurostate(net_side_t sd){
 	EMU_CK(sd != side_invalid);
@@ -907,3 +919,4 @@ get_synapse_from_binder(net_side_t sd, binder* bdr){
 	MCK_CK(my_snp->owner->ki != nd_invalid);
 	return my_snp;
 }
+
