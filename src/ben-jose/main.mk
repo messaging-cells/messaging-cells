@@ -63,7 +63,7 @@ BJ_CORES_INCLUDES := \
 	${SRC_BJ_DIR}/nervenet \
 	${SRC_BJ_DIR}/load_cnf \
 	${SRC_BJ_DIR}/propag \
-	${SRC_BJ_DIR}/mirrow \
+	${SRC_BJ_DIR}/stabi \
 	${SRC_BJ_DIR}/solver_main \
 
 
@@ -82,7 +82,7 @@ SUBMAKEFILES := \
 	./nervenet/nervenet.mk \
 	./load_cnf/load_cnf.mk \
 	./propag/propag.mk \
-	./mirrow/mirrow.mk \
+	./stabi/stabi.mk \
 	./solver_main/solver.mk \
 
 

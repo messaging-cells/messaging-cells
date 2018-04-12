@@ -46,8 +46,8 @@ Declaration of main bj solver function.
 #define bj_propag_cod mc_mod2_cod
 #define bj_propag_dat mc_mod2_dat
 
-#define bj_mirrow_cod mc_mod3_cod
-#define bj_mirrow_dat mc_mod3_dat
+#define bj_stabi_cod mc_mod3_cod
+#define bj_stabi_dat mc_mod3_dat
 
 #define bj_nervenet_cod 
 #define bj_nervenet_dat 

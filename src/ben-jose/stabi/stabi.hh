@@ -29,14 +29,14 @@ Our Resurrected and Living, both in Body and Spirit,
 
 ------------------------------------------------------------
 
-mirrow.hh
+stabi.hh
 
 Declaration of functions to load cnfs in the core.
 
 --------------------------------------------------------------*/
 
-#ifndef MIRROW_H
-#define MIRROW_H
+#ifndef STABI_H
+#define STABI_H
 
 #include "nervenet.hh"
 
@@ -46,9 +46,12 @@ Declaration of functions to load cnfs in the core.
 	if(ii < cap){ arr[ii] = val; } else { mck_abort(0xdeadbeaf, mc_cstr("ERROR. Invalid_propag_arr_set_index.")); }
 
 
-void bj_mirrow_init_handlers() bj_mirrow_cod;
-void bj_mirrow_main() bj_mirrow_cod;
+void bj_mirrow_init_handlers() bj_stabi_cod;
+void bj_mirrow_main() bj_stabi_cod;
 
-#endif		// MIRROW_H
+void bj_stabi_init_handlers() bj_stabi_cod;
+void bj_stabi_main() bj_stabi_cod;
+
+#endif		// STABI_H
 
 

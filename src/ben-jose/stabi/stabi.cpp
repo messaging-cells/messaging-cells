@@ -1,11 +1,6 @@
 
 #include "cell.hh"
-#include "mirrow.hh"
-
-void 
-nervenode_mirrow_handler(missive* msv){
-	MCK_CALL_HANDLER(nervenode, mirrow_handler, msv);
-}
+#include "stabi.hh"
 
 void 
 nervenet_mirrow_handler(missive* msv){
@@ -16,38 +11,16 @@ nervenet_mirrow_handler(missive* msv){
 void bj_mirrow_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
-	hndlrs[idx_polaron] = nervenode_mirrow_handler;
-	hndlrs[idx_neuron] = nervenode_mirrow_handler;
 	hndlrs[idx_nervenet] = nervenet_mirrow_handler;
 
 	kernel::set_handlers(idx_total, hndlrs);
 }
 
 void
-nervenode::mirrow_handler(missive* msv){
-	mirrow_tok_t tok = (mirrow_tok_t)msv->tok;
-	//net_side_t sd = ((transmitter*)msv)->wrk_side;
-
-	switch(tok){
-		default:
-			mck_abort(1, mc_cstr("BAD_MIRROW_TOK"));
-		break;
-	}
-}
-
-void
 nervenet::mirrow_handler(missive* msv){
-	mirrow_tok_t tok = (mirrow_tok_t)msv->tok;
+	EMU_CK(((mirrow_tok_t)msv->tok) == bj_tok_mirrow_start);
 
-	switch(tok){
-		case bj_tok_mirrow_start:
-			mirrow_nervenet();
-		break;
-		default:
-			mck_abort(1, mc_cstr("BAD_MIRROW_TOK"));
-		break;
-	}
-
+	mirrow_nervenet();
 	kernel::stop_sys(bj_tok_mirrow_end);
 }
 
@@ -286,3 +259,6 @@ void bj_mirrow_main() {
 
 }
 
+void bj_stabi_main() {
+	bj_mirrow_main();
+}

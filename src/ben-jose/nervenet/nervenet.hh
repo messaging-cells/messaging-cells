@@ -202,7 +202,7 @@ public:
 
 	void propag_handler(missive* msv) bj_propag_cod;
 
-	void calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_mirrow_cod;
+	void calc_stabi_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
 
 	void dbg_rec_call_all(bj_callee_t mth, net_side_t sd) mc_external_code_ram;
 
@@ -229,7 +229,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	void mirrow_tiset(tierset& tis, net_side_t src_sd) bj_mirrow_cod;
+	void mirrow_tiset(tierset& tis, net_side_t src_sd) bj_stabi_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -344,7 +344,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	void calc_stabi_arr() bj_mirrow_cod;
+	void calc_stabi_arr() bj_stabi_cod;
 	bool charge_all_active(propag_data* dat, node_kind_t ki) bj_propag_cod;
 	void reset_complete() bj_propag_cod;
 
@@ -372,10 +372,10 @@ public:
 
 	bool neu_is_to_delay(net_side_t sd, int dbg_caller) bj_propag_cod;
 
-	void reset_all_tiers(grip& tmp_ti) bj_mirrow_cod;
+	void reset_all_tiers(grip& tmp_ti) bj_stabi_cod;
 };
 
-int cmp_neurostate(neurostate* nod1, neurostate* nod2) bj_mirrow_cod;
+int cmp_neurostate(neurostate* nod1, neurostate* nod2) bj_stabi_cod;
 
 class mc_aligned nervenode : public cell {
 public:
@@ -412,8 +412,7 @@ public:
 
 	void send_confl_tok(propag_data* dat, sync_tok_t the_tok) mc_external_code_ram;
 
-	void mirrow_handler(missive* msv) bj_mirrow_cod;
-	void mirrow_sides(net_side_t sd) bj_mirrow_cod;
+	void mirrow_sides(net_side_t sd) bj_stabi_cod;
 
 	virtual 
 	bool is_tier_complete(propag_data* dat) bj_propag_cod;
@@ -674,16 +673,16 @@ public:
 
 	void load_handler(missive* msv) bj_load_cod;
 	void propag_sync_handler(missive* msv) bj_propag_cod;
-	void mirrow_handler(missive* msv) bj_mirrow_cod;
 
 	void propag_init_sync() mc_external_code_ram;
 	void propag_nervenet_start() bj_propag_cod;
 
-	void mirrow_nervenet() bj_propag_cod;
-	void mirrow_start_all_nods(grip& all_nod, net_side_t sd) bj_propag_cod;
-
 	void handle_sync() bj_propag_cod;
 	void send_parent_tok_empty_child(net_side_t sd) bj_propag_cod;
+
+	void mirrow_handler(missive* msv) bj_stabi_cod;
+	void mirrow_nervenet() bj_stabi_cod;
+	void mirrow_start_all_nods(grip& all_nod, net_side_t sd) bj_stabi_cod;
 
 	nervenet* get_nervenet(mc_core_id_t core_id) bj_propag_cod;
 
