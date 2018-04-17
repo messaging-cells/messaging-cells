@@ -13,6 +13,7 @@ SOURCES := \
 	../nervenet/nervenet.cpp \
 	../load_cnf/load_cnf.cpp \
 	../propag/propag.cpp \
+	../stabi/mirrow.cpp \
 	../stabi/stabi.cpp \
 	../solver_main/solver.cpp \
 

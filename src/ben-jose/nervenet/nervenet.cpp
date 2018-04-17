@@ -464,6 +464,32 @@ char* propag_tok_to_str(propag_tok_t tok){
 	return resp;
 }
 
+char* stabi_tok_to_str(stabi_tok_t tok){
+	char* resp = mc_cstr("UNKNOWN_STABI_TOK");
+
+	switch(tok){
+	case bj_tok_stabi_invalid:
+		resp = mc_cstr("bj_tok_stabi_invalid");
+	break;
+	case bj_tok_stabi_start:
+		resp = mc_cstr("bj_tok_stabi_start");
+	break;
+	case bj_tok_stabi_ping:
+		resp = mc_cstr("bj_tok_stabi_ping");
+	break;
+	case bj_tok_stabi_step:
+		resp = mc_cstr("bj_tok_stabi_step");
+	break;
+	case bj_tok_stabi_tier_done:
+		resp = mc_cstr("bj_tok_stabi_tier_done");
+	break;
+	case bj_tok_stabi_end:
+		resp = mc_cstr("bj_tok_stabi_end");
+	break;
+	}
+	return resp;
+}
+
 netstate::netstate(){ 
 	init_me();
 } 
@@ -918,5 +944,88 @@ get_synapse_from_binder(net_side_t sd, binder* bdr){
 	EMU_CK(bj_is_synapse(my_snp));
 	MCK_CK(my_snp->owner->ki != nd_invalid);
 	return my_snp;
+}
+
+void
+synapse::send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced){
+	if(bj_nervenet->get_active_netstate(sd).sync_ending_propag){ return; }
+
+	num_tier_t ti = owner->get_neurostate(sd).propag_num_tier;
+
+	MC_DBG(node_kind_t the_ki = owner->ki);
+	MCK_CK((the_ki == nd_pos) || (the_ki == nd_neg) || (the_ki == nd_neu));
+	EMU_CODE(nervenode* rem_nd = mate->owner);
+	EMU_LOG("::send_transmitter_%s_t%d_%s [%s %ld ->> %s %s %ld k%d] \n", net_side_to_str(sd), ti, 
+		propag_tok_to_str(tok), node_kind_to_str(owner->ki), owner->id, 
+		((dbg_is_forced)?("FORCED"):("")), node_kind_to_str(rem_nd->ki), rem_nd->id, 
+		mc_id_to_nn(mc_addr_get_id(mate)));
+
+	transmitter* trm = transmitter::acquire();
+	trm->src = this;
+	trm->dst = mate;
+	trm->tok = tok;
+	trm->wrk_side = sd;
+	trm->wrk_tier = ti;
+	trm->send();
+}
+
+void 
+send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec){
+	EMU_CK(mth != mc_null);
+
+	binder * fst, * lst, * wrk;
+
+	fst = (binder*)(nn_all_snp->bn_right);
+	lst = (binder*)mck_as_loc_pt(nn_all_snp);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synapse* my_snp = get_synapse_from_binder(sd, wrk);
+
+		(my_snp->owner->*mth)(my_snp, sd, from_rec);
+	}
+}
+
+void
+synset::transmitter_send_all_rec(bj_callee_t mth, net_side_t sd){
+	MCK_CHECK_SP();
+	//MCK_CK(! mc_addr_has_id(this));
+	//MCK_CK(! mc_addr_has_id(&(all_syn)));
+	//MCK_CK(! mc_addr_has_id(&(all_grp)));
+	send_all_synapses(&(all_syn), mth, sd, true /* IS_FROM_REC */);
+
+	binder * fst, * lst, * wrk;
+
+	binder* grps = &(all_grp);
+	fst = (binder*)(grps->bn_right);
+	lst = (binder*)mck_as_loc_pt(grps);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synset* sub_grp = (synset*)wrk;
+		EMU_CK(sub_grp->parent == this);
+		sub_grp->transmitter_send_all_rec(mth, sd);
+	}
+}
+
+void
+netstate::send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti, 
+			nervenode* the_cfl_src)
+{
+	sync_transmitter* trm = sync_transmitter::acquire();
+	trm->src = bj_nervenet;
+	trm->dst = the_dst;
+	trm->tok = the_tok;
+	trm->wrk_side = my_side;
+	trm->wrk_tier = the_ti;
+	trm->cfl_src = the_cfl_src;
+	trm->send();
+
+	SYNC_CODE_2(mc_core_nn_t dbg_dst_nn = mc_id_to_nn(mc_addr_get_id(the_dst)));
+	SYNC_LOG_2(" SYNC_send_transmitter_%s_t%d_%s_ [%ld ->> %ld] \n", 
+		net_side_to_str(my_side), the_ti, sync_tok_to_str(the_tok), kernel::get_core_nn(), dbg_dst_nn);
+	EMU_CK(the_ti != BJ_INVALID_NUM_TIER);
+}
+
+nervenet*
+nervenet::get_nervenet(mc_core_id_t id){
+	nervenet* rem_net = (nervenet*)mc_addr_set_id(id, this);
+	return rem_net;
 }
 

@@ -22,7 +22,7 @@ SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG}
 
 SRC_INCDIRS := ${BJ_CORES_INCLUDES} 
 
-SOURCES := stabi.cpp
+SOURCES := mirrow.cpp stabi.cpp
 
 
 
