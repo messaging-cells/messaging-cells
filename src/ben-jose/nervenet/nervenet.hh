@@ -108,7 +108,7 @@ enum stabi_tok_t : mck_token_t {
 	bj_tok_stabi_invalid = bj_tok_mirrow_end + 1,
 	bj_tok_stabi_start,
 	bj_tok_stabi_ping,
-	bj_tok_stabi_step,
+	bj_tok_stabi_rank,
 	bj_tok_stabi_tier_done,
 	bj_tok_stabi_end
 };
@@ -305,7 +305,8 @@ public:
 	void propag_handler(missive* msv) bj_propag_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
-	void send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced = false);
+	void propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced = false) bj_propag_cod;
+	void stabi_send_transmitter(stabi_tok_t tok, bool dbg_is_forced = false) bj_stabi_cod;
 
 	mc_inline_fn binder& get_side_binder(net_side_t sd) bj_propag_cod;
 
@@ -319,7 +320,6 @@ struct mc_aligned signal_data {
 public:
 	transmitter* trm = mc_null;
 	synapse* snp = mc_null;
-	//propag_tok_t tok = bj_tok_propag_invalid;
 	mck_token_t tok = mck_tok_invalid;
 	net_side_t sd = side_invalid;
 	num_tier_t ti = BJ_INVALID_NUM_TIER;
@@ -332,17 +332,15 @@ public:
 //class neurostate {
 class mc_aligned neurostate : public binder {
 public:
-	synset			propag_active_set;
-	num_tier_t		propag_num_tier;
+	mc_flags_t		step_flags;
+	synset			step_active_set;
+	num_syn_t 		step_prev_tot_active;
+	num_syn_t		step_num_complete;
+	num_syn_t		step_num_ping;
 
+	num_tier_t		propag_num_tier;
 	synapse*		propag_source;
 	grip			propag_tiers;
-
-	num_syn_t 		prev_tot_active;
-
-	mc_flags_t		propag_flags;
-	num_syn_t		propag_num_complete;
-	num_syn_t		propag_num_ping;
 
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
@@ -358,7 +356,7 @@ public:
 
 	void calc_stabi_arr() bj_stabi_cod;
 	bool charge_all_active(signal_data* dat, node_kind_t ki) bj_propag_cod;
-	void reset_complete() bj_propag_cod;
+	void step_reset_complete();
 
 	tierset*	dbg_get_tiset(num_tier_t nti) mc_external_code_ram;
 
@@ -370,17 +368,18 @@ public:
 	bool is_mono(num_tier_t nti) bj_propag_cod;
 
 	mc_inline_fn bool neu_all_ping(){
-		bool all_pg = ((prev_tot_active > 1) && (propag_num_ping == prev_tot_active));
+		bool all_pg = ((step_prev_tot_active > 1) && (step_num_ping == step_prev_tot_active));
 		return all_pg;
 	}
 
 	void send_all_propag(nervenode* nd, signal_data* dat) bj_propag_cod;
 
 	mc_inline_fn bool is_full(){
-		return (propag_num_complete == prev_tot_active);
+		return (step_num_complete == step_prev_tot_active);
 	}
 
-	void send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_propag_cod;
+	void propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_propag_cod;
+	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) bj_stabi_cod;
 
 	bool neu_is_to_delay(net_side_t sd, int dbg_caller) bj_propag_cod;
 
@@ -427,7 +426,7 @@ public:
 	void send_confl_tok(signal_data* dat, sync_tok_t the_tok) mc_external_code_ram;
 
 	virtual 
-	bool is_tier_complete(signal_data* dat) bj_propag_cod;
+	bool is_tier_complete(signal_data* dat);
 
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
@@ -439,6 +438,10 @@ public:
 
 	void mirrow_sides(net_side_t sd) bj_stabi_cod;
 	void stabi_recv_transmitter(signal_data* dat) bj_stabi_cod;
+	void stabi_recv_ping(signal_data* dat) bj_stabi_cod;
+	void stabi_recv_tier_done(signal_data* dat) bj_stabi_cod;
+
+	void stabi_send_snp_tier_done(synapse* snp, bool from_rec) bj_stabi_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -498,7 +501,7 @@ public:
 	//bool can_chg_all() bj_propag_cod;
 
 	virtual 
-	bool is_tier_complete(signal_data* dat) bj_propag_cod;
+	bool is_tier_complete(signal_data* dat);
 
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;

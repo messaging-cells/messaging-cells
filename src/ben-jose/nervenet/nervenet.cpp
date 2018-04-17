@@ -199,12 +199,12 @@ neurostate::init_me(int caller){
 
 	propag_source = mc_null;
 
-	prev_tot_active = 0;
+	step_prev_tot_active = 0;
 
-	propag_flags = 0;
+	step_flags = 0;
 
-	propag_num_complete = 0;
-	propag_num_ping = 0;
+	step_num_complete = 0;
+	step_num_ping = 0;
 
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
@@ -270,7 +270,7 @@ void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
 		polaron* my_pol = (polaron*)wrk;
 		EMU_CK(my_pol->ki == ki);
 
-		binder* nn_all_snp = &(my_pol->left_side.propag_active_set.all_syn);
+		binder* nn_all_snp = &(my_pol->left_side.step_active_set.all_syn);
 
 		mck_slog2("LDPOL.");
 		mck_ilog(my_pol->id);
@@ -312,7 +312,7 @@ bj_print_loaded_cnf() {
 		neuron* my_neu = (neuron*)wrk;
 		EMU_CK(my_neu->ki == nd_neu);
 
-		binder* nn_all_snp = &(my_neu->left_side.propag_active_set.all_syn);
+		binder* nn_all_snp = &(my_neu->left_side.step_active_set.all_syn);
 
 		mck_slog2("n");
 		mck_ilog(my_neu->id);
@@ -477,8 +477,8 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_ping:
 		resp = mc_cstr("bj_tok_stabi_ping");
 	break;
-	case bj_tok_stabi_step:
-		resp = mc_cstr("bj_tok_stabi_step");
+	case bj_tok_stabi_rank:
+		resp = mc_cstr("bj_tok_stabi_rank");
 	break;
 	case bj_tok_stabi_tier_done:
 		resp = mc_cstr("bj_tok_stabi_tier_done");
@@ -659,7 +659,7 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 	neurostate& ne_stt = get_neurostate(sd);
 	tierset* all_ti = ne_stt.dbg_get_tiset(num_ti);
 	
-	bool is_mpty = ((all_ti == mc_null) && ne_stt.propag_active_set.is_synset_empty());
+	bool is_mpty = ((all_ti == mc_null) && ne_stt.step_active_set.is_synset_empty());
 
 	if(is_mpty){
 		return;
@@ -697,7 +697,7 @@ nervenode::dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tie
 		}
 	}
 
-	ne_stt.propag_active_set.dbg_rec_call_all(mth, sd);
+	ne_stt.step_active_set.dbg_rec_call_all(mth, sd);
 
 	if(ki == nd_neu){
 		mck_slog2("]");
@@ -946,29 +946,6 @@ get_synapse_from_binder(net_side_t sd, binder* bdr){
 	return my_snp;
 }
 
-void
-synapse::send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced){
-	if(bj_nervenet->get_active_netstate(sd).sync_ending_propag){ return; }
-
-	num_tier_t ti = owner->get_neurostate(sd).propag_num_tier;
-
-	MC_DBG(node_kind_t the_ki = owner->ki);
-	MCK_CK((the_ki == nd_pos) || (the_ki == nd_neg) || (the_ki == nd_neu));
-	EMU_CODE(nervenode* rem_nd = mate->owner);
-	EMU_LOG("::send_transmitter_%s_t%d_%s [%s %ld ->> %s %s %ld k%d] \n", net_side_to_str(sd), ti, 
-		propag_tok_to_str(tok), node_kind_to_str(owner->ki), owner->id, 
-		((dbg_is_forced)?("FORCED"):("")), node_kind_to_str(rem_nd->ki), rem_nd->id, 
-		mc_id_to_nn(mc_addr_get_id(mate)));
-
-	transmitter* trm = transmitter::acquire();
-	trm->src = this;
-	trm->dst = mate;
-	trm->tok = tok;
-	trm->wrk_side = sd;
-	trm->wrk_tier = ti;
-	trm->send();
-}
-
 void 
 send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec){
 	EMU_CK(mth != mc_null);
@@ -1027,5 +1004,33 @@ nervenet*
 nervenet::get_nervenet(mc_core_id_t id){
 	nervenet* rem_net = (nervenet*)mc_addr_set_id(id, this);
 	return rem_net;
+}
+
+bool
+nervenode::is_tier_complete(signal_data* dat){
+	neurostate& stt = get_neurostate(dat->sd);
+	return stt.is_full();
+}
+
+bool
+polaron::is_tier_complete(signal_data* dat){
+	neurostate& pol_stt = get_neurostate(dat->sd);
+	neurostate& opp_stt = opp->get_neurostate(dat->sd);
+
+	bool both_full = pol_stt.is_full() && opp_stt.is_full();
+	return both_full;
+}
+
+void
+neurostate::step_reset_complete(){
+	EMU_LOG("::step_reset_complete flags=%p flgs_pt=%p \n", (void*)(uintptr_t)step_flags, 
+			(void*)(&step_flags));
+
+	//step_flags = 0;
+	mc_reset_flag(step_flags, bj_stt_charge_all_flag);
+
+	step_num_complete = 0;
+	step_num_ping = 0;
+	step_prev_tot_active = step_active_set.tot_syn;
 }
 

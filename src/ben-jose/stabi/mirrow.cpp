@@ -47,8 +47,8 @@ nervenode::mirrow_sides(net_side_t src_sd){
 
 	// mirrow active_sets
 
-	synset& src_set = src_st.propag_active_set;
-	synset& dst_set = dst_st.propag_active_set;
+	synset& src_set = src_st.step_active_set;
+	synset& dst_set = dst_st.step_active_set;
 
 	src_set.propag_rec_reset();
 	dst_set.propag_rec_reset();
@@ -103,11 +103,11 @@ nervenode::mirrow_sides(net_side_t src_sd){
 
 	// mirrow others
 
-	dst_st.prev_tot_active = src_st.prev_tot_active;
+	dst_st.step_prev_tot_active = src_st.step_prev_tot_active;
 
-	dst_st.propag_flags = src_st.propag_flags;
-	dst_st.propag_num_complete = src_st.propag_num_complete;
-	dst_st.propag_num_ping = src_st.propag_num_ping;
+	dst_st.step_flags = src_st.step_flags;
+	dst_st.step_num_complete = src_st.step_num_complete;
+	dst_st.step_num_ping = src_st.step_num_ping;
 
 	dst_st.stabi_arr_sz = 0;
 
