@@ -45,6 +45,7 @@ class pre_cnf_node;
 class pre_cnf_net;
 
 class transmitter;
+class stabi_transmitter;
 class sync_transmitter;
 class synapse;
 class nervenode;
@@ -180,9 +181,22 @@ bool bj_is_##cnam(agent* pt_obj){ \
 
 // end_of_macro
 
+struct mc_aligned signal_data {
+public:
+	missive* msv = mc_null;
+	synapse* snp = mc_null;
+	mck_token_t tok = mck_tok_invalid;
+	net_side_t sd = side_invalid;
+	num_tier_t ti = BJ_INVALID_NUM_TIER;
+	num_syn_t	id_arr_sz = 0;
+	num_syn_t*  id_arr = mc_null;
+};
+
+
 BJ_DECLARE_CLS_NAM(synset)
 BJ_DECLARE_CLS_NAM(tierset)
 BJ_DECLARE_CLS_NAM(transmitter)
+BJ_DECLARE_CLS_NAM(stabi_transmitter)
 BJ_DECLARE_CLS_NAM(sync_transmitter)
 BJ_DECLARE_CLS_NAM(synapse)
 BJ_DECLARE_CLS_NAM(nervenode)
@@ -267,6 +281,27 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+class mc_aligned stabi_transmitter : public transmitter {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(stabi_transmitter, bj_nervenet_mem)
+
+	num_syn_t	id_arr_sz;
+	num_syn_t*  id_arr;
+
+	stabi_transmitter() mc_external_code_ram;
+	~stabi_transmitter() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0);
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
+void bj_set_id_data(stabi_transmitter* sb_tmt, signal_data* dat) bj_stabi_cod;
+
+#define bj_id_arr_copy(dst, sz, src) for(num_syn_t idx = 0; idx < sz; idx++){ dst[idx] = src[idx]; }
+
 class mc_aligned sync_transmitter : public transmitter {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sync_transmitter, bj_nervenet_mem)
@@ -306,7 +341,8 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced = false) bj_propag_cod;
-	void stabi_send_transmitter(stabi_tok_t tok, bool dbg_is_forced = false) bj_stabi_cod;
+	void stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd = mc_null, 
+				bool dbg_is_forced = false) bj_stabi_cod;
 
 	mc_inline_fn binder& get_side_binder(net_side_t sd) bj_propag_cod;
 
@@ -315,15 +351,6 @@ public:
 };
 
 synapse* get_synapse_from_binder(net_side_t sd, binder* bdr);
-
-struct mc_aligned signal_data {
-public:
-	transmitter* trm = mc_null;
-	synapse* snp = mc_null;
-	mck_token_t tok = mck_tok_invalid;
-	net_side_t sd = side_invalid;
-	num_tier_t ti = BJ_INVALID_NUM_TIER;
-};
 
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
 
@@ -625,6 +652,7 @@ public:
 	mc_alloc_size_t dbg_tot_new_synset;
 	mc_alloc_size_t dbg_tot_new_tierset;
 	mc_alloc_size_t dbg_tot_new_transmitter;
+	mc_alloc_size_t dbg_tot_new_stabi_transmitter;
 	mc_alloc_size_t dbg_tot_new_sync_transmitter;
 	mc_alloc_size_t dbg_tot_new_synapse;
 	mc_alloc_size_t dbg_tot_new_neurostate;
@@ -642,11 +670,15 @@ public:
 	void dbg_prt_all() mc_external_code_ram;
 };
 
+#define BJ_MAX_ID_ARR_SZ 260
+
 class mc_aligned nervenet : public cell  {
 public:
 	MCK_DECLARE_MEM_METHODS(nervenet, bj_nervenet_mem)
 
 	long MAGIC;
+
+	num_syn_t tmp_id_arr[BJ_MAX_ID_ARR_SZ];
 
 	num_nod_t tot_neus;
 	num_nod_t tot_vars;
@@ -657,6 +689,7 @@ public:
 	mc_alloc_size_t	num_sep_tierdatas;
 
 	grip		ava_transmitters;
+	grip		ava_stabi_transmitters;
 	grip		ava_sync_transmitters;
 	grip		ava_synsets;
 	grip		ava_tiersets;
@@ -718,6 +751,7 @@ public:
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_transmitters (bj_nervenet->ava_transmitters)
+#define bj_ava_stabi_transmitters (bj_nervenet->ava_stabi_transmitters)
 #define bj_ava_sync_transmitters (bj_nervenet->ava_sync_transmitters)
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
 #define bj_ava_tiersets (bj_nervenet->ava_tiersets)

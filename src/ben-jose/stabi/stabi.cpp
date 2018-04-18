@@ -26,12 +26,16 @@ void bj_stabi_init_handlers(){
 
 void
 synapse::stabi_handler(missive* msv){
+	stabi_transmitter* sb_tmt = (stabi_transmitter*)msv;
+
 	signal_data dat;
-	dat.trm = (transmitter*)msv;
+	dat.msv = msv;
 	dat.snp = this;
-	dat.tok = (stabi_tok_t)(dat.trm)->tok;
-	dat.sd = (dat.trm)->wrk_side;
-	dat.ti = (dat.trm)->wrk_tier;
+	dat.tok = (stabi_tok_t)(sb_tmt->tok);
+	dat.sd = sb_tmt->wrk_side;
+	dat.ti = sb_tmt->wrk_tier;
+
+	bj_set_id_data(sb_tmt, &dat);
 
 	EMU_CK(dat.sd == side_left);
 	EMU_CK(dat.ti != BJ_INVALID_NUM_TIER);
@@ -206,7 +210,7 @@ nervenode::stabi_recv_tier_done(signal_data* dat){
 }
 
 void
-synapse::stabi_send_transmitter(stabi_tok_t tok, bool dbg_is_forced){
+synapse::stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd, bool dbg_is_forced){
 	net_side_t sd = side_left;
 
 	if(bj_nervenet->get_active_netstate(sd).sync_ending_propag){ return; }
@@ -221,12 +225,37 @@ synapse::stabi_send_transmitter(stabi_tok_t tok, bool dbg_is_forced){
 		((dbg_is_forced)?("FORCED"):("")), node_kind_to_str(rem_nd->ki), rem_nd->id, 
 		mc_id_to_nn(mc_addr_get_id(mate)));
 
-	transmitter* trm = transmitter::acquire();
+	stabi_transmitter* trm = stabi_transmitter::acquire();
 	trm->src = this;
 	trm->dst = mate;
 	trm->tok = tok;
 	trm->wrk_side = sd;
 	trm->wrk_tier = ti;
+	if(src_nd != mc_null){
+		trm->id_arr_sz = src_nd->stabi_arr_sz;
+		trm->id_arr = src_nd->stabi_arr;
+		EPH_CODE(
+			if(! mc_addr_is_local(mate)){
+				trm->id_arr = (num_syn_t*)mck_as_glb_pt(src_nd->stabi_arr);
+			}
+		);
+	}
 	trm->send();
+}
+
+void bj_set_id_data(stabi_transmitter* sb_tmt, signal_data* dat){
+	long sz = sb_tmt->id_arr_sz;
+	if(sz >= BJ_MAX_ID_ARR_SZ){
+		mck_abort(1, mc_cstr("FAILED bj_set_id_data."));
+	}
+
+	dat->id_arr_sz = sb_tmt->id_arr_sz;
+	dat->id_arr = sb_tmt->id_arr;
+	EPH_CODE(
+		if(mc_addr_has_id(dat->id_arr)){
+			dat->id_arr = bj_nervenet->tmp_id_arr;
+			bj_id_arr_copy(dat->id_arr, dat->id_arr_sz, sb_tmt->id_arr);
+		}
+	);
 }
 

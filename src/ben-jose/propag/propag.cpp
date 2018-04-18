@@ -60,12 +60,14 @@ neuron::propag_handler(missive* msv){
 
 void
 synapse::propag_handler(missive* msv){
+	transmitter* tmt = (transmitter*)msv;
+
 	signal_data dat;
-	dat.trm = (transmitter*)msv;
+	dat.msv = msv;
 	dat.snp = this;
-	dat.tok = (propag_tok_t)(dat.trm)->tok;
-	dat.sd = (dat.trm)->wrk_side;
-	dat.ti = (dat.trm)->wrk_tier;
+	dat.tok = (propag_tok_t)(tmt->tok);
+	dat.sd = tmt->wrk_side;
+	dat.ti = tmt->wrk_tier;
 
 	EMU_CK(dat.ti != BJ_INVALID_NUM_TIER);
 

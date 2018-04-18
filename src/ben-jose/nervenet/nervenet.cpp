@@ -8,6 +8,7 @@ missive_handler_t bj_nil_handlers[1] = { mc_null };
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(transmitter, 32, bj_ava_transmitters, 0)
+MCK_DEFINE_MEM_METHODS_AND_GET_AVA(stabi_transmitter, 32, bj_ava_stabi_transmitters, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sync_transmitter, 32, bj_ava_sync_transmitters, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synset, 32, bj_ava_synsets, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierset, 32, bj_ava_tiersets, bj_num_sep_tiersets)
@@ -19,6 +20,7 @@ MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierdata, 32, bj_ava_tierdatas, bj_num_sep_ti
 BJ_DEFINE_GET_CLS_NAM(synset)
 BJ_DEFINE_GET_CLS_NAM(tierset)
 BJ_DEFINE_GET_CLS_NAM(transmitter)
+BJ_DEFINE_GET_CLS_NAM(stabi_transmitter)
 BJ_DEFINE_GET_CLS_NAM(sync_transmitter)
 BJ_DEFINE_GET_CLS_NAM(synapse)
 BJ_DEFINE_GET_CLS_NAM(nervenode)
@@ -33,6 +35,7 @@ PLLA class_sizes:
 synset__40__
 tierset__32__
 transmitter__32__
+stabi_transmitter ????
 sync_transmitter__40__
 synapse__48__
 neurostate__80__
@@ -102,6 +105,26 @@ transmitter::init_me(int caller){
 	wrk_tier = BJ_INVALID_NUM_TIER;
 	//EMU_LOG_STACK((kernel::get_core_nn() == 15), "INIT_TRANSMITTER (%p) \n", (void*)this); 
 }
+
+//--------------
+
+stabi_transmitter::stabi_transmitter(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_stabi_transmitter ++);
+	mck_slog2("alloc__stabi_transmitter\n");
+	//init_me();
+} 
+
+stabi_transmitter::~stabi_transmitter(){} 
+
+void
+stabi_transmitter::init_me(int caller){
+	transmitter::init_me(caller);
+	id_arr_sz = 0;
+	id_arr = mc_null;
+}
+
+//--------------
 
 sync_transmitter::sync_transmitter(){
 	EMU_CK(bj_nervenet != mc_null);
@@ -774,6 +797,7 @@ dbg_stats::init_me(int caller){
 	dbg_tot_new_synset = 0;
 	dbg_tot_new_tierset = 0;
 	dbg_tot_new_transmitter = 0;
+	dbg_tot_new_stabi_transmitter = 0;
 	dbg_tot_new_sync_transmitter = 0;
 	dbg_tot_new_synapse = 0;
 	dbg_tot_new_neurostate = 0;
@@ -788,6 +812,7 @@ dbg_stats::dbg_prt_all(){
 	EMU_LOG("dbg_tot_new_synset = %d \n", dbg_tot_new_synset);
 	EMU_LOG("dbg_tot_new_tierset = %d \n", dbg_tot_new_tierset);
 	EMU_LOG("dbg_tot_new_transmitter = %d \n", dbg_tot_new_transmitter);
+	EMU_LOG("dbg_tot_new_stabi_transmitter = %d \n", dbg_tot_new_stabi_transmitter);
 	EMU_LOG("dbg_tot_new_sync_transmitter = %d \n", dbg_tot_new_sync_transmitter);
 	EMU_LOG("dbg_tot_new_synapse = %d \n", dbg_tot_new_synapse);
 	EMU_LOG("dbg_tot_new_neurostate = %d \n", dbg_tot_new_neurostate);
@@ -817,6 +842,9 @@ void bj_print_class_szs(){
 		mck_slog2("__\n");
 		mck_slog2("transmitter__");
 		mck_ilog(sizeof(transmitter));
+		mck_slog2("__\n");
+		mck_slog2("stabi_transmitter__");
+		mck_ilog(sizeof(stabi_transmitter));
 		mck_slog2("__\n");
 		mck_slog2("sync_transmitter__");
 		mck_ilog(sizeof(sync_transmitter));
