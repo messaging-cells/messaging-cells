@@ -5,11 +5,6 @@
 #define BJ_DBG_PROPAG_MAX_TIER 10
 
 void 
-polaron_propag_handler(missive* msv){
-	MCK_CALL_HANDLER(polaron, propag_handler, msv);
-}
-
-void 
 neuron_propag_handler(missive* msv){
 	MCK_CALL_HANDLER(neuron, propag_handler, msv);
 }
@@ -29,7 +24,6 @@ bj_propag_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
-	hndlrs[idx_polaron] = polaron_propag_handler;
 	hndlrs[idx_neuron] = neuron_propag_handler;
 	hndlrs[idx_synapse] = synapse_propag_handler;
 	hndlrs[idx_nervenet] = nervenet_propag_handler;
@@ -38,15 +32,8 @@ bj_propag_init_handlers(){
 }
 
 void
-polaron::propag_handler(missive* msv){
-}
-
-void
 neuron::propag_handler(missive* msv){
-	cell* msv_src = msv->src;
 	propag_tok_t tok = (propag_tok_t)msv->tok;
-	MC_MARK_USED(msv_src);
-	MC_MARK_USED(tok);
 
 	switch(tok){
 		case bj_tok_propag_start:
@@ -83,6 +70,7 @@ synapse::propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_fo
 
 	num_tier_t ti = owner->get_neurostate(sd).propag_num_tier;
 
+	EMU_CK(left_vessel == mc_null);
 	MC_DBG(node_kind_t the_ki = owner->ki);
 	MCK_CK((the_ki == nd_pos) || (the_ki == nd_neg) || (the_ki == nd_neu));
 	EMU_CODE(nervenode* rem_nd = mate->owner);
@@ -104,6 +92,8 @@ void
 nervenet::propag_nervenet_start(){
 	EMU_LOG("propag_nervenet_start \n");
 
+	send_all_neus(bj_tok_propag_start);
+	/*
 	nervenet* my_net = this;
 
 	binder * fst, * lst, * wrk;
@@ -116,7 +106,7 @@ nervenet::propag_nervenet_start(){
 		EMU_CK(my_neu->ki == nd_neu);
 		my_net->send(my_neu, bj_tok_propag_start);
 	}
-
+	*/
 	EMU_CK(get_active_netstate(side_left).get_tier(0, 2).rcv_neus == 0);
 	EMU_CK(get_active_netstate(side_right).get_tier(0, 3).rcv_neus == 0);
 
@@ -132,6 +122,9 @@ neuron::propag_neuron_start(){
 	EMU_CK(right_side.step_active_set.all_syn.is_alone());
 	EMU_CK(right_side.step_active_set.all_grp.is_alone());
 
+	EMU_CK(left_side.step_active_set.all_grp.is_alone());
+	//left_side.step_active_set.reset_tree(side_left);
+
 	//mck_slog2("dbg1.bef_rec_send_1 \n");
 	left_side.step_active_set.transmitter_send_all_rec(
 			(bj_callee_t)(&nervenode::propag_send_snp_propag), side_left);
@@ -142,27 +135,27 @@ neuron::propag_neuron_start(){
 }
 
 void 
-neuron::propag_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec){
-	neurostate& stt = get_neurostate(sd);
+neuron::propag_send_snp_propag(callee_prms& pms){
+	neurostate& stt = get_neurostate(pms.sd);
 
-	EMU_CK(snp != mc_null);
-	EMU_CK(snp->owner == this);
+	EMU_CK(pms.snp != mc_null);
+	EMU_CK(pms.snp->owner == this);
 	EMU_CK(! stt.step_active_set.is_synset_empty());
 	if(stt.step_active_set.tot_syn == 1){
 		EMU_LOG("FORCING %s %ld %s  TI=%d flags=%p flgs_pt=%p \n", node_kind_to_str(ki), id, 
-			net_side_to_str(sd), get_neurostate(sd).propag_num_tier, (void*)(uintptr_t)stt.step_flags,
+			net_side_to_str(pms.sd), get_neurostate(pms.sd).propag_num_tier, (void*)(uintptr_t)stt.step_flags,
 			(void*)(&stt.step_flags));
 
-		snp->propag_send_transmitter(bj_tok_propag_charge_all, sd, from_rec /*IS_FORCED*/);
+		pms.snp->propag_send_transmitter(bj_tok_propag_charge_all, pms.sd, pms.rec /*IS_FORCED*/);
 	} else {
-		snp->propag_send_transmitter(bj_tok_propag_ping, sd);
+		pms.snp->propag_send_transmitter(bj_tok_propag_ping, pms.sd);
 	}
 }
 
 void 
-nervenode::propag_send_snp_tier_done(synapse* snp, net_side_t sd, bool from_rec){
-	EMU_CK(snp->owner == this);
-	snp->propag_send_transmitter(bj_tok_propag_tier_done, sd);
+nervenode::propag_send_snp_tier_done(callee_prms& pms){
+	EMU_CK(pms.snp->owner == this);
+	pms.snp->propag_send_transmitter(bj_tok_propag_tier_done, pms.sd);
 }
 
 void
@@ -249,7 +242,8 @@ nervenode::propag_recv_transmitter(signal_data* dat){
 
 bool
 neurostate::charge_all_active(signal_data* dat, node_kind_t ki){
-	step_active_set.propag_rec_reset();
+	EMU_CK(step_active_set.all_grp.is_alone());
+	//step_active_set.reset_tree(dat->sd);
 
 	bool resp = false;
 	if(! step_active_set.is_synset_empty()){
@@ -325,7 +319,8 @@ nervenode::propag_recv_charge_src(signal_data* dat){
 
 	neurostate& stt = get_neurostate(dat->sd);
 
-	stt.step_active_set.propag_rec_reset();
+	EMU_CK(stt.step_active_set.all_grp.is_alone());
+	//stt.step_active_set.reset_tree(dat->sd);
 
 	if(stt.step_active_set.is_synset_empty()){
 		return;
@@ -388,22 +383,22 @@ nervenode::propag_recv_tier_done(signal_data* dat){
 }
 
 void 
-nervenode::propag_send_snp_charge_src(synapse* snp, net_side_t sd, bool from_rec){
-	EMU_CK(snp->owner == this);
-	snp->propag_send_transmitter(bj_tok_propag_charge_src, sd);
+nervenode::propag_send_snp_charge_src(callee_prms& pms){
+	EMU_CK(pms.snp->owner == this);
+	pms.snp->propag_send_transmitter(bj_tok_propag_charge_src, pms.sd);
 }
 
 void 
-nervenode::propag_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec){
-	EMU_CK(snp != mc_null);
-	EMU_CK(snp->owner == this);
-	snp->propag_send_transmitter(bj_tok_propag_ping, sd);
+nervenode::propag_send_snp_propag(callee_prms& pms){
+	EMU_CK(pms.snp != mc_null);
+	EMU_CK(pms.snp->owner == this);
+	pms.snp->propag_send_transmitter(bj_tok_propag_ping, pms.sd);
 }
 
 void 
-polaron::propag_send_snp_charge_all(synapse* snp, net_side_t sd, bool from_rec){
-	EMU_CK(snp->owner == this);
-	snp->propag_send_transmitter(bj_tok_propag_charge_all, sd);
+polaron::propag_send_snp_charge_all(callee_prms& pms){
+	EMU_CK(pms.snp->owner == this);
+	pms.snp->propag_send_transmitter(bj_tok_propag_charge_all, pms.sd);
 }
 
 bool

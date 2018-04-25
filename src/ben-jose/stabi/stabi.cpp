@@ -5,6 +5,11 @@
 #define BJ_DBG_STABI_MAX_TIER 10
 
 void 
+neuron_stabi_handler(missive* msv){
+	MCK_CALL_HANDLER(neuron, stabi_handler, msv);
+}
+
+void 
 synapse_stabi_handler(missive* msv){
 	MCK_CALL_HANDLER(synapse, stabi_handler, msv);
 }
@@ -18,6 +23,7 @@ nervenet_stabi_handler(missive* msv){
 void bj_stabi_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_neuron] = neuron_stabi_handler;
 	hndlrs[idx_synapse] = synapse_stabi_handler;
 	hndlrs[idx_nervenet] = nervenet_stabi_handler;
 
@@ -39,6 +45,7 @@ synapse::stabi_handler(missive* msv){
 
 	EMU_CK(dat.sd == side_left);
 	EMU_CK(dat.ti != BJ_INVALID_NUM_TIER);
+	EMU_CK(left_vessel != mc_null);
 
 	//if(bj_nervenet->get_active_netstate(dat.sd).sync_ending_propag){ return; }
 
@@ -50,7 +57,7 @@ void
 synset::stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) {
 	MCK_CHECK_SP();
 
-	EMU_CK(ii < cap);
+	EMU_CK_PRT((ii < cap), "DBG_INFO. ii=%d cap=%d\n", ii, cap);
 	arr[ii] = tot_syn;
 	ii++;
 
@@ -74,11 +81,25 @@ synset::stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) {
 
 void 
 neurostate::calc_stabi_arr() {
-	if(stabi_arr == mc_null){
-		stabi_arr_cap = calc_stabi_arr_cap(step_active_set.tot_syn);
-		stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
-	}
 	stabi_arr_sz = 0;
+	stabi_arr_cap = 0;
+	if(stabi_arr != mc_null){
+		mc_free32(stabi_arr);
+		stabi_arr = mc_null;
+	}
+
+	if(step_active_set.is_synset_empty()){
+		return;
+	}
+
+	EMU_CK(stabi_arr == mc_null);
+
+	stabi_arr_cap = calc_stabi_arr_cap(step_active_set.tot_syn);
+	stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
+
+	EMU_LOG(" calc_stabi_arr new_cap=%d \n", stabi_arr_cap);
+	EMU_CK(stabi_arr != mc_null);
+
 	step_active_set.stabi_calc_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
 }
 
@@ -104,10 +125,13 @@ int cmp_neurostate(neurostate* nod1, neurostate* nod2){
 
 void
 nervenet::stabi_handler(missive* msv){
-	EMU_CK(((stabi_tok_t)msv->tok) == bj_tok_stabi_start);
+	mck_token_t msv_tok = msv->tok;
+	if(msv_tok == bj_tok_stabi_start){
+		//stabi_nervenet_start();
+		kernel::stop_sys(bj_tok_stabi_end);
+		return;
+	}
 
-	//stabi_nervenet();
-	kernel::stop_sys(bj_tok_stabi_end);
 }
 
 void
@@ -115,17 +139,17 @@ nervenode::stabi_recv_transmitter(signal_data* dat){
 	EMU_CODE(
 		EMU_CK(dat->ti == side_left);
 		neurostate& stt = get_neurostate(side_left);
-		EMU_CK(stt.propag_num_tier != BJ_INVALID_NUM_TIER);
+		EMU_CK(stt.stabi_num_tier != BJ_INVALID_NUM_TIER);
 
 		bool ok_3 =  false;
 		if(ki == nd_neu){
-			ok_3 = ((dat->ti + 1) == stt.propag_num_tier);
+			ok_3 = ((dat->ti + 1) == stt.stabi_num_tier);
 		} else {
-			ok_3 = (dat->ti == stt.propag_num_tier);
+			ok_3 = (dat->ti == stt.stabi_num_tier);
 		}
 		
 		EMU_CK_PRT(ok_3, "%s %s %ld %s (%d > %d)", stabi_tok_to_str((stabi_tok_t)dat->tok),
-			node_kind_to_str(ki), id, net_side_to_str(side_left), (dat->ti + 1), stt.propag_num_tier);
+			node_kind_to_str(ki), id, net_side_to_str(side_left), (dat->ti + 1), stt.stabi_num_tier);
 
 		//EMU_CK(dat->ti < BJ_DBG_STABI_MAX_TIER); // debug_purposes_only
 		EMU_CK(	(bj_nervenet->sync_parent_id != 0) ||
@@ -138,7 +162,7 @@ nervenode::stabi_recv_transmitter(signal_data* dat){
 		EMU_LOG(" ::RECV_stabi_transmitter_%s_t%d_%s [%s %ld <<- %s %ld] #ti%d \n", 
 			net_side_to_str(side_left), dat->ti, stabi_tok_to_str((stabi_tok_t)dat->tok), 
 			node_kind_to_str(ki), id, node_kind_to_str(rem_nd->ki), rem_nd->id, 
-			stt.propag_num_tier
+			stt.stabi_num_tier
 		);
 	);
 
@@ -166,17 +190,17 @@ nervenode::stabi_send_snp_tier_done(synapse* snp, bool from_rec){
 void
 neurostate::stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti){
 	net_side_t sd = side_left;
-	EMU_CK(propag_num_tier != BJ_INVALID_NUM_TIER);
+	EMU_CK(stabi_num_tier != BJ_INVALID_NUM_TIER);
 
 	step_active_set.transmitter_send_all_rec((bj_callee_t)(&nervenode::stabi_send_snp_tier_done), sd);
 
-	EMU_CK((nd->ki != nd_neu) || ((dbg_ti + 1) == propag_num_tier));
-	EMU_CK((nd->ki == nd_neu) || (dbg_ti == propag_num_tier));
+	EMU_CK((nd->ki != nd_neu) || ((dbg_ti + 1) == stabi_num_tier));
+	EMU_CK((nd->ki == nd_neu) || (dbg_ti == stabi_num_tier));
 
-	EMU_CK(propag_num_tier != BJ_INVALID_NUM_TIER);
-	propag_num_tier++;
+	EMU_CK(stabi_num_tier != BJ_INVALID_NUM_TIER);
+	stabi_num_tier++;
 
-	EMU_LOG("STABI_INC_TIER_%s_t%d_%s_%ld\n", net_side_to_str(sd), propag_num_tier, 
+	EMU_LOG("STABI_INC_TIER_%s_t%d_%s_%ld\n", net_side_to_str(sd), stabi_num_tier, 
 			node_kind_to_str(nd->ki), nd->id);
 }
 
@@ -215,8 +239,9 @@ synapse::stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd, bool dbg_is
 
 	if(bj_nervenet->get_active_netstate(sd).sync_ending_propag){ return; }
 
-	num_tier_t ti = owner->get_neurostate(sd).propag_num_tier;
+	num_tier_t ti = owner->get_neurostate(sd).stabi_num_tier;
 
+	EMU_CK(left_vessel != mc_null);
 	MC_DBG(node_kind_t the_ki = owner->ki);
 	MCK_CK((the_ki == nd_pos) || (the_ki == nd_neg) || (the_ki == nd_neu));
 	EMU_CODE(nervenode* rem_nd = mate->owner);
@@ -257,5 +282,46 @@ void bj_set_id_data(stabi_transmitter* sb_tmt, signal_data* dat){
 			bj_id_arr_copy(dat->id_arr, dat->id_arr_sz, sb_tmt->id_arr);
 		}
 	);
+}
+
+void
+nervenet::stabi_nervenet_start(){
+	EMU_LOG("stabi_nervenet_start \n");
+	send_all_neus(bj_tok_stabi_start);
+	EMU_LOG("end_stabi_nervenet_start \n");
+}
+
+void
+neuron::stabi_handler(missive* msv){
+	stabi_tok_t tok = (stabi_tok_t)msv->tok;
+
+	switch(tok){
+		case bj_tok_stabi_start:
+			stabi_neuron_start();
+		break;
+		default:
+			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
+		break;
+	}
+}
+
+void
+neuron::stabi_neuron_start(){
+	EMU_CK(left_side.propag_tiers.is_alone());
+	EMU_CK(left_side.step_active_set.all_grp.is_alone());
+
+	EMU_CK(right_side.propag_tiers.is_alone());
+	EMU_CK(right_side.step_active_set.all_syn.is_alone());
+	EMU_CK(right_side.step_active_set.all_grp.is_alone());
+
+	EMU_CK(left_side.step_active_set.all_grp.is_alone());
+
+	/*
+	left_side.step_active_set.transmitter_send_all_rec(
+			(bj_callee_t)(&nervenode::stabi_send_snp_propag), side_left);
+
+	left_side.stabi_send_all_ti_done(this, side_left, BJ_INVALID_NUM_TIER);
+	left_side.step_reset_complete();
+	*/
 }
 

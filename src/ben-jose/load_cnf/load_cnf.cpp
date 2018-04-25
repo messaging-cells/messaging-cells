@@ -170,7 +170,7 @@ void bj_load_shd_cnf(){
 			my_snp->owner = my_glb_neu;
 
 			MCK_CK(my_neu->left_side.step_active_set.parent == mc_null);
-			my_neu->left_side.step_active_set.add_left_synapse(my_snp);
+			my_neu->left_side.step_active_set.add_left_synapse(my_snp, false);
 			my_neu->left_side.update_prv_tot_active();
 
 			transmitter* msv = transmitter::acquire();
@@ -240,7 +240,7 @@ polaron::load_handler(missive* msv){
 	MCK_CK(my_snp->mate != mc_null);
 
 	MCK_CK(left_side.step_active_set.parent == mc_null);
-	left_side.step_active_set.add_left_synapse(my_snp);
+	left_side.step_active_set.add_left_synapse(my_snp, false);
 	left_side.update_prv_tot_active();
 
 	transmitter* msv2 = transmitter::acquire();

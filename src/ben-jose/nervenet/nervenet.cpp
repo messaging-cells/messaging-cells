@@ -157,19 +157,22 @@ synset::init_me(int caller){
 }
 
 void 
-synset::add_left_synapse(synapse* snp){
+synset::add_left_synapse(synapse* snp, bool set_vessel){
 	EMU_CK(snp != mc_null);
 	tot_syn++;
 	all_syn.bind_to_my_left(*snp);
-	snp->left_vessel = this;
+	if(set_vessel){
+		snp->left_vessel = this;
+	} else {
+		snp->left_vessel = mc_null;
+	}
 }
 
 void 
-synset::add_right_synapse(synapse* snp){
+synset::add_right_synapse(synapse* snp, bool set_vessel){
 	EMU_CK(snp != mc_null);
 	tot_syn++;
 	all_syn.bind_to_my_left(snp->right_handle);
-	snp->right_vessel = this;
 }
 
 tierset::tierset(){
@@ -200,7 +203,6 @@ synapse::init_me(int caller){
 	handler_idx = idx_synapse;
 
 	left_vessel = mc_null;
-	right_vessel = mc_null;
 
 	owner = mc_null;
 	mate = mc_null;
@@ -229,6 +231,7 @@ neurostate::init_me(int caller){
 	step_num_complete = 0;
 	step_num_ping = 0;
 
+	stabi_num_tier = 0;
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
 	stabi_arr = mc_null;
@@ -639,7 +642,13 @@ dbg_call_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool f
 		EMU_CK(my_snp != mc_null);
 		EMU_CK(bj_is_synapse(my_snp));
 
-		(my_snp->owner->*mth)(my_snp, sd, from_rec);
+		callee_prms pms;
+		pms.snp = my_snp;
+		pms.sd = sd;
+		pms.rec = from_rec;
+
+		(my_snp->owner->*mth)(pms);
+		//(my_snp->owner->*mth)(my_snp, sd, from_rec);
 	}
 }
 
@@ -661,10 +670,10 @@ synset::dbg_rec_call_all(bj_callee_t mth, net_side_t sd){
 }
 
 void
-nervenode::dbg_prt_syn(synapse* my_snp, net_side_t sd, bool from_rec){
-	MCK_CK(my_snp->mate != mc_null);
+nervenode::dbg_prt_syn(callee_prms& pms){
+	MCK_CK(pms.snp->mate != mc_null);
 
-	synapse* mt_snp = (synapse*)(my_snp->mate);
+	synapse* mt_snp = (synapse*)(pms.snp->mate);
 	nervenode* the_nod = mt_snp->owner;
 
 	mck_ilog(the_nod->id);
@@ -920,20 +929,6 @@ void bj_print_class_szs(){
 	}
 }
 
-void
-synset::propag_rec_reset(){
-	MCK_CHECK_SP();
-	while(! all_grp.is_alone()){
-		synset* sub_grp = (synset*)(binder*)(all_grp.bn_right);
-		EMU_CK(sub_grp->parent == this);
-		sub_grp->propag_rec_reset();
-
-		EMU_CK(sub_grp->all_grp.is_alone());
-		all_syn.move_all_to_my_right(sub_grp->all_syn);
-		sub_grp->release();
-	}
-}
-
 netstate& 
 nervenet::get_active_netstate(net_side_t sd){
 	EMU_CK(sd != side_invalid);
@@ -985,7 +980,13 @@ send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		synapse* my_snp = get_synapse_from_binder(sd, wrk);
 
-		(my_snp->owner->*mth)(my_snp, sd, from_rec);
+		callee_prms pms;
+		pms.snp = my_snp;
+		pms.sd = sd;
+		pms.rec = from_rec;
+
+		(my_snp->owner->*mth)(pms);
+		//(my_snp->owner->*mth)(my_snp, sd, from_rec);
 	}
 }
 
@@ -1062,3 +1063,32 @@ neurostate::step_reset_complete(){
 	step_prev_tot_active = step_active_set.tot_syn;
 }
 
+void
+synset::reset_rec_tree(){
+	MCK_CHECK_SP();
+	while(! all_grp.is_alone()){
+		synset* sub_grp = (synset*)(binder*)(all_grp.bn_right);
+		EMU_CK(sub_grp->parent == this);
+		sub_grp->reset_rec_tree();
+
+		EMU_CK(sub_grp->all_grp.is_alone());
+		all_syn.move_all_to_my_right(sub_grp->all_syn);
+		sub_grp->release();
+	}
+}
+
+void
+nervenet::send_all_neus(mck_token_t tok){
+	nervenet* my_net = this;
+
+	binder * fst, * lst, * wrk;
+
+	binder* pt_all_neu = &(all_neu);
+	fst = (binder*)(pt_all_neu->bn_right);
+	lst = (binder*)mck_as_loc_pt(pt_all_neu);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		neuron* my_neu = (neuron*)wrk;
+		EMU_CK(my_neu->ki == nd_neu);
+		my_net->send(my_neu, tok);
+	}
+}

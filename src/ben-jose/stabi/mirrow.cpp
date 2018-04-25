@@ -50,8 +50,8 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	synset& src_set = src_st.step_active_set;
 	synset& dst_set = dst_st.step_active_set;
 
-	src_set.propag_rec_reset();
-	dst_set.propag_rec_reset();
+	EMU_CK(src_set.all_grp.is_alone());
+	EMU_CK(dst_set.all_grp.is_alone());
 
 	src = &(src_set.all_syn);
 
@@ -110,6 +110,13 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	dst_st.step_num_ping = src_st.step_num_ping;
 
 	dst_st.stabi_arr_sz = 0;
+
+	// set all vessels
+
+	neurostate& lft_st = get_neurostate(side_left);
+	lft_st.step_active_set.reset_vessels(true);
+	lft_st.calc_stabi_arr();
+	lft_st.stabi_num_tier = 0;
 
 	EMU_LOG("mirrow_nod_end \n");
 }
@@ -210,3 +217,21 @@ void bj_mirrow_main() {
 void bj_stabi_main() {
 	bj_mirrow_main();
 }
+
+void
+synset::reset_vessels(bool set_vessel){
+	EMU_CK(all_grp.is_alone());
+
+	binder* nn_all_snp = &all_syn;
+	binder * fst, * lst, * wrk;
+
+	fst = (binder*)(nn_all_snp->bn_right);
+	lst = (binder*)mck_as_loc_pt(nn_all_snp);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synapse* my_snp = get_synapse_from_binder(side_left, wrk);
+		synset* val = mc_null;
+		if(set_vessel){ val = this; }
+		my_snp->left_vessel = val;
+	}
+}
+

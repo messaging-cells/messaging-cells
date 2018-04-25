@@ -125,11 +125,17 @@ void bj_test_2(int argc, char *argv[])
 }
 
 void call_nerv_pt_fn(nervenode* nn, synapse* snp, bj_callee_t mth){
-	(nn->*mth)(snp, side_right, false);
+	callee_prms pms;
+	pms.snp = snp;
+	pms.sd = side_right;
+	pms.rec = false;
+
+	(nn->*mth)(pms);
+	//(nn->*mth)(snp, side_right, false);
 }
 
 void 
-neuron::pru_callee(synapse* snp, net_side_t sd, bool from_rec){
+neuron::pru_callee(callee_prms& pms){
 	//printf("pru_callee %ld %d \n", id, pru_attr);
 	printf("pru_callee %ld \n", id);
 }
