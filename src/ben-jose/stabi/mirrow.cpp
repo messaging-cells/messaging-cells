@@ -231,7 +231,7 @@ synset::reset_vessels(bool set_vessel){
 		synapse* my_snp = get_synapse_from_binder(side_left, wrk);
 		synset* val = mc_null;
 		if(set_vessel){ val = this; }
-		my_snp->left_vessel = val;
+		my_snp->stabi_vessel = val;
 	}
 }
 

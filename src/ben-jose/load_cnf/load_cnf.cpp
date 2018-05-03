@@ -169,7 +169,7 @@ void bj_load_shd_cnf(){
 
 			my_snp->owner = my_glb_neu;
 
-			MCK_CK(my_neu->left_side.step_active_set.parent == mc_null);
+			//MCK_CK(my_neu->left_side.step_active_set.parent == mc_null);
 			my_neu->left_side.step_active_set.add_left_synapse(my_snp, false);
 			my_neu->left_side.update_prv_tot_active();
 
@@ -231,7 +231,7 @@ polaron::load_handler(missive* msv){
 	//EMU_PRT("RCV msv pole %d from neu %d \n", id, mt_snp->owner->id);
 	//EMU_PRT("polaron::load_handler got snp=%p %s \n", (void*)mt_snp, mt_snp->get_class_name());
 	//EMU_CK(syn_src->get_class_name() == synapse_cls_nam);
-	EMU_CK(bj_is_synapse(syn_src));
+	EMU_CK(bj_ck_is_synapse(syn_src));
 
 	polaron* my_glb_pol = (polaron*)mck_as_glb_pt(this);
 
@@ -239,7 +239,7 @@ polaron::load_handler(missive* msv){
 	my_snp->mate = mt_snp;
 	MCK_CK(my_snp->mate != mc_null);
 
-	MCK_CK(left_side.step_active_set.parent == mc_null);
+	//MCK_CK(left_side.step_active_set.parent == mc_null);
 	left_side.step_active_set.add_left_synapse(my_snp, false);
 	left_side.update_prv_tot_active();
 
@@ -293,7 +293,7 @@ synapse::load_handler(missive* msv){
 
 	//EMU_PRT("synapse::load_handler got snp=%p %s \n", (void*)mt_snp, mt_snp->get_class_name());
 	//EMU_CK(syn_src->get_class_name() == synapse_cls_nam);
-	EMU_CK(bj_is_synapse(syn_src));
+	EMU_CK(bj_ck_is_synapse(syn_src));
 
 	mate = mt_snp;
 	EMU_CK(mate != mc_null);

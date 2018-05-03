@@ -152,7 +152,12 @@ synset::~synset(){}
 
 void
 synset::init_me(int caller){
-	parent = mc_null;
+	//parent = mc_null;
+
+	ini_ti = BJ_INVALID_NUM_TIER;
+	num_ss_recv = 0;
+	num_ss_ping = 0;
+
 	tot_syn = 0;
 }
 
@@ -162,9 +167,9 @@ synset::add_left_synapse(synapse* snp, bool set_vessel){
 	tot_syn++;
 	all_syn.bind_to_my_left(*snp);
 	if(set_vessel){
-		snp->left_vessel = this;
+		snp->stabi_vessel = this;
 	} else {
-		snp->left_vessel = mc_null;
+		snp->stabi_vessel = mc_null;
 	}
 }
 
@@ -202,7 +207,9 @@ void
 synapse::init_me(int caller){
 	handler_idx = idx_synapse;
 
-	left_vessel = mc_null;
+	stabi_vessel = mc_null;
+	stabi_rcv_arr_sz = 0;
+	stabi_rcv_arr = mc_null;
 
 	owner = mc_null;
 	mate = mc_null;
@@ -640,7 +647,7 @@ dbg_call_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool f
 			my_snp = bj_get_syn_of_rgt_handle(wrk);
 		}
 		EMU_CK(my_snp != mc_null);
-		EMU_CK(bj_is_synapse(my_snp));
+		EMU_CK(bj_ck_is_synapse(my_snp));
 
 		callee_prms pms;
 		pms.snp = my_snp;
@@ -664,7 +671,7 @@ synset::dbg_rec_call_all(bj_callee_t mth, net_side_t sd){
 	lst = (binder*)mck_as_loc_pt(grps);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		synset* sub_grp = (synset*)wrk;
-		EMU_CK(sub_grp->parent == this);
+		//EMU_CK(sub_grp->parent == this);
 		sub_grp->dbg_rec_call_all(mth, sd);
 	}
 }
@@ -964,20 +971,21 @@ get_synapse_from_binder(net_side_t sd, binder* bdr){
 		my_snp = bj_get_syn_of_rgt_handle(bdr);
 	}
 	EMU_CK(my_snp != mc_null);
-	EMU_CK(bj_is_synapse(my_snp));
+	EMU_CK(bj_ck_is_synapse(my_snp));
 	MCK_CK(my_snp->owner->ki != nd_invalid);
 	return my_snp;
 }
 
 void 
-send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec){
+with_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec){
 	EMU_CK(mth != mc_null);
 
-	binder * fst, * lst, * wrk;
+	binder * fst, * lst, * wrk, * nxt;
 
 	fst = (binder*)(nn_all_snp->bn_right);
 	lst = (binder*)mck_as_loc_pt(nn_all_snp);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+	for(wrk = fst; wrk != lst; wrk = nxt){
+		nxt = (binder*)(wrk->bn_right);
 		synapse* my_snp = get_synapse_from_binder(sd, wrk);
 
 		callee_prms pms;
@@ -986,7 +994,6 @@ send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_
 		pms.rec = from_rec;
 
 		(my_snp->owner->*mth)(pms);
-		//(my_snp->owner->*mth)(my_snp, sd, from_rec);
 	}
 }
 
@@ -996,7 +1003,7 @@ synset::transmitter_send_all_rec(bj_callee_t mth, net_side_t sd){
 	//MCK_CK(! mc_addr_has_id(this));
 	//MCK_CK(! mc_addr_has_id(&(all_syn)));
 	//MCK_CK(! mc_addr_has_id(&(all_grp)));
-	send_all_synapses(&(all_syn), mth, sd, true /* IS_FROM_REC */);
+	with_all_synapses(&(all_syn), mth, sd, true /* IS_FROM_REC */);
 
 	binder * fst, * lst, * wrk;
 
@@ -1005,7 +1012,7 @@ synset::transmitter_send_all_rec(bj_callee_t mth, net_side_t sd){
 	lst = (binder*)mck_as_loc_pt(grps);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		synset* sub_grp = (synset*)wrk;
-		EMU_CK(sub_grp->parent == this);
+		//EMU_CK(sub_grp->parent == this);
 		sub_grp->transmitter_send_all_rec(mth, sd);
 	}
 }
@@ -1068,7 +1075,7 @@ synset::reset_rec_tree(){
 	MCK_CHECK_SP();
 	while(! all_grp.is_alone()){
 		synset* sub_grp = (synset*)(binder*)(all_grp.bn_right);
-		EMU_CK(sub_grp->parent == this);
+		//EMU_CK(sub_grp->parent == this);
 		sub_grp->reset_rec_tree();
 
 		EMU_CK(sub_grp->all_grp.is_alone());

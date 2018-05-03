@@ -46,8 +46,14 @@ Declaration of functions to load cnfs in the core.
 	if(ii < cap){ arr[ii] = val; } else { mck_abort(0xdeadbeaf, mc_cstr("ERROR. Invalid_propag_arr_set_index.")); }
 
 
+void nervenet_mirrow_handler(missive* msv) bj_stabi_cod;
+
 void bj_mirrow_init_handlers() bj_stabi_cod;
 void bj_mirrow_main() bj_stabi_cod;
+
+void neuron_stabi_handler(missive* msv) bj_stabi_cod;
+void synapse_stabi_handler(missive* msv) bj_stabi_cod;
+void nervenet_stabi_handler(missive* msv) bj_stabi_cod;
 
 void bj_stabi_init_handlers() bj_stabi_cod;
 void bj_stabi_main() bj_stabi_cod;

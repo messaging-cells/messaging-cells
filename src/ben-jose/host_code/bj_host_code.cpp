@@ -109,7 +109,7 @@ void bj_test_1(int argc, char *argv[])
 	binder* lft = b1.bn_left;
 	synapse* pt_s1 = bj_get_syn_of_rgt_handle(lft);
 
-	EMU_CK(bj_is_synapse(pt_s1));
+	EMU_CK(bj_ck_is_synapse(pt_s1));
 	printf("syn_idx = %d\n", pt_s1->handler_idx);
 
 	printf("BJ_HOST_TESTS_FINISHED\n");

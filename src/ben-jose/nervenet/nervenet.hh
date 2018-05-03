@@ -133,7 +133,6 @@ public:
 	bool rec = false;
 };
 
-//typedef void (nervenode::*bj_callee_t)(synapse* snp, net_side_t sd, bool from_rec);
 typedef void (nervenode::*bj_callee_t)(callee_prms& pms);
 
 void emu_prt_tok_codes() mc_external_code_ram;
@@ -162,25 +161,31 @@ char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
 void dbg_call_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec) mc_external_code_ram;
 
-void send_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec = false);
+void with_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec = false);
 
 //net_side_t opp_side_of(net_side_t sd) bj_propag_cod;
 
+#define BJ_IS_CLS(obj, cnam) (((obj) != mc_null)?((obj)->get_class_name() == cnam##_cls_nam):(false))
+
 #define BJ_DECLARE_CLS_NAM(cnam) \
 extern char cnam##_cls_nam[] mc_external_data_ram; \
-bool bj_is_##cnam(agent* pt_obj); \
+bool bj_ck_is_##cnam(agent* pt_obj) mc_external_code_ram; \
 
 // end_of_macro
 
 #define BJ_DEFINE_GET_CLS_NAM(cnam) \
 char cnam##_cls_nam[] = "{" #cnam "}"; \
 char* cnam::get_class_name(){ return cnam##_cls_nam; } \
-bool bj_is_##cnam(agent* pt_obj){ \
-	if(pt_obj != mc_null){ return (pt_obj->get_class_name() == cnam##_cls_nam); } \
-	return false; \
+bool bj_ck_is_##cnam(agent* obj){ \
+	return BJ_IS_CLS(obj, cnam); \
 } \
 
 // end_of_macro
+
+//	return (((obj) != mc_null)?((obj)->get_class_name() == cnam##_cls_nam):(false)); 
+//	if(pt_obj != mc_null){ return (pt_obj->get_class_name() == cnam##_cls_nam); } 
+//	return false; 
+
 
 struct mc_aligned signal_data {
 public:
@@ -210,7 +215,11 @@ class mc_aligned synset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synset, bj_nervenet_mem)
 
-	synset*		parent;
+	//synset*		parent;
+
+	num_tier_t	ini_ti;
+	num_syn_t 	num_ss_recv;
+	num_syn_t 	num_ss_ping;
 
 	num_syn_t 	tot_syn;
 	grip		all_syn;
@@ -228,6 +237,8 @@ public:
 	void propag_handler(missive* msv) bj_propag_cod;
 
 	void stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
+	void stabi_rank_all_snp() bj_stabi_cod;
+	synset* stabi_get_subset_of(synapse* my_snp) bj_stabi_cod;
 
 	void dbg_rec_call_all(bj_callee_t mth, net_side_t sd) mc_external_code_ram;
 
@@ -237,6 +248,8 @@ public:
 	void reset_rec_tree();
 
 	bool is_synset_empty() bj_propag_cod;
+
+	synapse* get_first_snp(net_side_t sd) bj_stabi_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -300,8 +313,6 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-void bj_set_id_data(stabi_transmitter* sb_tmt, signal_data* dat) bj_stabi_cod;
-
 #define bj_id_arr_copy(dst, sz, src) for(num_syn_t idx = 0; idx < sz; idx++){ dst[idx] = src[idx]; }
 
 class mc_aligned sync_transmitter : public transmitter {
@@ -324,7 +335,9 @@ class mc_aligned synapse : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synapse, bj_nervenet_mem)
 
-	synset*		left_vessel;
+	synset*		stabi_vessel;
+	num_syn_t	stabi_rcv_arr_sz;
+	num_syn_t*  stabi_rcv_arr;
 
 	binder		right_handle;
 
@@ -344,6 +357,8 @@ public:
 	void propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced = false) bj_propag_cod;
 	void stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd = mc_null, 
 				bool dbg_is_forced = false) bj_stabi_cod;
+
+	void stabi_set_rcv_arr(signal_data* dat) bj_stabi_cod;
 
 	mc_inline_fn binder& get_side_binder(net_side_t sd) bj_propag_cod;
 
@@ -415,7 +430,7 @@ public:
 	void reset_all_tiers(grip& tmp_ti) bj_stabi_cod;
 };
 
-int cmp_neurostate(neurostate* nod1, neurostate* nod2) bj_stabi_cod;
+int cmp_synapses(synapse* snp1, synapse* snp2) bj_stabi_cod;
 
 class mc_aligned nervenode : public cell {
 public:
@@ -445,13 +460,6 @@ public:
 	void propag_recv_ping(signal_data* dat) bj_propag_cod;
 	void propag_recv_tier_done(signal_data* dat) bj_propag_cod;
 
-	/*virtual 
-	void propag_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec) bj_propag_cod;
-
-	void propag_send_snp_charge_src(synapse* snp, net_side_t sd, bool from_rec) bj_propag_cod;
-	void propag_send_snp_tier_done(synapse* snp, net_side_t sd, bool from_rec) bj_propag_cod;
-	*/
-
 	virtual 
 	void propag_send_snp_propag(callee_prms& pms) bj_propag_cod;
 
@@ -466,7 +474,6 @@ public:
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
 
-	//void dbg_prt_syn(synapse* snp, net_side_t sd, bool from_rec) mc_external_code_ram;
 	void dbg_prt_syn(callee_prms& pms) mc_external_code_ram;
 
 	void dbg_prt_nod(net_side_t sd, char* prefix, num_pulse_t num_pul, num_tier_t num_ti) mc_external_code_ram;
@@ -475,11 +482,11 @@ public:
 
 	void mirrow_sides(net_side_t sd) bj_stabi_cod;
 	void stabi_recv_transmitter(signal_data* dat) bj_stabi_cod;
+	void stabi_recv_rank(signal_data* dat) bj_stabi_cod;
 	void stabi_recv_ping(signal_data* dat) bj_stabi_cod;
 	void stabi_recv_tier_done(signal_data* dat) bj_stabi_cod;
 
-	//void stabi_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec) bj_propag_cod;
-	void stabi_send_snp_propag(callee_prms& pms) bj_propag_cod;
+	void stabi_send_snp_id_arr(callee_prms& pms) bj_stabi_cod;
 	void stabi_send_snp_tier_done(synapse* snp, bool from_rec) bj_stabi_cod;
 
 	virtual
@@ -510,13 +517,6 @@ public:
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
 
-	/*
-	virtual 
-	void propag_send_snp_propag(synapse* snp, net_side_t sd, bool from_rec) bj_propag_cod;
-
-	void pru_callee(synapse* snp, net_side_t sd, bool from_rec) mc_external_code_ram;
-	*/
-
 	virtual 
 	void propag_send_snp_propag(callee_prms& pms) bj_propag_cod;
 
@@ -540,7 +540,6 @@ public:
 
 	void load_handler(missive* msv) bj_load_cod;
 
-	//void propag_send_snp_charge_all(synapse* snp, net_side_t sd, bool from_rec) bj_propag_cod;
 	void propag_send_snp_charge_all(callee_prms& pms) bj_propag_cod;
 
 	void charge_all_confl_and_start_nxt_ti(signal_data* dat) mc_external_code_ram;

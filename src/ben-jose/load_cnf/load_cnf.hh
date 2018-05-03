@@ -40,6 +40,12 @@ Declaration of functions to load cnfs in the core.
 
 #include "nervenet.hh"
 
+void nervenet_load_handler(missive* msv) bj_load_cod;
+void polaron_load_handler(missive* msv) bj_load_cod;
+void synapse_load_handler(missive* msv) bj_load_cod;
+
+void print_childs() bj_load_cod;
+
 void bj_load_main() bj_load_cod;
 void bj_load_init_handlers() bj_load_cod;
 void bj_load_shd_cnf() bj_load_cod;
