@@ -25,10 +25,10 @@ nervenet::mirrow_handler(missive* msv){
 }
 
 void
-neurostate::reset_all_tiers(grip& tmp_ti){
-	while(! propag_tiers.is_alone()){
-		tierset* tis = (tierset*)(binder*)(propag_tiers.bn_right);
-		tmp_ti.move_all_to_my_right(*tis);
+bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp){
+	while(! src_grp.is_alone()){
+		tierset* tis = (tierset*)(binder*)(src_grp.bn_right);
+		dst_grp.move_all_to_my_right(*tis);
 		tis->release(111);
 	}
 }
@@ -81,7 +81,7 @@ nervenode::mirrow_sides(net_side_t src_sd){
 
 	grip tmp_ti;
 
-	dst_st.reset_all_tiers(tmp_ti);
+	bj_stabi_reset_all_tiers(tmp_ti, dst_st.propag_tiers);
 
 	src = &(src_st.propag_tiers);
 
@@ -168,8 +168,8 @@ nervenet::mirrow_nervenet(){
 	netstate& lst_nst = get_active_netstate(side_left);
 	netstate& rgt_nst = get_active_netstate(side_right);
 	
-	tierdata& lft = lst_nst.get_last_tier();
-	tierdata& rgt = rgt_nst.get_last_tier();
+	tierdata& lft = get_last_tier(lst_nst.all_propag_tiers);
+	tierdata& rgt = get_last_tier(rgt_nst.all_propag_tiers);
 
 	if(rgt.tdt_id > lft.tdt_id){
 		sd = side_right;
@@ -196,7 +196,7 @@ void bj_mirrow_main() {
 	ker->user_func = mc_null;
 
 	nervenet* my_net = bj_nervenet;
-	my_net->propag_init_sync();
+	my_net->init_sync_cycle();
 
 	mck_slog2("__dbg1.mirrow\n");
 
@@ -212,10 +212,6 @@ void bj_mirrow_main() {
 	mck_slog2("_________________________\n");
 	mck_sprt2("dbg1.mirrow.end\n");
 
-}
-
-void bj_stabi_main() {
-	bj_mirrow_main();
 }
 
 void

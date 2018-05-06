@@ -100,7 +100,7 @@ void mc_cores_main() {
 	if(! ok){
 		mck_abort(1, mc_cstr("mck_load_module_failed_for_STABI_IDX. \n"));
 	}
-	bj_stabi_main();
+	bj_mirrow_main();
 
 	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
 

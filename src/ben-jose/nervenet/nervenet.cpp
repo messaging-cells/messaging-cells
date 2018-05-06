@@ -533,23 +533,20 @@ void
 netstate::init_me(int caller){
 	my_side = side_invalid;
 
-	sync_flags = 0;
-
-	sync_is_inactive = false;
-
-	sync_wait_tier = 0;
-	sync_tier_out = BJ_INVALID_NUM_TIER;
-	sync_tier_in = BJ_INVALID_NUM_TIER;
-
-	sync_sent_stop_to_parent = false;
-
-	sync_ending_propag = false;
+	init_sync();
 
 	tok_confl = bj_tok_sync_invalid;
 	nod_confl = mc_null;
 	ti_confl = BJ_INVALID_NUM_TIER;
 
 	//EMU_PRT("SYNC_INIT_DATA TOT_CHLD=%d \n", sync_tot_children);
+}
+
+void
+netstate::init_sync(){
+	sync_is_inactive = false;
+	sync_wait_tier = 0;
+	sync_is_ending = false;
 }
 
 tierdata::tierdata(){
@@ -575,10 +572,13 @@ tierdata::init_me(int caller){
 }
 
 void
-nervenet::propag_init_sync(){
+nervenet::init_sync_cycle(){
 	sync_tot_children = mc_map_get_tot_children();
 	sync_parent_id = mc_map_get_parent_core_id();
 	sync_map = mc_map_get_loaded();
+
+	act_left_side.init_sync();
+	act_right_side.init_sync();
 }
 
 void 
@@ -1099,3 +1099,14 @@ nervenet::send_all_neus(mck_token_t tok){
 		my_net->send(my_neu, tok);
 	}
 }
+
+void
+netstate::broadcast_tier(tierdata& lti, int dbg_caller){
+	mc_core_id_t pnt_id = bj_nervenet->sync_parent_id;
+	if(pnt_id != 0){
+		nervenet* pnt_net = bj_nervenet->get_nervenet(pnt_id);
+		send_sync_transmitter(pnt_net, bj_tok_sync_add_tier, lti.tdt_id, mc_null);
+	} 
+	send_sync_to_children(bj_tok_sync_add_tier, lti.tdt_id, mc_null);
+}
+

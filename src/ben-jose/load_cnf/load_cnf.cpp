@@ -339,7 +339,7 @@ tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 }
 
 void
-netstate::init_tiers(nervenet& my_net){
+netstate::init_propag_tiers(nervenet& my_net){
 	tierdata* ti_dat = tierdata::acquire();
 
 	ti_dat->tdt_id = 0;
@@ -352,7 +352,7 @@ netstate::init_tiers(nervenet& my_net){
 
 	//EMU_CK((my_side != side_right) || (ti_dat->inp_neus == 0));	// OLD
 
-	all_tiers.bind_to_my_left(*ti_dat);
+	all_propag_tiers.bind_to_my_left(*ti_dat);
 }
 
 void bj_test_func_1() mc_external_code_ram;
@@ -385,10 +385,10 @@ void bj_load_main() {
 
 	kernel::run_sys();
 
-	my_net->act_left_side.init_tiers(*my_net);
-	my_net->act_right_side.init_tiers(*my_net);
+	my_net->act_left_side.init_propag_tiers(*my_net);
+	my_net->act_right_side.init_propag_tiers(*my_net);
 
-	EMU_CODE(tierdata& dat = my_net->act_left_side.get_last_tier());
+	EMU_CODE(tierdata& dat = get_last_tier(my_net->act_left_side.all_propag_tiers));
 	EMU_LOG("\n=========================================================================\n");
 	EMU_LOG("inp_neu=%ld \n", dat.inp_neus);
 }

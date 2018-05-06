@@ -371,6 +371,7 @@ synapse* get_synapse_from_binder(net_side_t sd, binder* bdr);
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
 
 #define	bj_stt_charge_all_flag mc_flag1
+#define	bj_stt_stabi_intact_id_flag mc_flag2
 
 //class neurostate {
 class mc_aligned neurostate : public binder {
@@ -427,10 +428,10 @@ public:
 
 	bool neu_is_to_delay(net_side_t sd, int dbg_caller) bj_propag_cod;
 
-	void reset_all_tiers(grip& tmp_ti) bj_stabi_cod;
 };
 
-int cmp_synapses(synapse* snp1, synapse* snp2) bj_stabi_cod;
+void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
+int bj_cmp_synapses(synapse* snp1, synapse* snp2) bj_stabi_cod;
 
 class mc_aligned nervenode : public cell {
 public:
@@ -489,6 +490,10 @@ public:
 	void stabi_send_snp_id_arr(callee_prms& pms) bj_stabi_cod;
 	void stabi_send_snp_tier_done(synapse* snp, bool from_rec) bj_stabi_cod;
 
+	virtual 
+	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
+
+
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
@@ -522,6 +527,9 @@ public:
 
 	void pru_callee(callee_prms& pms) mc_external_code_ram;
 
+	virtual 
+	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
+
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
@@ -550,6 +558,9 @@ public:
 
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
+
+	virtual 
+	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -588,7 +599,7 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
 	}
 
-	void update_tidat(netstate& nst) bj_propag_cod;
+	void update_tidat() bj_propag_cod;
 
 	mc_inline_fn bool is_tidat_empty(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == 0));
@@ -612,19 +623,12 @@ class mc_aligned netstate {
 public:
 	net_side_t my_side;
 
-	mc_flags_t	sync_flags;
-
-	bool	sync_is_inactive;
-
+	bool		sync_is_inactive;
 	num_tier_t	sync_wait_tier;
-	num_tier_t	sync_tier_out;
-	num_tier_t	sync_tier_in;
+	bool 		sync_is_ending;
 
-	bool 		sync_sent_stop_to_parent;
-	
-	bool sync_ending_propag;
-
-	grip 	all_tiers;
+	grip 		all_propag_tiers;
+	grip 		all_stabi_tiers;
 
 	sync_tok_t  tok_confl;
 	nervenode*	nod_confl;
@@ -633,12 +637,14 @@ public:
 	netstate() mc_external_code_ram;
 	~netstate() mc_external_code_ram;
 
+	void broadcast_tier(tierdata& lti, int dbg_caller);
+
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 
-	void init_tiers(nervenet& nnt) mc_external_code_ram;
-	void broadcast_last_tier(int dbg_caller) bj_propag_cod;
-	void inc_tier(int dbg_caller) bj_propag_cod;
+	void init_sync() mc_external_code_ram;
+
+	void init_propag_tiers(nervenet& nnt) mc_external_code_ram;
 
 	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
 			nervenode* cfl_src = mc_null);
@@ -649,21 +655,24 @@ public:
 	void handle_my_sync() bj_propag_cod;
 	void send_up_confl_tok(sync_tok_t the_tok, num_tier_t the_ti, nervenode* the_cfl) mc_external_code_ram;
 
-	mc_inline_fn tierdata& get_last_tier(){
-		EMU_CK(! all_tiers.is_alone());
-		return *((tierdata*)(all_tiers.bn_left));
-	}
+	tierdata& get_tier(grip& all_ti, num_tier_t nti, int dbg_caller);
 
-	mc_inline_fn bool is_last_tier(tierdata& tdt){
-		EMU_CK(! all_tiers.is_alone());
-		return (((tierdata*)(all_tiers.bn_left)) == (&tdt));
-	}
-
-	tierdata& get_tier(num_tier_t nti, int dbg_caller) bj_propag_cod;
-
-	bool dbg_prt_all_tiers() mc_external_code_ram;
+	bool dbg_prt_all_propag_tiers() mc_external_code_ram;
 
 };
+
+void inc_tier(grip& all_ti, net_side_t sd, int dbg_caller);
+
+mc_inline_fn tierdata& get_last_tier(grip& all_ti){
+	EMU_CK(! all_ti.is_alone());
+	return *((tierdata*)(all_ti.bn_left));
+}
+
+mc_inline_fn bool is_last_tier(grip& all_ti, tierdata& tdt){
+	EMU_CK(! all_ti.is_alone());
+	return (((tierdata*)(all_ti.bn_left)) == (&tdt));
+}
+
 
 class mc_aligned dbg_stats {
 public:
@@ -744,7 +753,7 @@ public:
 	void load_handler(missive* msv) bj_load_cod;
 	void propag_sync_handler(missive* msv) bj_propag_cod;
 
-	void propag_init_sync() mc_external_code_ram;
+	void init_sync_cycle() mc_external_code_ram;
 	void propag_nervenet_start() bj_propag_cod;
 
 	void handle_sync() bj_propag_cod;
