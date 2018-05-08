@@ -441,6 +441,7 @@ public:
 };
 
 void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
+int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_t* arr2) bj_stabi_cod;
 int bj_cmp_synapses(synapse* snp1, synapse* snp2) bj_stabi_cod;
 
 class mc_aligned nervenode : public cell {
@@ -659,11 +660,14 @@ public:
 	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
 			nervenode* cfl_src = mc_null);
 	void send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, nervenode* cfl_src) /*mc_external_code_ram*/;
-
-	void update_sync_inert() bj_propag_cod;
-
-	void handle_my_sync() bj_propag_cod;
 	void send_up_confl_tok(sync_tok_t the_tok, num_tier_t the_ti, nervenode* the_cfl) mc_external_code_ram;
+
+	void propag_handle_my_sync() bj_propag_cod;
+	void stabi_handle_my_sync() bj_stabi_cod;
+
+	void update_sync_inert(tier_kind_t tiki, bool remove_full = false);
+
+	grip& get_all_tiers(tier_kind_t tiki);
 
 	tierdata& get_tier(tier_kind_t tiki, grip& all_ti, num_tier_t nti, int dbg_caller);
 
@@ -760,13 +764,15 @@ public:
 
 	void init_nervenet_with(pre_cnf_net* pre_net) mc_external_code_ram;
 
+	void sync_handler(tier_kind_t tiki, missive* msv);
+
 	void load_handler(missive* msv) bj_load_cod;
-	void propag_sync_handler(missive* msv) bj_propag_cod;
+	void propag_handler(missive* msv) bj_propag_cod;
 
 	void init_sync_cycle() mc_external_code_ram;
 	void propag_nervenet_start() bj_propag_cod;
 
-	void handle_sync() bj_propag_cod;
+	void propag_handle_sync() bj_propag_cod;
 	void send_parent_tok_empty_child(net_side_t sd) bj_propag_cod;
 
 	void mirrow_handler(missive* msv) bj_stabi_cod;
@@ -804,7 +810,8 @@ public:
 
 extern missive_handler_t bj_nil_handlers[];
 
-void bj_kernel_func();
+void bj_propag_kernel_func();
+void bj_stabi_kernel_func();
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
 void bj_print_loaded_cnf() mc_external_code_ram;
