@@ -103,7 +103,7 @@ neurostate::calc_stabi_arr() {
 
 	EMU_CK(stabi_arr == mc_null);
 
-	stabi_arr_cap = calc_stabi_arr_cap(step_active_set.tot_syn);
+	stabi_arr_cap = calc_cap_stabi_arr(step_active_set.tot_syn);
 	stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
 
 	EMU_LOG(" calc_stabi_arr new_cap=%d \n", stabi_arr_cap);
@@ -299,13 +299,6 @@ neuron::stabi_neuron_start(){
 	left_side.step_reset_complete();
 }
 
-void 
-nervenode::stabi_send_snp_id_arr(callee_prms& pms){
-	EMU_CK(pms.snp != mc_null);
-	EMU_CK(pms.snp->owner == this);
-	pms.snp->stabi_send_transmitter(bj_tok_stabi_rank, &left_side);
-}
-
 void
 nervenode::stabi_recv_rank(signal_data* dat){
 	EMU_CK(dat->sd == side_left);
@@ -440,11 +433,21 @@ nervenode::stabi_recv_tier_done(signal_data* dat){
 			stt.step_num_complete, stt.step_prev_tot_active, dat->ti);
 
 	if(is_tier_complete(dat)){
+		bool to_dly = false;
 		if((ki == nd_neu)){
+			EMU_CK(dat->ti == (stt.stabi_num_tier - 1));
+			netstate& nstt = bj_nervenet->get_active_netstate(dat->sd);
+			to_dly = stt.neu_is_to_delay(nstt, tiki_stabi, stt.stabi_num_tier, nstt.all_stabi_tiers, 1);
 		}
 
 		EMU_LOG("STABI_TIER_COMPLETE_%s_t%d_%s_%ld \n", net_side_to_str(dat->sd), dat->ti, 
 					node_kind_to_str(ki), id);
+		EMU_COND_LOG(to_dly, "DELAYING_%s_t%d_%s_%ld \n", 
+			net_side_to_str(dat->sd), dat->ti, node_kind_to_str(ki), id);
+
+		if(! to_dly){
+			stabi_start_nxt_tier(dat);
+		}
 	}
 }
 
@@ -462,6 +465,14 @@ polaron::stabi_start_nxt_tier(signal_data* dat){
 	EMU_CK(pol_stt.is_full());
 	EMU_CK(opp_stt.is_full());
 
+	pol_stt.calc_stabi_arr();
+	opp_stt.calc_stabi_arr();
+
+	pol_stt.step_active_set.transmitter_send_all_rec(
+			(bj_callee_t)(&nervenode::stabi_send_snp_id_arr), side_left);
+	opp_stt.step_active_set.transmitter_send_all_rec(
+			(bj_callee_t)(&nervenode::stabi_send_snp_id_arr), side_left);
+
 	pol_stt.stabi_send_all_ti_done(pol, dat->ti);
 	opp_stt.stabi_send_all_ti_done(opp, dat->ti);
 
@@ -475,6 +486,11 @@ neuron::stabi_start_nxt_tier(signal_data* dat){
 	//netstate& nst = bj_nervenet->get_active_netstate(dat->sd);
 
 	MC_DBG(dbg_prt_nod(dat->sd, mc_cstr("STEBI__"), 7, dat->ti));
+
+	stt.calc_stabi_arr();
+
+	stt.step_active_set.transmitter_send_all_rec(
+			(bj_callee_t)(&nervenode::stabi_send_snp_id_arr), side_left);
 
 	stt.stabi_send_all_ti_done(this, dat->ti);
 	stt.step_reset_complete();
@@ -514,4 +530,10 @@ void bj_stabi_main() {
 
 }
 
+void 
+nervenode::stabi_send_snp_id_arr(callee_prms& pms){
+	EMU_CK(pms.snp != mc_null);
+	EMU_CK(pms.snp->owner == this);
+	pms.snp->stabi_send_transmitter(bj_tok_stabi_rank, &left_side);
+}
 

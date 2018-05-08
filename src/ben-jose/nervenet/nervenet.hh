@@ -70,6 +70,12 @@ enum net_side_t : uint8_t {
 	side_right
 };
 
+enum tier_kind_t : uint8_t {
+	tiki_invalid,
+	tiki_propag,
+	tiki_stabi
+};
+
 enum sync_tok_t : mck_token_t {
 	bj_tok_sync_invalid = mck_tok_last + 1,
 	bj_tok_sync_add_tier,
@@ -151,6 +157,10 @@ mc_inline_fn bool is_load_tok(mck_token_t tok){
 
 mc_inline_fn bool is_propag_tok(mck_token_t tok){
 	return ((bj_tok_propag_invalid <= tok) && (tok <= bj_tok_propag_end));
+}
+
+mc_inline_fn bool is_stabi_tok(mck_token_t tok){
+	return ((bj_tok_stabi_invalid <= tok) && (tok <= bj_tok_stabi_end));
 }
 
 
@@ -403,7 +413,7 @@ public:
 	bool charge_all_active(signal_data* dat, node_kind_t ki) bj_propag_cod;
 	void step_reset_complete();
 
-	tierset*	dbg_get_tiset(num_tier_t nti) mc_external_code_ram;
+	tierset*	dbg_get_tiset(grip& all_ti, num_tier_t nti) mc_external_code_ram;
 
 	tierset*	get_tiset(num_tier_t nti = BJ_INVALID_NUM_TIER) bj_propag_cod;
 	tierset&	add_tiset(num_tier_t nti) bj_propag_cod;
@@ -426,7 +436,7 @@ public:
 	void propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_propag_cod;
 	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) bj_stabi_cod;
 
-	bool neu_is_to_delay(net_side_t sd, int dbg_caller) bj_propag_cod;
+	bool neu_is_to_delay(netstate& nstt, tier_kind_t tiki, num_tier_t the_ti, grip& all_ti, int dbg_caller);
 
 };
 
@@ -613,7 +623,7 @@ public:
 		return *((tierdata*)bn_left);
 	}
 
-	void proc_delayed(net_side_t sd) bj_propag_cod;
+	void proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd);
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -655,13 +665,13 @@ public:
 	void handle_my_sync() bj_propag_cod;
 	void send_up_confl_tok(sync_tok_t the_tok, num_tier_t the_ti, nervenode* the_cfl) mc_external_code_ram;
 
-	tierdata& get_tier(grip& all_ti, num_tier_t nti, int dbg_caller);
+	tierdata& get_tier(tier_kind_t tiki, grip& all_ti, num_tier_t nti, int dbg_caller);
 
 	bool dbg_prt_all_propag_tiers() mc_external_code_ram;
 
 };
 
-void inc_tier(grip& all_ti, net_side_t sd, int dbg_caller);
+void inc_tier(tier_kind_t tiki, grip& all_ti, net_side_t sd, int dbg_caller);
 
 mc_inline_fn tierdata& get_last_tier(grip& all_ti){
 	EMU_CK(! all_ti.is_alone());

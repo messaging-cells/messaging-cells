@@ -40,7 +40,7 @@ Declaration of functions to load cnfs in the core.
 
 #include "nervenet.hh"
 
-#define calc_stabi_arr_cap(tot_syn) (4 * (tot_syn))
+#define calc_cap_stabi_arr(tot_syn) (4 * (tot_syn))
 
 #define set_stabi_arr(cap, arr, ii, val) \
 	if(ii < cap){ arr[ii] = val; } else { mck_abort(0xdeadbeaf, mc_cstr("ERROR. Invalid_propag_arr_set_index.")); }
