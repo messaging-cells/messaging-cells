@@ -433,7 +433,7 @@ public:
 		return (step_num_complete == step_prev_tot_active);
 	}
 
-	void propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti) bj_propag_cod;
+	void propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dat_ti) bj_propag_cod;
 	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) bj_stabi_cod;
 
 	bool neu_is_to_delay(netstate& nstt, tier_kind_t tiki, num_tier_t the_ti, grip& all_ti, int dbg_caller);

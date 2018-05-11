@@ -129,10 +129,8 @@ neuron::propag_neuron_start(){
 	EMU_CK(left_side.step_active_set.all_grp.is_alone());
 	//left_side.step_active_set.reset_tree(side_left);
 
-	//mck_slog2("dbg1.bef_rec_send_1 \n");
 	left_side.step_active_set.transmitter_send_all_rec(
 			(bj_callee_t)(&nervenode::propag_send_snp_propag), side_left);
-	//mck_slog2("dbg1.aft_rec_send_1 \n");
 
 	left_side.propag_send_all_ti_done(this, side_left, BJ_INVALID_NUM_TIER);
 	left_side.step_reset_complete();
@@ -163,28 +161,22 @@ nervenode::propag_send_snp_tier_done(callee_prms& pms){
 }
 
 void
-neurostate::propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dbg_ti){
-	EMU_CK(propag_num_tier != BJ_INVALID_NUM_TIER);
+neurostate::propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dat_ti){
+	if(dat_ti != BJ_INVALID_NUM_TIER){ 
+		EMU_CK((nd->ki != nd_neu) || ((dat_ti + 1) == propag_num_tier));
+		EMU_CK((nd->ki == nd_neu) || (dat_ti == propag_num_tier));
 
-	if(propag_num_tier != BJ_INVALID_NUM_TIER){ 
-		tierset* c_ti = get_tiset(propag_num_tier);
+		tierset* c_ti = get_tiset(dat_ti);
 		if(c_ti != mc_null){
+			//EMU_CK((nd->ki != nd_neu) || ! mc_get_flag(step_flags, bj_stt_charge_all_flag));
 			EMU_LOG("::propag_send_all_ti_done WITH_PRV_TI %s %ld %s \n", node_kind_to_str(nd->ki), 
 					nd->id, net_side_to_str(sd));
-			//mck_slog2("dbg1.bef_syn_send_1 \n");
 			with_all_synapses(&(c_ti->ti_all), (bj_callee_t)(&nervenode::propag_send_snp_tier_done), sd);
-			//mck_slog2("dbg1.aft_syn_send_1 \n");
 		}
 	}
 
-	//mck_slog2("dbg1.bef_rec_send_2 \n");
 	step_active_set.transmitter_send_all_rec((bj_callee_t)(&nervenode::propag_send_snp_tier_done), sd);
-	//mck_slog2("dbg1.aft_rec_send_2 \n");
 
-	EMU_CK((nd->ki != nd_neu) || ((dbg_ti + 1) == propag_num_tier));
-	EMU_CK((nd->ki == nd_neu) || (dbg_ti == propag_num_tier));
-
-	
 	EMU_CK(propag_num_tier != BJ_INVALID_NUM_TIER);
 	propag_num_tier++;
 
@@ -461,7 +453,11 @@ neurostate::add_tiset(num_tier_t nti){
 
 bool
 neurostate::is_mono(num_tier_t nti){
-	bool mo = (step_active_set.is_synset_empty() && (propag_source == mc_null) && (get_tiset(nti) != mc_null));
+	//EMU_LOG("MO_VALS_t%d_ %d %d %d \n", nti, step_active_set.is_synset_empty(), 
+	//		(propag_source == mc_null), (get_tiset(nti) != mc_null));
+	//bool mo = (step_active_set.is_synset_empty() && (propag_source == mc_null) && (get_tiset(nti) != mc_null));
+	bool mo = (step_active_set.is_synset_empty() && (propag_source == mc_null));
+	//bool mo = false;
 	return mo;
 }
 
@@ -511,11 +507,15 @@ polaron::propag_start_nxt_tier(signal_data* dat){
 		bool opp_mono = opp_stt.is_mono(dat->ti);
 
 		if(pol_mono && ! opp_mono){
-			EMU_LOG("MONO CASE %s %ld %s \n", node_kind_to_str(opp->ki), opp->id, net_side_to_str(dat->sd));
+			EMU_LOG("MONO_CASE_%s_t%d_ %s %ld \n", net_side_to_str(dat->sd), dat->ti, 
+				node_kind_to_str(opp->ki), opp->id);
+			EMU_CK(opp_stt.propag_source == mc_null);
 			opp->charge_all_and_start_nxt_ti(dat);
 		} else 
 		if(! pol_mono && opp_mono){
-			EMU_LOG("MONO CASE %s %ld %s \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd));
+			EMU_LOG("MONO_CASE_%s_t%d_ %s %ld \n", net_side_to_str(dat->sd), dat->ti, 
+				node_kind_to_str(pol->ki), pol->id);
+			EMU_CK(pol_stt.propag_source == mc_null);
 			pol->charge_all_and_start_nxt_ti(dat);
 		} else {
 			pol_stt.send_all_propag(pol, dat);
@@ -611,7 +611,9 @@ neuron::propag_start_nxt_tier(signal_data* dat){
 		stt.charge_all_active(dat, ki);
 		tierset* ti_grp = stt.get_tiset(dat->ti);
 		if(ti_grp != mc_null){
+			EMU_LOG("dbg1.charged_all_t%d pti=%d \n", dat->ti, stt.propag_num_tier);
 			with_all_synapses(&(ti_grp->ti_all), (bj_callee_t)(&nervenode::propag_send_snp_charge_src), dat->sd);
+			EMU_LOG("dbg1.sent_snp_chg_t%d pti=%d \n", dat->ti, stt.propag_num_tier);
 		}
 	} else {
 		if(stt.step_active_set.is_synset_empty() && (stt.propag_source == mc_null)){
