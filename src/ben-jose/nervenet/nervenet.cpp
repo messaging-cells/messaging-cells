@@ -1425,3 +1425,17 @@ netstate::update_sync_inert(tier_kind_t tiki, bool remove_full){
 	}
 }
 
+void 
+tierdata::update_tidat(){
+	if(tdt_id == 0){
+		return;
+	}
+	tierdata* prv = (tierdata*)(bn_left);
+	if((inp_neus == BJ_INVALID_NUM_NODE) && prv->got_all_neus()){
+		EMU_CK(prv->inp_neus != BJ_INVALID_NUM_NODE);
+		inp_neus = prv->inp_neus - prv->off_neus;
+		EMU_CK(inp_neus != BJ_INVALID_NUM_NODE);
+		EMU_CK(stl_neus >= 0);
+	}
+}
+

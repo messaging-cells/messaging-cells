@@ -488,7 +488,7 @@ neuron::stabi_start_nxt_tier(signal_data* dat){
 	neurostate& stt = get_neurostate(sd);
 	netstate& nst = bj_nervenet->get_active_netstate(sd);
 
-	MC_DBG(dbg_prt_nod(sd, mc_cstr("STEBI__"), 7, dat->ti));
+	MC_DBG(dbg_prt_nod(sd, mc_cstr("STABI__"), 7, dat->ti));
 
 	stt.calc_stabi_arr();
 
@@ -498,38 +498,9 @@ neuron::stabi_start_nxt_tier(signal_data* dat){
 	stt.stabi_send_all_ti_done(this, dat->ti);
 	stt.step_reset_complete();
 
-	mck_slog2("dbg1.reset\n");
+	mck_slog2("dbg2.reset\n");
 
 	nst.update_sync_inert(tiki_stabi, true);
-}
-
-void bj_stabi_main() {
-	mc_core_nn_t nn = kernel::get_core_nn();
-
-	kernel::set_handlers(1, bj_nil_handlers);
-	bj_stabi_init_handlers();
-
-	EMU_LOG("STABI___ %d \n", nn);
-
-	kernel* ker = mck_get_kernel();
-	ker->user_func = bj_stabi_kernel_func;
-
-	nervenet* my_net = bj_nervenet;
-	my_net->init_sync_cycle();
-
-	mck_slog2("__dbg1.stabi\n");
-
-	my_net->send(my_net, bj_tok_stabi_start);
-	kernel::run_sys();
-
-	bj_print_active_cnf(side_left, mc_cstr("ENDED_STABI_"), 5, 0);
-
-	EMU_PRT("...............................END_STABI\n");
-	mck_slog2("END_STABI___");
-	mck_ilog(nn);
-	mck_slog2("_________________________\n");
-	mck_sprt2("dbg1.stabi.end\n");
-
 }
 
 void 
@@ -564,12 +535,43 @@ void
 nervenet::stabi_handler(missive* msv){
 	mck_token_t msv_tok = msv->tok;
 	if(msv_tok == bj_tok_stabi_start){
-		//stabi_nervenet_start();
-		kernel::stop_sys(bj_tok_stabi_end); // DEBUG purposes only
+		stabi_nervenet_start();
+		//kernel::stop_sys(bj_tok_stabi_end); // DEBUG purposes only
 		return;
 	}
 
 	sync_handler(tiki_stabi, msv);
+}
+
+void bj_stabi_main() {
+	mck_set_sub_module_id(BJ_STABI_SUB_MODULE_STABI);
+
+	mc_core_nn_t nn = kernel::get_core_nn();
+
+	kernel::set_handlers(1, bj_nil_handlers);
+	bj_stabi_init_handlers();
+
+	EMU_LOG("STABI___ %d \n", nn);
+
+	kernel* ker = mck_get_kernel();
+	ker->user_func = bj_stabi_kernel_func;
+
+	nervenet* my_net = bj_nervenet;
+	my_net->init_sync_cycle();
+
+	mck_slog2("__dbg2.stabi\n");
+
+	my_net->send(my_net, bj_tok_stabi_start);
+	//kernel::run_sys();
+
+	bj_print_active_cnf(side_left, mc_cstr("ENDED_STABI_"), 5, 0);
+
+	EMU_PRT("...............................END_STABI\n");
+	mck_slog2("END_STABI___");
+	mck_ilog(nn);
+	mck_slog2("_________________________\n");
+	mck_sprt2("dbg2.stabi.end\n");
+
 }
 
 

@@ -610,7 +610,7 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
 	}
 
-	void update_tidat() bj_propag_cod;
+	void update_tidat();
 
 	mc_inline_fn bool is_tidat_empty(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == 0));
@@ -656,6 +656,7 @@ public:
 	void init_sync() mc_external_code_ram;
 
 	void init_propag_tiers(nervenet& nnt) mc_external_code_ram;
+	void init_stabi_tiers(nervenet& nnt) bj_stabi_cod;
 
 	void send_sync_transmitter(nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
 			nervenode* cfl_src = mc_null);

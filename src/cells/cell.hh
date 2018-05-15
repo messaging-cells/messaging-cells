@@ -908,6 +908,12 @@ bool
 mck_has_same_module(mc_core_id_t dst_id) mc_external_code_ram;
 
 bool
+mck_has_module() mc_external_code_ram;
+
+bool
+mck_has_same_sub_module(mc_core_id_t dst_id) mc_external_code_ram;
+
+bool
 mck_is_id_inited(mc_core_id_t dst_id) mc_external_code_ram;
 
 bool

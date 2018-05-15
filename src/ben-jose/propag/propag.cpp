@@ -93,20 +93,7 @@ nervenet::propag_nervenet_start(){
 	EMU_LOG("propag_nervenet_start \n");
 
 	send_all_neus(bj_tok_propag_start);
-	/*
-	nervenet* my_net = this;
 
-	binder * fst, * lst, * wrk;
-
-	binder* pt_all_neu = &(all_neu);
-	fst = (binder*)(pt_all_neu->bn_right);
-	lst = (binder*)mck_as_loc_pt(pt_all_neu);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		neuron* my_neu = (neuron*)wrk;
-		EMU_CK(my_neu->ki == nd_neu);
-		my_net->send(my_neu, bj_tok_propag_start);
-	}
-	*/
 	EMU_DBG_CODE(
 		netstate& lft = get_active_netstate(side_left);
 		netstate& rgt = get_active_netstate(side_right);
@@ -674,20 +661,6 @@ void bj_propag_main() {
 	mck_slog2("_________________________\n");
 	mck_sprt2("dbg1.propag.end\n");
 
-}
-
-void 
-tierdata::update_tidat(){
-	if(tdt_id == 0){
-		return;
-	}
-	tierdata* prv = (tierdata*)(bn_left);
-	if((inp_neus == BJ_INVALID_NUM_NODE) && prv->got_all_neus()){
-		EMU_CK(prv->inp_neus != BJ_INVALID_NUM_NODE);
-		inp_neus = prv->inp_neus - prv->off_neus;
-		EMU_CK(inp_neus != BJ_INVALID_NUM_NODE);
-		EMU_CK(stl_neus >= 0);
-	}
 }
 
 void 

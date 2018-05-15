@@ -400,8 +400,28 @@ mck_has_same_module(mc_core_id_t dst_id){
 	mc_addr_t* loc_mdl = &(in_shd->current_module_addr);
 	mc_addr_t* rmt_mdl = (mc_addr_t*)mc_addr_set_id(dst_id, loc_mdl);
 	if((*rmt_mdl) != (*loc_mdl)){
-		EMU_PRT("DIFF MODULES %s != %s \n", 
+		EMU_PRT("DIFF_MODULES %s != %s \n", 
 			(char*)(*loc_mdl), (char*)(*rmt_mdl));
+		return false;
+	}
+
+	return true;
+}
+
+bool
+mck_has_module(){
+	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	mc_addr_t* loc_mdl = &(in_shd->current_module_addr);
+	return (loc_mdl != mc_null);
+}
+
+bool
+mck_has_same_sub_module(mc_core_id_t dst_id){
+	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	uint8_t* loc_mdl = &(in_shd->current_sub_module_id);
+	uint8_t* rmt_mdl = (uint8_t*)mc_addr_set_id(dst_id, loc_mdl);
+	if((*rmt_mdl) != (*loc_mdl)){
+		EMU_PRT("DIFF_SUB_MODULES %d != %d \n", (*loc_mdl), (*rmt_mdl));
 		return false;
 	}
 
@@ -535,6 +555,12 @@ kernel::handle_missives(){
 				continue;
 			}
 			if(! mck_has_same_module(dst_id)){
+				did_work |= 0x08;
+				EMU_PRT("SKIP msg %d => %d tok=%d \n", 
+					MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
+				continue;
+			}
+			if(mck_has_module() && ! mck_has_same_sub_module(dst_id)){
 				did_work |= 0x08;
 				EMU_PRT("SKIP msg %d => %d tok=%d \n", 
 					MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);

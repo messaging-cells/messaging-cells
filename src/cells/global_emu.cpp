@@ -49,7 +49,7 @@ mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* us
 
 bool
 mck_load_module(mc_addr_t ext_addr){
-	EMU_PRT("LOADING MODULE %p %s \n", (void*)ext_addr, (char*)ext_addr);
+	EMU_LOG("LOADING MODULE %p %s \n", (void*)ext_addr, (char*)ext_addr);
 	MC_CORE_INFO->current_module_addr = ext_addr;
 	return true;
 }

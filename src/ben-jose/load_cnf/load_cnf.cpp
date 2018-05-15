@@ -88,7 +88,7 @@ void bj_load_shd_cnf(){
 	polaron::separate(sep_pols);
 	neuron::separate(sep_neus);
 
-	EMU_PRT("Separated polarons %ld\n", sep_pols);
+	//EMU_PRT("Separated polarons %ld\n", sep_pols);
 	EMU_LOG("Separated transmitters %ld\n", sep_msvs);
 
 	binder * fst, * lst, * wrk;
@@ -213,7 +213,7 @@ nervenet::load_handler(missive* msv){
 	MCK_CK(tok == bj_tok_load_no_lits);
 
 	EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-	EMU_PRT("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	EMU_LOG("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 	kernel::stop_sys(bj_tok_load_end);
 }
 
@@ -304,13 +304,13 @@ synapse::load_handler(missive* msv){
 	if(tot_ld == my_net->tot_lits){
 		//mck_slog2("ENDING_CNF_LOAD \n");
 		EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-		EMU_PRT("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+		EMU_LOG("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 		//print_childs();
 		//mck_get_kernel()->set_idle_exit();
 		kernel::stop_sys(bj_tok_load_end);
 	}
-	EMU_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
-		owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
+	//EMU_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
+	//	owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
 }
 
 void

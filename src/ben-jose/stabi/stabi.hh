@@ -40,6 +40,9 @@ Declaration of functions to load cnfs in the core.
 
 #include "nervenet.hh"
 
+#define BJ_STABI_SUB_MODULE_MIRROW 1
+#define BJ_STABI_SUB_MODULE_STABI 2
+
 #define calc_cap_stabi_arr(tot_syn) (4 * (tot_syn))
 
 #define set_stabi_arr(cap, arr, ii, val) \

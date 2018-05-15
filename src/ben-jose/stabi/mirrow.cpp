@@ -185,6 +185,8 @@ nervenet::mirrow_nervenet(){
 }
 
 void bj_mirrow_main() {
+	mck_set_sub_module_id(BJ_STABI_SUB_MODULE_MIRROW);
+
 	mc_core_nn_t nn = kernel::get_core_nn();
 
 	kernel::set_handlers(1, bj_nil_handlers);
@@ -202,6 +204,8 @@ void bj_mirrow_main() {
 
 	my_net->send(my_net, bj_tok_mirrow_start);
 	kernel::run_sys();
+
+	my_net->act_left_side.init_stabi_tiers(*my_net);
 
 	bj_print_active_cnf(side_left, mc_cstr("MIRROWED_"), 5, 0);
 	bj_print_active_cnf(side_right, mc_cstr("MIRROWED_"), 5, 0);
@@ -229,5 +233,25 @@ synset::reset_vessels(bool set_vessel){
 		if(set_vessel){ val = this; }
 		my_snp->stabi_vessel = val;
 	}
+}
+
+void
+netstate::init_stabi_tiers(nervenet& my_net){
+	tierdata* ti_dat = tierdata::acquire();
+	tierdata& lti_prop = get_last_tier(all_propag_tiers);
+
+	EMU_CK(lti_prop.got_all_neus());
+
+	ti_dat->tdt_id = 0;
+
+	EMU_CK(ti_dat->tdt_flags == 0);
+	EMU_CK(ti_dat->all_delayed.is_alone());
+	EMU_CK(ti_dat->num_inert_chdn == 0);
+
+	ti_dat->inp_neus = lti_prop.inp_neus - lti_prop.off_neus;
+	EMU_CK(ti_dat->inp_neus != BJ_INVALID_NUM_NODE);
+
+	EMU_CK(all_stabi_tiers.is_alone());
+	all_stabi_tiers.bind_to_my_left(*ti_dat);
 }
 

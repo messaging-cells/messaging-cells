@@ -68,6 +68,7 @@ struct mc_aligned mck_glb_sys_def {
 	uint8_t 		dbg_out_str[MC_MAX_STR_SZ];
 
 	mc_addr_t		current_module_addr;
+	uint8_t			current_sub_module_id;
 	void*			pt_core_kernel;
 
 	EPH_CODE(
@@ -227,6 +228,9 @@ mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* us
 
 bool
 mck_load_module(mc_addr_t ext_addr) mc_external_code_ram;
+
+//! Sets a sub module id to 'id'
+#define mck_set_sub_module_id(id) { MC_CORE_INFO->current_sub_module_id = (id); }
 
 void mc_host_init() mc_external_code_ram;
 void mc_host_run() mc_external_code_ram;

@@ -70,13 +70,10 @@ link_all_modules_aux_fn(){
 void mc_cores_main() {
 	kernel::init_sys();
 
-	EMU_PRT("SOLVER main (KER=%p)\n", (void*)MCK_KERNEL);
+	//EMU_PRT("SOLVER main (KER=%p)\n", (void*)MCK_KERNEL);
 	mck_slog2("SOLVER_STARTED\n");	
 
 	bj_print_class_szs();
-
-	//EMU_DBG_CODE(transmitter_alloc_hook = bj_dbg_transmmitter_alloc);
-	//EMU_DBG_CODE(transmitter_acquire_hook = bj_dbg_transmmitter_acquire);
 
 	init_module_nams();
 
@@ -101,11 +98,12 @@ void mc_cores_main() {
 		mck_abort(1, mc_cstr("mck_load_module_failed_for_STABI_IDX. \n"));
 	}
 	bj_mirrow_main();
+	bj_stabi_main();
+
 
 	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
 
-	EMU_PRT("SOLVER_ENDED\n");
-	//EMU_LOG("SOLVER_ENDED\n");
+	//EMU_PRT("SOLVER_ENDED\n");
 	mck_slog2("SOLVER_ENDED_OK\n");	
 
 	kernel::finish_sys();
