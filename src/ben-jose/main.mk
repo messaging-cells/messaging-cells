@@ -61,6 +61,7 @@ SRC_BJ_DIR := ${MC_CURR_DIR}
 BJ_CORES_INCLUDES := \
 	${MC_STD_INCDIRS} \
 	${SRC_BJ_DIR}/nervenet \
+	${SRC_BJ_DIR}/dbg_only \
 	${SRC_BJ_DIR}/load_cnf \
 	${SRC_BJ_DIR}/propag \
 	${SRC_BJ_DIR}/stabi \
@@ -79,6 +80,7 @@ SUBMAKEFILES := \
 	./host_code/no_nil_host.mk \
 	./host_code/bj_host_znq.mk \
 	./maker_bj_emu/bj_emu.mk \
+	./dbg_only/dbg_only.mk \
 	./nervenet/nervenet.mk \
 	./load_cnf/load_cnf.mk \
 	./propag/propag.mk \

@@ -4,10 +4,11 @@ BJ_LDF := bj-lk-script.ldf
 TARGET := ben-jose.elf
 
 TGT_LDFLAGS := -T ${BJ_LDF} ${MC_EPH_LDFLAGS_2} --no-check-sections -L${TARGET_DIR}
-TGT_LDLIBS  := -lload_cnf -lnervenet -lpropag -lstabi ${MC_STD_EPH_LDLIBS}
+TGT_LDLIBS  := -ldbg_only -lload_cnf -lnervenet -lpropag -lstabi ${MC_STD_EPH_LDLIBS}
 
 TGT_PREREQS := \
 	${MC_EPH_LIBS} \
+	libdbg_only.a \
 	libnervenet.a \
 	libload_cnf.a \
 	libpropag.a \

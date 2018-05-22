@@ -213,7 +213,7 @@ nervenet::load_handler(missive* msv){
 	MCK_CK(tok == bj_tok_load_no_lits);
 
 	EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-	EMU_LOG("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	EMU_LOG("ENDING_CNF_LOAD_nervenet %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 	kernel::stop_sys(bj_tok_load_end);
 }
 
@@ -302,9 +302,8 @@ synapse::load_handler(missive* msv){
 	long& tot_ld = my_net->tot_loaded;
 	tot_ld++;
 	if(tot_ld == my_net->tot_lits){
-		//mck_slog2("ENDING_CNF_LOAD \n");
 		EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-		EMU_LOG("ENDING_CNF_LOAD %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+		EMU_LOG("ENDING_CNF_LOAD_synapse %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 		//print_childs();
 		//mck_get_kernel()->set_idle_exit();
 		kernel::stop_sys(bj_tok_load_end);

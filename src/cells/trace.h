@@ -21,7 +21,8 @@ mck_get_call_stack_trace(int16_t sz_trace, void** trace) mc_external_code_ram;
 
 void 
 mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace) mc_external_code_ram;
-	
+
+#define mck_getchar() 	mck_wait_sync(MC_WAITING_ENTER, 0, mc_null)
 
 #ifdef __cplusplus
 }

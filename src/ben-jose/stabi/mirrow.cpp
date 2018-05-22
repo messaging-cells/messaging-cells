@@ -37,6 +37,8 @@ void
 nervenode::mirrow_sides(net_side_t src_sd){
 	EMU_LOG("mirrow_nod \n");
 
+	nervenode* nd = this;
+
 	binder * fst, * lst, * wrk, * src;
 
 	net_side_t dst_sd = side_left;
@@ -115,7 +117,7 @@ nervenode::mirrow_sides(net_side_t src_sd){
 
 	neurostate& lft_st = get_neurostate(side_left);
 	lft_st.step_active_set.reset_vessels(true);
-	lft_st.calc_stabi_arr();
+	lft_st.calc_stabi_arr(nd);
 	lft_st.stabi_num_tier = 0;
 
 	EMU_LOG("mirrow_nod_end \n");
@@ -207,8 +209,8 @@ void bj_mirrow_main() {
 
 	my_net->act_left_side.init_stabi_tiers(*my_net);
 
-	bj_print_active_cnf(side_left, mc_cstr("MIRROWED_"), 5, 0);
-	bj_print_active_cnf(side_right, mc_cstr("MIRROWED_"), 5, 0);
+	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
+	bj_print_active_cnf(side_right, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
 
 	EMU_PRT("...............................END_MIRROW\n");
 	mck_slog2("END_MIRROW___");
@@ -241,6 +243,7 @@ netstate::init_stabi_tiers(nervenet& my_net){
 	tierdata& lti_prop = get_last_tier(all_propag_tiers);
 
 	EMU_CK(lti_prop.got_all_neus());
+	EMU_CK(lti_prop.all_delayed.is_alone());
 
 	ti_dat->tdt_id = 0;
 

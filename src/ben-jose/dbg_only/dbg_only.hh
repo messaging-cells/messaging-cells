@@ -29,60 +29,24 @@ Our Resurrected and Living, both in Body and Spirit,
 
 ------------------------------------------------------------
 
-solver.hh
+dbg_only.hh
 
-Declaration of main bj solver function.
+Declaration of functions to load cnfs in the core.
 
 --------------------------------------------------------------*/
 
-#ifndef SOLVER_H
-#define SOLVER_H
+#ifndef DBG_ONLY_H
+#define DBG_ONLY_H
 
-#include "cell.hh"
+#include "nervenet.hh"
 
-#define bj_dbg_only_cod mc_mod1_cod
-#define bj_dbg_only_dat mc_mod1_dat
+void nervenet_dbg_only_handler(missive* msv) bj_dbg_only_cod;
 
-#define bj_load_cod mc_mod2_cod
-#define bj_load_dat mc_mod2_dat
+void bj_dbg_only_main() bj_dbg_only_cod;
+void bj_dbg_only_init_handlers() bj_dbg_only_cod;
 
-#define bj_propag_cod mc_mod3_cod
-#define bj_propag_dat mc_mod3_dat
+void bj_dbg_separate() bj_dbg_only_cod;
 
-#define bj_stabi_cod mc_mod4_cod
-#define bj_stabi_dat mc_mod4_dat
-
-#define bj_nervenet_cod 
-#define bj_nervenet_dat 
-#define bj_nervenet_mem mc_mod0_cod
-
-typedef long num_nod_t;
-typedef uint8_t num_syn_t;
-typedef uint32_t num_tier_t;
-typedef uint32_t num_pulse_t;
-typedef uint32_t dbg_consec_t;
-
-#define BJ_INVALID_NUM_NODE ((num_nod_t)(-1))
-#define BJ_INVALID_NUM_SYNAPSE ((num_syn_t)(~((num_syn_t)0x0)))
-#define BJ_INVALID_NUM_TIER ((num_tier_t)(~((num_tier_t)0x0)))
-
-
-#define BJ_LAST_TIER (BJ_INVALID_NUM_TIER - 1)
-
-#define BJ_MAX_NODE_SZ mc_maxof(num_syn_t)
-
-#define MAGIC_VAL 987654
-
-enum node_kind_t : uint8_t {
-	nd_invalid = 0,
-	nd_pos,
-	nd_neg,
-	nd_neu
-};
-
-#define bj_is_pol(ki) ((ki == nd_pos) || (ki == nd_neg))
-
-
-#endif		// SOLVER_H
+#endif		// DBG_ONLY_H
 
 
