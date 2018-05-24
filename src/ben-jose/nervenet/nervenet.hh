@@ -55,14 +55,19 @@ class neuron;
 class netstate;
 class nervenet;
 
-#define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
-//define SYNC_LOG(...) 
+//define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
+#define SYNC_LOG(...) 
 
-#define SYNC_COND_LOG(cond, ...) EMU_COND_LOG(cond, __VA_ARGS__)
-//define SYNC_COND_LOG(cond, ...) 
+//define SYNC_COND_LOG(cond, ...) EMU_COND_LOG(cond, __VA_ARGS__)
+#define SYNC_COND_LOG(cond, ...) 
 
-#define SYNC_CODE_2(prm) EMU_CODE(prm)
-#define SYNC_LOG_2(...) EMU_LOG(__VA_ARGS__)
+//define SYNC_CODE_2(prm) EMU_CODE(prm)
+#define SYNC_CODE_2(prm) 
+
+//define SYNC_LOG_2(...) EMU_LOG(__VA_ARGS__)
+#define SYNC_LOG_2(...) 
+
+#define SYNC_WITH_DELAYS
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -426,6 +431,7 @@ public:
 		num_syn_t lim = 0;
 		if(tiki == tiki_propag){ lim = 1; }
 		bool all_pg = ((step_prev_tot_active > lim) && (step_num_ping == step_prev_tot_active));
+		EMU_CK(! all_pg || (step_active_set.tot_syn > 0));
 		return all_pg;
 	}
 
@@ -608,6 +614,7 @@ public:
 	num_nod_t off_neus;
 	num_nod_t rcv_neus;
 	num_nod_t stl_neus;
+	num_nod_t dly_neus;
 
 	tierdata() mc_external_code_ram;
 	~tierdata() mc_external_code_ram;
@@ -620,24 +627,35 @@ public:
 	mc_inline_fn void inc_rcv(){ rcv_neus++; }
 	mc_inline_fn void inc_off(){ off_neus++; }
 
-	mc_inline_fn bool got_all_neus(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
-	}
-
 	void update_tidat();
 
 	mc_inline_fn bool is_tidat_empty(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == 0));
 	}
 
+#ifdef SYNC_WITH_DELAYS
+	mc_inline_fn bool got_all_neus(){
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == rcv_neus));
+	}
+
+	mc_inline_fn bool is_inert(){
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && ((inp_neus - off_neus) == dly_neus));
+	}
+
+#else
+	mc_inline_fn bool got_all_neus(){
+		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
+	}
+
 	mc_inline_fn bool is_inert(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
 	}
 
+#endif
+
 	mc_inline_fn tierdata& prv_tier(){
 		return *((tierdata*)bn_left);
 	}
-
 	void proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, bool star_nxt_ti);
 
 	virtual

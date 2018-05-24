@@ -315,7 +315,7 @@ void
 nervenode::stabi_recv_rank(signal_data* dat){
 	EMU_CK(dat->sd == side_left);
 	netstate& nst = bj_nervenet->act_left_side;
-	nst.get_tier(tiki_stabi, nst.all_stabi_tiers, dat->ti, 6);
+	nst.get_tier(tiki_stabi, nst.all_stabi_tiers, dat->ti, ((ki == nd_neu)?(9):(10)));
 
 	dat->snp->stabi_set_rcv_arr(dat);
 

@@ -300,7 +300,7 @@ nervenode::propag_recv_charge_src(signal_data* dat){
 	EMU_CK(dat->sd != side_invalid);
 
 	netstate& nst = bj_nervenet->get_active_netstate(dat->sd);
-	nst.get_tier(tiki_propag, nst.all_propag_tiers, dat->ti, 6);
+	nst.get_tier(tiki_propag, nst.all_propag_tiers, dat->ti, ((ki == nd_neu)?(6):(7)));
 
 	neurostate& stt = get_neurostate(dat->sd);
 
@@ -323,7 +323,7 @@ nervenode::propag_recv_charge_src(signal_data* dat){
 	if(stt.step_active_set.is_synset_empty()){
 		stt.step_num_ping = 0;
 		if(ki == nd_neu){
-			nst.get_tier(tiki_propag, nst.all_propag_tiers, dat->ti, 7).inc_off();
+			nst.get_tier(tiki_propag, nst.all_propag_tiers, dat->ti, 8).inc_off();
 		}
 	}
 	
