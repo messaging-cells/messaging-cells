@@ -691,6 +691,7 @@ netstate::propag_handle_my_sync(){
 	update_sync_inert(tiki_propag);
 }
 
+/*
 bool
 netstate::dbg_prt_all_propag_tiers(){
 	binder * fst, * lst, * wrk;
@@ -710,7 +711,7 @@ netstate::dbg_prt_all_propag_tiers(){
 
 	EMU_PRT("all_tier=[\n");
 	return true;
-}
+}*/
 
 void
 nervenet::propag_handler(missive* msv){

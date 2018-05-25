@@ -607,7 +607,7 @@ void bj_stabi_main() {
 	mck_slog2("__dbg2.stabi\n");
 
 	my_net->send(my_net, bj_tok_stabi_start);
-	//kernel::run_sys();
+	kernel::run_sys();
 
 	bj_print_active_cnf(side_left, tiki_stabi, mc_cstr("ENDED_STABI_"), 5, 0);
 

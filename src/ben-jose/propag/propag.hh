@@ -44,6 +44,7 @@ void neuron_propag_handler(missive* msv) bj_propag_cod;
 void synapse_propag_handler(missive* msv) bj_propag_cod;
 void nervenet_propag_handler(missive* msv) bj_propag_cod;
 
+void bj_propag_kernel_func() bj_propag_cod;
 void bj_propag_init_handlers() bj_propag_cod;
 void bj_propag_main() bj_propag_cod;
 

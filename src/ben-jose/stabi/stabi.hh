@@ -58,6 +58,7 @@ void neuron_stabi_handler(missive* msv) bj_stabi_cod;
 void synapse_stabi_handler(missive* msv) bj_stabi_cod;
 void nervenet_stabi_handler(missive* msv) bj_stabi_cod;
 
+void bj_stabi_kernel_func() bj_stabi_cod;
 void bj_stabi_init_handlers() mc_external_code_ram;
 void bj_stabi_main() bj_stabi_cod;
 

@@ -58,16 +58,8 @@ class nervenet;
 //define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
 #define SYNC_LOG(...) 
 
-//define SYNC_COND_LOG(cond, ...) EMU_COND_LOG(cond, __VA_ARGS__)
-#define SYNC_COND_LOG(cond, ...) 
-
-//define SYNC_CODE_2(prm) EMU_CODE(prm)
-#define SYNC_CODE_2(prm) 
-
-//define SYNC_LOG_2(...) EMU_LOG(__VA_ARGS__)
-#define SYNC_LOG_2(...) 
-
-#define SYNC_WITH_DELAYS
+//define SYNC_CODE(...) EMU_CODE(__VA_ARGS__)
+#define SYNC_CODE(...) 
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -633,7 +625,6 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == 0));
 	}
 
-#ifdef SYNC_WITH_DELAYS
 	mc_inline_fn bool got_all_neus(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == rcv_neus));
 	}
@@ -642,7 +633,7 @@ public:
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && ((inp_neus - off_neus) == dly_neus));
 	}
 
-#else
+	/*
 	mc_inline_fn bool got_all_neus(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
 	}
@@ -650,12 +641,16 @@ public:
 	mc_inline_fn bool is_inert(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
 	}
-
-#endif
+	*/
 
 	mc_inline_fn tierdata& prv_tier(){
 		return *((tierdata*)bn_left);
 	}
+
+	mc_inline_fn bool is_first_tier(grip& all_tiers){
+		return (bn_left == &all_tiers);
+	}
+
 	void proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, bool star_nxt_ti);
 
 	virtual
@@ -706,7 +701,7 @@ public:
 
 	tierdata& get_tier(tier_kind_t tiki, grip& all_ti, num_tier_t nti, int dbg_caller);
 
-	bool dbg_prt_all_propag_tiers() mc_external_code_ram;
+	void dbg_prt_all_tiers(tier_kind_t tiki, char* prefix, num_tier_t num_ti) mc_external_code_ram;
 
 };
 
@@ -852,8 +847,8 @@ public:
 
 extern missive_handler_t bj_nil_handlers[];
 
-void bj_propag_kernel_func();
-void bj_stabi_kernel_func();
+//void bj_propag_kernel_func();
+//void bj_stabi_kernel_func();
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
 void bj_print_loaded_cnf() mc_external_code_ram;
