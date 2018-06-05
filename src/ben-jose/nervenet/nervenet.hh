@@ -38,8 +38,19 @@ Declaration of nervenet class.
 #ifndef NERVENET_H
 #define NERVENET_H
 
+
+#ifdef MC_IS_EMU_CODE
+#include <stdio.h>
+#include <string.h>
+
+#include <sstream>
+typedef std::ostringstream bj_dbg_str_stream;
+#endif
+
+
 #include "cell.hh"
 #include "solver.hh"
+
 
 class pre_cnf_node;
 class pre_cnf_net;
@@ -218,11 +229,14 @@ BJ_DECLARE_CLS_NAM(polaron)
 BJ_DECLARE_CLS_NAM(tierdata)
 BJ_DECLARE_CLS_NAM(nervenet)
 
+#define	bj_ss_ranked_snps_flag mc_flag1
+
 class mc_aligned synset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synset, bj_nervenet_mem)
 
 	//synset*		parent;
+	EMU_DBG_CODE(mc_flags_t		ss_flags);
 
 	num_tier_t	ini_ti;
 	num_syn_t 	num_ss_recv;
@@ -244,8 +258,8 @@ public:
 	void propag_handler(missive* msv) bj_propag_cod;
 
 	void stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
-	void stabi_rank_all_snp() bj_stabi_cod;
-	synset* stabi_get_subset_of(synapse* my_snp) bj_stabi_cod;
+	void stabi_rank_all_snp(signal_data* dat, nervenode* dbg_nd) bj_stabi_cod;
+	synset* stabi_get_subset_of(synapse* my_snp, signal_data* dat) bj_stabi_cod;
 
 	void dbg_rec_call_all(bj_callee_t mth, net_side_t sd) mc_external_code_ram;
 
@@ -256,7 +270,9 @@ public:
 
 	bool is_synset_empty() bj_propag_cod;
 
-	synapse* get_first_snp(net_side_t sd) bj_stabi_cod;
+	synapse* get_first_snp(net_side_t sd);
+
+	EMU_DBG_CODE(void dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out) mc_external_code_ram);
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -406,7 +422,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	void calc_stabi_arr(nervenode* dbg_nd) bj_stabi_cod;
+	void calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) bj_stabi_cod;
 	bool charge_all_active(signal_data* dat, node_kind_t ki) bj_propag_cod;
 	void step_reset_complete();
 
@@ -441,9 +457,10 @@ public:
 
 };
 
+
 void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
 int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_t* arr2) bj_stabi_cod;
-int bj_cmp_synapses(synapse* snp1, synapse* snp2) bj_stabi_cod;
+int bj_cmp_synapses(synapse* snp1, synapse* snp2, signal_data* dat) bj_stabi_cod;
 
 char* bj_dbg_stabi_id_arr_to_str(num_syn_t sz1, num_syn_t* arr1, int sz_str, char* str) mc_external_code_ram;
 
@@ -511,8 +528,13 @@ public:
 	void stabi_send_snp_tier_done(callee_prms& pms) bj_stabi_cod;
 
 	virtual 
+	void dbg_prt_tier_done(signal_data* dat) mc_external_code_ram;
+
+	virtual 
 	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
 
+	void dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
+				num_tier_t num_ti) mc_external_code_ram;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -581,6 +603,9 @@ public:
 
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
+
+	virtual 
+	void dbg_prt_tier_done(signal_data* dat) mc_external_code_ram;
 
 	virtual 
 	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
@@ -683,7 +708,7 @@ public:
 	void init_sync() mc_external_code_ram;
 
 	void init_propag_tiers(nervenet& nnt) mc_external_code_ram;
-	void init_stabi_tiers(nervenet& nnt) bj_stabi_cod;
+	void init_stabi_tiers(nervenet& nnt) mc_external_code_ram;
 
 	void send_sync_transmitter(tier_kind_t tiki, nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
 			nervenode* cfl_src = mc_null);
@@ -850,11 +875,15 @@ extern missive_handler_t bj_nil_handlers[];
 //void bj_propag_kernel_func();
 //void bj_stabi_kernel_func();
 
+#define	bj_dbg_prt_nd_neu_flag mc_flag1
+#define	bj_dbg_prt_nd_pol_flag mc_flag2
+#define	bj_dbg_prt_id_pol_flag mc_flag3
+
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) mc_external_code_ram;
 void bj_print_loaded_cnf() mc_external_code_ram;
 
 void bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t num_pul, 
-			num_tier_t num_ti, bool with_pols = false) mc_external_code_ram;
+			num_tier_t num_ti, mc_flags_t prt_flgs = bj_dbg_prt_nd_neu_flag) mc_external_code_ram;
 
 void bj_print_class_szs() mc_external_code_ram;
 

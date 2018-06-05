@@ -618,7 +618,7 @@ neuron::propag_start_nxt_tier(signal_data* dat){
 
 	netstate& nst = bj_nervenet->get_active_netstate(dat->sd);
 
-	MC_DBG(dbg_prt_nod(dat->sd, tiki_propag, mc_cstr("TIER__"), 7, dat->ti));
+	MC_DBG(dbg_prt_nod(dat->sd, tiki_propag, mc_cstr("prp_TIER"), 7, dat->ti));
 
 	stt.propag_send_all_ti_done(this, dat->sd, dat->ti);
 	stt.step_reset_complete();
@@ -637,7 +637,8 @@ void bj_propag_main() {
 	EMU_LOG("PROPAG___ %d \n", nn);
 
 	bj_print_loaded_cnf();
-	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("LOADED "), 3, 0, true);
+	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("prp_before"), 3, 0, 
+		bj_dbg_prt_nd_neu_flag | bj_dbg_prt_id_pol_flag);
 
 	kernel* ker = mck_get_kernel();
 	ker->user_func = bj_propag_kernel_func;
@@ -653,8 +654,8 @@ void bj_propag_main() {
 	my_net->send(my_net, bj_tok_propag_start);
 	kernel::run_sys();
 
-	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("REDUCED "), 5, 0);
-	bj_print_active_cnf(side_left, tiki_propag, mc_null, 7, BJ_INVALID_NUM_TIER);
+	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("prp_after"), 7, BJ_LAST_TIER);
+	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("REDUCED"), 5, 0);
 
 	EMU_PRT("...............................END_PROPAG\n");
 	mck_slog2("END_PROPAG___");
@@ -690,28 +691,6 @@ void
 netstate::propag_handle_my_sync(){
 	update_sync_inert(tiki_propag);
 }
-
-/*
-bool
-netstate::dbg_prt_all_propag_tiers(){
-	binder * fst, * lst, * wrk;
-
-	EMU_PRT("all_tier=[\n");
-
-	binder* tis = &(all_propag_tiers);
-	fst = (binder*)(tis->bn_left);
-	lst = (binder*)mck_as_loc_pt(tis);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_left)){
-		tierdata* tda = (tierdata*)wrk;
-		MC_MARK_USED(tda);
-		EMU_PRT("ti%d__ [%d,%d,%d,%d] \n", tda->tdt_id, 
-			tda->inp_neus, tda->off_neus, tda->rcv_neus, tda->stl_neus
-		);
-	}
-
-	EMU_PRT("all_tier=[\n");
-	return true;
-}*/
 
 void
 nervenet::propag_handler(missive* msv){

@@ -2,11 +2,6 @@
 #include "cell.hh"
 #include "nervenet.hh"
 
-#ifdef MC_IS_EMU_CODE
-#include <stdio.h>
-#include <string.h>
-#endif
-
 missive_handler_t bj_nil_handlers[1] = { mc_null };
 
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
@@ -157,6 +152,7 @@ synset::~synset(){}
 void
 synset::init_me(int caller){
 	//parent = mc_null;
+	EMU_DBG_CODE(ss_flags = 0);
 
 	ini_ti = BJ_INVALID_NUM_TIER;
 	num_ss_recv = 0;
@@ -763,6 +759,7 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 
 	if(prefix != mc_null){
 		mck_slog2(prefix);
+		mck_slog2("_");
 	}
 
 	mck_slog2(net_side_to_str(sd));
@@ -811,11 +808,10 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 
 	if(left_side.stabi_arr != mc_null){
 		EMU_DBG_CODE(
-			mck_slog2(" id=[");
+			mck_slog2(" id=");
 			bj_dbg_stabi_id_arr_to_str(left_side.stabi_arr_sz, left_side.stabi_arr, 
 				BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
 			mck_slog(bj_nervenet->dbg_str1);
-			mck_slog2("]");
 		);
 	}
 
@@ -826,51 +822,81 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 
 void 
 bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t num_pul, num_tier_t num_ti,
-		bool with_pols)
+		mc_flags_t prt_flgs)
 {
 	nervenet* my_net = bj_nervenet;
 
 	binder * fst, * lst, * wrk;
 
-	binder* pt_all_neu = &(my_net->all_neu);
-	fst = (binder*)(pt_all_neu->bn_right);
-	lst = (binder*)mck_as_loc_pt(pt_all_neu);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		neuron* my_neu = (neuron*)wrk;
-		EMU_CK(my_neu->ki == nd_neu);
+	bool with_neus = mc_get_flag(prt_flgs, bj_dbg_prt_nd_neu_flag);
+	if(with_neus){ 
+		binder* pt_all_neu = &(my_net->all_neu);
+		fst = (binder*)(pt_all_neu->bn_right);
+		lst = (binder*)mck_as_loc_pt(pt_all_neu);
+		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+			neuron* my_neu = (neuron*)wrk;
+			EMU_CK(my_neu->ki == nd_neu);
 
-		my_neu->dbg_prt_nod(sd, tiki, prefix, num_pul, num_ti);
+			my_neu->dbg_prt_nod(sd, tiki, prefix, num_pul, num_ti);
+		}
 	}
 
-	if(! with_pols){ return; }
+	bool with_pols = mc_get_flag(prt_flgs, bj_dbg_prt_nd_pol_flag);
+	if(with_pols){ 
+		binder* pt_all_pos = &(my_net->all_pos);
+		fst = (binder*)(pt_all_pos->bn_right);
+		lst = (binder*)mck_as_loc_pt(pt_all_pos);
+		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+			nervenode* my_nd = (nervenode*)wrk;
+			EMU_CK(my_nd->ki == nd_pos);
 
-	mck_lock_log();
-	mck_slog2("ALL_POL={\n");
+			my_nd->dbg_prt_nod(sd, tiki, prefix, num_pul, num_ti);
+		}
 
-	binder* pt_all_pol = &(my_net->all_pos);
-	fst = (binder*)(pt_all_pol->bn_right);
-	lst = (binder*)mck_as_loc_pt(pt_all_pol);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		polaron* my_pos = (polaron*)wrk;
-		EMU_CK(my_pos->ki == nd_pos);
+		binder* pt_all_neg = &(my_net->all_neg);
+		fst = (binder*)(pt_all_neg->bn_right);
+		lst = (binder*)mck_as_loc_pt(pt_all_neg);
+		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+			nervenode* my_nd = (nervenode*)wrk;
+			EMU_CK(my_nd->ki == nd_neg);
 
-		mck_ilog(my_pos->id);
-		mck_slog2(" ");
+			my_nd->dbg_prt_nod(sd, tiki, prefix, num_pul, num_ti);
+		}
 	}
 
-	pt_all_pol = &(my_net->all_neg);
-	fst = (binder*)(pt_all_pol->bn_right);
-	lst = (binder*)mck_as_loc_pt(pt_all_pol);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		polaron* my_neg = (polaron*)wrk;
-		EMU_CK(my_neg->ki == nd_neg);
+	bool with_pol_ids = mc_get_flag(prt_flgs, bj_dbg_prt_id_pol_flag);
+	if(with_pol_ids){ 
+		mck_lock_log();
+		if(prefix != mc_null){
+			mck_slog2(prefix);
+		}
+		mck_slog2("_ALL_POL={");
 
-		mck_ilog(my_neg->id);
-		mck_slog2(" ");
+		binder* pt_all_pol = &(my_net->all_pos);
+		fst = (binder*)(pt_all_pol->bn_right);
+		lst = (binder*)mck_as_loc_pt(pt_all_pol);
+		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+			polaron* my_pos = (polaron*)wrk;
+			EMU_CK(my_pos->ki == nd_pos);
+
+			mck_ilog(my_pos->id);
+			mck_slog2(" ");
+		}
+
+		pt_all_pol = &(my_net->all_neg);
+		fst = (binder*)(pt_all_pol->bn_right);
+		lst = (binder*)mck_as_loc_pt(pt_all_pol);
+		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+			polaron* my_neg = (polaron*)wrk;
+			EMU_CK(my_neg->ki == nd_neg);
+
+			mck_ilog(my_neg->id);
+			mck_slog2(" ");
+		}
+
+		mck_slog2("}\n");
+		mck_unlock_log();
 	}
-
-	mck_slog2("\n}\n");
-	mck_unlock_log();
 }
 
 dbg_stats::dbg_stats(){
@@ -1453,23 +1479,6 @@ tierdata::update_tidat(){
 	}
 }
 
-#ifdef MC_IS_EMU_CODE
-char* bj_dbg_stabi_id_arr_to_str(num_syn_t sz1, num_syn_t* arr1, int sz_str, char* str){
-	memset(str, 0, sz_str);
-	char* pt_str = str;
-	int nxt_sz = sz_str;
-	for(num_syn_t aa = 0; (aa < sz1); aa++){
-		int num_prt = snprintf(pt_str, nxt_sz, "%d ", arr1[aa]);
-		if(num_prt > (nxt_sz - 3)){
-			break;
-		}
-		pt_str = strchr(pt_str, '\0');
-		nxt_sz -= num_prt;
-	}
-	return str;
-}
-#endif
-
 char*
 nervenode::get_ki_str(){
 	if(ki == nd_neu){ return mc_cstr("n"); }
@@ -1638,4 +1647,101 @@ netstate::update_sync_inert(tier_kind_t tiki, bool remove_full){
 		send_sync_to_children(bj_tok_sync_to_children, wt_tdt.tdt_id, tiki, mc_null);
 	}
 }
+
+synapse*
+synset::get_first_snp(net_side_t sd){
+	if(all_syn.is_alone()){
+		return mc_null;
+	}
+	binder* fst = (binder*)(all_syn.bn_right);
+	synapse* snp = get_synapse_from_binder(sd, fst);
+	return snp;
+}
+
+//===================================================================================================
+#ifdef MC_IS_EMU_CODE
+
+#define BJ_AUX_STR_MIN_SZ 3
+
+#define bj_aux_stabi_append_str(str, num_prt, pt_str, nxt_sz, ...) \
+	num_prt = snprintf(pt_str, nxt_sz, __VA_ARGS__); \
+	if(num_prt > (nxt_sz - BJ_AUX_STR_MIN_SZ)){ \
+		return str; \
+	} \
+	pt_str = strchr(pt_str, '\0'); \
+	nxt_sz -= num_prt; \
+
+// end_of_macro
+
+char* bj_dbg_stabi_id_arr_to_str(num_syn_t sz1, num_syn_t* arr1, int sz_str, char* str){
+	EMU_CK(str != mc_null);
+	EMU_CK(sz_str > BJ_AUX_STR_MIN_SZ);
+
+	memset(str, 0, sz_str);
+	str[sz_str - 1] = '\0';
+
+	char* pt_str = str;
+	int num_prt = 0;
+	int nxt_sz = sz_str;
+
+	bj_aux_stabi_append_str(str, num_prt, pt_str, nxt_sz, "[");
+
+	if(arr1 != mc_null){
+		for(num_syn_t aa = 0; (aa < sz1); aa++){
+			bj_aux_stabi_append_str(str, num_prt, pt_str, nxt_sz, "%d ", arr1[aa]);
+		}
+	}
+
+	bj_aux_stabi_append_str(str, num_prt, pt_str, nxt_sz, "]");
+
+	return str;
+}
+
+void 
+synset::dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out){
+	out << '(';
+	out << (int)tot_syn;
+
+	synapse* snp = get_first_snp(sd);
+	if(snp != mc_null){
+		nervenode* nd = snp->mate->owner;
+		if(snp->stabi_rcv_arr != mc_null){
+			bj_dbg_stabi_id_arr_to_str(snp->stabi_rcv_arr_sz, snp->stabi_rcv_arr, 
+					BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
+			out << '{' << nd->get_ki_str() << nd->id << bj_nervenet->dbg_str1 << '}';
+		} else {
+			bj_dbg_stabi_id_arr_to_str(nd->left_side.stabi_arr_sz, nd->left_side.stabi_arr, 
+					BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
+			out << "{R." << nd->get_ki_str() << nd->id << bj_nervenet->dbg_str1 << ".R}";
+		}
+	}
+
+	//out << ' ';
+
+
+	binder * fst, * lst, * wrk;
+
+	binder* grps = &(all_grp);
+	fst = (binder*)(grps->bn_right);
+	lst = (binder*)mck_as_loc_pt(grps);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synset* sub_grp = (synset*)wrk;
+		//EMU_CK(sub_grp->parent == this);
+		sub_grp->dbg_rec_prt_synset(sd, out);
+	}
+	out << ')';
+}
+
+void
+nervenode::dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, num_tier_t num_ti){
+	char* ts = bj_dbg_tier_kind_to_str(tiki);
+	neurostate& nst = get_neurostate(sd);
+
+	bj_dbg_str_stream out;
+	nst.step_active_set.dbg_rec_prt_synset(sd, out);
+	EMU_LOG(" %s_%s_t%d_%s_%d_%s \n", ts, prefix, num_ti, get_ki_str(), id, out.str().c_str());
+}
+
+#endif
+//---------------------------------------------------------------------------------------------------
 

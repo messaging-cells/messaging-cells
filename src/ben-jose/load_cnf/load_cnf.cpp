@@ -89,7 +89,7 @@ void bj_load_shd_cnf(){
 	neuron::separate(sep_neus);
 
 	//EMU_PRT("Separated polarons %ld\n", sep_pols);
-	EMU_LOG("Separated transmitters %ld\n", sep_msvs);
+	EMU_LOG("Separated_all_transmitters %ld\n", sep_msvs);
 
 	binder * fst, * lst, * wrk;
 
@@ -204,6 +204,8 @@ void bj_load_shd_cnf(){
 		msv->tok = bj_tok_load_no_lits;
 		msv->send();
 	}
+
+	EMU_LOG("end_of_bj_load_shd_cnf \n");
 }
 
 void
@@ -215,6 +217,7 @@ nervenet::load_handler(missive* msv){
 	EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
 	EMU_LOG("ENDING_CNF_LOAD_nervenet %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 	kernel::stop_sys(bj_tok_load_end);
+	EMU_LOG("ENDING_CNF_LOAD_nervenet_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 }
 
 void
@@ -303,10 +306,11 @@ synapse::load_handler(missive* msv){
 	tot_ld++;
 	if(tot_ld == my_net->tot_lits){
 		EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-		EMU_LOG("ENDING_CNF_LOAD_synapse %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 		//print_childs();
 		//mck_get_kernel()->set_idle_exit();
+		EMU_LOG("ENDING_CNF_LOAD_synapse %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 		kernel::stop_sys(bj_tok_load_end);
+		EMU_LOG("ENDING_CNF_LOAD_synapse_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 	}
 	//EMU_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
 	//	owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
@@ -376,9 +380,9 @@ void bj_load_main() {
 	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
 	bj_nervenet->shd_cnf = nn_cnf;
 	
-	bj_load_shd_cnf();
-
 	bj_load_init_handlers();
+
+	bj_load_shd_cnf();
 
 	//MC_DBG(if(kernel::get_core_nn() == 0){ bj_test_func_1(); });
 
@@ -389,7 +393,7 @@ void bj_load_main() {
 
 	EMU_CODE(tierdata& dat = get_last_tier(my_net->act_left_side.all_propag_tiers));
 	EMU_LOG("\n=========================================================================\n");
-	EMU_LOG("inp_neu=%ld \n", dat.inp_neus);
+	EMU_LOG("ENDED_LOADING. inp_neu=%ld \n", dat.inp_neus);
 }
 
 void bj_test_func_1(){

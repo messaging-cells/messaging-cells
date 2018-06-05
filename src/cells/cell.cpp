@@ -101,7 +101,7 @@ kernel::init_kernel(){
 	user_data = mc_null;
 
 	host_running = false;
-	did_work = 0x80;
+	did_work = mc_bit0;
 	exit_when_idle = false;
 
 	reset_stop_sys(); 
@@ -172,7 +172,7 @@ kernel::run_sys(){
 	}
 	ker->exit_when_idle = false;
 	while(true){
-		ker->did_work = 0x0;
+		ker->did_work = 0x0000;
 		ker->handle_missives();
 		if(! ker->did_work && ker->exit_when_idle){
 			break;
@@ -326,7 +326,7 @@ kernel::fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 				MC_ABORT_MSG("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs CAN NOT be mc_null. \n"));
 		}
 		if((hdlrs[0] != mc_null) && (hdlrs[0] != mc_kernel_handler)){
-			EMU_PRT("hdlrs[0] = %p \n", (void*)(hdlrs[0]));
+			//EMU_PRT("hdlrs[0] = %p \n", (void*)(hdlrs[0]));
 			mck_abort(__LINE__, 
 				MC_ABORT_MSG("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs[0] MUST be mc_null. \n"));
 		}
@@ -384,7 +384,7 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 			EMU_CK(*rem_dst_ack_pt == mck_busy_ack);
 			*rem_dst_ack_pt = mck_ready_ack;
 
-			did_work |= 0x01;
+			did_work |= mc_bit1;
 
 			//EMU_COND_PRT(is_from_host, "FLAG2_is_from_host = %d \n", is_from_host);
 		}
@@ -400,8 +400,8 @@ mck_has_same_module(mc_core_id_t dst_id){
 	mc_addr_t* loc_mdl = &(in_shd->current_module_addr);
 	mc_addr_t* rmt_mdl = (mc_addr_t*)mc_addr_set_id(dst_id, loc_mdl);
 	if((*rmt_mdl) != (*loc_mdl)){
-		EMU_PRT("DIFF_MODULES %s != %s \n", 
-			(char*)(*loc_mdl), (char*)(*rmt_mdl));
+		//EMU_PRT("DIFF_MODULES %s != %s \n", 
+		//	(char*)(*loc_mdl), (char*)(*rmt_mdl));
 		return false;
 	}
 
@@ -421,7 +421,7 @@ mck_has_same_sub_module(mc_core_id_t dst_id){
 	uint8_t* loc_mdl = &(in_shd->current_sub_module_id);
 	uint8_t* rmt_mdl = (uint8_t*)mc_addr_set_id(dst_id, loc_mdl);
 	if((*rmt_mdl) != (*loc_mdl)){
-		EMU_PRT("DIFF_SUB_MODULES %d != %d \n", (*loc_mdl), (*rmt_mdl));
+		//EMU_PRT("DIFF_SUB_MODULES %d != %d \n", (*loc_mdl), (*rmt_mdl));
 		return false;
 	}
 
@@ -448,8 +448,8 @@ kernel::handle_missives(){
 	binder * fst, * lst, * wrk, * nxt;
 
 	if(all_handlers == mc_null){
-		mck_slog2(MC_ERR_CELL_01);
-		EMU_PRT(MC_ERR_CELL_01);
+		//mck_slog2(MC_ERR_CELL_01);
+		//EMU_PRT(MC_ERR_CELL_01);
 		mck_abort(__LINE__, MC_ABORT_MSG(MC_ERR_CELL_01));
 		return;
 	}
@@ -499,7 +499,7 @@ kernel::handle_missives(){
 
 		fst_ref->release(2);
 		EMU_CK(fst_ref->glb_agent_ptr == mc_null);
-		did_work |= 0x02;
+		did_work |= mc_bit2;
 	}
 
 	grip* out_msvs = &(ker->out_work);
@@ -521,7 +521,7 @@ kernel::handle_missives(){
 			add_out_missive(out_msvs, *fst_msg);
 			EMU_CK(! fst_msg->is_alone());
 		}
-		did_work |= 0x04;
+		did_work |= mc_bit3;
 	}
 
 	mc_core_nn_t src_idx = get_core_nn();
@@ -551,25 +551,23 @@ kernel::handle_missives(){
 		if(loc_dst_ack_pt == mck_virgin_ack){
 			// Have never sent missives
 			if(! mck_is_id_inited(dst_id)){
-				did_work |= 0x08;
+				did_work |= mc_bit4;
 				continue;
 			}
 			if(! mck_has_same_module(dst_id)){
-				did_work |= 0x08;
-				EMU_PRT("SKIP msg %d => %d tok=%d \n", 
-					MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
+				did_work |= mc_bit5;
+				//EMU_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			if(mck_has_module() && ! mck_has_same_sub_module(dst_id)){
-				did_work |= 0x08;
-				EMU_PRT("SKIP msg %d => %d tok=%d \n", 
-					MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
+				did_work |= mc_bit6;
+				//EMU_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			loc_dst_ack_pt = mck_ready_ack;
 		}
 		if(loc_dst_ack_pt != mck_ready_ack){
-			did_work |= 0x10;
+			did_work |= mc_bit7;
 			continue;
 		}
 		loc_dst_ack_pt = mck_busy_ack;
@@ -591,7 +589,7 @@ kernel::handle_missives(){
 
 		mgrp->let_go();
 		ker->sent_work.bind_to_my_left(*mgrp);
-		did_work |= 0x20;
+		did_work |= mc_bit8;
 	}
 
 	if(has_to_host_work){
@@ -608,7 +606,7 @@ kernel::handle_missives(){
 			mgrp->release_all_agts();
 			mgrp->release(4);
 		}
-		did_work |= 0x40;
+		did_work |= mc_bit9;
 	}
 
 	if(ker->user_func != mc_null){
@@ -679,19 +677,19 @@ kernel::handle_work_to_cores(){
 
 		kernel* core_ker = kernel::get_core_kernel(dst_id);
 		if(core_ker == mc_null){
-			did_work |= 0x200;
+			did_work |= mc_bit10;
 			continue;
 		}
 		if(loc_dst_ack_pt == mck_virgin_ack){
 			// Have never sent missives
 			if(core_ker == mc_null){
-				did_work |= 0x400;
+				did_work |= mc_bit11;
 				continue;
 			}
 			loc_dst_ack_pt = mck_ready_ack;
 		}
 		if(loc_dst_ack_pt != mck_ready_ack){
-			did_work |= 0x800;
+			did_work |= mc_bit12;
 			continue;
 		}
 		//EMU_PRT("kernel::handle_work_to_cores. loc_dst_ack_pt= %p \n", &loc_dst_ack_pt);
@@ -707,7 +705,7 @@ kernel::handle_work_to_cores(){
 
 		mgrp->let_go();
 		ker->sent_work.bind_to_my_left(*mgrp);
-		did_work |= 0x20;
+		did_work |= mc_bit13;
 
 		//EMU_PRT("kernel::handle_work_to_cores. added to sent_work. \n");
 	}
@@ -720,8 +718,8 @@ kernel::handle_work_to_host(){
 	MCK_CK(has_to_host_work);
 
 	if(routed_ack_from_host != mck_ready_ack){
-		did_work |= 0x100;
-		EMU_PRT("HOST NOT READY \n");
+		did_work |= mc_bit14;
+		//EMU_PRT("HOST NOT READY \n");
 		return;
 	}
 
@@ -767,7 +765,7 @@ kernel::handle_host_missives(){
 	)*/
 	
 	if(hdl){	
-		did_work = 0x0;
+		did_work = 0x0000;
 		handle_missives();
 		if(! did_work && exit_when_idle){
 			host_running = false;
@@ -839,7 +837,7 @@ kernel::handle_work_from_host(){
 
 	fst_ref->release(6);
 	EMU_CK(fst_ref->glb_agent_ptr == mc_null);
-	did_work |= 0x1000;
+	did_work |= mc_bit15;
 
 	has_from_host_work = false;
 

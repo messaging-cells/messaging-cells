@@ -115,10 +115,13 @@ nervenode::mirrow_sides(net_side_t src_sd){
 
 	// set all vessels
 
-	neurostate& lft_st = get_neurostate(side_left);
+	neurostate& lft_st = left_side;
 	lft_st.step_active_set.reset_vessels(true);
-	lft_st.calc_stabi_arr(nd);
+	lft_st.calc_stabi_arr(nd, mc_null);
 	lft_st.stabi_num_tier = 0;
+
+	EMU_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
+		bj_dbg_stabi_id_arr_to_str(lft_st.stabi_arr_sz, lft_st.stabi_arr, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));
 
 	EMU_LOG("mirrow_nod_end \n");
 }
@@ -158,6 +161,7 @@ nervenet::mirrow_start_all_nods(grip& all_nod, net_side_t sd){
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		nervenode* my_nod = (nervenode*)wrk;
 		my_nod->mirrow_sides(sd);
+		EMU_DBG_CODE(my_nod->dbg_prt_active_synset(side_left, tiki_stabi, mc_cstr("START"), 0));
 	}
 }
 

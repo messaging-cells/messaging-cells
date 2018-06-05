@@ -640,6 +640,27 @@ typedef uint8_t mc_flags_t;
 #define	mc_flag6	((mc_flags_t)0x40)
 #define	mc_flag7	((mc_flags_t)0x80)
 
+
+// did_work bits
+
+#define	mc_bit0	((uint16_t)0x0001)
+#define	mc_bit1	((uint16_t)0x0002)
+#define	mc_bit2	((uint16_t)0x0004)
+#define	mc_bit3	((uint16_t)0x0008)
+#define	mc_bit4	((uint16_t)0x0010)
+#define	mc_bit5	((uint16_t)0x0020)
+#define	mc_bit6	((uint16_t)0x0040)
+#define	mc_bit7	((uint16_t)0x0080)
+#define	mc_bit8	((uint16_t)0x0100)
+#define	mc_bit9	((uint16_t)0x0200)
+#define	mc_bit10	((uint16_t)0x0400)
+#define	mc_bit11	((uint16_t)0x0800)
+#define	mc_bit12	((uint16_t)0x1000)
+#define	mc_bit13	((uint16_t)0x2000)
+#define	mc_bit14	((uint16_t)0x4000)
+#define	mc_bit15	((uint16_t)0x8000)
+
+
 static mc_inline_fn
 mc_flags_t	mc_set_flag(mc_flags_t& flgs, mc_flags_t bit_flag){
 	flgs = (mc_flags_t)(flgs | bit_flag);
