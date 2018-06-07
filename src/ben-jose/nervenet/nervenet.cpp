@@ -151,10 +151,8 @@ synset::~synset(){}
 
 void
 synset::init_me(int caller){
-	//parent = mc_null;
 	EMU_DBG_CODE(ss_flags = 0);
 
-	ini_ti = BJ_INVALID_NUM_TIER;
 	num_ss_recv = 0;
 	num_ss_ping = 0;
 
@@ -1074,7 +1072,9 @@ get_synapse_from_binder(net_side_t sd, binder* bdr){
 }
 
 void 
-with_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec){
+with_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, 
+			bool from_rec, bool dbg_mates, void* aux)
+{
 	EMU_CK(mth != mc_null);
 
 	binder * fst, * lst, * wrk, * nxt;
@@ -1085,10 +1085,15 @@ with_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_
 		nxt = (binder*)(wrk->bn_right);
 		synapse* my_snp = get_synapse_from_binder(sd, wrk);
 
+		if(dbg_mates){
+			EMU_DBG_CODE(my_snp = my_snp->mate);
+		}
+
 		callee_prms pms;
 		pms.snp = my_snp;
 		pms.sd = sd;
 		pms.rec = from_rec;
+		pms.aux = aux;
 
 		(my_snp->owner->*mth)(pms);
 	}
@@ -1658,6 +1663,14 @@ synset::get_first_snp(net_side_t sd){
 	return snp;
 }
 
+int
+bj_cmp_num_syn(num_syn_t const & n1, num_syn_t const & n2){ 
+	if(n1 == n2){ return 0; }
+	if(n1 < n2){ return -1; }
+	return 1;
+}
+
+
 //===================================================================================================
 #ifdef MC_IS_EMU_CODE
 
@@ -1697,6 +1710,12 @@ char* bj_dbg_stabi_id_arr_to_str(num_syn_t sz1, num_syn_t* arr1, int sz_str, cha
 	return str;
 }
 
+void
+nervenode::dbg_prt_snp_id(callee_prms& pms){
+	bj_dbg_str_stream* out = (bj_dbg_str_stream*)(pms.aux);
+	*out << get_ki_str() << id;
+}
+
 void 
 synset::dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out){
 	out << '(';
@@ -1708,13 +1727,15 @@ synset::dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out){
 		if(snp->stabi_rcv_arr != mc_null){
 			bj_dbg_stabi_id_arr_to_str(snp->stabi_rcv_arr_sz, snp->stabi_rcv_arr, 
 					BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
-			out << '{' << nd->get_ki_str() << nd->id << bj_nervenet->dbg_str1 << '}';
+			out << bj_nervenet->dbg_str1;
 		} else {
 			bj_dbg_stabi_id_arr_to_str(nd->left_side.stabi_arr_sz, nd->left_side.stabi_arr, 
 					BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
-			out << "{R." << nd->get_ki_str() << nd->id << bj_nervenet->dbg_str1 << ".R}";
+			out << "." << bj_nervenet->dbg_str1;
 		}
 	}
+	bj_dbg_str_stream* pt_out = &out;
+	with_all_synapses(&(all_syn), &nervenode::dbg_prt_snp_id, sd, true, true, pt_out);
 
 	//out << ' ';
 
@@ -1741,6 +1762,7 @@ nervenode::dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
 	nst.step_active_set.dbg_rec_prt_synset(sd, out);
 	EMU_LOG(" %s_%s_t%d_%s_%d_%s \n", ts, prefix, num_ti, get_ki_str(), id, out.str().c_str());
 }
+
 
 #endif
 //---------------------------------------------------------------------------------------------------

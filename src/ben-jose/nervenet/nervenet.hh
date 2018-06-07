@@ -145,6 +145,7 @@ public:
 	synapse* snp = mc_null;
 	net_side_t sd = side_invalid;
 	bool rec = false;
+	void* aux = mc_null;
 };
 
 typedef void (nervenode::*bj_callee_t)(callee_prms& pms);
@@ -179,7 +180,8 @@ char* stabi_tok_to_str(stabi_tok_t tok) mc_external_code_ram;
 
 void dbg_call_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec) mc_external_code_ram;
 
-void with_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, bool from_rec = false);
+void with_all_synapses(binder* nn_all_snp, bj_callee_t mth, net_side_t sd, 
+		bool from_rec = false, bool dbg_mates = false, void* aux = mc_null);
 
 //net_side_t opp_side_of(net_side_t sd) bj_propag_cod;
 
@@ -231,14 +233,15 @@ BJ_DECLARE_CLS_NAM(nervenet)
 
 #define	bj_ss_ranked_snps_flag mc_flag1
 
+int
+bj_cmp_num_syn(num_syn_t const & n1, num_syn_t const & n2);
+
 class mc_aligned synset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synset, bj_nervenet_mem)
 
-	//synset*		parent;
 	EMU_DBG_CODE(mc_flags_t		ss_flags);
 
-	num_tier_t	ini_ti;
 	num_syn_t 	num_ss_recv;
 	num_syn_t 	num_ss_ping;
 
@@ -267,6 +270,8 @@ public:
 
 	void reset_vessels(bool set_vessel) bj_stabi_cod;
 	void reset_rec_tree();
+
+	void stabi_insert_sort() bj_stabi_cod;
 
 	bool is_synset_empty() bj_propag_cod;
 
@@ -356,7 +361,7 @@ public:
 
 class mc_aligned synapse : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synapse, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synapse, mc_external_code_ram)
 
 	synset*		stabi_vessel;
 	num_syn_t	stabi_rcv_arr_sz;
@@ -536,6 +541,8 @@ public:
 	void dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
 				num_tier_t num_ti) mc_external_code_ram;
 
+	EMU_DBG_CODE(void dbg_prt_snp_id(callee_prms& pms) mc_external_code_ram);
+
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
@@ -545,7 +552,7 @@ public:
 
 class mc_aligned neuron : public nervenode {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(neuron, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(neuron, mc_external_code_ram)
 
 	//EMU_CODE(int pru_attr);
 	
@@ -578,7 +585,7 @@ public:
 
 class mc_aligned polaron : public nervenode {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(polaron, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(polaron, mc_external_code_ram)
 	
 	polaron*		opp;
 
@@ -772,7 +779,7 @@ public:
 
 class mc_aligned nervenet : public cell  {
 public:
-	MCK_DECLARE_MEM_METHODS(nervenet, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS(nervenet, mc_external_code_ram)
 
 	long MAGIC;
 

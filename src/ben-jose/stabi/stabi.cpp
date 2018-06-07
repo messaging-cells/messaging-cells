@@ -401,10 +401,10 @@ synset::stabi_get_subset_of(synapse* add_snp, signal_data* dat){
 			sset = ss;
 			break;
 		}
-		if(vc == -1){
+		if(vc < 0){
 			break;
 		}
-		if(vc == 1){
+		if(vc > 0){
 			lft = (binder*)ss;
 			continue;
 		}
@@ -450,6 +450,12 @@ synset::stabi_rank_all_snp(signal_data* dat, nervenode* dbg_nd){
 		fst = (binder*)(all_grp.bn_right);
 		fst->let_go();
 		EMU_CK(all_grp.is_alone());
+
+		EMU_CODE(synset* sub_grp = (synset*)fst);
+		EMU_CK(sub_grp->num_ss_recv == 0);
+		EMU_CK(sub_grp->num_ss_ping == 0);
+		EMU_CK(sub_grp->tot_syn == tot_syn);
+		EMU_CK(sub_grp->all_grp.is_alone());
 
 		bind_to_my_right(*fst);
 		release();
@@ -667,3 +673,28 @@ void bj_stabi_main() {
 
 }
 
+void
+synset::stabi_insert_sort(){
+	binder * fst, * lst, * wrk;
+	grip sorted;
+	while(! all_grp.is_alone()){
+		synset* add_ss = (synset*)(all_grp.bn_right);
+		add_ss->let_go();
+
+		binder* left = &sorted;
+
+		binder* grps = &(sorted);
+		fst = (binder*)(grps->bn_right);
+		lst = (binder*)mck_as_loc_pt(grps);
+		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+			synset* sub_grp = (synset*)wrk;
+			int vc = bj_cmp_num_syn(add_ss->tot_syn, sub_grp->tot_syn);
+			if(vc <= 0){ 
+				break; 
+			} 
+			left = (binder*)sub_grp;
+		}
+		left->bind_to_my_right(*add_ss);
+	}
+	all_grp.move_all_to_my_right(sorted);
+}
