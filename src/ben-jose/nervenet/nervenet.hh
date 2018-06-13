@@ -268,7 +268,7 @@ public:
 
 	void transmitter_send_all_rec(bj_callee_t mth, net_side_t sd);
 
-	void reset_vessels(bool set_vessel) bj_stabi_cod;
+	void reset_vessels(bool set_vessel);
 	void reset_rec_tree();
 
 	void stabi_insert_sort() bj_stabi_cod;
@@ -466,6 +466,13 @@ public:
 void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
 int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_t* arr2) bj_stabi_cod;
 int bj_cmp_synapses(synapse* snp1, synapse* snp2, signal_data* dat) bj_stabi_cod;
+
+typedef int (*bj_cmp_func_t)(binder* obj1, binder* obj2);
+
+bool bj_is_sorted(grip& grp, bj_cmp_func_t fn, int ord) mc_external_code_ram;
+
+int bj_dbg_cmp_synset_by_arr_id(binder* obj1, binder* obj2) mc_external_code_ram;
+int bj_dbg_cmp_synset_by_tot_syn(binder* obj1, binder* obj2) mc_external_code_ram;
 
 char* bj_dbg_stabi_id_arr_to_str(num_syn_t sz1, num_syn_t* arr1, int sz_str, char* str) mc_external_code_ram;
 

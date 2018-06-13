@@ -225,23 +225,6 @@ void bj_mirrow_main() {
 }
 
 void
-synset::reset_vessels(bool set_vessel){
-	EMU_CK(all_grp.is_alone());
-
-	binder* nn_all_snp = &all_syn;
-	binder * fst, * lst, * wrk;
-
-	fst = (binder*)(nn_all_snp->bn_right);
-	lst = (binder*)mck_as_loc_pt(nn_all_snp);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		synapse* my_snp = get_synapse_from_binder(side_left, wrk);
-		synset* val = mc_null;
-		if(set_vessel){ val = this; }
-		my_snp->stabi_vessel = val;
-	}
-}
-
-void
 netstate::init_stabi_tiers(nervenet& my_net){
 	tierdata* ti_dat = tierdata::acquire();
 	tierdata& lti_prop = get_last_tier(all_propag_tiers);

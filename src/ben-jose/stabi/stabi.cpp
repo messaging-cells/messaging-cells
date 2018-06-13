@@ -460,6 +460,8 @@ synset::stabi_rank_all_snp(signal_data* dat, nervenode* dbg_nd){
 		bind_to_my_right(*fst);
 		release();
 	}
+
+	stabi_insert_sort();
 }
 
 void
