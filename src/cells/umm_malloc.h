@@ -179,7 +179,7 @@ UMM_H_ATTPACKPRE typedef struct umm_ptr_t {
 } UMM_H_ATTPACKSUF umm_ptr;
 
 
-UMM_H_ATTPACKPRE typedef struct umm_block_t {
+UMM_H_ATTPACKPRE typedef struct umm_blk {
 	union {
 		umm_ptr used;
 	} header;
@@ -191,7 +191,7 @@ UMM_H_ATTPACKPRE typedef struct umm_block_t {
 
 #define UMM_HEAP_NUM_BLOCKS (UMM_MALLOC_CFG__HEAP_SIZE / sizeof(umm_block))
 
-extern umm_idx_t umm_numblocks;
+//extern umm_idx_t umm_numblocks;
 
 #ifdef MC_IS_EMU_CODE
 	umm_block*

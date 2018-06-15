@@ -1,27 +1,58 @@
-/*
-  File: e-loader.c
 
-  This file is part of the Epiphany Software Development Kit.
 
-  Copyright (C) 2013 Adapteva, Inc.
-  See AUTHORS for list of contributors.
-  Support e-mail: <support@adapteva.com>
+/*************************************************************
 
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License (LGPL)
-  as published by the Free Software Foundation, either version 3 of the
-  License, or (at your option) any later version.
+This file is part of messaging-cells.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+messaging-cells is free software: you can redistribute it and/or modify
+it under the terms of the version 3 of the GNU General Public 
+License as published by the Free Software Foundation.
 
-  You should have received a copy of the GNU General Public License
-  and the GNU Lesser General Public License along with this program,
-  see the files COPYING and COPYING.LESSER.  If not, see
-  <http://www.gnu.org/licenses/>.
-*/
+messaging-cells is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with messaging-cells.  If not, see <http://www.gnu.org/licenses/>.
+
+------------------------------------------------------------
+
+Copyright (C) 2017-2018. QUIROGA BELTRAN, Jose Luis.
+Id (cedula): 79523732 de Bogota - Colombia.
+See https://messaging-cells.github.io/
+
+messaging-cells is free software thanks to The Glory of Our Lord 
+	Yashua Melej Hamashiaj.
+Our Resurrected and Living, both in Body and Spirit, 
+	Prince of Peace.
+
+------------------------------------------------------------
+
+File: core_loader_znq.c  
+Based on: e-loader.c
+
+This file is part of the Epiphany Software Development Kit.
+
+Copyright (C) 2013 Adapteva, Inc.
+See AUTHORS for list of contributors.
+Support e-mail: <support@adapteva.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License (LGPL)
+as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+and the GNU Lesser General Public License along with this program,
+see the files COPYING and COPYING.LESSER.  If not, see
+<http://www.gnu.org/licenses/>.
+-------------------------------------------------------------*/
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,26 +1,56 @@
-/*
-  Default header file for malloc-2.8.x, written by Doug Lea
-  and released to the public domain, as explained at
-  http://creativecommons.org/licenses/publicdomain. 
- 
-  last update: Mon Aug 15 08:55:52 2005  Doug Lea  (dl at gee)
 
-  This header is for ANSI C/C++ only.  You can set any of
-  the following #defines before including:
 
-  * If USE_DL_PREFIX is defined, it is assumed that malloc.c 
-    was also compiled with this option, so all routines
-    have names starting with "dl".
+/*************************************************************
 
-  * If HAVE_USR_INCLUDE_MALLOC_H is defined, it is assumed that this
-    file will be #included AFTER <malloc.h>. This is needed only if
-    your system defines a struct mallinfo that is incompatible with the
-    standard one declared here.  Otherwise, you can include this file
-    INSTEAD of your system system <malloc.h>.  At least on ANSI, all
-    declarations should be compatible with system versions
+This file is part of messaging-cells.
 
-  * If MSPACES is defined, declarations for mspace versions are included.
-*/
+messaging-cells is free software: you can redistribute it and/or modify
+it under the terms of the version 3 of the GNU General Public 
+License as published by the Free Software Foundation.
+
+messaging-cells is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with messaging-cells.  If not, see <http://www.gnu.org/licenses/>.
+
+------------------------------------------------------------
+
+Copyright (C) 2017-2018. QUIROGA BELTRAN, Jose Luis.
+Id (cedula): 79523732 de Bogota - Colombia.
+See https://messaging-cells.github.io/
+
+messaging-cells is free software thanks to The Glory of Our Lord 
+	Yashua Melej Hamashiaj.
+Our Resurrected and Living, both in Body and Spirit, 
+	Prince of Peace.
+
+------------------------------------------------------------
+
+Default header file for malloc-2.8.x, written by Doug Lea
+and released to the public domain, as explained at
+http://creativecommons.org/licenses/publicdomain. 
+
+last update: Mon Aug 15 08:55:52 2005  Doug Lea  (dl at gee)
+
+This header is for ANSI C/C++ only.  You can set any of
+the following #defines before including:
+
+* If USE_DL_PREFIX is defined, it is assumed that malloc.c 
+was also compiled with this option, so all routines
+have names starting with "dl".
+
+* If HAVE_USR_INCLUDE_MALLOC_H is defined, it is assumed that this
+file will be #included AFTER <malloc.h>. This is needed only if
+your system defines a struct mallinfo that is incompatible with the
+standard one declared here.  Otherwise, you can include this file
+INSTEAD of your system system <malloc.h>.  At least on ANSI, all
+declarations should be compatible with system versions
+
+* If MSPACES is defined, declarations for mspace versions are included.
+--------------------------------------------------------------*/
 
 #ifndef DLMALLOC_280_H
 #define DLMALLOC_280_H
