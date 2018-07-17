@@ -20,7 +20,7 @@ SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${MC_DBG_FLAG}
 
 SRC_INCDIRS := ${BJ_HOST_INCLUDES}
 
-SUBMAKEFILES := ./lib-dimacs-znq.mk ./cnf_preload_znq.mk 
+SUBMAKEFILES := ./lib-dimacs-znq.mk ./cnf_preload_znq.mk ./sornet_preload_znq.mk 
 
 SOURCES := \
 	bj_host_code.cpp \

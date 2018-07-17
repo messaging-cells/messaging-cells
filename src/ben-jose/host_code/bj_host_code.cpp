@@ -4,7 +4,7 @@
 #include "cell.hh"
 #include "dimacs.h"
 #include "load_cnf.hh"
-#include "preload_cnf.hh"
+#include "preload.hh"
 #include "file_funcs.h"
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
@@ -74,8 +74,9 @@ int bj_host_main(int argc, char *argv[])
 	printf("THE_CNF=%p \n", core_cnf_pt);
 	printf("magic = %ld \n", THE_CNF->MAGIC);
 
+	//host_print_nods();
+
 	//print_cnf();
-	//print_nods();
 	//print_core_cnfs();
 
 	missive_handler_t the_handlers[] = { mc_null };
@@ -91,6 +92,7 @@ int bj_host_main(int argc, char *argv[])
 
 void bj_test_1(int argc, char *argv[])
 {
+	printf("TEST_1 \n");
 	binder b1;
 	binder b2;
 	synapse s1;
@@ -119,6 +121,7 @@ typedef uint16_t test_int_t;
 
 void bj_test_2(int argc, char *argv[])
 {
+	printf("TEST_2 \n");
 	unsigned long imax = mc_maxof(test_int_t);
 
 	printf("imax = %lu\n", imax);
@@ -142,6 +145,7 @@ neuron::pru_callee(callee_prms& pms){
 
 void bj_test_3(int argc, char *argv[])
 {
+	printf("TEST_3 \n");
 	neuron nn1;
 	synapse snp1;
 
@@ -155,6 +159,7 @@ void bj_test_3(int argc, char *argv[])
 
 void bj_test_4(int argc, char *argv[])
 {
+	printf("TEST_4 \n");
 	long aa = 1234;
 	long bb = (aa >> 3);
 
@@ -163,12 +168,40 @@ void bj_test_4(int argc, char *argv[])
 
 void bj_test_5(int argc, char *argv[])
 {
+	printf("TEST_5 \n");
 	mc_flags_t ff = 0;
 
 	mc_set_flag(ff, mc_flag1);
 	printf("flags=%p ff_pt=%p \n", (void*)(uintptr_t)ff, (void*)(&ff));
 	mc_set_flag(ff, mc_flag3);
 	printf("flags=%p ff_pt=%p \n", (void*)(uintptr_t)ff, (void*)(&ff));
+}
+
+void bj_test_6(int argc, char *argv[])
+{
+	printf("TEST_6 \n");
+	if(argc < 2){
+		printf("%s <num>\n", argv[0]);
+		return; 
+	}
+	num_nod_t num_to_sort = atol(argv[1]);
+	num_to_sort = get_bigger_pow2(num_to_sort);
+	printf("pow2 = %ld \n", num_to_sort);
+}
+
+void bj_test_7(int argc, char *argv[])
+{
+	printf("TEST_7 \n");
+	if(argc < 2){
+		printf("%s <num>\n", argv[0]);
+		return; 
+	}
+	num_nod_t num_to_sort = atol(argv[1]);
+	num_to_sort = get_bigger_pow2(num_to_sort);
+
+	kernel::init_host_sys();
+	create_sornet(num_to_sort);
+	kernel::finish_host_sys();
 }
 
 
@@ -183,7 +216,9 @@ int mc_host_main(int argc, char *argv[])
 	//EMU_CODE(bj_test_3(argc, argv));
 	//EMU_CODE(bj_test_4(argc, argv));
 	//EMU_CODE(bj_test_5(argc, argv));
-	rr = bj_host_main(argc, argv);
+	//EMU_CODE(bj_test_6(argc, argv));
+	EMU_CODE(bj_test_7(argc, argv));
+	//rr = bj_host_main(argc, argv);
 
 	printf("HOST_CODE_FINISHED ==================================== \n");
 	return rr;

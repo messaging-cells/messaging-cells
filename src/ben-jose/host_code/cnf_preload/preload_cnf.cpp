@@ -3,13 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "preload_cnf.hh"
-
-grip ava_pre_cnf_node;
-grip ava_pre_cnf_net;
+#include "preload.hh"
 
 pre_load_cnf* THE_CNF = mc_null;
 
+grip ava_pre_sornode;
+grip ava_pre_cnf_node;
+grip ava_pre_cnf_net;
+
+MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_sornode, 32, ava_pre_sornode, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_cnf_node, 32, ava_pre_cnf_node, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_cnf_net, 32, ava_pre_cnf_net, 0)
 
@@ -63,10 +65,10 @@ print_cnf(){
 }
 
 void
-print_nods(){
+host_print_nods(){
 	printf("ALL_NODS {");
-	for(long aa = 0; aa < THE_CNF->tot_sort_nods; aa++){
-		pre_cnf_node* nod =  THE_CNF->all_sort_nods[aa];
+	for(long aa = 0; aa < THE_CNF->tot_tmp_pre_load_nods; aa++){
+		pre_cnf_node* nod =  THE_CNF->all_tmp_pre_load_nods[aa];
 		printf("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->pre_sz);
 	}
 	printf("} \n");
@@ -141,8 +143,8 @@ preload_cnf(long sz, const long* arr){
 		return;
 	}
 
-	THE_CNF->tot_sort_nods = num_ccls + num_vars;
-	long num_sort_nods = THE_CNF->tot_sort_nods;
+	THE_CNF->tot_tmp_pre_load_nods = num_ccls + num_vars;
+	long num_tmp_pre_load_nods = THE_CNF->tot_tmp_pre_load_nods;
 
 	agent_ref::separate(2 * num_lits);
 	pre_cnf_node::separate(num_ccls + (2 * num_vars));
@@ -153,7 +155,8 @@ preload_cnf(long sz, const long* arr){
 	THE_CNF->all_ccl = mc_malloc32(pre_cnf_node*, num_ccls);
 	THE_CNF->all_pos = mc_malloc32(pre_cnf_node*, num_vars);
 	THE_CNF->all_neg = mc_malloc32(pre_cnf_node*, num_vars);
-	THE_CNF->all_sort_nods = mc_malloc32(pre_cnf_node*, num_sort_nods);
+	//THE_CNF->all_tmp_pre_load_nods = mc_malloc32(pre_cnf_node*, num_tmp_pre_load_nods);
+	THE_CNF->all_tmp_pre_load_nods = (pre_cnf_node**) malloc(num_tmp_pre_load_nods * sizeof(pre_cnf_node*));
 
 	THE_CNF->all_cnf = mc_malloc32(pre_cnf_net, num_cores);
 	for(int bb = 0; bb < num_cores; bb++){ 
@@ -164,8 +167,8 @@ preload_cnf(long sz, const long* arr){
 	init_node_arr(num_vars, THE_CNF->all_pos, nd_pos);
 	init_node_arr(num_vars, THE_CNF->all_neg, nd_neg);
 
-	memcpy(THE_CNF->all_sort_nods, THE_CNF->all_ccl, num_ccls * sizeof(pre_cnf_node*));
-	memcpy(THE_CNF->all_sort_nods + num_ccls, THE_CNF->all_pos, num_vars * sizeof(pre_cnf_node*));
+	memcpy(THE_CNF->all_tmp_pre_load_nods, THE_CNF->all_ccl, num_ccls * sizeof(pre_cnf_node*));
+	memcpy(THE_CNF->all_tmp_pre_load_nods + num_ccls, THE_CNF->all_pos, num_vars * sizeof(pre_cnf_node*));
 
 	long nn = 0;
 
@@ -208,12 +211,12 @@ preload_cnf(long sz, const long* arr){
 		}
 	}
 
-	qsort(THE_CNF->all_sort_nods, num_sort_nods, sizeof(pre_cnf_node*), cmp_nodes);
+	qsort(THE_CNF->all_tmp_pre_load_nods, num_tmp_pre_load_nods, sizeof(pre_cnf_node*), cmp_nodes);
 
 	long kk = 0;
-	for(long aa = 0; aa < num_sort_nods; aa++){
+	for(long aa = 0; aa < num_tmp_pre_load_nods; aa++){
 		if(kk == num_cores){ kk = 0; }
-		pre_cnf_node* nod = THE_CNF->all_sort_nods[aa];
+		pre_cnf_node* nod = THE_CNF->all_tmp_pre_load_nods[aa];
 		pre_cnf_net& cnf = THE_CNF->all_cnf[kk];
 		EMU_CK(nod->is_alone());
 		cnf.tot_pre_rels += nod->pre_sz;
@@ -245,6 +248,9 @@ preload_cnf(long sz, const long* arr){
 		}
 		kk++;
 	}
+
+	num_nod_t num_to_sort = mc_max((num_vars * 2), num_ccls);
+	create_sornet(num_to_sort);
 }
 
 

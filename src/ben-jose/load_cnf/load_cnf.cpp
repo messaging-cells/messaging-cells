@@ -2,7 +2,7 @@
 #include "cell.hh"
 
 #include "load_cnf.hh"
-#include "preload_cnf.hh"
+#include "preload.hh"
 
 void 
 nervenode::init_nervenode_with(pre_cnf_node* nod) { 

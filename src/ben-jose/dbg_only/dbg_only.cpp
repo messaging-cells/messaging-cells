@@ -2,7 +2,7 @@
 #include "cell.hh"
 
 #include "dbg_only.hh"
-#include "preload_cnf.hh"
+#include "preload.hh"
 
 void 
 nervenet_dbg_only_handler(missive* msv){
