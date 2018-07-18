@@ -171,12 +171,19 @@ public:
 
 	num_nod_t tot_pre_sornods;
 	grip	all_pre_sornods;
+
+	num_nod_t tmp_nod_idx;
+
+	/*
+	num_nod_t tot_pre_sorinput_nod;
+	pre_sornode**	all_pre_sorinput_nod;
 	
 	num_nod_t tot_pre_sorinput_pol;
 	pre_sornode**	all_pre_sorinput_pol;
 
 	num_nod_t tot_pre_sorinput_neu;
 	pre_sornode**	all_pre_sorinput_neu;	
+	*/
 	
 	pre_cnf_net(){
 		tot_pre_neus = 0;
@@ -186,10 +193,17 @@ public:
 
 		// sornet info
 		tot_pre_sornods = 0;
+
+		tmp_nod_idx = 0;
+
+		/*
+		tot_pre_sorinput_nod = 0;
+		all_pre_sorinput_nod = mc_null;
 		tot_pre_sorinput_pol = 0;
 		all_pre_sorinput_pol = mc_null;
 		tot_pre_sorinput_neu = 0;
 		all_pre_sorinput_neu = mc_null;
+		*/
 	}
 
 	~pre_cnf_net(){}
@@ -218,6 +232,9 @@ public:
 	num_nod_t tot_tmp_pre_load_nods;
 	pre_cnf_node**	all_tmp_pre_load_nods;
 
+	num_nod_t tot_pre_sorinput_nod;
+	pre_sornode**	all_pre_sorinput_nod;
+
 	long tot_cores;
 	pre_cnf_net*		all_cnf;	//!< Array of \ref pre_cnf_net s to load in each core.
 
@@ -236,6 +253,9 @@ public:
 
 		tot_tmp_pre_load_nods = 0;
 		all_tmp_pre_load_nods = mc_null;
+
+		tot_pre_sorinput_nod = 0;
+		all_pre_sorinput_nod = mc_null;
 
 		tot_cores = 0;
 		all_cnf = mc_null;

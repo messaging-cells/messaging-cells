@@ -14,6 +14,7 @@ SOURCES := \
 	../host_code/cnf_preload/preload_sornet.cpp \
 	../nervenet/nervenet.cpp \
 	../load_cnf/load_cnf.cpp \
+	../load_cnf/load_sornet.cpp \
 	../propag/propag.cpp \
 	../stabi/mirrow.cpp \
 	../stabi/stabi.cpp \

@@ -249,8 +249,8 @@ preload_cnf(long sz, const long* arr){
 		kk++;
 	}
 
-	num_nod_t num_to_sort = mc_max((num_vars * 2), num_ccls);
-	create_sornet(num_to_sort);
+	//num_nod_t num_to_sort = mc_max((num_vars * 2), num_ccls);
+	create_sornet(7);
 }
 
 

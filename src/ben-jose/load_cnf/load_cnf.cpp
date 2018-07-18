@@ -383,6 +383,7 @@ void bj_load_main() {
 	bj_load_init_handlers();
 
 	bj_load_shd_cnf();
+	//bj_load_shd_sornet();
 
 	//MC_DBG(if(kernel::get_core_nn() == 0){ bj_test_func_1(); });
 

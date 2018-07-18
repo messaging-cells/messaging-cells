@@ -12,8 +12,9 @@ MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sync_transmitter, 32, bj_ava_sync_transmitter
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synset, 32, bj_ava_synsets, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierset, 32, bj_ava_tiersets, bj_num_sep_tiersets)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synapse, 32, bj_ava_synapses, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(polaron, 32, bj_ava_polarons, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(neuron, 32, bj_ava_neurons, 0)
+MCK_DEFINE_MEM_METHODS_AND_GET_AVA(polaron, 32, bj_ava_polarons, 0)
+MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sorcell, 32, bj_ava_sorcells, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
 
 BJ_DEFINE_GET_CLS_NAM(synset)
@@ -25,6 +26,7 @@ BJ_DEFINE_GET_CLS_NAM(synapse)
 BJ_DEFINE_GET_CLS_NAM(nervenode)
 BJ_DEFINE_GET_CLS_NAM(neuron)
 BJ_DEFINE_GET_CLS_NAM(polaron)
+BJ_DEFINE_GET_CLS_NAM(sorcell)
 BJ_DEFINE_GET_CLS_NAM(tierdata)
 BJ_DEFINE_GET_CLS_NAM(nervenet)
 
@@ -137,6 +139,7 @@ neurostate__80__
 nervenode__192__
 neuron__192__
 polaron__200__
+sorcell__???
 tierdata__48__
 netstate__48__
 dbg_stats__24__
@@ -180,6 +183,10 @@ nervenet::nervenet(){
 	act_left_side.my_side = side_left;
 	act_right_side.my_side = side_right;
 
+	tot_sorcells = 0;
+
+	tot_input_sorcells = 0;
+	all_input_sorcells = mc_null;
 }
 
 nervenet::~nervenet(){} 
@@ -358,6 +365,20 @@ nervenode::init_me(int caller){
 	//right_side.side_kind = side_right;
 }
 
+neuron::neuron(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_neuron ++);
+	mck_slog2("alloc__neuron\n");
+	init_me();
+} 
+
+neuron::~neuron(){} 
+
+void
+neuron::init_me(int caller){
+	handler_idx = idx_neuron;
+}
+
 polaron::polaron(){ 
 	EMU_CK(bj_nervenet != mc_null);
 	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_polaron ++);
@@ -373,18 +394,26 @@ polaron::init_me(int caller){
 	opp = mc_null; 
 }
 
-neuron::neuron(){
+sorcell::sorcell(){ 
 	EMU_CK(bj_nervenet != mc_null);
-	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_neuron ++);
-	mck_slog2("alloc__neuron\n");
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_sorcell ++);
+	mck_slog2("alloc__sorcell\n");
 	init_me();
 } 
 
-neuron::~neuron(){} 
+sorcell::~sorcell(){} 
 
 void
-neuron::init_me(int caller){
-	handler_idx = idx_neuron;
+sorcell::init_me(int caller){
+	handler_idx = idx_sorcell;
+
+	up_idx = 0;
+	up_inp = mc_null;
+	up_out = mc_null;
+
+	down_idx = 0;
+	down_inp = mc_null;
+	down_out = mc_null;
 }
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
@@ -1011,6 +1040,7 @@ dbg_stats::init_me(int caller){
 	dbg_tot_new_nervenode = 0;
 	dbg_tot_new_neuron = 0;
 	dbg_tot_new_polaron = 0;
+	dbg_tot_new_sorcell = 0;
 	dbg_tot_new_tierdata = 0;
 }
 
@@ -1026,6 +1056,7 @@ dbg_stats::dbg_prt_all(){
 	EMU_LOG("dbg_tot_new_nervenode = %d \n", dbg_tot_new_nervenode);
 	EMU_LOG("dbg_tot_new_neuron = %d \n", dbg_tot_new_neuron);
 	EMU_LOG("dbg_tot_new_polaron = %d \n", dbg_tot_new_polaron);
+	EMU_LOG("dbg_tot_new_sorcell = %d \n", dbg_tot_new_sorcell);
 	EMU_LOG("dbg_tot_new_tierdata = %d \n", dbg_tot_new_tierdata);
 }
 
@@ -1070,6 +1101,9 @@ void bj_print_class_szs(){
 		mck_slog2("__\n");
 		mck_slog2("polaron__");
 		mck_ilog(sizeof(polaron));
+		mck_slog2("__\n");
+		mck_slog2("sorcell__");
+		mck_ilog(sizeof(sorcell));
 		mck_slog2("__\n");
 		mck_slog2("tierdata__");
 		mck_ilog(sizeof(tierdata));

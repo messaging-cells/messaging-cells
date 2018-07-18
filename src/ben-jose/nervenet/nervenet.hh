@@ -61,8 +61,9 @@ class sync_transmitter;
 class synapse;
 class nervenode;
 class neurostate;
-class polaron;
 class neuron;
+class polaron;
+class sorcell;
 class netstate;
 class nervenet;
 
@@ -133,8 +134,9 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_synset,
 	idx_tierset,
 	idx_synapse,
-	idx_polaron,
 	idx_neuron,
+	idx_polaron,
+	idx_sorcell,
 	idx_tierdata,
 	idx_nervenet,
 	idx_total
@@ -228,6 +230,7 @@ BJ_DECLARE_CLS_NAM(synapse)
 BJ_DECLARE_CLS_NAM(nervenode)
 BJ_DECLARE_CLS_NAM(neuron)
 BJ_DECLARE_CLS_NAM(polaron)
+BJ_DECLARE_CLS_NAM(sorcell)
 BJ_DECLARE_CLS_NAM(tierdata)
 BJ_DECLARE_CLS_NAM(nervenet)
 
@@ -628,6 +631,28 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+class mc_aligned sorcell : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorcell, mc_external_code_ram)
+
+	num_nod_t 	up_idx;
+	void*		up_inp;
+	sorcell*	up_out;
+
+	num_nod_t 	down_idx;
+	void*		down_inp;
+	sorcell*	down_out;
+
+	sorcell() mc_external_code_ram;
+	~sorcell() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
 #define	bj_sent_inert_flag mc_flag0
 
 class mc_aligned tierdata : public agent {
@@ -769,6 +794,7 @@ public:
 	mc_alloc_size_t dbg_tot_new_nervenode;
 	mc_alloc_size_t dbg_tot_new_neuron;
 	mc_alloc_size_t dbg_tot_new_polaron;
+	mc_alloc_size_t dbg_tot_new_sorcell;
 	mc_alloc_size_t dbg_tot_new_tierdata;
 
 	dbg_stats() mc_external_code_ram;
@@ -806,8 +832,9 @@ public:
 	grip		ava_synsets;
 	grip		ava_tiersets;
 	grip		ava_synapses;
-	grip		ava_polarons;
 	grip		ava_neurons;
+	grip		ava_polarons;
+	grip		ava_sorcells;
 	grip		ava_tierdatas;
 
 	missive_handler_t all_handlers[idx_total];
@@ -833,6 +860,12 @@ public:
 		char 	dbg_str1[BJ_DBG_STR_CAP];
 		char 	dbg_str2[BJ_DBG_STR_CAP];
 	);
+
+	num_nod_t tot_sorcells;
+	grip	all_sorcells;
+
+	num_nod_t tot_input_sorcells;
+	sorcell**	all_input_sorcells;
 
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
@@ -878,8 +911,9 @@ public:
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
 #define bj_ava_tiersets (bj_nervenet->ava_tiersets)
 #define bj_ava_synapses (bj_nervenet->ava_synapses)
-#define bj_ava_polarons (bj_nervenet->ava_polarons)
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
+#define bj_ava_polarons (bj_nervenet->ava_polarons)
+#define bj_ava_sorcells (bj_nervenet->ava_sorcells)
 #define bj_ava_tierdatas (bj_nervenet->ava_tierdatas)
 
 #define bj_handlers (bj_nervenet->all_handlers)

@@ -29,29 +29,23 @@ Our Resurrected and Living, both in Body and Spirit,
 
 ------------------------------------------------------------
 
-load_cnf.hh
+sornet.hh
 
-Declaration of functions to load cnfs in the core.
+Declaration of functions to use the sornet.
 
 --------------------------------------------------------------*/
 
-#ifndef LOAD_CNF_H
-#define LOAD_CNF_H
+#ifndef SORNET_H
+#define SORNET_H
 
 #include "nervenet.hh"
 
-void nervenet_load_handler(missive* msv) bj_load_cod;
-void polaron_load_handler(missive* msv) bj_load_cod;
-void synapse_load_handler(missive* msv) bj_load_cod;
+void nervenet_sornet_handler(missive* msv) bj_sornet_cod;
 
-void print_childs() bj_load_cod;
+void bj_sornet_kernel_func() bj_sornet_cod;
+void bj_sornet_init_handlers() mc_external_code_ram;
+void bj_sornet_main() bj_sornet_cod;
 
-void bj_load_main() bj_load_cod;
-void bj_load_init_handlers() bj_load_cod;
-void bj_load_shd_cnf() bj_load_cod;
-void bj_load_shd_sornet() bj_load_cod;
-
-
-#endif		// LOAD_CNF_H
+#endif		// SORNET_H
 
 

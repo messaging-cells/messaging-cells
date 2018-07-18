@@ -217,8 +217,8 @@ int mc_host_main(int argc, char *argv[])
 	//EMU_CODE(bj_test_4(argc, argv));
 	//EMU_CODE(bj_test_5(argc, argv));
 	//EMU_CODE(bj_test_6(argc, argv));
-	EMU_CODE(bj_test_7(argc, argv));
-	//rr = bj_host_main(argc, argv);
+	//EMU_CODE(bj_test_7(argc, argv));
+	rr = bj_host_main(argc, argv);
 
 	printf("HOST_CODE_FINISHED ==================================== \n");
 	return rr;
