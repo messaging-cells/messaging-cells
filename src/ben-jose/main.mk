@@ -83,6 +83,7 @@ SUBMAKEFILES := \
 	./dbg_only/dbg_only.mk \
 	./nervenet/nervenet.mk \
 	./load_cnf/load_cnf.mk \
+	./sornet/sornet.mk \
 	./propag/propag.mk \
 	./stabi/stabi.mk \
 	./solver_main/solver.mk \

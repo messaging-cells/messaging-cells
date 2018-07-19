@@ -7,6 +7,7 @@ missive_handler_t bj_nil_handlers[1] = { mc_null };
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(transmitter, 32, bj_ava_transmitters, 0)
+MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, 32, bj_ava_sornet_transmitters, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(stabi_transmitter, 32, bj_ava_stabi_transmitters, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sync_transmitter, 32, bj_ava_sync_transmitters, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synset, 32, bj_ava_synsets, 0)
@@ -20,6 +21,7 @@ MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierdata, 32, bj_ava_tierdatas, bj_num_sep_ti
 BJ_DEFINE_GET_CLS_NAM(synset)
 BJ_DEFINE_GET_CLS_NAM(tierset)
 BJ_DEFINE_GET_CLS_NAM(transmitter)
+BJ_DEFINE_GET_CLS_NAM(sornet_transmitter)
 BJ_DEFINE_GET_CLS_NAM(stabi_transmitter)
 BJ_DEFINE_GET_CLS_NAM(sync_transmitter)
 BJ_DEFINE_GET_CLS_NAM(synapse)
@@ -132,6 +134,7 @@ PLLA class_sizes:
 synset__40__
 tierset__32__
 transmitter__32__
+sornet_transmitter ????
 stabi_transmitter ????
 sync_transmitter__40__
 synapse__48__
@@ -185,8 +188,15 @@ nervenet::nervenet(){
 
 	tot_sorcells = 0;
 
+	dbg_sornet_curr_cntr = 0;
+
+	net_top = binval_top;
+	net_bottom = binval_bottom;
+
 	tot_input_sorcells = 0;
 	all_input_sorcells = mc_null;
+	tot_rcv_output_sorcells = 0;
+	all_output_sorcells = mc_null;
 }
 
 nervenet::~nervenet(){} 
@@ -206,6 +216,24 @@ transmitter::init_me(int caller){
 	wrk_side = side_invalid;
 	wrk_tier = BJ_INVALID_NUM_TIER;
 	//EMU_LOG_STACK((kernel::get_core_nn() == 15), "INIT_TRANSMITTER (%p) \n", (void*)this); 
+}
+
+//--------------
+
+sornet_transmitter::sornet_transmitter(){
+	EMU_CK(bj_nervenet != mc_null);
+	EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_sornet_transmitter ++);
+	mck_slog2("alloc__sornet_transmitter\n");
+	//init_me();
+} 
+
+sornet_transmitter::~sornet_transmitter(){} 
+
+void
+sornet_transmitter::init_me(int caller){
+	transmitter::init_me(caller);
+	idx = 0;
+	obj = mc_null;
 }
 
 //--------------
@@ -406,6 +434,8 @@ sorcell::~sorcell(){}
 void
 sorcell::init_me(int caller){
 	handler_idx = idx_sorcell;
+
+	color = 0;
 
 	up_idx = 0;
 	up_inp = mc_null;
@@ -925,7 +955,7 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 		mck_slog2("}");
 	}
 
-	if((ki == nd_neu) && ne_stt.neu_all_ping(tiki)){
+	if((tiki != tiki_invalid) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){
 		mck_slog2("*");
 	}
 

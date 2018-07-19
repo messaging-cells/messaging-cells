@@ -13,6 +13,7 @@ SOURCES := \
 	../host_code/cnf_preload/preload_cnf.cpp \
 	../host_code/cnf_preload/preload_sornet.cpp \
 	../nervenet/nervenet.cpp \
+	../sornet/sornet.cpp \
 	../load_cnf/load_cnf.cpp \
 	../load_cnf/load_sornet.cpp \
 	../propag/propag.cpp \

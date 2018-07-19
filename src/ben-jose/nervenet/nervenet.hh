@@ -56,6 +56,7 @@ class pre_cnf_node;
 class pre_cnf_net;
 
 class transmitter;
+class sornet_transmitter;
 class stabi_transmitter;
 class sync_transmitter;
 class synapse;
@@ -72,6 +73,12 @@ class nervenet;
 
 //define SYNC_CODE(...) EMU_CODE(__VA_ARGS__)
 #define SYNC_CODE(...) 
+
+enum binval_t : uint8_t {
+	binval_invalid,
+	binval_top,
+	binval_bottom
+};
 
 enum net_side_t : uint8_t {
 	side_invalid,
@@ -127,6 +134,14 @@ enum stabi_tok_t : mck_token_t {
 	bj_tok_stabi_rank,
 	bj_tok_stabi_tier_done,
 	bj_tok_stabi_end
+};
+
+enum sornet_tok_t : mck_token_t {
+	bj_tok_sornet_invalid = bj_tok_stabi_end + 1,
+	bj_tok_sornet_start,
+	bj_tok_sornet_out,
+	bj_tok_sornet_bin,
+	bj_tok_sornet_end
 };
 
 enum bj_hdlr_idx_t : uint8_t {
@@ -224,6 +239,7 @@ public:
 BJ_DECLARE_CLS_NAM(synset)
 BJ_DECLARE_CLS_NAM(tierset)
 BJ_DECLARE_CLS_NAM(transmitter)
+BJ_DECLARE_CLS_NAM(sornet_transmitter)
 BJ_DECLARE_CLS_NAM(stabi_transmitter)
 BJ_DECLARE_CLS_NAM(sync_transmitter)
 BJ_DECLARE_CLS_NAM(synapse)
@@ -322,6 +338,23 @@ public:
 		virtual mc_opt_sz_fn 
 		void	dbg_release(int dbg_caller) mc_external_code_ram;
 	);*/
+
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
+class mc_aligned sornet_transmitter : public transmitter {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_sornet_cod)
+
+	num_nod_t	idx;
+	void*		obj;
+
+	sornet_transmitter() mc_external_code_ram;
+	~sornet_transmitter() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) bj_sornet_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -635,6 +668,8 @@ class mc_aligned sorcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorcell, mc_external_code_ram)
 
+	num_nod_t 	color;
+
 	num_nod_t 	up_idx;
 	void*		up_inp;
 	sorcell*	up_out;
@@ -649,9 +684,15 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 
+	void sornet_handler(missive* msv) bj_sornet_cod;
+
+	void bin_handler(missive* msv) bj_sornet_cod;
+
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
+
+void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod_t idx) bj_sornet_cod;
 
 #define	bj_sent_inert_flag mc_flag0
 
@@ -787,6 +828,7 @@ public:
 	mc_alloc_size_t dbg_tot_new_synset;
 	mc_alloc_size_t dbg_tot_new_tierset;
 	mc_alloc_size_t dbg_tot_new_transmitter;
+	mc_alloc_size_t dbg_tot_new_sornet_transmitter;
 	mc_alloc_size_t dbg_tot_new_stabi_transmitter;
 	mc_alloc_size_t dbg_tot_new_sync_transmitter;
 	mc_alloc_size_t dbg_tot_new_synapse;
@@ -827,6 +869,7 @@ public:
 	mc_alloc_size_t	num_sep_tierdatas;
 
 	grip		ava_transmitters;
+	grip		ava_sornet_transmitters;
 	grip		ava_stabi_transmitters;
 	grip		ava_sync_transmitters;
 	grip		ava_synsets;
@@ -864,8 +907,15 @@ public:
 	num_nod_t tot_sorcells;
 	grip	all_sorcells;
 
-	num_nod_t tot_input_sorcells;
+	num_nod_t 	dbg_sornet_curr_cntr;
+
+	binval_t	net_top;
+	binval_t	net_bottom;
+
+	num_nod_t 	tot_input_sorcells;
 	sorcell**	all_input_sorcells;
+	num_nod_t 	tot_rcv_output_sorcells;
+	sorcell**	all_output_sorcells;
 
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
@@ -877,6 +927,7 @@ public:
 	void dbg_only_handler(missive* msv) bj_dbg_only_cod;
 	void load_handler(missive* msv) bj_load_cod;
 	void propag_handler(missive* msv) bj_propag_cod;
+	void sornet_handler(missive* msv) bj_sornet_cod;
 
 	void init_sync_cycle() mc_external_code_ram;
 	void propag_nervenet_start() bj_propag_cod;
@@ -893,6 +944,8 @@ public:
 
 	void send_all_neus(mck_token_t tok);
 
+	bool sornet_send_dbg_cntr();
+
 	nervenet* get_nervenet(mc_core_id_t core_id);
 
 	netstate& get_active_netstate(net_side_t sd);
@@ -906,6 +959,7 @@ public:
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_transmitters (bj_nervenet->ava_transmitters)
+#define bj_ava_sornet_transmitters (bj_nervenet->ava_sornet_transmitters)
 #define bj_ava_stabi_transmitters (bj_nervenet->ava_stabi_transmitters)
 #define bj_ava_sync_transmitters (bj_nervenet->ava_sync_transmitters)
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
