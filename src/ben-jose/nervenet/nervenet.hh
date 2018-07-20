@@ -75,9 +75,9 @@ class nervenet;
 #define SYNC_CODE(...) 
 
 enum binval_t : uint8_t {
-	binval_invalid,
-	binval_top,
-	binval_bottom
+	binval_invalid = 0,
+	binval_bottom = 11,
+	binval_top = 22
 };
 
 enum net_side_t : uint8_t {
@@ -166,12 +166,12 @@ public:
 };
 
 typedef void (nervenode::*bj_callee_t)(callee_prms& pms);
+typedef int (*bj_cmp_obj_func_t)(void* obj1, void* obj2);
 
 void emu_prt_tok_codes() mc_external_code_ram;
 
 char* net_side_to_str(net_side_t sd) mc_external_code_ram;
 char* node_kind_to_str(node_kind_t ki) mc_external_code_ram;
-
 
 mc_inline_fn bool is_sync_tok(mck_token_t tok){
 	return ((bj_tok_sync_invalid <= tok) && (tok <= bj_tok_sync_end));
@@ -685,8 +685,7 @@ public:
 	void init_me(int caller = 0) mc_external_code_ram;
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
-
-	void bin_handler(missive* msv) bj_sornet_cod;
+	bj_cmp_obj_func_t sornet_get_cmp_func(sornet_tok_t tmt_tok) bj_sornet_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -914,8 +913,8 @@ public:
 
 	num_nod_t 	tot_input_sorcells;
 	sorcell**	all_input_sorcells;
-	num_nod_t 	tot_rcv_output_sorcells;
-	sorcell**	all_output_sorcells;
+	num_nod_t 	tot_rcv_output_sorobjs;
+	void**		all_output_sorobjs;
 
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
@@ -944,7 +943,12 @@ public:
 
 	void send_all_neus(mck_token_t tok);
 
-	bool sornet_send_dbg_cntr();
+	bool sornet_check_order(bj_cmp_obj_func_t fn);
+
+	bool sornet_dbg_send_cntr() bj_sornet_cod;
+	void sornet_dbg_end_step() bj_sornet_cod;
+	void sornet_dbg_bin_handler(missive* msv) bj_sornet_cod;
+
 
 	nervenet* get_nervenet(mc_core_id_t core_id);
 

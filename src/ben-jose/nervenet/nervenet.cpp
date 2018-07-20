@@ -195,8 +195,8 @@ nervenet::nervenet(){
 
 	tot_input_sorcells = 0;
 	all_input_sorcells = mc_null;
-	tot_rcv_output_sorcells = 0;
-	all_output_sorcells = mc_null;
+	tot_rcv_output_sorobjs = 0;
+	all_output_sorobjs = mc_null;
 }
 
 nervenet::~nervenet(){} 

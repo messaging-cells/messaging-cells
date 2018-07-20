@@ -23,9 +23,6 @@ void bj_sornet_init_handlers(){
 }
 
 
-void bj_sornet_kernel_func(){
-}
-
 #define bj_pt_obj_as_bin(pt_oo) (*((binval_t*)(pt_oo)))
 
 int
@@ -37,11 +34,43 @@ bj_cmp_bin_objs(void* obj1, void* obj2){
 	return 0;
 }
 
+bj_cmp_obj_func_t
+sorcell::sornet_get_cmp_func(sornet_tok_t tmt_tok){
+	return &bj_cmp_bin_objs;
+}
+
 void
 sorcell::sornet_handler(missive* msv){
-	mck_token_t msv_tok = msv->tok;
-	if(msv_tok == bj_tok_sornet_bin){
-		bin_handler(msv);
+	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
+	sornet_tok_t tmt_tok = (sornet_tok_t)(sn_tmt->tok);
+	num_nod_t tmt_idx = sn_tmt->idx;
+	void* tmt_obj = sn_tmt->obj;
+
+	bj_cmp_obj_func_t fn = sornet_get_cmp_func(tmt_tok);
+
+	if(tmt_idx == up_idx){
+		EMU_CK(up_inp == mc_null);
+		up_inp = tmt_obj;
+	}
+	if(tmt_idx == down_idx){
+		EMU_CK(down_inp == mc_null);
+		down_inp = tmt_obj;
+	}
+
+	cell* src = this;
+	if((up_inp != mc_null) && (down_inp != mc_null)){
+		//int cv = bj_cmp_bin_objs(up_inp, down_inp);
+		int cv = (*fn)(up_inp, down_inp);
+		if(cv < 0){
+			bj_send_sornet_tmt(src, tmt_tok, up_inp, up_out, up_idx);
+			bj_send_sornet_tmt(src, tmt_tok, down_inp, down_out, down_idx);
+		} else {
+			bj_send_sornet_tmt(src, tmt_tok, up_inp, down_out, down_idx);
+			bj_send_sornet_tmt(src, tmt_tok, down_inp, up_out, up_idx);
+		}
+
+		up_inp = mc_null;
+		down_inp = mc_null;
 	}
 }
 
@@ -51,6 +80,8 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod
 	EMU_CK(obj != mc_null);
 
 	sornet_transmitter* trm = sornet_transmitter::acquire();
+	trm->wrk_side = side_left;
+
 	trm->src = src;
 	trm->dst = dst;
 	trm->tok = tok;
@@ -66,40 +97,8 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod
 	trm->send();
 }
 
-void
-sorcell::bin_handler(missive* msv){
-	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
-	sornet_tok_t tmt_tok = (sornet_tok_t)(sn_tmt->tok);
-	num_nod_t tmt_idx = sn_tmt->idx;
-	void* tmt_obj = sn_tmt->obj;
-
-	if(tmt_idx == up_idx){
-		EMU_CK(up_inp == mc_null);
-		up_inp = tmt_obj;
-	}
-	if(tmt_idx == down_idx){
-		EMU_CK(down_inp == mc_null);
-		down_inp = tmt_obj;
-	}
-
-	cell* src = this;
-	if((up_inp != mc_null) && (down_inp != mc_null)){
-		int cv = bj_cmp_bin_objs(up_inp, down_inp);
-		if(cv < 0){
-			bj_send_sornet_tmt(src, tmt_tok, up_inp, up_out, up_idx);
-			bj_send_sornet_tmt(src, tmt_tok, down_inp, down_out, down_idx);
-		} else {
-			bj_send_sornet_tmt(src, tmt_tok, up_inp, down_out, down_idx);
-			bj_send_sornet_tmt(src, tmt_tok, down_inp, up_out, up_idx);
-		}
-
-		up_inp = mc_null;
-		down_inp = mc_null;
-	}
-}
-
 bool
-nervenet::sornet_send_dbg_cntr(){
+nervenet::sornet_dbg_send_cntr(){
 	EMU_CK(kernel::get_core_nn() == 0);
 	EMU_CK(all_input_sorcells != mc_null);
 	
@@ -130,24 +129,6 @@ nervenet::sornet_send_dbg_cntr(){
 	}
 
 	return true;
-}
-
-void
-nervenet::sornet_handler(missive* msv){
-	mck_token_t msv_tok = msv->tok;  
-	if(msv_tok == bj_tok_sornet_start){
-		bool has_more = sornet_send_dbg_cntr();
-		if(! has_more){
-			EMU_CK(false);
-			// finish code
-		}
-	}
-	if(msv_tok == bj_tok_sornet_out){
-		tot_rcv_output_sorcells++;
-		if(tot_rcv_output_sorcells == tot_input_sorcells){
-			
-		}
-	}
 }
 
 void bj_sornet_main() {
@@ -185,5 +166,77 @@ void bj_sornet_main() {
 	mck_slog2("_________________________\n");
 	mck_sprt2("dbg2.sornet.end\n");
 
+}
+
+bool
+nervenet::sornet_check_order(bj_cmp_obj_func_t fn){
+	num_nod_t aa;
+	bool sor_ok = true;
+	for(aa = 1; aa < tot_input_sorcells; aa++){
+		void* o1 = all_output_sorobjs[aa - 1];
+		void* o2 = all_output_sorobjs[aa];
+		int cv = (*fn)(o1, o2);
+		if(cv > 0){
+			sor_ok = false;
+			break;
+		}
+	}
+	return sor_ok;
+}
+
+void
+nervenet::sornet_dbg_end_step(){
+	EMU_CK(kernel::get_core_nn() == 0);
+
+	sornet_check_order(&bj_cmp_bin_objs);
+
+	nervenet* my_net = bj_nervenet;
+	my_net->send(my_net, bj_tok_sornet_start);
+}
+
+void
+nervenet::sornet_dbg_bin_handler(missive* msv){
+	EMU_CK(kernel::get_core_nn() == 0);
+
+	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
+	sornet_tok_t tmt_tok = (sornet_tok_t)(sn_tmt->tok);
+	num_nod_t tmt_idx = sn_tmt->idx;
+	void* tmt_obj = sn_tmt->obj;
+
+	if(tmt_tok == bj_tok_sornet_start){
+		bool has_more = sornet_dbg_send_cntr();
+		if(! has_more){
+			act_left_side.send_sync_to_children(bj_tok_sync_to_children, 
+					BJ_INVALID_NUM_TIER, tiki_invalid, mc_null);
+		}
+	}
+	if(tmt_tok == bj_tok_sornet_out){
+		EMU_CK(tmt_idx < tot_input_sorcells);
+		EMU_CK(all_output_sorobjs[tmt_idx] == mc_null);
+		all_output_sorobjs[tmt_idx] = tmt_obj;
+
+		tot_rcv_output_sorobjs++;
+		if(tot_rcv_output_sorobjs == tot_input_sorcells){
+			sornet_dbg_end_step();
+		}
+	}
+}
+
+void bj_sornet_kernel_func(){
+	nervenet* my_net = bj_nervenet;
+	if(my_net->act_left_side.sync_is_ending){
+		kernel::stop_sys(bj_tok_sornet_end);
+	}
+}
+
+void
+nervenet::sornet_handler(missive* msv){
+	mck_token_t tmt_tok = msv->tok;
+	if(bj_tok_sync_to_children == tmt_tok){
+		act_left_side.send_sync_to_children(bj_tok_sync_to_children, BJ_INVALID_NUM_TIER, tiki_invalid, mc_null);
+		return;
+	}
+
+	sornet_dbg_bin_handler(msv);
 }
 

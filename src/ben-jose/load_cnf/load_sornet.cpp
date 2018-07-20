@@ -87,8 +87,9 @@ void bj_load_shd_sornet(){
 
 		my_net->tot_input_sorcells = tot_sclls;
 		my_net->all_input_sorcells = mc_malloc32(sorcell*, tot_sclls);
-		my_net->all_output_sorcells = mc_malloc32(sorcell*, tot_sclls);
-		mc_init_arr_vals(tot_sclls, my_net->all_output_sorcells, mc_null);
+
+		my_net->all_output_sorobjs = mc_malloc32(void*, tot_sclls);
+		mc_init_arr_vals(tot_sclls, my_net->all_output_sorobjs, mc_null);
 
 		sorcell** all_sorcell = my_net->all_input_sorcells;
 		
