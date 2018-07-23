@@ -292,6 +292,21 @@ mc_v32_of_p16(uint16_t* p16){
 #define mc_to_bytes(num_bits)	(mc_div8(num_bits) + (mc_mod8(num_bits) > 0))
 #define mc_to_bits(num_bytes)	(num_bytes * k_num_bits_byte)
 
+#define mc_byte_to_binary_pattern "%c%c%c%c%c%c%c%c"
+
+#define mc_byte_to_binary(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
+
+
+
+
 #define mc_mem_2K   2048
 #define mc_mem_16K   16384
 #define mc_mem_32K   32768

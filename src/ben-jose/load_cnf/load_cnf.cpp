@@ -361,14 +361,14 @@ netstate::init_propag_tiers(nervenet& my_net){
 void bj_test_func_1() mc_external_code_ram;
 void bj_test_func_2(binder* pt_1) mc_external_code_ram;
 
-void bj_load_main() {
+void bj_init_nervenet(){
 	kernel* ker = mck_get_kernel();
 	mc_core_nn_t nn = kernel::get_core_nn();
 
 	if(ker->magic_id != MC_MAGIC_ID){
 		mck_slog2("BAD_MAGIC\n");
 	}
-	
+
 	nervenet* my_net = nervenet::acquire_alloc();
 	if(my_net == mc_null){
 		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
@@ -379,11 +379,30 @@ void bj_load_main() {
 
 	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
 	bj_nervenet->shd_cnf = nn_cnf;
+}
+
+void bj_load_main() {
+	
+	bj_init_nervenet();
+
+	nervenet* my_net = bj_nervenet;
+	/*
+	nervenet* my_net = nervenet::acquire_alloc();
+	if(my_net == mc_null){
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
+	}
+	ker->user_data = my_net;
+
+	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
+
+	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
+	bj_nervenet->shd_cnf = nn_cnf;
+	*/
 	
 	bj_load_init_handlers();
 
 	bj_load_shd_cnf();
-	//bj_load_shd_sornet();
+	bj_load_shd_sornet();
 
 	//MC_DBG(if(kernel::get_core_nn() == 0){ bj_test_func_1(); });
 

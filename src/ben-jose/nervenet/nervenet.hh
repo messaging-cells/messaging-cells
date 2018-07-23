@@ -670,6 +670,8 @@ public:
 
 	num_nod_t 	color;
 
+	num_nod_t 	dbg_level;
+
 	num_nod_t 	up_idx;
 	void*		up_inp;
 	sorcell*	up_out;
@@ -851,13 +853,15 @@ public:
 
 #define BJ_DBG_STR_CAP 2048
 
-class mc_aligned nervenet : public cell  {
+typedef unsigned long mini_bit_arr_t;
+
+class mc_aligned nervenet : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS(nervenet, mc_external_code_ram)
 
 	long MAGIC;
 
-	num_syn_t tmp_id_arr[BJ_MAX_ID_ARR_SZ];
+	//num_syn_t tmp_id_arr[BJ_MAX_ID_ARR_SZ];
 
 	num_nod_t tot_neus;
 	num_nod_t tot_vars;
@@ -906,7 +910,8 @@ public:
 	num_nod_t tot_sorcells;
 	grip	all_sorcells;
 
-	num_nod_t 	dbg_sornet_curr_cntr;
+	mini_bit_arr_t 	dbg_sornet_curr_cntr;
+	mini_bit_arr_t 	dbg_sornet_max_cntr;
 
 	binval_t	net_top;
 	binval_t	net_bottom;
@@ -943,8 +948,9 @@ public:
 
 	void send_all_neus(mck_token_t tok);
 
-	bool sornet_check_order(bj_cmp_obj_func_t fn);
+	bool sornet_check_order(bj_cmp_obj_func_t fn) bj_sornet_cod;
 
+	mini_bit_arr_t sornet_dbg_bin_get_mini_sorted_arr() bj_sornet_cod;
 	bool sornet_dbg_send_cntr() bj_sornet_cod;
 	void sornet_dbg_end_step() bj_sornet_cod;
 	void sornet_dbg_bin_handler(missive* msv) bj_sornet_cod;
@@ -994,6 +1000,8 @@ void bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_puls
 void bj_print_class_szs() mc_external_code_ram;
 
 char* bj_dbg_tier_kind_to_str(tier_kind_t tiki) mc_external_code_ram;
+
+void bj_init_nervenet() mc_external_code_ram;
 
 #endif		// NERVENET_H
 

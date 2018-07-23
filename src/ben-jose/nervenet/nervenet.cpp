@@ -437,6 +437,8 @@ sorcell::init_me(int caller){
 
 	color = 0;
 
+	dbg_level = 0;
+
 	up_idx = 0;
 	up_inp = mc_null;
 	up_out = mc_null;

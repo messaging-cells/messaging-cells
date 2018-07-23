@@ -44,6 +44,8 @@ void bj_load_shd_sornet(){
 
 		sorcell* scll = sorcell::acquire();
 
+		scll->dbg_level = nod->level;
+
 		EMU_CK(scll->up_inp == mc_null);
 		scll->up_idx = nod->up_idx;
 		if(nod->out_up != mc_null){

@@ -149,8 +149,14 @@ mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* us
 	uint32_t tot_modls = mck_get_tot_modules();
 	for(uint32_t aa = 0; aa < user_sz; aa++){
 		char* usr_nam = user_order[aa];
+		if(usr_nam == mc_null){
+			mck_abort(__LINE__, MC_ABORT_MSG("Null string in mck_fill_module_external_addresses (prm 1).\n"));
+		}
 		for(uint32_t bb = 0; bb < tot_modls; bb++){
 			char* link_nam = mck_get_module_name(bb);
+			if(link_nam == mc_null){
+				mck_abort(__LINE__, MC_ABORT_MSG("Null string in mck_fill_module_external_addresses (prm 2 ).\n"));
+			}
 			int cc = mc_strcmp(usr_nam, link_nam);
 			if(cc == 0){
 				user_ext_addr[aa] = mck_get_module_address(bb);

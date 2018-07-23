@@ -65,6 +65,7 @@ BJ_CORES_INCLUDES := \
 	${SRC_BJ_DIR}/load_cnf \
 	${SRC_BJ_DIR}/propag \
 	${SRC_BJ_DIR}/stabi \
+	${SRC_BJ_DIR}/sornet \
 	${SRC_BJ_DIR}/solver_main \
 
 

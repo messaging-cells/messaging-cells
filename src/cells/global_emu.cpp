@@ -74,6 +74,9 @@ void
 mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* user_ext_addr){
 	for(int aa = 0; aa < user_sz; aa++){
 		char* usr_nam = user_order[aa];
+		if(usr_nam == mc_null){
+			mck_abort(__LINE__, MC_ABORT_MSG("Null string in mck_fill_module_external_addresses (prm 1).\n"));
+		}
 		user_ext_addr[aa] = (mc_addr_t)usr_nam;
 	}
 }
