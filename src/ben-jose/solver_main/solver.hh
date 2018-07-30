@@ -40,6 +40,8 @@ Declaration of main bj solver function.
 
 #include "cell.hh"
 
+#define BJ_DBG_TOT_INPUT_SORNODES 3
+
 #define bj_dbg_only_cod mc_mod1_cod
 #define bj_dbg_only_dat mc_mod1_dat
 

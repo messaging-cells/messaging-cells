@@ -129,6 +129,7 @@ SUBMAKEFILES := \
 
 
 default: all
+	@echo "Finished building Messaging Cell TESTS"
 
 install: 
 	@echo "Copy the files in ../bin to the desired install directories."

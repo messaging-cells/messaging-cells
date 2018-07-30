@@ -58,6 +58,14 @@ SUBMAKEFILES := \
 
 
 default: all
+	@echo "FINISHED_BUILDING_MESSAGING_CELLS"
+	
+parallella: ${TARGET_DIR}/libmck-cell.a \
+	${TARGET_DIR}/libmck-tak-mak.a \
+	${TARGET_DIR}/libmcz-tak-mak.a \
+	${TARGET_DIR}/libmcz-dlmalloc.a \
+	${TARGET_DIR}/libmcz-cell.a 
+	@echo "FINISHED_BUILDING_PARALLELLA_MESSAGING_CELLS"
 
 install: 
 	@echo "Copy the files in ../bin to the desired install directories."

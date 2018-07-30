@@ -105,8 +105,11 @@ mc_host_init(){
 
 	if(lk_dat->extnl_ram_orig == 0) {
 		printf("ERROR: Can't read external memory location from '%s'\n", mch_epiphany_elf_path);
-		printf("Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n", mch_epiphany_elf_path);
-		mch_abort_func(201, "host_init_1. ERROR: Bad ELF\n");
+		printf("1- Make sure to set 'mch_epiphany_elf_path' global variable to a valid Epiphany ELF file\n");
+		printf("\tbefore calling 'kernel::init_host_sys()'\n");
+		printf("2- Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n",
+			   mch_epiphany_elf_path);
+		mch_abort_func(201, "mc_host_init (1). ERROR: Bad ELF\n");
 	}
 
 	// IMPORTANT NOTE:
@@ -127,7 +130,7 @@ mc_host_init(){
 	e_get_platform_info(&platform);
 
 	if (e_alloc(&mch_glb_emem, 0, lk_dat->extnl_ram_size)) {
-		mch_abort_func(202, "host_init_2. ERROR: Can't allocate external memory buffer!\n\n");
+		mch_abort_func(202, "mc_host_init (2). ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
 	MCH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)mch_glb_emem.base);
@@ -176,7 +179,7 @@ mc_host_init(){
 	#endif
 
 	if(err == E_ERR){
-		mch_abort_func(203, "host_init_3. ERROR: Loading_group_failed.\n");
+		mch_abort_func(203, "mc_host_init (3). ERROR: Loading_group_failed.\n");
 	}
 
 	// init shared data.

@@ -81,6 +81,8 @@ synset::stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) {
 
 void 
 neurostate::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
+	//mck_slog2("mirrow_nod_calc_arr_start \n");
+	
 	bool was_nul = (stabi_arr == mc_null);
 	EMU_DBG_CODE(
 		num_tier_t dbg_ti = 0;
@@ -102,6 +104,8 @@ neurostate::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 		stabi_arr = mc_null;
 	}
 
+	//mck_slog2("mirrow_nod_calc_arr_s2 \n");
+	
 	EMU_CK(stabi_arr_sz == 0);
 	EMU_CK(stabi_arr == mc_null);
 
@@ -112,15 +116,19 @@ neurostate::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 		} else {
 			mc_free32(old_arr);
 		}
+		//mck_slog2("mirrow_nod_calc_arr_retu \n");
 		return;
 	}
-
+	//mck_slog2("mirrow_nod_calc_arr_cap \n");
+	
 	stabi_arr_cap = calc_cap_stabi_arr(step_active_set.tot_syn);
 	stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
 
 	EMU_LOG(" calc_stabi_arr new_cap=%d \n", stabi_arr_cap);
 	EMU_CK(stabi_arr != mc_null);
 
+	//mck_slog2("mirrow_nod_calc_arr_rec \n");
+	
 	step_active_set.stabi_calc_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
 
 	if(old_arr != mc_null){
@@ -139,6 +147,7 @@ neurostate::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 		}
 		mc_free32(old_arr);
 	}
+	//mck_slog2("mirrow_calc_arr_end \n");
 }
 
 int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_t* arr2){
@@ -585,7 +594,7 @@ neuron::stabi_start_nxt_tier(signal_data* dat){
 	stt.stabi_send_all_ti_done(neu, dat->ti);
 	stt.step_reset_complete();
 
-	mck_slog2("dbg2.reset\n");
+	//mck_slog2("dbg2.reset\n");
 
 	nst.update_sync_inert(tiki_stabi, true);
 }
@@ -670,7 +679,7 @@ void bj_stabi_main() {
 	EMU_PRT("...............................END_STABI\n");
 	mck_slog2("END_STABI___");
 	mck_ilog(nn);
-	mck_slog2("_________________________\n");
+	//mck_slog2("_________________________\n");
 	mck_sprt2("dbg2.stabi.end\n");
 
 }

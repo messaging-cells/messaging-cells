@@ -91,6 +91,7 @@ SUBMAKEFILES := \
 
 
 default: all
+	@echo "Finished building Lev-Ben-Jose"
 
 install: 
 	@echo "Copy the files in ../bin to the desired install directories."

@@ -89,7 +89,8 @@ void bj_load_shd_cnf(){
 	neuron::separate(sep_neus);
 
 	//EMU_PRT("Separated polarons %ld\n", sep_pols);
-	EMU_LOG("Separated_all_transmitters %ld\n", sep_msvs);
+	//EMU_LOG("Separated_all_transmitters %ld\n", sep_msvs);
+	mck_slog2("Separated_all_init_objects\n");	
 
 	binder * fst, * lst, * wrk;
 
@@ -204,8 +205,6 @@ void bj_load_shd_cnf(){
 		msv->tok = bj_tok_load_no_lits;
 		msv->send();
 	}
-
-	EMU_LOG("end_of_bj_load_shd_cnf \n");
 }
 
 void
@@ -402,7 +401,9 @@ void bj_load_main() {
 	bj_load_init_handlers();
 
 	bj_load_shd_cnf();
+	mck_slog2("end_of_load_shd_cnf \n");	
 	bj_load_shd_sornet();
+	mck_slog2("end_of_load_sornet \n");	
 
 	//MC_DBG(if(kernel::get_core_nn() == 0){ bj_test_func_1(); });
 

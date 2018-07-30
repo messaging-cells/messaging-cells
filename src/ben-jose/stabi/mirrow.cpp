@@ -35,9 +35,10 @@ bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp){
 
 void
 nervenode::mirrow_sides(net_side_t src_sd){
-	EMU_LOG("mirrow_nod \n");
+	EMU_LOG("mirrow_nod_start \n");
 
 	nervenode* nd = this;
+	EPH_CODE(MCK_CK(! mc_addr_has_id(nd)));
 
 	binder * fst, * lst, * wrk, * src;
 
@@ -72,7 +73,7 @@ nervenode::mirrow_sides(net_side_t src_sd){
 		}
 	}
 
-	EMU_LOG("mirrow_nod_act \n");
+	//EMU_LOG("mirrow_nod_act \n");
 
 	// mirrow ti and src
 
@@ -101,7 +102,7 @@ nervenode::mirrow_sides(net_side_t src_sd){
 
 	EMU_CK(tmp_ti.is_alone());
 
-	EMU_LOG("mirrow_nod_tis \n");
+	//EMU_LOG("mirrow_nod_tis \n");
 
 	// mirrow others
 
@@ -114,16 +115,20 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	dst_st.stabi_arr_sz = 0;
 
 	// set all vessels
+	//EMU_LOG("mirrow_nod_set_vessels \n");
 
 	neurostate& lft_st = left_side;
 	lft_st.step_active_set.reset_vessels(true);
+
+	//EMU_LOG("mirrow_nod_calc_arr \n");
+
 	lft_st.calc_stabi_arr(nd, mc_null);
 	lft_st.stabi_num_tier = 0;
 
 	EMU_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
 		bj_dbg_stabi_id_arr_to_str(lft_st.stabi_arr_sz, lft_st.stabi_arr, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));
 
-	EMU_LOG("mirrow_nod_end \n");
+	//EMU_LOG("mirrow_nod_end \n");
 }
 
 void
@@ -181,13 +186,14 @@ nervenet::mirrow_nervenet(){
 		sd = side_right;
 	}
 
-	EMU_LOG("mirrow_nervenet_nods %s \n", net_side_to_str(sd));
+	//EMU_LOG("mirrow_nervenet_nods %s \n", net_side_to_str(sd));
+	EMU_LOG("mirrow_nervenet_nods \n");
 
 	mirrow_start_all_nods(all_neu, sd);
 	mirrow_start_all_nods(all_pos, sd);
 	mirrow_start_all_nods(all_neg, sd);
 
-	EMU_LOG("end_mirrow_nervenet \n");
+	//mck_slog2("end_mirrow_nervenet \n");
 }
 
 void bj_mirrow_main() {
@@ -206,7 +212,7 @@ void bj_mirrow_main() {
 	nervenet* my_net = bj_nervenet;
 	my_net->init_sync_cycle();
 
-	mck_slog2("__dbg1.mirrow\n");
+	//mck_slog2("__dbg1.mirrow\n");
 
 	my_net->send(my_net, bj_tok_mirrow_start);
 	kernel::run_sys();
@@ -219,7 +225,7 @@ void bj_mirrow_main() {
 	EMU_PRT("...............................END_MIRROW\n");
 	mck_slog2("END_MIRROW___");
 	mck_ilog(nn);
-	mck_slog2("_________________________\n");
+	//mck_slog2("_________________________\n");
 	mck_sprt2("dbg1.mirrow.end\n");
 
 }

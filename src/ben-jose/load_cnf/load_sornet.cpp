@@ -85,22 +85,28 @@ void bj_load_shd_sornet(){
 		pre_sornode** all_input = 
 			(pre_sornode**)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_pre_sorinput_nod));
 
-		num_nod_t tot_sclls = pre_cnf->tot_pre_sorinput_nod;
+		num_nod_t tot_sorinp = pre_cnf->tot_pre_sorinput_nod;
+		//EMU_LOG("TOT_INPUT_SORCELLS=%ld \n", tot_sorinp);
+		mck_slog2("TOT_INPUT_SORCELLS=");
+		mck_ilog(tot_sorinp);	
+		mck_slog2("\n");
 
-		my_net->tot_input_sorcells = tot_sclls;
-		my_net->all_input_sorcells = mc_malloc32(sorcell*, tot_sclls);
+		my_net->tot_input_sorcells = tot_sorinp;
+		my_net->all_input_sorcells = mc_malloc32(sorcell*, tot_sorinp);
+		mc_init_arr_vals(tot_sorinp, my_net->all_input_sorcells, mc_null);
 
-		my_net->all_output_sorobjs = mc_malloc32(void*, tot_sclls);
-		mc_init_arr_vals(tot_sclls, my_net->all_output_sorobjs, mc_null);
+		my_net->all_output_sorobjs = mc_malloc32(void*, tot_sorinp);
+		mc_init_arr_vals(tot_sorinp, my_net->all_output_sorobjs, mc_null);
 
 		sorcell** all_sorcell = my_net->all_input_sorcells;
 		
 		num_nod_t aa;
-		for(aa = 0; aa < tot_sclls; aa++){
-			bj_set_sorcell_pt(all_input[aa], all_sorcell[aa], false);
+		for(aa = 0; aa < tot_sorinp; aa++){
+			sorcell* inp_aa = (sorcell*)mc_host_addr_to_core_addr((mc_addr_t)(all_input[aa]));
+			bj_set_sorcell_pt(inp_aa, all_sorcell[aa], false);
 		}
 	}
 
-	EMU_LOG("end_of_bj_load_shd_sornet \n");
+	//mck_slog2("end_of_bj_load_shd_sornet  \n");	
 }
 

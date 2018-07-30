@@ -2,6 +2,40 @@
 #include "cell.hh"
 #include "nervenet.hh"
 
+/*
+-------------------------------------------------------------
+PLLA class_sizes:
+synset__40__
+tierset__32__
+transmitter__32__
+stabi_transmitter__40__
+sync_transmitter__40__
+synapse__48__
+neurostate__104__
+nervenode__240__
+neuron__240__
+polaron__248__
+sorcell__56__
+tierdata__56__
+netstate__48__
+dbg_stats__32__
+nervenet__360__
+void_pt__4__
+binder__8__
+num_syn_t__1__
+grip__8__
+num_tier_t__4__
+mc_flags_t__1__
+kernel__328__
+agent__16__
+cell__24__
+missive__32__
+agent_ref__24__
+agent_grp__32__
+test_cls__8__
+-------------------------------------------------------------
+*/
+
 missive_handler_t bj_nil_handlers[1] = { mc_null };
 
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
@@ -31,6 +65,7 @@ BJ_DEFINE_GET_CLS_NAM(polaron)
 BJ_DEFINE_GET_CLS_NAM(sorcell)
 BJ_DEFINE_GET_CLS_NAM(tierdata)
 BJ_DEFINE_GET_CLS_NAM(nervenet)
+
 
 //===================================================================================================
 #ifdef MC_IS_EMU_CODE
@@ -127,41 +162,6 @@ nervenode::dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
 
 #endif
 //---------------------------------------------------------------------------------------------------
-
-/*
--------------------------------------------------------------
-PLLA class_sizes:
-synset__40__
-tierset__32__
-transmitter__32__
-sornet_transmitter ????
-stabi_transmitter ????
-sync_transmitter__40__
-synapse__48__
-neurostate__80__
-nervenode__192__
-neuron__192__
-polaron__200__
-sorcell__???
-tierdata__48__
-netstate__48__
-dbg_stats__24__
-nervenet__288__
-void_pt__4__
-binder__8__
-num_syn_t__1__
-grip__8__
-num_tier_t__4__
-mc_flags_t__1__
-kernel__328__
-agent__16__
-cell__24__
-missive__32__
-agent_ref__24__
-agent_grp__32__
-test_cls__??__
--------------------------------------------------------------
-*/
 
 nervenet::nervenet(){
 	MAGIC = MAGIC_VAL;

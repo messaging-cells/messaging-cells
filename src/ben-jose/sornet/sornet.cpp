@@ -117,8 +117,8 @@ nervenet::sornet_dbg_send_cntr(){
 	cell* src = this;
 
 	EMU_CK(((mini_bit_arr_t)(sizeof(mini_bit_arr_t) * 8)) > ((mini_bit_arr_t)tot_input_sorcells));
-	EMU_LOG("send_cntr counter=%d tot_inp=%d sizeof(num_nod_t)=%d \n", 
-			tmp_num, tot_input_sorcells, sizeof(num_nod_t));
+	EMU_LOG("send_cntr counter=%d tot_inp=%d sizeof(mini_bit_arr_t)=%d \n", 
+			tmp_num, tot_input_sorcells, sizeof(mini_bit_arr_t));
 
 	num_nod_t aa;
 	for(aa = 0; aa < tot_input_sorcells; aa++){
@@ -181,6 +181,14 @@ nervenet::sornet_dbg_bin_get_mini_sorted_arr(){
 	return min_arr;
 }
 
+#if BJ_DBG_TOT_INPUT_SORNODES < 9
+#define BJ_SORTED_PATTERN mc_byte_to_binary_pattern
+#define BJ_SORTED_DATA mc_byte_to_binary(pt_arr[0])
+#else
+#define BJ_SORTED_PATTERN mc_byte_to_binary_pattern mc_byte_to_binary_pattern
+#define BJ_SORTED_DATA mc_byte_to_binary(pt_arr[1]), mc_byte_to_binary(pt_arr[0])
+#endif
+
 void
 nervenet::sornet_dbg_end_step(){
 	EMU_CK(kernel::get_core_nn() == 0);
@@ -193,9 +201,14 @@ nervenet::sornet_dbg_end_step(){
 	mini_bit_arr_t min_arr = sornet_dbg_bin_get_mini_sorted_arr();
 	char* pt_arr = (char*)(&min_arr);
 	MC_MARK_USED(pt_arr);
-	EMU_PRT("SORTED_OK_ARR_%d\n", dbg_sornet_curr_cntr);
-	EMU_LOG("SORTED_OK_ARR_%d_" mc_byte_to_binary_pattern "\n", dbg_sornet_curr_cntr,
-			mc_byte_to_binary(pt_arr[0]));
+	EMU_PRT("SORTED_OK_ARR_%d_" BJ_SORTED_PATTERN "\n", dbg_sornet_curr_cntr, BJ_SORTED_DATA);
+	EMU_LOG("SORTED_OK_ARR_%d_" BJ_SORTED_PATTERN "\n", dbg_sornet_curr_cntr, BJ_SORTED_DATA);
+	mck_slog2("sorted_ok_arr_");
+	mck_ilog(dbg_sornet_curr_cntr);
+	mck_slog2("\n");
+	mck_sprt2("sorted_ok_arr_");
+	mck_iprt(dbg_sornet_curr_cntr);
+	mck_sprt2("\n");
 
 	mc_init_arr_vals(tot_input_sorcells, all_output_sorobjs, mc_null);
 	tot_rcv_output_sorobjs = 0;
@@ -272,8 +285,12 @@ void bj_sornet_main() {
 	//	bj_dbg_prt_nd_neu_flag | bj_dbg_prt_nd_pol_flag);
 
 	if(nn == 0){
-		my_net->dbg_sornet_max_cntr = 256;
+		mini_bit_arr_t max_cntr = (((mini_bit_arr_t)1) << BJ_DBG_TOT_INPUT_SORNODES) + 1;
+		my_net->dbg_sornet_max_cntr = max_cntr;
 		my_net->send(my_net, bj_tok_sornet_start);
+
+		EMU_PRT("dbg_sornet_max_cntr=%d\n", max_cntr);
+		EMU_LOG("dbg_sornet_max_cntr=%d\n", max_cntr);
 	}
 	kernel::run_sys();
 

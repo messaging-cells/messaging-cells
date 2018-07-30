@@ -24,7 +24,13 @@ get_bigger_pow2(num_nod_t nn){
 pre_sornode*
 create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms& prms){
 	pre_sornode* nod = pre_sornode::acquire();
-
+	MCK_CK(nod != mc_null);
+	
+	mc_core_nn_t emu_up_nid = 0;
+	mc_core_nn_t emu_down_nid = 0;
+	MC_MARK_USED(emu_up_nid);
+	MC_MARK_USED(emu_down_nid);
+	
 	prms.curr_nod_id++;
 	nod->nod_id = prms.curr_nod_id;
 
@@ -39,11 +45,6 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 
 	prms.arr_nods[up_idx] = nod;
 	prms.arr_nods[down_idx] = nod;
-
-	mc_core_nn_t emu_up_nid = 0;
-	mc_core_nn_t emu_down_nid = 0;
-	MC_MARK_USED(emu_up_nid);
-	MC_MARK_USED(emu_down_nid);
 
 	if(nod->out_up != mc_null){
 		nod->level = nod->out_up->level + 1;
@@ -79,6 +80,8 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	EMU_CK(knd != snod_invalid);
 	EMU_PRT("%s_NOD (%ld)  %ld[%ld %ld] \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), nod->nod_id, 
 			nod->level, up_idx, down_idx, emu_up_nid, emu_down_nid);
+	ZNQ_CODE(printf("%s_NOD (%ld)  %ld[%ld %ld] \t(%d %d) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
+				nod->nod_id, nod->level, up_idx, down_idx, emu_up_nid, emu_down_nid));
 
 	return nod;
 }
@@ -141,6 +144,7 @@ create_sornet(num_nod_t num_to_sort){
 	//MUST be a power of 2
 	prms.tot_nods = get_bigger_pow2(num_to_sort);
 	prms.arr_nods = mc_malloc32(pre_sornode*, prms.tot_nods);
+	mc_init_arr_vals(prms.tot_nods, prms.arr_nods, mc_null);
 
 	if(THE_CNF != mc_null){
 		printf("THE_CNF not null \n");
@@ -154,34 +158,8 @@ create_sornet(num_nod_t num_to_sort){
 
 	create_net_sorter(0, prms.tot_nods, prms);
 
+	ZNQ_CODE(printf("\nTOT_INPUT_NODS=%ld TOT_LVS=%ld \n", prms.tot_nods, prms.tot_lvs));
 	EMU_PRT("\nTOT_INPUT_NODS=%ld TOT_LVS=%ld \n", prms.tot_nods, prms.tot_lvs);
-
-	//long num_cores = THE_CNF->tot_cores;
-
-	/*
-	for(long aa = 0; aa < prms.tot_nods; aa++){
-		pre_sornode* nod = prms.arr_nods[aa];
-		EMU_CK(nod->nod_nn < num_cores);
-
-		pre_cnf_net& cnf = THE_CNF->all_cnf[nod->nod_nn];
-		cnf.tot_pre_sorinput_nod++;
-	}
-
-	for(long bb = 0; bb < num_cores; bb++){
-		pre_cnf_net& cnf = THE_CNF->all_cnf[bb];
-		cnf.all_pre_sorinput_nod = (pre_sornode**)calloc(cnf.tot_pre_sorinput_nod, sizeof(pre_sornode*));
-	}
-
-	for(long cc = 0; cc < prms.tot_nods; cc++){
-		pre_sornode* nod = prms.arr_nods[cc];
-		EMU_CK(nod->nod_nn < num_cores);
-
-		pre_cnf_net& cnf = THE_CNF->all_cnf[nod->nod_nn];
-		EMU_CK(cnf.tmp_nod_idx < cnf.tot_pre_sorinput_nod);
-		cnf.all_pre_sorinput_nod[cnf.tmp_nod_idx] = nod;
-		cnf.tmp_nod_idx++;
-	}
-	*/
 }
 
 //				pre_sornode* nod = pre_sornode::acquire();

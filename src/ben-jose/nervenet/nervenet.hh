@@ -292,7 +292,7 @@ public:
 
 	void stabi_insert_sort() bj_stabi_cod;
 
-	bool is_synset_empty() bj_propag_cod;
+	bool is_synset_empty();
 
 	synapse* get_first_snp(net_side_t sd);
 
@@ -346,6 +346,7 @@ public:
 class mc_aligned sornet_transmitter : public transmitter {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_sornet_cod)
+	//MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_nervenet_mem)
 
 	num_nod_t	idx;
 	void*		obj;

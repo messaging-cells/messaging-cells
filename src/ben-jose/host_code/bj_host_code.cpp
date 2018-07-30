@@ -189,23 +189,29 @@ void bj_test_6(int argc, char *argv[])
 	printf("pow2 = %ld \n", num_to_sort);
 }
 
+#endif
+
 void bj_test_7(int argc, char *argv[])
 {
 	printf("TEST_7 \n");
-	if(argc < 2){
-		printf("%s <num>\n", argv[0]);
-		return; 
+	if(argc > 1){
+		mch_epiphany_elf_path = argv[1];
+		printf("Using core executable: %s \n", mch_epiphany_elf_path);
 	}
-	num_nod_t num_to_sort = atol(argv[1]);
+
+	if(argc < 3){
+		printf("Usage: %s <epiphany_elf> <num>\n", argv[0]);
+		return;
+	}
+	
+	num_nod_t num_to_sort = atol(argv[2]);
 	num_to_sort = get_bigger_pow2(num_to_sort);
+	if(num_to_sort < 4){ num_to_sort = 4; }
 
 	kernel::init_host_sys();
 	create_sornet(num_to_sort);
 	kernel::finish_host_sys();
 }
-
-
-#endif
 
 int mc_host_main(int argc, char *argv[])
 {
@@ -217,7 +223,7 @@ int mc_host_main(int argc, char *argv[])
 	//EMU_CODE(bj_test_4(argc, argv));
 	//EMU_CODE(bj_test_5(argc, argv));
 	//EMU_CODE(bj_test_6(argc, argv));
-	//EMU_CODE(bj_test_7(argc, argv));
+	//bj_test_7(argc, argv);
 	rr = bj_host_main(argc, argv);
 
 	printf("HOST_CODE_FINISHED ==================================== \n");
