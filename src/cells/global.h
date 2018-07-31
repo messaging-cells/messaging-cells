@@ -37,7 +37,7 @@ Our Resurrected and Living, both in Body and Spirit,
 #ifndef MC_GLOBAL_H
 #define MC_GLOBAL_H
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 	#include <sched.h>
 #endif
 
@@ -137,7 +137,7 @@ typedef struct mck_glb_sys_def mck_glb_sys_st;
 	#define MCK_PT_EXTERNAL_HOST_DATA mcz_pt_external_host_data_obj
 #endif
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 	extern mc_off_sys_st mcm_external_host_data_obj;
 	#define MCK_PT_EXTERNAL_HOST_DATA (&mcm_external_host_data_obj)
 #endif
@@ -180,7 +180,7 @@ mck_set_irq0_handler() mc_external_code_ram;
 	#define MCK_CK(cond) MCK_INCORE_ASSERT(cond)
 #endif
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 	#define MCK_CK(cond) EMU_CK(cond)
 #endif
 

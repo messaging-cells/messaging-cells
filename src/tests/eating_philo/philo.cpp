@@ -43,7 +43,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 //define PHILO_EPH_DBG
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 #define PHILO_WITH_DBG
 #endif
 

@@ -72,7 +72,7 @@ mc_c_decl {
 	//define mc_asm(code) 
 	//define mc_asm	123
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 //---------------------------------------------------------------------------------------
 	#define mc_opt_sz_fn 
 	#define mc_no_opt_fn 
@@ -123,7 +123,7 @@ mc_c_decl {
 
 	#define EPH_CODE(cod) 
 
-#else //NOT  MC_IS_EMU_CODE :
+#else //NOT  MC_IS_PTD_CODE :
 //---------------------------------------------------------------------------------------
 
 	#define mc_opt_sz_fn __attribute__((optimize("Os")))
@@ -159,7 +159,7 @@ mc_c_decl {
 	#define EMU_LOG(...) 
 
 //---------------------------------------------------------------------------------------
-#endif	//NOT MC_IS_EMU_CODE
+#endif	//NOT MC_IS_PTD_CODE
 
 #ifdef MC_IS_ZNQ_CODE
 	#define ZNQ_CODE(cod) cod
@@ -206,7 +206,7 @@ mc_c_decl {
 #define mc_mod8_dat mc_section("module8_data")
 #define mc_mod9_dat mc_section("module9_data")
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 	#define EMU_32_CODE(cod) COD_32(cod)
 	#define EMU_64_CODE(cod) COD_64(cod)
 #endif

@@ -58,8 +58,8 @@ typedef uint8_t mc_bool_t;
 //======================================================================
 // address opers
 
-#ifdef MC_IS_EMU_CODE
-	#include "shared_emu.h"
+#ifdef MC_IS_PTD_CODE
+	#include "shared_ptd.h"
 #endif
 
 #ifdef MC_IS_EPH_CODE

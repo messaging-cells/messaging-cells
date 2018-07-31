@@ -315,7 +315,7 @@ Every core must have one and only one kernel inited with kernel::init_sys.
 	#define MCK_KERNEL (mch_PT_THE_KERNEL)
 #endif
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 	kernel*
 	mcm_get_kernel();
 

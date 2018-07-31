@@ -91,25 +91,25 @@ MC_STD_INCDIRS := ../../cells ../../cells/mc_manager ${MC_ETOOLS}/host/include
 #	./tak_mak_test/test_tak_mak.mk \
 #	./logs_test/logs_test.mk \
 #	./eph_dev_driver_bug/eph_dev_driver_bug.mk \
-#	./dlmalloc_test/test_dlmalloc_emu.mk \
+#	./dlmalloc_test/test_dlmalloc_ptd.mk \
 #	./dlmalloc_test/test_dlmalloc_znq.mk \
 #	./test_addr_conv/addr_conv.mk \
 #	./znq_tests/znq_hello.mk \
 #	./znq_tests/znq_backtrace.mk \
 #	./backtrace/backtrace.mk \
 #	./min_host/min_host.mk \
-#	./min_host/min_host_emu.mk \
+#	./min_host/min_host_ptd.mk \
 #	./hello_class/hello_class.mk \
 #	./sequence/sequence.mk \
 #	./sequence/sequence_2.mk \
 #	./sequence/sequence_3.mk \
-#	./send_host_msg/send_host_msg_emu.mk \
+#	./send_host_msg/send_host_msg_ptd.mk \
 #	./send_msg/send_msg_eph.mk \
-#	./send_msg/send_msg_emu.mk \
-#	./send_host_msg/send_host_msg_emu.mk \
+#	./send_msg/send_msg_ptd.mk \
+#	./send_host_msg/send_host_msg_ptd.mk \
 #	./send_host_msg/send_host_msg_eph.mk \
 #	./send_host_msg/send_host_msg_znq.mk \
-#	./emu_tests/hola_jose.mk \
+#	./ptd_tests/hola_jose.mk \
 #	./modules/modules.mk \
 
 SUBMAKEFILES := \
@@ -118,10 +118,10 @@ SUBMAKEFILES := \
 	./logs_test/logs_test.mk \
 	./hello_world/hello_world.mk \
 	./send_msg/send_msg_eph.mk \
-	./send_msg/send_msg_emu.mk \
-	./eating_philo/philo_emu.mk \
+	./send_msg/send_msg_ptd.mk \
+	./eating_philo/philo_ptd.mk \
 	./eating_philo/philo_eph.mk \
-	./send_host_msg/send_host_msg_emu.mk \
+	./send_host_msg/send_host_msg_ptd.mk \
 	./send_host_msg/send_host_msg_eph.mk \
 	./send_host_msg/send_host_msg_znq.mk \
 	./modules/modules.mk \

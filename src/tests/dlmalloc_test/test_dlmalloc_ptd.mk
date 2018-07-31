@@ -30,35 +30,26 @@
 #------------------------------------------------------------
 
 
-SRC_TEST_DIR := ./
-SRC_HOST_DIR := ../../host
-SRC_CELLS_DIR := ../../cells
+#SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
+SRC_IN_SECTIONS := 
 
-DBG_FLAG := -DFULL_DEBUG
+#LD_IN_SECTIONS := --gc-sections
+LD_IN_SECTIONS := 
 
 # =======================================
 
-TARGET := znq_dlmalloc_test.elf
+TARGET := test_dlmalloc_ptd.elf
 
-TGT_LDFLAGS := -L${TARGET_DIR} 
-TGT_LDLIBS  := -lmcz-tak-mak -lmcz-dlmalloc
-TGT_PREREQS := libmcz-tak-mak.a libmcz-dlmalloc.a
+TGT_LDFLAGS := ${MC_STD_EMU_LDFLAGS} ${LD_IN_SECTIONS} 
+TGT_LDLIBS  := ${MC_STD_EMU_LDLIBS}
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
-TGT_CC := $(CROSS_COMPILE)gcc
-TGT_CXX := $(CROSS_COMPILE)g++
-TGT_LINKER := $(CROSS_COMPILE)gcc
+SRC_CFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -pthread
+SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -pthread
 
-C_FLAGS_1 := -Wall -std=gnu11 -pthread
-SRC_CFLAGS := -DMC_IS_ZNQ_CODE ${DBG_FLAG} ${C_FLAGS_1}
+SRC_INCDIRS := ${MC_STD_INCDIRS}
 
-CXX_FLAGS_1 := -Wall -std=c++14 -pthread
-SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE ${DBG_FLAG} ${CXX_FLAGS_1}
-
-SRC_INCDIRS := $(SRC_HOST_DIR) ${SRC_CELLS_DIR}
-
-SOURCES := $(SRC_TEST_DIR)/dbg_dlmalloc.cpp
-
+SOURCES := test_dlmalloc.cpp 
 
 

@@ -80,7 +80,7 @@ BJ_HOST_INCLUDES := \
 SUBMAKEFILES := \
 	./host_code/no_nil_host.mk \
 	./host_code/bj_host_znq.mk \
-	./maker_bj_emu/bj_emu.mk \
+	./maker_bj_ptd/bj_ptd.mk \
 	./dbg_only/dbg_only.mk \
 	./nervenet/nervenet.mk \
 	./load_cnf/load_cnf.mk \

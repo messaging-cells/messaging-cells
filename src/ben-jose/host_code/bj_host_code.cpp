@@ -88,7 +88,7 @@ int bj_host_main(int argc, char *argv[])
 	return 0;
 }
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 
 void bj_test_1(int argc, char *argv[])
 {

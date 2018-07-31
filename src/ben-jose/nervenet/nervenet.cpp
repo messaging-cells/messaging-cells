@@ -68,7 +68,7 @@ BJ_DEFINE_GET_CLS_NAM(nervenet)
 
 
 //===================================================================================================
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 
 #define BJ_AUX_STR_MIN_SZ 3
 

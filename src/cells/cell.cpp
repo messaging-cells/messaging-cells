@@ -30,7 +30,7 @@ Our Resurrected and Living, both in Body and Spirit,
 ------------------------------------------------------------*/
 
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 #include <sched.h>
 #endif
 
@@ -61,7 +61,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 	void* __dso_handle = mc_null;
 
-#endif	//MC_IS_EMU_CODE
+#endif	//MC_IS_PTD_CODE
 
 //----------------------------------------------------------------------------
 

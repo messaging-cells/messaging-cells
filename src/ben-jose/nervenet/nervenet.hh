@@ -39,7 +39,7 @@ Declaration of nervenet class.
 #define NERVENET_H
 
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 #include <stdio.h>
 #include <string.h>
 

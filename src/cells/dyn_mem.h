@@ -95,7 +95,7 @@ a64_free(uint8_t* ptr) mc_external_code_ram;
 	#define mc_free64(ptr)	mspace_free(mch_glb_alloc_mspace, ptr)
 #endif
 
-#ifdef MC_IS_EMU_CODE
+#ifdef MC_IS_PTD_CODE
 	uint8_t* 
 	mc_malloc_impl(umm_size_t num_bytes);
 

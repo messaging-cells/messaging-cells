@@ -43,14 +43,14 @@ CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-c
 STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
 SUBMAKEFILES := \
-	pthreads/mc-emu-tak-mak-lib.mk \
-	pthreads/mc-emu-dlmalloc-lib.mk \
-	pthreads/mc-emu-cell-lib.mk \
-	parallella/manager/mc-znq-tak-mak-lib.mk \
-	parallella/manager/mc-znq-dlmalloc-lib.mk \
-	parallella/manager/mc-znq-cell-lib.mk \
-	parallella/workers/mc-eph-tak-mak-lib.mk \
-	parallella/workers/mc-eph-cell-lib.mk \
+	pthreads/mc-ptd-tak-mak-lib.mk \
+	pthreads/mc-ptd-dlmalloc-lib.mk \
+	pthreads/mc-ptd-cell-lib.mk \
+	parallella/mc_manager/mc-znq-tak-mak-lib.mk \
+	parallella/mc_manager/mc-znq-dlmalloc-lib.mk \
+	parallella/mc_manager/mc-znq-cell-lib.mk \
+	parallella/mc_workers/mc-eph-tak-mak-lib.mk \
+	parallella/mc_workers/mc-eph-cell-lib.mk \
 
 
 
