@@ -42,7 +42,7 @@ Our Resurrected and Living, both in Body and Spirit,
 #include "shared.h"
 
 //define BINDER_CK(prm) 	DBG_CK(prm)
-#define BINDER_CK(prm) EMU_CK(prm)
+#define BINDER_CK(prm) PTD_CK(prm)
 
 //=================================================================
 // binder
@@ -89,7 +89,7 @@ public:
 
 	mc_opt_sz_fn
 	bool	ck_binder(){
-		EMU_CODE(binder* loc_ths = (binder*)mck_as_loc_pt(this));
+		PTD_CODE(binder* loc_ths = (binder*)mck_as_loc_pt(this));
 		BINDER_CK(bn_right->bn_left == loc_ths);
 		BINDER_CK(bn_left->bn_right == loc_ths);
 		return true;

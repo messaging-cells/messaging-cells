@@ -37,12 +37,12 @@ Our Resurrected and Living, both in Body and Spirit,
 
 mc_sys_sz_st*
 mc_get_glb_sys_sz(){
-	return &(mck_get_emu_info()->emu_system_sz);
+	return &(mck_get_ptd_info()->ptd_system_sz);
 }
 
 mc_core_id_t 
 mck_get_core_id(){
-	return mck_get_emu_info()->emu_core_id;
+	return mck_get_ptd_info()->ptd_core_id;
 }
 
 mc_addr_t

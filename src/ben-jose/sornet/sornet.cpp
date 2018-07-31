@@ -51,11 +51,11 @@ sorcell::sornet_handler(missive* msv){
 	bj_cmp_obj_func_t fn = sornet_get_cmp_func(tmt_tok);
 
 	if(tmt_idx == up_idx){
-		EMU_CK(up_inp == mc_null);
+		PTD_CK(up_inp == mc_null);
 		up_inp = tmt_obj;
 	}
 	if(tmt_idx == down_idx){
-		EMU_CK(down_inp == mc_null);
+		PTD_CK(down_inp == mc_null);
 		down_inp = tmt_obj;
 	}
 
@@ -74,14 +74,14 @@ sorcell::sornet_handler(missive* msv){
 		up_inp = mc_null;
 		down_inp = mc_null;
 
-		//EMU_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_idx, down_idx);
+		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_idx, down_idx);
 	}
 }
 
 void
 bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod_t idx){
-	EMU_CK(src != mc_null);
-	EMU_CK(obj != mc_null);
+	PTD_CK(src != mc_null);
+	PTD_CK(obj != mc_null);
 
 	sornet_transmitter* trm = sornet_transmitter::acquire();
 	trm->wrk_side = side_left;
@@ -103,8 +103,8 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod
 
 bool
 nervenet::sornet_dbg_send_cntr(){
-	EMU_CK(kernel::get_core_nn() == 0);
-	EMU_CK(all_input_sorcells != mc_null);
+	PTD_CK(kernel::get_core_nn() == 0);
+	PTD_CK(all_input_sorcells != mc_null);
 	
 	dbg_sornet_curr_cntr++;
 
@@ -116,17 +116,17 @@ nervenet::sornet_dbg_send_cntr(){
 
 	cell* src = this;
 
-	EMU_CK(((mini_bit_arr_t)(sizeof(mini_bit_arr_t) * 8)) > ((mini_bit_arr_t)tot_input_sorcells));
-	EMU_LOG("send_cntr counter=%d tot_inp=%d sizeof(mini_bit_arr_t)=%d \n", 
+	PTD_CK(((mini_bit_arr_t)(sizeof(mini_bit_arr_t) * 8)) > ((mini_bit_arr_t)tot_input_sorcells));
+	PTD_LOG("send_cntr counter=%d tot_inp=%d sizeof(mini_bit_arr_t)=%d \n", 
 			tmp_num, tot_input_sorcells, sizeof(mini_bit_arr_t));
 
 	num_nod_t aa;
 	for(aa = 0; aa < tot_input_sorcells; aa++){
 		bool vv = mc_get_bit(&tmp_num, aa);
-		//EMU_LOG("send_cntr vv=%d \n", vv);
+		//PTD_LOG("send_cntr vv=%d \n", vv);
 
 		sorcell* srcll = all_input_sorcells[aa];
-		EMU_CK(srcll != mc_null);
+		PTD_CK(srcll != mc_null);
 
 		void* obj = mc_null;
 		if(vv){
@@ -134,21 +134,21 @@ nervenet::sornet_dbg_send_cntr(){
 		} else {
 			obj = mck_as_glb_pt(&net_bottom);
 		}
-		EMU_CK(obj != mc_null);
-		EMU_CK(srcll != mc_null);
-		EMU_CK(src != mc_null);
+		PTD_CK(obj != mc_null);
+		PTD_CK(srcll != mc_null);
+		PTD_CK(src != mc_null);
 
 		bj_send_sornet_tmt(src, bj_tok_sornet_bin, obj, srcll, aa);
 	}
 
-	EMU_LOG("send_cntr_end\n");
+	PTD_LOG("send_cntr_end\n");
 
 	return true;
 }
 
 bool
 nervenet::sornet_check_order(bj_cmp_obj_func_t fn){
-	//EMU_LOG("sornet_check_order_beg\n");
+	//PTD_LOG("sornet_check_order_beg\n");
 
 	num_nod_t aa;
 	bool sor_ok = true;
@@ -168,7 +168,7 @@ mini_bit_arr_t
 nervenet::sornet_dbg_bin_get_mini_sorted_arr(){
 	mini_bit_arr_t min_arr = 0;
 
-	EMU_CK(((mini_bit_arr_t)(sizeof(mini_bit_arr_t) * 8)) > ((mini_bit_arr_t)tot_input_sorcells));
+	PTD_CK(((mini_bit_arr_t)(sizeof(mini_bit_arr_t) * 8)) > ((mini_bit_arr_t)tot_input_sorcells));
 
 	num_nod_t aa;
 	for(aa = 0; aa < tot_input_sorcells; aa++){
@@ -191,7 +191,7 @@ nervenet::sornet_dbg_bin_get_mini_sorted_arr(){
 
 void
 nervenet::sornet_dbg_end_step(){
-	EMU_CK(kernel::get_core_nn() == 0);
+	PTD_CK(kernel::get_core_nn() == 0);
 
 	bool srt_ok = sornet_check_order(&bj_cmp_bin_objs);
 	if(! srt_ok){
@@ -201,8 +201,8 @@ nervenet::sornet_dbg_end_step(){
 	mini_bit_arr_t min_arr = sornet_dbg_bin_get_mini_sorted_arr();
 	char* pt_arr = (char*)(&min_arr);
 	MC_MARK_USED(pt_arr);
-	EMU_PRT("SORTED_OK_ARR_%d_" BJ_SORTED_PATTERN "\n", dbg_sornet_curr_cntr, BJ_SORTED_DATA);
-	EMU_LOG("SORTED_OK_ARR_%d_" BJ_SORTED_PATTERN "\n", dbg_sornet_curr_cntr, BJ_SORTED_DATA);
+	PTD_PRT("SORTED_OK_ARR_%d_" BJ_SORTED_PATTERN "\n", dbg_sornet_curr_cntr, BJ_SORTED_DATA);
+	PTD_LOG("SORTED_OK_ARR_%d_" BJ_SORTED_PATTERN "\n", dbg_sornet_curr_cntr, BJ_SORTED_DATA);
 	mck_slog2("sorted_ok_arr_");
 	mck_ilog(dbg_sornet_curr_cntr);
 	mck_slog2("\n");
@@ -219,8 +219,8 @@ nervenet::sornet_dbg_end_step(){
 
 void
 nervenet::sornet_dbg_bin_handler(missive* msv){
-	EMU_CK(kernel::get_core_nn() == 0);
-	//EMU_LOG("sornet_dbg_bin_handler 1\n");
+	PTD_CK(kernel::get_core_nn() == 0);
+	//PTD_LOG("sornet_dbg_bin_handler 1\n");
 
 	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
 	sornet_tok_t tmt_tok = (sornet_tok_t)(sn_tmt->tok);
@@ -234,8 +234,8 @@ nervenet::sornet_dbg_bin_handler(missive* msv){
 		}
 	}
 	if(tmt_tok == bj_tok_sornet_out){
-		EMU_CK(tmt_idx < tot_input_sorcells);
-		EMU_CK(all_output_sorobjs[tmt_idx] == mc_null);
+		PTD_CK(tmt_idx < tot_input_sorcells);
+		PTD_CK(all_output_sorobjs[tmt_idx] == mc_null);
 		all_output_sorobjs[tmt_idx] = tmt_obj;
 
 		tot_rcv_output_sorobjs++;
@@ -269,7 +269,7 @@ void bj_sornet_main() {
 	kernel::set_handlers(1, bj_nil_handlers);
 	bj_sornet_init_handlers();
 
-	EMU_LOG("SORNET___ %d \n", nn);
+	PTD_LOG("SORNET___ %d \n", nn);
 
 	kernel* ker = mck_get_kernel();
 	ker->user_func = bj_sornet_kernel_func;
@@ -289,15 +289,15 @@ void bj_sornet_main() {
 		my_net->dbg_sornet_max_cntr = max_cntr;
 		my_net->send(my_net, bj_tok_sornet_start);
 
-		EMU_PRT("dbg_sornet_max_cntr=%d\n", max_cntr);
-		EMU_LOG("dbg_sornet_max_cntr=%d\n", max_cntr);
+		PTD_PRT("dbg_sornet_max_cntr=%d\n", max_cntr);
+		PTD_LOG("dbg_sornet_max_cntr=%d\n", max_cntr);
 	}
 	kernel::run_sys();
 
 	//bj_print_active_cnf(side_left, tiki_invalid, mc_cstr("snt_after"), 3, 0, 
 	//	bj_dbg_prt_nd_neu_flag | bj_dbg_prt_nd_pol_flag);
 
-	EMU_PRT("...............................END_SORNET\n");
+	PTD_PRT("...............................END_SORNET\n");
 	mck_slog2("END_SORNET___");
 	mck_ilog(nn);
 	mck_slog2("_________________________\n");

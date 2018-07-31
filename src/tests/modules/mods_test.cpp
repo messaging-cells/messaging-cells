@@ -125,7 +125,7 @@ int main() {
 	mck_slog2("Modules main \n");
 
 	init_module_nams();
-	EMU_CK(mck_get_tot_modules() >= TOT_MODS);
+	PTD_CK(mck_get_tot_modules() >= TOT_MODS);
 
 	all_mod_addr = mc_malloc32(mc_addr_t, TOT_MODS);
 	mck_fill_module_external_addresses(TOT_MODS, all_mod_nams, all_mod_addr);

@@ -42,7 +42,7 @@ class sequence;
 
 #define MAX_MSVS 5000
 
-#define PH_DBG EMU_PRT
+#define PH_DBG PTD_PRT
 
 typedef uint32_t seq_tok_t;
 
@@ -73,7 +73,7 @@ public:
 	grip&	get_available();
 };
 
-// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
+// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (cores as threads) TO WORK.
 class seq_core {
 public:
 	MCK_DECLARE_MEM_METHODS(seq_core, mc_mod0_cod)
@@ -119,7 +119,7 @@ sequence::handler(missive* msv){
 	bool is_sender = (nn == 1);
 
 	PH_DBG("is_sender=%d tok=%d last_recv=%d\n", is_sender, tok, last_recv);
-	EMU_CK(tok == (last_recv + 1));
+	PTD_CK(tok == (last_recv + 1));
 	last_recv = tok;
 
 	if(is_sender && (last_recv < last_sent)){
@@ -133,11 +133,11 @@ sequence::handler(missive* msv){
 
 	for(int kk = 0; kk < num_rep; kk++){
 		if(is_sender){
-			EMU_CK(msv_src == glb_receiver);
-			//EMU_CK(last_recv == last_sent);
+			PTD_CK(msv_src == glb_receiver);
+			//PTD_CK(last_recv == last_sent);
 			last_sent += 1;
 		} else {
-			EMU_CK(msv_src == glb_sender);
+			PTD_CK(msv_src == glb_sender);
 			last_sent = last_recv;
 		}
 

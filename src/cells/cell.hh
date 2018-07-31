@@ -98,12 +98,12 @@ typedef void (*mc_dbg_alloc_func_t)(void* obj, mc_alloc_size_t sz);
 
 //! Defines 'acquire_alloc' method for class 'nam' with aligment 'align' (32 or 64).
 #define MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
-EMU_DBG_CODE(mc_dbg_alloc_func_t nam##_alloc_hook = mc_null); \
+PTD_DBG_CODE(mc_dbg_alloc_func_t nam##_alloc_hook = mc_null); \
 nam* \
 nam::acquire_alloc(mc_alloc_size_t sz){ \
 	MCK_CK(sz != BJ_INVALID_ALLOC_SZ); \
 	nam* obj = mc_malloc##align(nam, sz); \
-	EMU_DBG_CODE(if(nam##_alloc_hook != mc_null){ (*nam##_alloc_hook)(obj, sz); }); \
+	PTD_DBG_CODE(if(nam##_alloc_hook != mc_null){ (*nam##_alloc_hook)(obj, sz); }); \
 	if(obj == mc_null){ \
 		mck_slog2(#nam); \
 		mck_slog2("_OUT_OF_MEM.acquire_alloc_NULL_OBJECT.\n"); \
@@ -148,10 +148,10 @@ nam::separate(mc_alloc_size_t sz){ \
 	for(int bb = 0; bb < sz; bb++){ \
 		obj[bb].let_go(); \
 		ava.bind_to_my_left(obj[bb]); \
-		EMU_CODE( \
+		PTD_CODE( \
 			if(bb == 0){ \
 				grip& ava2 = obj[bb].get_available(); \
-				EMU_CK_PRT(((&ava) == (&ava2)), "You MUST define %s::get_available() returning %s \n", \
+				PTD_CK_PRT(((&ava) == (&ava2)), "You MUST define %s::get_available() returning %s \n", \
 							#nam, #all_ava); \
 			} \
 		); \
@@ -163,18 +163,18 @@ nam::separate(mc_alloc_size_t sz){ \
 //define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
 
 #define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
-EMU_DBG_CODE(mc_dbg_alloc_func_t nam##_acquire_hook = mc_null); \
+PTD_DBG_CODE(mc_dbg_alloc_func_t nam##_acquire_hook = mc_null); \
 nam* \
 nam::acquire(mc_alloc_size_t sz){ \
 	grip& ava = all_ava; \
 	if(sz == 1){ \
-		EMU_DBG_CODE(bool was_alone = ava.is_alone()); \
+		PTD_DBG_CODE(bool was_alone = ava.is_alone()); \
 		if(ava.is_alone()){ \
 			separate(BJ_INVALID_ALLOC_SZ); \
 		} \
 		binder* fst = ava.bn_right; \
 		fst->let_go(); \
-		EMU_DBG_CODE(if(! was_alone && (nam##_acquire_hook != mc_null)){ (*nam##_acquire_hook)(fst, sz); }); \
+		PTD_DBG_CODE(if(! was_alone && (nam##_acquire_hook != mc_null)){ (*nam##_acquire_hook)(fst, sz); }); \
 		return (nam *)fst; \
 	} \
 	return nam::acquire_alloc(sz); \
@@ -328,7 +328,7 @@ Every core must have one and only one kernel inited with kernel::init_sys.
 
 void mc_kernel_handler(missive* msv);
 
-void emu_dbg_prt_ack_arr(int sz, mck_ack_t* arr);
+void ptd_dbg_prt_ack_arr(int sz, mck_ack_t* arr);
 
 extern char* err_cell_07 mc_external_data_ram;
 extern char* err_cell_08 mc_external_data_ram;
@@ -559,23 +559,23 @@ public:
 	((all_handlers != mc_null) && mck_is_valid_handler_idx(idx) && (all_handlers[idx] != mc_null))
 
 /*
-	EMU_CK_PRT(mck_is_valid_handler_idx(hdlr_idx), "WARNING !. Invalid handler_idx %d with %s dst=%p \n\n", \
+	PTD_CK_PRT(mck_is_valid_handler_idx(hdlr_idx), "WARNING !. Invalid handler_idx %d with %s dst=%p \n\n", \
 		hdlr_idx, (((msv != mc_null) && (msv->dst != mc_null))?(msv->dst->get_class_name()):("UNKNOW CLASS")), \
 		(void*)(msv->dst)); \
 */
 
 #define mck_handle_missive_base(msv, hdlr_idx) \
-	EMU_CK(mck_is_valid_handler_idx(hdlr_idx)); \
+	PTD_CK(mck_is_valid_handler_idx(hdlr_idx)); \
 	if(mck_is_valid_handler_idx(hdlr_idx)){ \
 		(*(all_handlers[hdlr_idx]))(msv); \
 	} \
-	EMU_DBG_CODE(msv->dbg_msv |= 0x2); \
+	PTD_DBG_CODE(msv->dbg_msv |= 0x2); \
 
 // end_macro
 
 #define mck_handle_missive(msv) \
 	cell* hdlr_dst = (msv)->dst; \
-	EMU_CK(hdlr_dst != mc_null); \
+	PTD_CK(hdlr_dst != mc_null); \
 	mck_handle_missive_base(msv, hdlr_dst->handler_idx) \
 
 // end_macro
@@ -614,7 +614,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void	init_me(int caller = 0) mc_external_code_ram;
 
-	EMU_DBG_CODE(
+	PTD_DBG_CODE(
 		virtual mc_opt_sz_fn 
 		void	dbg_release(int dbg_caller){}
 	);
@@ -626,7 +626,7 @@ public:
 		init_me(dbg_caller);
 		grip& ava = get_available();
 		ava.bind_to_my_left(*this);
-		EMU_DBG_CODE(dbg_release(dbg_caller));
+		PTD_DBG_CODE(dbg_release(dbg_caller));
 	}
 
 	mc_inline_fn
@@ -771,7 +771,7 @@ public:
 	cell*				src;
 	mck_token_t 		tok;
 
-	EMU_DBG_CODE(uint8_t	dbg_msv);
+	PTD_DBG_CODE(uint8_t	dbg_msv);
 
 	mc_opt_sz_fn 
 	missive(){
@@ -783,23 +783,23 @@ public:
 
 	virtual mc_opt_sz_fn 
 	void init_me(int dbg_caller = 0){
-		EMU_CK_PRT((dbg_caller == 0) || (! (dbg_msv & 0x1)) || (dbg_msv & 0x2), 
+		PTD_CK_PRT((dbg_caller == 0) || (! (dbg_msv & 0x1)) || (dbg_msv & 0x2), 
 			"cll=%d dbg=%p tok=%d src=%p dst=%p\n", 
 			dbg_caller, (void*)(uintptr_t)dbg_msv, tok, (void*)src, (void*)dst);
 		dst = mc_null;
 		src = mc_null;
 		tok = 0;
-		EMU_DBG_CODE(dbg_msv = 0);
+		PTD_DBG_CODE(dbg_msv = 0);
 	}
 
 	//! Sends this \ref missive . It calls \ref mck_as_glb_pt with src before sending.
 	mc_inline_fn 
 	void send(){
-		EMU_CK(dbg_msv == 0);
-		EMU_DBG_CODE(dbg_msv |= 0x1);
+		PTD_CK(dbg_msv == 0);
+		PTD_DBG_CODE(dbg_msv |= 0x1);
 
-		EMU_CK(dst != mc_null);
-		EMU_CK(mc_addr_in_sys((mc_addr_t)dst));
+		PTD_CK(dst != mc_null);
+		PTD_CK(mc_addr_in_sys((mc_addr_t)dst));
 
 		src = (cell*)mck_as_glb_pt(src);
 		MCK_KERNEL->local_work.bind_to_my_left(*this);
@@ -807,13 +807,13 @@ public:
 
 	mc_inline_fn 
 	void send_to_host(){
-		EMU_CK(dbg_msv == 0);
-		EMU_DBG_CODE(dbg_msv |= 0x1);
+		PTD_CK(dbg_msv == 0);
+		PTD_DBG_CODE(dbg_msv |= 0x1);
 
-		EMU_CK(dst != mc_null);
+		PTD_CK(dst != mc_null);
 		if(! MCK_KERNEL->is_host_kernel){
-			EMU_CK(mc_addr_get_id((mc_addr_t)dst) != 0);
-			EMU_CK(! mc_addr_in_sys((mc_addr_t)dst));
+			PTD_CK(mc_addr_get_id((mc_addr_t)dst) != 0);
+			PTD_CK(! mc_addr_in_sys((mc_addr_t)dst));
 			src = (cell*)mck_as_glb_pt(src);
 			MCK_KERNEL->to_host_work.bind_to_my_left(*this);
 			MCK_KERNEL->has_to_host_work = true;

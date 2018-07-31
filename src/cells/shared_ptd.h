@@ -32,11 +32,11 @@ Our Resurrected and Living, both in Body and Spirit,
 
 // mc_shared_ptd.h
 
-#ifndef MC_SHARED_DATA_EMU_H
-#define MC_SHARED_DATA_EMU_H
+#ifndef MC_SHARED_DATA_PTD_H
+#define MC_SHARED_DATA_PTD_H
 
 #if ! defined(MC_IS_PTD_CODE)
-	#error Only compile for emulation code (your linux)
+	#error Only compile for PTD code (your linux)
 #endif
 
 #ifdef __cplusplus
@@ -83,6 +83,6 @@ mcm_addr_with_fn(mc_core_id_t id, void* addr);
 }
 #endif
 
-#endif // MC_SHARED_DATA_EMU_H
+#endif // MC_SHARED_DATA_PTD_H
 
 

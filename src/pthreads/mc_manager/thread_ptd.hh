@@ -32,8 +32,8 @@ Our Resurrected and Living, both in Body and Spirit,
 
 // thread_ptd.h
 
-#ifndef THREAD_EMU_HH
-#define THREAD_EMU_HH
+#ifndef THREAD_PTD_HH
+#define THREAD_PTD_HH
 
 #include <pthread.h>
 
@@ -44,33 +44,33 @@ Our Resurrected and Living, both in Body and Spirit,
 
 #define NAMELEN 16
 
-struct emu_info_st {    // Used as argument to thread_start() 
-	pthread_t 		emu_id;        // id returned by pthread_create() 
-	mc_core_nn_t	emu_num;       // core consec
-	char 			emu_name[NAMELEN];
+struct ptd_info_st {    // Used as argument to thread_start() 
+	pthread_t 		ptd_id;        // id returned by pthread_create() 
+	mc_core_nn_t	ptd_num;       // core consec
+	char 			ptd_name[NAMELEN];
 
-	void 		(*emu_core_func)();
+	void 		(*ptd_core_func)();
 
-	mc_core_id_t 	emu_core_id;	// core id as in epiphany arch
-	mc_sys_sz_st 	emu_system_sz;
-	mck_glb_sys_st	emu_glb_sys_data;
-	mc_core_id_t	emu_map_parent_core_id;
-	mc_core_nn_t	emu_map_tot_children;
-	mc_load_map_st*	emu_map_loaded;
-	kernel 			emu_THE_KERNEL;
+	mc_core_id_t 	ptd_core_id;	// core id as in epiphany arch
+	mc_sys_sz_st 	ptd_system_sz;
+	mck_glb_sys_st	ptd_glb_sys_data;
+	mc_core_id_t	ptd_map_parent_core_id;
+	mc_core_nn_t	ptd_map_tot_children;
+	mc_load_map_st*	ptd_map_loaded;
+	kernel 			ptd_THE_KERNEL;
 };
 
-typedef struct emu_info_st emu_info_t;
+typedef struct ptd_info_st ptd_info_t;
 
 struct thread_info_st {    // Used as argument to thread_start() 
-	emu_info_t		thd_emu;
+	ptd_info_t		thd_ptd;
 	char*			thd_log_fnam;
 	umm_block 		thd_umm_heap[UMM_HEAP_NUM_BLOCKS];
 };
 
 typedef struct thread_info_st thread_info_t;
 
-extern emu_info_t*	mcm_HOST_EMU_INFO;
+extern ptd_info_t*	mcm_HOST_PTD_INFO;
 
 extern thread_info_t* ALL_THREADS_INFO;
 extern int TOT_THREADS;
@@ -79,8 +79,8 @@ extern pthread_t HOST_THREAD_ID;
 uint16_t
 mck_get_thread_idx();
 
-emu_info_t*
-mck_get_emu_info();
+ptd_info_t*
+mck_get_ptd_info();
 
 mc_inline_fn bool
 mcm_addr_in_host(void* addr){
@@ -102,14 +102,14 @@ mck_addr_in_cores(void* addr){
 
 mc_inline_fn mc_core_nn_t
 mck_get_addr_idx(void* addr){
-	EMU_CK(mck_addr_in_cores(addr));
+	PTD_CK(mck_addr_in_cores(addr));
 	mc_core_nn_t idx = (mc_core_nn_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t));
 	return idx;
 }
 
 mc_inline_fn uintptr_t
 mck_get_addr_offset(void* addr){
-	EMU_CK(mck_addr_in_cores(addr));
+	PTD_CK(mck_addr_in_cores(addr));
 	uintptr_t ofs = (uintptr_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) % sizeof(thread_info_t));
 	return ofs;
 }
@@ -146,5 +146,5 @@ mc_c_decl {
 }
 #endif
 
-#endif // THREAD_EMU_HH
+#endif // THREAD_PTD_HH
 

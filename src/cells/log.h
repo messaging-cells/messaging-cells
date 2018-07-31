@@ -116,9 +116,9 @@ mck_sprt(char* msg){
 void
 mck_aux_iout(uint32_t vv, mc_out_type_t outt, mc_type_t tt) mc_external_code_ram;
 
-//! Aborts emulation
+//! Aborts PTD
 mc_inline_fn void
-mc_out_abort_emu(){
+mc_out_abort_ptd(){
 	mck_aux_iout(0, MC_OUT_ABORT, MC_X32);
 }
 

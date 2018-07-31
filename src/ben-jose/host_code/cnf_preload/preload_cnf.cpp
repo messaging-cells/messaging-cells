@@ -32,12 +32,12 @@ pre_cnf_node*
 get_lit(long lit_id){
 	if(lit_id > 0){
 		pre_cnf_node* pos =  THE_CNF->all_pos[lit_id - 1];
-		EMU_CK(pos->id == lit_id);
+		PTD_CK(pos->id == lit_id);
 		return pos;
 	}
-	EMU_CK(lit_id < 0);
+	PTD_CK(lit_id < 0);
 	pre_cnf_node* neg =  THE_CNF->all_neg[(-lit_id) - 1];
-	EMU_CK(neg->id == lit_id);
+	PTD_CK(neg->id == lit_id);
 	return neg;
 }
 
@@ -126,7 +126,7 @@ check_node_sz(pre_node_sz_t sz){
 		mck_abort(9, mc_cstr(
 			"CNF node too big. Variable in too many clauses or clause too big. (BJ_MAX_NODE_SZ). Fix CNF."));
 	}
-	EMU_CK(sz < THE_CNF->max_nod_sz);
+	PTD_CK(sz < THE_CNF->max_nod_sz);
 }
 
 void
@@ -172,17 +172,17 @@ preload_cnf(long sz, const long* arr){
 
 	long nn = 0;
 
-	EMU_CK(nn < num_ccls);
+	PTD_CK(nn < num_ccls);
 	pre_cnf_node* ccl = THE_CNF->all_ccl[nn];
 	ccl->id = nn;
 
 	for(long ii = 0; ii < sz; ii++){
 		long nio_id = arr[ii];
-		EMU_CK(ccl != mc_null);
+		PTD_CK(ccl != mc_null);
 		
 		if(nio_id != 0){
 			pre_cnf_node* lit = get_lit(nio_id);
-			EMU_CK(lit != NULL);
+			PTD_CK(lit != NULL);
 
 			agent_ref* rli = agent_ref::acquire();
 			rli->glb_agent_ptr = lit;
@@ -218,7 +218,7 @@ preload_cnf(long sz, const long* arr){
 		if(kk == num_cores){ kk = 0; }
 		pre_cnf_node* nod = THE_CNF->all_tmp_pre_load_nods[aa];
 		pre_cnf_net& cnf = THE_CNF->all_cnf[kk];
-		EMU_CK(nod->is_alone());
+		PTD_CK(nod->is_alone());
 		cnf.tot_pre_rels += nod->pre_sz;
 		switch(nod->ki){
 			case nd_pos:
@@ -228,8 +228,8 @@ preload_cnf(long sz, const long* arr){
 				nod->opp_nod = opp;
 				opp->opp_nod = nod;
 
-				EMU_CK(nod->loaded == mc_null);
-				EMU_CK(opp->loaded == mc_null);
+				PTD_CK(nod->loaded == mc_null);
+				PTD_CK(opp->loaded == mc_null);
 
 				cnf.all_pre_pos.bind_to_my_left(*nod);
 				cnf.all_pre_neg.bind_to_my_left(*opp);

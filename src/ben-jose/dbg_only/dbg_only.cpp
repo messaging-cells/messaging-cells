@@ -15,8 +15,8 @@ nervenet::dbg_only_handler(missive* msv){
 	MC_MARK_USED(tok);
 	MCK_CK(tok == bj_tok_load_no_lits);
 
-	EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-	EMU_LOG("ENDING_DBG_ONLY %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	PTD_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
+	PTD_LOG("ENDING_DBG_ONLY %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 	kernel::stop_sys(bj_tok_load_end);
 }
 
@@ -58,10 +58,10 @@ void bj_dbg_separate(){
 	polaron::separate(sep_pols);
 	neuron::separate(sep_neus);
 
-	EMU_LOG("Separated transmitters %ld\n", sep_msvs);
+	PTD_LOG("Separated transmitters %ld\n", sep_msvs);
 
 	transmitter* msv = transmitter::acquire();
-	EMU_CK(msv->wrk_side == side_invalid);
+	PTD_CK(msv->wrk_side == side_invalid);
 	msv->src = my_net;
 	msv->dst = my_net;
 	msv->tok = bj_tok_load_no_lits;
@@ -93,6 +93,6 @@ void bj_dbg_only_main() {
 
 	kernel::run_sys();
 
-	EMU_LOG("\n=========================================================================\n");
+	PTD_LOG("\n=========================================================================\n");
 }
 

@@ -80,7 +80,7 @@ link_all_modules_aux_fn(){
 void mc_cores_main() {
 	kernel::init_sys();
 
-	//EMU_PRT("SOLVER main (KER=%p)\n", (void*)MCK_KERNEL);
+	//PTD_PRT("SOLVER main (KER=%p)\n", (void*)MCK_KERNEL);
 	mck_slog2("SOLVER_STARTED\n");	
 
 	bj_print_class_szs();
@@ -91,10 +91,10 @@ void mc_cores_main() {
 	mck_fill_module_external_addresses(TOT_MODS, all_mod_nams, all_mod_addr);
 
 	#ifdef BJ_DBG_ONLY
-		EMU_PRT("BJ_DBG_ONLY\n");
+		PTD_PRT("BJ_DBG_ONLY\n");
 		mck_slog2("BJ_DBG_ONLY\n");	
 		bool ok = false;
-		EMU_CK(DBG_ONLY_IDX < TOT_MODS);
+		PTD_CK(DBG_ONLY_IDX < TOT_MODS);
 		ok = mck_load_module(all_mod_addr[DBG_ONLY_IDX]);
 		if(! ok){
 			mck_abort(1, mc_cstr("mck_load_module failed for DBG_ONLY_IDX. \n"));
@@ -103,18 +103,18 @@ void mc_cores_main() {
 	#endif
 
 	#ifdef BJ_DBG_SORNET
-		EMU_PRT("BJ_DBG_SORNET\n");
+		PTD_PRT("BJ_DBG_SORNET\n");
 		mck_slog2("BJ_DBG_SORNET\n");	
 		bool ok = false;
 
-		EMU_CK(CNF_LOADER_IDX < TOT_MODS);
+		PTD_CK(CNF_LOADER_IDX < TOT_MODS);
 		ok = mck_load_module(all_mod_addr[CNF_LOADER_IDX]);
 		if(! ok){
 			mck_abort(1, mc_cstr("mck_load_module failed for CNF_LOADER_IDX. \n"));
 		}
 		bj_load_main();
 
-		EMU_CK(SORNET_IDX < TOT_MODS);
+		PTD_CK(SORNET_IDX < TOT_MODS);
 		ok = mck_load_module(all_mod_addr[SORNET_IDX]);
 		if(! ok){
 			mck_abort(1, mc_cstr("mck_load_module failed for SORNET_IDX. \n"));
@@ -124,25 +124,25 @@ void mc_cores_main() {
 
 	
 	#ifdef BJ_NORMAL 
-		EMU_PRT("BJ_NORMAL\n");
+		PTD_PRT("BJ_NORMAL\n");
 		mck_slog2("BJ_NORMAL\n");	
 
 		bool ok = false;
-		EMU_CK(CNF_LOADER_IDX < TOT_MODS);
+		PTD_CK(CNF_LOADER_IDX < TOT_MODS);
 		ok = mck_load_module(all_mod_addr[CNF_LOADER_IDX]);
 		if(! ok){
 			mck_abort(1, mc_cstr("mck_load_module failed for CNF_LOADER_IDX. \n"));
 		}
 		bj_load_main();
 
-		EMU_CK(PROPAG_IDX < TOT_MODS);
+		PTD_CK(PROPAG_IDX < TOT_MODS);
 		ok = mck_load_module(all_mod_addr[PROPAG_IDX]);
 		if(! ok){
 			mck_abort(1, mc_cstr("mck_load_module_failed_for_PROPAG_IDX. \n"));
 		}
 		bj_propag_main();
 
-		EMU_CK(STABI_IDX < TOT_MODS);
+		PTD_CK(STABI_IDX < TOT_MODS);
 		ok = mck_load_module(all_mod_addr[STABI_IDX]);
 		if(! ok){
 			mck_abort(1, mc_cstr("mck_load_module_failed_for_STABI_IDX. \n"));
@@ -150,11 +150,11 @@ void mc_cores_main() {
 		bj_mirrow_main();
 		bj_stabi_main();
 
-		EMU_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
+		PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
 
 	#endif
 
-	//EMU_PRT("SOLVER_ENDED\n");
+	//PTD_PRT("SOLVER_ENDED\n");
 	mck_slog2("SOLVER_ENDED_OK\n");	
 
 	kernel::finish_sys();

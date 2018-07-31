@@ -26,16 +26,16 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	pre_sornode* nod = pre_sornode::acquire();
 	MCK_CK(nod != mc_null);
 	
-	mc_core_nn_t emu_up_nid = 0;
-	mc_core_nn_t emu_down_nid = 0;
-	MC_MARK_USED(emu_up_nid);
-	MC_MARK_USED(emu_down_nid);
+	mc_core_nn_t ptd_up_nid = 0;
+	mc_core_nn_t ptd_down_nid = 0;
+	MC_MARK_USED(ptd_up_nid);
+	MC_MARK_USED(ptd_down_nid);
 	
 	prms.curr_nod_id++;
 	nod->nod_id = prms.curr_nod_id;
 
-	EMU_CK(up_idx < prms.tot_nods);
-	EMU_CK(down_idx < prms.tot_nods);
+	PTD_CK(up_idx < prms.tot_nods);
+	PTD_CK(down_idx < prms.tot_nods);
 
 	nod->up_idx = up_idx;
 	nod->down_idx = down_idx;
@@ -48,23 +48,23 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 
 	if(nod->out_up != mc_null){
 		nod->level = nod->out_up->level + 1;
-		EMU_CK(nod->out_down != mc_null);
-		EMU_CK(nod->out_down->level == nod->out_up->level);
+		PTD_CK(nod->out_down != mc_null);
+		PTD_CK(nod->out_down->level == nod->out_up->level);
 
-		emu_up_nid = nod->out_up->nod_id;
-		emu_down_nid = nod->out_down->nod_id;
+		ptd_up_nid = nod->out_up->nod_id;
+		ptd_down_nid = nod->out_down->nod_id;
 
 		nod->up_conn = nod->out_up->get_conn_kind(up_idx);
 		nod->down_conn = nod->out_down->get_conn_kind(down_idx);
 	}
 
-	EMU_CK(nod->level >= 0);
-	EMU_CK(nod->level < prms.tot_lvs);
+	PTD_CK(nod->level >= 0);
+	PTD_CK(nod->level < prms.tot_lvs);
 
 	if(THE_CNF != mc_null){
 		long num_cores = THE_CNF->tot_cores;
 		mc_core_nn_t& nxt_nn = prms.arr_lvs[nod->level];
-		EMU_CK(nxt_nn < num_cores);
+		PTD_CK(nxt_nn < num_cores);
 
 		nod->nod_nn = nxt_nn;
 
@@ -74,14 +74,14 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 
 		nxt_nn++;
 		if(nxt_nn == num_cores){ nxt_nn = 0; }
-		EMU_CK(nxt_nn < num_cores);
+		PTD_CK(nxt_nn < num_cores);
 	}
 
-	EMU_CK(knd != snod_invalid);
-	EMU_PRT("%s_NOD (%ld)  %ld[%ld %ld] \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), nod->nod_id, 
-			nod->level, up_idx, down_idx, emu_up_nid, emu_down_nid);
+	PTD_CK(knd != snod_invalid);
+	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld] \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), nod->nod_id, 
+			nod->level, up_idx, down_idx, ptd_up_nid, ptd_down_nid);
 	ZNQ_CODE(printf("%s_NOD (%ld)  %ld[%ld %ld] \t(%d %d) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
-				nod->nod_id, nod->level, up_idx, down_idx, emu_up_nid, emu_down_nid));
+				nod->nod_id, nod->level, up_idx, down_idx, ptd_up_nid, ptd_down_nid));
 
 	return nod;
 }
@@ -159,7 +159,7 @@ create_sornet(num_nod_t num_to_sort){
 	create_net_sorter(0, prms.tot_nods, prms);
 
 	ZNQ_CODE(printf("\nTOT_INPUT_NODS=%ld TOT_LVS=%ld \n", prms.tot_nods, prms.tot_lvs));
-	EMU_PRT("\nTOT_INPUT_NODS=%ld TOT_LVS=%ld \n", prms.tot_nods, prms.tot_lvs);
+	PTD_PRT("\nTOT_INPUT_NODS=%ld TOT_LVS=%ld \n", prms.tot_nods, prms.tot_lvs);
 }
 
 //				pre_sornode* nod = pre_sornode::acquire();

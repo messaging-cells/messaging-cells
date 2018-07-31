@@ -15,14 +15,14 @@ wait_inited_state(mc_core_id_t dst_id){
 void 
 recv_cell_handler(missive* msg){
 	MCK_UPDATE_MIN_SP();
-	EMU_CK(mc_addr_is_local(msg->dst));
+	PTD_CK(mc_addr_is_local(msg->dst));
 	mc_core_id_t koid = kernel::get_core_id();
 	MC_MARK_USED(koid);
 	mc_core_nn_t konn = kernel::get_core_nn();
 	MC_MARK_USED(konn);
 	mck_slog2("GOT MISSIVE\n");
-	EMU_LOG("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	EMU_PRT("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_LOG("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_PRT("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	msg->dst->flags = 1;
 }
 

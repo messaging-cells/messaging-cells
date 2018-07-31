@@ -5,9 +5,9 @@ SRC_BJ_HOST_DIR := .
 
 TARGET := ben-jose-ptd.elf
 
-TGT_LDFLAGS := ${MC_STD_EMU_LDFLAGS} -rdynamic
-TGT_LDLIBS  := ${MC_STD_EMU_LDLIBS} -lstdc++ -ldimacs-emu 
-TGT_PREREQS := ${MC_EMU_LIBS} libdimacs-emu.a 
+TGT_LDFLAGS := ${MC_STD_PTD_LDFLAGS} -rdynamic
+TGT_LDLIBS  := ${MC_STD_PTD_LDLIBS} -lstdc++ -ldimacs-ptd 
+TGT_PREREQS := ${MC_PTD_LIBS} libdimacs-ptd.a 
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

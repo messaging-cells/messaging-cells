@@ -32,8 +32,8 @@
 
 TARGET := hola_jose_ptd.elf
 
-TGT_LDFLAGS := ${MC_STD_EMU_LDFLAGS} -rdynamic
-TGT_LDLIBS  := ${MC_STD_EMU_LDLIBS}
+TGT_LDFLAGS := ${MC_STD_PTD_LDFLAGS} -rdynamic
+TGT_LDLIBS  := ${MC_STD_PTD_LDLIBS}
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

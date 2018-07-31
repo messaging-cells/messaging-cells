@@ -57,7 +57,7 @@ void bj_load_shd_cnf(){
 	my_net->init_nervenet_with(nn_cnf);
 	nervenet& tots = *my_net;
 
-	//EMU_PRT("%ld local tot_vars\n", my_net->tot_vars);
+	//PTD_PRT("%ld local tot_vars\n", my_net->tot_vars);
 
 	long num_neus = tots.tot_neus;
 	long num_vars = tots.tot_vars;
@@ -67,7 +67,7 @@ void bj_load_shd_cnf(){
 		return;
 	}*/
 
-	//EMU_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld TOT_RELS=%ld \n", 
+	//PTD_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld TOT_RELS=%ld \n", 
 	//		tots.tot_lits, tots.tot_vars, tots.tot_neus, tots.tot_rels);
 
 	long sep_msvs = 3 * num_rels;	// almost (lft + rgt)
@@ -88,8 +88,8 @@ void bj_load_shd_cnf(){
 	polaron::separate(sep_pols);
 	neuron::separate(sep_neus);
 
-	//EMU_PRT("Separated polarons %ld\n", sep_pols);
-	//EMU_LOG("Separated_all_transmitters %ld\n", sep_msvs);
+	//PTD_PRT("Separated polarons %ld\n", sep_pols);
+	//PTD_LOG("Separated_all_transmitters %ld\n", sep_msvs);
 	mck_slog2("Separated_all_init_objects\n");	
 
 	binder * fst, * lst, * wrk;
@@ -100,12 +100,12 @@ void bj_load_shd_cnf(){
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
 		pre_cnf_node* nod = (pre_cnf_node*)wrk;
 
-		EMU_CK(nod->ki == nd_pos);
-		EMU_CK(nod->opp_nod != mc_null);
+		PTD_CK(nod->ki == nd_pos);
+		PTD_CK(nod->opp_nod != mc_null);
 
 		pre_cnf_node* opp = (pre_cnf_node*)mc_host_pt_to_core_pt(nod->opp_nod);
-		EMU_CK(opp->ki == nd_neg);
-		EMU_CK(nod->id == -(opp->id));
+		PTD_CK(opp->ki == nd_neg);
+		PTD_CK(nod->id == -(opp->id));
 		//pre_cnf_node* opp = nod->opp_nod;
 
 		polaron* pos_nod = polaron::acquire();
@@ -120,12 +120,12 @@ void bj_load_shd_cnf(){
 		my_net->all_pos.bind_to_my_left(*pos_nod);
 		my_net->all_neg.bind_to_my_left(*neg_nod);
 
-		//EMU_PRT("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
-		//EMU_PRT("[k%d id%ld sz%ld] \n", opp->ki, opp->id, opp->sz);
-		//EMU_PRT("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ \n");
+		//PTD_PRT("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
+		//PTD_PRT("[k%d id%ld sz%ld] \n", opp->ki, opp->id, opp->sz);
+		//PTD_PRT("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ \n");
 
-		EMU_CK(nod->loaded == mc_null);
-		EMU_CK(opp->loaded == mc_null);
+		PTD_CK(nod->loaded == mc_null);
+		PTD_CK(opp->loaded == mc_null);
 
 		nod->loaded = mck_as_glb_pt(pos_nod);
 		opp->loaded = mck_as_glb_pt(neg_nod);
@@ -156,12 +156,12 @@ void bj_load_shd_cnf(){
 			agent_ref* sh_snp = (agent_ref*)wrk2;
 			pre_cnf_node* pol = (pre_cnf_node*)mc_host_pt_to_core_pt(sh_snp->glb_agent_ptr);
 
-			//EMU_CK(pol->loaded != mc_null);
+			//PTD_CK(pol->loaded != mc_null);
 			while(pol->loaded == mc_null){
 				// SPIN UNTIL SET (may be set by an other core)
-				EMU_CODE(sched_yield());
+				PTD_CODE(sched_yield());
 			}
-			EMU_CK(pol->loaded != mc_null);
+			PTD_CK(pol->loaded != mc_null);
 			polaron* my_pol = (polaron*)(pol->loaded);
 			
 			MCK_CK(my_pol->id == pol->id);
@@ -175,7 +175,7 @@ void bj_load_shd_cnf(){
 			my_neu->left_side.update_prv_tot_active();
 
 			transmitter* msv = transmitter::acquire();
-			EMU_CK(msv->wrk_side == side_invalid);
+			PTD_CK(msv->wrk_side == side_invalid);
 			msv->src = my_snp;
 			msv->dst = my_pol;
 			msv->tok = bj_tok_load_nw_syn;
@@ -185,9 +185,9 @@ void bj_load_shd_cnf(){
 			long& tot_ld = bj_nervenet->tot_loading;
 			tot_ld++;
 			if(tot_ld == tots.tot_lits){
-				EMU_PRT("SENT LAST------------------------ \n");
+				PTD_PRT("SENT LAST------------------------ \n");
 			}
-			EMU_PRT("SND to pole %d msv from neu %d \n", my_pol->id, my_neu->id);
+			PTD_PRT("SND to pole %d msv from neu %d \n", my_pol->id, my_neu->id);
 			*/
 
 			//mck_ilog(my_pol->id);
@@ -199,7 +199,7 @@ void bj_load_shd_cnf(){
 
 	if(tots.tot_lits == 0){
 		transmitter* msv = transmitter::acquire();
-		EMU_CK(msv->wrk_side == side_invalid);
+		PTD_CK(msv->wrk_side == side_invalid);
 		msv->src = my_net;
 		msv->dst = my_net;
 		msv->tok = bj_tok_load_no_lits;
@@ -213,10 +213,10 @@ nervenet::load_handler(missive* msv){
 	MC_MARK_USED(tok);
 	MCK_CK(tok == bj_tok_load_no_lits);
 
-	EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-	EMU_LOG("ENDING_CNF_LOAD_nervenet %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	PTD_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
+	PTD_LOG("ENDING_CNF_LOAD_nervenet %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 	kernel::stop_sys(bj_tok_load_end);
-	EMU_LOG("ENDING_CNF_LOAD_nervenet_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	PTD_LOG("ENDING_CNF_LOAD_nervenet_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 }
 
 void
@@ -230,10 +230,10 @@ polaron::load_handler(missive* msv){
 	synapse* mt_snp = (synapse*)syn_src;
 	synapse* my_snp = synapse::acquire();
 
-	//EMU_PRT("RCV msv pole %d from neu %d \n", id, mt_snp->owner->id);
-	//EMU_PRT("polaron::load_handler got snp=%p %s \n", (void*)mt_snp, mt_snp->get_class_name());
-	//EMU_CK(syn_src->get_class_name() == synapse_cls_nam);
-	EMU_CK(bj_ck_is_synapse(syn_src));
+	//PTD_PRT("RCV msv pole %d from neu %d \n", id, mt_snp->owner->id);
+	//PTD_PRT("polaron::load_handler got snp=%p %s \n", (void*)mt_snp, mt_snp->get_class_name());
+	//PTD_CK(syn_src->get_class_name() == synapse_cls_nam);
+	PTD_CK(bj_ck_is_synapse(syn_src));
 
 	polaron* my_glb_pol = (polaron*)mck_as_glb_pt(this);
 
@@ -246,7 +246,7 @@ polaron::load_handler(missive* msv){
 	left_side.update_prv_tot_active();
 
 	transmitter* msv2 = transmitter::acquire();
-	EMU_CK(msv2->wrk_side == side_invalid);
+	PTD_CK(msv2->wrk_side == side_invalid);
 	msv2->src = my_snp;
 	msv2->dst = mt_snp;
 	msv2->tok = bj_tok_load_nw_syn;
@@ -261,7 +261,7 @@ print_childs(){
 	mck_ilog(mp->num_core);
 	mck_slog2("___\n");
 
-	//EMU_PRT("NUM_CORE=%d \n", mp->num_core);
+	//PTD_PRT("NUM_CORE=%d \n", mp->num_core);
 
 	if(mp->childs == mc_null){ 
 		mck_slog2("NULL_CHILDS\n");
@@ -271,7 +271,7 @@ print_childs(){
 	int aa = 0;
 	mc_load_map_st* ch_map = (mp->childs)[aa];
 	while(ch_map != mc_null){
-		//EMU_PRT("CHILD=%d \n", ch_map->num_core);
+		//PTD_PRT("CHILD=%d \n", ch_map->num_core);
 		mck_slog2("CHILD=");
 		mck_ilog(ch_map->num_core);
 		mck_slog2("___\n");
@@ -288,30 +288,30 @@ synapse::load_handler(missive* msv){
 	load_tok_t tok = (load_tok_t)msv->tok;
 	MC_MARK_USED(syn_src);
 	MC_MARK_USED(tok);
-	EMU_CK_PRT(tok == bj_tok_load_nw_syn, "BAD_TOK= %s (%d) (%s)\n\n", load_tok_to_str(tok), tok, 
+	PTD_CK_PRT(tok == bj_tok_load_nw_syn, "BAD_TOK= %s (%d) (%s)\n\n", load_tok_to_str(tok), tok, 
 			propag_tok_to_str((propag_tok_t)(msv->tok)));
 
 	synapse* mt_snp = (synapse*)syn_src;
 
-	//EMU_PRT("synapse::load_handler got snp=%p %s \n", (void*)mt_snp, mt_snp->get_class_name());
-	//EMU_CK(syn_src->get_class_name() == synapse_cls_nam);
-	EMU_CK(bj_ck_is_synapse(syn_src));
+	//PTD_PRT("synapse::load_handler got snp=%p %s \n", (void*)mt_snp, mt_snp->get_class_name());
+	//PTD_CK(syn_src->get_class_name() == synapse_cls_nam);
+	PTD_CK(bj_ck_is_synapse(syn_src));
 
 	mate = mt_snp;
-	EMU_CK(mate != mc_null);
+	PTD_CK(mate != mc_null);
 
 	nervenet* my_net = bj_nervenet;
 	long& tot_ld = my_net->tot_loaded;
 	tot_ld++;
 	if(tot_ld == my_net->tot_lits){
-		EMU_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
+		PTD_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
 		//print_childs();
 		//mck_get_kernel()->set_idle_exit();
-		EMU_LOG("ENDING_CNF_LOAD_synapse %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+		PTD_LOG("ENDING_CNF_LOAD_synapse %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 		kernel::stop_sys(bj_tok_load_end);
-		EMU_LOG("ENDING_CNF_LOAD_synapse_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+		PTD_LOG("ENDING_CNF_LOAD_synapse_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
 	}
-	//EMU_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
+	//PTD_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
 	//	owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
 }
 
@@ -327,13 +327,13 @@ tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 		nervenode* my_nod = (nervenode*)wrk;
 		neurostate& stt = my_nod->get_neurostate(sd);
 		num_syn_t tsn = stt.step_active_set.tot_syn;
-		//EMU_LOG("ADD_NOD %s %ld tot_syn=%ld\n", node_kind_to_str(my_nod->ki), my_nod->id, tsn);
+		//PTD_LOG("ADD_NOD %s %ld tot_syn=%ld\n", node_kind_to_str(my_nod->ki), my_nod->id, tsn);
 		if(tsn > 0){
 			if(my_nod->ki == nd_neu){
 				inp_neus++;
 			} 
 			//else {
-			//	EMU_CK(bj_is_pol(my_nod->ki));
+			//	PTD_CK(bj_is_pol(my_nod->ki));
 			//	inp_pols++;
 			//}
 		}
@@ -352,7 +352,7 @@ netstate::init_propag_tiers(nervenet& my_net){
 	ti_dat->add_all_inp_from(my_net.all_pos, my_side);
 	ti_dat->add_all_inp_from(my_net.all_neg, my_side);
 
-	//EMU_CK((my_side != side_right) || (ti_dat->inp_neus == 0));	// OLD
+	//PTD_CK((my_side != side_right) || (ti_dat->inp_neus == 0));	// OLD
 
 	all_propag_tiers.bind_to_my_left(*ti_dat);
 }
@@ -412,9 +412,9 @@ void bj_load_main() {
 	my_net->act_left_side.init_propag_tiers(*my_net);
 	my_net->act_right_side.init_propag_tiers(*my_net);
 
-	EMU_CODE(tierdata& dat = get_last_tier(my_net->act_left_side.all_propag_tiers));
-	EMU_LOG("\n=========================================================================\n");
-	EMU_LOG("ENDED_LOADING. inp_neu=%ld \n", dat.inp_neus);
+	PTD_CODE(tierdata& dat = get_last_tier(my_net->act_left_side.all_propag_tiers));
+	PTD_LOG("\n=========================================================================\n");
+	PTD_LOG("ENDED_LOADING. inp_neu=%ld \n", dat.inp_neus);
 }
 
 void bj_test_func_1(){

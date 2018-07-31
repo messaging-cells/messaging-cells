@@ -40,9 +40,9 @@ LD_IN_SECTIONS :=
 
 TARGET := philo_ptd.elf
 
-TGT_LDFLAGS := ${MC_STD_EMU_LDFLAGS} ${LD_IN_SECTIONS} -rdynamic
-TGT_LDLIBS  := ${MC_STD_EMU_LDLIBS}
-TGT_PREREQS := ${MC_EMU_LIBS}
+TGT_LDFLAGS := ${MC_STD_PTD_LDFLAGS} ${LD_IN_SECTIONS} -rdynamic
+TGT_LDLIBS  := ${MC_STD_PTD_LDLIBS}
+TGT_PREREQS := ${MC_PTD_LIBS}
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

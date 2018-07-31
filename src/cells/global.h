@@ -103,14 +103,14 @@ struct mc_aligned mck_glb_sys_def {
 		void* 		mck_dbg_call_stack_trace[MC_MAX_CALL_STACK_SZ];
 		uint16_t 	mck_trace_err;
 	)
-	EMU_CODE(
+	PTD_CODE(
 		uint8_t 	mck_sync_signal;
 		char* 		mck_dbg_call_nams_stack_trace[MC_MAX_CALL_STACK_SZ];
 	)
 };
 typedef struct mck_glb_sys_def mck_glb_sys_st;
 
-//if defined(MC_IS_EPH_CODE) && !defined(IS_EMU_COD) 
+//if defined(MC_IS_EPH_CODE) && !defined(IS_PTD_COD) 
 
 #ifdef MC_IS_EPH_CODE
 	mck_glb_sys_st*
@@ -181,7 +181,7 @@ mck_set_irq0_handler() mc_external_code_ram;
 #endif
 
 #ifdef MC_IS_PTD_CODE
-	#define MCK_CK(cond) EMU_CK(cond)
+	#define MCK_CK(cond) PTD_CK(cond)
 #endif
 
 #ifdef MC_IS_ZNQ_CODE

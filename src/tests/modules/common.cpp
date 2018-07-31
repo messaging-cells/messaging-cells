@@ -49,7 +49,7 @@ long some_glb_val mc_comm_dat = 6;
 // 		*static_initialization_and_destruction* functions
 // 		*_GLOBAL__sub_I_main* functions (wrappers to the first)
 //
-// NEVER USE GLOBAL VARIABLES (EMULATOR WILL NOT WORK)
+// NEVER USE GLOBAL VARIABLES (PTD WILL NOT WORK)
 
 //comm_cla some_comm_obj mc_comm_dat;  
 

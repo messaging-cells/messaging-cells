@@ -10,9 +10,9 @@
 	if(nod != mc_null){ \
 		while(bj_get_loaded_of_sornode(nod) == mc_null){ \
 			/* SPIN UNTIL SET (may be set by an other core) */ \
-			EMU_CODE(sched_yield()); \
+			PTD_CODE(sched_yield()); \
 		} \
-		EMU_CK(bj_get_loaded_of_sornode(nod) != mc_null); \
+		PTD_CK(bj_get_loaded_of_sornode(nod) != mc_null); \
 		out = (sorcell*)bj_get_loaded_of_sornode(nod); \
 		if(reset){ nod = mc_null; } \
 	} \
@@ -29,7 +29,7 @@ void bj_load_shd_sornet(){
 
 	sorcell::separate(tot_sclls);
 
-	EMU_LOG("Separated_sorcells %ld\n", tot_sclls);
+	PTD_LOG("Separated_sorcells %ld\n", tot_sclls);
 
 	//num_nod_t tot_pre_sornods;
 	//grip	all_pre_sornods;
@@ -46,13 +46,13 @@ void bj_load_shd_sornet(){
 
 		scll->dbg_level = nod->level;
 
-		EMU_CK(scll->up_inp == mc_null);
+		PTD_CK(scll->up_inp == mc_null);
 		scll->up_idx = nod->up_idx;
 		if(nod->out_up != mc_null){
 			scll->up_inp = (void*)mc_host_pt_to_core_pt(nod->out_up);	// up_inp used as tmp
 		}
 
-		EMU_CK(scll->down_inp == mc_null);
+		PTD_CK(scll->down_inp == mc_null);
 		scll->down_idx = nod->down_idx;
 		if(nod->out_down != mc_null){
 			scll->down_inp = (void*)mc_host_pt_to_core_pt(nod->out_down);	// down_inp used as tmp
@@ -60,7 +60,7 @@ void bj_load_shd_sornet(){
 
 		my_net->all_sorcells.bind_to_my_left(*scll);
 
-		EMU_CK(nod->loaded == mc_null);
+		PTD_CK(nod->loaded == mc_null);
 		nod->loaded = mck_as_glb_pt(scll);
 	}
 
@@ -73,8 +73,8 @@ void bj_load_shd_sornet(){
 		bj_set_sorcell_pt(scll->up_inp, scll->up_out, true);
 		bj_set_sorcell_pt(scll->down_inp, scll->down_out, true);
 
-		EMU_CK(scll->up_inp == mc_null);
-		EMU_CK(scll->down_inp == mc_null);
+		PTD_CK(scll->up_inp == mc_null);
+		PTD_CK(scll->down_inp == mc_null);
 	};
 
 	kernel* ker = mck_get_kernel();
@@ -86,7 +86,7 @@ void bj_load_shd_sornet(){
 			(pre_sornode**)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_pre_sorinput_nod));
 
 		num_nod_t tot_sorinp = pre_cnf->tot_pre_sorinput_nod;
-		//EMU_LOG("TOT_INPUT_SORCELLS=%ld \n", tot_sorinp);
+		//PTD_LOG("TOT_INPUT_SORCELLS=%ld \n", tot_sorinp);
 		mck_slog2("TOT_INPUT_SORCELLS=");
 		mck_ilog(tot_sorinp);	
 		mck_slog2("\n");

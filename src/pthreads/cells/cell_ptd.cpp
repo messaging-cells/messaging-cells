@@ -38,7 +38,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 kernel*
 mcm_get_kernel(){
-	return &(mck_get_emu_info()->emu_THE_KERNEL);
+	return &(mck_get_ptd_info()->ptd_THE_KERNEL);
 }
 
 void 
@@ -49,17 +49,17 @@ mck_send_irq(mc_core_id_t koid, uint16_t num_irq) {
 kernel* //static 
 kernel::get_core_kernel(mc_core_id_t id){
 	mc_core_nn_t nn = mc_id_to_nn(id);
-	EMU_CK((0 <= nn) && (nn < TOT_THREADS));
+	PTD_CK((0 <= nn) && (nn < TOT_THREADS));
 	thread_info_t* info = &(ALL_THREADS_INFO[nn]);
-	if(info->thd_emu.emu_glb_sys_data.inited_core != id){
-		EMU_PRT("kernel::get_core_kernel ID=%p ------------\n", (void*)(uintptr_t)id);
+	if(info->thd_ptd.ptd_glb_sys_data.inited_core != id){
+		PTD_PRT("kernel::get_core_kernel ID=%p ------------\n", (void*)(uintptr_t)id);
 		return mc_null;
 	}
-	return &(info->thd_emu.emu_THE_KERNEL);
+	return &(info->thd_ptd.ptd_THE_KERNEL);
 }
 
 void 
-emu_dbg_prt_ack_arr(int sz, mck_ack_t* arr){
+ptd_dbg_prt_ack_arr(int sz, mck_ack_t* arr){
 	fprintf(stderr, "{"); 
 	for(int aa = 0; aa < sz; aa++){ 
 		fprintf(stderr, "%d ", arr[aa]); 

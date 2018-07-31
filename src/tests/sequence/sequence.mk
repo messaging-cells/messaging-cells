@@ -40,8 +40,8 @@ LD_IN_SECTIONS :=
 
 TARGET := sequence_ptd.elf
 
-TGT_LDFLAGS := ${MC_STD_EMU_LDFLAGS} ${LD_IN_SECTIONS} -rdynamic
-TGT_LDLIBS  := ${MC_STD_EMU_LDLIBS}
+TGT_LDFLAGS := ${MC_STD_PTD_LDFLAGS} ${LD_IN_SECTIONS} -rdynamic
+TGT_LDLIBS  := ${MC_STD_PTD_LDLIBS}
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

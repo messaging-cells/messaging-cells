@@ -66,7 +66,7 @@ MC_EPH_LDFLAGS_1 := -L${MC_ETOOLS}/e-gnu/epiphany-elf/lib -L${MC_ETOOLS}/e-gnu/l
 MC_EPH_LDFLAGS_2 := -L${MC_LIB_DIR} -L${TARGET_DIR} ${MC_EPH_LDFLAGS_1} --strip-debug -static 
 MC_STD_EPH_LDFLAGS := -T ${MC_LDF} ${MC_EPH_LDFLAGS_2}
 
-MC_STD_EMU_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} 
+MC_STD_PTD_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} 
 
 MC_ZNQ_LDFLAGS_1 := -L${MC_ETOOLS}/host/lib 
 MC_STD_ZNQ_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} ${MC_ZNQ_LDFLAGS_1} 
@@ -74,7 +74,7 @@ MC_STD_ZNQ_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} ${MC_ZNQ_LDFLAGS_1}
 MC_STD_C_LDLIBS := -lc -lepiphany -lgcc -lg 
 # MC_STD_ZNQ_LDLIBS := -lmcz-cell -lmcz-tak-mak -lmcz-dlmalloc -le-hal -lm 
 MC_STD_ZNQ_LDLIBS := -lmcz-cell -lmcz-tak-mak -lmcz-dlmalloc -le-hal -lm -static-libstdc++ -static-libgcc 
-MC_STD_EMU_LDLIBS := -lmcm-cell -lmcm-tak-mak -lmcm-dlmalloc -lpthread
+MC_STD_PTD_LDLIBS := -lmcm-cell -lmcm-tak-mak -lmcm-dlmalloc -lpthread
 MC_STD_EPH_LDLIBS := -lmck-cell -lmck-tak-mak 
 
 MC_CURR_DIR := $(shell pwd)
@@ -83,7 +83,7 @@ MC_CURR_DIR := $(shell pwd)
 MC_LIB_DIR_2 := ../lib-cells
 
 MC_ZNQ_LIBS := ${MC_LIB_DIR_2}/libmcz-cell.a ${MC_LIB_DIR_2}/libmcz-tak-mak.a ${MC_LIB_DIR_2}/libmcz-dlmalloc.a
-MC_EMU_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
+MC_PTD_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
 MC_EPH_LIBS := ${MC_LIB_DIR_2}/libmck-cell.a ${MC_LIB_DIR_2}/libmck-tak-mak.a
 
 MC_STD_INCDIRS := ../../cells ../../cells/mc_manager ${MC_ETOOLS}/host/include

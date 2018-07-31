@@ -35,7 +35,7 @@ Our Resurrected and Living, both in Body and Spirit,
 void mc_cores_main() {
 	mck_glb_init(false);
 
-	mck_slog2("MIN_CORE_EMU\n");	
+	mck_slog2("MIN_CORE_PTD\n");	
 
 	mck_glb_finish();
 }

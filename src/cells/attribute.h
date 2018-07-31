@@ -86,40 +86,40 @@ mc_c_decl {
 
 	#include <stdbool.h>
 
-	char* mcm_get_emu_log_fnam();
+	char* mcm_get_ptd_log_fnam();
 	bool mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool vv_ck, 
 					const char* file, int line, const char* ck_str, const char* fmt, ...);
 
 	//void mcm_printf(const char *format, ...);
 	//void mcm_log(const char *fmt, ...);
 
-	#define EMU_CODE(cod) cod
-	#define EMU_DBG_CODE(cod) MC_DBG(cod)
+	#define PTD_CODE(cod) cod
+	#define PTD_DBG_CODE(cod) MC_DBG(cod)
 
-	#define EMU_CK(vv) MC_DBG( \
+	#define PTD_CK(vv) MC_DBG( \
 		mcm_call_assert(mc_null, true, true, vv, __FILE__, __LINE__, #vv, mc_null))
 
-	#define EMU_CK_PRT(vv, ...) MC_DBG( \
+	#define PTD_CK_PRT(vv, ...) MC_DBG( \
 		mcm_call_assert(mc_null, true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
 
-	#define EMU_CK_LOG(vv, ...) MC_DBG( \
-		mcm_call_assert(mcm_get_emu_log_fnam(), true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
+	#define PTD_CK_LOG(vv, ...) MC_DBG( \
+		mcm_call_assert(mcm_get_ptd_log_fnam(), true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
 
-	#define EMU_COND_LOG(cond, ...) MC_DBG( \
-		mcm_call_assert(mcm_get_emu_log_fnam(), false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+	#define PTD_COND_LOG(cond, ...) MC_DBG( \
+		mcm_call_assert(mcm_get_ptd_log_fnam(), false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
-	#define EMU_LOG(...) EMU_COND_LOG(true, __VA_ARGS__)
+	#define PTD_LOG(...) PTD_COND_LOG(true, __VA_ARGS__)
 
-	#define EMU_COND_PRT(cond, ...) MC_DBG( \
+	#define PTD_COND_PRT(cond, ...) MC_DBG( \
 		mcm_call_assert(mc_null, false, false, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
-	#define EMU_PRT(...) EMU_COND_PRT(true, __VA_ARGS__)
+	#define PTD_PRT(...) PTD_COND_PRT(true, __VA_ARGS__)
 
-	#define EMU_PRT_STACK(cond, ...) MC_DBG( \
+	#define PTD_PRT_STACK(cond, ...) MC_DBG( \
 		mcm_call_assert(mc_null, false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
-	#define EMU_LOG_STACK(cond, ...) MC_DBG( \
-		mcm_call_assert(mcm_get_emu_log_fnam(), false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
+	#define PTD_LOG_STACK(cond, ...) MC_DBG( \
+		mcm_call_assert(mcm_get_ptd_log_fnam(), false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
 	#define EPH_CODE(cod) 
 
@@ -144,19 +144,19 @@ mc_c_decl {
 		#define EPH_CODE(cod) 
 	#endif
 
-	#define EMU_CODE(cod) 
-	#define EMU_32_CODE(cod) 
-	#define EMU_64_CODE(cod) 
-	#define EMU_DBG_CODE(cod) 
-	#define EMU_CK(prm) 
-	#define EMU_CK_PRT(vv, ...) 
-	#define EMU_CK_LOG(vv, ...) 
-	#define EMU_COND_LOG(cond, ...)
-	#define EMU_COND_PRT(cond, ...)
-	#define EMU_PRT_STACK(cond, ...)
-	#define EMU_LOG_STACK(cond, ...)
-	#define EMU_PRT(...) 
-	#define EMU_LOG(...) 
+	#define PTD_CODE(cod) 
+	#define PTD_32_CODE(cod) 
+	#define PTD_64_CODE(cod) 
+	#define PTD_DBG_CODE(cod) 
+	#define PTD_CK(prm) 
+	#define PTD_CK_PRT(vv, ...) 
+	#define PTD_CK_LOG(vv, ...) 
+	#define PTD_COND_LOG(cond, ...)
+	#define PTD_COND_PRT(cond, ...)
+	#define PTD_PRT_STACK(cond, ...)
+	#define PTD_LOG_STACK(cond, ...)
+	#define PTD_PRT(...) 
+	#define PTD_LOG(...) 
 
 //---------------------------------------------------------------------------------------
 #endif	//NOT MC_IS_PTD_CODE
@@ -207,8 +207,8 @@ mc_c_decl {
 #define mc_mod9_dat mc_section("module9_data")
 
 #ifdef MC_IS_PTD_CODE
-	#define EMU_32_CODE(cod) COD_32(cod)
-	#define EMU_64_CODE(cod) COD_64(cod)
+	#define PTD_32_CODE(cod) COD_32(cod)
+	#define PTD_64_CODE(cod) COD_64(cod)
 #endif
 	
 #ifdef __cplusplus

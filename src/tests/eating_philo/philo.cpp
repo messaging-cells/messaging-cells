@@ -80,7 +80,7 @@ class philosopher;
 
 #define MAX_BITES 10
 
-#define PH_DBG EMU_PRT
+#define PH_DBG PTD_PRT
 
 enum philo_tok_t : uint8_t {
 	tok_invalid,
@@ -251,7 +251,7 @@ public:
 	grip&	get_available();
 };
 
-// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE EMULATOR (cores as threads) TO WORK.
+// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (cores as threads) TO WORK.
 class philo_core {
 public:
 	MCK_DECLARE_MEM_METHODS(philo_core, mc_mod0_cod)
@@ -399,19 +399,19 @@ chopstick::handler(missive* msv){
 
 	switch(tok){
 		case tok_take:
-			EMU_CK(owner != msv_src);
+			PTD_CK(owner != msv_src);
 			if(owner == mc_null){
 				owner = msv_src;
 				last_sent = tok_taken;
 				respond(msv, tok_taken);
 			} else {
-				EMU_CK(owner != mc_null);
+				PTD_CK(owner != mc_null);
 				last_sent = tok_not_taken;
 				respond(msv, tok_not_taken);
 			}
 		break;
 		case tok_drop:
-			EMU_CK(owner == msv_src);
+			PTD_CK(owner == msv_src);
 			owner = mc_null;
 			last_sent = tok_droped;
 			respond(msv, tok_droped);
@@ -463,17 +463,17 @@ philosopher::handler(missive* msv){
 
 	switch(tok){
 		case tok_eat:
-			EMU_CK(msv_src == this);
-			EMU_CK(left == mc_null);
-			EMU_CK(right == mc_null);
-			EMU_CK(num_bites < MAX_BITES);
+			PTD_CK(msv_src == this);
+			PTD_CK(left == mc_null);
+			PTD_CK(right == mc_null);
+			PTD_CK(num_bites < MAX_BITES);
 			send(lft_stick, tok_take);
 		break;
 		case tok_taken:
-			EMU_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
+			PTD_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
 			if(msv_src == lft_stick){
-				EMU_CK(left == mc_null);
-				EMU_CK(right == mc_null);
+				PTD_CK(left == mc_null);
+				PTD_CK(right == mc_null);
 				left = lft_stick;
 				send(rgt_stick, tok_take);
 	
@@ -484,16 +484,16 @@ philosopher::handler(missive* msv){
 				#endif
 			}
 			if(msv_src == rgt_stick){
-				EMU_CK(left == lft_stick);
-				EMU_CK(right == mc_null);
+				PTD_CK(left == lft_stick);
+				PTD_CK(right == mc_null);
 				right = rgt_stick;
 
-				EMU_CK(left != mc_null);
-				EMU_CK(right != mc_null);
-				EMU_CK(num_bites < MAX_BITES);
+				PTD_CK(left != mc_null);
+				PTD_CK(right != mc_null);
+				PTD_CK(num_bites < MAX_BITES);
 				num_bites++;
 				PH_DBG("#BITES %d \n", num_bites);
-				EMU_LOG("#BITES %d \n", num_bites);
+				PTD_LOG("#BITES %d \n", num_bites);
 
 				#ifdef PHILO_EPH_DBG
 					mck_slog2("#BITES____");
@@ -506,32 +506,32 @@ philosopher::handler(missive* msv){
 			}
 		break;
 		case tok_not_taken:
-			EMU_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
+			PTD_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
 			if(msv_src == lft_stick){
-				EMU_CK(left == mc_null);
-				EMU_CK(right == mc_null);
+				PTD_CK(left == mc_null);
+				PTD_CK(right == mc_null);
 				send(this, tok_eat);
 			}
 			if(msv_src == rgt_stick){
-				EMU_CK(left == lft_stick);
-				EMU_CK(right == mc_null);
+				PTD_CK(left == lft_stick);
+				PTD_CK(right == mc_null);
 				send(lft_stick, tok_drop);
 			}
 		break;
 		case tok_droped:
-			EMU_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
+			PTD_CK((msv_src == lft_stick) || (msv_src == rgt_stick));
 			if(msv_src == lft_stick){
-				EMU_CK(left == lft_stick);
+				PTD_CK(left == lft_stick);
 				left = mc_null;
 			}
 			if(msv_src == rgt_stick){
-				EMU_CK(right == rgt_stick);
+				PTD_CK(right == rgt_stick);
 				right = mc_null;
 			}
 			if((left == mc_null) && (right == mc_null)){
 				if(num_bites == MAX_BITES){
 					PH_DBG("I AM FULL \n");
-					EMU_LOG("I AM FULL \n");
+					PTD_LOG("I AM FULL \n");
 					mck_sprt2("I AM FULL____");
 					mck_iprt(mck_get_kernel()->get_core_nn());
 					mck_sprt2("___\n");
@@ -550,13 +550,13 @@ philosopher::handler(missive* msv){
 			}
 		break;
 		case tok_yes_full:
-			EMU_CK((msv_src == lft_philo) || (msv_src == rgt_philo));
+			PTD_CK((msv_src == lft_philo) || (msv_src == rgt_philo));
 			if(msv_src == lft_philo){ 
-				EMU_CK(! lft_ph_full);
+				PTD_CK(! lft_ph_full);
 				lft_ph_full = true; 
 			}
 			if(msv_src == rgt_philo){ 
-				EMU_CK(! rgt_ph_full);
+				PTD_CK(! rgt_ph_full);
 				rgt_ph_full = true; 
 			}
 			if(can_exit()){
@@ -577,7 +577,7 @@ philosopher::call_exit(){
 		prt_full();
 		prt_all_philo();
 	)
-	EMU_LOG("FINISHING \n");
+	PTD_LOG("FINISHING \n");
 
 	//mck_sprt2("CALLING_EXIT____");
 	//mck_iprt(mck_get_kernel()->get_core_nn());
@@ -651,11 +651,11 @@ philosopher::call_exit(){
 		char full_str[500];
 		char* pt = full_str;
 		pt += sprintf(pt, "CORE %d=[", aa);
-		EMU_64_CODE(
+		PTD_64_CODE(
 			pt += sprintf(pt, "out_work_sz=%ld ", pc->out_work_sz);
 			pt += sprintf(pt, "sent_work_sz=%ld ", pc->sent_work_sz);
 		)
-		EMU_32_CODE(
+		PTD_32_CODE(
 			pt += sprintf(pt, "out_work_sz=%d ", pc->out_work_sz);
 			pt += sprintf(pt, "sent_work_sz=%d ", pc->sent_work_sz);
 		)
@@ -734,7 +734,7 @@ void mc_cores_main() {
 	glb_philo->lft_philo = get_philo(glb_philo->lft_phi_id);
 	glb_philo->rgt_philo = get_philo(glb_philo->rgt_phi_id);
 
-	EMU_PRT("the_handlers[0] = %p \n", (void*)(the_handlers[0]));
+	PTD_PRT("the_handlers[0] = %p \n", (void*)(the_handlers[0]));
 	kernel::set_handlers(3, the_handlers);
 
 	missive::separate(mc_out_num_cores);
@@ -750,7 +750,7 @@ void mc_cores_main() {
 	kernel::run_sys();
 
 	PH_DBG("finished\n");
-	EMU_LOG("PHILOSOPHER %d FINISHED !!\n", nn);
+	PTD_LOG("PHILOSOPHER %d FINISHED !!\n", nn);
 	mck_slog2("PHILOSOPHERS FINISHED !!\n");	
 
 	kernel::finish_sys();

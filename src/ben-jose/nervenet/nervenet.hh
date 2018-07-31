@@ -68,10 +68,10 @@ class sorcell;
 class netstate;
 class nervenet;
 
-//define SYNC_LOG(...) EMU_LOG(__VA_ARGS__)
+//define SYNC_LOG(...) PTD_LOG(__VA_ARGS__)
 #define SYNC_LOG(...) 
 
-//define SYNC_CODE(...) EMU_CODE(__VA_ARGS__)
+//define SYNC_CODE(...) PTD_CODE(__VA_ARGS__)
 #define SYNC_CODE(...) 
 
 enum binval_t : uint8_t {
@@ -168,7 +168,7 @@ public:
 typedef void (nervenode::*bj_callee_t)(callee_prms& pms);
 typedef int (*bj_cmp_obj_func_t)(void* obj1, void* obj2);
 
-void emu_prt_tok_codes() mc_external_code_ram;
+void ptd_prt_tok_codes() mc_external_code_ram;
 
 char* net_side_to_str(net_side_t sd) mc_external_code_ram;
 char* node_kind_to_str(node_kind_t ki) mc_external_code_ram;
@@ -259,7 +259,7 @@ class mc_aligned synset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synset, bj_nervenet_mem)
 
-	EMU_DBG_CODE(mc_flags_t		ss_flags);
+	PTD_DBG_CODE(mc_flags_t		ss_flags);
 
 	num_syn_t 	num_ss_recv;
 	num_syn_t 	num_ss_ping;
@@ -296,7 +296,7 @@ public:
 
 	synapse* get_first_snp(net_side_t sd);
 
-	EMU_DBG_CODE(void dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out) mc_external_code_ram);
+	PTD_DBG_CODE(void dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out) mc_external_code_ram);
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -334,7 +334,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	/*EMU_DBG_CODE(
+	/*PTD_DBG_CODE(
 		virtual mc_opt_sz_fn 
 		void	dbg_release(int dbg_caller) mc_external_code_ram;
 	);*/
@@ -456,7 +456,7 @@ public:
 	num_syn_t		stabi_arr_sz;
 	num_syn_t*  	stabi_arr;
 
-	EMU_DBG_CODE(bool was_all_pg);
+	PTD_DBG_CODE(bool was_all_pg);
 
 	neurostate() mc_external_code_ram;
 	~neurostate() mc_external_code_ram;
@@ -481,7 +481,7 @@ public:
 		num_syn_t lim = 0;
 		if(tiki == tiki_propag){ lim = 1; }
 		bool all_pg = ((step_prev_tot_active > lim) && (step_num_ping == step_prev_tot_active));
-		EMU_CK(! all_pg || (step_active_set.tot_syn > 0));
+		PTD_CK(! all_pg || (step_active_set.tot_syn > 0));
 		return all_pg;
 	}
 
@@ -585,7 +585,7 @@ public:
 	void dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
 				num_tier_t num_ti) mc_external_code_ram;
 
-	EMU_DBG_CODE(void dbg_prt_snp_id(callee_prms& pms) mc_external_code_ram);
+	PTD_DBG_CODE(void dbg_prt_snp_id(callee_prms& pms) mc_external_code_ram);
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -598,7 +598,7 @@ class mc_aligned neuron : public nervenode {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(neuron, mc_external_code_ram)
 
-	//EMU_CODE(int pru_attr);
+	//PTD_CODE(int pru_attr);
 	
 	neuron() mc_external_code_ram;
 	~neuron() mc_external_code_ram;
@@ -815,12 +815,12 @@ public:
 void inc_tier(tier_kind_t tiki, grip& all_ti, net_side_t sd, int dbg_caller);
 
 mc_inline_fn tierdata& get_last_tier(grip& all_ti){
-	EMU_CK(! all_ti.is_alone());
+	PTD_CK(! all_ti.is_alone());
 	return *((tierdata*)(all_ti.bn_left));
 }
 
 mc_inline_fn bool is_last_tier(grip& all_ti, tierdata& tdt){
-	EMU_CK(! all_ti.is_alone());
+	PTD_CK(! all_ti.is_alone());
 	return (((tierdata*)(all_ti.bn_left)) == (&tdt));
 }
 
@@ -902,7 +902,7 @@ public:
 	netstate	act_left_side;
 	netstate	act_right_side;
 
-	EMU_DBG_CODE(
+	PTD_DBG_CODE(
 		dbg_stats all_dbg_dat;
 		char 	dbg_str1[BJ_DBG_STR_CAP];
 		char 	dbg_str2[BJ_DBG_STR_CAP];

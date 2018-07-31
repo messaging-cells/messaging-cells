@@ -46,14 +46,14 @@ mc_off_sys_st mcm_external_host_data_obj;
 void 
 mck_abort(mc_addr_t err, char* orig_msg) {
 	char msg[300];
-	emu_info_t* inf = mck_get_emu_info();
-	snprintf(msg, 300, "ABORTED THREAD=%ld \t CORE_ID=%x MSG=%s\n", inf->emu_id, inf->emu_core_id, orig_msg);
+	ptd_info_t* inf = mck_get_ptd_info();
+	snprintf(msg, 300, "ABORTED THREAD=%ld \t CORE_ID=%x MSG=%s\n", inf->ptd_id, inf->ptd_core_id, orig_msg);
 	mch_abort_func(err, msg);
 }
 
 mck_glb_sys_st*
 mck_get_glb_sys(){
-	return &(mck_get_emu_info()->emu_glb_sys_data);
+	return &(mck_get_ptd_info()->ptd_glb_sys_data);
 }
 
 void 
@@ -83,7 +83,7 @@ mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* us
 
 bool
 mck_load_module(mc_addr_t ext_addr){
-	EMU_LOG("LOADING MODULE %p %s \n", (void*)ext_addr, (char*)ext_addr);
+	PTD_LOG("LOADING MODULE %p %s \n", (void*)ext_addr, (char*)ext_addr);
 	MC_CORE_INFO->current_module_addr = ext_addr;
 	return true;
 }

@@ -38,10 +38,10 @@ void recv_core_handler(missive* msg);
 
 void 
 recv_core_handler(missive* msg){
-	EMU_CK(mc_addr_is_local(msg->dst));
+	PTD_CK(mc_addr_is_local(msg->dst));
 
 	mck_sprt2("CORE_GOT_RESPONSE\n");
-	EMU_PRT("RCV_RESPONSE. src=%p dst=%p \n", msg->get_source(), msg->dst);
+	PTD_PRT("RCV_RESPONSE. src=%p dst=%p \n", msg->get_source(), msg->dst);
 	
 	mck_get_kernel()->set_idle_exit();
 }
@@ -72,7 +72,7 @@ void mc_cores_main() {
 		cell* act1 = kernel::get_core_cell();
 		cell* act2 = kernel::get_host_cell();
 
-		EMU_CK_PRT((mc_addr_get_id((mc_addr_t)act2) != 0), "act2 = %p\n", act2);
+		PTD_CK_PRT((mc_addr_get_id((mc_addr_t)act2) != 0), "act2 = %p\n", act2);
 
 		missive* msv = missive::acquire();
 		msv->src = act1;
@@ -87,7 +87,7 @@ void mc_cores_main() {
 
 		msv->send_to_host();
 
-		EMU_PRT("SND_SENT H MISSIVE\n");
+		PTD_PRT("SND_SENT H MISSIVE\n");
 
 		#ifndef WITH_RESPONSE
 			ker->set_idle_exit();

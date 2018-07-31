@@ -1,7 +1,7 @@
 
 SRC_BASE_DIR := ../host_code/
 
-TARGET := libdimacs-emu.a
+TARGET := libdimacs-ptd.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

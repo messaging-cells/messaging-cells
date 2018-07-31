@@ -43,21 +43,21 @@ void recv_host_handler(missive* msg);
 
 void 
 recv_host_handler(missive* msg){
-	EMU_PRT("RCV_MSV=%p \n", msg);
-	EMU_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
-	EMU_PRT("RCV_CORE_ID=%x \n", mc_addr_get_id(msg->dst));
-	EMU_PRT("RCV_GLB_CORE_ID=%x \n", MC_CORE_INFO->the_core_id);
+	PTD_PRT("RCV_MSV=%p \n", msg);
+	PTD_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
+	PTD_PRT("RCV_CORE_ID=%x \n", mc_addr_get_id(msg->dst));
+	PTD_PRT("RCV_GLB_CORE_ID=%x \n", MC_CORE_INFO->the_core_id);
 	printf("HOST_RECEIVED_MSV !!!\n");
 
-	EMU_CK(mc_addr_is_local(msg->dst));
+	PTD_CK(mc_addr_is_local(msg->dst));
 	mc_core_id_t koid = kernel::get_core_id();
 	MC_MARK_USED(koid);
 	mc_core_nn_t konn = kernel::get_core_nn();
 	MC_MARK_USED(konn);
 
 
-	EMU_LOG("recv_host_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	EMU_PRT("RCV_MSV. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_LOG("recv_host_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_PRT("RCV_MSV. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 
 	#ifdef WITH_RESPONSE
 		msg->dst->respond(msg, (msg->tok + 10)); 

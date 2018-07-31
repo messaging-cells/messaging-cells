@@ -59,7 +59,7 @@ uint8_t mcm_dlmalloc_heap[MCM_DLMALLOC_HEAP_SZ];
 
 mspace mcm_glb_mspace;
 
-emu_info_t*	mcm_HOST_EMU_INFO = mc_null;
+ptd_info_t*	mcm_HOST_PTD_INFO = mc_null;
 
 mc_addr_t
 mc_znq_addr_to_eph_addr(mc_addr_t znq_addr){
@@ -91,8 +91,8 @@ mcm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
 }
 
 void 
-mch_prt_core_call_stack_emu(thread_info_t& thd_inf){
-	char** trace = thd_inf.thd_emu.emu_glb_sys_data.mck_dbg_call_nams_stack_trace;
+mch_prt_core_call_stack_ptd(thread_info_t& thd_inf){
+	char** trace = thd_inf.thd_ptd.ptd_glb_sys_data.mck_dbg_call_nams_stack_trace;
 	if(trace == mc_null){
 		return;
 	}
@@ -100,8 +100,8 @@ mch_prt_core_call_stack_emu(thread_info_t& thd_inf){
 		return;
 	}
 	mch_out << "---------------------------------------------------\n";
-	mch_out << "STACK_TRACE for core num " << std::dec << thd_inf.thd_emu.emu_num;
-	mch_out << " with core_id = 0x" << std::hex << thd_inf.thd_emu.emu_core_id << "\n";
+	mch_out << "STACK_TRACE for core num " << std::dec << thd_inf.thd_ptd.ptd_num;
+	mch_out << " with core_id = 0x" << std::hex << thd_inf.thd_ptd.ptd_core_id << "\n";
 	for(int aa = 0; aa < MC_MAX_CALL_STACK_SZ; aa++){
 		if(trace[aa] == mc_null){ break; }
 		mch_out << trace[aa] << "\n";
@@ -116,7 +116,7 @@ ck_all_core_ids(){
 	}
 	for(int aa = 0; aa < TOT_THREADS; aa++){
 		mc_core_id_t koid = mc_nn_to_id(aa);
-		if(ALL_THREADS_INFO[aa].thd_emu.emu_core_id != koid){
+		if(ALL_THREADS_INFO[aa].thd_ptd.ptd_core_id != koid){
 			mch_abort_func(1, "ck_all_core_ids. BAD CORE ID \n");
 		}
 	}
@@ -134,9 +134,9 @@ mch_load_map_rec(mc_core_id_t parent, mc_load_map_st* mp){
 	MCH_CK(nn_core < TOT_THREADS);
 	thread_info_t& thd_inf = ALL_THREADS_INFO[nn_core];
 
-	thd_inf.thd_emu.emu_map_loaded = mp;
-	thd_inf.thd_emu.emu_map_parent_core_id = parent;
-	thd_inf.thd_emu.emu_map_tot_children = 0;
+	thd_inf.thd_ptd.ptd_map_loaded = mp;
+	thd_inf.thd_ptd.ptd_map_parent_core_id = parent;
+	thd_inf.thd_ptd.ptd_map_tot_children = 0;
 
 	if(mp->childs == mc_null){ return; }
 
@@ -148,7 +148,7 @@ mch_load_map_rec(mc_core_id_t parent, mc_load_map_st* mp){
 		aa++;
 		ch_map = (mp->childs)[aa];
 	}
-	thd_inf.thd_emu.emu_map_tot_children = aa;
+	thd_inf.thd_ptd.ptd_map_tot_children = aa;
 }
 
 void
@@ -170,15 +170,15 @@ mc_host_init(){
 	memset(mcm_dlmalloc_heap, 0, sizeof(mcm_dlmalloc_heap));
 	mcm_glb_mspace = create_mspace_with_base(mcm_dlmalloc_heap, MCM_DLMALLOC_HEAP_SZ, 0);
 
-	mcm_HOST_EMU_INFO = mc_malloc32(emu_info_t, 1);
+	mcm_HOST_PTD_INFO = mc_malloc32(ptd_info_t, 1);
 
-	mc_init_glb_sys_sz(&(mcm_HOST_EMU_INFO->emu_system_sz));
+	mc_init_glb_sys_sz(&(mcm_HOST_PTD_INFO->ptd_system_sz));
 
 	mc_core_co_t max_row = mc_tot_xx_sys;
 	mc_core_co_t max_col = mc_tot_yy_sys;
 	mc_core_id_t core_id = mc_ro_co_to_id(max_row + 1, max_col + 1);
-	mcm_HOST_EMU_INFO->emu_core_id = core_id;
-	mcm_HOST_EMU_INFO->emu_num = ~0;
+	mcm_HOST_PTD_INFO->ptd_core_id = core_id;
+	mcm_HOST_PTD_INFO->ptd_num = ~0;
 
 	memset(&mch_external_ram_load_data, 0, sizeof(mc_link_syms_data_st));
 
@@ -192,8 +192,8 @@ mc_host_init(){
 
 	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_HOST_DATA;
 	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
-	EMU_64_CODE(printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data)));
-	EMU_32_CODE(printf("sizeof(*pt_shd_data)=%d\n", sizeof(*pt_shd_data)));
+	PTD_64_CODE(printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data)));
+	PTD_32_CODE(printf("sizeof(*pt_shd_data)=%d\n", sizeof(*pt_shd_data)));
 
 	// init shared data.
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));
@@ -244,10 +244,10 @@ mc_host_run()
 			mc_core_nn_t num_core = mc_id_to_nn(core_id);
 
 			thread_info_t& thd_inf = ALL_THREADS_INFO[num_core];
-			thd_inf.thd_emu.emu_num = num_core;
-			mc_uint16_to_hex_bytes(thd_inf.thd_emu.emu_num, (uint8_t*)(thd_inf.thd_emu.emu_name));
-			thd_inf.thd_emu.emu_core_id = core_id;
-			thd_inf.thd_emu.emu_core_func = &mc_cores_main;
+			thd_inf.thd_ptd.ptd_num = num_core;
+			mc_uint16_to_hex_bytes(thd_inf.thd_ptd.ptd_num, (uint8_t*)(thd_inf.thd_ptd.ptd_name));
+			thd_inf.thd_ptd.ptd_core_id = core_id;
+			thd_inf.thd_ptd.ptd_core_func = &mc_cores_main;
 			thd_inf.thd_log_fnam = mc_null;
 
 			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
@@ -278,9 +278,9 @@ mc_host_run()
 				mc_rr_init(&(pt_buff->rd_arr), MC_OUT_BUFF_SZ, pt_buff->buff, 1);
 			}
 			
-			// Start one core emulation thread
+			// Start one core ptd thread
 
-			int ss = pthread_create(&thd_inf.thd_emu.emu_id, NULL,
+			int ss = pthread_create(&thd_inf.thd_ptd.ptd_id, NULL,
 								&thread_start, &thd_inf);
 			if (ss != 0){
 				mch_abort_func(ss, "host_main. Cannot pthread_create");
@@ -310,7 +310,7 @@ mc_host_run()
 		has_work = false;
 
 		if(MCH_ABORT_EXEC){
-			mch_abort_func(1, "ABORT_CALLED_FROM_EMULATION_THREAD \n");
+			mch_abort_func(1, "ABORT_CALLED_FROM_PTD_THREAD \n");
 		}
 
 		kernel* ker = MCK_KERNEL;
@@ -346,8 +346,8 @@ mc_host_run()
 					//			core_id, row, col, num_core);
 				}
 
-				//mck_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data.in_core_shd;
-				mck_glb_sys_st* inco = &thd_inf.thd_emu.emu_glb_sys_data;
+				//mck_glb_sys_st* inco = &thd_inf.thd_ptd.ptd_glb_sys_data.in_core_shd;
+				mck_glb_sys_st* inco = &thd_inf.thd_ptd.ptd_glb_sys_data;
 
 				// wait for finish
 				if(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL){
@@ -367,7 +367,7 @@ mc_host_run()
 						
 						sh_dat_1->is_waiting = MC_NOT_WAITING;
 
-						thd_inf.thd_emu.emu_glb_sys_data.mck_sync_signal = 1;	// SEND signal
+						thd_inf.thd_ptd.ptd_glb_sys_data.mck_sync_signal = 1;	// SEND signal
 					}
 				} else {
 					MCH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
@@ -393,7 +393,7 @@ mc_host_run()
 						if(inco->dbg_error_code != 0){
 							mch_prt_in_core_shd_dat(inco);
 						}
-						mch_prt_core_call_stack_emu(thd_inf);
+						mch_prt_core_call_stack_ptd(thd_inf);
 					}
 
 				}
@@ -411,7 +411,7 @@ mc_host_run()
 	int tnum;
 	for (tnum = 0; tnum < TOT_THREADS; tnum++) {
 		void *res;
-		int ss = pthread_join(ALL_THREADS_INFO[tnum].thd_emu.emu_id, &res);
+		int ss = pthread_join(ALL_THREADS_INFO[tnum].thd_ptd.ptd_id, &res);
 		if(ss != 0){
 			mch_abort_func(ss, "mc_host_finish. Cannot join thread.");
 		}

@@ -81,7 +81,7 @@ kernel::~kernel(){}
 
 void 
 kernel::init_router_ack_arrays(){
-	//EMU_PRT("kernel::init_router_ack_arrays\n");
+	//PTD_PRT("kernel::init_router_ack_arrays\n");
 	mc_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_ack_arr, mck_virgin_ack);
 	mc_init_arr_vals(kernel_pw2_routed_arr_sz, pw2_routed_ack_arr, mck_virgin_ack);
 	mc_init_arr_vals(kernel_pw4_routed_arr_sz, pw4_routed_ack_arr, mck_virgin_ack);
@@ -121,8 +121,8 @@ kernel::init_kernel(){
 
 	host_kernel = mc_null;
 
-	EMU_CK(cell::get_curr_separate_sz() == 1);
-	//EMU_PRT("CURR_SEP_SIZE=%u \n\n", cell::get_curr_separate_sz());
+	PTD_CK(cell::get_curr_separate_sz() == 1);
+	//PTD_PRT("CURR_SEP_SIZE=%u \n\n", cell::get_curr_separate_sz());
 	first_cell = cell::acquire();
 	//ZNQ_CODE(printf("INITED_first_cell = %p \n", first_cell));
 
@@ -163,7 +163,7 @@ kernel::init_sys(bool is_the_host){
 	ker->host_kernel = (kernel*)(MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel);
 	if(ker->host_kernel != mc_null){
 		ker->host_load_data = ker->host_kernel->host_load_data;
-		//EMU_PRT("SETTING host_load_data = %p \n", ker->host_load_data);
+		//PTD_PRT("SETTING host_load_data = %p \n", ker->host_load_data);
 	}
 
 	mck_glb_sys_st* in_shd = MC_CORE_INFO;
@@ -208,7 +208,7 @@ kernel::run_sys(){
 		if(! ker->did_work && ker->exit_when_idle){
 			break;
 		}
-		EMU_CODE(sched_yield());
+		PTD_CODE(sched_yield());
 	}
 
 	MC_CORE_INFO->inited_core = 0;
@@ -285,8 +285,8 @@ kernel::add_out_missive(grip* out_wk, missive& msv1){
 	}
 
 	missive_grp_t* mgrp2 = agent_grp::acquire();
-	EMU_CK(mgrp2 != mc_null);
-	EMU_CK(mgrp2->all_agts.is_alone());
+	PTD_CK(mgrp2 != mc_null);
+	PTD_CK(mgrp2->all_agts.is_alone());
 
 	msv1.let_go();
 	mgrp2->all_agts.bind_to_my_left(msv1);
@@ -357,7 +357,7 @@ kernel::fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 				MC_ABORT_MSG("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs CAN NOT be mc_null. \n"));
 		}
 		if((hdlrs[0] != mc_null) && (hdlrs[0] != mc_kernel_handler)){
-			//EMU_PRT("hdlrs[0] = %p \n", (void*)(hdlrs[0]));
+			//PTD_PRT("hdlrs[0] = %p \n", (void*)(hdlrs[0]));
 			mck_abort(__LINE__, 
 				MC_ABORT_MSG("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs[0] MUST be mc_null. \n"));
 		}
@@ -384,14 +384,14 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 			arr[aa] = mc_null;
 
 			missive_ref_t* nw_ref = agent_ref::acquire();
-			EMU_CK(nw_ref->is_alone());
-			EMU_CK(nw_ref->glb_agent_ptr == mc_null);
+			PTD_CK(nw_ref->is_alone());
+			PTD_CK(nw_ref->glb_agent_ptr == mc_null);
 
 			nw_ref->glb_agent_ptr = glb_msv_grp;
 			in_wrk.bind_to_my_left(*nw_ref);
 
 			mc_core_id_t src_id = mc_addr_get_id((mc_addr_t)(glb_msv_grp));
-			EMU_CK_PRT((is_from_host || (aa == mc_id_to_nn(src_id))), "is_from_host = %d \n", is_from_host);
+			PTD_CK_PRT((is_from_host || (aa == mc_id_to_nn(src_id))), "is_from_host = %d \n", is_from_host);
 
 			mck_ack_t* rem_dst_ack_pt;
 			if(! is_host_kernel){
@@ -402,27 +402,27 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 					rem_dst_ack_pt = loc_dst_ack_pt;
 				}
 			} else {
-				EMU_CK(! is_from_host);
+				PTD_CK(! is_from_host);
 				kernel* core_ker = kernel::get_core_kernel(src_id);
 				rem_dst_ack_pt = (mck_ack_t*)(&(core_ker->routed_ack_from_host));
-				//EMU_PRT("process_signal. rem_dst_ack_pt=%p\n", rem_dst_ack_pt);
+				//PTD_PRT("process_signal. rem_dst_ack_pt=%p\n", rem_dst_ack_pt);
 				//ZNQ_CODE(printf("process_signal. rem_dst_ack_pt=%p \n", rem_dst_ack_pt));
 			}
 
-			//EMU_COND_PRT(is_from_host, "FLAG1_is_from_host = %d \n", is_from_host);
+			//PTD_COND_PRT(is_from_host, "FLAG1_is_from_host = %d \n", is_from_host);
 
-			EMU_CK(rem_dst_ack_pt != mc_null);
-			EMU_CK(*rem_dst_ack_pt == mck_busy_ack);
+			PTD_CK(rem_dst_ack_pt != mc_null);
+			PTD_CK(*rem_dst_ack_pt == mck_busy_ack);
 			*rem_dst_ack_pt = mck_ready_ack;
 
 			did_work |= mc_bit1;
 
-			//EMU_COND_PRT(is_from_host, "FLAG2_is_from_host = %d \n", is_from_host);
+			//PTD_COND_PRT(is_from_host, "FLAG2_is_from_host = %d \n", is_from_host);
 		}
 	}
 
 	//ZNQ_CODE(printf("process_signal FLAG2\n"));
-	//EMU_COND_PRT(is_from_host, "FLAG3_is_from_host = %d \n", is_from_host);
+	//PTD_COND_PRT(is_from_host, "FLAG3_is_from_host = %d \n", is_from_host);
 }
 
 bool
@@ -431,7 +431,7 @@ mck_has_same_module(mc_core_id_t dst_id){
 	mc_addr_t* loc_mdl = &(in_shd->current_module_addr);
 	mc_addr_t* rmt_mdl = (mc_addr_t*)mc_addr_set_id(dst_id, loc_mdl);
 	if((*rmt_mdl) != (*loc_mdl)){
-		//EMU_PRT("DIFF_MODULES %s != %s \n", 
+		//PTD_PRT("DIFF_MODULES %s != %s \n", 
 		//	(char*)(*loc_mdl), (char*)(*rmt_mdl));
 		return false;
 	}
@@ -452,7 +452,7 @@ mck_has_same_sub_module(mc_core_id_t dst_id){
 	uint8_t* loc_mdl = &(in_shd->current_sub_module_id);
 	uint8_t* rmt_mdl = (uint8_t*)mc_addr_set_id(dst_id, loc_mdl);
 	if((*rmt_mdl) != (*loc_mdl)){
-		//EMU_PRT("DIFF_SUB_MODULES %d != %d \n", (*loc_mdl), (*rmt_mdl));
+		//PTD_PRT("DIFF_SUB_MODULES %d != %d \n", (*loc_mdl), (*rmt_mdl));
 		return false;
 	}
 
@@ -480,7 +480,7 @@ kernel::handle_missives(){
 
 	if(all_handlers == mc_null){
 		//mck_slog2(MC_ERR_CELL_01);
-		//EMU_PRT(MC_ERR_CELL_01);
+		//PTD_PRT(MC_ERR_CELL_01);
 		mck_abort(__LINE__, MC_ABORT_MSG(MC_ERR_CELL_01));
 		return;
 	}
@@ -521,7 +521,7 @@ kernel::handle_missives(){
 		missive_grp_t* remote_grp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
 
 		//mck_slog2("RECEIVING MISSIVE\n");
-		//EMU_PRT("RECEIVING pt_msv_grp= %p\n", remote_grp);
+		//PTD_PRT("RECEIVING pt_msv_grp= %p\n", remote_grp);
 		if(! is_host_kernel){ 
 			call_handlers_of_group(remote_grp);
 		} else {
@@ -529,7 +529,7 @@ kernel::handle_missives(){
 		}
 
 		fst_ref->release(2);
-		EMU_CK(fst_ref->glb_agent_ptr == mc_null);
+		PTD_CK(fst_ref->glb_agent_ptr == mc_null);
 		did_work |= mc_bit2;
 	}
 
@@ -550,16 +550,16 @@ kernel::handle_missives(){
 			fst_msg->release(3);
 		} else {
 			add_out_missive(out_msvs, *fst_msg);
-			EMU_CK(! fst_msg->is_alone());
+			PTD_CK(! fst_msg->is_alone());
 		}
 		did_work |= mc_bit3;
 	}
 
 	mc_core_nn_t src_idx = get_core_nn();
 
-	EMU_CK(is_host_kernel || ker->to_cores_work.is_alone());
+	PTD_CK(is_host_kernel || ker->to_cores_work.is_alone());
 	if(is_host_kernel){
-		EMU_CK(ker->out_work.is_alone());
+		PTD_CK(ker->out_work.is_alone());
 		handle_work_to_cores();
 	}
 
@@ -569,8 +569,8 @@ kernel::handle_missives(){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
 		nxt = wrk->bn_right;
 
-		EMU_CK(! is_host_kernel);
-		EMU_CK(! mgrp->all_agts.is_alone());
+		PTD_CK(! is_host_kernel);
+		PTD_CK(! mgrp->all_agts.is_alone());
 		
 		missive* msv = (missive*)(mgrp->all_agts.get_right_pt());
 		mc_core_id_t dst_id = mc_addr_get_id(msv->dst);
@@ -587,12 +587,12 @@ kernel::handle_missives(){
 			}
 			if(! mck_has_same_module(dst_id)){
 				did_work |= mc_bit5;
-				//EMU_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
+				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			if(mck_has_module() && ! mck_has_same_sub_module(dst_id)){
 				did_work |= mc_bit6;
-				//EMU_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
+				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			loc_dst_ack_pt = mck_ready_ack;
@@ -607,9 +607,9 @@ kernel::handle_missives(){
 		missive_grp_t** rmt_src_pt = (missive_grp_t**)mc_addr_set_id(dst_id, loc_src_pt);
 		missive_grp_t* glb_mgrp = (missive_grp_t*)mck_as_glb_pt(mgrp);
 
-		//EMU_PRT("SENDING pt_msv_grp= %p right= %p\n", mgrp, mgrp->get_right_pt());
+		//PTD_PRT("SENDING pt_msv_grp= %p right= %p\n", mgrp, mgrp->get_right_pt());
 
-		EMU_CK(*rmt_src_pt == mc_null);	
+		PTD_CK(*rmt_src_pt == mc_null);	
 		*rmt_src_pt = glb_mgrp;
 
 		// send signal
@@ -684,7 +684,7 @@ cell::respond(missive* msv_orig, mck_token_t tok){
 
 void 
 kernel::handle_work_to_cores(){
-	EMU_CK(is_host_kernel);
+	PTD_CK(is_host_kernel);
 
 	kernel* ker = this;
 	binder * fst, * lst, * wrk, * nxt;
@@ -695,7 +695,7 @@ kernel::handle_work_to_cores(){
 		missive_grp_t* mgrp = (missive_grp_t*)wrk;
 		nxt = wrk->bn_right;
 
-		EMU_CK(! mgrp->all_agts.is_alone());
+		PTD_CK(! mgrp->all_agts.is_alone());
 		//ZNQ_CODE(printf("handle_work_to_cores. mgrp=%p &all_agts=%p \n", 
 		//		mgrp, (binder*)(&(mgrp->all_agts)) ));
 		
@@ -723,12 +723,12 @@ kernel::handle_work_to_cores(){
 			did_work |= mc_bit12;
 			continue;
 		}
-		//EMU_PRT("kernel::handle_work_to_cores. loc_dst_ack_pt= %p \n", &loc_dst_ack_pt);
+		//PTD_PRT("kernel::handle_work_to_cores. loc_dst_ack_pt= %p \n", &loc_dst_ack_pt);
 		loc_dst_ack_pt = mck_busy_ack;
 
 		missive_grp_t* glb_mgrp = (missive_grp_t*)mc_host_pt_to_core_pt(mgrp);
 
-		EMU_CK(core_ker->routed_from_host == mc_null);
+		PTD_CK(core_ker->routed_from_host == mc_null);
 		core_ker->routed_from_host = glb_mgrp;
 
 		// send signal
@@ -738,7 +738,7 @@ kernel::handle_work_to_cores(){
 		ker->sent_work.bind_to_my_left(*mgrp);
 		did_work |= mc_bit13;
 
-		//EMU_PRT("kernel::handle_work_to_cores. added to sent_work. \n");
+		//PTD_PRT("kernel::handle_work_to_cores. added to sent_work. \n");
 	}
 }
 
@@ -750,15 +750,15 @@ kernel::handle_work_to_host(){
 
 	if(routed_ack_from_host != mck_ready_ack){
 		did_work |= mc_bit14;
-		//EMU_PRT("HOST NOT READY \n");
+		//PTD_PRT("HOST NOT READY \n");
 		return;
 	}
 
 	routed_ack_from_host = mck_busy_ack;
 
 	missive_grp_t* mgrp2 = agent_grp::acquire();
-	EMU_CK(mgrp2 != mc_null);
-	EMU_CK(mgrp2->all_agts.is_alone());
+	PTD_CK(mgrp2 != mc_null);
+	PTD_CK(mgrp2->all_agts.is_alone());
 
 	mgrp2->all_agts.move_all_to_my_left(to_host_work);
 
@@ -782,7 +782,7 @@ kernel::handle_work_to_host(){
 
 void 
 kernel::handle_host_missives(){
-	//EMU_PRT("handle_host_missives ker=%p\n", this);
+	//PTD_PRT("handle_host_missives ker=%p\n", this);
 	MCK_CK(is_host_kernel);
 	if(! host_running){
 		return;
@@ -806,7 +806,7 @@ kernel::handle_host_missives(){
 
 void 
 kernel::call_host_handlers_of_group(missive_grp_t* core_mgrp){
-	EMU_CK(is_host_kernel);
+	PTD_CK(is_host_kernel);
 	
 	binder * fst, * lst, * wrk;
 
@@ -822,7 +822,7 @@ kernel::call_host_handlers_of_group(missive_grp_t* core_mgrp){
 		missive* remote_msv = (missive*)(binder*)mc_core_pt_to_host_pt(wrk);
 
 		cell* hdlr_dst = (remote_msv)->dst;
-		EMU_CK(hdlr_dst != mc_null);
+		PTD_CK(hdlr_dst != mc_null);
 
 		mck_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
 	}
@@ -837,13 +837,13 @@ kernel::handle_work_from_host(){
 	MCK_CK(host_kernel != mc_null);
 	MCK_CK(has_from_host_work);
 
-	EMU_CK(from_host_work.is_alone());
+	PTD_CK(from_host_work.is_alone());
 	process_signal(from_host_work, 1, &routed_from_host, host_kernel->pw0_routed_ack_arr);
-	EMU_CK(! from_host_work.is_alone());
+	PTD_CK(! from_host_work.is_alone());
 
 	missive_ref_t* fst_ref = (missive_ref_t*)from_host_work.bn_right;
 	fst_ref->let_go();
-	EMU_CK(from_host_work.is_alone());
+	PTD_CK(from_host_work.is_alone());
 
 	missive_grp_t* host_mgrp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
 
@@ -859,7 +859,7 @@ kernel::handle_work_from_host(){
 		missive* remote_msv = (missive*)wrk;
 
 		cell* hdlr_dst = (remote_msv)->dst;
-		EMU_CK(hdlr_dst != mc_null);
+		PTD_CK(hdlr_dst != mc_null);
 
 		mck_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
 	}
@@ -867,7 +867,7 @@ kernel::handle_work_from_host(){
 	host_mgrp->handled = mc_true;
 
 	fst_ref->release(6);
-	EMU_CK(fst_ref->glb_agent_ptr == mc_null);
+	PTD_CK(fst_ref->glb_agent_ptr == mc_null);
 	did_work |= mc_bit15;
 
 	has_from_host_work = false;
@@ -899,7 +899,7 @@ kernel::stop_sys(mck_token_t key){
 
 	ker->stop_key = key;
 
-	//EMU_PRT("START_STOP_CORE=%d \n", ker->get_core_nn());
+	//PTD_PRT("START_STOP_CORE=%d \n", ker->get_core_nn());
 }
 
 void 
@@ -910,17 +910,17 @@ kernel::send_stop_to_children(){
 
 	mc_load_map_st* mp = mc_map_get_loaded();
 
-	//EMU_PRT("STOP_CHILDREN CORE=%d \n", get_core_nn());
+	//PTD_PRT("STOP_CHILDREN CORE=%d \n", get_core_nn());
 
 	if(mp->childs != mc_null){ 
 		int aa = 0;
 		mc_load_map_st* ch_map = (mp->childs)[aa];
 		while(ch_map != mc_null){
-			//EMU_PRT("send_stop to CHILD=%d \n", ch_map->num_core);
+			//PTD_PRT("send_stop to CHILD=%d \n", ch_map->num_core);
 			mc_core_nn_t chd_nn = ch_map->num_core;
 			cell* ch_cell = get_core_cell(mc_nn_to_id(chd_nn));
 
-			//EMU_PRT_STACK(true, "mck_tok_stop_sys_to_children CORE=%d \n", get_core_nn());
+			//PTD_PRT_STACK(true, "mck_tok_stop_sys_to_children CORE=%d \n", get_core_nn());
 
 			missive* msv = missive::acquire();
 			msv->src = get_core_cell();
@@ -938,11 +938,11 @@ kernel::send_stop_to_children(){
 
 void 
 kernel::handle_stop(){
-	EMU_CK(stop_key != 0);
+	PTD_CK(stop_key != 0);
 	mc_core_nn_t tot_child = mc_map_get_tot_children();
-	//EMU_CK((tot_child == 0) == ());
+	//PTD_CK((tot_child == 0) == ());
 	if(! sent_stop_to_parent && (num_childs_stopping == tot_child)){
-		//EMU_PRT("SENDING STOP TO PARENT CORE=%d TOT_CHLD=%d \n", get_core_nn(), tot_child);
+		//PTD_PRT("SENDING STOP TO PARENT CORE=%d TOT_CHLD=%d \n", get_core_nn(), tot_child);
 
 		if(user_stop_func != mc_null){
 			(*user_stop_func)();
@@ -975,7 +975,7 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 			kernel* ker = MCK_KERNEL;
 			kernel* rem_ker = (kernel*)mc_addr_set_id(src_id, ker);
 
-			//EMU_PRT("GOT_STOP PARENT FROM CORE=%d \n", mc_id_to_nn(src_id));
+			//PTD_PRT("GOT_STOP PARENT FROM CORE=%d \n", mc_id_to_nn(src_id));
 
 			mck_token_t rem_key = rem_ker->stop_key;
 			if(rcvd_stop_key == 0){
@@ -1001,6 +1001,6 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 
 void
 kernel::dbg_set_idle(){
-	//EMU_PRT_STACK(true, "CALLING kernel::set_idle_exit");
+	//PTD_PRT_STACK(true, "CALLING kernel::set_idle_exit");
 }
 

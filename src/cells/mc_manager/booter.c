@@ -56,7 +56,7 @@ bool MCH_ABORT_EXEC = false;
 void 
 mch_abort_func(long val, const char* msg){
 	fprintf(stderr, "\nABORTING_WITH_ERR=%ld %s\n", val, msg);
-	EMU_CODE(mch_ptr_call_stack_trace(mc_null););
+	PTD_CODE(mch_ptr_call_stack_trace(mc_null););
 	
 	exit(EXIT_FAILURE);
 }
@@ -124,8 +124,8 @@ int mch_prt_in_core_shd_dat(mck_glb_sys_st* sh_dat){
 	
 	ZNQ_CODE(fprintf(stderr, "min_sp=0x%08x \n", sh_dat->dbg_min_sp));
 
-	EMU_64_CODE(fprintf(stderr, "dbg_error_code=0x%08lx \n", sh_dat->dbg_error_code));
-	EMU_32_CODE(fprintf(stderr, "dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
+	PTD_64_CODE(fprintf(stderr, "dbg_error_code=0x%08lx \n", sh_dat->dbg_error_code));
+	PTD_32_CODE(fprintf(stderr, "dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
 	ZNQ_CODE(fprintf(stderr, "dbg_error_code=0x%08x \n", sh_dat->dbg_error_code));
 
 	if(sh_dat->dbg_error_str != mc_null){
@@ -269,7 +269,7 @@ mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_
 			if(obj[0] == MC_OUT_ABORT){
 				MCH_ABORT_EXEC = true;
 				continue;
-				//mch_abort_func(1, "ABORT CALLED FROM EMULATION THREAD \n");
+				//mch_abort_func(1, "ABORT CALLED FROM PTD THREAD \n");
 			}
 			if(obj[0] == MC_OUT_LOCK_LOG){
 				if(! (*lock)){
@@ -432,8 +432,8 @@ mch_ptr_call_stack_trace(FILE* out_fp) {
 
 	size_t trace_sz = backtrace(trace, MCH_MAX_CALL_STACK_SZ);
 
-	EMU_64_CODE(fprintf(out_fp, "trace_size=%lu \n", trace_sz));
-	EMU_32_CODE(fprintf(out_fp, "trace_size=%u \n", trace_sz));
+	PTD_64_CODE(fprintf(out_fp, "trace_size=%lu \n", trace_sz));
+	PTD_32_CODE(fprintf(out_fp, "trace_size=%u \n", trace_sz));
 	ZNQ_CODE(fprintf(out_fp, "trace_size=%u \n", trace_sz));
 
 	char **stack_strings = backtrace_symbols(trace, trace_sz);

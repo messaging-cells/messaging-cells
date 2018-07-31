@@ -129,14 +129,14 @@ mck_get_thread_idx(){
 	return thd_idx;
 }
 
-emu_info_t*
-mck_get_emu_info(){
+ptd_info_t*
+mck_get_ptd_info(){
 	if(mc_is_host_thread()){
-		EMU_CK(mcm_HOST_EMU_INFO != mc_null);
-		return mcm_HOST_EMU_INFO;
+		PTD_CK(mcm_HOST_PTD_INFO != mc_null);
+		return mcm_HOST_PTD_INFO;
 	}
 	uint16_t thd_idx = mck_get_thread_idx();
-	emu_info_t* info = &(ALL_THREADS_INFO[thd_idx].thd_emu);
+	ptd_info_t* info = &(ALL_THREADS_INFO[thd_idx].thd_ptd);
 	return info;
 }
 
@@ -151,12 +151,12 @@ mck_get_emu_info(){
 mc_core_id_t
 mcm_get_addr_core_id_fn(void* addr){
 	if(mcm_addr_in_host(addr)){
-		EMU_CK(mcm_HOST_EMU_INFO != mc_null);
-		return mcm_HOST_EMU_INFO->emu_core_id;
+		PTD_CK(mcm_HOST_PTD_INFO != mc_null);
+		return mcm_HOST_PTD_INFO->ptd_core_id;
 	}	
 	mc_core_nn_t idx = mck_get_addr_idx(addr);
 	thread_info_t* info = &(ALL_THREADS_INFO[idx]);
-	return info->thd_emu.emu_core_id;
+	return info->thd_ptd.ptd_core_id;
 }
 
 void*
@@ -166,7 +166,7 @@ mcm_addr_with_fn(mc_core_id_t core_id, void* addr){
 	}
 	mc_core_nn_t idx = mc_id_to_nn(core_id);
 	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + mck_get_addr_offset(addr));
-	//EMU_CK((core_id != mcm_get_addr_core_id_fn(addr)) || (addr2 == addr));
+	//PTD_CK((core_id != mcm_get_addr_core_id_fn(addr)) || (addr2 == addr));
 	return addr2;
 }
 
@@ -191,11 +191,11 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 		fflush(stdout); 
 		fflush(out_file); 
 
-		emu_info_t* inf = mck_get_emu_info();
+		ptd_info_t* inf = mck_get_ptd_info();
 		if(is_assert || prt_stck){
 			fprintf(out_file, "\n------------------------------------------------------------------\n");
 		}
-		fprintf(out_file, "%d:%x --> ", inf->emu_num, inf->emu_core_id);
+		fprintf(out_file, "%d:%x --> ", inf->ptd_num, inf->ptd_core_id);
 		if(fnam != mc_null){
 			fprintf(out_file, "FILE %s(%d): ", fnam, line);
 		}
@@ -243,7 +243,7 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 }
 
 char*
-mcm_get_emu_log_fnam(){
+mcm_get_ptd_log_fnam(){
 	if(mc_is_host_thread()){
 		return mc_null;
 	}
@@ -255,7 +255,7 @@ mcm_get_emu_log_fnam(){
 /*
 void
 mcm_log(const char *fmt, ...){
-	//EMU_CK(! mc_is_host_thread());
+	//PTD_CK(! mc_is_host_thread());
 
 	char pp[MC_MAX_STR_SZ];
 	va_list ap;
@@ -275,7 +275,7 @@ mcm_log(const char *fmt, ...){
 
 void
 mcm_printf(const char *fmt, ...){
-	//EMU_CK(! mc_is_host_thread());
+	//PTD_CK(! mc_is_host_thread());
 
 	char pp[MC_MAX_STR_SZ];
 	va_list ap;
@@ -290,9 +290,9 @@ mcm_printf(const char *fmt, ...){
 		mch_abort_func((mc_addr_t)mcm_printf, "mcm_printf. ERROR. \n");
 	}
 
-	emu_info_t* inf = mck_get_emu_info();
+	ptd_info_t* inf = mck_get_ptd_info();
 
-	printf("%d:%x --> %s", inf->emu_num, inf->emu_core_id, pp);
+	printf("%d:%x --> %s", inf->ptd_num, inf->ptd_core_id, pp);
 	fflush(stdout); 
 }
 */
@@ -304,15 +304,15 @@ thread_start(void *arg){
 	pthread_t slf = pthread_self();
 	int old_cancel;
 
-	pthread_setname_np(slf, tinfo->thd_emu.emu_name);
+	pthread_setname_np(slf, tinfo->thd_ptd.ptd_name);
 
 	pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &old_cancel);
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_cancel);
 
-	//printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, mck_get_core_id(), tinfo->thd_emu.emu_name);
+	//printf("SELF = %ld \tCORE_ID = %d \tNAME = %s \n", slf, mck_get_core_id(), tinfo->thd_ptd.ptd_name);
 
-	if(tinfo->thd_emu.emu_core_func != mc_null){
-		(tinfo->thd_emu.emu_core_func)();
+	if(tinfo->thd_ptd.ptd_core_func != mc_null){
+		(tinfo->thd_ptd.ptd_core_func)();
 	}
 
 	return mc_null;
@@ -323,10 +323,10 @@ thread_abort(){
 	if(mc_is_host_thread()){
 		abort();
 	}
-	mc_out_abort_emu();
+	mc_out_abort_ptd();
 
-	emu_info_t* info = mck_get_emu_info();
-	if(pthread_cancel(info->emu_id) != 0){
+	ptd_info_t* info = mck_get_ptd_info();
+	if(pthread_cancel(info->ptd_id) != 0){
 		assert(false && "CANNOT_CANCEL_THREAD !!!!!");
 	}
 	pause();

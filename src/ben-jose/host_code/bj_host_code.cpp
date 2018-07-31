@@ -111,7 +111,7 @@ void bj_test_1(int argc, char *argv[])
 	binder* lft = b1.bn_left;
 	synapse* pt_s1 = bj_get_syn_of_rgt_handle(lft);
 
-	EMU_CK(bj_ck_is_synapse(pt_s1));
+	PTD_CK(bj_ck_is_synapse(pt_s1));
 	printf("syn_idx = %d\n", pt_s1->handler_idx);
 
 	printf("BJ_HOST_TESTS_FINISHED\n");
@@ -217,12 +217,12 @@ int mc_host_main(int argc, char *argv[])
 {
 	int rr = 0;
 
-	//EMU_CODE(bj_test_1(argc, argv));
-	//EMU_CODE(bj_test_2(argc, argv));
-	//EMU_CODE(bj_test_3(argc, argv));
-	//EMU_CODE(bj_test_4(argc, argv));
-	//EMU_CODE(bj_test_5(argc, argv));
-	//EMU_CODE(bj_test_6(argc, argv));
+	//PTD_CODE(bj_test_1(argc, argv));
+	//PTD_CODE(bj_test_2(argc, argv));
+	//PTD_CODE(bj_test_3(argc, argv));
+	//PTD_CODE(bj_test_4(argc, argv));
+	//PTD_CODE(bj_test_5(argc, argv));
+	//PTD_CODE(bj_test_6(argc, argv));
 	//bj_test_7(argc, argv);
 	rr = bj_host_main(argc, argv);
 
