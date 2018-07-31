@@ -26,16 +26,15 @@ endef
 
 $(eval $(SET_g_FLAG))
 
-BUILD_DIR := ../tmp-build/lib-cells
-TARGET_DIR := ../bin/lib-cells
+MC_MAKER_DIR := $(shell pwd)
+
+SRC_DIR := ${MC_MAKER_DIR}/../src
+
+BUILD_DIR := ${MC_MAKER_DIR}/../tmp-build/lib-cells
+TARGET_DIR := ${MC_MAKER_DIR}/../bin/lib-cells
 
 ESDK=${EPIPHANY_HOME}
 ETOOLS=${ESDK}/tools
-
-SRC_DIR := ../src
-
-EPH_SAMPLES_DIR := ./eph_samples
-EMU_SAMPLES_DIR := ./emu_samples
 
 STD_EPH_CFLAGS := -Wall -std=gnu11 -ffreestanding -nostdlib -nostartfiles -fno-default-inline 
 
@@ -43,17 +42,15 @@ CXXFLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables
 CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
 STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
-ATVA_EPH_LFLAGS := -L${ETOOLS}/e-gnu/epiphany-elf/lib -L${ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
-
 SUBMAKEFILES := \
-	mc-emu-tak-mak-lib.mk \
-	mc-eph-tak-mak-lib.mk \
-	mc-znq-tak-mak-lib.mk \
-	mc-emu-dlmalloc-lib.mk \
-	mc-znq-dlmalloc-lib.mk \
-	mc-znq-cell-lib.mk \
-	mc-emu-cell-lib.mk \
-	mc-eph-cell-lib.mk \
+	pthreads/mc-emu-tak-mak-lib.mk \
+	pthreads/mc-emu-dlmalloc-lib.mk \
+	pthreads/mc-emu-cell-lib.mk \
+	parallella/manager/mc-znq-tak-mak-lib.mk \
+	parallella/manager/mc-znq-dlmalloc-lib.mk \
+	parallella/manager/mc-znq-cell-lib.mk \
+	parallella/workers/mc-eph-tak-mak-lib.mk \
+	parallella/workers/mc-eph-cell-lib.mk \
 
 
 

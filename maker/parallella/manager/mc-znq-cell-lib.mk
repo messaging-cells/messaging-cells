@@ -4,7 +4,8 @@ H_DIR=${ESDK}/tools/host
 H_LIB_1=${ETOOLS}/host/lib
 H_INC_1=${ETOOLS}/host/include
 
-SRC_HOST_DIR := $(SRC_DIR)/host
+SRC_MANAGER_DIR := $(SRC_DIR)/cells/mc_manager
+SRC_PLLA_MANAGER_DIR := $(SRC_DIR)/parallella/manager
 SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================

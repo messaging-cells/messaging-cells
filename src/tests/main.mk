@@ -86,7 +86,7 @@ MC_ZNQ_LIBS := ${MC_LIB_DIR_2}/libmcz-cell.a ${MC_LIB_DIR_2}/libmcz-tak-mak.a ${
 MC_EMU_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
 MC_EPH_LIBS := ${MC_LIB_DIR_2}/libmck-cell.a ${MC_LIB_DIR_2}/libmck-tak-mak.a
 
-MC_STD_INCDIRS := ../../cells ../../host ${MC_ETOOLS}/host/include
+MC_STD_INCDIRS := ../../cells ../../cells/mc_manager ${MC_ETOOLS}/host/include
 
 #	./tak_mak_test/test_tak_mak.mk \
 #	./logs_test/logs_test.mk \

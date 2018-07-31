@@ -1,7 +1,7 @@
 
 IS_EMU_FLAG := -DMC_IS_EMU_CODE
 
-SRC_HOST_DIR := $(SRC_DIR)/host
+SRC_HOST_DIR := $(SRC_DIR)/cells/mc_manager
 SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================
@@ -9,7 +9,7 @@ SRC_CELLS_DIR := $(SRC_DIR)/cells
 SRC_CFLAGS := -DMC_IS_EMU_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} ${g_FLAG} -pthread 
 SRC_CXXFLAGS := -DMC_IS_EMU_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${g_FLAG} -pthread 
 
-SRC_INCDIRS := $(SRC_HOST_DIR) $(SRC_CELLS_DIR) 
+SRC_INCDIRS := $(SRC_PTHREADS_MANAGER) $(SRC_HOST_DIR) $(SRC_CELLS_DIR) 
 
 SOURCES := \
 	$(SRC_CELLS_DIR)/umm_malloc.c \
