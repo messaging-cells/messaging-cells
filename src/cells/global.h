@@ -129,17 +129,17 @@ typedef struct mck_glb_sys_def mck_glb_sys_st;
 
 #ifdef MC_IS_EPH_CODE
 	extern mc_off_sys_st mck_external_manageru_data_obj;
-	#define MCK_PT_EXTERNAL_HOST_DATA (&mck_external_manageru_data_obj)
+	#define MCK_PT_EXTERNAL_MANAGERU_DATA (&mck_external_manageru_data_obj)
 #endif
 
 #ifdef MC_IS_ZNQ_CODE
 	extern mc_off_sys_st* mcz_pt_external_manageru_data_obj;
-	#define MCK_PT_EXTERNAL_HOST_DATA mcz_pt_external_manageru_data_obj
+	#define MCK_PT_EXTERNAL_MANAGERU_DATA mcz_pt_external_manageru_data_obj
 #endif
 
 #ifdef MC_IS_PTD_CODE
 	extern mc_off_sys_st mcm_external_manageru_data_obj;
-	#define MCK_PT_EXTERNAL_HOST_DATA (&mcm_external_manageru_data_obj)
+	#define MCK_PT_EXTERNAL_MANAGERU_DATA (&mcm_external_manageru_data_obj)
 #endif
 
 
@@ -242,7 +242,7 @@ void ck_shd_code();
 mc_inline_fn 
 uint32_t 
 mck_get_tot_modules(){
-	return MCK_PT_EXTERNAL_HOST_DATA->tot_modules;
+	return MCK_PT_EXTERNAL_MANAGERU_DATA->tot_modules;
 }
 
 mc_addr_t 

@@ -81,7 +81,7 @@ void bj_load_shd_sornet(){
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
 	if(nn == 0){
-		pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
+		pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->manageru_load_data);
 		pre_sornode** all_input = 
 			(pre_sornode**)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_pre_sorinput_nod));
 

@@ -45,13 +45,13 @@ mc_link_syms_data_st mck_external_ram_load_data mc_lk_syms_dat = {
 	.extnl_ram_size = MC_VAL_EXTERNAL_RAM_SIZE,
 	.extnl_code_size = MC_VAL_EXTERNAL_CODE_SIZE,
 	.extnl_load_size = MC_VAL_EXTERNAL_LOAD_SIZE,
-	.extnl_manageru_data_size = MC_VAL_EXTERNAL_HOST_DATA_SIZE,
-	.extnl_manageru_alloc_size = MC_VAL_EXTERNAL_HOST_ALLOC_SIZE,
+	.extnl_manageru_data_size = MC_VAL_EXTERNAL_MANAGERU_DATA_SIZE,
+	.extnl_manageru_alloc_size = MC_VAL_EXTERNAL_MANAGERU_ALLOC_SIZE,
 	.extnl_ram_orig = MC_VAL_EXTERNAL_RAM_ORIG,
 	.extnl_code_orig = MC_VAL_EXTERNAL_CODE_ORIG,
 	.extnl_load_orig = MC_VAL_EXTERNAL_LOAD_ORIG,
-	.extnl_manageru_data_orig = MC_VAL_EXTERNAL_HOST_DATA_ORIG,
-	.extnl_manageru_alloc_orig = MC_VAL_EXTERNAL_HOST_ALLOC_ORIG,
+	.extnl_manageru_data_orig = MC_VAL_EXTERNAL_MANAGERU_DATA_ORIG,
+	.extnl_manageru_alloc_orig = MC_VAL_EXTERNAL_MANAGERU_ALLOC_ORIG,
 
 	.core_module_orig = MC_VAL_CORE_MODULE_ORIG,
 	.core_module_size = MC_VAL_CORE_MODULE_SIZE,
@@ -97,7 +97,7 @@ mc_load_map(){
 	*/
 
 	if(mp == mc_null){
-		if(MCK_PT_EXTERNAL_HOST_DATA->first_load_workeru_id != koid){
+		if(MCK_PT_EXTERNAL_MANAGERU_DATA->first_load_workeru_id != koid){
 			mck_abort((mc_addr_t)err_loader_eph_01, err_loader_eph_01);
 		}
 		if(mck_first_load_map != mc_null){

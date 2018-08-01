@@ -31,7 +31,7 @@
 
 
 SRC_TEST_DIR := ./
-SRC_HOST_DIR := ../../host
+SRC_MANAGERU_DIR := ../../host
 SRC_CELLS_DIR := ../../cells
 
 DBG_FLAG := -DFULL_DEBUG
@@ -56,7 +56,7 @@ SRC_CFLAGS := -DMC_IS_ZNQ_CODE ${DBG_FLAG} ${C_FLAGS_1}
 CXX_FLAGS_1 := -Wall -std=c++14 -pthread
 SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE ${DBG_FLAG} ${CXX_FLAGS_1}
 
-SRC_INCDIRS := $(SRC_HOST_DIR) ${SRC_CELLS_DIR}
+SRC_INCDIRS := $(SRC_MANAGERU_DIR) ${SRC_CELLS_DIR}
 
 SOURCES := $(SRC_TEST_DIR)/dbg_dlmalloc.cpp
 

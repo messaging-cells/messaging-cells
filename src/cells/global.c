@@ -62,16 +62,16 @@ mck_glb_init(bool is_host) {
 	mc_sys_sz_st* sys_sz = MC_SYS_SZ;
 	mc_init_glb_sys_sz(sys_sz);
 	
-	if(MCK_PT_EXTERNAL_HOST_DATA->magic_id != MC_MAGIC_ID){
+	if(MCK_PT_EXTERNAL_MANAGERU_DATA->magic_id != MC_MAGIC_ID){
 		mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_1.\n"));
 	}
 
-	MCK_PT_EXTERNAL_HOST_DATA->pt_this_from_eph = MCK_PT_EXTERNAL_HOST_DATA;	// should be same for all cores
+	MCK_PT_EXTERNAL_MANAGERU_DATA->pt_this_from_eph = MCK_PT_EXTERNAL_MANAGERU_DATA;	// should be same for all cores
 	
 	// glb_sys_sz init
 	mc_workeru_id_t koid = mck_get_workeru_id();
 	mc_memset((uint8_t*)sys_sz, 0, sizeof(mc_sys_sz_st));
-	*sys_sz = MCK_PT_EXTERNAL_HOST_DATA->wrk_sys;
+	*sys_sz = MCK_PT_EXTERNAL_MANAGERU_DATA->wrk_sys;
 
 	// num_core init
 	mc_workeru_nn_t num_core = mc_id_to_nn(koid);
@@ -79,8 +79,8 @@ mck_glb_init(bool is_host) {
 	glb_dat->magic_id = MC_MAGIC_ID;
 	glb_dat->dbg_stack_trace = mc_null;
 	glb_dat->magic_end = MC_MAGIC_END;	
-	glb_dat->znq_shd_mem_base = MCK_PT_EXTERNAL_HOST_DATA->znq_shared_mem_base;
-	glb_dat->eph_shd_mem_base = MCK_PT_EXTERNAL_HOST_DATA->eph_shared_mem_base;
+	glb_dat->znq_shd_mem_base = MCK_PT_EXTERNAL_MANAGERU_DATA->znq_shared_mem_base;
+	glb_dat->eph_shd_mem_base = MCK_PT_EXTERNAL_MANAGERU_DATA->eph_shared_mem_base;
 	glb_dat->the_workeru_id = koid;
 	glb_dat->the_workeru_ro = mc_id_to_ro(koid);
 	glb_dat->the_workeru_co = mc_id_to_co(koid);
@@ -90,12 +90,12 @@ mck_glb_init(bool is_host) {
 	glb_dat->pt_workeru_kernel = mc_null;
 
 	if(num_core < mc_out_num_cores){
-		glb_dat->off_workeru_pt = &((MCK_PT_EXTERNAL_HOST_DATA->sys_cores)[num_core]);
-		if((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core].magic_id != MC_MAGIC_ID){
+		glb_dat->off_workeru_pt = &((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_cores)[num_core]);
+		if((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_out_buffs)[num_core].magic_id != MC_MAGIC_ID){
 			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_2.\n"));
 		}
 
-		mc_workeru_out_st* out_st = &((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core]);
+		mc_workeru_out_st* out_st = &((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_out_buffs)[num_core]);
 
 		glb_dat->write_rrarray = &(out_st->wr_arr);
 		mc_rr_init(glb_dat->write_rrarray, MC_OUT_BUFF_SZ, out_st->buff, 0);

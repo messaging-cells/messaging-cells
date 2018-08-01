@@ -70,7 +70,7 @@ struct thread_info_st {    // Used as argument to thread_start()
 
 typedef struct thread_info_st thread_info_t;
 
-extern ptd_info_t*	mcm_HOST_PTD_INFO;
+extern ptd_info_t*	mcm_MANAGERU_PTD_INFO;
 
 extern thread_info_t* ALL_THREADS_INFO;
 extern int TOT_THREADS;

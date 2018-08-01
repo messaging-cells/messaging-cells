@@ -132,8 +132,8 @@ mck_get_thread_idx(){
 ptd_info_t*
 mck_get_ptd_info(){
 	if(mc_is_manageru_thread()){
-		PTD_CK(mcm_HOST_PTD_INFO != mc_null);
-		return mcm_HOST_PTD_INFO;
+		PTD_CK(mcm_MANAGERU_PTD_INFO != mc_null);
+		return mcm_MANAGERU_PTD_INFO;
 	}
 	uint16_t thd_idx = mck_get_thread_idx();
 	ptd_info_t* info = &(ALL_THREADS_INFO[thd_idx].thd_ptd);
@@ -151,8 +151,8 @@ mck_get_ptd_info(){
 mc_workeru_id_t
 mcm_get_addr_workeru_id_fn(void* addr){
 	if(mcm_addr_in_host(addr)){
-		PTD_CK(mcm_HOST_PTD_INFO != mc_null);
-		return mcm_HOST_PTD_INFO->ptd_workeru_id;
+		PTD_CK(mcm_MANAGERU_PTD_INFO != mc_null);
+		return mcm_MANAGERU_PTD_INFO->ptd_workeru_id;
 	}	
 	mc_workeru_nn_t idx = mck_get_addr_idx(addr);
 	thread_info_t* info = &(ALL_THREADS_INFO[idx]);

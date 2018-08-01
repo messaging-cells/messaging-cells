@@ -69,7 +69,7 @@ BJ_CORES_INCLUDES := \
 	${SRC_BJ_DIR}/solver_main \
 
 
-BJ_HOST_INCLUDES := \
+BJ_MANAGERU_INCLUDES := \
 	${BJ_CORES_INCLUDES} \
 	${SRC_BJ_DIR}/manageru_code/cnf_preload \
 	${SRC_BJ_DIR}/manageru_code/dimacs \

@@ -59,7 +59,7 @@ uint8_t mcm_dlmalloc_heap[MCM_DLMALLOC_HEAP_SZ];
 
 mspace mcm_glb_mspace;
 
-ptd_info_t*	mcm_HOST_PTD_INFO = mc_null;
+ptd_info_t*	mcm_MANAGERU_PTD_INFO = mc_null;
 
 void
 mcm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
@@ -160,15 +160,15 @@ mc_manageru_init(){
 	memset(mcm_dlmalloc_heap, 0, sizeof(mcm_dlmalloc_heap));
 	mcm_glb_mspace = create_mspace_with_base(mcm_dlmalloc_heap, MCM_DLMALLOC_HEAP_SZ, 0);
 
-	mcm_HOST_PTD_INFO = mc_malloc32(ptd_info_t, 1);
+	mcm_MANAGERU_PTD_INFO = mc_malloc32(ptd_info_t, 1);
 
-	mc_init_glb_sys_sz(&(mcm_HOST_PTD_INFO->ptd_system_sz));
+	mc_init_glb_sys_sz(&(mcm_MANAGERU_PTD_INFO->ptd_system_sz));
 
 	mc_workeru_co_t max_row = mc_tot_xx_sys;
 	mc_workeru_co_t max_col = mc_tot_yy_sys;
 	mc_workeru_id_t core_id = mc_ro_co_to_id(max_row + 1, max_col + 1);
-	mcm_HOST_PTD_INFO->ptd_workeru_id = core_id;
-	mcm_HOST_PTD_INFO->ptd_num = ~0;
+	mcm_MANAGERU_PTD_INFO->ptd_workeru_id = core_id;
+	mcm_MANAGERU_PTD_INFO->ptd_num = ~0;
 
 	memset(&mch_external_ram_load_data, 0, sizeof(mc_link_syms_data_st));
 
@@ -180,7 +180,7 @@ mc_manageru_init(){
 
 	printf("TOT_THREADS = %d\n", TOT_THREADS);
 
-	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_HOST_DATA;
+	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_MANAGERU_DATA;
 	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 	PTD_64_CODE(printf("sizeof(*pt_shd_data)=%ld\n", sizeof(*pt_shd_data)));
 	PTD_32_CODE(printf("sizeof(*pt_shd_data)=%d\n", sizeof(*pt_shd_data)));
@@ -204,7 +204,7 @@ mc_manageru_init(){
 void
 mc_manageru_run()
 {
-	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_HOST_DATA;
+	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_MANAGERU_DATA;
 	//mc_sys_sz_st* sys_sz = MC_SYS_SZ;
 
 	mc_workeru_id_t core_id;

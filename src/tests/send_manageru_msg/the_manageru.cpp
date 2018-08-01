@@ -68,7 +68,7 @@ recv_manageru_handler(missive* msg){
 	mck_get_kernel()->set_idle_exit();
 }
 
-missive_handler_t host_handlers[] = {
+missive_handler_t manageru_handlers[] = {
 	mc_null,
 	recv_manageru_handler
 };
@@ -77,7 +77,7 @@ void
 send_manageru_main(){
 	kernel::init_manageru_sys();
 
-	kernel::set_handlers(2, host_handlers);
+	kernel::set_handlers(2, manageru_handlers);
 
 	cell::separate(mc_out_num_cores);
 	missive::separate(mc_out_num_cores);

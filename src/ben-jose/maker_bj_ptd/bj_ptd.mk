@@ -1,5 +1,5 @@
 
-SRC_BJ_HOST_DIR := .
+SRC_BJ_MANAGERU_DIR := .
 
 # =======================================
 
@@ -17,7 +17,7 @@ SRC_CFLAGS := -DMC_IS_PTD_CODE ${MC_DBG_FLAG} ${C_FLAGS_1}
 CXX_FLAGS_1 := -Wall -std=c++14 -g3 -pthread 
 SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_DBG_FLAG} ${CXX_FLAGS_1}
 
-SRC_INCDIRS := ${BJ_HOST_INCLUDES}
+SRC_INCDIRS := ${BJ_MANAGERU_INCLUDES}
 
 SUBMAKEFILES := ./lib-dimacs-ptd.mk ./all_modules_ptd.mk 
 

@@ -66,7 +66,7 @@ int bj_manageru_main(int argc, char *argv[])
 	preload_cnf(sz, arr);
 
 	void* core_cnf_pt = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)THE_CNF);
-	kernel::get_sys()->host_load_data = core_cnf_pt;
+	kernel::get_sys()->manageru_load_data = core_cnf_pt;
 
 	printf("LITS_SZ=%ld tot_lits=%ld tot_vars=%ld tot_ccls=%ld tot_cores=%ld \n", all_lits.size(),
 			the_loader.ld_tot_lits, the_loader.ld_num_vars, the_loader.ld_num_ccls, THE_CNF->tot_cores);
@@ -74,7 +74,7 @@ int bj_manageru_main(int argc, char *argv[])
 	printf("THE_CNF=%p \n", core_cnf_pt);
 	printf("magic = %ld \n", THE_CNF->MAGIC);
 
-	//host_print_nods();
+	//manageru_print_nods();
 
 	//print_cnf();
 	//print_workeru_cnfs();
@@ -114,7 +114,7 @@ void bj_test_1(int argc, char *argv[])
 	PTD_CK(bj_ck_is_synapse(pt_s1));
 	printf("syn_idx = %d\n", pt_s1->handler_idx);
 
-	printf("BJ_HOST_TESTS_FINISHED\n");
+	printf("BJ_MANAGERU_TESTS_FINISHED\n");
 }
 
 typedef uint16_t test_int_t;

@@ -268,7 +268,7 @@ extern pre_load_cnf* THE_CNF;
 
 void preload_cnf(long sz, const long* arr);
 
-void host_print_nods();
+void manageru_print_nods();
 
 void print_cnf();
 void print_pre_cnf_nets();

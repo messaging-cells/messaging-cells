@@ -375,16 +375,16 @@ public:
 	grip 	cls_available_agent_ref;
 	grip 	cls_available_agent_grp;
 
-	kernel*	host_kernel;
+	kernel*	manageru_kernel;
 
 	cell* 	first_cell;
 
-	void*	host_load_data;
+	void*	manageru_load_data;
 
 	mc_kenel_func_t	user_func;
 	void*	user_data;
 
-	bool		host_running;
+	bool		manageru_running;
 	uint16_t 	did_work;
 	bool 		exit_when_idle;
 

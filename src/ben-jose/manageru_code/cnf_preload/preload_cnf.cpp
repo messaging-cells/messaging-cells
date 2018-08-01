@@ -65,7 +65,7 @@ print_cnf(){
 }
 
 void
-host_print_nods(){
+manageru_print_nods(){
 	printf("ALL_NODS {");
 	for(long aa = 0; aa < THE_CNF->tot_tmp_pre_load_nods; aa++){
 		pre_cnf_node* nod =  THE_CNF->all_tmp_pre_load_nods[aa];

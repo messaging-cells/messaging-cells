@@ -119,19 +119,19 @@ kernel::init_kernel(){
 	mck_set_class_name(agent_ref);
 	mck_set_class_name(agent_grp);
 
-	host_kernel = mc_null;
+	manageru_kernel = mc_null;
 
 	PTD_CK(cell::get_curr_separate_sz() == 1);
 	//PTD_PRT("CURR_SEP_SIZE=%u \n\n", cell::get_curr_separate_sz());
 	first_cell = cell::acquire();
 	//ZNQ_CODE(printf("INITED_first_cell = %p \n", first_cell));
 
-	host_load_data = mc_null;
+	manageru_load_data = mc_null;
 
 	user_func = mc_null;
 	user_data = mc_null;
 
-	host_running = false;
+	manageru_running = false;
 	did_work = mc_bit0;
 	exit_when_idle = false;
 
@@ -160,10 +160,10 @@ kernel::init_sys(bool is_the_host){
 
 	new (ker) kernel(); 
 
-	ker->host_kernel = (kernel*)(MCK_PT_EXTERNAL_HOST_DATA->pt_manageru_kernel);
-	if(ker->host_kernel != mc_null){
-		ker->host_load_data = ker->host_kernel->host_load_data;
-		//PTD_PRT("SETTING host_load_data = %p \n", ker->host_load_data);
+	ker->manageru_kernel = (kernel*)(MCK_PT_EXTERNAL_MANAGERU_DATA->pt_manageru_kernel);
+	if(ker->manageru_kernel != mc_null){
+		ker->manageru_load_data = ker->manageru_kernel->manageru_load_data;
+		//PTD_PRT("SETTING manageru_load_data = %p \n", ker->manageru_load_data);
 	}
 
 	mck_glb_sys_st* in_shd = MC_CORE_INFO;
@@ -225,11 +225,11 @@ void // static
 kernel::init_manageru_sys(){
 	mc_manageru_init();
 	kernel::init_sys(true);
-	MCK_PT_EXTERNAL_HOST_DATA->pt_manageru_kernel = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)MCK_KERNEL);
+	MCK_PT_EXTERNAL_MANAGERU_DATA->pt_manageru_kernel = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)MCK_KERNEL);
 	MCK_KERNEL->is_manageru_kernel = true;
 
 	//ZNQ_CODE(printf("init_manageru_sys. MCK_KERNEL = %p \n", MCK_KERNEL));
-	//ZNQ_CODE(printf("init_manageru_sys. pt_manageru_kernel = %p \n", MCK_PT_EXTERNAL_HOST_DATA->pt_manageru_kernel));
+	//ZNQ_CODE(printf("init_manageru_sys. pt_manageru_kernel = %p \n", MCK_PT_EXTERNAL_MANAGERU_DATA->pt_manageru_kernel));
 	//ZNQ_CODE(printf("init_manageru_sys. mg=%x emg=%x \n", MCK_KERNEL->magic_id, MCK_KERNEL->end_magic_id));
 	//ZNQ_CODE(printf("init_manageru_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
 }
@@ -237,7 +237,7 @@ kernel::init_manageru_sys(){
 void // static
 kernel::run_manageru_sys(){
 	//ZNQ_CODE(printf("run_manageru_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
-	MCK_KERNEL->host_running = true;
+	MCK_KERNEL->manageru_running = true;
 	mc_manageru_run();
 }
 
@@ -346,7 +346,7 @@ kernel::get_manageru_cell(){
 	if(ker->is_manageru_kernel){
 		return ker->first_cell;
 	} 
-	return ker->host_kernel->first_cell;
+	return ker->manageru_kernel->first_cell;
 }
 
 void // static
@@ -745,7 +745,7 @@ kernel::handle_work_to_cores(){
 void 
 kernel::handle_work_to_host(){
 	MCK_CK(! is_manageru_kernel);
-	MCK_CK(host_kernel != mc_null);
+	MCK_CK(manageru_kernel != mc_null);
 	MCK_CK(has_to_manageru_work);
 
 	if(routed_ack_from_host != mck_ready_ack){
@@ -770,10 +770,10 @@ kernel::handle_work_to_host(){
 	mc_workeru_nn_t src_idx = get_workeru_nn();
 	missive_grp_t* glb_mgrp = (missive_grp_t*)mck_as_glb_pt(mgrp2);
 
-	(host_kernel->pw0_routed_arr)[src_idx] = glb_mgrp;
+	(manageru_kernel->pw0_routed_arr)[src_idx] = glb_mgrp;
 
 	// send signal
-	host_kernel->signals_arr[mck_do_pw0_routes_sgnl] = mc_true;
+	manageru_kernel->signals_arr[mck_do_pw0_routes_sgnl] = mc_true;
 
 	sent_work.bind_to_my_left(*mgrp2);
 
@@ -784,7 +784,7 @@ void
 kernel::handle_manageru_missives(){
 	//PTD_PRT("handle_manageru_missives ker=%p\n", this);
 	MCK_CK(is_manageru_kernel);
-	if(! host_running){
+	if(! manageru_running){
 		return;
 	}
 	bool hdl = true;
@@ -799,7 +799,7 @@ kernel::handle_manageru_missives(){
 		did_work = 0x0000;
 		handle_missives();
 		if(! did_work && exit_when_idle){
-			host_running = false;
+			manageru_running = false;
 		}
 	}
 }
@@ -834,22 +834,22 @@ kernel::call_manageru_handlers_of_group(missive_grp_t* core_mgrp){
 void
 kernel::handle_work_from_host(){
 	MCK_CK(! is_manageru_kernel);
-	MCK_CK(host_kernel != mc_null);
+	MCK_CK(manageru_kernel != mc_null);
 	MCK_CK(has_from_manageru_work);
 
 	PTD_CK(from_manageru_work.is_alone());
-	process_signal(from_manageru_work, 1, &routed_from_host, host_kernel->pw0_routed_ack_arr);
+	process_signal(from_manageru_work, 1, &routed_from_host, manageru_kernel->pw0_routed_ack_arr);
 	PTD_CK(! from_manageru_work.is_alone());
 
 	missive_ref_t* fst_ref = (missive_ref_t*)from_manageru_work.bn_right;
 	fst_ref->let_go();
 	PTD_CK(from_manageru_work.is_alone());
 
-	missive_grp_t* host_mgrp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
+	missive_grp_t* manageru_mgrp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
 
 	binder * fst, * lst, * wrk;
 
-	binder* all_msvs = &(host_mgrp->all_agts);
+	binder* all_msvs = &(manageru_mgrp->all_agts);
 
 	//mck_sprt2("handle_work_from_host. FLAG1 \n");
 
@@ -864,7 +864,7 @@ kernel::handle_work_from_host(){
 		mck_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
 	}
 
-	host_mgrp->handled = mc_true;
+	manageru_mgrp->handled = mc_true;
 
 	fst_ref->release(6);
 	PTD_CK(fst_ref->glb_agent_ptr == mc_null);
