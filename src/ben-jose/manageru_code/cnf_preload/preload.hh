@@ -151,7 +151,7 @@ public:
 };
 
 /*! \class pre_cnf_net
-\brief Class per core cnf section to load in core. 
+\brief Class per workeruni cnf section to load in workeruni. 
 
 */
 class mc_aligned pre_cnf_net : public agent_grp {
@@ -212,7 +212,7 @@ public:
 typedef int (*cmp_fn)(const void *, const void *);
 
 /*! \class pre_load_cnf
-\brief Class full cnf to load in cores. 
+\brief Class full cnf to load in workerunis. 
 
 */
 class mc_aligned pre_load_cnf {
@@ -235,8 +235,8 @@ public:
 	num_nod_t tot_pre_sorinput_nod;
 	pre_sornode**	all_pre_sorinput_nod;
 
-	long tot_cores;
-	pre_cnf_net*		all_cnf;	//!< Array of \ref pre_cnf_net s to load in each core.
+	long tot_workerunis;
+	pre_cnf_net*		all_cnf;	//!< Array of \ref pre_cnf_net s to load in each workeruni.
 
 	pre_load_cnf(){
 		MAGIC = MAGIC_VAL;
@@ -257,7 +257,7 @@ public:
 		tot_pre_sorinput_nod = 0;
 		all_pre_sorinput_nod = mc_null;
 
-		tot_cores = 0;
+		tot_workerunis = 0;
 		all_cnf = mc_null;
 	}
 

@@ -70,7 +70,7 @@ mc_manageru_main(int argc, char *argv[])
 
 	if(argc > 1){
 		elf_path = argv[1];
-		printf("Using core executable: %s \n", elf_path);
+		printf("Using workeruni executable: %s \n", elf_path);
 	}
 
 	mc_link_syms_data_st* lk_dat = &(syms);
@@ -140,7 +140,7 @@ mc_manageru_main(int argc, char *argv[])
 	max_col = dev.cols;
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
-			void* dst = ((void*) dev.core[row][col].mems.base);
+			void* dst = ((void*) dev.workeruni[row][col].mems.base);
 			printf("min=%p dst=%p max=%p\n", min_shd, dst, max_shd);
 			MCH_CK(addr_in_shd_mem(dst));
 		}
@@ -163,16 +163,16 @@ mc_manageru_main(int argc, char *argv[])
 		bool isonchip = islocal ? true : e_is_addr_on_chip((void *) ((uintptr_t) ld_addr));
 		bool isexternal = ((! islocal) && (! isonchip));
 
-		unsigned coreid = ld_addr >> 20;
-		mc_addr_t coreid_2 = mc_addr_get_id(ld_addr);
+		unsigned workeru_id = ld_addr >> 20;
+		mc_addr_t workeru_id_2 = mc_addr_get_id(ld_addr);
 
-		MCH_CK(coreid == coreid_2);
+		MCH_CK(workeru_id == workeru_id_2);
 
-		bool islocal_2 = (coreid_2 == 0);
+		bool islocal_2 = (workeru_id_2 == 0);
 		bool isonchip_2 = mc_addr_in_sys(ld_addr);
 		bool isexternal_2 = ((! islocal) && (! isonchip));
 
-		//printf("%" PRIu32 " == %p  coreid=%u \n", ld_addr, (void*)ld_addr, coreid);
+		//printf("%" PRIu32 " == %p  workeru_id=%u \n", ld_addr, (void*)ld_addr, workeru_id);
 		bool islocal_3 = ! mc_addr_has_id(ld_addr);
 		
 		MCH_CK(islocal == islocal_2);
@@ -182,11 +182,11 @@ mc_manageru_main(int argc, char *argv[])
 
 		if(!islocal && isonchip){
 			unsigned  globrow, globcol;
-			ee_get_coords_from_id(&dev, coreid, &globrow, &globcol);
-			mc_workeru_co_t g_ro = mc_id_to_ro(coreid);
-			mc_workeru_co_t g_co = mc_id_to_co(coreid);
+			ee_get_coords_from_id(&dev, workeru_id, &globrow, &globcol);
+			mc_workeru_co_t g_ro = mc_id_to_ro(workeru_id);
+			mc_workeru_co_t g_co = mc_id_to_co(workeru_id);
 
-			//printf("coreid=%p \n", (void*)coreid);
+			//printf("workeru_id=%p \n", (void*)workeru_id);
 			//printf("g_ro=%d globrow=%d\n", g_ro, globrow);
 
 			MCH_CK(g_ro == globrow);

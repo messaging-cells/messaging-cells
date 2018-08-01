@@ -251,15 +251,15 @@ public:
 	grip&	get_available();
 };
 
-// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (cores as threads) TO WORK.
-class philo_core {
+// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (workerunis as threads) TO WORK.
+class philo_workeruni {
 public:
-	MCK_DECLARE_MEM_METHODS(philo_core, mc_mod0_cod)
+	MCK_DECLARE_MEM_METHODS(philo_workeruni, mc_mod0_cod)
 
-	philo_core(){		// NEED THIS SO THAT no memset func call
-		init_philo_core();
+	philo_workeruni(){		// NEED THIS SO THAT no memset func call
+		init_philo_workeruni();
 	}		
-	~philo_core(){}		// NEED THIS SO THAT no memset func call
+	~philo_workeruni(){}		// NEED THIS SO THAT no memset func call
 
 	chopstick stick;
 	philosopher philo;
@@ -277,7 +277,7 @@ public:
 	mc_size_t cls_available_agent_ref_sz;
 	mc_size_t cls_available_agent_grp_sz;
 
-	void init_philo_core(){
+	void init_philo_workeruni(){
 		from_manageru_work_sz = 0;
 		to_manageru_work_sz = 0;
 		in_work_sz = 0;
@@ -291,18 +291,18 @@ public:
 	}
 };
 
-MCK_DEFINE_ACQUIRE_ALLOC(philo_core, 32);	// defines philo_core::acquire_alloc
+MCK_DEFINE_ACQUIRE_ALLOC(philo_workeruni, 32);	// defines philo_workeruni::acquire_alloc
 
-#define glb_philo_core ((philo_core*)(mck_get_kernel()->user_data))
+#define glb_philo_workeruni ((philo_workeruni*)(mck_get_kernel()->user_data))
 
 //! Returns the local \ref chopstick 
-#define glb_stick (&(glb_philo_core->stick))
+#define glb_stick (&(glb_philo_workeruni->stick))
 
 //! Returns the local \ref philosopher
-#define glb_philo (&(glb_philo_core->philo))
+#define glb_philo (&(glb_philo_workeruni->philo))
 
-#define glb_ava_sticks (glb_philo_core->ava_chopstick)
-#define glb_ava_philos (glb_philo_core->ava_philosopher)
+#define glb_ava_sticks (glb_philo_workeruni->ava_chopstick)
+#define glb_ava_philos (glb_philo_workeruni->ava_philosopher)
 
 #define left_chp_nn(nn) (nn)
 #define right_chp_nn(nn) ((nn == 15)?(0):(nn + 1))
@@ -310,10 +310,10 @@ MCK_DEFINE_ACQUIRE_ALLOC(philo_core, 32);	// defines philo_core::acquire_alloc
 #define left_phl_nn(nn) ((nn == 0)?(15):(nn - 1))
 #define right_phl_nn(nn) ((nn == 15)?(0):(nn + 1))
 
-//! Returns the \ref chopstick in core with 'id'
+//! Returns the \ref chopstick in workeruni with 'id'
 #define get_stick(id) ((chopstick*)mc_addr_set_id(id, glb_stick))
 
-//! Returns the \ref philosopher in core with 'id'
+//! Returns the \ref philosopher in workeruni with 'id'
 #define get_philo(id) ((philosopher*)mc_addr_set_id(id, glb_philo))
 
 MCK_DEFINE_MEM_METHODS(chopstick, 32, glb_ava_sticks, 0)
@@ -331,7 +331,7 @@ philosopher::get_available(){
 
 
 #ifdef PHILO_WITH_DBG
-	philo_core* 
+	philo_workeruni* 
 	dbg_all_philo[16] mc_external_code_ram = {
 		mc_null, mc_null, mc_null, mc_null, 
 		mc_null, mc_null, mc_null, mc_null, 
@@ -387,7 +387,7 @@ chopstick::handler(missive* msv){
 				//long osz = ker->out_work.calc_size();
 				//mck_ack_t loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[0];
 				mck_slog2("ADDR_INI____");
-				mck_xlog((mc_addr_t)(&(MC_WORKERUNI_INFO->inited_core)));
+				mck_xlog((mc_addr_t)(&(MC_WORKERUNI_INFO->inited_workeruni)));
 				mck_slog2("___\n");
 
 				mck_slog2("INI_0____");
@@ -647,7 +647,7 @@ philosopher::call_exit(){
 		PH_DBG(full_str);
 	}
 
-	void prt_pc(int aa, philo_core* pc){
+	void prt_pc(int aa, philo_workeruni* pc){
 		char full_str[500];
 		char* pt = full_str;
 		pt += sprintf(pt, "WORKERUNI %d=[", aa);
@@ -669,7 +669,7 @@ philosopher::call_exit(){
 
 	void prt_all_philo(){
 		for(int aa = 0; aa < 16; aa++){
-			philo_core* phl = dbg_all_philo[aa];
+			philo_workeruni* phl = dbg_all_philo[aa];
 			if(phl != mc_null){
 				prt_ch(aa, &(phl->stick));
 				prt_ph(aa, &(phl->philo));
@@ -687,7 +687,7 @@ philosopher::call_exit(){
 		if(ker->did_work && dbg_all_idle_prt[nn]){
 			mc_loop_set_var(dbg_all_idle_prt[nn], false);
 		}
-		philo_core* phl = dbg_all_philo[nn];
+		philo_workeruni* phl = dbg_all_philo[nn];
 
 		phl->to_manageru_work_sz = ker->to_manageru_work.calc_size();
 		phl->in_work_sz = ker->in_work.calc_size();
@@ -713,16 +713,16 @@ void mc_workerus_main() {
 		mc_loop_set_var(dbg_all_full[nn], false);
 	)
 
-	philo_core* core_dat = philo_core::acquire_alloc();
-	if(core_dat == mc_null){
+	philo_workeruni* workeruni_dat = philo_workeruni::acquire_alloc();
+	if(workeruni_dat == mc_null){
 		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERUNI DATA"));
 	}
 
-	ker->user_data = core_dat;
+	ker->user_data = workeruni_dat;
 
 	PH_DBG_COD(
 		ker->user_func = ker_func;
-		dbg_all_philo[nn] = core_dat;
+		dbg_all_philo[nn] = workeruni_dat;
 	);
 
 	glb_philo->lft_stk_id = mc_nn_to_id(left_chp_nn(nn));
@@ -737,9 +737,9 @@ void mc_workerus_main() {
 	PTD_PRT("the_handlers[0] = %p \n", (void*)(the_handlers[0]));
 	kernel::set_handlers(3, the_handlers);
 
-	missive::separate(mc_out_num_cores);
-	agent_ref::separate(mc_out_num_cores);
-	agent_grp::separate(mc_out_num_cores);
+	missive::separate(mc_out_num_workerunis);
+	agent_ref::separate(mc_out_num_workerunis);
+	agent_grp::separate(mc_out_num_workerunis);
 
 	chopstick::separate(1);
 	philosopher::separate(1);

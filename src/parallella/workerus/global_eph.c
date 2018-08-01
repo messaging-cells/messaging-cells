@@ -105,19 +105,19 @@ mck_abort(mc_addr_t err, char* msg) {
 
 void
 mc_manageru_init(){
-	// a core must never call this
+	// a workeruni must never call this
 	mck_abort(__LINE__, MC_ABORT_MSG("mc_manageru_init abort\n"));
 }
 
 void
 mc_manageru_run(){
-	// a core must never call this
+	// a workeruni must never call this
 	mck_abort(__LINE__, MC_ABORT_MSG("mc_manageru_run abort\n"));
 }
 
 void
 mc_manageru_finish(){
-	// a core must never call this
+	// a workeruni must never call this
 	mck_abort(__LINE__, MC_ABORT_MSG("mc_manageru_finish abort\n"));
 }
 

@@ -160,13 +160,13 @@ mcm_get_addr_workeru_id_fn(void* addr){
 }
 
 void*
-mcm_addr_with_fn(mc_workeru_id_t core_id, void* addr){
+mcm_addr_with_fn(mc_workeru_id_t workeruni_id, void* addr){
 	if(mcm_addr_in_manageru(addr)){
 		return mc_null;
 	}
-	mc_workeru_nn_t idx = mc_id_to_nn(core_id);
+	mc_workeru_nn_t idx = mc_id_to_nn(workeruni_id);
 	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + mck_get_addr_offset(addr));
-	//PTD_CK((core_id != mcm_get_addr_workeru_id_fn(addr)) || (addr2 == addr));
+	//PTD_CK((workeruni_id != mcm_get_addr_workeru_id_fn(addr)) || (addr2 == addr));
 	return addr2;
 }
 

@@ -1614,7 +1614,7 @@ netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind
 		int aa = 0;
 		mc_load_map_st* ch_map = (my_children)[aa];
 		while(ch_map != mc_null){
-			mc_workeru_nn_t chd_nn = ch_map->num_core;
+			mc_workeru_nn_t chd_nn = ch_map->num_workeruni;
 			nervenet* ch_net = bj_nervenet->get_nervenet(mc_nn_to_id(chd_nn));
 			send_sync_transmitter(tiki, ch_net, the_tok, the_ti, the_cfl);
 

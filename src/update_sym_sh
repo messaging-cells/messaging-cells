@@ -2,5 +2,5 @@
 # Only change last year. DO NOT use generic matching '^Copyright' because
 # it will change other people's Copyright.
 
-find . -name "*" -type f | xargs sed -i 's/WORKERUNI/WORKERUNI/g'
+find . -name "*" -type f | xargs sed -i 's/workeruni/workeru/g'
 

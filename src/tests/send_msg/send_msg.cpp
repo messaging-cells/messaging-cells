@@ -55,9 +55,9 @@ recv_cell_handler(missive* msg){
 		MC_MARK_USED(koid);
 		mc_workeru_nn_t konn = kernel::get_workeru_nn();
 		MC_MARK_USED(konn);
-		PTD_LOG("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", 
+		PTD_LOG("recv_cell_handler. workeruni_id=%lx workeruni_nn=%d src=%p dst=%p \n", 
 				koid, konn, msg->get_source(), msg->dst);
-		PTD_PRT("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", 
+		PTD_PRT("recv_cell_handler. workeruni_id=%lx workeruni_nn=%d src=%p dst=%p \n", 
 				koid, konn, msg->get_source(), msg->dst);
 	)
 
@@ -78,15 +78,15 @@ void mc_workerus_main() {
 
 	kernel::set_handlers(1, the_handlers);
 
-	cell::separate(mc_out_num_cores);
-	missive::separate(mc_out_num_cores);
-	agent_ref::separate(mc_out_num_cores);
-	agent_grp::separate(mc_out_num_cores);
+	cell::separate(mc_out_num_workerunis);
+	missive::separate(mc_out_num_workerunis);
+	agent_ref::separate(mc_out_num_workerunis);
+	agent_grp::separate(mc_out_num_workerunis);
 
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	if(mck_is_ro_co_core(0,0)){
+	if(mck_is_ro_co_workeruni(0,0)){
 		mck_slog2("WORKERUNI (0,0) started\n");
 
 		// Next line is just to remaind that every single cell should have a valid handler_idx. It was already 0.
@@ -94,7 +94,7 @@ void mc_workerus_main() {
 
 		kernel::run_sys();
 	}
-	if(mck_is_ro_co_core(0,1)){
+	if(mck_is_ro_co_workeruni(0,1)){
 		mck_slog2("WORKERUNI (0,1) started\n");
 		mc_workeru_id_t dst = mc_ro_co_to_id(0, 0);
 		

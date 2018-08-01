@@ -46,7 +46,7 @@ recv_workeru_handler(missive* msg){
 	mck_get_kernel()->set_idle_exit();
 }
 
-missive_handler_t core_handlers[] = {
+missive_handler_t workeruni_handlers[] = {
 	mc_null,
 	recv_workeru_handler
 };
@@ -54,20 +54,20 @@ missive_handler_t core_handlers[] = {
 void mc_workerus_main() {
 	kernel::init_sys();
 
-	cell::separate(mc_out_num_cores);
-	missive::separate(mc_out_num_cores);
-	agent_ref::separate(mc_out_num_cores);
-	agent_grp::separate(mc_out_num_cores);
+	cell::separate(mc_out_num_workerunis);
+	missive::separate(mc_out_num_workerunis);
+	agent_ref::separate(mc_out_num_workerunis);
+	agent_grp::separate(mc_out_num_workerunis);
 
 	kernel::get_workeru_cell()->handler_idx = 1;
 
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	if(mck_is_ro_co_core(0,0)){
+	if(mck_is_ro_co_workeruni(0,0)){
 		mck_slog2("WORKERUNI (0,0) started\n");
 
-		kernel::set_handlers(2, core_handlers);
+		kernel::set_handlers(2, workeruni_handlers);
 
 		cell* act1 = kernel::get_workeru_cell();
 		cell* act2 = kernel::get_manageru_cell();

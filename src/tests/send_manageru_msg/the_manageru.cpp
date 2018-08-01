@@ -56,8 +56,8 @@ recv_manageru_handler(missive* msg){
 	MC_MARK_USED(konn);
 
 
-	PTD_LOG("recv_manageru_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	PTD_PRT("RCV_MSV. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_LOG("recv_manageru_handler. workeruni_id=%lx workeruni_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_PRT("RCV_MSV. workeruni_id=%lx workeruni_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 
 	#ifdef WITH_RESPONSE
 		msg->dst->respond(msg, (msg->tok + 10)); 
@@ -79,10 +79,10 @@ send_manageru_main(){
 
 	kernel::set_handlers(2, manageru_handlers);
 
-	cell::separate(mc_out_num_cores);
-	missive::separate(mc_out_num_cores);
-	agent_ref::separate(mc_out_num_cores);
-	agent_grp::separate(mc_out_num_cores);
+	cell::separate(mc_out_num_workerunis);
+	missive::separate(mc_out_num_workerunis);
+	agent_ref::separate(mc_out_num_workerunis);
+	agent_grp::separate(mc_out_num_workerunis);
 
 	//mck_slog2("MANAGERU started\n");
 	kernel::get_workeru_cell()->handler_idx = 1;
@@ -103,7 +103,7 @@ int mc_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
-		printf("Using core executable: %s \n", mch_epiphany_elf_path);
+		printf("Using workeruni executable: %s \n", mch_epiphany_elf_path);
 	}
 	if(argc > 2){
 		printf("LOADING WITH MEMCPY \n");

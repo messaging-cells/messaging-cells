@@ -66,15 +66,15 @@ mck_glb_init(bool is_manageru) {
 		mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_1.\n"));
 	}
 
-	MCK_PT_EXTERNAL_MANAGERU_DATA->pt_this_from_eph = MCK_PT_EXTERNAL_MANAGERU_DATA;	// should be same for all cores
+	MCK_PT_EXTERNAL_MANAGERU_DATA->pt_this_from_eph = MCK_PT_EXTERNAL_MANAGERU_DATA;	// should be same for all workerunis
 	
 	// glb_sys_sz init
 	mc_workeru_id_t koid = mck_get_workeru_id();
 	mc_memset((uint8_t*)sys_sz, 0, sizeof(mc_sys_sz_st));
 	*sys_sz = MCK_PT_EXTERNAL_MANAGERU_DATA->wrk_sys;
 
-	// num_core init
-	mc_workeru_nn_t num_core = mc_id_to_nn(koid);
+	// num_workeruni init
+	mc_workeru_nn_t num_workeruni = mc_id_to_nn(koid);
 
 	glb_dat->magic_id = MC_MAGIC_ID;
 	glb_dat->dbg_stack_trace = mc_null;
@@ -84,18 +84,18 @@ mck_glb_init(bool is_manageru) {
 	glb_dat->the_workeru_id = koid;
 	glb_dat->the_workeru_ro = mc_id_to_ro(koid);
 	glb_dat->the_workeru_co = mc_id_to_co(koid);
-	glb_dat->the_workeru_nn = num_core;
+	glb_dat->the_workeru_nn = num_workeruni;
 	glb_dat->current_module_addr = (mc_addr_t)mc_null;
 	glb_dat->current_sub_module_id = 0;
 	glb_dat->pt_workeru_kernel = mc_null;
 
-	if(num_core < mc_out_num_cores){
-		glb_dat->off_workeru_pt = &((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_cores)[num_core]);
-		if((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_out_buffs)[num_core].magic_id != MC_MAGIC_ID){
+	if(num_workeruni < mc_out_num_workerunis){
+		glb_dat->off_workeru_pt = &((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_workerunis)[num_workeruni]);
+		if((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_out_buffs)[num_workeruni].magic_id != MC_MAGIC_ID){
 			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_2.\n"));
 		}
 
-		mc_workeru_out_st* out_st = &((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_out_buffs)[num_core]);
+		mc_workeru_out_st* out_st = &((MCK_PT_EXTERNAL_MANAGERU_DATA->sys_out_buffs)[num_workeruni]);
 
 		glb_dat->write_rrarray = &(out_st->wr_arr);
 		mc_rr_init(glb_dat->write_rrarray, MC_OUT_BUFF_SZ, out_st->buff, 0);
@@ -110,7 +110,7 @@ mck_glb_init(bool is_manageru) {
 		MC_MARK_USED(glb_dat_wid);
 
 		mc_loop_set_var(glb_dat->off_workeru_pt->ck_workeru_id, koid);
-		mc_loop_set_var(glb_dat->off_workeru_pt->core_data, glb_dat_wid);
+		mc_loop_set_var(glb_dat->off_workeru_pt->workeruni_data, glb_dat_wid);
 		
 		mck_set_finished(MC_NOT_FINISHED_VAL);
 		mc_loop_set_var(glb_dat->off_workeru_pt->is_waiting, MC_NOT_WAITING);

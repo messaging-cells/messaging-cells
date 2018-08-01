@@ -39,7 +39,7 @@ mck_aux_sout(bool cond, char* msg, mc_out_type_t outt){
 	if(! cond){
 		return;
 	}
-	if(! mck_has_off_core){
+	if(! mck_has_off_workeruni){
 		return;
 	}
 
@@ -63,7 +63,7 @@ mck_aux_sout(bool cond, char* msg, mc_out_type_t outt){
 
 void
 mck_aux_iout(uint32_t vv, mc_out_type_t outt, mc_type_t tt){
-	if(! mck_has_off_core){
+	if(! mck_has_off_workeruni){
 		return;
 	}
 

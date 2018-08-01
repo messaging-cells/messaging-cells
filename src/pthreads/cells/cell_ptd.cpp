@@ -51,7 +51,7 @@ kernel::get_workeru_kernel(mc_workeru_id_t id){
 	mc_workeru_nn_t nn = mc_id_to_nn(id);
 	PTD_CK((0 <= nn) && (nn < TOT_THREADS));
 	thread_info_t* info = &(ALL_THREADS_INFO[nn]);
-	if(info->thd_ptd.ptd_glb_sys_data.inited_core != id){
+	if(info->thd_ptd.ptd_glb_sys_data.inited_workeruni != id){
 		PTD_PRT("kernel::get_workeru_kernel ID=%p ------------\n", (void*)(uintptr_t)id);
 		return mc_null;
 	}

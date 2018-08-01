@@ -73,23 +73,23 @@ public:
 	grip&	get_available();
 };
 
-// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (cores as threads) TO WORK.
-class seq_core {
+// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (workerunis as threads) TO WORK.
+class seq_workeruni {
 public:
-	MCK_DECLARE_MEM_METHODS(seq_core, mc_mod0_cod)
+	MCK_DECLARE_MEM_METHODS(seq_workeruni, mc_mod0_cod)
 
 	tak_mak gg;
 	sequence my_seq;
 	grip ava_seq;
 };
 
-MCK_DEFINE_ACQUIRE_ALLOC(seq_core, 32)	// defines seq_core::acquire_alloc
+MCK_DEFINE_ACQUIRE_ALLOC(seq_workeruni, 32)	// defines seq_workeruni::acquire_alloc
 
-#define glb_seq_core ((seq_core*)(mck_get_kernel()->user_data))
+#define glb_seq_workeruni ((seq_workeruni*)(mck_get_kernel()->user_data))
 
-#define glb_gg (glb_seq_core->gg)
-#define glb_my_seq &(glb_seq_core->my_seq)
-#define glb_ava_seq (glb_seq_core->ava_seq)
+#define glb_gg (glb_seq_workeruni->gg)
+#define glb_my_seq &(glb_seq_workeruni->my_seq)
+#define glb_ava_seq (glb_seq_workeruni->ava_seq)
 
 #define get_my_seq(id) ((sequence*)mc_addr_set_id(id, glb_my_seq))
 
@@ -193,15 +193,15 @@ void mc_workerus_main() {
 		return;
 	}
 
-	seq_core* core_dat = seq_core::acquire_alloc();
-	ker->user_data = core_dat;
+	seq_workeruni* workeruni_dat = seq_workeruni::acquire_alloc();
+	ker->user_data = workeruni_dat;
 	ker->user_func = ker_func;
 
 	kernel::set_handlers(2, the_handlers);
 
-	missive::separate(mc_out_num_cores);
-	agent_ref::separate(mc_out_num_cores);
-	agent_grp::separate(mc_out_num_cores);
+	missive::separate(mc_out_num_workerunis);
+	agent_ref::separate(mc_out_num_workerunis);
+	agent_grp::separate(mc_out_num_workerunis);
 
 	PH_DBG("started\n");
 	if(nn == 1){

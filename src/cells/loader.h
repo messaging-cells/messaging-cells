@@ -109,8 +109,8 @@ struct mc_aligned mc_link_syms_data_def {
 	mc_addr_t extnl_manageru_data_orig;
 	mc_addr_t extnl_manageru_alloc_orig;
 
-	mc_addr_t core_module_orig;
-	mc_addr_t core_module_size;
+	mc_addr_t workeruni_module_orig;
+	mc_addr_t workeruni_module_size;
 
 	mc_addr_t extnl_code_disp;
 	mc_addr_t extnl_load_disp;
@@ -133,7 +133,7 @@ mc_extnl_ram_load_data_fill(mc_link_syms_data_st* syms) mc_external_code_ram;
 
 
 struct mc_aligned mc_load_map_def {
-	mc_workeru_nn_t 			num_core;
+	mc_workeru_nn_t 			num_workeruni;
 	bool 					is_loaded;
 	struct mc_load_map_def**	childs;
 };
@@ -141,27 +141,27 @@ typedef struct mc_load_map_def mc_load_map_st;
 
 #define MCL_NODE_NAM(nam, aa) mc_load_ ## nam ## _node_ ## aa
 
-//! Parrallel loading tree definition macro that declares a core 'aa' of tree named 'nam' to be loaded
+//! Parrallel loading tree definition macro that declares a workeruni 'aa' of tree named 'nam' to be loaded
 #define MCL_NODE(nam, aa) (& MCL_NODE_NAM(nam, aa))
 
-//! Parrallel loading tree definition macro that defines a leaf core 'aa' of tree named 'nam' to be loaded
+//! Parrallel loading tree definition macro that defines a leaf workeruni 'aa' of tree named 'nam' to be loaded
 #define MCL_LEAF_NODE(nam, aa) \
 	mc_load_map_st MCL_NODE_NAM(nam, aa) mc_external_data_ram = { \
-		.num_core = aa, \
+		.num_workeruni = aa, \
 		.is_loaded = false, \
 		.childs = mc_null \
 	}; \
 
 // end_of_macro
 
-/*! Parrallel loading tree definition macro that defines a sub-tree core 'aa' of tree named 'nam' to be loaded
-with a variable number of sub-trees to be loaded before this core. See standard loading trees lib_dbg_map
+/*! Parrallel loading tree definition macro that defines a sub-tree workeruni 'aa' of tree named 'nam' to be loaded
+with a variable number of sub-trees to be loaded before this workeruni. See standard loading trees lib_dbg_map
 and lib_std_map in file \ref broadcast_maps.c
 */
 #define MCL_TREE_NODE(nam, aa, ...) \
 	mc_load_map_st* childs_of_ ## nam ## aa [] mc_external_data_ram = { __VA_ARGS__ , mc_null }; \
 	mc_load_map_st MCL_NODE_NAM(nam, aa) mc_external_data_ram = { \
-		.num_core = aa, \
+		.num_workeruni = aa, \
 		.is_loaded = false, \
 		.childs = childs_of_ ## nam ## aa \
 	}; \
@@ -186,10 +186,10 @@ void
 mcl_load_module(char* module_name) mc_external_code_ram;
 
 void
-mc_reset_core(mc_workeru_id_t id) mc_external_code_ram;
+mc_reset_workeruni(mc_workeru_id_t id) mc_external_code_ram;
 
 mc_inline_fn void
-mc_copy_mem_to_core(mc_workeru_id_t koid){
+mc_copy_mem_to_workeruni(mc_workeru_id_t koid){
 	uint8_t* dst = (uint8_t*)mc_addr_set_id(koid, 0x0);
 	mc_memcpy(dst, (uint8_t*)0x0, mc_workeru_tot_mem);
 }

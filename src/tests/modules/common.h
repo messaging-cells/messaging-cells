@@ -60,8 +60,8 @@ public:
 
 void comm_prt(char* val) mc_comm_cod;
 
-void comm_f1_core() mc_comm_cod;
-void comm_f2_core() mc_comm_cod;
+void comm_f1_workeruni() mc_comm_cod;
+void comm_f2_workeruni() mc_comm_cod;
 
 #ifdef __cplusplus
 }

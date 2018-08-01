@@ -957,7 +957,7 @@ public:
 	void sornet_dbg_bin_handler(missive* msv) bj_sornet_cod;
 
 
-	nervenet* get_nervenet(mc_workeru_id_t core_id);
+	nervenet* get_nervenet(mc_workeru_id_t workeruni_id);
 
 	netstate& get_active_netstate(net_side_t sd);
 

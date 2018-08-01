@@ -76,7 +76,7 @@ struct mc_aligned mck_glb_sys_def {
 	mc_workeru_co_t the_workeru_ro;
 	mc_workeru_co_t the_workeru_co;
 
-	mc_workeru_id_t		inited_core;
+	mc_workeru_id_t		inited_workeruni;
 	mck_exception_t 	exception_code;
 	
 	uint16_t 	binder_sz;
@@ -269,17 +269,17 @@ extern char* mch_epiphany_elf_path;
 extern void mc_workerus_main() mc_external_code_ram;
 extern int mc_manageru_main(int argc, char *argv[]) mc_external_code_ram;
 
-//! True if this core is in row 'ro' and column 'co'
-#define mck_is_ro_co_core(ro, co) \
+//! True if this workeruni is in row 'ro' and column 'co'
+#define mck_is_ro_co_workeruni(ro, co) \
 	((MC_WORKERUNI_INFO->the_workeru_ro == (ro)) && (MC_WORKERUNI_INFO->the_workeru_co == (co)))
 
-//! True if this core has number 'nn'
-#define mck_is_nn_core(nn) (MC_WORKERUNI_INFO->the_workeru_nn == (nn))
+//! True if this workeruni has number 'nn'
+#define mck_is_nn_workeruni(nn) (MC_WORKERUNI_INFO->the_workeru_nn == (nn))
 
-//! True if this core has id 'id'
-#define mck_is_id_core(id) (MC_WORKERUNI_INFO->the_workeru_id == (id))
+//! True if this workeruni has id 'id'
+#define mck_is_id_workeruni(id) (MC_WORKERUNI_INFO->the_workeru_id == (id))
 
-#define mck_has_off_core (MC_WORKERUNI_INFO->off_workeru_pt != mc_null)
+#define mck_has_off_workeruni (MC_WORKERUNI_INFO->off_workeru_pt != mc_null)
 
 #ifdef __cplusplus
 }

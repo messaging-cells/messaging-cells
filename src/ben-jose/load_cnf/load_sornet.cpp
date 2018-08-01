@@ -9,7 +9,7 @@
 #define bj_set_sorcell_pt(nod, out, reset) \
 	if(nod != mc_null){ \
 		while(bj_get_loaded_of_sornode(nod) == mc_null){ \
-			/* SPIN UNTIL SET (may be set by an other core) */ \
+			/* SPIN UNTIL SET (may be set by an other workeruni) */ \
 			PTD_CODE(sched_yield()); \
 		} \
 		PTD_CK(bj_get_loaded_of_sornode(nod) != mc_null); \
@@ -36,7 +36,7 @@ void bj_load_shd_sornet(){
 
 	binder * fst, * lst, * wrk;
 
-	binder* nn_all_nods = &(nn_cnf->all_pre_sornods); // nn_cnf is already core_pt so nn_all_nods is core_pt
+	binder* nn_all_nods = &(nn_cnf->all_pre_sornods); // nn_cnf is already workeruni_pt so nn_all_nods is workeruni_pt
 	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_nods->bn_right);
 	lst = nn_all_nods;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
@@ -64,7 +64,7 @@ void bj_load_shd_sornet(){
 		nod->loaded = mck_as_glb_pt(scll);
 	}
 
-	binder* nn_all_sclls = &(my_net->all_sorcells); // nn_cnf is already core_pt so nn_all_sclls is core_pt
+	binder* nn_all_sclls = &(my_net->all_sorcells); // nn_cnf is already workeruni_pt so nn_all_sclls is workeruni_pt
 	fst = (binder*)(nn_all_sclls->bn_right);
 	lst = nn_all_sclls;
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){

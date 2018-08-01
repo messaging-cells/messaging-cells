@@ -90,7 +90,7 @@ print_all_nods(binder& grip){
 void
 print_pre_cnf_nets(){
 	printf("ALL_CNFS {\n");
-	for(long aa = 0; aa < THE_CNF->tot_cores; aa++){
+	for(long aa = 0; aa < THE_CNF->tot_workerunis; aa++){
 		pre_cnf_net& cnf =  THE_CNF->all_cnf[aa];
 
 		printf("CNF %ld ======================================= \n", aa);
@@ -137,7 +137,7 @@ preload_cnf(long sz, const long* arr){
 	long num_ccls = THE_CNF->tot_ccls;
 	long num_vars = THE_CNF->tot_vars;
 	long num_lits = THE_CNF->tot_lits;
-	long num_cores = THE_CNF->tot_cores;
+	long num_workerunis = THE_CNF->tot_workerunis;
 
 	if(num_ccls == 0){
 		return;
@@ -158,8 +158,8 @@ preload_cnf(long sz, const long* arr){
 	//THE_CNF->all_tmp_pre_load_nods = mc_malloc32(pre_cnf_node*, num_tmp_pre_load_nods);
 	THE_CNF->all_tmp_pre_load_nods = (pre_cnf_node**) malloc(num_tmp_pre_load_nods * sizeof(pre_cnf_node*));
 
-	THE_CNF->all_cnf = mc_malloc32(pre_cnf_net, num_cores);
-	for(int bb = 0; bb < num_cores; bb++){ 
+	THE_CNF->all_cnf = mc_malloc32(pre_cnf_net, num_workerunis);
+	for(int bb = 0; bb < num_workerunis; bb++){ 
 		new (&(THE_CNF->all_cnf[bb])) pre_cnf_net(); 
 	} 
 
@@ -215,7 +215,7 @@ preload_cnf(long sz, const long* arr){
 
 	long kk = 0;
 	for(long aa = 0; aa < num_tmp_pre_load_nods; aa++){
-		if(kk == num_cores){ kk = 0; }
+		if(kk == num_workerunis){ kk = 0; }
 		pre_cnf_node* nod = THE_CNF->all_tmp_pre_load_nods[aa];
 		pre_cnf_net& cnf = THE_CNF->all_cnf[kk];
 		PTD_CK(nod->is_alone());

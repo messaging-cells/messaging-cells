@@ -63,7 +63,7 @@ e_epiphany_t mch_glb_dev;
 void
 print_workeru_info(mc_off_workeru_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
 	mck_glb_sys_st* pt_inco = 
-		(mck_glb_sys_st*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
+		(mck_glb_sys_st*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->workeruni_data));
 	mch_prt_in_workeru_shd_dat(pt_inco);
 
 	if(pt_inco->dbg_stack_trace != mc_null){
@@ -76,7 +76,7 @@ print_workeru_info(mc_off_workeru_st* sh_dat_1, e_epiphany_t* dev, unsigned row,
 void
 print_exception_case(mc_off_workeru_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
 	mck_glb_sys_st* pt_inco = 
-		(mck_glb_sys_st*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
+		(mck_glb_sys_st*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->workeruni_data));
 
 	if(pt_inco->exception_code != mck_invalid_exception){
 		//mch_prt_exception(pt_inco);
@@ -203,7 +203,7 @@ mc_manageru_init(){
 }
 
 void
-mc_start_first_core(){
+mc_start_first_workeruni(){
 	e_epiphany_t & dev = mch_glb_dev;
 	mc_workeru_co_t row, col;
 	row = mc_nn_to_ro(mch_first_load_workeru_nn);
@@ -229,8 +229,8 @@ mc_manageru_run(){
 	mc_off_sys_st* pt_shd_data = mcz_pt_external_manageru_data_obj;
 
 	mc_workeru_co_t row, col, max_row, max_col;
-	mc_workeru_nn_t tot_cores;
-	mc_workeru_id_t core_id;
+	mc_workeru_nn_t tot_workerunis;
+	mc_workeru_id_t workeruni_id;
 	char f_nm[200];
 
 	//max_row = 1;
@@ -238,72 +238,72 @@ mc_manageru_run(){
 	max_row = dev.rows;
 	max_col = dev.cols;
 
-	tot_cores = max_row * max_col;
-	MCH_CK(tot_cores <= mc_out_num_cores);
+	tot_workerunis = max_row * max_col;
+	MCH_CK(tot_workerunis <= mc_out_num_workerunis);
 
-	char* all_f_nam[tot_cores];
-	FILE* all_fps[tot_cores];
-	bool all_f_locks[tot_cores];
+	char* all_f_nam[tot_workerunis];
+	FILE* all_fps[tot_workerunis];
+	bool all_f_locks[tot_workerunis];
 
-	memset(all_f_nam, 0, (sizeof(char*) * tot_cores));
-	memset(all_fps, 0, (sizeof(FILE*) * tot_cores));
-	memset(all_f_locks, false, (sizeof(bool) * tot_cores));
+	memset(all_f_nam, 0, (sizeof(char*) * tot_workerunis));
+	memset(all_fps, 0, (sizeof(FILE*) * tot_workerunis));
+	memset(all_f_locks, false, (sizeof(bool) * tot_workerunis));
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
-			//core_id = (row + platform.row) * 64 + col + platform.col;
-			core_id = mc_ro_co_to_id(row, col);
-			mc_workeru_nn_t num_core = mc_id_to_nn(core_id);
+			//workeruni_id = (row + platform.row) * 64 + col + platform.col;
+			workeruni_id = mc_ro_co_to_id(row, col);
+			mc_workeru_nn_t num_workeruni = mc_id_to_nn(workeruni_id);
 
-			//printf("STARTING WORKERUNI 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
+			//printf("STARTING WORKERUNI 0x%03x (%2d,%2d) NUM=%d\n", workeruni_id, row, col, num_workeruni);
 
 			memset(&f_nm, 0, sizeof(f_nm));
-			sprintf(f_nm, "log_workeru_%02d.txt", num_core);
+			sprintf(f_nm, "log_workeru_%02d.txt", num_workeruni);
 
-			all_f_nam[num_core] = strdup((const char*)f_nm);
-			mch_reset_log_file(all_f_nam[num_core]);
+			all_f_nam[num_workeruni] = strdup((const char*)f_nm);
+			mch_reset_log_file(all_f_nam[num_workeruni]);
 
 			FILE* flog = fopen(f_nm, "a");
 			if(flog == NULL){
 				fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
 				return;
 			}
-			all_fps[num_core] = flog;
+			all_fps[num_workeruni] = flog;
 			
 			// init shared data.
-			pt_shd_data->sys_cores[num_core].magic_id = MC_MAGIC_ID;
-			MCH_CK(pt_shd_data->sys_cores[num_core].magic_id == MC_MAGIC_ID);
+			pt_shd_data->sys_workerunis[num_workeruni].magic_id = MC_MAGIC_ID;
+			MCH_CK(pt_shd_data->sys_workerunis[num_workeruni].magic_id == MC_MAGIC_ID);
 
-			mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+			mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_workeruni]);
 
 			pt_buff->magic_id = MC_MAGIC_ID;
 			MCH_CK(pt_buff->magic_id == MC_MAGIC_ID);
 
 			mc_rr_init(&(pt_buff->rd_arr), MC_OUT_BUFF_SZ, pt_buff->buff, 1);
 
-			// Start one core
+			// Start one workeruni
 			//e_start(&dev, row, col);
 		}
 	}
 
 	#ifdef MC_PLL_LOADING
-		mc_start_first_core();
+		mc_start_first_workeruni();
 	#else
-		mc_start_all_cores();
+		mc_start_all_workerunis();
 	#endif
 
-	bool core_started[tot_cores];
-	memset(core_started, 0, (sizeof(bool) * tot_cores));
+	bool workeruni_started[tot_workerunis];
+	memset(workeruni_started, 0, (sizeof(bool) * tot_workerunis));
 
-	bool core_finished[tot_cores];
-	memset(core_finished, 0, (sizeof(bool) * tot_cores));
+	bool workeruni_finished[tot_workerunis];
+	memset(workeruni_finished, 0, (sizeof(bool) * tot_workerunis));
 
 	/*
-	bool core_started[max_row][max_col];
-	mc_init_2d_bool_arr(core_started, max_row, max_col, 0);
+	bool workeruni_started[max_row][max_col];
+	mc_init_2d_bool_arr(workeruni_started, max_row, max_col, 0);
 
-	bool core_finished[max_row][max_col];
-	mc_init_2d_bool_arr(core_finished, max_row, max_col, 0);
+	bool workeruni_finished[max_row][max_col];
+	mc_init_2d_bool_arr(workeruni_finished, max_row, max_col, 0);
 	*/
 
 	bool has_work = true;	
@@ -319,14 +319,14 @@ mc_manageru_run(){
 
 		for (row=0; row < max_row; row++){
 			for (col=0; col < max_col; col++){
-				//core_id = (row + platform.row) * 64 + col + platform.col;
-				core_id = mc_ro_co_to_id(row, col);
-				mc_workeru_nn_t num_core = mc_id_to_nn(core_id);
-				mc_off_workeru_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
-				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+				//workeruni_id = (row + platform.row) * 64 + col + platform.col;
+				workeruni_id = mc_ro_co_to_id(row, col);
+				mc_workeru_nn_t num_workeruni = mc_id_to_nn(workeruni_id);
+				mc_off_workeru_st* sh_dat_1 = &(pt_shd_data->sys_workerunis[num_workeruni]);
+				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_workeruni]);
 
-				// Wait for core program execution to start
-				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
+				// Wait for workeruni program execution to start
+				if((sh_dat_1->workeruni_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
 					has_work = true;
 					MCH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
 					continue;
@@ -337,19 +337,19 @@ mc_manageru_run(){
 						(sh_dat_1->is_finished == MC_FINISHED_VAL)
 				);
 
-				MCH_CK(sh_dat_1->ck_workeru_id == core_id);
-				if(! core_started[num_core] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
-					core_started[num_core] = true;
+				MCH_CK(sh_dat_1->ck_workeru_id == workeruni_id);
+				if(! workeruni_started[num_workeruni] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
+					workeruni_started[num_workeruni] = true;
 					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
-					//			core_id, row, col, num_core);
+					//			workeruni_id, row, col, num_workeruni);
 				}
 
 				// wait for finish
 				if(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL){
 					has_work = true;
 
-					mch_print_out_buffer(all_fps[num_core], &(all_f_locks[num_core]), 
-							&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+					mch_print_out_buffer(all_fps[num_workeruni], &(all_f_locks[num_workeruni]), 
+							&(pt_buff->rd_arr), all_f_nam[num_workeruni], num_workeruni);
 
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == MC_WAITING_ENTER){
@@ -357,8 +357,8 @@ mc_manageru_run(){
 							mch_get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == MC_WAITING_BUFFER){
-							mch_print_out_buffer(all_fps[num_core], &(all_f_locks[num_core]), &(pt_buff->rd_arr), 
-										all_f_nam[num_core], num_core);
+							mch_print_out_buffer(all_fps[num_workeruni], &(all_f_locks[num_workeruni]), &(pt_buff->rd_arr), 
+										all_f_nam[num_workeruni], num_workeruni);
 						}
 						
 						int SYNC = (1 << E_SYNC);
@@ -371,15 +371,15 @@ mc_manageru_run(){
 				} else {
 					MCH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
 	
-					if(! core_finished[num_core]){
-						core_finished[num_core] = true;
+					if(! workeruni_finished[num_workeruni]){
+						workeruni_finished[num_workeruni] = true;
 
-						mch_print_out_buffer(all_fps[num_core], &(all_f_locks[num_core]), 
-								&(pt_buff->rd_arr), all_f_nam[num_core], num_core);
+						mch_print_out_buffer(all_fps[num_workeruni], &(all_f_locks[num_workeruni]), 
+								&(pt_buff->rd_arr), all_f_nam[num_workeruni], num_workeruni);
 
 						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
-						printf("Finished %d %p \n", num_core, (void*)(uintptr_t)(sh_dat_1->is_finished));
+						printf("Finished %d %p \n", num_workeruni, (void*)(uintptr_t)(sh_dat_1->is_finished));
 						//print_workeru_info(sh_dat_1, &dev, row, col);
 						print_exception_case(sh_dat_1, &dev, row, col);
 					}
@@ -406,7 +406,7 @@ mc_manageru_run(){
 	//printf("WORKERUNIS FINISHED \n");
 
 	int nn;
-	for (nn=0; nn < tot_cores; nn++){
+	for (nn=0; nn < tot_workerunis; nn++){
 		if(all_f_nam[nn] != mc_null){
 			free(all_f_nam[nn]);
 		}
@@ -443,7 +443,7 @@ int main(int argc, char *argv[]) {
 }
 
 void
-mc_start_all_cores(){
+mc_start_all_workerunis(){
 	e_epiphany_t & dev = mch_glb_dev;
 	mc_workeru_co_t row, col, max_row, max_col;
 
@@ -463,7 +463,7 @@ mc_start_all_cores(){
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
-			//pto = (int *) (dev.core[row][col].regs.base + to_addr);
+			//pto = (int *) (dev.workeruni[row][col].regs.base + to_addr);
 			//*pto = SYNC;
 
 			e_start(&dev, row, col);

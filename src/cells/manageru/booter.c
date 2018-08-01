@@ -246,7 +246,7 @@ mch_reset_log_file(char* f_nm){
 }
 
 void
-mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_workeru_nn_t num_core){
+mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_workeru_nn_t num_workeruni){
 	//FILE* flog = fopen(f_nm, "a");
 	if((flog == NULL) || (lock == NULL)){
 		fprintf(stderr, "ERROR. NULL file pointer for file %s\n", f_nm);

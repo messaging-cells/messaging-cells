@@ -141,7 +141,7 @@ A message sent by Cell_A is always received by Cell_B only once.
 <li>
 Messages are always received by Cell_B in the same order they are sent by Cell_A.
 <li>
-Cell_A (sending) always does local core writing and Cell_B (receiving) always does remote core reading. 
+Cell_A (sending) always does local workeruni writing and Cell_B (receiving) always does remote workeruni reading. 
 No message copying.
 </ul>
 
@@ -157,10 +157,10 @@ No message copying.
 
 \details 
 
-<h2>In-core RAM partitions</h2>
+<h2>In-workeruni RAM partitions</h2>
 
 <p>
-The RAM memory of each core is divided in:
+The RAM memory of each workeruni is divided in:
 
 <ol>
 <li>
@@ -179,12 +179,12 @@ The sizes and location are configurable in the GNU link script. See \ref docgrp_
 <h2>Dynamic memory</h2>
 
 <p>
-The in-core dynamic memory is handled in a two fold way:
+The in-workeruni dynamic memory is handled in a two fold way:
 
 <h3>First time heap allocation</h3>
 
 <p>
-The first time an object is allocated the library calls external code (off-core) of the 
+The first time an object is allocated the library calls external code (off-workeruni) of the 
 <a href="https://github.com/dimonomid/umm_malloc" target="blank">umm_malloc</a> allocator.
 
 <h3>Reusing objects</h3>
@@ -196,7 +196,7 @@ call the \ref agent::release method to get inited and put in a one-per-class dou
 (\ref grip) of available objects (see \ref agent::get_available virtual method). 
 
 <p>
-The one-per-class acquire and the \ref agent::release are small footprint methods runned from in-core memory 
+The one-per-class acquire and the \ref agent::release are small footprint methods runned from in-workeruni memory 
 (as opposed to the umm_malloc functions) that can be used in the user's high performance code.
 
 <p>
@@ -239,25 +239,25 @@ Whether it is:
 From the epiphany side (hardware addresses).
 	<ol>
 	<li>
-	local-core. 
+	local-workeruni. 
 		<ul>
 		<li>
-		Zero based (without core id).
+		Zero based (without workeruni id).
 		<li>
-		With local core id.
+		With local workeruni id.
 		</ul>
 	<li>
-	remote-core. 
+	remote-workeruni. 
 	<li>
-	off-core (outside of the epiphany system in the shared mem with the host)
+	off-workeruni (outside of the epiphany system in the shared mem with the host)
 	</ol>
 <li>
 From the host side (linux virtual addresses mapped to hardware addresses).
 	<ol>
 	<li>
-	in-core. Inside the RAM of a core of the epiphany system (no register mem). 
+	in-workeruni. Inside the RAM of a workeruni of the epiphany system (no register mem). 
 	<li>
-	off-core 
+	off-workeruni 
 	</ol>
 </ul>
 
@@ -267,24 +267,24 @@ The most used functions are in files \ref shared_eph3.h and \ref shared.h
 <h1>Implicit addressing symmetry</h1>
 <p>
 In the examples it is used an implicit symmetry: The fact that two objects that are allocated in 
-exactly the same order in different cores have the same local address.
+exactly the same order in different workerunis have the same local address.
 
 <p>
 For example when in the \ref mc_workerus_main function of the \ref philo.cpp program, 
 the line:
 
 <pre>
-	philo_core* core_dat = philo_core::acquire_alloc();
+	philo_workeruni* workeruni_dat = philo_workeruni::acquire_alloc();
 </pre>
 
 <p>
-allocates a global 'core_dat' variable it is done in every core, so all data inside will have
-the same local address in every core.
+allocates a global 'workeruni_dat' variable it is done in every workeruni, so all data inside will have
+the same local address in every workeruni.
 
 <p>
-So the macro \ref glb_stick will return the same local pointer in every core and that is why by 
-calling \ref mc_addr_set_id with it and the id of another core as in the macro \ref get_stick 
-the \ref chopstick of an other core can be addressed in orther to send it \ref missive s. 
+So the macro \ref glb_stick will return the same local pointer in every workeruni and that is why by 
+calling \ref mc_addr_set_id with it and the id of another workeruni as in the macro \ref get_stick 
+the \ref chopstick of an other workeruni can be addressed in orther to send it \ref missive s. 
 The same happens for \ref glb_philo. 
 
 <br><br><br><br>
@@ -321,8 +321,8 @@ The techniques used to partition your code in modules. See \ref docgrp_modules
 <p>
 This group corresponds to basically two main features:
 <ul>
-<li> The posibility to customize the tree that defines the order in which the library's kernel is loaded in the cores. See \ref loader.h and \ref broadcast_maps.c
-<li> The posibility to load different modules in different cores. See \ref docgrp_modules
+<li> The posibility to customize the tree that defines the order in which the library's kernel is loaded in the workerunis. See \ref loader.h and \ref broadcast_maps.c
+<li> The posibility to load different modules in different workerunis. See \ref docgrp_modules
 </ul>
 
 <br><br><br><br>

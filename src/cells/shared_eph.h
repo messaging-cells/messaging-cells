@@ -55,7 +55,7 @@ mc_c_decl {
 //! True if 'addr' is local
 #define mc_addr_is_local(addr) ((! mc_addr_has_id(addr)) || mc_addr_has_local_id(addr))
 
-//! Sets the id of 'pt' to the local core id.
+//! Sets the id of 'pt' to the local workeruni id.
 #define mck_as_glb_pt(pt) ((void*)mc_addr_set_id(MC_WORKERUNI_INFO->the_workeru_id, (pt)))
 
 //! Sets to zero the id of 'pt'.

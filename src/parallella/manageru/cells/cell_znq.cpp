@@ -56,11 +56,11 @@ kernel::get_workeru_kernel(mc_workeru_id_t id){
 	mc_workeru_nn_t nn = mc_id_to_nn(id);
 	mc_off_sys_st* pt_shd_data = mcz_pt_external_manageru_data_obj;
 	mck_glb_sys_st* glb_dat = 
-		(mck_glb_sys_st*)mc_eph_addr_to_znq_addr((mc_addr_t)(pt_shd_data->sys_cores[nn]).core_data);
+		(mck_glb_sys_st*)mc_eph_addr_to_znq_addr((mc_addr_t)(pt_shd_data->sys_workerunis[nn]).workeruni_data);
 	if(glb_dat == mc_null){
 		return mc_null;	//not inited yet
 	}
-	if(glb_dat->inited_core != id){
+	if(glb_dat->inited_workeruni != id){
 		return mc_null;	//not inited yet
 	}
 	kernel* ker = (kernel*)(glb_dat->pt_workeru_kernel);

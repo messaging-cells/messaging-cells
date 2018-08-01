@@ -31,7 +31,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 load_cnf.hh
 
-Declaration of functions to load cnfs in the core.
+Declaration of functions to load cnfs in the workeruni.
 
 --------------------------------------------------------------*/
 
