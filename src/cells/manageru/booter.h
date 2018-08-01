@@ -140,13 +140,6 @@ mch_read_eph_link_syms(const char *executable, mc_link_syms_data_st* syms);
 	
 //--end_of_def
 
-
-mc_addr_t
-mc_znq_addr_to_eph_addr(mc_addr_t znq_addr);
-
-mc_addr_t
-mc_eph_addr_to_znq_addr(mc_addr_t eph_addr);
-
 void
 mcm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs);
 

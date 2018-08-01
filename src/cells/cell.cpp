@@ -222,27 +222,27 @@ kernel::finish_sys(){
 }
 
 void // static
-kernel::init_host_sys(){
+kernel::init_manageru_sys(){
 	mc_host_init();
 	kernel::init_sys(true);
-	MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel = (void*)mc_host_addr_to_core_addr((mc_addr_t)MCK_KERNEL);
+	MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)MCK_KERNEL);
 	MCK_KERNEL->is_host_kernel = true;
 
-	//ZNQ_CODE(printf("init_host_sys. MCK_KERNEL = %p \n", MCK_KERNEL));
-	//ZNQ_CODE(printf("init_host_sys. pt_host_kernel = %p \n", MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel));
-	//ZNQ_CODE(printf("init_host_sys. mg=%x emg=%x \n", MCK_KERNEL->magic_id, MCK_KERNEL->end_magic_id));
-	//ZNQ_CODE(printf("init_host_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
+	//ZNQ_CODE(printf("init_manageru_sys. MCK_KERNEL = %p \n", MCK_KERNEL));
+	//ZNQ_CODE(printf("init_manageru_sys. pt_host_kernel = %p \n", MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel));
+	//ZNQ_CODE(printf("init_manageru_sys. mg=%x emg=%x \n", MCK_KERNEL->magic_id, MCK_KERNEL->end_magic_id));
+	//ZNQ_CODE(printf("init_manageru_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
 }
 
 void // static
-kernel::run_host_sys(){
-	//ZNQ_CODE(printf("run_host_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
+kernel::run_manageru_sys(){
+	//ZNQ_CODE(printf("run_manageru_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
 	MCK_KERNEL->host_running = true;
 	mc_host_run();
 }
 
 void // static 
-kernel::finish_host_sys(){
+kernel::finish_manageru_sys(){
 	kernel::finish_sys();
 	mc_host_finish();
 }

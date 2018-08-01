@@ -83,7 +83,7 @@ void bj_load_shd_sornet(){
 	if(nn == 0){
 		pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
 		pre_sornode** all_input = 
-			(pre_sornode**)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_pre_sorinput_nod));
+			(pre_sornode**)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_pre_sorinput_nod));
 
 		num_nod_t tot_sorinp = pre_cnf->tot_pre_sorinput_nod;
 		//PTD_LOG("TOT_INPUT_SORCELLS=%ld \n", tot_sorinp);
@@ -102,7 +102,7 @@ void bj_load_shd_sornet(){
 		
 		num_nod_t aa;
 		for(aa = 0; aa < tot_sorinp; aa++){
-			sorcell* inp_aa = (sorcell*)mc_host_addr_to_core_addr((mc_addr_t)(all_input[aa]));
+			sorcell* inp_aa = (sorcell*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(all_input[aa]));
 			bj_set_sorcell_pt(inp_aa, all_sorcell[aa], false);
 		}
 	}

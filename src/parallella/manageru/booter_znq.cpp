@@ -64,11 +64,12 @@ e_epiphany_t mch_glb_dev;
 void
 print_core_info(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
 	mck_glb_sys_st* pt_inco = 
-		(mck_glb_sys_st*)mc_core_eph_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
+		(mck_glb_sys_st*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
 	mch_prt_in_core_shd_dat(pt_inco);
 
 	if(pt_inco->dbg_stack_trace != mc_null){
-		void** 	pt_trace = (void**)mc_core_eph_addr_to_znq_addr(row, col, (mc_addr_t)(pt_inco->dbg_stack_trace));;
+		void** 	pt_trace = (void**)mc_manageru_eph_loc_addr_to_znq_addr(
+			row, col, (mc_addr_t)(pt_inco->dbg_stack_trace));;
 		mch_prt_core_call_stack(mch_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
 	}
 }
@@ -76,7 +77,7 @@ print_core_info(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsig
 void
 print_exception_case(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
 	mck_glb_sys_st* pt_inco = 
-		(mck_glb_sys_st*)mc_core_eph_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
+		(mck_glb_sys_st*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
 
 	if(pt_inco->exception_code != mck_invalid_exception){
 		//mch_prt_exception(pt_inco);
@@ -87,7 +88,7 @@ print_exception_case(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, 
 	}
 	if(pt_inco->dbg_stack_trace != mc_null){
 		mc_addr_t eph_addr = (mc_addr_t)(pt_inco->dbg_stack_trace);
-		void** 	pt_trace = (void**)mc_core_eph_addr_to_znq_addr(row, col, eph_addr);
+		void** 	pt_trace = (void**)mc_manageru_eph_loc_addr_to_znq_addr(row, col, eph_addr);
 		mch_prt_core_call_stack(mch_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
 	}
 }
@@ -106,7 +107,7 @@ mc_host_init(){
 	if(lk_dat->extnl_ram_orig == 0) {
 		printf("ERROR: Can't read external memory location from '%s'\n", mch_epiphany_elf_path);
 		printf("1- Make sure to set 'mch_epiphany_elf_path' global variable to a valid Epiphany ELF file\n");
-		printf("\tbefore calling 'kernel::init_host_sys()'\n");
+		printf("\tbefore calling 'kernel::init_manageru_sys()'\n");
 		printf("2- Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n",
 			   mch_epiphany_elf_path);
 		mch_abort_func(201, "mc_host_init (1). ERROR: Bad ELF\n");

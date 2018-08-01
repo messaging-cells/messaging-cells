@@ -414,13 +414,13 @@ public:
 	finish_sys() mc_external_code_ram; //!< Static method that finishes this core kernel.
 
 	static void
-	init_host_sys() mc_external_code_ram;
+	init_manageru_sys() mc_external_code_ram;
 
 	static void 
-	run_host_sys() mc_external_code_ram;
+	run_manageru_sys() mc_external_code_ram;
 
 	static void
-	finish_host_sys() mc_external_code_ram;
+	finish_manageru_sys() mc_external_code_ram;
 
 	//! Returns the kernel
 	static mc_inline_fn kernel*

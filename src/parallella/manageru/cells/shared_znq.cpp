@@ -31,8 +31,8 @@ Our Resurrected and Living, both in Body and Spirit,
 
 
 #include "shared.h"
-
 #include "booter.h"
+#include "core_loader_znq.h"
 
 mc_sys_sz_st mch_system_sz;
 
@@ -49,12 +49,12 @@ mck_get_core_id(){
 }
 
 mc_addr_t
-mc_host_addr_to_core_addr(mc_addr_t h_addr){
+mc_manageru_addr_to_workeru_addr(mc_addr_t h_addr){
 	return mc_znq_addr_to_eph_addr(h_addr);
 }
 
 mc_addr_t
-mc_core_addr_to_host_addr(mc_addr_t c_addr){
+mc_workeru_addr_to_manageru_addr(mc_addr_t c_addr){
 	return mc_eph_addr_to_znq_addr(c_addr);
 }
 

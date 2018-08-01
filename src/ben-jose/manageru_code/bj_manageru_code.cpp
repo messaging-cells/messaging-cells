@@ -53,7 +53,7 @@ int bj_host_main(int argc, char *argv[])
 	const long* arr = all_lits.get_c_array();
 	long sz = all_lits.get_c_array_sz();
 
-	kernel::init_host_sys();
+	kernel::init_manageru_sys();
 
 	THE_CNF = mc_malloc32(pre_load_cnf, 1);
 	new (THE_CNF) pre_load_cnf(); 
@@ -65,7 +65,7 @@ int bj_host_main(int argc, char *argv[])
 
 	preload_cnf(sz, arr);
 
-	void* core_cnf_pt = (void*)mc_host_addr_to_core_addr((mc_addr_t)THE_CNF);
+	void* core_cnf_pt = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)THE_CNF);
 	kernel::get_sys()->host_load_data = core_cnf_pt;
 
 	printf("LITS_SZ=%ld tot_lits=%ld tot_vars=%ld tot_ccls=%ld tot_cores=%ld \n", all_lits.size(),
@@ -82,8 +82,8 @@ int bj_host_main(int argc, char *argv[])
 	missive_handler_t the_handlers[] = { mc_null };
 	kernel::set_handlers(0, the_handlers);
 
-	kernel::run_host_sys();
-	kernel::finish_host_sys();
+	kernel::run_manageru_sys();
+	kernel::finish_manageru_sys();
 
 	return 0;
 }
@@ -208,9 +208,9 @@ void bj_test_7(int argc, char *argv[])
 	num_to_sort = get_bigger_pow2(num_to_sort);
 	if(num_to_sort < 4){ num_to_sort = 4; }
 
-	kernel::init_host_sys();
+	kernel::init_manageru_sys();
 	create_sornet(num_to_sort);
-	kernel::finish_host_sys();
+	kernel::finish_manageru_sys();
 }
 
 int mc_host_main(int argc, char *argv[])

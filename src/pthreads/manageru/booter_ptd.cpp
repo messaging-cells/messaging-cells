@@ -61,16 +61,6 @@ mspace mcm_glb_mspace;
 
 ptd_info_t*	mcm_HOST_PTD_INFO = mc_null;
 
-mc_addr_t
-mc_znq_addr_to_eph_addr(mc_addr_t znq_addr){
-	return znq_addr;
-}
-
-mc_addr_t
-mc_eph_addr_to_znq_addr(mc_addr_t eph_addr){
-	return eph_addr;
-}
-
 void
 mcm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
 	void* 		trace[trace_strs_sz];

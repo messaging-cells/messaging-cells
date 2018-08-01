@@ -44,7 +44,7 @@ int mc_host_main(int argc, char *argv[])
 		printf("Using core executable: %s \n", mch_epiphany_elf_path);
 	}
 
-	kernel::init_host_sys();
+	kernel::init_manageru_sys();
 
 	printf("STARTING min-manageru \n");
 
@@ -66,10 +66,10 @@ int mc_host_main(int argc, char *argv[])
 	printf("CORE_ID=%p Kcell=%p koid2=%p eph_act1=%p \n", 
 		(void*)(mc_addr_t)koid, act1, (void*)(mc_addr_t)koid2, (void*)eph_act1);
 
-	//kernel::run_host_sys();
+	//kernel::run_manageru_sys();
 	*/
 
-	kernel::finish_host_sys();
+	kernel::finish_manageru_sys();
 
 
 	return 0;

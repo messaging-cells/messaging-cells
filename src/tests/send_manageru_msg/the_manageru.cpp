@@ -75,7 +75,7 @@ missive_handler_t host_handlers[] = {
 
 void
 send_host_main(){
-	kernel::init_host_sys();
+	kernel::init_manageru_sys();
 
 	kernel::set_handlers(2, host_handlers);
 
@@ -93,8 +93,8 @@ send_host_main(){
 	printf("HOST STARTING ==================================== \n");
 	ZNQ_CODE(printf("off_all_agts=%d \n", off_all_agts));
 
-	kernel::run_host_sys();
-	kernel::finish_host_sys();
+	kernel::run_manageru_sys();
+	kernel::finish_manageru_sys();
 
 	printf("ALL FINISHED ==================================== \n");
 }

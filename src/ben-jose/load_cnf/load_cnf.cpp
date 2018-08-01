@@ -376,7 +376,7 @@ void bj_init_nervenet(){
 
 	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
 
-	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
+	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
 	bj_nervenet->shd_cnf = nn_cnf;
 }
 
@@ -394,7 +394,7 @@ void bj_load_main() {
 
 	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);
 
-	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_host_addr_to_core_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
+	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
 	bj_nervenet->shd_cnf = nn_cnf;
 	*/
 	

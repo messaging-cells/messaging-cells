@@ -310,7 +310,6 @@ mc_v32_of_p16(uint16_t* p16){
 #define mc_mem_2K   2048
 #define mc_mem_16K   16384
 #define mc_mem_32K   32768
-#define mc_max_core_addr 0x7ff0
 #define mc_max_opcodes_func 16384
 
 #define MC_MAGIC_ID 0xaabbccdd
@@ -419,17 +418,17 @@ mc_isprint(char cc){
 
 //! Maps a host addresses to a core addresses 
 mc_addr_t
-mc_host_addr_to_core_addr(mc_addr_t h_addr) mc_external_code_ram;
+mc_manageru_addr_to_workeru_addr(mc_addr_t h_addr) mc_external_code_ram;
 
 //! Maps a core addresses to a host addresses 
 mc_addr_t
-mc_core_addr_to_host_addr(mc_addr_t c_addr) mc_external_code_ram;
+mc_workeru_addr_to_manageru_addr(mc_addr_t c_addr) mc_external_code_ram;
 
 //! Maps a host pointer to a core pointer
-#define mc_host_pt_to_core_pt(pt) (mc_host_addr_to_core_addr((mc_addr_t)(pt)))
+#define mc_host_pt_to_core_pt(pt) (mc_manageru_addr_to_workeru_addr((mc_addr_t)(pt)))
 
 //! Maps a core pointer to a host pointer
-#define mc_core_pt_to_host_pt(pt) (mc_core_addr_to_host_addr((mc_addr_t)(pt)))
+#define mc_core_pt_to_host_pt(pt) (mc_workeru_addr_to_manageru_addr((mc_addr_t)(pt)))
 
 
 #ifdef __cplusplus

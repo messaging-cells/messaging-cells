@@ -139,10 +139,17 @@ void
 ck_dbg_shd_code(char* msg, uint16_t* base);
 
 mc_addr_t
-mc_core_eph_addr_to_znq_addr(int row, int col, mc_addr_t ld_addr);
+mc_manageru_eph_loc_addr_to_znq_addr(int row, int col, mc_addr_t ld_addr);
 
 void
 mc_start_all_cores();
+
+mc_addr_t
+mc_znq_addr_to_eph_addr(mc_addr_t znq_addr);
+
+mc_addr_t
+mc_eph_addr_to_znq_addr(mc_addr_t eph_addr);
+
 
 #ifdef __cplusplus
 }

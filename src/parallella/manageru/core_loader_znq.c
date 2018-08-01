@@ -315,7 +315,7 @@ mc_eph_addr_to_znq_addr(mc_addr_t eph_addr){
 }
 
 mc_addr_t
-mc_core_eph_addr_to_znq_addr(int row, int col, mc_addr_t ld_addr){
+mc_manageru_eph_loc_addr_to_znq_addr(int row, int col, mc_addr_t ld_addr){
 	e_epiphany_t *dev = &mch_glb_dev;
 
 	mc_addr_t dst = mc_null;
@@ -422,7 +422,7 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 
 		mc_addr_t ld_addr = ld_sh_addr;
 
-		uint8_t* pt_dst = (uint8_t*)mc_core_eph_addr_to_znq_addr(row, col, ld_addr);
+		uint8_t* pt_dst = (uint8_t*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, ld_addr);
 		uint8_t* pt_src = &src[ld_src_off];
 		size_t blk_sz = ld_src_sz;
 

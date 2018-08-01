@@ -79,7 +79,7 @@ BJ_HOST_INCLUDES := \
 
 SUBMAKEFILES := \
 	./manageru_code/no_nil_manageru.mk \
-	./manageru_code/bj_host_znq.mk \
+	./manageru_code/bj_manageru_znq.mk \
 	./maker_bj_ptd/bj_ptd.mk \
 	./dbg_only/dbg_only.mk \
 	./nervenet/nervenet.mk \

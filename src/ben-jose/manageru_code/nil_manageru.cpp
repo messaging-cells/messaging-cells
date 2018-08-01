@@ -12,13 +12,13 @@ int mc_host_main(int argc, char *argv[])
 		printf("Using core executable: %s \n", mch_epiphany_elf_path);
 	}
 
-	kernel::init_host_sys();
+	kernel::init_manageru_sys();
 
 	missive_handler_t the_handlers[] = { mc_null };
 	kernel::set_handlers(0, the_handlers);
 
-	kernel::run_host_sys();
-	kernel::finish_host_sys();
+	kernel::run_manageru_sys();
+	kernel::finish_manageru_sys();
 
 	printf("ALL FINISHED ==================================== \n");
 

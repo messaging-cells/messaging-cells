@@ -48,6 +48,8 @@ mc_c_decl {
 //======================================================================
 // epiphany III macros
 	
+#define mc_max_eph3_addr 0x7ff0
+	
 #define mc_axis_bits	6
 #define mc_axis_mask	0x3f
 
