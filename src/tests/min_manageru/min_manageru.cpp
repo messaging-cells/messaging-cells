@@ -46,7 +46,7 @@ int mc_host_main(int argc, char *argv[])
 
 	kernel::init_host_sys();
 
-	printf("STARTING min-host \n");
+	printf("STARTING min-manageru \n");
 
 	/*
 	kernel* ker = MCK_KERNEL;

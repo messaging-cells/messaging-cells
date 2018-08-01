@@ -54,7 +54,7 @@ MC_ZNQ_LIBS := ${MC_LIB_DIR_2}/libmcz-cell.a ${MC_LIB_DIR_2}/libmcz-tak-mak.a ${
 MC_PTD_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
 MC_EPH_LIBS := ${MC_LIB_DIR_2}/libmck-cell.a ${MC_LIB_DIR_2}/libmck-tak-mak.a
 
-MC_STD_INCDIRS := ../../cells ../../cells/mc_manager ${MC_ETOOLS}/host/include
+MC_STD_INCDIRS := ../../cells ../../cells/manageru ${MC_ETOOLS}/host/include
 
 SRC_BJ_DIR := ${MC_CURR_DIR}
 
@@ -71,15 +71,15 @@ BJ_CORES_INCLUDES := \
 
 BJ_HOST_INCLUDES := \
 	${BJ_CORES_INCLUDES} \
-	${SRC_BJ_DIR}/host_code/cnf_preload \
-	${SRC_BJ_DIR}/host_code/dimacs \
-	${SRC_BJ_DIR}/host_code/utils 
+	${SRC_BJ_DIR}/manageru_code/cnf_preload \
+	${SRC_BJ_DIR}/manageru_code/dimacs \
+	${SRC_BJ_DIR}/manageru_code/utils 
 
 
 
 SUBMAKEFILES := \
-	./host_code/no_nil_host.mk \
-	./host_code/bj_host_znq.mk \
+	./manageru_code/no_nil_manageru.mk \
+	./manageru_code/bj_host_znq.mk \
 	./maker_bj_ptd/bj_ptd.mk \
 	./dbg_only/dbg_only.mk \
 	./nervenet/nervenet.mk \

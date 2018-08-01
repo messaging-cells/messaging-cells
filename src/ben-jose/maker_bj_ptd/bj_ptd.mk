@@ -22,7 +22,7 @@ SRC_INCDIRS := ${BJ_HOST_INCLUDES}
 SUBMAKEFILES := ./lib-dimacs-ptd.mk ./all_modules_ptd.mk 
 
 SOURCES := \
-	../host_code/bj_host_code.cpp \
+	../manageru_code/bj_manageru_code.cpp \
 
 
 

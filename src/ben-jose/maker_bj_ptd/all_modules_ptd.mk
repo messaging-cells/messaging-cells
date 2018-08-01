@@ -10,8 +10,8 @@ SRC_INCDIRS := ${BJ_HOST_INCLUDES}
 
 SOURCES := \
 	../dbg_only/dbg_only.cpp \
-	../host_code/cnf_preload/preload_cnf.cpp \
-	../host_code/cnf_preload/preload_sornet.cpp \
+	../manageru_code/cnf_preload/preload_cnf.cpp \
+	../manageru_code/cnf_preload/preload_sornet.cpp \
 	../nervenet/nervenet.cpp \
 	../sornet/sornet.cpp \
 	../load_cnf/load_cnf.cpp \

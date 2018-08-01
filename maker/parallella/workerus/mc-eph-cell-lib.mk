@@ -1,7 +1,7 @@
 
 # H_INC_1=${ETOOLS}/host/include
 
-SRC_PLLA_WORKERS_DIR := $(SRC_DIR)/parallella/mc_workers
+SRC_PLLA_WORKERS_DIR := $(SRC_DIR)/parallella/workerus
 SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================

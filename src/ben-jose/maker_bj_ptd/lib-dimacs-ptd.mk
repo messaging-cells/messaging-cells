@@ -1,5 +1,5 @@
 
-SRC_BASE_DIR := ../host_code/
+SRC_BASE_DIR := ../manageru_code/
 
 TARGET := libdimacs-ptd.a
 

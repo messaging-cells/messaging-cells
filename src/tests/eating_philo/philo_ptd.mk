@@ -51,6 +51,6 @@ SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_
 
 SRC_INCDIRS := ${MC_STD_INCDIRS}
 
-SOURCES := philo.cpp ../nil_host/nil_host.cpp
+SOURCES := philo.cpp ../nil_manageru/nil_manageru.cpp
 
 

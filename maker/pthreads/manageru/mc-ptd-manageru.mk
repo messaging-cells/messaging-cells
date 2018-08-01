@@ -1,5 +1,5 @@
 
-SRC_HOST_DIR := $(SRC_DIR)/cells/mc_manager
+SRC_HOST_DIR := $(SRC_DIR)/cells/manageru
 SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================

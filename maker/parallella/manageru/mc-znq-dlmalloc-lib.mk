@@ -1,5 +1,5 @@
 
-SRC_DLMALLOC_DIR := $(SRC_DIR)/cells/mc_manager/dlmalloc
+SRC_DLMALLOC_DIR := $(SRC_DIR)/cells/manageru/dlmalloc
 
 # =======================================
 

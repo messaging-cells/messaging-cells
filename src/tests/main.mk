@@ -86,7 +86,7 @@ MC_ZNQ_LIBS := ${MC_LIB_DIR_2}/libmcz-cell.a ${MC_LIB_DIR_2}/libmcz-tak-mak.a ${
 MC_PTD_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
 MC_EPH_LIBS := ${MC_LIB_DIR_2}/libmck-cell.a ${MC_LIB_DIR_2}/libmck-tak-mak.a
 
-MC_STD_INCDIRS := ../../cells ../../cells/mc_manager ${MC_ETOOLS}/host/include
+MC_STD_INCDIRS := ../../cells ../../cells/manageru ${MC_ETOOLS}/host/include
 
 #	./tak_mak_test/test_tak_mak.mk \
 #	./logs_test/logs_test.mk \
@@ -97,33 +97,35 @@ MC_STD_INCDIRS := ../../cells ../../cells/mc_manager ${MC_ETOOLS}/host/include
 #	./znq_tests/znq_hello.mk \
 #	./znq_tests/znq_backtrace.mk \
 #	./backtrace/backtrace.mk \
-#	./min_host/min_host.mk \
-#	./min_host/min_host_ptd.mk \
+#	./min_manageru/min_manageru.mk \
+#	./min_manageru/min_manageru_ptd.mk \
 #	./hello_class/hello_class.mk \
 #	./sequence/sequence.mk \
 #	./sequence/sequence_2.mk \
 #	./sequence/sequence_3.mk \
-#	./send_host_msg/send_host_msg_ptd.mk \
+#	./send_manageru_msg/send_manageru_msg_ptd.mk \
 #	./send_msg/send_msg_eph.mk \
 #	./send_msg/send_msg_ptd.mk \
-#	./send_host_msg/send_host_msg_ptd.mk \
-#	./send_host_msg/send_host_msg_eph.mk \
-#	./send_host_msg/send_host_msg_znq.mk \
+#	./send_manageru_msg/send_manageru_msg_ptd.mk \
+#	./send_manageru_msg/send_manageru_msg_eph.mk \
+#	./send_manageru_msg/send_manageru_msg_znq.mk \
 #	./ptd_tests/hola_jose.mk \
 #	./modules/modules.mk \
 
 SUBMAKEFILES := \
-	./nil_host/no_nil_host.mk \
-	./nil_host/nil_host.mk \
+	./nil_manageru/no_nil_manageru.mk \
+	./nil_manageru/nil_manageru.mk \
 	./logs_test/logs_test.mk \
 	./hello_world/hello_world.mk \
 	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_ptd.mk \
 	./eating_philo/philo_ptd.mk \
 	./eating_philo/philo_eph.mk \
-	./send_host_msg/send_host_msg_ptd.mk \
-	./send_host_msg/send_host_msg_eph.mk \
-	./send_host_msg/send_host_msg_znq.mk \
+	./min_manageru/min_manageru.mk \
+	./min_manageru/min_manageru_ptd.mk \
+	./send_manageru_msg/send_manageru_msg_ptd.mk \
+	./send_manageru_msg/send_manageru_msg_eph.mk \
+	./send_manageru_msg/send_manageru_msg_znq.mk \
 	./modules/modules.mk \
 
 

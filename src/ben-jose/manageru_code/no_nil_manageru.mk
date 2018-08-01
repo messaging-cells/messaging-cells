@@ -1,10 +1,7 @@
 
-SRC_HOST_DIR := $(SRC_DIR)/host
-SRC_CELLS_DIR := $(SRC_DIR)/cells
-
 # =======================================
 
-TARGET := bj-no-nil-host.elf
+TARGET := bj-no-nil-manageru.elf
 
 TGT_LDFLAGS := ${MC_STD_ZNQ_LDFLAGS}
 TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS}
@@ -20,4 +17,4 @@ SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${MC_DBG_FLAG}
 
 SRC_INCDIRS := $(MC_STD_INCDIRS)
 
-SOURCES := nil_host.cpp
+SOURCES := nil_manageru.cpp

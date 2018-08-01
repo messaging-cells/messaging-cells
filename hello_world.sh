@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cd bin/tests
-./nil-host.elf hello_world.elf
+./nil-manageru.elf hello_world.elf
 

@@ -46,11 +46,11 @@ SUBMAKEFILES := \
 	pthreads/mc-ptd-tak-mak-lib.mk \
 	pthreads/mc-ptd-dlmalloc-lib.mk \
 	pthreads/mc-ptd-cell-lib.mk \
-	parallella/mc_manager/mc-znq-tak-mak-lib.mk \
-	parallella/mc_manager/mc-znq-dlmalloc-lib.mk \
-	parallella/mc_manager/mc-znq-cell-lib.mk \
-	parallella/mc_workers/mc-eph-tak-mak-lib.mk \
-	parallella/mc_workers/mc-eph-cell-lib.mk \
+	parallella/manageru/mc-znq-tak-mak-lib.mk \
+	parallella/manageru/mc-znq-dlmalloc-lib.mk \
+	parallella/manageru/mc-znq-cell-lib.mk \
+	parallella/workerus/mc-eph-tak-mak-lib.mk \
+	parallella/workerus/mc-eph-cell-lib.mk \
 
 
 

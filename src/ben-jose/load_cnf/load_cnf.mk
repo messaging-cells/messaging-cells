@@ -22,7 +22,7 @@ SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG}
 
 SRC_INCDIRS := ${BJ_CORES_INCLUDES} \
 	${SRC_BJ_DIR}/load_cnf \
-	${SRC_BJ_DIR}/host_code/cnf_preload \
+	${SRC_BJ_DIR}/manageru_code/cnf_preload \
 
 SOURCES := load_cnf.cpp load_sornet.cpp
 

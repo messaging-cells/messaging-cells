@@ -30,27 +30,23 @@
 #------------------------------------------------------------
 
 
-#SRC_IN_SECTIONS := -fdata-sections -ffunction-sections
-SRC_IN_SECTIONS := 
-
-#LD_IN_SECTIONS := --gc-sections
-LD_IN_SECTIONS := 
-
 # =======================================
 
-TARGET := send_host_msg_ptd.elf
+TARGET := nil-manageru.elf
 
-TGT_LDFLAGS := ${MC_STD_PTD_LDFLAGS} ${LD_IN_SECTIONS} -rdynamic
-TGT_LDLIBS  := ${MC_STD_PTD_LDLIBS}
-TGT_PREREQS := ${MC_PTD_LIBS}
+TGT_LDFLAGS := ${MC_STD_ZNQ_LDFLAGS}
+TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS}
+TGT_PREREQS := ${MC_ZNQ_LIBS}
+
+TGT_CC := $(CROSS_COMPILE)gcc
+TGT_CXX := $(CROSS_COMPILE)g++
+TGT_LINKER := $(CROSS_COMPILE)g++
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
-SRC_CFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -pthread
-SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -pthread
+SRC_CFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=gnu11 ${MC_DBG_FLAG}
+SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${MC_DBG_FLAG}
 
-SRC_INCDIRS := ${MC_STD_INCDIRS}
+SRC_INCDIRS := $(MC_STD_INCDIRS)
 
-SOURCES := send_host_msg.cpp host.cpp
-
-
+SOURCES := nil_manageru.cpp

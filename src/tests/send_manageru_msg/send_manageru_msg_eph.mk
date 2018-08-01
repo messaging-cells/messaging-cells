@@ -38,7 +38,7 @@ LD_IN_SECTIONS :=
 
 # =======================================
 
-TARGET := send_host_msg_eph.elf
+TARGET := send_manageru_msg_eph.elf
 
 TGT_LDFLAGS := ${MC_STD_EPH_LDFLAGS} ${LD_IN_SECTIONS} 
 TGT_LDLIBS  := ${MC_STD_EPH_LDLIBS}
@@ -60,6 +60,6 @@ SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_
 
 SRC_INCDIRS := ${MC_STD_INCDIRS}
 
-SOURCES := send_host_msg.cpp
+SOURCES := send_manageru_msg.cpp
 
 
