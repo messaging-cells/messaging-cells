@@ -53,7 +53,7 @@ typedef uint8_t mc_bool_t;
 
 #define mc_e3_num_chip_cores 16
 
-#define mc_core_tot_mem		0x8000
+#define mc_workeru_tot_mem		0x8000
 
 //======================================================================
 // address opers
@@ -70,7 +70,7 @@ typedef uint8_t mc_bool_t;
 	#include "shared_znq.h"
 #endif
 
-#define MC_INVALID_CORE_NN ((mc_core_nn_t)(~((mc_core_nn_t)0x0)))
+#define MC_INVALID_CORE_NN ((mc_workeru_nn_t)(~((mc_workeru_nn_t)0x0)))
 
 typedef mc_addr_t mc_size_t;
 	
@@ -86,9 +86,9 @@ typedef mc_addr_t mc_size_t;
 #define mc_out_num_cores mc_e3_num_chip_cores
 
 struct mc_aligned mc_sys_def { 
-	mc_core_co_t 	xx;		// absolute xx epiphany space coordinates
-	mc_core_co_t 	yy;		// absolute yy epiphany space coordinates
-	mc_core_co_t 	xx_sz;		// this running sys number of ekores in xx axis (sys length)
+	mc_workeru_co_t 	xx;		// absolute xx epiphany space coordinates
+	mc_workeru_co_t 	yy;		// absolute yy epiphany space coordinates
+	mc_workeru_co_t 	xx_sz;		// this running sys number of ekores in xx axis (sys length)
 	uint8_t 	 	yy_sz_pw2;		// this running sys number of ekores in yy axis (sys witdh) is (2 ^ yy_sz_pw2)
 };
 typedef struct mc_sys_def mc_sys_sz_st;
@@ -112,8 +112,8 @@ mc_init_glb_sys_sz(mc_sys_sz_st* sys_sz) {
 }
 
 void mc_inline_fn
-mc_init_glb_sys_sz_with(mc_sys_sz_st* sys_sz, mc_core_co_t xx_val, mc_core_co_t yy_val, 
-				mc_core_co_t xx_sz_val, uint8_t yy_sz_pw2_val)
+mc_init_glb_sys_sz_with(mc_sys_sz_st* sys_sz, mc_workeru_co_t xx_val, mc_workeru_co_t yy_val, 
+				mc_workeru_co_t xx_sz_val, uint8_t yy_sz_pw2_val)
 {
 	sys_sz->xx = xx_val;
 	sys_sz->yy = yy_val;
@@ -141,7 +141,7 @@ mc_init_glb_sys_sz_with(mc_sys_sz_st* sys_sz, mc_core_co_t xx_val, mc_core_co_t 
 #define mc_pw2_yy_sys (MC_SYS_SZ->yy_sz_pw2)
 
 #define mc_tot_xx_sys (MC_SYS_SZ->xx_sz)
-#define mc_tot_yy_sys ((mc_core_co_t)(1 << mc_pw2_yy_sys))
+#define mc_tot_yy_sys ((mc_workeru_co_t)(1 << mc_pw2_yy_sys))
 #define mc_tot_nn_sys (mc_tot_xx_sys * mc_tot_yy_sys)
 
 #define mc_min_xx_sys (MC_SYS_SZ->xx)
@@ -175,28 +175,28 @@ mc_init_glb_sys_sz_with(mc_sys_sz_st* sys_sz, mc_core_co_t xx_val, mc_core_co_t 
 // address functions 2
 
 #ifdef MC_IS_EPH_CODE
-mc_core_id_t mc_inline_fn
-mck_get_core_id() {
-	mc_core_id_t koid = 0x0; 
+mc_workeru_id_t mc_inline_fn
+mck_get_workeru_id() {
+	mc_workeru_id_t koid = 0x0; 
 	mc_asm("movfs %0, coreid" : "=r" (koid));
 	return koid;
 }
 #else
-mc_core_id_t 
-mck_get_core_id();
+mc_workeru_id_t 
+mck_get_workeru_id();
 #endif
 
 //! Returns true if 'addr' is local to the core with id 'koid'
 bool mc_inline_fn
-mc_addr_in_core(mc_addr_t addr, mc_core_id_t koid) {
-	mc_core_id_t addr_koid = mc_addr_get_id(addr);
+mc_addr_in_core(mc_addr_t addr, mc_workeru_id_t koid) {
+	mc_workeru_id_t addr_koid = mc_addr_get_id(addr);
 	return ((addr_koid == 0) || (addr_koid == koid));
 }
 
 //! Returns true if 'addr' is in any of the cores of the epiphany system
 bool mc_inline_fn
 mc_addr_in_sys(mc_addr_t addr) {
-	mc_core_id_t addr_koid = mc_addr_get_id(addr);
+	mc_workeru_id_t addr_koid = mc_addr_get_id(addr);
 	if(addr_koid == 0){
 		return true;
 	}
@@ -269,7 +269,7 @@ mc_v32_of_p16(uint16_t* p16){
 }
 
 //! Warranted set of an off-core variable (loops until reading the value). Use only if needed.
-#define mc_set_off_core_var(var, val) \
+#define mc_set_off_workeru_var(var, val) \
 	(var) = (val); \
 	while((var) != (val)); \
 		
@@ -333,27 +333,27 @@ typedef uint8_t mck_exception_t;
 #define MC_WAITING_ENTER	0xaa
 #define MC_WAITING_BUFFER	0xbb
 
-struct mc_aligned mc_off_core_shared_data_def { 
+struct mc_aligned mc_off_workeru_shared_data_def { 
 	uint32_t 		magic_id;
-	mc_core_id_t	ck_core_id;
+	mc_workeru_id_t	ck_workeru_id;
 	uint8_t 		is_finished;
 	uint8_t 		is_waiting;
 	void* 			core_data;
 };
-typedef struct mc_off_core_shared_data_def mc_off_core_st;
+typedef struct mc_off_workeru_shared_data_def mc_off_workeru_st;
 
 
 //define MC_OUT_BUFF_SZ 	mc_mem_16K
 #define MC_OUT_BUFF_SZ 	300
 #define MC_OUT_BUFF_MAX_OMC_SZ 500
 
-struct mc_aligned mc_core_out_def { 
+struct mc_aligned mc_workeru_out_def { 
 	uint32_t 		magic_id;
 	mc_rrarray_st 	wr_arr;
 	mc_rrarray_st 	rd_arr;
 	uint8_t 		buff[MC_OUT_BUFF_SZ];
 };
-typedef struct mc_core_out_def mc_core_out_st;
+typedef struct mc_workeru_out_def mc_workeru_out_st;
 
 
 struct mc_aligned mc_off_sys_shared_data_def { 
@@ -367,11 +367,11 @@ struct mc_aligned mc_off_sys_shared_data_def {
 
 	uint32_t 		tot_modules;
 
-	mc_core_id_t	first_load_core_id;
+	mc_workeru_id_t	first_load_workeru_id;
 
 	mc_sys_sz_st 	wrk_sys;
-	mc_off_core_st 	sys_cores[mc_out_num_cores];
-	mc_core_out_st 	sys_out_buffs[mc_out_num_cores];
+	mc_off_workeru_st 	sys_cores[mc_out_num_cores];
+	mc_workeru_out_st 	sys_out_buffs[mc_out_num_cores];
 };
 typedef struct mc_off_sys_shared_data_def mc_off_sys_st;
 

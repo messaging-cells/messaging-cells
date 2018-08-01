@@ -47,7 +47,7 @@ void
 mck_abort(mc_addr_t err, char* orig_msg) {
 	char msg[300];
 	ptd_info_t* inf = mck_get_ptd_info();
-	snprintf(msg, 300, "ABORTED THREAD=%ld \t CORE_ID=%x MSG=%s\n", inf->ptd_id, inf->ptd_core_id, orig_msg);
+	snprintf(msg, 300, "ABORTED THREAD=%ld \t CORE_ID=%x MSG=%s\n", inf->ptd_id, inf->ptd_workeru_id, orig_msg);
 	mch_abort_func(err, msg);
 }
 

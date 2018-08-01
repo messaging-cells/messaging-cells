@@ -103,7 +103,7 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod
 
 bool
 nervenet::sornet_dbg_send_cntr(){
-	PTD_CK(kernel::get_core_nn() == 0);
+	PTD_CK(kernel::get_workeru_nn() == 0);
 	PTD_CK(all_input_sorcells != mc_null);
 	
 	dbg_sornet_curr_cntr++;
@@ -191,7 +191,7 @@ nervenet::sornet_dbg_bin_get_mini_sorted_arr(){
 
 void
 nervenet::sornet_dbg_end_step(){
-	PTD_CK(kernel::get_core_nn() == 0);
+	PTD_CK(kernel::get_workeru_nn() == 0);
 
 	bool srt_ok = sornet_check_order(&bj_cmp_bin_objs);
 	if(! srt_ok){
@@ -219,7 +219,7 @@ nervenet::sornet_dbg_end_step(){
 
 void
 nervenet::sornet_dbg_bin_handler(missive* msv){
-	PTD_CK(kernel::get_core_nn() == 0);
+	PTD_CK(kernel::get_workeru_nn() == 0);
 	//PTD_LOG("sornet_dbg_bin_handler 1\n");
 
 	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
@@ -264,7 +264,7 @@ nervenet::sornet_handler(missive* msv){
 }
 
 void bj_sornet_main() {
-	mc_core_nn_t nn = kernel::get_core_nn();
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
 	kernel::set_handlers(1, bj_nil_handlers);
 	bj_sornet_init_handlers();

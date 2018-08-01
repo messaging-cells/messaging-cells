@@ -46,16 +46,16 @@ Our Resurrected and Living, both in Body and Spirit,
 
 struct ptd_info_st {    // Used as argument to thread_start() 
 	pthread_t 		ptd_id;        // id returned by pthread_create() 
-	mc_core_nn_t	ptd_num;       // core consec
+	mc_workeru_nn_t	ptd_num;       // core consec
 	char 			ptd_name[NAMELEN];
 
-	void 		(*ptd_core_func)();
+	void 		(*ptd_workeru_func)();
 
-	mc_core_id_t 	ptd_core_id;	// core id as in epiphany arch
+	mc_workeru_id_t 	ptd_workeru_id;	// core id as in epiphany arch
 	mc_sys_sz_st 	ptd_system_sz;
 	mck_glb_sys_st	ptd_glb_sys_data;
-	mc_core_id_t	ptd_map_parent_core_id;
-	mc_core_nn_t	ptd_map_tot_children;
+	mc_workeru_id_t	ptd_map_parent_workeru_id;
+	mc_workeru_nn_t	ptd_map_tot_children;
 	mc_load_map_st*	ptd_map_loaded;
 	kernel 			ptd_THE_KERNEL;
 };
@@ -100,10 +100,10 @@ mck_addr_in_cores(void* addr){
 	return false;
 }
 
-mc_inline_fn mc_core_nn_t
+mc_inline_fn mc_workeru_nn_t
 mck_get_addr_idx(void* addr){
 	PTD_CK(mck_addr_in_cores(addr));
-	mc_core_nn_t idx = (mc_core_nn_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t));
+	mc_workeru_nn_t idx = (mc_workeru_nn_t)(((uintptr_t)addr - (uintptr_t)ALL_THREADS_INFO) / sizeof(thread_info_t));
 	return idx;
 }
 
@@ -114,11 +114,11 @@ mck_get_addr_offset(void* addr){
 	return ofs;
 }
 
-mc_core_id_t
-mcm_get_addr_core_id_fn(void* addr);
+mc_workeru_id_t
+mcm_get_addr_workeru_id_fn(void* addr);
 
 void*
-mcm_addr_with_fn(mc_core_id_t id, void* addr);
+mcm_addr_with_fn(mc_workeru_id_t id, void* addr);
 
 mc_inline_fn bool
 mc_is_host_thread(){

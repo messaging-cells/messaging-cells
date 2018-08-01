@@ -177,7 +177,7 @@ kernel::init_sys(bool is_the_host){
 	in_shd->agent_grp_sz = sizeof(agent_grp);
 	in_shd->mck_glb_sys_st_sz = sizeof(mck_glb_sys_st);
 
-	in_shd->pt_core_kernel = mc_null;
+	in_shd->pt_workeru_kernel = mc_null;
 
 	mck_enable_all_irq();
 	mck_global_irq_enable();
@@ -189,11 +189,11 @@ kernel::run_sys(){
 	
 	if(! ker->is_host_kernel){
 		ker->reset_stop_sys();
-		MC_CORE_INFO->pt_core_kernel = (void*)mc_addr_set_id(MC_CORE_INFO->the_core_id, ker);
-		MC_CORE_INFO->inited_core = MC_CORE_INFO->the_core_id;
+		MC_CORE_INFO->pt_workeru_kernel = (void*)mc_addr_set_id(MC_CORE_INFO->the_workeru_id, ker);
+		MC_CORE_INFO->inited_core = MC_CORE_INFO->the_workeru_id;
 		/*
 		#ifdef MC_PLL_LOADING
-			if(MC_CORE_INFO->the_core_nn == 0){
+			if(MC_CORE_INFO->the_workeru_nn == 0){
 				mck_sprt2("INITED___"); 
 				mck_xprt((mc_addr_t)(&(MC_CORE_INFO->inited_core)));
 				mck_sprt2("___\n");
@@ -299,7 +299,7 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 	//kernel* ker = this;
 
 	binder* all_msvs = &(rem_mgrp->all_agts);
-	mc_core_id_t msvs_id = mc_addr_get_id(all_msvs);
+	mc_workeru_id_t msvs_id = mc_addr_get_id(all_msvs);
 
 	fst = mc_glb_binder_get_rgt(all_msvs, msvs_id);
 	lst = all_msvs;
@@ -324,16 +324,16 @@ agent::init_me(int caller){
 }
 
 cell*	//	static 
-kernel::get_core_cell(mc_core_id_t dst_id){
+kernel::get_workeru_cell(mc_workeru_id_t dst_id){
 	if(! MCK_KERNEL->is_host_kernel){
-		cell* loc_act = kernel::get_core_cell();
-		if(dst_id == kernel::get_core_id()){
+		cell* loc_act = kernel::get_workeru_cell();
+		if(dst_id == kernel::get_workeru_id()){
 			return loc_act;
 		}
 		cell* rem_act = (cell*)mc_addr_set_id(dst_id, loc_act);
 		return rem_act;
 	}
-	kernel* core_ker = kernel::get_core_kernel(dst_id);
+	kernel* core_ker = kernel::get_workeru_kernel(dst_id);
 	if(core_ker != mc_null){
 		return core_ker->first_cell;
 	}
@@ -375,7 +375,7 @@ kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 
 void 
 kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* acks){
-	mc_core_nn_t dst_idx = get_core_nn();
+	mc_workeru_nn_t dst_idx = get_workeru_nn();
 	bool is_from_host = (arr == &routed_from_host);
 
 	for(int aa = 0; aa < sz; aa++){
@@ -390,7 +390,7 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 			nw_ref->glb_agent_ptr = glb_msv_grp;
 			in_wrk.bind_to_my_left(*nw_ref);
 
-			mc_core_id_t src_id = mc_addr_get_id((mc_addr_t)(glb_msv_grp));
+			mc_workeru_id_t src_id = mc_addr_get_id((mc_addr_t)(glb_msv_grp));
 			PTD_CK_PRT((is_from_host || (aa == mc_id_to_nn(src_id))), "is_from_host = %d \n", is_from_host);
 
 			mck_ack_t* rem_dst_ack_pt;
@@ -403,7 +403,7 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 				}
 			} else {
 				PTD_CK(! is_from_host);
-				kernel* core_ker = kernel::get_core_kernel(src_id);
+				kernel* core_ker = kernel::get_workeru_kernel(src_id);
 				rem_dst_ack_pt = (mck_ack_t*)(&(core_ker->routed_ack_from_host));
 				//PTD_PRT("process_signal. rem_dst_ack_pt=%p\n", rem_dst_ack_pt);
 				//ZNQ_CODE(printf("process_signal. rem_dst_ack_pt=%p \n", rem_dst_ack_pt));
@@ -426,7 +426,7 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 }
 
 bool
-mck_has_same_module(mc_core_id_t dst_id){
+mck_has_same_module(mc_workeru_id_t dst_id){
 	mck_glb_sys_st* in_shd = MC_CORE_INFO;
 	mc_addr_t* loc_mdl = &(in_shd->current_module_addr);
 	mc_addr_t* rmt_mdl = (mc_addr_t*)mc_addr_set_id(dst_id, loc_mdl);
@@ -447,7 +447,7 @@ mck_has_module(){
 }
 
 bool
-mck_has_same_sub_module(mc_core_id_t dst_id){
+mck_has_same_sub_module(mc_workeru_id_t dst_id){
 	mck_glb_sys_st* in_shd = MC_CORE_INFO;
 	uint8_t* loc_mdl = &(in_shd->current_sub_module_id);
 	uint8_t* rmt_mdl = (uint8_t*)mc_addr_set_id(dst_id, loc_mdl);
@@ -460,10 +460,10 @@ mck_has_same_sub_module(mc_core_id_t dst_id){
 }
 
 bool
-mck_is_id_inited(mc_core_id_t dst_id){
+mck_is_id_inited(mc_workeru_id_t dst_id){
 	mck_glb_sys_st* in_shd = MC_CORE_INFO;
-	mc_core_id_t* loc_st = &(in_shd->inited_core);
-	mc_core_id_t* rmt_st = (mc_core_id_t*)mc_addr_set_id(dst_id, loc_st);
+	mc_workeru_id_t* loc_st = &(in_shd->inited_core);
+	mc_workeru_id_t* rmt_st = (mc_workeru_id_t*)mc_addr_set_id(dst_id, loc_st);
 	if((*rmt_st) != dst_id){
 		return false;
 	}
@@ -555,7 +555,7 @@ kernel::handle_missives(){
 		did_work |= mc_bit3;
 	}
 
-	mc_core_nn_t src_idx = get_core_nn();
+	mc_workeru_nn_t src_idx = get_workeru_nn();
 
 	PTD_CK(is_host_kernel || ker->to_cores_work.is_alone());
 	if(is_host_kernel){
@@ -573,8 +573,8 @@ kernel::handle_missives(){
 		PTD_CK(! mgrp->all_agts.is_alone());
 		
 		missive* msv = (missive*)(mgrp->all_agts.get_right_pt());
-		mc_core_id_t dst_id = mc_addr_get_id(msv->dst);
-		mc_core_nn_t dst_idx = mc_id_to_nn(dst_id);
+		mc_workeru_id_t dst_id = mc_addr_get_id(msv->dst);
+		mc_workeru_nn_t dst_idx = mc_id_to_nn(dst_id);
 
 		// ONLY pw0 case
 		mck_ack_t& loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[dst_idx];
@@ -587,12 +587,12 @@ kernel::handle_missives(){
 			}
 			if(! mck_has_same_module(dst_id)){
 				did_work |= mc_bit5;
-				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
+				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_workeru_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			if(mck_has_module() && ! mck_has_same_sub_module(dst_id)){
 				did_work |= mc_bit6;
-				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_core_nn, mc_id_to_nn(dst_id), msv->tok);
+				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_workeru_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			loc_dst_ack_pt = mck_ready_ack;
@@ -700,13 +700,13 @@ kernel::handle_work_to_cores(){
 		//		mgrp, (binder*)(&(mgrp->all_agts)) ));
 		
 		missive* msv = (missive*)(mgrp->all_agts.get_right_pt());
-		mc_core_id_t dst_id = mc_addr_get_id(msv->dst);
-		mc_core_nn_t dst_idx = mc_id_to_nn(dst_id);
+		mc_workeru_id_t dst_id = mc_addr_get_id(msv->dst);
+		mc_workeru_nn_t dst_idx = mc_id_to_nn(dst_id);
 
 		// ONLY pw0 case
 		mck_ack_t& loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[dst_idx];
 
-		kernel* core_ker = kernel::get_core_kernel(dst_id);
+		kernel* core_ker = kernel::get_workeru_kernel(dst_id);
 		if(core_ker == mc_null){
 			did_work |= mc_bit10;
 			continue;
@@ -767,7 +767,7 @@ kernel::handle_work_to_host(){
 	mck_sprt2("___\n");
 	mck_sprt2("SND_HOST handle_work_to_host SENDING MISSIVE\n");*/
 
-	mc_core_nn_t src_idx = get_core_nn();
+	mc_workeru_nn_t src_idx = get_workeru_nn();
 	missive_grp_t* glb_mgrp = (missive_grp_t*)mck_as_glb_pt(mgrp2);
 
 	(host_kernel->pw0_routed_arr)[src_idx] = glb_mgrp;
@@ -810,7 +810,7 @@ kernel::call_host_handlers_of_group(missive_grp_t* core_mgrp){
 	
 	binder * fst, * lst, * wrk;
 
-	mc_core_id_t msvs_id = mc_addr_get_id(core_mgrp);
+	mc_workeru_id_t msvs_id = mc_addr_get_id(core_mgrp);
 	missive_grp_t* rem_mgrp = (missive_grp_t*)mc_workeru_pt_to_manageru_pt(core_mgrp);
 
 	//binder* all_msvs = &(rem_mgrp->all_agts);
@@ -899,7 +899,7 @@ kernel::stop_sys(mck_token_t key){
 
 	ker->stop_key = key;
 
-	//PTD_PRT("START_STOP_CORE=%d \n", ker->get_core_nn());
+	//PTD_PRT("START_STOP_CORE=%d \n", ker->get_workeru_nn());
 }
 
 void 
@@ -910,20 +910,20 @@ kernel::send_stop_to_children(){
 
 	mc_load_map_st* mp = mc_map_get_loaded();
 
-	//PTD_PRT("STOP_CHILDREN CORE=%d \n", get_core_nn());
+	//PTD_PRT("STOP_CHILDREN CORE=%d \n", get_workeru_nn());
 
 	if(mp->childs != mc_null){ 
 		int aa = 0;
 		mc_load_map_st* ch_map = (mp->childs)[aa];
 		while(ch_map != mc_null){
 			//PTD_PRT("send_stop to CHILD=%d \n", ch_map->num_core);
-			mc_core_nn_t chd_nn = ch_map->num_core;
-			cell* ch_cell = get_core_cell(mc_nn_to_id(chd_nn));
+			mc_workeru_nn_t chd_nn = ch_map->num_core;
+			cell* ch_cell = get_workeru_cell(mc_nn_to_id(chd_nn));
 
-			//PTD_PRT_STACK(true, "mck_tok_stop_sys_to_children CORE=%d \n", get_core_nn());
+			//PTD_PRT_STACK(true, "mck_tok_stop_sys_to_children CORE=%d \n", get_workeru_nn());
 
 			missive* msv = missive::acquire();
-			msv->src = get_core_cell();
+			msv->src = get_workeru_cell();
 			msv->dst = ch_cell;
 			msv->tok = mck_tok_stop_sys_to_children;
 			msv->send();
@@ -939,21 +939,21 @@ kernel::send_stop_to_children(){
 void 
 kernel::handle_stop(){
 	PTD_CK(stop_key != 0);
-	mc_core_nn_t tot_child = mc_map_get_tot_children();
+	mc_workeru_nn_t tot_child = mc_map_get_tot_children();
 	//PTD_CK((tot_child == 0) == ());
 	if(! sent_stop_to_parent && (num_childs_stopping == tot_child)){
-		//PTD_PRT("SENDING STOP TO PARENT CORE=%d TOT_CHLD=%d \n", get_core_nn(), tot_child);
+		//PTD_PRT("SENDING STOP TO PARENT CORE=%d TOT_CHLD=%d \n", get_workeru_nn(), tot_child);
 
 		if(user_stop_func != mc_null){
 			(*user_stop_func)();
 		}
 		sent_stop_to_parent = true;
-		mc_core_id_t pnt_koid = mc_map_get_parent_core_id();
+		mc_workeru_id_t pnt_koid = mc_map_get_parent_workeru_id();
 		if(pnt_koid != 0){
-			cell* pcell = get_core_cell(pnt_koid);
+			cell* pcell = get_workeru_cell(pnt_koid);
 
 			missive* msv = missive::acquire();
-			msv->src = get_core_cell();
+			msv->src = get_workeru_cell();
 			msv->dst = pcell;
 			msv->tok = mck_tok_stop_sys_to_parent;
 			msv->send();
@@ -971,7 +971,7 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 		case mck_tok_stop_sys_to_parent:
 		{
 			cell* msv_src = msv->src;
-			mc_core_id_t src_id = mc_addr_get_id(msv_src);
+			mc_workeru_id_t src_id = mc_addr_get_id(msv_src);
 			kernel* ker = MCK_KERNEL;
 			kernel* rem_ker = (kernel*)mc_addr_set_id(src_id, ker);
 

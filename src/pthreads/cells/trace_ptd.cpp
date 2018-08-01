@@ -52,8 +52,8 @@ mck_get_call_stack_trace(int16_t, void**) {
 
 void 
 mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
-	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt;
-	if(off_core_pt == mc_null){
+	mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt;
+	if(off_workeru_pt == mc_null){
 		return;
 	}
 	if((sz_trace > 0) && (trace != mc_null)){
@@ -62,14 +62,14 @@ mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	if(info == MC_NOT_WAITING){
 		info = MC_WAITING_ENTER;
 	}
-	mc_set_off_core_var(off_core_pt->is_waiting, info);
+	mc_set_off_workeru_var(off_workeru_pt->is_waiting, info);
 
 	uint8_t& sync_sg = MC_CORE_INFO->mck_sync_signal;
 	while(sync_sg == 0){
 		sched_yield();
 	}
 
-	mc_set_off_core_var(off_core_pt->is_waiting, MC_NOT_WAITING);
+	mc_set_off_workeru_var(off_workeru_pt->is_waiting, MC_NOT_WAITING);
 	sync_sg = 0;
 }
 

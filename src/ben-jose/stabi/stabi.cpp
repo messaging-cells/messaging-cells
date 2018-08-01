@@ -652,7 +652,7 @@ nervenet::stabi_handler(missive* msv){
 void bj_stabi_main() {
 	mck_set_sub_module_id(BJ_STABI_SUB_MODULE_STABI);
 
-	mc_core_nn_t nn = kernel::get_core_nn();
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
 	kernel::set_handlers(1, bj_nil_handlers);
 	bj_stabi_init_handlers();

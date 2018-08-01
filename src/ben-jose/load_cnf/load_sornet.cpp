@@ -78,7 +78,7 @@ void bj_load_shd_sornet(){
 	};
 
 	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = kernel::get_core_nn();
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
 	if(nn == 0){
 		pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->host_load_data);

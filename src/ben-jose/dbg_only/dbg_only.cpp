@@ -15,8 +15,8 @@ nervenet::dbg_only_handler(missive* msv){
 	MC_MARK_USED(tok);
 	MCK_CK(tok == bj_tok_load_no_lits);
 
-	PTD_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-	PTD_LOG("ENDING_DBG_ONLY %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	PTD_CODE(mc_workeru_nn_t nn = mck_get_kernel()->get_workeru_nn());
+	PTD_LOG("ENDING_DBG_ONLY %d --------------- PARENT=%x \n", nn, mc_map_get_parent_workeru_id());
 	kernel::stop_sys(bj_tok_load_end);
 }
 
@@ -70,7 +70,7 @@ void bj_dbg_separate(){
 
 void bj_dbg_only_main() {
 	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = kernel::get_core_nn();
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
 	if(ker->magic_id != MC_MAGIC_ID){
 		mck_slog2("BAD_MAGIC\n");

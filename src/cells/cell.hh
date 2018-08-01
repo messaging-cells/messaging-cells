@@ -227,7 +227,7 @@ nam::acquire(mc_alloc_size_t sz){ \
 //! Type to identify a \ref missive handler.
 typedef uint8_t mck_handler_idx_t;
 
-enum mck_core_state_t : uint8_t {
+enum mck_workeru_state_t : uint8_t {
 	mck_invalid_state = 10,
 	mck_inited_state
 };
@@ -428,13 +428,13 @@ public:
 
 	//! Returns the core global info
 	static mc_inline_fn mck_glb_sys_st& 
-	get_core_info(){
+	get_workeru_info(){
 		return *MC_CORE_INFO;
 	}
 
-	static mc_inline_fn mc_off_core_st& 
+	static mc_inline_fn mc_off_workeru_st& 
 	get_off_shd(){
-		return *(MC_CORE_INFO->off_core_pt);
+		return *(MC_CORE_INFO->off_workeru_pt);
 	}
 
 	//! Returns the system size structure
@@ -445,46 +445,46 @@ public:
 	}
 
 	//! Returns the core number
-	static mc_inline_fn mc_core_nn_t 
-	get_core_nn(){
-		return MC_CORE_INFO->the_core_nn;
+	static mc_inline_fn mc_workeru_nn_t 
+	get_workeru_nn(){
+		return MC_CORE_INFO->the_workeru_nn;
 	}
 
 	//! Returns the core row
-	static mc_inline_fn mc_core_co_t 
-	get_core_ro(){
-		return MC_CORE_INFO->the_core_ro;
+	static mc_inline_fn mc_workeru_co_t 
+	get_workeru_ro(){
+		return MC_CORE_INFO->the_workeru_ro;
 	}
 
 	//! Returns the core column
-	static mc_inline_fn mc_core_co_t 
-	get_core_co(){
-		return MC_CORE_INFO->the_core_co;
+	static mc_inline_fn mc_workeru_co_t 
+	get_workeru_co(){
+		return MC_CORE_INFO->the_workeru_co;
 	}
 
 	//! Returns the core id
-	static mc_inline_fn mc_core_id_t 
-	get_core_id(){
-		return MC_CORE_INFO->the_core_id;
+	static mc_inline_fn mc_workeru_id_t 
+	get_workeru_id(){
+		return MC_CORE_INFO->the_workeru_id;
 	}
 
 	//! Returns the parent core id
-	static mc_inline_fn mc_core_id_t 
-	get_parent_core_id(){
-		return mc_map_get_parent_core_id();
+	static mc_inline_fn mc_workeru_id_t 
+	get_parent_workeru_id(){
+		return mc_map_get_parent_workeru_id();
 	}
 
 	//! Returns this kernel first created \ref cell 
 	static mc_inline_fn cell*
-	get_core_cell(){
+	get_workeru_cell(){
 		return MCK_KERNEL->first_cell;
 	}
 
-	//! Returns the core_cell (see \ref get_core_cell) of the core with id 'dst_id'
+	//! Returns the core_cell (see \ref get_workeru_cell) of the core with id 'dst_id'
 	static cell*
-	get_core_cell(mc_core_id_t dst_id);
+	get_workeru_cell(mc_workeru_id_t dst_id);
 
-	//! Returns the core_cell (see \ref get_core_cell) of the host
+	//! Returns the core_cell (see \ref get_workeru_cell) of the host
 	static cell*
 	get_host_cell() mc_external_code_ram;
 
@@ -493,7 +493,7 @@ public:
 	set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) mc_external_code_ram;
 
 	static kernel*
-	get_core_kernel(mc_core_id_t id) mc_external_code_ram;
+	get_workeru_kernel(mc_workeru_id_t id) mc_external_code_ram;
 
 	void dbg_set_idle() mc_external_code_ram;
 
@@ -954,23 +954,23 @@ mc_c_decl {
 #endif
 
 bool
-mck_has_same_module(mc_core_id_t dst_id) mc_external_code_ram;
+mck_has_same_module(mc_workeru_id_t dst_id) mc_external_code_ram;
 
 bool
 mck_has_module() mc_external_code_ram;
 
 bool
-mck_has_same_sub_module(mc_core_id_t dst_id) mc_external_code_ram;
+mck_has_same_sub_module(mc_workeru_id_t dst_id) mc_external_code_ram;
 
 bool
-mck_is_id_inited(mc_core_id_t dst_id) mc_external_code_ram;
+mck_is_id_inited(mc_workeru_id_t dst_id) mc_external_code_ram;
 
 bool
 mck_ck_type_sizes() mc_external_code_ram;
 
 //mc_opt_sz_fn 
 void 
-mck_send_irq(mc_core_id_t koid, uint16_t num_irq) mc_external_code_ram;
+mck_send_irq(mc_workeru_id_t koid, uint16_t num_irq) mc_external_code_ram;
 
 #ifdef __cplusplus
 }

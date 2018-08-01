@@ -42,17 +42,17 @@ mcm_get_kernel(){
 }
 
 void 
-mck_send_irq(mc_core_id_t koid, uint16_t num_irq) {
+mck_send_irq(mc_workeru_id_t koid, uint16_t num_irq) {
 	mck_abort((mc_addr_t)mck_send_irq, mc_cstr("mck_send_irq abort"));
 }
 
 kernel* //static 
-kernel::get_core_kernel(mc_core_id_t id){
-	mc_core_nn_t nn = mc_id_to_nn(id);
+kernel::get_workeru_kernel(mc_workeru_id_t id){
+	mc_workeru_nn_t nn = mc_id_to_nn(id);
 	PTD_CK((0 <= nn) && (nn < TOT_THREADS));
 	thread_info_t* info = &(ALL_THREADS_INFO[nn]);
 	if(info->thd_ptd.ptd_glb_sys_data.inited_core != id){
-		PTD_PRT("kernel::get_core_kernel ID=%p ------------\n", (void*)(uintptr_t)id);
+		PTD_PRT("kernel::get_workeru_kernel ID=%p ------------\n", (void*)(uintptr_t)id);
 		return mc_null;
 	}
 	return &(info->thd_ptd.ptd_THE_KERNEL);

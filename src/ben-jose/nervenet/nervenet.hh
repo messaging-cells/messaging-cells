@@ -707,7 +707,7 @@ public:
 
 	binder	all_delayed;
 
-	mc_core_nn_t num_inert_chdn;
+	mc_workeru_nn_t num_inert_chdn;
 
 	num_nod_t inp_neus;
 	num_nod_t off_neus;
@@ -895,8 +895,8 @@ public:
 	grip	all_pos;
 	grip	all_neg;
 
-	mc_core_nn_t sync_tot_children;
-	mc_core_id_t sync_parent_id;
+	mc_workeru_nn_t sync_tot_children;
+	mc_workeru_id_t sync_parent_id;
 	mc_load_map_st* sync_map;
 
 	netstate	act_left_side;
@@ -957,7 +957,7 @@ public:
 	void sornet_dbg_bin_handler(missive* msv) bj_sornet_cod;
 
 
-	nervenet* get_nervenet(mc_core_id_t core_id);
+	nervenet* get_nervenet(mc_workeru_id_t core_id);
 
 	netstate& get_active_netstate(net_side_t sd);
 

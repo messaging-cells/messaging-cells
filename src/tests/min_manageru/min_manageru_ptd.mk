@@ -50,6 +50,6 @@ SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_
 
 SRC_INCDIRS := ${MC_STD_INCDIRS}
 
-SOURCES := min_core_ptd.cpp min_manageru.cpp
+SOURCES := min_workeru_ptd.cpp min_manageru.cpp
 
 

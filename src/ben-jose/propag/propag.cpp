@@ -532,7 +532,7 @@ netstate::send_up_confl_tok(sync_tok_t the_tok, num_tier_t the_ti, nervenode* th
 {
 	PTD_CK((the_tok == bj_tok_sync_confl_up_neu) || (the_tok == bj_tok_sync_confl_up_pol));
 
-	mc_core_id_t pnt_id = bj_nervenet->sync_parent_id;
+	mc_workeru_id_t pnt_id = bj_nervenet->sync_parent_id;
 	if(pnt_id != 0){
 		nervenet* pnt_net = bj_nervenet->get_nervenet(pnt_id);
 		send_sync_transmitter(tiki_propag, pnt_net, the_tok, the_ti, the_cfl);
@@ -629,7 +629,7 @@ neuron::propag_start_nxt_tier(signal_data* dat){
 }
 
 void bj_propag_main() {
-	mc_core_nn_t nn = kernel::get_core_nn();
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
 	kernel::set_handlers(1, bj_nil_handlers);
 	bj_propag_init_handlers();
@@ -646,7 +646,7 @@ void bj_propag_main() {
 	nervenet* my_net = bj_nervenet;
 	my_net->init_sync_cycle();
 
-	PTD_CODE(if(kernel::get_core_nn() == 0){ ptd_prt_tok_codes(); });
+	PTD_CODE(if(kernel::get_workeru_nn() == 0){ ptd_prt_tok_codes(); });
 
 	mck_ilog(sizeof(mck_glb_sys_st));
 	mck_slog2("__dbg1.propag\n");

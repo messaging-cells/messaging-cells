@@ -129,7 +129,7 @@ mc_manageru_main(int argc, char *argv[])
 
 	//============================================================
 
-	mc_core_co_t row, col, max_row, max_col;
+	mc_workeru_co_t row, col, max_row, max_col;
 
 	void* min_shd = (void*)MCH_EXTERNAL_RAM_BASE_PT;
 	void* max_shd = (void*)(MCH_EXTERNAL_RAM_BASE_PT + lk_dat->extnl_ram_size);
@@ -183,8 +183,8 @@ mc_manageru_main(int argc, char *argv[])
 		if(!islocal && isonchip){
 			unsigned  globrow, globcol;
 			ee_get_coords_from_id(&dev, coreid, &globrow, &globcol);
-			mc_core_co_t g_ro = mc_id_to_ro(coreid);
-			mc_core_co_t g_co = mc_id_to_co(coreid);
+			mc_workeru_co_t g_ro = mc_id_to_ro(coreid);
+			mc_workeru_co_t g_co = mc_id_to_co(coreid);
 
 			//printf("coreid=%p \n", (void*)coreid);
 			//printf("g_ro=%d globrow=%d\n", g_ro, globrow);

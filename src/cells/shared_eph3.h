@@ -54,9 +54,9 @@ mc_c_decl {
 #define mc_axis_mask	0x3f
 
 typedef uint32_t mc_addr_t;	//!< Type for epiphany addresses
-typedef uint16_t mc_core_id_t;	//!< Type for core ids
-typedef uint16_t mc_core_co_t;	//!< Type for core coordinates (row and col)
-typedef uint16_t mc_core_nn_t; //!< Type for core numbers (starts in 0)
+typedef uint16_t mc_workeru_id_t;	//!< Type for core ids
+typedef uint16_t mc_workeru_co_t;	//!< Type for core coordinates (row and col)
+typedef uint16_t mc_workeru_nn_t; //!< Type for core numbers (starts in 0)
 
 #define mc_addr_val_in_p16(p16) ((mc_addr_t)(mc_v32_of_p16(p16)))
 
@@ -74,8 +74,8 @@ typedef uint16_t mc_core_nn_t; //!< Type for core numbers (starts in 0)
 
 //! True 'addr' has 'id' (not zero id)
 #define mc_addr_has_id(addr) mc_addr_mask_id(addr)
-//! Returns the id part of 'addr' as mc_core_id_t value
-#define mc_addr_get_id(addr) ((mc_core_id_t)(mc_addr_mask_id(addr) >> mc_glb_addr_sz))
+//! Returns the id part of 'addr' as mc_workeru_id_t value
+#define mc_addr_get_id(addr) ((mc_workeru_id_t)(mc_addr_mask_id(addr) >> mc_glb_addr_sz))
 //! Sets the id part of 'addr' with 'id'
 #define mc_addr_set_id(id, addr) ((mc_addr_t)((((mc_addr_t)(id)) << mc_glb_addr_sz) | mc_addr_mask_ad(addr)))
 

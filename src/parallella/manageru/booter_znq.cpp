@@ -49,7 +49,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 //=====================================================================================
 
-mc_core_id_t mch_first_load_core_nn = 0;
+mc_workeru_id_t mch_first_load_workeru_nn = 0;
 
 uint8_t* MCH_EXTERNAL_RAM_BASE_PT = mc_null;
 
@@ -62,34 +62,34 @@ e_mem_t mch_glb_emem;
 e_epiphany_t mch_glb_dev;
 
 void
-print_core_info(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
+print_workeru_info(mc_off_workeru_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
 	mck_glb_sys_st* pt_inco = 
 		(mck_glb_sys_st*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
-	mch_prt_in_core_shd_dat(pt_inco);
+	mch_prt_in_workeru_shd_dat(pt_inco);
 
 	if(pt_inco->dbg_stack_trace != mc_null){
 		void** 	pt_trace = (void**)mc_manageru_eph_loc_addr_to_znq_addr(
 			row, col, (mc_addr_t)(pt_inco->dbg_stack_trace));;
-		mch_prt_core_call_stack(mch_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
+		mch_prt_workeru_call_stack(mch_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
 	}
 }
 
 void
-print_exception_case(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
+print_exception_case(mc_off_workeru_st* sh_dat_1, e_epiphany_t* dev, unsigned row, unsigned col){
 	mck_glb_sys_st* pt_inco = 
 		(mck_glb_sys_st*)mc_manageru_eph_loc_addr_to_znq_addr(row, col, (mc_addr_t)(sh_dat_1->core_data));
 
 	if(pt_inco->exception_code != mck_invalid_exception){
 		//mch_prt_exception(pt_inco);
-		mch_prt_in_core_shd_dat(pt_inco);
+		mch_prt_in_workeru_shd_dat(pt_inco);
 	}
 	if(pt_inco->dbg_error_code != 0){
-		mch_prt_in_core_shd_dat(pt_inco);
+		mch_prt_in_workeru_shd_dat(pt_inco);
 	}
 	if(pt_inco->dbg_stack_trace != mc_null){
 		mc_addr_t eph_addr = (mc_addr_t)(pt_inco->dbg_stack_trace);
 		void** 	pt_trace = (void**)mc_manageru_eph_loc_addr_to_znq_addr(row, col, eph_addr);
-		mch_prt_core_call_stack(mch_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
+		mch_prt_workeru_call_stack(mch_epiphany_elf_path, MC_MAX_CALL_STACK_SZ, pt_trace);
 	}
 }
 
@@ -169,7 +169,7 @@ mc_manageru_init(){
 	ld_dat.cols = platform.cols;
 	ld_dat.all_module_names = NULL;
 	ld_dat.all_module_addrs = NULL;
-	ld_dat.root_nn = mch_first_load_core_nn;
+	ld_dat.root_nn = mch_first_load_workeru_nn;
 
 	e_reset_group(&dev);
 
@@ -200,15 +200,15 @@ mc_manageru_init(){
 	pt_shd_data->pt_host_kernel = mc_null;
 	pt_shd_data->tot_modules = mcl_module_names_sz;
 
-	pt_shd_data->first_load_core_id = mc_nn_to_id(mch_first_load_core_nn);
+	pt_shd_data->first_load_workeru_id = mc_nn_to_id(mch_first_load_workeru_nn);
 }
 
 void
 mc_start_first_core(){
 	e_epiphany_t & dev = mch_glb_dev;
-	mc_core_co_t row, col;
-	row = mc_nn_to_ro(mch_first_load_core_nn);
-	col = mc_nn_to_co(mch_first_load_core_nn);
+	mc_workeru_co_t row, col;
+	row = mc_nn_to_ro(mch_first_load_workeru_nn);
+	col = mc_nn_to_co(mch_first_load_workeru_nn);
 	e_start(&dev, row, col);
 }
 
@@ -229,9 +229,9 @@ mc_manageru_run(){
 	//mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 	mc_off_sys_st* pt_shd_data = mcz_pt_external_host_data_obj;
 
-	mc_core_co_t row, col, max_row, max_col;
-	mc_core_nn_t tot_cores;
-	mc_core_id_t core_id;
+	mc_workeru_co_t row, col, max_row, max_col;
+	mc_workeru_nn_t tot_cores;
+	mc_workeru_id_t core_id;
 	char f_nm[200];
 
 	//max_row = 1;
@@ -254,12 +254,12 @@ mc_manageru_run(){
 		for (col=0; col < max_col; col++){
 			//core_id = (row + platform.row) * 64 + col + platform.col;
 			core_id = mc_ro_co_to_id(row, col);
-			mc_core_nn_t num_core = mc_id_to_nn(core_id);
+			mc_workeru_nn_t num_core = mc_id_to_nn(core_id);
 
 			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
 			memset(&f_nm, 0, sizeof(f_nm));
-			sprintf(f_nm, "log_core_%02d.txt", num_core);
+			sprintf(f_nm, "log_workeru_%02d.txt", num_core);
 
 			all_f_nam[num_core] = strdup((const char*)f_nm);
 			mch_reset_log_file(all_f_nam[num_core]);
@@ -275,7 +275,7 @@ mc_manageru_run(){
 			pt_shd_data->sys_cores[num_core].magic_id = MC_MAGIC_ID;
 			MCH_CK(pt_shd_data->sys_cores[num_core].magic_id == MC_MAGIC_ID);
 
-			mc_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+			mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
 			pt_buff->magic_id = MC_MAGIC_ID;
 			MCH_CK(pt_buff->magic_id == MC_MAGIC_ID);
@@ -322,9 +322,9 @@ mc_manageru_run(){
 			for (col=0; col < max_col; col++){
 				//core_id = (row + platform.row) * 64 + col + platform.col;
 				core_id = mc_ro_co_to_id(row, col);
-				mc_core_nn_t num_core = mc_id_to_nn(core_id);
-				mc_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
-				mc_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+				mc_workeru_nn_t num_core = mc_id_to_nn(core_id);
+				mc_off_workeru_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
+				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
 				// Wait for core program execution to start
 				if((sh_dat_1->core_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
@@ -338,7 +338,7 @@ mc_manageru_run(){
 						(sh_dat_1->is_finished == MC_FINISHED_VAL)
 				);
 
-				MCH_CK(sh_dat_1->ck_core_id == core_id);
+				MCH_CK(sh_dat_1->ck_workeru_id == core_id);
 				if(! core_started[num_core] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
 					core_started[num_core] = true;
 					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
@@ -354,7 +354,7 @@ mc_manageru_run(){
 
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == MC_WAITING_ENTER){
-							print_core_info(sh_dat_1, &dev, row, col);
+							print_workeru_info(sh_dat_1, &dev, row, col);
 							mch_get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == MC_WAITING_BUFFER){
@@ -381,7 +381,7 @@ mc_manageru_run(){
 						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						printf("Finished %d %p \n", num_core, (void*)(uintptr_t)(sh_dat_1->is_finished));
-						//print_core_info(sh_dat_1, &dev, row, col);
+						//print_workeru_info(sh_dat_1, &dev, row, col);
 						print_exception_case(sh_dat_1, &dev, row, col);
 					}
 
@@ -446,7 +446,7 @@ int main(int argc, char *argv[]) {
 void
 mc_start_all_cores(){
 	e_epiphany_t & dev = mch_glb_dev;
-	mc_core_co_t row, col, max_row, max_col;
+	mc_workeru_co_t row, col, max_row, max_col;
 
 	fprintf(stderr, "sizeof(int)=%d \n", sizeof(int));
 	fprintf(stderr, "sizeof(uint32_t)=%d \n", sizeof(uint32_t));

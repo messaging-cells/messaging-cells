@@ -186,12 +186,12 @@ public:
 	bool lft_ph_full;
 	bool rgt_ph_full;
 
-	mc_core_id_t	lft_stk_id;
-	mc_core_id_t	rgt_stk_id;
+	mc_workeru_id_t	lft_stk_id;
+	mc_workeru_id_t	rgt_stk_id;
 	chopstick*		lft_stick;
 	chopstick*		rgt_stick;
-	mc_core_id_t	lft_phi_id;
-	mc_core_id_t	rgt_phi_id;
+	mc_workeru_id_t	lft_phi_id;
+	mc_workeru_id_t	rgt_phi_id;
 	philosopher*	lft_philo;
 	philosopher*	rgt_philo;
 
@@ -364,7 +364,7 @@ chopstick::handler(missive* msv){
 	last_src = msv_src;
 	last_recv = tok;
 
-	mc_core_nn_t nn = mck_get_kernel()->get_core_nn();
+	mc_workeru_nn_t nn = mck_get_kernel()->get_workeru_nn();
 	PH_DBG_COD(
 		if(prt_recv_msgs){
 			PH_DBG("CHOP %d RECV %s \n", nn, tok_to_str(tok));
@@ -372,7 +372,7 @@ chopstick::handler(missive* msv){
 	)
 	if((nn == 0) || (nn >= 14)){
 		#ifdef PHILO_EPH_DBG
-			mc_core_id_t src_id = mc_addr_get_id(msv_src);
+			mc_workeru_id_t src_id = mc_addr_get_id(msv_src);
 			mck_slog2("CHOP_RECV____");
 			mck_slog2(tok_to_str(tok));
 			mck_slog2("___");
@@ -447,7 +447,7 @@ void
 philosopher::handler(missive* msv){
 	cell* msv_src = msv->src;
 	philo_tok_t tok = (philo_tok_t)msv->tok;
-	mc_core_nn_t nn = mck_get_kernel()->get_core_nn();
+	mc_workeru_nn_t nn = mck_get_kernel()->get_workeru_nn();
 	MC_MARK_USED(nn);
 
 	PH_DBG_COD(
@@ -533,10 +533,10 @@ philosopher::handler(missive* msv){
 					PH_DBG("I AM FULL \n");
 					PTD_LOG("I AM FULL \n");
 					mck_sprt2("I AM FULL____");
-					mck_iprt(mck_get_kernel()->get_core_nn());
+					mck_iprt(mck_get_kernel()->get_workeru_nn());
 					mck_sprt2("___\n");
 
-					PH_DBG_COD(mc_set_off_core_var(dbg_all_full[nn], true);)
+					PH_DBG_COD(mc_set_off_workeru_var(dbg_all_full[nn], true);)
 
 					send(lft_philo, tok_yes_full);
 					send(rgt_philo, tok_yes_full);
@@ -580,7 +580,7 @@ philosopher::call_exit(){
 	PTD_LOG("FINISHING \n");
 
 	//mck_sprt2("CALLING_EXIT____");
-	//mck_iprt(mck_get_kernel()->get_core_nn());
+	//mck_iprt(mck_get_kernel()->get_workeru_nn());
 	//mck_sprt2("___\n");
 
 	mck_get_kernel()->set_idle_exit();
@@ -680,12 +680,12 @@ philosopher::call_exit(){
 
 	void ker_func(){
 		kernel* ker = mck_get_kernel();
-		mc_core_nn_t nn = ker->get_core_nn();
+		mc_workeru_nn_t nn = ker->get_workeru_nn();
 		if(! ker->did_work && ! dbg_all_idle_prt[nn]){
-			mc_set_off_core_var(dbg_all_idle_prt[nn], true);
+			mc_set_off_workeru_var(dbg_all_idle_prt[nn], true);
 		}
 		if(ker->did_work && dbg_all_idle_prt[nn]){
-			mc_set_off_core_var(dbg_all_idle_prt[nn], false);
+			mc_set_off_workeru_var(dbg_all_idle_prt[nn], false);
 		}
 		philo_core* phl = dbg_all_philo[nn];
 
@@ -706,11 +706,11 @@ void mc_workerus_main() {
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	mc_core_nn_t nn = ker->get_core_nn();
+	mc_workeru_nn_t nn = ker->get_workeru_nn();
 
 	PH_DBG_COD(
-		mc_set_off_core_var(dbg_all_idle_prt[nn], false);
-		mc_set_off_core_var(dbg_all_full[nn], false);
+		mc_set_off_workeru_var(dbg_all_idle_prt[nn], false);
+		mc_set_off_workeru_var(dbg_all_full[nn], false);
 	)
 
 	philo_core* core_dat = philo_core::acquire_alloc();

@@ -42,8 +42,8 @@ mc_get_glb_sys_sz(){
 }
 
 
-mc_core_id_t 
-mck_get_core_id(){
+mc_workeru_id_t 
+mck_get_workeru_id(){
 	mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 	return mc_addr_get_id(lk_dat->extnl_host_alloc_orig);
 }

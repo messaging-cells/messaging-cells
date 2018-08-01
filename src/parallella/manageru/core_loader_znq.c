@@ -104,7 +104,7 @@ uint8_t*
 mc_memload(uint8_t* dest, const uint8_t* src, uint32_t sz){
 	uint32_t idx = 0;
 	for(idx = 0; idx < sz; idx++){
-		mc_set_off_core_var(dest[idx], src[idx]);
+		mc_set_off_workeru_var(dest[idx], src[idx]);
 	}
 	return dest;
 }
@@ -170,10 +170,10 @@ mc_start_load(load_info_t *ld_dat){
 
 	const char *executable = ld_dat->executable;
 	e_epiphany_t *dev = ld_dat->dev;
-	mc_core_co_t row = ld_dat->row;
-	mc_core_co_t col = ld_dat->col;
-	mc_core_co_t rows = ld_dat->rows;
-	mc_core_co_t cols = ld_dat->cols;
+	mc_workeru_co_t row = ld_dat->row;
+	mc_workeru_co_t col = ld_dat->col;
+	mc_workeru_co_t rows = ld_dat->rows;
+	mc_workeru_co_t cols = ld_dat->cols;
 
 	mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 
@@ -302,9 +302,9 @@ mc_eph_addr_to_znq_addr(mc_addr_t eph_addr){
 	
 	mc_addr_t znq_addr = mc_null;
 	if (mc_addr_in_sys(eph_addr)) {
-		mc_core_id_t coreid = mc_addr_get_id(eph_addr);
-		mc_core_co_t g_ro = mc_id_to_ro(coreid);
-		mc_core_co_t g_co = mc_id_to_co(coreid);
+		mc_workeru_id_t coreid = mc_addr_get_id(eph_addr);
+		mc_workeru_co_t g_ro = mc_id_to_ro(coreid);
+		mc_workeru_co_t g_co = mc_id_to_co(coreid);
 
 		znq_addr = ((mc_addr_t) dev->core[g_ro][g_co].mems.base) + mc_addr_get_disp(eph_addr);
 
@@ -380,7 +380,7 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 	MCH_CK(dev == &mch_glb_dev);
 	MCH_CK(emem == &mch_glb_emem);
 
-	mc_core_id_t curr_id = mc_ro_co_to_id(row, col);
+	mc_workeru_id_t curr_id = mc_ro_co_to_id(row, col);
 	MCL_MARK_USED(curr_id);
 
 	ehdr = (Elf32_Ehdr *) &src[0];
@@ -506,8 +506,8 @@ mcl_load_root(load_info_t *ld_dat){
 		return E_ERR;
 	}
 
-	mc_core_co_t root_ro = mc_nn_to_ro(ld_dat->root_nn);
-	mc_core_co_t root_co = mc_nn_to_co(ld_dat->root_nn);
+	mc_workeru_co_t root_ro = mc_nn_to_ro(ld_dat->root_nn);
+	mc_workeru_co_t root_co = mc_nn_to_co(ld_dat->root_nn);
 
 	e_return_stat_t retval = 
 		mcl_load_elf(root_ro, root_co, ld_dat);

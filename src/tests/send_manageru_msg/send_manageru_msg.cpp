@@ -34,10 +34,10 @@ Our Resurrected and Living, both in Body and Spirit,
 
 #include "resp_conf.h"
 
-void recv_core_handler(missive* msg);
+void recv_workeru_handler(missive* msg);
 
 void 
-recv_core_handler(missive* msg){
+recv_workeru_handler(missive* msg){
 	PTD_CK(mc_addr_is_local(msg->dst));
 
 	mck_sprt2("CORE_GOT_RESPONSE\n");
@@ -48,7 +48,7 @@ recv_core_handler(missive* msg){
 
 missive_handler_t core_handlers[] = {
 	mc_null,
-	recv_core_handler
+	recv_workeru_handler
 };
 
 void mc_workerus_main() {
@@ -59,7 +59,7 @@ void mc_workerus_main() {
 	agent_ref::separate(mc_out_num_cores);
 	agent_grp::separate(mc_out_num_cores);
 
-	kernel::get_core_cell()->handler_idx = 1;
+	kernel::get_workeru_cell()->handler_idx = 1;
 
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
@@ -69,7 +69,7 @@ void mc_workerus_main() {
 
 		kernel::set_handlers(2, core_handlers);
 
-		cell* act1 = kernel::get_core_cell();
+		cell* act1 = kernel::get_workeru_cell();
 		cell* act2 = kernel::get_host_cell();
 
 		PTD_CK_PRT((mc_addr_get_id((mc_addr_t)act2) != 0), "act2 = %p\n", act2);

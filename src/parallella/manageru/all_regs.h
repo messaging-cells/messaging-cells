@@ -159,7 +159,7 @@ typedef enum {
 	MC_REG_MESHCFG          = MC_CORE_SP_REG_BASE + 0x0700,
 	MC_REG_COREID           = MC_CORE_SP_REG_BASE + 0x0704,
 	MC_REG_CORE_RESET       = MC_CORE_SP_REG_BASE + 0x070c,
-} mc_core_reg_id_t;
+} mc_workeru_reg_id_t;
 
 // Chip registers
 typedef enum {

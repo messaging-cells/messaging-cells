@@ -40,9 +40,9 @@ mc_get_glb_sys_sz(){
 	return &(mck_get_ptd_info()->ptd_system_sz);
 }
 
-mc_core_id_t 
-mck_get_core_id(){
-	return mck_get_ptd_info()->ptd_core_id;
+mc_workeru_id_t 
+mck_get_workeru_id(){
+	return mck_get_ptd_info()->ptd_workeru_id;
 }
 
 mc_addr_t

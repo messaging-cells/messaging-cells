@@ -50,25 +50,25 @@ mc_c_decl {
 #define mc_axis_mask	0x3f
 
 typedef uintptr_t mc_addr_t;
-typedef uint16_t mc_core_id_t;	// e_coreid_t
-typedef uint16_t mc_core_co_t;
-typedef uint16_t mc_core_nn_t;
+typedef uint16_t mc_workeru_id_t;	// e_coreid_t
+typedef uint16_t mc_workeru_co_t;
+typedef uint16_t mc_workeru_nn_t;
 
 //define mc_addr_val_in_p16(p16) ((mc_addr_t)(mc_v32_of_p16(p16)))
 
 //======================================================================
 // address macros
 
-mc_core_id_t
-mcm_get_addr_core_id_fn(void*);
+mc_workeru_id_t
+mcm_get_addr_workeru_id_fn(void*);
 
 void*
-mcm_addr_with_fn(mc_core_id_t id, void* addr);
+mcm_addr_with_fn(mc_workeru_id_t id, void* addr);
 
 #define mc_addr_has_id(addr) true
-#define mc_addr_get_id(addr) mcm_get_addr_core_id_fn((void*)(addr))
+#define mc_addr_get_id(addr) mcm_get_addr_workeru_id_fn((void*)(addr))
 #define mc_addr_set_id(id, addr) mcm_addr_with_fn((id), (void*)(addr))
-#define mc_addr_has_local_id(addr) (mc_addr_get_id(addr) == MC_CORE_INFO->the_core_id)
+#define mc_addr_has_local_id(addr) (mc_addr_get_id(addr) == MC_CORE_INFO->the_workeru_id)
 #define mc_addr_is_local(addr) mc_addr_has_local_id(addr)
 
 #define mc_addr_get_disp(addr) ((mc_addr_t)(addr))

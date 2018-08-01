@@ -108,19 +108,19 @@ mc_rr_init(mc_rrarray_st* arr, uint16_t sz, uint8_t* dat, uint8_t reset){
 	if(arr == mc_null){
 		return;
 	}
-	mc_set_off_core_var(arr->magic_id, MC_MAGIC_ID);
-	mc_set_off_core_var(arr->data, dat);
+	mc_set_off_workeru_var(arr->magic_id, MC_MAGIC_ID);
+	mc_set_off_workeru_var(arr->data, dat);
 	if(reset){
 		mc_memset(arr->data, 0, sz);
 	}
 	
-	mc_set_off_core_var(arr->end_data, (dat + sz));
-	mc_set_off_core_var(arr->wr_obj, arr->data);
-	mc_set_off_core_var(arr->rd_obj, arr->data);
+	mc_set_off_workeru_var(arr->end_data, (dat + sz));
+	mc_set_off_workeru_var(arr->wr_obj, arr->data);
+	mc_set_off_workeru_var(arr->rd_obj, arr->data);
 	
-	mc_set_off_core_var(arr->num_wr_errs, 0);
-	mc_set_off_core_var(arr->wr_err, 0);
-	mc_set_off_core_var(arr->rd_err, 0);
+	mc_set_off_workeru_var(arr->num_wr_errs, 0);
+	mc_set_off_workeru_var(arr->wr_err, 0);
+	mc_set_off_workeru_var(arr->rd_err, 0);
 }
 
 uint16_t
@@ -170,15 +170,15 @@ mc_rr_read_obj(mc_rrarray_st* arr, uint16_t omc_sz, uint8_t* obj){
 	uint8_t* dat = arr->rd_obj;
 	uint16_t osz = mc_rr_get_v16(arr, &dat);
 	if(osz == 0){
-		mc_set_off_core_var(arr->rd_err, -1);
+		mc_set_off_workeru_var(arr->rd_err, -1);
 		return 0;
 	}
 	if(osz > omc_sz){
-		mc_set_off_core_var(arr->rd_err, -2);
+		mc_set_off_workeru_var(arr->rd_err, -2);
 		return 0;
 	}
 	if(osz > (arr->end_data - arr->data)){
-		mc_set_off_core_var(arr->rd_err, -3);
+		mc_set_off_workeru_var(arr->rd_err, -3);
 		return 0;
 	}
 	uint16_t ii;
@@ -192,7 +192,7 @@ mc_rr_read_obj(mc_rrarray_st* arr, uint16_t omc_sz, uint8_t* obj){
 	uint16_t tcrc16 = mc_rr_get_v16(arr, &dat);
 	uint16_t rcrc16 = mc_crc16(obj, osz);
 	if(tcrc16 != rcrc16){
-		mc_set_off_core_var(arr->rd_err, -4);
+		mc_set_off_workeru_var(arr->rd_err, -4);
 		return 0;
 	}
 	uint8_t* dat2 = arr->rd_obj;
@@ -203,7 +203,7 @@ mc_rr_read_obj(mc_rrarray_st* arr, uint16_t omc_sz, uint8_t* obj){
 		(*dat2) = 0;
 		dat2++;
 	}
-	mc_set_off_core_var(arr->rd_obj, dat2);
+	mc_set_off_workeru_var(arr->rd_obj, dat2);
 	return osz;
 }
 
@@ -216,15 +216,15 @@ mc_rr_write_obj(mc_rrarray_st* arr, uint16_t omc_sz, uint8_t* obj){
 	uint32_t nme = arr->num_wr_errs;
 	uint16_t osz = omc_sz;
 	if(osz > ((arr->end_data - arr->data) - (2 * sizeof(uint16_t)))){
-		mc_set_off_core_var(arr->wr_err, -1);
+		mc_set_off_workeru_var(arr->wr_err, -1);
 		nme++;
-		mc_set_off_core_var(arr->num_wr_errs, nme);
+		mc_set_off_workeru_var(arr->num_wr_errs, nme);
 		return 0;
 	}
 	if(osz <= 0){
-		mc_set_off_core_var(arr->wr_err, -2);
+		mc_set_off_workeru_var(arr->wr_err, -2);
 		nme++;
-		mc_set_off_core_var(arr->num_wr_errs, nme);
+		mc_set_off_workeru_var(arr->num_wr_errs, nme);
 		return 0;
 	}
 	uint16_t w_sz = omc_sz + (3 * sizeof(uint16_t));
@@ -240,9 +240,9 @@ mc_rr_write_obj(mc_rrarray_st* arr, uint16_t omc_sz, uint8_t* obj){
 		dat2++;
 	}
 	if(dat2 == 0){
-		mc_set_off_core_var(arr->wr_err, -3);
+		mc_set_off_workeru_var(arr->wr_err, -3);
 		nme++;
-		mc_set_off_core_var(arr->num_wr_errs, nme);
+		mc_set_off_workeru_var(arr->num_wr_errs, nme);
 		return 0;
 	}
 	uint8_t* dat = arr->wr_obj;
@@ -257,7 +257,7 @@ mc_rr_write_obj(mc_rrarray_st* arr, uint16_t omc_sz, uint8_t* obj){
 	}
 	uint16_t rcrc16 = mc_crc16(obj, osz);
 	mc_rr_set_v16(arr, &dat, rcrc16);
-	mc_set_off_core_var(arr->wr_obj, dat); 
+	mc_set_off_workeru_var(arr->wr_obj, dat); 
 	return osz;
 }
 

@@ -77,12 +77,12 @@ mck_timer0_handler(void); // ivt_entry_timer0
 	}
 
 	#define mck_simple_abort(func, excode) \
-		mck_glb_sys_st* in_core_pt = MC_CORE_INFO; \
-		in_core_pt->exception_code = excode; \
-		in_core_pt->dbg_error_code = (mc_addr_t)(func); \
-		mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt; \
-		if((off_core_pt != mc_null) && (off_core_pt->magic_id == MC_MAGIC_ID)){ \
-			off_core_pt->is_finished = MC_FINISHED_VAL; \
+		mck_glb_sys_st* in_workeru_pt = MC_CORE_INFO; \
+		in_workeru_pt->exception_code = excode; \
+		in_workeru_pt->dbg_error_code = (mc_addr_t)(func); \
+		mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt; \
+		if((off_workeru_pt != mc_null) && (off_workeru_pt->magic_id == MC_MAGIC_ID)){ \
+			off_workeru_pt->is_finished = MC_FINISHED_VAL; \
 		} \
 		mc_asm("trap 0x3"); \
 

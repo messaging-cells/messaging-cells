@@ -100,12 +100,12 @@ struct load_info_st {
 	char *executable;
 	e_epiphany_t *dev;
 
-	mc_core_nn_t root_nn;
+	mc_workeru_nn_t root_nn;
 
-	mc_core_co_t row;
-	mc_core_co_t col;
-	mc_core_co_t rows;
-	mc_core_co_t cols;
+	mc_workeru_co_t row;
+	mc_workeru_co_t col;
+	mc_workeru_co_t rows;
+	mc_workeru_co_t cols;
 
 	char**	all_module_names;
 	void**	all_module_addrs;	// as seen from ephiphany side

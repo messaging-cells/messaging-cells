@@ -26,8 +26,8 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	pre_sornode* nod = pre_sornode::acquire();
 	MCK_CK(nod != mc_null);
 	
-	mc_core_nn_t ptd_up_nid = 0;
-	mc_core_nn_t ptd_down_nid = 0;
+	mc_workeru_nn_t ptd_up_nid = 0;
+	mc_workeru_nn_t ptd_down_nid = 0;
 	MC_MARK_USED(ptd_up_nid);
 	MC_MARK_USED(ptd_down_nid);
 	
@@ -63,7 +63,7 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 
 	if(THE_CNF != mc_null){
 		long num_cores = THE_CNF->tot_cores;
-		mc_core_nn_t& nxt_nn = prms.arr_lvs[nod->level];
+		mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
 		PTD_CK(nxt_nn < num_cores);
 
 		nod->nod_nn = nxt_nn;
@@ -154,7 +154,7 @@ create_sornet(num_nod_t num_to_sort){
 	}
 
 	prms.tot_lvs = get_tot_levels(prms.tot_nods);
-	prms.arr_lvs = (mc_core_nn_t*)calloc(prms.tot_lvs, sizeof(mc_core_nn_t));
+	prms.arr_lvs = (mc_workeru_nn_t*)calloc(prms.tot_lvs, sizeof(mc_workeru_nn_t));
 
 	create_net_sorter(0, prms.tot_nods, prms);
 

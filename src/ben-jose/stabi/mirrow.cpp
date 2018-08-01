@@ -199,7 +199,7 @@ nervenet::mirrow_nervenet(){
 void bj_mirrow_main() {
 	mck_set_sub_module_id(BJ_STABI_SUB_MODULE_MIRROW);
 
-	mc_core_nn_t nn = kernel::get_core_nn();
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
 	kernel::set_handlers(1, bj_nil_handlers);
 	bj_mirrow_init_handlers();

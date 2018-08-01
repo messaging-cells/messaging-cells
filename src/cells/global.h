@@ -71,12 +71,12 @@ struct mc_aligned mck_glb_sys_def {
 	mc_addr_t	znq_shd_mem_base;
 	mc_addr_t	eph_shd_mem_base;
 
-	mc_core_id_t the_core_id;
-	mc_core_nn_t the_core_nn;
-	mc_core_co_t the_core_ro;
-	mc_core_co_t the_core_co;
+	mc_workeru_id_t the_workeru_id;
+	mc_workeru_nn_t the_workeru_nn;
+	mc_workeru_co_t the_workeru_ro;
+	mc_workeru_co_t the_workeru_co;
 
-	mc_core_id_t		inited_core;
+	mc_workeru_id_t		inited_core;
 	mck_exception_t 	exception_code;
 	
 	uint16_t 	binder_sz;
@@ -91,13 +91,13 @@ struct mc_aligned mck_glb_sys_def {
 
 	uint32_t 	magic_end;
 
-	mc_off_core_st* off_core_pt;
+	mc_off_workeru_st* off_workeru_pt;
 	mc_rrarray_st* 	write_rrarray;
 	uint8_t 		dbg_out_str[MC_MAX_STR_SZ];
 
 	mc_addr_t		current_module_addr;
 	uint8_t			current_sub_module_id;
-	void*			pt_core_kernel;
+	void*			pt_workeru_kernel;
 
 	EPH_CODE(
 		void* 		mck_dbg_call_stack_trace[MC_MAX_CALL_STACK_SZ];
@@ -264,22 +264,22 @@ void mc_manageru_init() mc_external_code_ram;
 void mc_manageru_run() mc_external_code_ram;
 void mc_manageru_finish() mc_external_code_ram;
 
-extern mc_core_nn_t mch_first_load_core_nn;
+extern mc_workeru_nn_t mch_first_load_workeru_nn;
 extern char* mch_epiphany_elf_path;
 extern void mc_workerus_main() mc_external_code_ram;
 extern int mc_manageru_main(int argc, char *argv[]) mc_external_code_ram;
 
 //! True if this core is in row 'ro' and column 'co'
 #define mck_is_ro_co_core(ro, co) \
-	((MC_CORE_INFO->the_core_ro == (ro)) && (MC_CORE_INFO->the_core_co == (co)))
+	((MC_CORE_INFO->the_workeru_ro == (ro)) && (MC_CORE_INFO->the_workeru_co == (co)))
 
 //! True if this core has number 'nn'
-#define mck_is_nn_core(nn) (MC_CORE_INFO->the_core_nn == (nn))
+#define mck_is_nn_core(nn) (MC_CORE_INFO->the_workeru_nn == (nn))
 
 //! True if this core has id 'id'
-#define mck_is_id_core(id) (MC_CORE_INFO->the_core_id == (id))
+#define mck_is_id_core(id) (MC_CORE_INFO->the_workeru_id == (id))
 
-#define mck_has_off_core (MC_CORE_INFO->off_core_pt != mc_null)
+#define mck_has_off_core (MC_CORE_INFO->off_workeru_pt != mc_null)
 
 #ifdef __cplusplus
 }

@@ -56,7 +56,7 @@ mck_glb_init(bool is_host) {
 	mck_glb_sys_st* glb_dat = MCK_FIRST_GLB_SYS;
 	mc_memset((uint8_t*)glb_dat, 0, sizeof(mck_glb_sys_st));
 
-	glb_dat->off_core_pt = mc_null;
+	glb_dat->off_workeru_pt = mc_null;
 	glb_dat->write_rrarray = mc_null;
 
 	mc_sys_sz_st* sys_sz = MC_SYS_SZ;
@@ -69,51 +69,51 @@ mck_glb_init(bool is_host) {
 	MCK_PT_EXTERNAL_HOST_DATA->pt_this_from_eph = MCK_PT_EXTERNAL_HOST_DATA;	// should be same for all cores
 	
 	// glb_sys_sz init
-	mc_core_id_t koid = mck_get_core_id();
+	mc_workeru_id_t koid = mck_get_workeru_id();
 	mc_memset((uint8_t*)sys_sz, 0, sizeof(mc_sys_sz_st));
 	*sys_sz = MCK_PT_EXTERNAL_HOST_DATA->wrk_sys;
 
 	// num_core init
-	mc_core_nn_t num_core = mc_id_to_nn(koid);
+	mc_workeru_nn_t num_core = mc_id_to_nn(koid);
 
 	glb_dat->magic_id = MC_MAGIC_ID;
 	glb_dat->dbg_stack_trace = mc_null;
 	glb_dat->magic_end = MC_MAGIC_END;	
 	glb_dat->znq_shd_mem_base = MCK_PT_EXTERNAL_HOST_DATA->znq_shared_mem_base;
 	glb_dat->eph_shd_mem_base = MCK_PT_EXTERNAL_HOST_DATA->eph_shared_mem_base;
-	glb_dat->the_core_id = koid;
-	glb_dat->the_core_ro = mc_id_to_ro(koid);
-	glb_dat->the_core_co = mc_id_to_co(koid);
-	glb_dat->the_core_nn = num_core;
+	glb_dat->the_workeru_id = koid;
+	glb_dat->the_workeru_ro = mc_id_to_ro(koid);
+	glb_dat->the_workeru_co = mc_id_to_co(koid);
+	glb_dat->the_workeru_nn = num_core;
 	glb_dat->current_module_addr = (mc_addr_t)mc_null;
 	glb_dat->current_sub_module_id = 0;
-	glb_dat->pt_core_kernel = mc_null;
+	glb_dat->pt_workeru_kernel = mc_null;
 
 	if(num_core < mc_out_num_cores){
-		glb_dat->off_core_pt = &((MCK_PT_EXTERNAL_HOST_DATA->sys_cores)[num_core]);
+		glb_dat->off_workeru_pt = &((MCK_PT_EXTERNAL_HOST_DATA->sys_cores)[num_core]);
 		if((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core].magic_id != MC_MAGIC_ID){
 			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_2.\n"));
 		}
 
-		mc_core_out_st* out_st = &((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core]);
+		mc_workeru_out_st* out_st = &((MCK_PT_EXTERNAL_HOST_DATA->sys_out_buffs)[num_core]);
 
 		glb_dat->write_rrarray = &(out_st->wr_arr);
 		mc_rr_init(glb_dat->write_rrarray, MC_OUT_BUFF_SZ, out_st->buff, 0);
 
-		if(glb_dat->off_core_pt->magic_id != MC_MAGIC_ID){
+		if(glb_dat->off_workeru_pt->magic_id != MC_MAGIC_ID){
 			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init_case_3.\n"));
 		}
 
-		// glb_dat->off_core_pt init	
-		//mc_set_off_core_var(glb_dat->off_core_pt->magic_id, MC_MAGIC_ID);
+		// glb_dat->off_workeru_pt init	
+		//mc_set_off_workeru_var(glb_dat->off_workeru_pt->magic_id, MC_MAGIC_ID);
 		void* glb_dat_wid = (void*)mc_addr_set_id(koid, glb_dat);
 		MC_MARK_USED(glb_dat_wid);
 
-		mc_set_off_core_var(glb_dat->off_core_pt->ck_core_id, koid);
-		mc_set_off_core_var(glb_dat->off_core_pt->core_data, glb_dat_wid);
+		mc_set_off_workeru_var(glb_dat->off_workeru_pt->ck_workeru_id, koid);
+		mc_set_off_workeru_var(glb_dat->off_workeru_pt->core_data, glb_dat_wid);
 		
 		mck_set_finished(MC_NOT_FINISHED_VAL);
-		mc_set_off_core_var(glb_dat->off_core_pt->is_waiting, MC_NOT_WAITING);
+		mc_set_off_workeru_var(glb_dat->off_workeru_pt->is_waiting, MC_NOT_WAITING);
 	}
 
 	EPH_CODE(
@@ -143,9 +143,9 @@ mc_extnl_ram_load_data_fill(mc_link_syms_data_st* syms){
 
 void 
 mck_set_finished(uint8_t val) {
-	mc_off_core_st* off_core_pt = MC_CORE_INFO->off_core_pt; 
-	if(off_core_pt != mc_null){
-		mc_set_off_core_var(off_core_pt->is_finished, val);
+	mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt; 
+	if(off_workeru_pt != mc_null){
+		mc_set_off_workeru_var(off_workeru_pt->is_finished, val);
 	}
 }
 

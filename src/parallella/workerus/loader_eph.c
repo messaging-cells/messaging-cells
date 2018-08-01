@@ -35,9 +35,9 @@ Our Resurrected and Living, both in Body and Spirit,
 #include "all_regs.h"
 #include "umm_malloc.h"
 
-mc_core_id_t 		mcz_parent_broadcast_core_id;
+mc_workeru_id_t 		mcz_parent_broadcast_workeru_id;
 mc_load_map_st* 	mcz_broadcast_map;
-mc_core_nn_t 		mcz_tot_children;
+mc_workeru_nn_t 		mcz_tot_children;
 
 mc_load_map_st* mck_first_load_map;  // in shared mem
 
@@ -76,13 +76,13 @@ mc_load_map(){
 	mcz_tot_children = 0;
 
 	mc_load_map_st* mp = mcz_broadcast_map;
-	mc_core_id_t koid = mck_get_core_id();
+	mc_workeru_id_t koid = mck_get_workeru_id();
 
 	/*
 	mck_sprt("K=");
 	mck_xprt(koid);
 	mck_sprt("_P=");
-	mck_xprt(mcz_parent_broadcast_core_id);
+	mck_xprt(mcz_parent_broadcast_workeru_id);
 	mck_sprt("_\n");
 
 	mck_sprt("STARTING_LOAD_MAP core___");
@@ -97,7 +97,7 @@ mc_load_map(){
 	*/
 
 	if(mp == mc_null){
-		if(MCK_PT_EXTERNAL_HOST_DATA->first_load_core_id != koid){
+		if(MCK_PT_EXTERNAL_HOST_DATA->first_load_workeru_id != koid){
 			mck_abort((mc_addr_t)err_loader_eph_01, err_loader_eph_01);
 		}
 		if(mck_first_load_map != mc_null){
@@ -116,7 +116,7 @@ mc_load_map(){
 	//mck_ilog(mcz_broadcast_map->num_core);
 	//mck_slog("___\n");
 
-	mc_core_id_t* pt_parent = &mcz_parent_broadcast_core_id;
+	mc_workeru_id_t* pt_parent = &mcz_parent_broadcast_workeru_id;
 	mc_load_map_st** pt_ld_map = &mcz_broadcast_map;
 
 	if(mp->childs == mc_null){ return; }
@@ -131,20 +131,20 @@ mc_load_map(){
 	int aa = 0;
 	mc_load_map_st* ch_map = (mp->childs)[aa];
 	while(ch_map != mc_null){
-		mc_core_id_t ch_id = mc_nn_to_id(ch_map->num_core);
+		mc_workeru_id_t ch_id = mc_nn_to_id(ch_map->num_core);
 
 		uint8_t* dst = (uint8_t*)mc_addr_set_id(ch_id, 0x0);
 
-		mc_memcpy(dst, (uint8_t*)0x0, mc_core_tot_mem);
+		mc_memcpy(dst, (uint8_t*)0x0, mc_workeru_tot_mem);
 
 		unsigned *ivt = (unsigned*)mc_addr_set_id(ch_id, 0x0);
-		mc_set_off_core_var(*ivt, mck_original_ivt_0);
+		mc_set_off_workeru_var(*ivt, mck_original_ivt_0);
 
 		mc_load_map_st** ch_ld_map = (mc_load_map_st**)mc_addr_set_id(ch_id, pt_ld_map);
-		mc_set_off_core_var(*ch_ld_map, ch_map);
+		mc_set_off_workeru_var(*ch_ld_map, ch_map);
 
-		mc_core_id_t* ch_ld_parent = (mc_core_id_t*)mc_addr_set_id(ch_id, pt_parent);
-		mc_set_off_core_var(*ch_ld_parent, koid);
+		mc_workeru_id_t* ch_ld_parent = (mc_workeru_id_t*)mc_addr_set_id(ch_id, pt_parent);
+		mc_set_off_workeru_var(*ch_ld_parent, koid);
 
 		uint32_t* rem_reg = (uint32_t*)mc_addr_set_id(ch_id, MC_REG_ILATST);
 

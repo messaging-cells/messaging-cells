@@ -213,10 +213,10 @@ nervenet::load_handler(missive* msv){
 	MC_MARK_USED(tok);
 	MCK_CK(tok == bj_tok_load_no_lits);
 
-	PTD_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
-	PTD_LOG("ENDING_CNF_LOAD_nervenet %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	PTD_CODE(mc_workeru_nn_t nn = mck_get_kernel()->get_workeru_nn());
+	PTD_LOG("ENDING_CNF_LOAD_nervenet %d --------------- PARENT=%x \n", nn, mc_map_get_parent_workeru_id());
 	kernel::stop_sys(bj_tok_load_end);
-	PTD_LOG("ENDING_CNF_LOAD_nervenet_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+	PTD_LOG("ENDING_CNF_LOAD_nervenet_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_workeru_id());
 }
 
 void
@@ -304,12 +304,12 @@ synapse::load_handler(missive* msv){
 	long& tot_ld = my_net->tot_loaded;
 	tot_ld++;
 	if(tot_ld == my_net->tot_lits){
-		PTD_CODE(mc_core_nn_t nn = mck_get_kernel()->get_core_nn());
+		PTD_CODE(mc_workeru_nn_t nn = mck_get_kernel()->get_workeru_nn());
 		//print_childs();
 		//mck_get_kernel()->set_idle_exit();
-		PTD_LOG("ENDING_CNF_LOAD_synapse %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+		PTD_LOG("ENDING_CNF_LOAD_synapse %d --------------- PARENT=%x \n", nn, mc_map_get_parent_workeru_id());
 		kernel::stop_sys(bj_tok_load_end);
-		PTD_LOG("ENDING_CNF_LOAD_synapse_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_core_id());
+		PTD_LOG("ENDING_CNF_LOAD_synapse_2 %d --------------- PARENT=%x \n", nn, mc_map_get_parent_workeru_id());
 	}
 	//PTD_PRT("RCV5 msv neu %d from pole %d LOADED=(%ld/%ld) \n", 
 	//	owner->id, mt_snp->owner->id, tot_ld, my_net->tot_lits);
@@ -362,7 +362,7 @@ void bj_test_func_2(binder* pt_1) mc_external_code_ram;
 
 void bj_init_nervenet(){
 	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = kernel::get_core_nn();
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
 	if(ker->magic_id != MC_MAGIC_ID){
 		mck_slog2("BAD_MAGIC\n");
@@ -405,7 +405,7 @@ void bj_load_main() {
 	bj_load_shd_sornet();
 	mck_slog2("end_of_load_sornet \n");	
 
-	//MC_DBG(if(kernel::get_core_nn() == 0){ bj_test_func_1(); });
+	//MC_DBG(if(kernel::get_workeru_nn() == 0){ bj_test_func_1(); });
 
 	kernel::run_sys();
 

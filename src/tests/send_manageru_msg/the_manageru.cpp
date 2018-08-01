@@ -46,13 +46,13 @@ recv_host_handler(missive* msg){
 	PTD_PRT("RCV_MSV=%p \n", msg);
 	PTD_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
 	PTD_PRT("RCV_CORE_ID=%x \n", mc_addr_get_id(msg->dst));
-	PTD_PRT("RCV_GLB_CORE_ID=%x \n", MC_CORE_INFO->the_core_id);
+	PTD_PRT("RCV_GLB_CORE_ID=%x \n", MC_CORE_INFO->the_workeru_id);
 	printf("HOST_RECEIVED_MSV !!!\n");
 
 	PTD_CK(mc_addr_is_local(msg->dst));
-	mc_core_id_t koid = kernel::get_core_id();
+	mc_workeru_id_t koid = kernel::get_workeru_id();
 	MC_MARK_USED(koid);
-	mc_core_nn_t konn = kernel::get_core_nn();
+	mc_workeru_nn_t konn = kernel::get_workeru_nn();
 	MC_MARK_USED(konn);
 
 
@@ -85,7 +85,7 @@ send_manageru_main(){
 	agent_grp::separate(mc_out_num_cores);
 
 	//mck_slog2("HOST started\n");
-	kernel::get_core_cell()->handler_idx = 1;
+	kernel::get_workeru_cell()->handler_idx = 1;
 
 	mc_size_t off_all_agts = mc_offsetof(&missive_grp_t::all_agts);
 	MC_MARK_USED(off_all_agts);

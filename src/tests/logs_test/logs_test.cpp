@@ -36,8 +36,8 @@ Our Resurrected and Living, both in Body and Spirit,
 void mc_workerus_main() {
 	mck_glb_init(false);
 
-	mc_core_id_t koid = mck_get_core_id();
-	mc_core_nn_t num_core = mc_id_to_nn(koid);
+	mc_workeru_id_t koid = mck_get_workeru_id();
+	mc_workeru_nn_t num_core = mc_id_to_nn(koid);
 
 	char** john = (char**)(all_log_tests[num_core]);
 	long john_sz = all_log_tests_sz[num_core];

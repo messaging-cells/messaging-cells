@@ -147,7 +147,7 @@ sequence::get_available(){
 
 void ker_func(){
 	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = ker->get_core_nn();
+	mc_workeru_nn_t nn = ker->get_workeru_nn();
 	MC_MARK_USED(ker);
 	MC_MARK_USED(nn);
 }

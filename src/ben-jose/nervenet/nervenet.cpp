@@ -215,7 +215,7 @@ transmitter::init_me(int caller){
 	missive::init_me(caller);
 	wrk_side = side_invalid;
 	wrk_tier = BJ_INVALID_NUM_TIER;
-	//PTD_LOG_STACK((kernel::get_core_nn() == 15), "INIT_TRANSMITTER (%p) \n", (void*)this); 
+	//PTD_LOG_STACK((kernel::get_workeru_nn() == 15), "INIT_TRANSMITTER (%p) \n", (void*)this); 
 }
 
 //--------------
@@ -730,7 +730,7 @@ tierdata::init_me(int caller){
 void
 nervenet::init_sync_cycle(){
 	sync_tot_children = mc_map_get_tot_children();
-	sync_parent_id = mc_map_get_parent_core_id();
+	sync_parent_id = mc_map_get_parent_workeru_id();
 	sync_map = mc_map_get_loaded();
 
 	act_left_side.init_sync();
@@ -1101,7 +1101,7 @@ public:
 };
 
 void bj_print_class_szs(){
-	if(kernel::get_core_nn() == 0){
+	if(kernel::get_workeru_nn() == 0){
 		mck_slog2("-------------------------------------------------------------\n");
 		mck_slog2("class_sizes:\n");
 		mck_slog2("synset__");
@@ -1296,14 +1296,14 @@ netstate::send_sync_transmitter(tier_kind_t tiki, nervenet* the_dst, sync_tok_t 
 	trm->cfl_src = the_cfl_src;
 	trm->send();
 
-	PTD_CODE(mc_core_nn_t dbg_dst_nn = mc_id_to_nn(mc_addr_get_id(the_dst)); MC_MARK_USED(dbg_dst_nn););
+	PTD_CODE(mc_workeru_nn_t dbg_dst_nn = mc_id_to_nn(mc_addr_get_id(the_dst)); MC_MARK_USED(dbg_dst_nn););
 	SYNC_LOG(" %s_SYNCR_send_transmitter_%s_t%d_%s_ [%ld ->> %ld] \n", ts, 
-		net_side_to_str(my_side), the_ti, sync_tok_to_str(the_tok), kernel::get_core_nn(), dbg_dst_nn);
+		net_side_to_str(my_side), the_ti, sync_tok_to_str(the_tok), kernel::get_workeru_nn(), dbg_dst_nn);
 	PTD_CK(the_ti != BJ_INVALID_NUM_TIER);
 }
 
 nervenet*
-nervenet::get_nervenet(mc_core_id_t id){
+nervenet::get_nervenet(mc_workeru_id_t id){
 	nervenet* rem_net = (nervenet*)mc_addr_set_id(id, this);
 	return rem_net;
 }
@@ -1368,7 +1368,7 @@ nervenet::send_all_neus(mck_token_t tok){
 
 void
 netstate::broadcast_tier(tier_kind_t tiki, tierdata& lti, int dbg_caller){
-	mc_core_id_t pnt_id = bj_nervenet->sync_parent_id;
+	mc_workeru_id_t pnt_id = bj_nervenet->sync_parent_id;
 	if(pnt_id != 0){
 		nervenet* pnt_net = bj_nervenet->get_nervenet(pnt_id);
 		send_sync_transmitter(tiki, pnt_net, bj_tok_sync_add_tier, lti.tdt_id, mc_null);
@@ -1594,7 +1594,7 @@ netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind
 {
 	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
 	SYNC_LOG(" %s_SYNCR_STOP_CHILDREN_%s_t%d_ CORE=%d \n", ts, net_side_to_str(my_side), 
-			the_ti, kernel::get_core_nn());
+			the_ti, kernel::get_workeru_nn());
 
 	PTD_CK(the_ti != BJ_INVALID_NUM_TIER);
 
@@ -1614,7 +1614,7 @@ netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind
 		int aa = 0;
 		mc_load_map_st* ch_map = (my_children)[aa];
 		while(ch_map != mc_null){
-			mc_core_nn_t chd_nn = ch_map->num_core;
+			mc_workeru_nn_t chd_nn = ch_map->num_core;
 			nervenet* ch_net = bj_nervenet->get_nervenet(mc_nn_to_id(chd_nn));
 			send_sync_transmitter(tiki, ch_net, the_tok, the_ti, the_cfl);
 
@@ -1694,7 +1694,7 @@ nervenet::sync_handler(tier_kind_t tiki, missive* msv){
 
 	SYNC_LOG(" %s_SYNCR_RECV_%s_t%d_%s_ [%d <<- %d] lti=%d cf=%p chdn=(%d of %d) %s\n", ts, 
 		net_side_to_str(tmt_sd), tmt_ti, sync_tok_to_str((sync_tok_t)(msv_tok)), 
-		kernel::get_core_nn(), mc_id_to_nn(mc_addr_get_id(msv->src)), 
+		kernel::get_workeru_nn(), mc_id_to_nn(mc_addr_get_id(msv->src)), 
 		lti.tdt_id, tmt_cfl, lti.num_inert_chdn, bj_nervenet->sync_tot_children,
 		((tmt_ti < lti.tdt_id)?("OLDER_TIER"):(""))
 	);
@@ -1778,7 +1778,7 @@ netstate::update_sync_inert(tier_kind_t tiki, bool remove_full){
 		return;
 	}
 
-	mc_core_nn_t tot_chdn = the_net->sync_tot_children;
+	mc_workeru_nn_t tot_chdn = the_net->sync_tot_children;
 
 	if(wt_tdt.num_inert_chdn < tot_chdn){
 		SYNC_LOG(" %s_SYNCR_NO_snd_to_pnt_%s_t%d_not_all_inert_chdn (%d < %d) \n", ts, 
@@ -1806,7 +1806,7 @@ netstate::update_sync_inert(tier_kind_t tiki, bool remove_full){
 		wt_tdt.inp_neus, wt_tdt.off_neus, wt_tdt.rcv_neus, wt_tdt.stl_neus, wt_tdt.dly_neus
 	);
 
-	mc_core_id_t pnt_id = the_net->sync_parent_id;
+	mc_workeru_id_t pnt_id = the_net->sync_parent_id;
 	if(pnt_id != 0){
 		nervenet* pnt_net = the_net->get_nervenet(pnt_id);
 		send_sync_transmitter(tiki, pnt_net, bj_tok_sync_inert_child, wt_tdt.tdt_id);

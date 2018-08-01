@@ -84,7 +84,7 @@ void
 mch_prt_exception(mck_glb_sys_st* sh_dat);
 
 int 
-mch_prt_in_core_shd_dat(mck_glb_sys_st* sh_dat);
+mch_prt_in_workeru_shd_dat(mck_glb_sys_st* sh_dat);
 
 bool
 mch_rr_ck_zero(mc_rrarray_st* arr);
@@ -99,7 +99,7 @@ void
 mch_reset_log_file(char* f_nm);
 
 void
-mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_core_nn_t num_core);
+mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_workeru_nn_t num_core);
 
 uint8_t*
 mch_read_file(char* the_pth, off_t* size);
@@ -108,10 +108,10 @@ int
 mch_write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once);
 
 int 
-mch_prt_core_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
+mch_prt_workeru_call_stack(const char *elf_nm, int addrs_sz, void** stack_addrs);
 
 void
-mch_get_enter(mc_core_co_t row, mc_core_co_t col);
+mch_get_enter(mc_workeru_co_t row, mc_workeru_co_t col);
 
 void
 mch_ptr_call_stack_trace(FILE* out_fp);

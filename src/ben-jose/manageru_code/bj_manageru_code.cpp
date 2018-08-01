@@ -77,7 +77,7 @@ int bj_manageru_main(int argc, char *argv[])
 	//host_print_nods();
 
 	//print_cnf();
-	//print_core_cnfs();
+	//print_workeru_cnfs();
 
 	missive_handler_t the_handlers[] = { mc_null };
 	kernel::set_handlers(0, the_handlers);

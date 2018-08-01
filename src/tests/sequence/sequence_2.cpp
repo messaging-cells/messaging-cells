@@ -110,7 +110,7 @@ sequence::handler(missive* msv){
 	MC_MARK_USED(tok);
 
 	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = ker->get_core_nn();
+	mc_workeru_nn_t nn = ker->get_workeru_nn();
 
 	bool is_sender = (nn == 1);
 
@@ -159,7 +159,7 @@ sequence::get_available(){
 
 void ker_func(){
 	kernel* ker = mck_get_kernel();
-	mc_core_nn_t nn = ker->get_core_nn();
+	mc_workeru_nn_t nn = ker->get_workeru_nn();
 	MC_MARK_USED(ker);
 	MC_MARK_USED(nn);
 }
@@ -169,7 +169,7 @@ void mc_workerus_main() {
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	mc_core_nn_t nn = ker->get_core_nn();
+	mc_workeru_nn_t nn = ker->get_workeru_nn();
 	
 	if((nn != 0) && (nn != 1)){
 		PH_DBG("SKIP\n");

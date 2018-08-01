@@ -51,9 +51,9 @@ void
 recv_cell_handler(missive* msg){
 	PTD_CODE(
 		PTD_CK(mc_addr_is_local(msg->dst));
-		mc_core_id_t koid = kernel::get_core_id();
+		mc_workeru_id_t koid = kernel::get_workeru_id();
 		MC_MARK_USED(koid);
-		mc_core_nn_t konn = kernel::get_core_nn();
+		mc_workeru_nn_t konn = kernel::get_workeru_nn();
 		MC_MARK_USED(konn);
 		PTD_LOG("recv_cell_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", 
 				koid, konn, msg->get_source(), msg->dst);
@@ -90,16 +90,16 @@ void mc_workerus_main() {
 		mck_slog2("CORE (0,0) started\n");
 
 		// Next line is just to remaind that every single cell should have a valid handler_idx. It was already 0.
-		kernel::get_core_cell()->handler_idx = 0;	// This is recv_cell_handler's index in the_handlers.
+		kernel::get_workeru_cell()->handler_idx = 0;	// This is recv_cell_handler's index in the_handlers.
 
 		kernel::run_sys();
 	}
 	if(mck_is_ro_co_core(0,1)){
 		mck_slog2("CORE (0,1) started\n");
-		mc_core_id_t dst = mc_ro_co_to_id(0, 0);
+		mc_workeru_id_t dst = mc_ro_co_to_id(0, 0);
 		
-		cell* act1 = kernel::get_core_cell();
-		cell* act2 = kernel::get_core_cell(dst);
+		cell* act1 = kernel::get_workeru_cell();
+		cell* act2 = kernel::get_workeru_cell(dst);
 
 		missive* msv = missive::acquire();
 		msv->src = act1;

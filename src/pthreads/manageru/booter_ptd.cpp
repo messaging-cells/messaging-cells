@@ -51,7 +51,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 // =====================================================================================
 
-mc_core_id_t mch_first_load_core_nn = 0;
+mc_workeru_id_t mch_first_load_workeru_nn = 0;
 
 #define MCM_EXTERNAL_RAM_ORIG 0x8e000000
 
@@ -81,7 +81,7 @@ mcm_get_call_stack_trace(size_t trace_strs_sz, char** trace_strs) {
 }
 
 void 
-mch_prt_core_call_stack_ptd(thread_info_t& thd_inf){
+mch_prt_workeru_call_stack_ptd(thread_info_t& thd_inf){
 	char** trace = thd_inf.thd_ptd.ptd_glb_sys_data.mck_dbg_call_nams_stack_trace;
 	if(trace == mc_null){
 		return;
@@ -91,7 +91,7 @@ mch_prt_core_call_stack_ptd(thread_info_t& thd_inf){
 	}
 	mch_out << "---------------------------------------------------\n";
 	mch_out << "STACK_TRACE for core num " << std::dec << thd_inf.thd_ptd.ptd_num;
-	mch_out << " with core_id = 0x" << std::hex << thd_inf.thd_ptd.ptd_core_id << "\n";
+	mch_out << " with core_id = 0x" << std::hex << thd_inf.thd_ptd.ptd_workeru_id << "\n";
 	for(int aa = 0; aa < MC_MAX_CALL_STACK_SZ; aa++){
 		if(trace[aa] == mc_null){ break; }
 		mch_out << trace[aa] << "\n";
@@ -100,32 +100,32 @@ mch_prt_core_call_stack_ptd(thread_info_t& thd_inf){
 }
 
 bool
-ck_all_core_ids(){
+ck_all_workeru_ids(){
 	if (ALL_THREADS_INFO == NULL){
-		mch_abort_func(1, "ck_all_core_ids. NULL ALL_THREADS_INFO \n");
+		mch_abort_func(1, "ck_all_workeru_ids. NULL ALL_THREADS_INFO \n");
 	}
 	for(int aa = 0; aa < TOT_THREADS; aa++){
-		mc_core_id_t koid = mc_nn_to_id(aa);
-		if(ALL_THREADS_INFO[aa].thd_ptd.ptd_core_id != koid){
-			mch_abort_func(1, "ck_all_core_ids. BAD CORE ID \n");
+		mc_workeru_id_t koid = mc_nn_to_id(aa);
+		if(ALL_THREADS_INFO[aa].thd_ptd.ptd_workeru_id != koid){
+			mch_abort_func(1, "ck_all_workeru_ids. BAD CORE ID \n");
 		}
 	}
 	return true;
 }
 
 void
-mch_load_map_rec(mc_core_id_t parent, mc_load_map_st* mp){
+mch_load_map_rec(mc_workeru_id_t parent, mc_load_map_st* mp){
 	MCH_CK(mp != mc_null);
 
-	mc_core_nn_t nn_core = mp->num_core;
-	mc_core_id_t koid = mc_nn_to_id(nn_core);
+	mc_workeru_nn_t nn_core = mp->num_core;
+	mc_workeru_id_t koid = mc_nn_to_id(nn_core);
 
 	MCH_CK(nn_core >= 0);
 	MCH_CK(nn_core < TOT_THREADS);
 	thread_info_t& thd_inf = ALL_THREADS_INFO[nn_core];
 
 	thd_inf.thd_ptd.ptd_map_loaded = mp;
-	thd_inf.thd_ptd.ptd_map_parent_core_id = parent;
+	thd_inf.thd_ptd.ptd_map_parent_workeru_id = parent;
 	thd_inf.thd_ptd.ptd_map_tot_children = 0;
 
 	if(mp->childs == mc_null){ return; }
@@ -164,10 +164,10 @@ mc_manageru_init(){
 
 	mc_init_glb_sys_sz(&(mcm_HOST_PTD_INFO->ptd_system_sz));
 
-	mc_core_co_t max_row = mc_tot_xx_sys;
-	mc_core_co_t max_col = mc_tot_yy_sys;
-	mc_core_id_t core_id = mc_ro_co_to_id(max_row + 1, max_col + 1);
-	mcm_HOST_PTD_INFO->ptd_core_id = core_id;
+	mc_workeru_co_t max_row = mc_tot_xx_sys;
+	mc_workeru_co_t max_col = mc_tot_yy_sys;
+	mc_workeru_id_t core_id = mc_ro_co_to_id(max_row + 1, max_col + 1);
+	mcm_HOST_PTD_INFO->ptd_workeru_id = core_id;
 	mcm_HOST_PTD_INFO->ptd_num = ~0;
 
 	memset(&mch_external_ram_load_data, 0, sizeof(mc_link_syms_data_st));
@@ -198,7 +198,7 @@ mc_manageru_init(){
 
 	pt_shd_data->pt_host_kernel = mc_null;
 
-	pt_shd_data->first_load_core_id = mc_nn_to_id(mch_first_load_core_nn);
+	pt_shd_data->first_load_workeru_id = mc_nn_to_id(mch_first_load_workeru_nn);
 }
 
 void
@@ -207,11 +207,11 @@ mc_manageru_run()
 	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_HOST_DATA;
 	//mc_sys_sz_st* sys_sz = MC_SYS_SZ;
 
-	mc_core_id_t core_id;
-	mc_core_co_t row, col, max_row, max_col;
+	mc_workeru_id_t core_id;
+	mc_workeru_co_t row, col, max_row, max_col;
 	char f_nm[200];
 
-	mc_core_nn_t tot_cores = mc_out_num_cores;
+	mc_workeru_nn_t tot_cores = mc_out_num_cores;
 
 	char* all_f_nam[tot_cores];
 	FILE* all_fps[tot_cores];
@@ -231,20 +231,20 @@ mc_manageru_run()
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
 			core_id = mc_ro_co_to_id(row, col);
-			mc_core_nn_t num_core = mc_id_to_nn(core_id);
+			mc_workeru_nn_t num_core = mc_id_to_nn(core_id);
 
 			thread_info_t& thd_inf = ALL_THREADS_INFO[num_core];
 			thd_inf.thd_ptd.ptd_num = num_core;
 			mc_uint16_to_hex_bytes(thd_inf.thd_ptd.ptd_num, (uint8_t*)(thd_inf.thd_ptd.ptd_name));
-			thd_inf.thd_ptd.ptd_core_id = core_id;
-			thd_inf.thd_ptd.ptd_core_func = &mc_workerus_main;
+			thd_inf.thd_ptd.ptd_workeru_id = core_id;
+			thd_inf.thd_ptd.ptd_workeru_func = &mc_workerus_main;
 			thd_inf.thd_log_fnam = mc_null;
 
 			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
 			if(num_core < mc_out_num_cores){
 				memset(&f_nm, 0, sizeof(f_nm));
-				sprintf(f_nm, "log_core_%02d.txt", num_core);
+				sprintf(f_nm, "log_workeru_%02d.txt", num_core);
 				all_f_nam[num_core] = strdup((const char*)f_nm);
 				thd_inf.thd_log_fnam = strdup((const char*)f_nm);
 				mch_reset_log_file(all_f_nam[num_core]);
@@ -260,7 +260,7 @@ mc_manageru_run()
 				pt_shd_data->sys_cores[num_core].magic_id = MC_MAGIC_ID;
 				MCH_CK(pt_shd_data->sys_cores[num_core].magic_id == MC_MAGIC_ID);
 
-				mc_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
 				pt_buff->magic_id = MC_MAGIC_ID;
 				MCH_CK(pt_buff->magic_id == MC_MAGIC_ID);
@@ -278,7 +278,7 @@ mc_manageru_run()
 		}
 	}
 
-	MCH_CK(ck_all_core_ids());
+	MCH_CK(ck_all_workeru_ids());
 
 	bool core_started[tot_cores];
 	memset(core_started, 0, (sizeof(bool) * tot_cores));
@@ -312,9 +312,9 @@ mc_manageru_run()
 		for (row=0; row < max_row; row++){
 			for (col=0; col < max_col; col++){
 				core_id = mc_ro_co_to_id(row, col);
-				mc_core_nn_t num_core = mc_id_to_nn(core_id);
-				mc_off_core_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
-				mc_core_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
+				mc_workeru_nn_t num_core = mc_id_to_nn(core_id);
+				mc_off_workeru_st* sh_dat_1 = &(pt_shd_data->sys_cores[num_core]);
+				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_core]);
 
 				thread_info_t& thd_inf = ALL_THREADS_INFO[num_core];
 
@@ -329,14 +329,14 @@ mc_manageru_run()
 				MCH_CK(	(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL) ||
 						(sh_dat_1->is_finished == MC_FINISHED_VAL)
 				);
-				MCH_CK(sh_dat_1->ck_core_id == core_id);
+				MCH_CK(sh_dat_1->ck_workeru_id == core_id);
 				if(! core_started[num_core] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
 					core_started[num_core] = true;
 					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
 					//			core_id, row, col, num_core);
 				}
 
-				//mck_glb_sys_st* inco = &thd_inf.thd_ptd.ptd_glb_sys_data.in_core_shd;
+				//mck_glb_sys_st* inco = &thd_inf.thd_ptd.ptd_glb_sys_data.in_workeru_shd;
 				mck_glb_sys_st* inco = &thd_inf.thd_ptd.ptd_glb_sys_data;
 
 				// wait for finish
@@ -372,18 +372,18 @@ mc_manageru_run()
 						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
 						/*printf("Finished\n");
-						int err2 = mch_prt_in_core_shd_dat(inco);
+						int err2 = mch_prt_in_workeru_shd_dat(inco);
 						if(err2){
 							break;
 						}*/
 						if(inco->exception_code != mck_invalid_exception){
 							//mch_prt_exception(inco);
-							mch_prt_in_core_shd_dat(inco);
+							mch_prt_in_workeru_shd_dat(inco);
 						}
 						if(inco->dbg_error_code != 0){
-							mch_prt_in_core_shd_dat(inco);
+							mch_prt_in_workeru_shd_dat(inco);
 						}
-						mch_prt_core_call_stack_ptd(thd_inf);
+						mch_prt_workeru_call_stack_ptd(thd_inf);
 					}
 
 				}

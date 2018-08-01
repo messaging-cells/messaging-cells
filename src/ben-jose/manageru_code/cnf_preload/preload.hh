@@ -70,7 +70,7 @@ public:
 	pre_sornode** arr_nods = mc_null;
 
 	num_nod_t tot_lvs = 0;
-	mc_core_nn_t* arr_lvs = mc_null;
+	mc_workeru_nn_t* arr_lvs = mc_null;
 
 	num_nod_t curr_nod_id = 0;
 };
@@ -86,7 +86,7 @@ public:
 	num_nod_t	 	nod_id;
 	num_nod_t 		level;
 
-	mc_core_nn_t	nod_nn;
+	mc_workeru_nn_t	nod_nn;
 
 	num_nod_t 		up_idx;
 	connect_kind_t	up_conn;
