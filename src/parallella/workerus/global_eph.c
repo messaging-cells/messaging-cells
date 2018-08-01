@@ -72,7 +72,7 @@ mck_set_irq0_handler(){
 }
 
 /*! 
-This function aborts execution. It saves the stack trace and the host will print it after aborting.
+This function aborts execution. It saves the stack trace and the Zynq side will print it after aborting.
 */
 void 
 mck_abort(mc_addr_t err, char* msg) {

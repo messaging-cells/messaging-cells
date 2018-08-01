@@ -57,7 +57,7 @@ int mc_manageru_main(int argc, char *argv[])
 	//mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 	//mc_addr_t addr_0 = (mc_addr_t)mch_disp_to_pt(lk_dat->extnl_manageru_alloc_disp);
 
-	cell* act1 = kernel::get_workeru_cell();
+	cell* act1 = kernel::get_first_cell();
 
 	mc_addr_t eph_act1 = mc_znq_addr_to_eph_addr((mc_addr_t)act1);
 

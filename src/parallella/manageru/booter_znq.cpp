@@ -121,7 +121,8 @@ mc_manageru_init(){
 	// Current value of EPIPHANY_HDF: /opt/adapteva/esdk/bsps/current/platform.hdf
 	// Current value of EMEM_BASE_ADDRESS in HDF: 0x8e000000
 	// Current link script: mc-ld-script.ldf
-	// Observe that this address is AS SEEN FROM THE EPIPHANY side. NOT as seen from the Zynq (host) side.
+	// Observe that this address is AS SEEN FROM THE EPIPHANY CORES (workerus) side. 
+	// 		NOT as seen from the Zynq (manageru) side.
 
 	// sys init
 

@@ -52,15 +52,15 @@ PROVIDE (___bss_start = __bss_start);
 USER DEFINED SIZES
 */
 
-/*! Full external epiphany system RAM size (shared with the host) */
+/*! Full external epiphany system RAM size. RAM shared with the manageru (znq). */
 LD_EXTERNAL_RAM_SIZE = 32M;	
 /*! External RAM used for code (.text, data, rodata, bss and .stack) */
 LD_EXTERNAL_CODE_SIZE = 8M;	
 /*! External RAM used for modules code */
 LD_EXTERNAL_LOAD_SIZE = 8M;	
-/*! External RAM used structured shared data with the host */
+/*! External RAM used structured shared data with the manageru (znq) */
 LD_EXTERNAL_MANAGERU_DATA_SIZE = 8M;	
-/*! External RAM used dynamic allocated shared data with the host */
+/*! External RAM used dynamic allocated shared data with the manageru (znq) */
 LD_EXTERNAL_MANAGERU_ALLOC_SIZE = 8M;	
 
 /*! Core interrupts vector table size */

@@ -85,7 +85,7 @@ send_manageru_main(){
 	agent_grp::separate(mc_out_num_workerus);
 
 	//mck_slog2("MANAGERU started\n");
-	kernel::get_workeru_cell()->handler_idx = 1;
+	kernel::get_first_cell()->handler_idx = 1;
 
 	mc_size_t off_all_agts = mc_offsetof(&missive_grp_t::all_agts);
 	MC_MARK_USED(off_all_agts);

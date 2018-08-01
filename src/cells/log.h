@@ -104,7 +104,7 @@ mck_cond_slog(bool cond, char* msg){
 //! Sames as \ref mck_cond_slog but it does a const_cast<char *> for you so you can use directly it in c++.
 #define	mck_cond_slog2(cond, msg) mck_cond_slog(cond, mc_cstr(msg))
 
-//! Prints a string to stdout in the host.
+//! Prints a string to stdout in the manageru.
 mc_inline_fn void
 mck_sprt(char* msg){
 	mck_aux_sout(mc_true, msg, MC_OUT_PRT);
@@ -140,19 +140,19 @@ mck_xlog(uint32_t vv){
 	mck_aux_iout(vv, MC_OUT_LOG, MC_X32);
 }
 
-//! Prints an int32_t to stdout in the host.
+//! Prints an int32_t to stdout in the manageru.
 mc_inline_fn void
 mck_iprt(int32_t vv){
 	mck_aux_iout(vv, MC_OUT_PRT, MC_I32);
 }
 
-//! Prints an uint32_t to stdout in the host.
+//! Prints an uint32_t to stdout in the manageru.
 mc_inline_fn void
 mck_uprt(uint32_t vv){
 	mck_aux_iout(vv, MC_OUT_PRT, MC_UI32);
 }
 
-//! Prints an uint32_t as a hexadecimal to stdout in the host.
+//! Prints an uint32_t as a hexadecimal to stdout in the manageru.
 mc_inline_fn void
 mck_xprt(uint32_t vv){
 	mck_aux_iout(vv, MC_OUT_PRT, MC_X32);

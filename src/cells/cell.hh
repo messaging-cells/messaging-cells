@@ -476,15 +476,15 @@ public:
 
 	//! Returns this kernel first created \ref cell 
 	static mc_inline_fn cell*
-	get_workeru_cell(){
+	get_first_cell(){
 		return MCK_KERNEL->first_cell;
 	}
 
-	//! Returns the workeru_cell (see \ref get_workeru_cell) of the workeru with id 'dst_id'
+	//! Returns the first_cell (see \ref get_first_cell) of the workeru with id 'dst_id'
 	static cell*
-	get_workeru_cell(mc_workeru_id_t dst_id);
+	get_first_cell(mc_workeru_id_t dst_id);
 
-	//! Returns the workeru_cell (see \ref get_workeru_cell) of the host
+	//! Returns the first_cell (see \ref get_first_cell) of the manageru
 	static cell*
 	get_manageru_cell() mc_external_code_ram;
 

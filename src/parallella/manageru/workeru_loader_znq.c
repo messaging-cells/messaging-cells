@@ -167,7 +167,7 @@ mc_start_load(load_info_t *ld_dat){
 	struct stat  st;
 	void        *file;
 
-	//e_set_manageru_verbosity(H_D0);
+	e_set_host_verbosity(H_D0);
 
 	const char *executable = ld_dat->executable;
 	e_epiphany_t *dev = ld_dat->dev;

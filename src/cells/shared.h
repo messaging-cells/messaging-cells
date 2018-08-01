@@ -2,7 +2,7 @@
 //----------------------------------------------------------------------------
 /*! \file shared.h
 
-\brief C shared structures (by host and workerus). It is included in global.h and \ref cell.hh.
+\brief C shared structures (by the manageru and all workerus). It is included in global.h and \ref cell.hh.
 
 */
 
@@ -203,7 +203,7 @@ mc_addr_in_sys(mc_addr_t addr) {
 	return mc_id_in_sys(addr_koid);
 }
 
-//! Returns true if 'addr' is in the host
+//! Returns true if 'addr' is in the manageru
 #define mc_addr_in_manageru(addr) (! mc_addr_in_sys(addr))
 
 /*! Remote dereference of a 'pt_field' of remote object pointer 'glb_pt' (with id) and 
@@ -416,18 +416,18 @@ mc_isprint(char cc){
 
 // end_macro
 
-//! Maps a host addresses to a workeru addresses 
+//! Maps a manageru address to a workeru address
 mc_addr_t
 mc_manageru_addr_to_workeru_addr(mc_addr_t h_addr) mc_external_code_ram;
 
-//! Maps a workeru addresses to a host addresses 
+//! Maps a workeru address to a manageru address
 mc_addr_t
 mc_workeru_addr_to_manageru_addr(mc_addr_t c_addr) mc_external_code_ram;
 
-//! Maps a host pointer to a workeru pointer
+//! Maps a manageru pointer to a workeru pointer
 #define mc_manageru_pt_to_workeru_pt(pt) (mc_manageru_addr_to_workeru_addr((mc_addr_t)(pt)))
 
-//! Maps a workeru pointer to a host pointer
+//! Maps a workeru pointer to a manageru pointer
 #define mc_workeru_pt_to_manageru_pt(pt) (mc_workeru_addr_to_manageru_addr((mc_addr_t)(pt)))
 
 

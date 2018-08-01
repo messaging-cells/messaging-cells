@@ -90,7 +90,7 @@ void mc_workerus_main() {
 		mck_slog2("WORKERU (0,0) started\n");
 
 		// Next line is just to remaind that every single cell should have a valid handler_idx. It was already 0.
-		kernel::get_workeru_cell()->handler_idx = 0;	// This is recv_cell_handler's index in the_handlers.
+		kernel::get_first_cell()->handler_idx = 0;	// This is recv_cell_handler's index in the_handlers.
 
 		kernel::run_sys();
 	}
@@ -98,8 +98,8 @@ void mc_workerus_main() {
 		mck_slog2("WORKERU (0,1) started\n");
 		mc_workeru_id_t dst = mc_ro_co_to_id(0, 0);
 		
-		cell* act1 = kernel::get_workeru_cell();
-		cell* act2 = kernel::get_workeru_cell(dst);
+		cell* act1 = kernel::get_first_cell();
+		cell* act2 = kernel::get_first_cell(dst);
 
 		missive* msv = missive::acquire();
 		msv->src = act1;

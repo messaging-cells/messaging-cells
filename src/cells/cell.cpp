@@ -324,9 +324,9 @@ agent::init_me(int caller){
 }
 
 cell*	//	static 
-kernel::get_workeru_cell(mc_workeru_id_t dst_id){
+kernel::get_first_cell(mc_workeru_id_t dst_id){
 	if(! MCK_KERNEL->is_manageru_kernel){
-		cell* loc_act = kernel::get_workeru_cell();
+		cell* loc_act = kernel::get_first_cell();
 		if(dst_id == kernel::get_workeru_id()){
 			return loc_act;
 		}
@@ -918,12 +918,12 @@ kernel::send_stop_to_children(){
 		while(ch_map != mc_null){
 			//PTD_PRT("send_stop to CHILD=%d \n", ch_map->num_workeru);
 			mc_workeru_nn_t chd_nn = ch_map->num_workeru;
-			cell* ch_cell = get_workeru_cell(mc_nn_to_id(chd_nn));
+			cell* ch_cell = get_first_cell(mc_nn_to_id(chd_nn));
 
 			//PTD_PRT_STACK(true, "mck_tok_stop_sys_to_children WORKERU=%d \n", get_workeru_nn());
 
 			missive* msv = missive::acquire();
-			msv->src = get_workeru_cell();
+			msv->src = get_first_cell();
 			msv->dst = ch_cell;
 			msv->tok = mck_tok_stop_sys_to_children;
 			msv->send();
@@ -950,10 +950,10 @@ kernel::handle_stop(){
 		sent_stop_to_parent = true;
 		mc_workeru_id_t pnt_koid = mc_map_get_parent_workeru_id();
 		if(pnt_koid != 0){
-			cell* pcell = get_workeru_cell(pnt_koid);
+			cell* pcell = get_first_cell(pnt_koid);
 
 			missive* msv = missive::acquire();
-			msv->src = get_workeru_cell();
+			msv->src = get_first_cell();
 			msv->dst = pcell;
 			msv->tok = mck_tok_stop_sys_to_parent;
 			msv->send();

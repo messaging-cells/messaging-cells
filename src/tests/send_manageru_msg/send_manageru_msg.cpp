@@ -59,7 +59,7 @@ void mc_workerus_main() {
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
 
-	kernel::get_workeru_cell()->handler_idx = 1;
+	kernel::get_first_cell()->handler_idx = 1;
 
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
@@ -69,7 +69,7 @@ void mc_workerus_main() {
 
 		kernel::set_handlers(2, workeru_handlers);
 
-		cell* act1 = kernel::get_workeru_cell();
+		cell* act1 = kernel::get_first_cell();
 		cell* act2 = kernel::get_manageru_cell();
 
 		PTD_CK_PRT((mc_addr_get_id((mc_addr_t)act2) != 0), "act2 = %p\n", act2);

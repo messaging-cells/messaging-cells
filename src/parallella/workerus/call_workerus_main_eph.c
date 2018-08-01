@@ -100,9 +100,9 @@ The debug features are basically two:
 
 <ul>
 <li>
-All functions in \ref log.h to print and log in the host. Functions like: \ref mck_slog and \ref mck_slog2. 
+All functions in \ref log.h to print and log in the zynq. Functions like: \ref mck_slog and \ref mck_slog2. 
 <li>
-Functions to get the stack trace. When calling \ref mck_get_call_stack_trace and when aborting execution by calling \ref mck_abort you get the stack trace printed in the host.
+Functions to get the stack trace. When calling \ref mck_get_call_stack_trace and when aborting execution by calling \ref mck_abort you get the stack trace printed in the zynq.
 </ul>
 
 <p>
@@ -249,10 +249,10 @@ From the epiphany side (hardware addresses).
 	<li>
 	remote-workeru. 
 	<li>
-	off-workeru (outside of the epiphany system in the shared mem with the host)
+	off-workeru (outside of the epiphany system in the shared mem with the zynq)
 	</ol>
 <li>
-From the host side (linux virtual addresses mapped to hardware addresses).
+From the zynq side (linux virtual addresses mapped to hardware addresses).
 	<ol>
 	<li>
 	in-workeru. Inside the RAM of a workeru of the epiphany system (no register mem). 
