@@ -1593,7 +1593,7 @@ void
 netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, nervenode* the_cfl)
 {
 	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
-	SYNC_LOG(" %s_SYNCR_STOP_CHILDREN_%s_t%d_ CORE=%d \n", ts, net_side_to_str(my_side), 
+	SYNC_LOG(" %s_SYNCR_STOP_CHILDREN_%s_t%d_ WORKERUNI=%d \n", ts, net_side_to_str(my_side), 
 			the_ti, kernel::get_workeru_nn());
 
 	PTD_CK(the_ti != BJ_INVALID_NUM_TIER);

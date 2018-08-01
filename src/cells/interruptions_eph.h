@@ -77,10 +77,10 @@ mck_timer0_handler(void); // ivt_entry_timer0
 	}
 
 	#define mck_simple_abort(func, excode) \
-		mck_glb_sys_st* in_workeru_pt = MC_CORE_INFO; \
+		mck_glb_sys_st* in_workeru_pt = MC_WORKERUNI_INFO; \
 		in_workeru_pt->exception_code = excode; \
 		in_workeru_pt->dbg_error_code = (mc_addr_t)(func); \
-		mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt; \
+		mc_off_workeru_st* off_workeru_pt = MC_WORKERUNI_INFO->off_workeru_pt; \
 		if((off_workeru_pt != mc_null) && (off_workeru_pt->magic_id == MC_MAGIC_ID)){ \
 			off_workeru_pt->is_finished = MC_FINISHED_VAL; \
 		} \

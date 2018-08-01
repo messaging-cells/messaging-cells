@@ -68,7 +68,7 @@ mcm_addr_with_fn(mc_workeru_id_t id, void* addr);
 #define mc_addr_has_id(addr) true
 #define mc_addr_get_id(addr) mcm_get_addr_workeru_id_fn((void*)(addr))
 #define mc_addr_set_id(id, addr) mcm_addr_with_fn((id), (void*)(addr))
-#define mc_addr_has_local_id(addr) (mc_addr_get_id(addr) == MC_CORE_INFO->the_workeru_id)
+#define mc_addr_has_local_id(addr) (mc_addr_get_id(addr) == MC_WORKERUNI_INFO->the_workeru_id)
 #define mc_addr_is_local(addr) mc_addr_has_local_id(addr)
 
 #define mc_addr_get_disp(addr) ((mc_addr_t)(addr))

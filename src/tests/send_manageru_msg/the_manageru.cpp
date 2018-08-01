@@ -45,9 +45,9 @@ void
 recv_manageru_handler(missive* msg){
 	PTD_PRT("RCV_MSV=%p \n", msg);
 	PTD_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
-	PTD_PRT("RCV_CORE_ID=%x \n", mc_addr_get_id(msg->dst));
-	PTD_PRT("RCV_GLB_CORE_ID=%x \n", MC_CORE_INFO->the_workeru_id);
-	printf("HOST_RECEIVED_MSV !!!\n");
+	PTD_PRT("RCV_WORKERUNI_ID=%x \n", mc_addr_get_id(msg->dst));
+	PTD_PRT("RCV_GLB_WORKERUNI_ID=%x \n", MC_WORKERUNI_INFO->the_workeru_id);
+	printf("MANAGERU_RECEIVED_MSV !!!\n");
 
 	PTD_CK(mc_addr_is_local(msg->dst));
 	mc_workeru_id_t koid = kernel::get_workeru_id();
@@ -61,7 +61,7 @@ recv_manageru_handler(missive* msg){
 
 	#ifdef WITH_RESPONSE
 		msg->dst->respond(msg, (msg->tok + 10)); 
-		printf("HOST_RESPONDED\n");
+		printf("MANAGERU_RESPONDED\n");
 	#endif 
 
 
@@ -84,13 +84,13 @@ send_manageru_main(){
 	agent_ref::separate(mc_out_num_cores);
 	agent_grp::separate(mc_out_num_cores);
 
-	//mck_slog2("HOST started\n");
+	//mck_slog2("MANAGERU started\n");
 	kernel::get_workeru_cell()->handler_idx = 1;
 
 	mc_size_t off_all_agts = mc_offsetof(&missive_grp_t::all_agts);
 	MC_MARK_USED(off_all_agts);
 
-	printf("HOST STARTING ==================================== \n");
+	printf("MANAGERU STARTING ==================================== \n");
 	ZNQ_CODE(printf("off_all_agts=%d \n", off_all_agts));
 
 	kernel::run_manageru_sys();

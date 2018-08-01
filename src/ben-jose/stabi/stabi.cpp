@@ -631,7 +631,7 @@ netstate::stabi_handle_my_sync(){
 	update_sync_inert(tiki_stabi, true);
 	
 	if(sync_is_ending){
-		SYNC_LOG(" SYNCR_STOPPING_CORE_%s \n", net_side_to_str(my_side));
+		SYNC_LOG(" SYNCR_STOPPING_WORKERUNI_%s \n", net_side_to_str(my_side));
 		//mck_get_kernel()->set_idle_exit();
 		kernel::stop_sys(bj_tok_propag_end);
 	}

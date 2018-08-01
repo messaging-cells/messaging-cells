@@ -47,10 +47,10 @@ Our Resurrected and Living, both in Body and Spirit,
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
-#define MCT_COREID(_addr) ((_addr) >> 20)
+#define MCT_WORKERUNIID(_addr) ((_addr) >> 20)
 static inline bool mct_is_local(uint32_t addr)
 {
-	return MCT_COREID(addr) == 0;
+	return MCT_WORKERUNIID(addr) == 0;
 }
 
 #define addr_in_shd_mem(addr) (! (\

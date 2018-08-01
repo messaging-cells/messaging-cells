@@ -118,13 +118,13 @@ typedef struct mck_glb_sys_def mck_glb_sys_st;
 
 	extern mck_glb_sys_st*	mck_glb_pt_sys_data;
 	#define MCK_FIRST_GLB_SYS mck_get_first_glb_sys()
-	#define MC_CORE_INFO (mck_glb_pt_sys_data)
+	#define MC_WORKERUNI_INFO (mck_glb_pt_sys_data)
 #else
 	mck_glb_sys_st*
 	mck_get_glb_sys();
 
 	#define MCK_FIRST_GLB_SYS mck_get_glb_sys()
-	#define MC_CORE_INFO mck_get_glb_sys()
+	#define MC_WORKERUNI_INFO mck_get_glb_sys()
 #endif
 
 #ifdef MC_IS_EPH_CODE
@@ -153,7 +153,7 @@ void
 mck_set_finished(uint8_t val) mc_external_code_ram;
 
 void 
-mck_glb_init(bool is_host) mc_external_code_ram;
+mck_glb_init(bool is_manageru) mc_external_code_ram;
 
 void 
 mck_glb_finish() mc_external_code_ram;
@@ -169,7 +169,7 @@ mck_set_irq0_handler() mc_external_code_ram;
 #define MC_ASSERT_MSG(cond) mc_cstr("ASSERT (" #cond ") failed at " __FILE__ "(" MC_TOSTRING(__LINE__) ")")
 //define MC_ASSERT_MSG(cond) mc_cstr(#cond)
 
-#define MCK_INCORE_ASSERT(cond) MC_DBG( \
+#define MCK_INWORKERUNI_ASSERT(cond) MC_DBG( \
 	if(! (cond)){ \
 		mck_abort(0xdeadbeaf, MC_ASSERT_MSG(cond)); \
 	} )
@@ -177,7 +177,7 @@ mck_set_irq0_handler() mc_external_code_ram;
 // end_of_macro
 
 #ifdef MC_IS_EPH_CODE
-	#define MCK_CK(cond) MCK_INCORE_ASSERT(cond)
+	#define MCK_CK(cond) MCK_INWORKERUNI_ASSERT(cond)
 #endif
 
 #ifdef MC_IS_PTD_CODE
@@ -228,7 +228,7 @@ void ck_shd_code();
 	}
 
 	#define MCK_CHECK_SP() MC_DBG( \
-		if(mck_get_stack_pointer() < MC_VAL_CORE_STACK_ORIG){ \
+		if(mck_get_stack_pointer() < MC_VAL_WORKERUNI_STACK_ORIG){ \
 			mck_abort(__LINE__, MC_ABORT_MSG("Stack_overflow_error")); \
 		} \
 	) \
@@ -258,7 +258,7 @@ bool
 mck_load_module(mc_addr_t ext_addr) mc_external_code_ram;
 
 //! Sets a sub module id to 'id'
-#define mck_set_sub_module_id(id) { MC_CORE_INFO->current_sub_module_id = (id); }
+#define mck_set_sub_module_id(id) { MC_WORKERUNI_INFO->current_sub_module_id = (id); }
 
 void mc_manageru_init() mc_external_code_ram;
 void mc_manageru_run() mc_external_code_ram;
@@ -271,15 +271,15 @@ extern int mc_manageru_main(int argc, char *argv[]) mc_external_code_ram;
 
 //! True if this core is in row 'ro' and column 'co'
 #define mck_is_ro_co_core(ro, co) \
-	((MC_CORE_INFO->the_workeru_ro == (ro)) && (MC_CORE_INFO->the_workeru_co == (co)))
+	((MC_WORKERUNI_INFO->the_workeru_ro == (ro)) && (MC_WORKERUNI_INFO->the_workeru_co == (co)))
 
 //! True if this core has number 'nn'
-#define mck_is_nn_core(nn) (MC_CORE_INFO->the_workeru_nn == (nn))
+#define mck_is_nn_core(nn) (MC_WORKERUNI_INFO->the_workeru_nn == (nn))
 
 //! True if this core has id 'id'
-#define mck_is_id_core(id) (MC_CORE_INFO->the_workeru_id == (id))
+#define mck_is_id_core(id) (MC_WORKERUNI_INFO->the_workeru_id == (id))
 
-#define mck_has_off_core (MC_CORE_INFO->off_workeru_pt != mc_null)
+#define mck_has_off_core (MC_WORKERUNI_INFO->off_workeru_pt != mc_null)
 
 #ifdef __cplusplus
 }

@@ -70,7 +70,7 @@ typedef uint8_t mc_bool_t;
 	#include "shared_znq.h"
 #endif
 
-#define MC_INVALID_CORE_NN ((mc_workeru_nn_t)(~((mc_workeru_nn_t)0x0)))
+#define MC_INVALID_WORKERUNI_NN ((mc_workeru_nn_t)(~((mc_workeru_nn_t)0x0)))
 
 typedef mc_addr_t mc_size_t;
 	
@@ -204,7 +204,7 @@ mc_addr_in_sys(mc_addr_t addr) {
 }
 
 //! Returns true if 'addr' is in the host
-#define mc_addr_in_host(addr) (! mc_addr_in_sys(addr))
+#define mc_addr_in_manageru(addr) (! mc_addr_in_sys(addr))
 
 /*! Remote dereference of a 'pt_field' of remote object pointer 'glb_pt' (with id) and 
 returns it as a 'typ_nam' pointer

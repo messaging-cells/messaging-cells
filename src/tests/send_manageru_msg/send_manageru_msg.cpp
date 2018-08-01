@@ -40,7 +40,7 @@ void
 recv_workeru_handler(missive* msg){
 	PTD_CK(mc_addr_is_local(msg->dst));
 
-	mck_sprt2("CORE_GOT_RESPONSE\n");
+	mck_sprt2("WORKERUNI_GOT_RESPONSE\n");
 	PTD_PRT("RCV_RESPONSE. src=%p dst=%p \n", msg->get_source(), msg->dst);
 	
 	mck_get_kernel()->set_idle_exit();
@@ -65,7 +65,7 @@ void mc_workerus_main() {
 	MC_MARK_USED(ker);
 
 	if(mck_is_ro_co_core(0,0)){
-		mck_slog2("CORE (0,0) started\n");
+		mck_slog2("WORKERUNI (0,0) started\n");
 
 		kernel::set_handlers(2, core_handlers);
 
@@ -85,7 +85,7 @@ void mc_workerus_main() {
 
 		MCK_CK(act2 != mc_null);
 
-		msv->send_to_host();
+		msv->send_to_manageru();
 
 		PTD_PRT("SND_SENT H MISSIVE\n");
 
@@ -96,7 +96,7 @@ void mc_workerus_main() {
 		kernel::run_sys();
 	}
 
-	mck_slog2("FINISHED SEND_HOST TEST\n");	
+	mck_slog2("FINISHED SEND_MANAGERU TEST\n");	
 
 	kernel::finish_sys();
 }

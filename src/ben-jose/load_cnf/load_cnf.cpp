@@ -257,11 +257,11 @@ void
 print_childs(){
 	mc_load_map_st* mp = mc_map_get_loaded();
 
-	mck_slog2("NUM_CORE=");
+	mck_slog2("NUM_WORKERUNI=");
 	mck_ilog(mp->num_core);
 	mck_slog2("___\n");
 
-	//PTD_PRT("NUM_CORE=%d \n", mp->num_core);
+	//PTD_PRT("NUM_WORKERUNI=%d \n", mp->num_core);
 
 	if(mp->childs == mc_null){ 
 		mck_slog2("NULL_CHILDS\n");
@@ -370,7 +370,7 @@ void bj_init_nervenet(){
 
 	nervenet* my_net = nervenet::acquire_alloc();
 	if(my_net == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERUNI DATA"));
 	}
 	ker->user_data = my_net;
 
@@ -388,7 +388,7 @@ void bj_load_main() {
 	/*
 	nervenet* my_net = nervenet::acquire_alloc();
 	if(my_net == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERUNI DATA"));
 	}
 	ker->user_data = my_net;
 

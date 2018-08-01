@@ -61,9 +61,9 @@ mc_c_decl {
 	extern mc_addr_t LD_EXTERNAL_MANAGERU_DATA_ORIG;
 	extern mc_addr_t LD_EXTERNAL_MANAGERU_ALLOC_ORIG;
 
-	extern mc_addr_t LD_CORE_STACK_ORIG;
-	extern mc_addr_t LD_CORE_MODULE_ORIG;
-	extern mc_addr_t LD_CORE_MODULE_SIZE;
+	extern mc_addr_t LD_WORKERUNI_STACK_ORIG;
+	extern mc_addr_t LD_WORKERUNI_MODULE_ORIG;
+	extern mc_addr_t LD_WORKERUNI_MODULE_SIZE;
 
 	#define MCK_LNK_SCRPT_SYM_VAL(xx) ((mc_addr_t)(&xx))
 
@@ -88,12 +88,12 @@ mc_c_decl {
 	//! Value of linker script variable LD_EXTERNAL_MANAGERU_ALLOC_ORIG
 	#define MC_VAL_EXTERNAL_MANAGERU_ALLOC_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_EXTERNAL_MANAGERU_ALLOC_ORIG)
 
-	//! Value of linker script variable LD_CORE_STACK_ORIG
-	#define MC_VAL_CORE_STACK_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_CORE_STACK_ORIG)
-	//! Value of linker script variable LD_CORE_MODULE_ORIG
-	#define MC_VAL_CORE_MODULE_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_ORIG)
-	//! Value of linker script variable LD_CORE_MODULE_SIZE
-	#define MC_VAL_CORE_MODULE_SIZE 	MCK_LNK_SCRPT_SYM_VAL(LD_CORE_MODULE_SIZE)
+	//! Value of linker script variable LD_WORKERUNI_STACK_ORIG
+	#define MC_VAL_WORKERUNI_STACK_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_WORKERUNI_STACK_ORIG)
+	//! Value of linker script variable LD_WORKERUNI_MODULE_ORIG
+	#define MC_VAL_WORKERUNI_MODULE_ORIG 	MCK_LNK_SCRPT_SYM_VAL(LD_WORKERUNI_MODULE_ORIG)
+	//! Value of linker script variable LD_WORKERUNI_MODULE_SIZE
+	#define MC_VAL_WORKERUNI_MODULE_SIZE 	MCK_LNK_SCRPT_SYM_VAL(LD_WORKERUNI_MODULE_SIZE)
 
 #endif
 

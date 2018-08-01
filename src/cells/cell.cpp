@@ -105,8 +105,8 @@ kernel::init_kernel(){
 
 	init_router_ack_arrays();
 
-	routed_from_host = mc_null;
-	routed_ack_from_host = mck_ready_ack;
+	routed_from_manageru = mc_null;
+	routed_ack_from_manageru = mck_ready_ack;
 
 	has_from_manageru_work = false;
 	has_to_manageru_work = false;
@@ -151,8 +151,8 @@ mck_ck_type_sizes(){
 }
 
 void	// static
-kernel::init_sys(bool is_the_host){
-	mck_glb_init(is_the_host);
+kernel::init_sys(bool is_the_manageru){
+	mck_glb_init(is_the_manageru);
 
 	MCK_CK(mck_ck_type_sizes());
 
@@ -166,7 +166,7 @@ kernel::init_sys(bool is_the_host){
 		//PTD_PRT("SETTING manageru_load_data = %p \n", ker->manageru_load_data);
 	}
 
-	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	mck_glb_sys_st* in_shd = MC_WORKERUNI_INFO;
 
 	in_shd->binder_sz = sizeof(binder);
 	in_shd->kernel_sz = sizeof(kernel);
@@ -189,13 +189,13 @@ kernel::run_sys(){
 	
 	if(! ker->is_manageru_kernel){
 		ker->reset_stop_sys();
-		MC_CORE_INFO->pt_workeru_kernel = (void*)mc_addr_set_id(MC_CORE_INFO->the_workeru_id, ker);
-		MC_CORE_INFO->inited_core = MC_CORE_INFO->the_workeru_id;
+		MC_WORKERUNI_INFO->pt_workeru_kernel = (void*)mc_addr_set_id(MC_WORKERUNI_INFO->the_workeru_id, ker);
+		MC_WORKERUNI_INFO->inited_core = MC_WORKERUNI_INFO->the_workeru_id;
 		/*
 		#ifdef MC_PLL_LOADING
-			if(MC_CORE_INFO->the_workeru_nn == 0){
+			if(MC_WORKERUNI_INFO->the_workeru_nn == 0){
 				mck_sprt2("INITED___"); 
-				mck_xprt((mc_addr_t)(&(MC_CORE_INFO->inited_core)));
+				mck_xprt((mc_addr_t)(&(MC_WORKERUNI_INFO->inited_core)));
 				mck_sprt2("___\n");
 			}
 		#endif
@@ -211,7 +211,7 @@ kernel::run_sys(){
 		PTD_CODE(sched_yield());
 	}
 
-	MC_CORE_INFO->inited_core = 0;
+	MC_WORKERUNI_INFO->inited_core = 0;
 
 	ker->init_router_ack_arrays();
 }
@@ -376,7 +376,7 @@ kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 void 
 kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* acks){
 	mc_workeru_nn_t dst_idx = get_workeru_nn();
-	bool is_from_host = (arr == &routed_from_host);
+	bool is_from_manageru = (arr == &routed_from_manageru);
 
 	for(int aa = 0; aa < sz; aa++){
 		missive_grp_t* glb_msv_grp = arr[aa];
@@ -391,25 +391,25 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 			in_wrk.bind_to_my_left(*nw_ref);
 
 			mc_workeru_id_t src_id = mc_addr_get_id((mc_addr_t)(glb_msv_grp));
-			PTD_CK_PRT((is_from_host || (aa == mc_id_to_nn(src_id))), "is_from_host = %d \n", is_from_host);
+			PTD_CK_PRT((is_from_manageru || (aa == mc_id_to_nn(src_id))), "is_from_manageru = %d \n", is_from_manageru);
 
 			mck_ack_t* rem_dst_ack_pt;
 			if(! is_manageru_kernel){
 				mck_ack_t* loc_dst_ack_pt = &(acks[dst_idx]);
-				if(! is_from_host){
+				if(! is_from_manageru){
 					rem_dst_ack_pt = (mck_ack_t*)mc_addr_set_id(src_id, loc_dst_ack_pt);
 				} else {
 					rem_dst_ack_pt = loc_dst_ack_pt;
 				}
 			} else {
-				PTD_CK(! is_from_host);
+				PTD_CK(! is_from_manageru);
 				kernel* core_ker = kernel::get_workeru_kernel(src_id);
-				rem_dst_ack_pt = (mck_ack_t*)(&(core_ker->routed_ack_from_host));
+				rem_dst_ack_pt = (mck_ack_t*)(&(core_ker->routed_ack_from_manageru));
 				//PTD_PRT("process_signal. rem_dst_ack_pt=%p\n", rem_dst_ack_pt);
 				//ZNQ_CODE(printf("process_signal. rem_dst_ack_pt=%p \n", rem_dst_ack_pt));
 			}
 
-			//PTD_COND_PRT(is_from_host, "FLAG1_is_from_host = %d \n", is_from_host);
+			//PTD_COND_PRT(is_from_manageru, "FLAG1_is_from_manageru = %d \n", is_from_manageru);
 
 			PTD_CK(rem_dst_ack_pt != mc_null);
 			PTD_CK(*rem_dst_ack_pt == mck_busy_ack);
@@ -417,17 +417,17 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 
 			did_work |= mc_bit1;
 
-			//PTD_COND_PRT(is_from_host, "FLAG2_is_from_host = %d \n", is_from_host);
+			//PTD_COND_PRT(is_from_manageru, "FLAG2_is_from_manageru = %d \n", is_from_manageru);
 		}
 	}
 
 	//ZNQ_CODE(printf("process_signal FLAG2\n"));
-	//PTD_COND_PRT(is_from_host, "FLAG3_is_from_host = %d \n", is_from_host);
+	//PTD_COND_PRT(is_from_manageru, "FLAG3_is_from_manageru = %d \n", is_from_manageru);
 }
 
 bool
 mck_has_same_module(mc_workeru_id_t dst_id){
-	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	mck_glb_sys_st* in_shd = MC_WORKERUNI_INFO;
 	mc_addr_t* loc_mdl = &(in_shd->current_module_addr);
 	mc_addr_t* rmt_mdl = (mc_addr_t*)mc_addr_set_id(dst_id, loc_mdl);
 	if((*rmt_mdl) != (*loc_mdl)){
@@ -441,14 +441,14 @@ mck_has_same_module(mc_workeru_id_t dst_id){
 
 bool
 mck_has_module(){
-	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	mck_glb_sys_st* in_shd = MC_WORKERUNI_INFO;
 	mc_addr_t* loc_mdl = &(in_shd->current_module_addr);
 	return (loc_mdl != mc_null);
 }
 
 bool
 mck_has_same_sub_module(mc_workeru_id_t dst_id){
-	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	mck_glb_sys_st* in_shd = MC_WORKERUNI_INFO;
 	uint8_t* loc_mdl = &(in_shd->current_sub_module_id);
 	uint8_t* rmt_mdl = (uint8_t*)mc_addr_set_id(dst_id, loc_mdl);
 	if((*rmt_mdl) != (*loc_mdl)){
@@ -461,7 +461,7 @@ mck_has_same_sub_module(mc_workeru_id_t dst_id){
 
 bool
 mck_is_id_inited(mc_workeru_id_t dst_id){
-	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	mck_glb_sys_st* in_shd = MC_WORKERUNI_INFO;
 	mc_workeru_id_t* loc_st = &(in_shd->inited_core);
 	mc_workeru_id_t* rmt_st = (mc_workeru_id_t*)mc_addr_set_id(dst_id, loc_st);
 	if((*rmt_st) != dst_id){
@@ -508,7 +508,7 @@ kernel::handle_missives(){
 	}
 
 	if(has_from_manageru_work){
-		handle_work_from_host();
+		handle_work_from_manageru();
 	}
 
 	binder* in_grp = &(ker->in_work);
@@ -587,12 +587,12 @@ kernel::handle_missives(){
 			}
 			if(! mck_has_same_module(dst_id)){
 				did_work |= mc_bit5;
-				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_workeru_nn, mc_id_to_nn(dst_id), msv->tok);
+				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_WORKERUNI_INFO->the_workeru_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			if(mck_has_module() && ! mck_has_same_sub_module(dst_id)){
 				did_work |= mc_bit6;
-				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_CORE_INFO->the_workeru_nn, mc_id_to_nn(dst_id), msv->tok);
+				//PTD_PRT("SKIP msg %d => %d tok=%d \n", MC_WORKERUNI_INFO->the_workeru_nn, mc_id_to_nn(dst_id), msv->tok);
 				continue;
 			}
 			loc_dst_ack_pt = mck_ready_ack;
@@ -624,7 +624,7 @@ kernel::handle_missives(){
 	}
 
 	if(has_to_manageru_work){
-		handle_work_to_host();
+		handle_work_to_manageru();
 	}
 
 	fst = ker->sent_work.bn_right;
@@ -728,8 +728,8 @@ kernel::handle_work_to_cores(){
 
 		missive_grp_t* glb_mgrp = (missive_grp_t*)mc_manageru_pt_to_workeru_pt(mgrp);
 
-		PTD_CK(core_ker->routed_from_host == mc_null);
-		core_ker->routed_from_host = glb_mgrp;
+		PTD_CK(core_ker->routed_from_manageru == mc_null);
+		core_ker->routed_from_manageru = glb_mgrp;
 
 		// send signal
 		core_ker->has_from_manageru_work = mc_true;
@@ -743,18 +743,18 @@ kernel::handle_work_to_cores(){
 }
 
 void 
-kernel::handle_work_to_host(){
+kernel::handle_work_to_manageru(){
 	MCK_CK(! is_manageru_kernel);
 	MCK_CK(manageru_kernel != mc_null);
 	MCK_CK(has_to_manageru_work);
 
-	if(routed_ack_from_host != mck_ready_ack){
+	if(routed_ack_from_manageru != mck_ready_ack){
 		did_work |= mc_bit14;
-		//PTD_PRT("HOST NOT READY \n");
+		//PTD_PRT("MANAGERU NOT READY \n");
 		return;
 	}
 
-	routed_ack_from_host = mck_busy_ack;
+	routed_ack_from_manageru = mck_busy_ack;
 
 	missive_grp_t* mgrp2 = agent_grp::acquire();
 	PTD_CK(mgrp2 != mc_null);
@@ -762,10 +762,10 @@ kernel::handle_work_to_host(){
 
 	mgrp2->all_agts.move_all_to_my_left(to_manageru_work);
 
-	/*mck_sprt2("SND_HOST fst_msv___");
+	/*mck_sprt2("SND_MANAGERU fst_msv___");
 	mck_xprt((mc_addr_t)(mgrp2->all_agts.bn_right));
 	mck_sprt2("___\n");
-	mck_sprt2("SND_HOST handle_work_to_host SENDING MISSIVE\n");*/
+	mck_sprt2("SND_MANAGERU handle_work_to_manageru SENDING MISSIVE\n");*/
 
 	mc_workeru_nn_t src_idx = get_workeru_nn();
 	missive_grp_t* glb_mgrp = (missive_grp_t*)mck_as_glb_pt(mgrp2);
@@ -832,13 +832,13 @@ kernel::call_manageru_handlers_of_group(missive_grp_t* core_mgrp){
 }
 
 void
-kernel::handle_work_from_host(){
+kernel::handle_work_from_manageru(){
 	MCK_CK(! is_manageru_kernel);
 	MCK_CK(manageru_kernel != mc_null);
 	MCK_CK(has_from_manageru_work);
 
 	PTD_CK(from_manageru_work.is_alone());
-	process_signal(from_manageru_work, 1, &routed_from_host, manageru_kernel->pw0_routed_ack_arr);
+	process_signal(from_manageru_work, 1, &routed_from_manageru, manageru_kernel->pw0_routed_ack_arr);
 	PTD_CK(! from_manageru_work.is_alone());
 
 	missive_ref_t* fst_ref = (missive_ref_t*)from_manageru_work.bn_right;
@@ -851,7 +851,7 @@ kernel::handle_work_from_host(){
 
 	binder* all_msvs = &(manageru_mgrp->all_agts);
 
-	//mck_sprt2("handle_work_from_host. FLAG1 \n");
+	//mck_sprt2("handle_work_from_manageru. FLAG1 \n");
 
 	fst = (binder*)mc_manageru_pt_to_workeru_pt(all_msvs->bn_right);
 	lst = all_msvs;
@@ -872,7 +872,7 @@ kernel::handle_work_from_host(){
 
 	has_from_manageru_work = false;
 
-	//mck_sprt2("handle_work_from_host. end_FLAG \n");
+	//mck_sprt2("handle_work_from_manageru. end_FLAG \n");
 }
 
 void 
@@ -899,7 +899,7 @@ kernel::stop_sys(mck_token_t key){
 
 	ker->stop_key = key;
 
-	//PTD_PRT("START_STOP_CORE=%d \n", ker->get_workeru_nn());
+	//PTD_PRT("START_STOP_WORKERUNI=%d \n", ker->get_workeru_nn());
 }
 
 void 
@@ -910,7 +910,7 @@ kernel::send_stop_to_children(){
 
 	mc_load_map_st* mp = mc_map_get_loaded();
 
-	//PTD_PRT("STOP_CHILDREN CORE=%d \n", get_workeru_nn());
+	//PTD_PRT("STOP_CHILDREN WORKERUNI=%d \n", get_workeru_nn());
 
 	if(mp->childs != mc_null){ 
 		int aa = 0;
@@ -920,7 +920,7 @@ kernel::send_stop_to_children(){
 			mc_workeru_nn_t chd_nn = ch_map->num_core;
 			cell* ch_cell = get_workeru_cell(mc_nn_to_id(chd_nn));
 
-			//PTD_PRT_STACK(true, "mck_tok_stop_sys_to_children CORE=%d \n", get_workeru_nn());
+			//PTD_PRT_STACK(true, "mck_tok_stop_sys_to_children WORKERUNI=%d \n", get_workeru_nn());
 
 			missive* msv = missive::acquire();
 			msv->src = get_workeru_cell();
@@ -942,7 +942,7 @@ kernel::handle_stop(){
 	mc_workeru_nn_t tot_child = mc_map_get_tot_children();
 	//PTD_CK((tot_child == 0) == ());
 	if(! sent_stop_to_parent && (num_childs_stopping == tot_child)){
-		//PTD_PRT("SENDING STOP TO PARENT CORE=%d TOT_CHLD=%d \n", get_workeru_nn(), tot_child);
+		//PTD_PRT("SENDING STOP TO PARENT WORKERUNI=%d TOT_CHLD=%d \n", get_workeru_nn(), tot_child);
 
 		if(user_stop_func != mc_null){
 			(*user_stop_func)();
@@ -975,7 +975,7 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 			kernel* ker = MCK_KERNEL;
 			kernel* rem_ker = (kernel*)mc_addr_set_id(src_id, ker);
 
-			//PTD_PRT("GOT_STOP PARENT FROM CORE=%d \n", mc_id_to_nn(src_id));
+			//PTD_PRT("GOT_STOP PARENT FROM WORKERUNI=%d \n", mc_id_to_nn(src_id));
 
 			mck_token_t rem_key = rem_ker->stop_key;
 			if(rcvd_stop_key == 0){

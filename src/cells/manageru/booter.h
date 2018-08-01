@@ -52,7 +52,7 @@ mc_c_decl {
 #define MC_STDERR stderr
 
 #define MC_PURE_LOCAL_ADDR 3
-#define MC_CORE_LOCAL_ADDR 4
+#define MC_WORKERUNI_LOCAL_ADDR 4
 #define MC_EXTE_LOCAL_ADDR 5
 
 

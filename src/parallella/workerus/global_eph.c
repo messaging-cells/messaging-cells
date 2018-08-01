@@ -81,16 +81,16 @@ mck_abort(mc_addr_t err, char* msg) {
 
 	if(msg != mc_null){
 		sz_trace = MC_MAX_CALL_STACK_SZ;
-		trace = MC_CORE_INFO->mck_dbg_call_stack_trace;
+		trace = MC_WORKERUNI_INFO->mck_dbg_call_stack_trace;
 	}
 	if((trace != mc_null) && (sz_trace > 0)){
 		mck_get_call_stack_trace(sz_trace, trace);
 	}
-	mck_glb_sys_st* in_shd = MC_CORE_INFO;
+	mck_glb_sys_st* in_shd = MC_WORKERUNI_INFO;
 	in_shd->dbg_error_code = err;
 	in_shd->dbg_error_str = msg;
 
-	mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt;
+	mc_off_workeru_st* off_workeru_pt = MC_WORKERUNI_INFO->off_workeru_pt;
 	if((off_workeru_pt != mc_null) && (off_workeru_pt->magic_id == MC_MAGIC_ID)){
 		mc_loop_set_var(off_workeru_pt->is_finished, MC_FINISHED_VAL);
 	}
@@ -127,7 +127,7 @@ mck_get_module_address(uint32_t modl_idx){
 	if(modl_idx >= tot_modls){
 		return mc_null;
 	}
-	mc_addr_t mod_sz = MC_VAL_CORE_MODULE_SIZE;
+	mc_addr_t mod_sz = MC_VAL_WORKERUNI_MODULE_SIZE;
 	uint8_t* pt_ext_mods = (uint8_t*)MC_VAL_EXTERNAL_LOAD_ORIG;
 	return ((mc_addr_t)(pt_ext_mods + (mod_sz * modl_idx)));
 }
@@ -138,7 +138,7 @@ mck_get_module_name(uint32_t modl_idx){
 	if(modl_idx >= tot_modls){
 		return mc_null;
 	}
-	mc_addr_t mod_sz = MC_VAL_CORE_MODULE_SIZE;
+	mc_addr_t mod_sz = MC_VAL_WORKERUNI_MODULE_SIZE;
 	uint8_t* pt_ext_mods = (uint8_t*)MC_VAL_EXTERNAL_LOAD_ORIG;
 	char** pt_mod_nams = (char**)(pt_ext_mods + (mod_sz * tot_modls));
 	return pt_mod_nams[modl_idx];
@@ -181,11 +181,11 @@ mck_load_module(mc_addr_t ext_addr){
 	mck_xprt((mc_addr_t)pt_mod);
 	mck_sprt(dbg_glb_addr_end);
 
-	mc_addr_t mod_sz = MC_VAL_CORE_MODULE_SIZE;
-	uint8_t* pt_mem_mod = (uint8_t*)MC_VAL_CORE_MODULE_ORIG;
+	mc_addr_t mod_sz = MC_VAL_WORKERUNI_MODULE_SIZE;
+	uint8_t* pt_mem_mod = (uint8_t*)MC_VAL_WORKERUNI_MODULE_ORIG;
 	mc_memcpy(pt_mem_mod, pt_mod, mod_sz);
 
-	MC_CORE_INFO->current_module_addr = ext_addr;
+	MC_WORKERUNI_INFO->current_module_addr = ext_addr;
 	return true;
 }
 

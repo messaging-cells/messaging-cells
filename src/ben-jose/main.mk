@@ -58,7 +58,7 @@ MC_STD_INCDIRS := ../../cells ../../cells/manageru ${MC_ETOOLS}/host/include
 
 SRC_BJ_DIR := ${MC_CURR_DIR}
 
-BJ_CORES_INCLUDES := \
+BJ_WORKERUNIS_INCLUDES := \
 	${MC_STD_INCDIRS} \
 	${SRC_BJ_DIR}/nervenet \
 	${SRC_BJ_DIR}/dbg_only \
@@ -70,7 +70,7 @@ BJ_CORES_INCLUDES := \
 
 
 BJ_MANAGERU_INCLUDES := \
-	${BJ_CORES_INCLUDES} \
+	${BJ_WORKERUNIS_INCLUDES} \
 	${SRC_BJ_DIR}/manageru_code/cnf_preload \
 	${SRC_BJ_DIR}/manageru_code/dimacs \
 	${SRC_BJ_DIR}/manageru_code/utils 

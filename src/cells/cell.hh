@@ -353,8 +353,8 @@ public:
 	mck_ack_t pw4_routed_ack_arr[kernel_pw4_routed_arr_sz];
 	mck_ack_t pw6_routed_ack_arr[kernel_pw6_routed_arr_sz];
 
-	missive_grp_t*	routed_from_host;
-	mck_ack_t	routed_ack_from_host;
+	missive_grp_t*	routed_from_manageru;
+	mck_ack_t	routed_ack_from_manageru;
 
 	mc_bool_t has_from_manageru_work;
 	mc_bool_t has_to_manageru_work;
@@ -405,7 +405,7 @@ public:
 	void init_router_ack_arrays() mc_external_code_ram;
 
 	static void
-	init_sys(bool is_the_host = false) mc_external_code_ram; //!< Static method that inits this core kernel.
+	init_sys(bool is_the_manageru = false) mc_external_code_ram; //!< Static method that inits this core kernel.
 
 	static mc_opt_sz_fn void 
 	run_sys(); //!< Static method that starts handling \ref missive s. No \ref missive s are handled before.
@@ -429,43 +429,43 @@ public:
 	//! Returns the core global info
 	static mc_inline_fn mck_glb_sys_st& 
 	get_workeru_info(){
-		return *MC_CORE_INFO;
+		return *MC_WORKERUNI_INFO;
 	}
 
 	static mc_inline_fn mc_off_workeru_st& 
 	get_off_shd(){
-		return *(MC_CORE_INFO->off_workeru_pt);
+		return *(MC_WORKERUNI_INFO->off_workeru_pt);
 	}
 
 	//! Returns the system size structure
 	static mc_inline_fn mc_sys_sz_st& 
 	get_sys_sz(){
 		return *MC_SYS_SZ;
-		//return MC_CORE_INFO->mck_system_sz;
+		//return MC_WORKERUNI_INFO->mck_system_sz;
 	}
 
 	//! Returns the core number
 	static mc_inline_fn mc_workeru_nn_t 
 	get_workeru_nn(){
-		return MC_CORE_INFO->the_workeru_nn;
+		return MC_WORKERUNI_INFO->the_workeru_nn;
 	}
 
 	//! Returns the core row
 	static mc_inline_fn mc_workeru_co_t 
 	get_workeru_ro(){
-		return MC_CORE_INFO->the_workeru_ro;
+		return MC_WORKERUNI_INFO->the_workeru_ro;
 	}
 
 	//! Returns the core column
 	static mc_inline_fn mc_workeru_co_t 
 	get_workeru_co(){
-		return MC_CORE_INFO->the_workeru_co;
+		return MC_WORKERUNI_INFO->the_workeru_co;
 	}
 
 	//! Returns the core id
 	static mc_inline_fn mc_workeru_id_t 
 	get_workeru_id(){
-		return MC_CORE_INFO->the_workeru_id;
+		return MC_WORKERUNI_INFO->the_workeru_id;
 	}
 
 	//! Returns the parent core id
@@ -518,10 +518,10 @@ public:
 	call_handlers_of_group(missive_grp_t* mgrp);
 
 	void 
-	handle_work_to_host() mc_external_code_ram;
+	handle_work_to_manageru() mc_external_code_ram;
 
 	void
-	handle_work_from_host() mc_external_code_ram;
+	handle_work_from_manageru() mc_external_code_ram;
 
 	void 
 	handle_work_to_cores() mc_external_code_ram;
@@ -806,7 +806,7 @@ public:
 	}
 
 	mc_inline_fn 
-	void send_to_host(){
+	void send_to_manageru(){
 		PTD_CK(dbg_msv == 0);
 		PTD_DBG_CODE(dbg_msv |= 0x1);
 

@@ -226,7 +226,7 @@ int mc_manageru_main(int argc, char *argv[])
 	//bj_test_7(argc, argv);
 	rr = bj_manageru_main(argc, argv);
 
-	printf("HOST_CODE_FINISHED ==================================== \n");
+	printf("MANAGERU_CODE_FINISHED ==================================== \n");
 	return rr;
 }
 

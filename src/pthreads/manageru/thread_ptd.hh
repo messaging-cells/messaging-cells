@@ -74,7 +74,7 @@ extern ptd_info_t*	mcm_MANAGERU_PTD_INFO;
 
 extern thread_info_t* ALL_THREADS_INFO;
 extern int TOT_THREADS;
-extern pthread_t HOST_THREAD_ID;
+extern pthread_t MANAGERU_THREAD_ID;
 
 uint16_t
 mck_get_thread_idx();
@@ -83,7 +83,7 @@ ptd_info_t*
 mck_get_ptd_info();
 
 mc_inline_fn bool
-mcm_addr_in_host(void* addr){
+mcm_addr_in_manageru(void* addr){
 	uint8_t* pt = (uint8_t*)addr;
 	uint8_t* hh = (uint8_t*)mcm_dlmalloc_heap;
 	uint8_t* ll = hh + sizeof(mcm_dlmalloc_heap);
@@ -122,7 +122,7 @@ mcm_addr_with_fn(mc_workeru_id_t id, void* addr);
 
 mc_inline_fn bool
 mc_is_manageru_thread(){
-	return (pthread_self() == HOST_THREAD_ID);
+	return (pthread_self() == MANAGERU_THREAD_ID);
 }
 
 void

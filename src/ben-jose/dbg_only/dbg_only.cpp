@@ -78,7 +78,7 @@ void bj_dbg_only_main() {
 	
 	nervenet* my_net = nervenet::acquire_alloc();
 	if(my_net == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERUNI DATA"));
 	}
 	ker->user_data = my_net;
 

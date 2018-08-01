@@ -387,7 +387,7 @@ chopstick::handler(missive* msv){
 				//long osz = ker->out_work.calc_size();
 				//mck_ack_t loc_dst_ack_pt = (ker->pw0_routed_ack_arr)[0];
 				mck_slog2("ADDR_INI____");
-				mck_xlog((mc_addr_t)(&(MC_CORE_INFO->inited_core)));
+				mck_xlog((mc_addr_t)(&(MC_WORKERUNI_INFO->inited_core)));
 				mck_slog2("___\n");
 
 				mck_slog2("INI_0____");
@@ -650,7 +650,7 @@ philosopher::call_exit(){
 	void prt_pc(int aa, philo_core* pc){
 		char full_str[500];
 		char* pt = full_str;
-		pt += sprintf(pt, "CORE %d=[", aa);
+		pt += sprintf(pt, "WORKERUNI %d=[", aa);
 		PTD_64_CODE(
 			pt += sprintf(pt, "out_work_sz=%ld ", pc->out_work_sz);
 			pt += sprintf(pt, "sent_work_sz=%ld ", pc->sent_work_sz);
@@ -715,7 +715,7 @@ void mc_workerus_main() {
 
 	philo_core* core_dat = philo_core::acquire_alloc();
 	if(core_dat == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB CORE DATA"));
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERUNI DATA"));
 	}
 
 	ker->user_data = core_dat;

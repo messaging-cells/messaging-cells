@@ -102,7 +102,7 @@ public:
 		nod_id = 0;
 		level = 0;
 
-		nod_nn = MC_INVALID_CORE_NN;
+		nod_nn = MC_INVALID_WORKERUNI_NN;
 
 		up_idx = 0;
 		up_conn = conn_invalid;

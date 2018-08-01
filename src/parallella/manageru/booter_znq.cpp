@@ -255,7 +255,7 @@ mc_manageru_run(){
 			core_id = mc_ro_co_to_id(row, col);
 			mc_workeru_nn_t num_core = mc_id_to_nn(core_id);
 
-			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
+			//printf("STARTING WORKERUNI 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
 			memset(&f_nm, 0, sizeof(f_nm));
 			sprintf(f_nm, "log_workeru_%02d.txt", num_core);
@@ -403,7 +403,7 @@ mc_manageru_run(){
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
 	*/
-	//printf("CORES FINISHED \n");
+	//printf("WORKERUNIS FINISHED \n");
 
 	int nn;
 	for (nn=0; nn < tot_cores; nn++){

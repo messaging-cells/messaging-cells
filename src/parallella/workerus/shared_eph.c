@@ -40,11 +40,11 @@ mc_sys_sz_st 	mck_system_sz;
 
 mc_addr_t
 mc_manageru_addr_to_workeru_addr(mc_addr_t h_addr){
-	return (MC_VAL_EXTERNAL_RAM_ORIG + (h_addr - MC_CORE_INFO->znq_shd_mem_base));
+	return (MC_VAL_EXTERNAL_RAM_ORIG + (h_addr - MC_WORKERUNI_INFO->znq_shd_mem_base));
 }
 
 mc_addr_t
 mc_workeru_addr_to_manageru_addr(mc_addr_t c_addr){
-	return (MC_CORE_INFO->znq_shd_mem_base + (c_addr - MC_VAL_EXTERNAL_RAM_ORIG));
+	return (MC_WORKERUNI_INFO->znq_shd_mem_base + (c_addr - MC_VAL_EXTERNAL_RAM_ORIG));
 }
 

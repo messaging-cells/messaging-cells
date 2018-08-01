@@ -47,7 +47,7 @@ void
 mck_abort(mc_addr_t err, char* orig_msg) {
 	char msg[300];
 	ptd_info_t* inf = mck_get_ptd_info();
-	snprintf(msg, 300, "ABORTED THREAD=%ld \t CORE_ID=%x MSG=%s\n", inf->ptd_id, inf->ptd_workeru_id, orig_msg);
+	snprintf(msg, 300, "ABORTED THREAD=%ld \t WORKERUNI_ID=%x MSG=%s\n", inf->ptd_id, inf->ptd_workeru_id, orig_msg);
 	mch_abort_func(err, msg);
 }
 
@@ -84,7 +84,7 @@ mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* us
 bool
 mck_load_module(mc_addr_t ext_addr){
 	PTD_LOG("LOADING MODULE %p %s \n", (void*)ext_addr, (char*)ext_addr);
-	MC_CORE_INFO->current_module_addr = ext_addr;
+	MC_WORKERUNI_INFO->current_module_addr = ext_addr;
 	return true;
 }
 

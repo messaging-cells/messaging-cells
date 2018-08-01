@@ -53,8 +53,8 @@ mc_link_syms_data_st mck_external_ram_load_data mc_lk_syms_dat = {
 	.extnl_manageru_data_orig = MC_VAL_EXTERNAL_MANAGERU_DATA_ORIG,
 	.extnl_manageru_alloc_orig = MC_VAL_EXTERNAL_MANAGERU_ALLOC_ORIG,
 
-	.core_module_orig = MC_VAL_CORE_MODULE_ORIG,
-	.core_module_size = MC_VAL_CORE_MODULE_SIZE,
+	.core_module_orig = MC_VAL_WORKERUNI_MODULE_ORIG,
+	.core_module_size = MC_VAL_WORKERUNI_MODULE_SIZE,
 
 	.extnl_code_disp = 0,
 	.extnl_load_disp = 0,
@@ -91,8 +91,8 @@ mc_load_map(){
 		mck_sprt("___umm_heap___");
 		mck_xprt((mc_addr_t)umm_heap);
 	)
-	//mck_sprt("___MC_CORE_INFO___");
-	//mck_xprt((mc_addr_t)MC_CORE_INFO);
+	//mck_sprt("___MC_WORKERUNI_INFO___");
+	//mck_xprt((mc_addr_t)MC_WORKERUNI_INFO);
 	mck_sprt("___\n");
 	*/
 
@@ -112,7 +112,7 @@ mc_load_map(){
 		mck_abort((mc_addr_t)err_loader_eph_02, err_loader_eph_02);
 		return;
 	}
-	//mck_slog("NUM_CORE_OK2=");
+	//mck_slog("NUM_WORKERUNI_OK2=");
 	//mck_ilog(mcz_broadcast_map->num_core);
 	//mck_slog("___\n");
 

@@ -87,7 +87,7 @@ void mc_workerus_main() {
 	MC_MARK_USED(ker);
 
 	if(mck_is_ro_co_core(0,0)){
-		mck_slog2("CORE (0,0) started\n");
+		mck_slog2("WORKERUNI (0,0) started\n");
 
 		// Next line is just to remaind that every single cell should have a valid handler_idx. It was already 0.
 		kernel::get_workeru_cell()->handler_idx = 0;	// This is recv_cell_handler's index in the_handlers.
@@ -95,7 +95,7 @@ void mc_workerus_main() {
 		kernel::run_sys();
 	}
 	if(mck_is_ro_co_core(0,1)){
-		mck_slog2("CORE (0,1) started\n");
+		mck_slog2("WORKERUNI (0,1) started\n");
 		mc_workeru_id_t dst = mc_ro_co_to_id(0, 0);
 		
 		cell* act1 = kernel::get_workeru_cell();

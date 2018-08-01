@@ -130,7 +130,7 @@ int main() {
 	all_mod_addr = mc_malloc32(mc_addr_t, TOT_MODS);
 	mck_fill_module_external_addresses(TOT_MODS, all_mod_nams, all_mod_addr);
 
-	if(MC_CORE_INFO->the_workeru_nn == 0){	
+	if(MC_WORKERUNI_INFO->the_workeru_nn == 0){	
 		//print_module_nams();
 		//print_module_addrs();
 		bool ok = mck_load_module(all_mod_addr[MOD2_IDX]);
@@ -138,7 +138,7 @@ int main() {
 			m2_main();
 		}
 	}
-	if(MC_CORE_INFO->the_workeru_nn == 1){	
+	if(MC_WORKERUNI_INFO->the_workeru_nn == 1){	
 		//print_module_nams();
 		//print_module_addrs();
 		bool ok = mck_load_module(all_mod_addr[MOD1_IDX]);
@@ -146,7 +146,7 @@ int main() {
 			m1_main();
 		}
 	}
-	if(MC_CORE_INFO->the_workeru_nn == 3){	
+	if(MC_WORKERUNI_INFO->the_workeru_nn == 3){	
 		//print_module_nams();
 		//print_module_addrs();
 		bool ok = mck_load_module(all_mod_addr[MOD3_IDX]);

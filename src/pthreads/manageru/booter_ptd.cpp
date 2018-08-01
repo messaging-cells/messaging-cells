@@ -107,7 +107,7 @@ ck_all_workeru_ids(){
 	for(int aa = 0; aa < TOT_THREADS; aa++){
 		mc_workeru_id_t koid = mc_nn_to_id(aa);
 		if(ALL_THREADS_INFO[aa].thd_ptd.ptd_workeru_id != koid){
-			mch_abort_func(1, "ck_all_workeru_ids. BAD CORE ID \n");
+			mch_abort_func(1, "ck_all_workeru_ids. BAD WORKERUNI ID \n");
 		}
 	}
 	return true;
@@ -155,7 +155,7 @@ mch_load_map(){
 void
 mc_manageru_init(){
 	ALL_THREADS_INFO = mc_null;
-	HOST_THREAD_ID = pthread_self();
+	MANAGERU_THREAD_ID = pthread_self();
 
 	memset(mcm_dlmalloc_heap, 0, sizeof(mcm_dlmalloc_heap));
 	mcm_glb_mspace = create_mspace_with_base(mcm_dlmalloc_heap, MCM_DLMALLOC_HEAP_SZ, 0);
@@ -240,7 +240,7 @@ mc_manageru_run()
 			thd_inf.thd_ptd.ptd_workeru_func = &mc_workerus_main;
 			thd_inf.thd_log_fnam = mc_null;
 
-			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
+			//printf("STARTING WORKERUNI 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
 
 			if(num_core < mc_out_num_cores){
 				memset(&f_nm, 0, sizeof(f_nm));

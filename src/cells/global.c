@@ -41,7 +41,7 @@ Our Resurrected and Living, both in Body and Spirit,
 //EPH_CODE(extern mc_addr_t LD_EXTERNAL_RAM_ORIG);
 
 void 
-mck_glb_init(bool is_host) {
+mck_glb_init(bool is_manageru) {
 	ZNQ_CODE(
 		if(MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_orig == 0){
 			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init. Use mc_manageru_init before.\n"));
@@ -143,7 +143,7 @@ mc_extnl_ram_load_data_fill(mc_link_syms_data_st* syms){
 
 void 
 mck_set_finished(uint8_t val) {
-	mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt; 
+	mc_off_workeru_st* off_workeru_pt = MC_WORKERUNI_INFO->off_workeru_pt; 
 	if(off_workeru_pt != mc_null){
 		mc_loop_set_var(off_workeru_pt->is_finished, val);
 	}

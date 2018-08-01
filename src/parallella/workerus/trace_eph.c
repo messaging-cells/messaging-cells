@@ -85,7 +85,7 @@ get_call_opcode(uint16_t opcode[2], int16_t disp){
 uint16_t*
 find_call(uint16_t* code_addr, uint16_t opcode[2]){
 	uint16_t* addr = code_addr;
-	uint16_t* err = &(MC_CORE_INFO->mck_trace_err);
+	uint16_t* err = &(MC_WORKERUNI_INFO->mck_trace_err);
 	(*err) = 0x0;
 	while(addr > 0x0){
 		if((addr[0] == opcode[0]) && (addr[1] == opcode[1])){
@@ -110,7 +110,7 @@ find_call(uint16_t* code_addr, uint16_t opcode[2]){
 uint16_t*
 find_interrupt_call(uint16_t* code_addr){
 	uint16_t* addr = code_addr;
-	uint16_t* err = &(MC_CORE_INFO->mck_trace_err);
+	uint16_t* err = &(MC_WORKERUNI_INFO->mck_trace_err);
 	(*err) = 0x0;
 	while(addr > 0x0){
 		if(	(addr[0] == 0x14fc) && (addr[1] == 0x0500) && (addr[2] == 0x0512) &&
@@ -135,7 +135,7 @@ get_sp_disp(uint16_t* code_addr){
 	addr -= 2;
 	uint16_t v0 = addr[0];
 	uint16_t v1 = addr[1];
-	uint16_t* err = &(MC_CORE_INFO->mck_trace_err);
+	uint16_t* err = &(MC_WORKERUNI_INFO->mck_trace_err);
 
 	(*err) = 0x0;
 	
@@ -188,7 +188,7 @@ find_rts(uint16_t* code_addr){
 
 	// changed this to work in shd mem
 	uint16_t* max_addr = code_addr + mc_max_opcodes_func;	
-	uint16_t* err = &(MC_CORE_INFO->mck_trace_err);
+	uint16_t* err = &(MC_WORKERUNI_INFO->mck_trace_err);
 
 	(*err) = 0x0;
 	
@@ -244,7 +244,7 @@ mck_get_call_stack_trace(int16_t sz, void** trace) {
 		return 0;
 	}
 	mc_memset((uint8_t*)trace, 0, sizeof(void*) * sz);
-	MC_CORE_INFO->dbg_stack_trace = trace;
+	MC_WORKERUNI_INFO->dbg_stack_trace = trace;
 	
 	uint16_t* pc_val = 0;
 	uint16_t* sp_val = 0;
@@ -295,7 +295,7 @@ mck_get_call_stack_trace(int16_t sz, void** trace) {
 		rts_addr = find_rts(pc_val);
 	}
 
-	uint16_t* err = &(MC_CORE_INFO->mck_trace_err);
+	uint16_t* err = &(MC_WORKERUNI_INFO->mck_trace_err);
 	if((*err) == 0x41){
 		uint16_t* call_addr = find_interrupt_call(pc_val);
 		trace[idx++] = call_addr;
@@ -305,7 +305,7 @@ mck_get_call_stack_trace(int16_t sz, void** trace) {
 
 void 
 mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
-	mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt;
+	mc_off_workeru_st* off_workeru_pt = MC_WORKERUNI_INFO->off_workeru_pt;
 	if(off_workeru_pt == mc_null){
 		return;
 	}
