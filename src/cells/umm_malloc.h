@@ -63,9 +63,9 @@ umm_memmove(uint8_t* dest, const uint8_t* src, umm_size_t sz){
 #ifdef MC_IS_PTD_CODE
 	#define UMM_MALLOC_CFG__HEAP_SIZE 131064
 #else
-	extern mc_addr_t LD_WORKERUNI_ALLOC_ORIG;
-	extern mc_addr_t LD_WORKERUNI_ALLOC_SIZE;
-	#define UMM_MALLOC_CFG__HEAP_SIZE MCK_LINK_SCRIPT_SYM_VAL(LD_WORKERUNI_ALLOC_SIZE)
+	extern mc_addr_t LD_WORKERU_ALLOC_ORIG;
+	extern mc_addr_t LD_WORKERU_ALLOC_SIZE;
+	#define UMM_MALLOC_CFG__HEAP_SIZE MCK_LINK_SCRIPT_SYM_VAL(LD_WORKERU_ALLOC_SIZE)
 	//define UMM_MALLOC_CFG__HEAP_SIZE 8192
 #endif
 

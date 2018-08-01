@@ -160,13 +160,13 @@ mcm_get_addr_workeru_id_fn(void* addr){
 }
 
 void*
-mcm_addr_with_fn(mc_workeru_id_t workeruni_id, void* addr){
+mcm_addr_with_fn(mc_workeru_id_t workeru_id, void* addr){
 	if(mcm_addr_in_manageru(addr)){
 		return mc_null;
 	}
-	mc_workeru_nn_t idx = mc_id_to_nn(workeruni_id);
+	mc_workeru_nn_t idx = mc_id_to_nn(workeru_id);
 	void* addr2 = (void*)((uintptr_t)(&(ALL_THREADS_INFO[idx])) + mck_get_addr_offset(addr));
-	//PTD_CK((workeruni_id != mcm_get_addr_workeru_id_fn(addr)) || (addr2 == addr));
+	//PTD_CK((workeru_id != mcm_get_addr_workeru_id_fn(addr)) || (addr2 == addr));
 	return addr2;
 }
 
@@ -309,7 +309,7 @@ thread_start(void *arg){
 	pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &old_cancel);
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old_cancel);
 
-	//printf("SELF = %ld \tWORKERUNI_ID = %d \tNAME = %s \n", slf, mck_get_workeru_id(), tinfo->thd_ptd.ptd_name);
+	//printf("SELF = %ld \tWORKERU_ID = %d \tNAME = %s \n", slf, mck_get_workeru_id(), tinfo->thd_ptd.ptd_name);
 
 	if(tinfo->thd_ptd.ptd_workeru_func != mc_null){
 		(tinfo->thd_ptd.ptd_workeru_func)();

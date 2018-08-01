@@ -271,12 +271,12 @@ enum mck_ack_t : uint8_t {
 
 //-------------------------------------------------------------------------
 /*! \class kernel
-\brief The kernel of a workeruni that is using the library.
+\brief The kernel of a workeru that is using the library.
 \ingroup docgrp_inner_working
 
 \details 
 <p>
-Every workeruni must have one and only one kernel inited with kernel::init_sys. 
+Every workeru must have one and only one kernel inited with kernel::init_sys. 
 
 */
 
@@ -284,7 +284,7 @@ Every workeruni must have one and only one kernel inited with kernel::init_sys.
 #define mc_virgin ((missive_grp_t*)(~((mc_addr_t)mc_null)))
 
 #define kernel_signals_arr_sz mck_tot_signals
-#define kernel_pw0_routed_arr_sz mc_out_num_workerunis
+#define kernel_pw0_routed_arr_sz mc_out_num_workerus
 #define kernel_pw2_routed_arr_sz mck_tot_routes
 #define kernel_pw4_routed_arr_sz mck_tot_routes
 #define kernel_pw6_routed_arr_sz mck_tot_routes
@@ -297,12 +297,12 @@ Every workeruni must have one and only one kernel inited with kernel::init_sys.
 	kernel*
 	mck_get_first_kernel() mc_external_code_ram;
 
-	//! This workeruni's kernel
+	//! This workeru's kernel
 	extern kernel*	mck_PT_THE_KERNEL;
 
 	#define MCK_FIRST_KERNEL mck_get_first_kernel()
 
-	//! Returns the kernel of this workeruni
+	//! Returns the kernel of this workeru
 	#define MCK_KERNEL (mck_PT_THE_KERNEL)
 #endif
 
@@ -339,7 +339,7 @@ public:
 	bool		is_manageru_kernel;
 
 	mck_handler_idx_t 	tot_handlers; //!< \ref kernel::all_handlers size.
-	missive_handler_t* 	all_handlers; //!< Current array of \ref missive handlers of \ref cell s for this workeruni.
+	missive_handler_t* 	all_handlers; //!< Current array of \ref missive handlers of \ref cell s for this workeru.
 
 	mc_bool_t signals_arr[kernel_signals_arr_sz];
 
@@ -359,7 +359,7 @@ public:
 	mc_bool_t has_from_manageru_work;
 	mc_bool_t has_to_manageru_work;
 
-	grip to_workerunis_work;
+	grip to_workerus_work;
 	grip to_manageru_work;
 	grip from_manageru_work;
 
@@ -405,13 +405,13 @@ public:
 	void init_router_ack_arrays() mc_external_code_ram;
 
 	static void
-	init_sys(bool is_the_manageru = false) mc_external_code_ram; //!< Static method that inits this workeruni kernel.
+	init_sys(bool is_the_manageru = false) mc_external_code_ram; //!< Static method that inits this workeru kernel.
 
 	static mc_opt_sz_fn void 
 	run_sys(); //!< Static method that starts handling \ref missive s. No \ref missive s are handled before.
 
 	static void
-	finish_sys() mc_external_code_ram; //!< Static method that finishes this workeruni kernel.
+	finish_sys() mc_external_code_ram; //!< Static method that finishes this workeru kernel.
 
 	static void
 	init_manageru_sys() mc_external_code_ram;
@@ -426,49 +426,49 @@ public:
 	static mc_inline_fn kernel*
 	get_sys(){ return MCK_KERNEL; }
 
-	//! Returns the workeruni global info
+	//! Returns the workeru global info
 	static mc_inline_fn mck_glb_sys_st& 
 	get_workeru_info(){
-		return *MC_WORKERUNI_INFO;
+		return *MC_WORKERU_INFO;
 	}
 
 	static mc_inline_fn mc_off_workeru_st& 
 	get_off_shd(){
-		return *(MC_WORKERUNI_INFO->off_workeru_pt);
+		return *(MC_WORKERU_INFO->off_workeru_pt);
 	}
 
 	//! Returns the system size structure
 	static mc_inline_fn mc_sys_sz_st& 
 	get_sys_sz(){
 		return *MC_SYS_SZ;
-		//return MC_WORKERUNI_INFO->mck_system_sz;
+		//return MC_WORKERU_INFO->mck_system_sz;
 	}
 
-	//! Returns the workeruni number
+	//! Returns the workeru number
 	static mc_inline_fn mc_workeru_nn_t 
 	get_workeru_nn(){
-		return MC_WORKERUNI_INFO->the_workeru_nn;
+		return MC_WORKERU_INFO->the_workeru_nn;
 	}
 
-	//! Returns the workeruni row
+	//! Returns the workeru row
 	static mc_inline_fn mc_workeru_co_t 
 	get_workeru_ro(){
-		return MC_WORKERUNI_INFO->the_workeru_ro;
+		return MC_WORKERU_INFO->the_workeru_ro;
 	}
 
-	//! Returns the workeruni column
+	//! Returns the workeru column
 	static mc_inline_fn mc_workeru_co_t 
 	get_workeru_co(){
-		return MC_WORKERUNI_INFO->the_workeru_co;
+		return MC_WORKERU_INFO->the_workeru_co;
 	}
 
-	//! Returns the workeruni id
+	//! Returns the workeru id
 	static mc_inline_fn mc_workeru_id_t 
 	get_workeru_id(){
-		return MC_WORKERUNI_INFO->the_workeru_id;
+		return MC_WORKERU_INFO->the_workeru_id;
 	}
 
-	//! Returns the parent workeruni id
+	//! Returns the parent workeru id
 	static mc_inline_fn mc_workeru_id_t 
 	get_parent_workeru_id(){
 		return mc_map_get_parent_workeru_id();
@@ -480,11 +480,11 @@ public:
 		return MCK_KERNEL->first_cell;
 	}
 
-	//! Returns the workeruni_cell (see \ref get_workeru_cell) of the workeruni with id 'dst_id'
+	//! Returns the workeru_cell (see \ref get_workeru_cell) of the workeru with id 'dst_id'
 	static cell*
 	get_workeru_cell(mc_workeru_id_t dst_id);
 
-	//! Returns the workeruni_cell (see \ref get_workeru_cell) of the host
+	//! Returns the workeru_cell (see \ref get_workeru_cell) of the host
 	static cell*
 	get_manageru_cell() mc_external_code_ram;
 
@@ -524,7 +524,7 @@ public:
 	handle_work_from_manageru() mc_external_code_ram;
 
 	void 
-	handle_work_to_workerunis() mc_external_code_ram;
+	handle_work_to_workerus() mc_external_code_ram;
 
 	void 
 	handle_manageru_missives() mc_external_code_ram;

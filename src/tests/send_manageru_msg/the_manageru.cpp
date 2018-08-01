@@ -45,8 +45,8 @@ void
 recv_manageru_handler(missive* msg){
 	PTD_PRT("RCV_MSV=%p \n", msg);
 	PTD_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
-	PTD_PRT("RCV_WORKERUNI_ID=%x \n", mc_addr_get_id(msg->dst));
-	PTD_PRT("RCV_GLB_WORKERUNI_ID=%x \n", MC_WORKERUNI_INFO->the_workeru_id);
+	PTD_PRT("RCV_WORKERU_ID=%x \n", mc_addr_get_id(msg->dst));
+	PTD_PRT("RCV_GLB_WORKERU_ID=%x \n", MC_WORKERU_INFO->the_workeru_id);
 	printf("MANAGERU_RECEIVED_MSV !!!\n");
 
 	PTD_CK(mc_addr_is_local(msg->dst));
@@ -56,8 +56,8 @@ recv_manageru_handler(missive* msg){
 	MC_MARK_USED(konn);
 
 
-	PTD_LOG("recv_manageru_handler. workeruni_id=%lx workeruni_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	PTD_PRT("RCV_MSV. workeruni_id=%lx workeruni_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_LOG("recv_manageru_handler. workeru_id=%lx workeru_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_PRT("RCV_MSV. workeru_id=%lx workeru_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 
 	#ifdef WITH_RESPONSE
 		msg->dst->respond(msg, (msg->tok + 10)); 
@@ -79,10 +79,10 @@ send_manageru_main(){
 
 	kernel::set_handlers(2, manageru_handlers);
 
-	cell::separate(mc_out_num_workerunis);
-	missive::separate(mc_out_num_workerunis);
-	agent_ref::separate(mc_out_num_workerunis);
-	agent_grp::separate(mc_out_num_workerunis);
+	cell::separate(mc_out_num_workerus);
+	missive::separate(mc_out_num_workerus);
+	agent_ref::separate(mc_out_num_workerus);
+	agent_grp::separate(mc_out_num_workerus);
 
 	//mck_slog2("MANAGERU started\n");
 	kernel::get_workeru_cell()->handler_idx = 1;
@@ -103,7 +103,7 @@ int mc_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
-		printf("Using workeruni executable: %s \n", mch_epiphany_elf_path);
+		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
 	}
 	if(argc > 2){
 		printf("LOADING WITH MEMCPY \n");

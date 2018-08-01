@@ -52,7 +52,7 @@ mc_c_decl {
 #define MC_STDERR stderr
 
 #define MC_PURE_LOCAL_ADDR 3
-#define MC_WORKERUNI_LOCAL_ADDR 4
+#define MC_WORKERU_LOCAL_ADDR 4
 #define MC_EXTE_LOCAL_ADDR 5
 
 
@@ -99,7 +99,7 @@ void
 mch_reset_log_file(char* f_nm);
 
 void
-mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_workeru_nn_t num_workeruni);
+mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_workeru_nn_t num_workeru);
 
 uint8_t*
 mch_read_file(char* the_pth, off_t* size);

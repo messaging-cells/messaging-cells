@@ -40,13 +40,13 @@ void
 recv_workeru_handler(missive* msg){
 	PTD_CK(mc_addr_is_local(msg->dst));
 
-	mck_sprt2("WORKERUNI_GOT_RESPONSE\n");
+	mck_sprt2("WORKERU_GOT_RESPONSE\n");
 	PTD_PRT("RCV_RESPONSE. src=%p dst=%p \n", msg->get_source(), msg->dst);
 	
 	mck_get_kernel()->set_idle_exit();
 }
 
-missive_handler_t workeruni_handlers[] = {
+missive_handler_t workeru_handlers[] = {
 	mc_null,
 	recv_workeru_handler
 };
@@ -54,20 +54,20 @@ missive_handler_t workeruni_handlers[] = {
 void mc_workerus_main() {
 	kernel::init_sys();
 
-	cell::separate(mc_out_num_workerunis);
-	missive::separate(mc_out_num_workerunis);
-	agent_ref::separate(mc_out_num_workerunis);
-	agent_grp::separate(mc_out_num_workerunis);
+	cell::separate(mc_out_num_workerus);
+	missive::separate(mc_out_num_workerus);
+	agent_ref::separate(mc_out_num_workerus);
+	agent_grp::separate(mc_out_num_workerus);
 
 	kernel::get_workeru_cell()->handler_idx = 1;
 
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	if(mck_is_ro_co_workeruni(0,0)){
-		mck_slog2("WORKERUNI (0,0) started\n");
+	if(mck_is_ro_co_workeru(0,0)){
+		mck_slog2("WORKERU (0,0) started\n");
 
-		kernel::set_handlers(2, workeruni_handlers);
+		kernel::set_handlers(2, workeru_handlers);
 
 		cell* act1 = kernel::get_workeru_cell();
 		cell* act2 = kernel::get_manageru_cell();

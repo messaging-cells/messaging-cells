@@ -76,7 +76,7 @@ struct mc_aligned mck_glb_sys_def {
 	mc_workeru_co_t the_workeru_ro;
 	mc_workeru_co_t the_workeru_co;
 
-	mc_workeru_id_t		inited_workeruni;
+	mc_workeru_id_t		inited_workeru;
 	mck_exception_t 	exception_code;
 	
 	uint16_t 	binder_sz;
@@ -118,13 +118,13 @@ typedef struct mck_glb_sys_def mck_glb_sys_st;
 
 	extern mck_glb_sys_st*	mck_glb_pt_sys_data;
 	#define MCK_FIRST_GLB_SYS mck_get_first_glb_sys()
-	#define MC_WORKERUNI_INFO (mck_glb_pt_sys_data)
+	#define MC_WORKERU_INFO (mck_glb_pt_sys_data)
 #else
 	mck_glb_sys_st*
 	mck_get_glb_sys();
 
 	#define MCK_FIRST_GLB_SYS mck_get_glb_sys()
-	#define MC_WORKERUNI_INFO mck_get_glb_sys()
+	#define MC_WORKERU_INFO mck_get_glb_sys()
 #endif
 
 #ifdef MC_IS_EPH_CODE
@@ -169,7 +169,7 @@ mck_set_irq0_handler() mc_external_code_ram;
 #define MC_ASSERT_MSG(cond) mc_cstr("ASSERT (" #cond ") failed at " __FILE__ "(" MC_TOSTRING(__LINE__) ")")
 //define MC_ASSERT_MSG(cond) mc_cstr(#cond)
 
-#define MCK_INWORKERUNI_ASSERT(cond) MC_DBG( \
+#define MCK_INWORKERU_ASSERT(cond) MC_DBG( \
 	if(! (cond)){ \
 		mck_abort(0xdeadbeaf, MC_ASSERT_MSG(cond)); \
 	} )
@@ -177,7 +177,7 @@ mck_set_irq0_handler() mc_external_code_ram;
 // end_of_macro
 
 #ifdef MC_IS_EPH_CODE
-	#define MCK_CK(cond) MCK_INWORKERUNI_ASSERT(cond)
+	#define MCK_CK(cond) MCK_INWORKERU_ASSERT(cond)
 #endif
 
 #ifdef MC_IS_PTD_CODE
@@ -228,7 +228,7 @@ void ck_shd_code();
 	}
 
 	#define MCK_CHECK_SP() MC_DBG( \
-		if(mck_get_stack_pointer() < MC_VAL_WORKERUNI_STACK_ORIG){ \
+		if(mck_get_stack_pointer() < MC_VAL_WORKERU_STACK_ORIG){ \
 			mck_abort(__LINE__, MC_ABORT_MSG("Stack_overflow_error")); \
 		} \
 	) \
@@ -258,7 +258,7 @@ bool
 mck_load_module(mc_addr_t ext_addr) mc_external_code_ram;
 
 //! Sets a sub module id to 'id'
-#define mck_set_sub_module_id(id) { MC_WORKERUNI_INFO->current_sub_module_id = (id); }
+#define mck_set_sub_module_id(id) { MC_WORKERU_INFO->current_sub_module_id = (id); }
 
 void mc_manageru_init() mc_external_code_ram;
 void mc_manageru_run() mc_external_code_ram;
@@ -269,17 +269,17 @@ extern char* mch_epiphany_elf_path;
 extern void mc_workerus_main() mc_external_code_ram;
 extern int mc_manageru_main(int argc, char *argv[]) mc_external_code_ram;
 
-//! True if this workeruni is in row 'ro' and column 'co'
-#define mck_is_ro_co_workeruni(ro, co) \
-	((MC_WORKERUNI_INFO->the_workeru_ro == (ro)) && (MC_WORKERUNI_INFO->the_workeru_co == (co)))
+//! True if this workeru is in row 'ro' and column 'co'
+#define mck_is_ro_co_workeru(ro, co) \
+	((MC_WORKERU_INFO->the_workeru_ro == (ro)) && (MC_WORKERU_INFO->the_workeru_co == (co)))
 
-//! True if this workeruni has number 'nn'
-#define mck_is_nn_workeruni(nn) (MC_WORKERUNI_INFO->the_workeru_nn == (nn))
+//! True if this workeru has number 'nn'
+#define mck_is_nn_workeru(nn) (MC_WORKERU_INFO->the_workeru_nn == (nn))
 
-//! True if this workeruni has id 'id'
-#define mck_is_id_workeruni(id) (MC_WORKERUNI_INFO->the_workeru_id == (id))
+//! True if this workeru has id 'id'
+#define mck_is_id_workeru(id) (MC_WORKERU_INFO->the_workeru_id == (id))
 
-#define mck_has_off_workeruni (MC_WORKERUNI_INFO->off_workeru_pt != mc_null)
+#define mck_has_off_workeru (MC_WORKERU_INFO->off_workeru_pt != mc_null)
 
 #ifdef __cplusplus
 }

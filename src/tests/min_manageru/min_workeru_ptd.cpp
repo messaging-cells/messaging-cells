@@ -35,7 +35,7 @@ Our Resurrected and Living, both in Body and Spirit,
 void mc_workerus_main() {
 	mck_glb_init(false);
 
-	mck_slog2("MIN_WORKERUNI_PTD\n");	
+	mck_slog2("MIN_WORKERU_PTD\n");	
 
 	mck_glb_finish();
 }

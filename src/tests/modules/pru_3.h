@@ -43,7 +43,7 @@ mc_c_decl {
 void m3_f1_shd() mc_external_code_ram;
 void m3_f2_shd() mc_external_code_ram;
 
-void m3_f3_workeruni() mc_mod3_cod;
+void m3_f3_workeru() mc_mod3_cod;
 void m3_main() mc_mod3_cod;
 
 #ifdef __cplusplus

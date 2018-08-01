@@ -16,7 +16,7 @@ int bj_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
-		printf("Using workeruni executable: %s \n", mch_epiphany_elf_path);
+		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
 	}
 
 	if(argc < 3){
@@ -61,17 +61,17 @@ int bj_manageru_main(int argc, char *argv[])
 	THE_CNF->tot_ccls = the_loader.ld_num_ccls;
 	THE_CNF->tot_vars = the_loader.ld_num_vars;
 	THE_CNF->tot_lits = the_loader.ld_tot_lits;
-	THE_CNF->tot_workerunis = mc_tot_nn_sys;
+	THE_CNF->tot_workerus = mc_tot_nn_sys;
 
 	preload_cnf(sz, arr);
 
-	void* workeruni_cnf_pt = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)THE_CNF);
-	kernel::get_sys()->manageru_load_data = workeruni_cnf_pt;
+	void* workeru_cnf_pt = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)THE_CNF);
+	kernel::get_sys()->manageru_load_data = workeru_cnf_pt;
 
-	printf("LITS_SZ=%ld tot_lits=%ld tot_vars=%ld tot_ccls=%ld tot_workerunis=%ld \n", all_lits.size(),
-			the_loader.ld_tot_lits, the_loader.ld_num_vars, the_loader.ld_num_ccls, THE_CNF->tot_workerunis);
+	printf("LITS_SZ=%ld tot_lits=%ld tot_vars=%ld tot_ccls=%ld tot_workerus=%ld \n", all_lits.size(),
+			the_loader.ld_tot_lits, the_loader.ld_num_vars, the_loader.ld_num_ccls, THE_CNF->tot_workerus);
 
-	printf("THE_CNF=%p \n", workeruni_cnf_pt);
+	printf("THE_CNF=%p \n", workeru_cnf_pt);
 	printf("magic = %ld \n", THE_CNF->MAGIC);
 
 	//manageru_print_nods();
@@ -196,7 +196,7 @@ void bj_test_7(int argc, char *argv[])
 	printf("TEST_7 \n");
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
-		printf("Using workeruni executable: %s \n", mch_epiphany_elf_path);
+		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
 	}
 
 	if(argc < 3){

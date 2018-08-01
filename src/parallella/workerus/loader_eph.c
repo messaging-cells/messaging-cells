@@ -53,8 +53,8 @@ mc_link_syms_data_st mck_external_ram_load_data mc_lk_syms_dat = {
 	.extnl_manageru_data_orig = MC_VAL_EXTERNAL_MANAGERU_DATA_ORIG,
 	.extnl_manageru_alloc_orig = MC_VAL_EXTERNAL_MANAGERU_ALLOC_ORIG,
 
-	.workeruni_module_orig = MC_VAL_WORKERUNI_MODULE_ORIG,
-	.workeruni_module_size = MC_VAL_WORKERUNI_MODULE_SIZE,
+	.workeru_module_orig = MC_VAL_WORKERU_MODULE_ORIG,
+	.workeru_module_size = MC_VAL_WORKERU_MODULE_SIZE,
 
 	.extnl_code_disp = 0,
 	.extnl_load_disp = 0,
@@ -69,7 +69,7 @@ mc_add_lk_syms(){
 };
 
 char* err_loader_eph_01 mc_external_data_ram = "mc_load_map. Null mcz_broadcast_map.";
-char* err_loader_eph_02 mc_external_data_ram = "mc_load_map. Bad num workeruni.";
+char* err_loader_eph_02 mc_external_data_ram = "mc_load_map. Bad num workeru.";
 
 void
 mc_load_map(){
@@ -85,14 +85,14 @@ mc_load_map(){
 	mck_xprt(mcz_parent_broadcast_workeru_id);
 	mck_sprt("_\n");
 
-	mck_sprt("STARTING_LOAD_MAP workeruni___");
+	mck_sprt("STARTING_LOAD_MAP workeru___");
 	mck_xprt(koid);
 	EPH_CODE(
 		mck_sprt("___umm_heap___");
 		mck_xprt((mc_addr_t)umm_heap);
 	)
-	//mck_sprt("___MC_WORKERUNI_INFO___");
-	//mck_xprt((mc_addr_t)MC_WORKERUNI_INFO);
+	//mck_sprt("___MC_WORKERU_INFO___");
+	//mck_xprt((mc_addr_t)MC_WORKERU_INFO);
 	mck_sprt("___\n");
 	*/
 
@@ -107,13 +107,13 @@ mc_load_map(){
 		}
 		mp = mcz_broadcast_map;
 	}
-	if(mp->num_workeruni != mc_id_to_nn(koid)){
+	if(mp->num_workeru != mc_id_to_nn(koid)){
 		//mck_sprt("ABORTING_LOAD_MAP");
 		mck_abort((mc_addr_t)err_loader_eph_02, err_loader_eph_02);
 		return;
 	}
-	//mck_slog("NUM_WORKERUNI_OK2=");
-	//mck_ilog(mcz_broadcast_map->num_workeruni);
+	//mck_slog("NUM_WORKERU_OK2=");
+	//mck_ilog(mcz_broadcast_map->num_workeru);
 	//mck_slog("___\n");
 
 	mc_workeru_id_t* pt_parent = &mcz_parent_broadcast_workeru_id;
@@ -131,7 +131,7 @@ mc_load_map(){
 	int aa = 0;
 	mc_load_map_st* ch_map = (mp->childs)[aa];
 	while(ch_map != mc_null){
-		mc_workeru_id_t ch_id = mc_nn_to_id(ch_map->num_workeruni);
+		mc_workeru_id_t ch_id = mc_nn_to_id(ch_map->num_workeru);
 
 		uint8_t* dst = (uint8_t*)mc_addr_set_id(ch_id, 0x0);
 
@@ -177,7 +177,7 @@ mc_prt_load_map(mc_load_map_st* mp, int lv){
 		return;
 	}
 	mck_sprt("_");
-	mck_iprt(mp->num_workeruni);
+	mck_iprt(mp->num_workeru);
 	if(mp->childs == mc_null){
 		//mc_prt_margin(lv);
 		//mck_sprt("NULL_CHILDS \n");

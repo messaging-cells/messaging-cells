@@ -94,7 +94,7 @@ void bj_load_shd_cnf(){
 
 	binder * fst, * lst, * wrk;
 
-	binder* nn_all_pos = &(nn_cnf->all_pre_pos); // nn_cnf is already workeruni_pt so nn_all_pos is workeruni_pt
+	binder* nn_all_pos = &(nn_cnf->all_pre_pos); // nn_cnf is already workeru_pt so nn_all_pos is workeru_pt
 	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_pos->bn_right);
 	lst = nn_all_pos;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
@@ -131,7 +131,7 @@ void bj_load_shd_cnf(){
 		opp->loaded = mck_as_glb_pt(neg_nod);
 	}
 
-	binder* nn_all_neu = &(nn_cnf->all_pre_neu); // nn_cnf is already workeruni_pt so nn_all_neu is workeruni_pt
+	binder* nn_all_neu = &(nn_cnf->all_pre_neu); // nn_cnf is already workeru_pt so nn_all_neu is workeru_pt
 	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_neu->bn_right);
 	lst = nn_all_neu;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
@@ -158,7 +158,7 @@ void bj_load_shd_cnf(){
 
 			//PTD_CK(pol->loaded != mc_null);
 			while(pol->loaded == mc_null){
-				// SPIN UNTIL SET (may be set by an other workeruni)
+				// SPIN UNTIL SET (may be set by an other workeru)
 				PTD_CODE(sched_yield());
 			}
 			PTD_CK(pol->loaded != mc_null);
@@ -257,11 +257,11 @@ void
 print_childs(){
 	mc_load_map_st* mp = mc_map_get_loaded();
 
-	mck_slog2("NUM_WORKERUNI=");
-	mck_ilog(mp->num_workeruni);
+	mck_slog2("NUM_WORKERU=");
+	mck_ilog(mp->num_workeru);
 	mck_slog2("___\n");
 
-	//PTD_PRT("NUM_WORKERUNI=%d \n", mp->num_workeruni);
+	//PTD_PRT("NUM_WORKERU=%d \n", mp->num_workeru);
 
 	if(mp->childs == mc_null){ 
 		mck_slog2("NULL_CHILDS\n");
@@ -271,9 +271,9 @@ print_childs(){
 	int aa = 0;
 	mc_load_map_st* ch_map = (mp->childs)[aa];
 	while(ch_map != mc_null){
-		//PTD_PRT("CHILD=%d \n", ch_map->num_workeruni);
+		//PTD_PRT("CHILD=%d \n", ch_map->num_workeru);
 		mck_slog2("CHILD=");
-		mck_ilog(ch_map->num_workeruni);
+		mck_ilog(ch_map->num_workeru);
 		mck_slog2("___\n");
 
 		aa++;
@@ -370,7 +370,7 @@ void bj_init_nervenet(){
 
 	nervenet* my_net = nervenet::acquire_alloc();
 	if(my_net == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERUNI DATA"));
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERU DATA"));
 	}
 	ker->user_data = my_net;
 
@@ -388,7 +388,7 @@ void bj_load_main() {
 	/*
 	nervenet* my_net = nervenet::acquire_alloc();
 	if(my_net == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERUNI DATA"));
+		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERU DATA"));
 	}
 	ker->user_data = my_net;
 

@@ -120,7 +120,7 @@ int mch_prt_in_workeru_shd_dat(mck_glb_sys_st* sh_dat){
 		return 1;
 	}
 	fprintf(stderr, "----------------------------------------------------------------------------\n");
-	fprintf(stderr, "InWORKERUNI 0x%03x (%d)\n", sh_dat->the_workeru_id, sh_dat->the_workeru_nn);
+	fprintf(stderr, "InWORKERU 0x%03x (%d)\n", sh_dat->the_workeru_id, sh_dat->the_workeru_nn);
 	
 	ZNQ_CODE(fprintf(stderr, "min_sp=0x%08x \n", sh_dat->dbg_min_sp));
 
@@ -246,7 +246,7 @@ mch_reset_log_file(char* f_nm){
 }
 
 void
-mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_workeru_nn_t num_workeruni){
+mch_print_out_buffer(FILE* flog, bool* lock, mc_rrarray_st* arr, char* f_nm, mc_workeru_nn_t num_workeru){
 	//FILE* flog = fopen(f_nm, "a");
 	if((flog == NULL) || (lock == NULL)){
 		fprintf(stderr, "ERROR. NULL file pointer for file %s\n", f_nm);
@@ -415,7 +415,7 @@ mch_write_file(char* the_pth, uint8_t* the_data, long the_sz, int write_once){
 void
 mch_get_enter(mc_workeru_co_t row, mc_workeru_co_t col){
 	// CONTINUE
-	printf("WORKERUNI (%d, %d) WAITING. Type enter\n", row, col);
+	printf("WORKERU (%d, %d) WAITING. Type enter\n", row, col);
 	getchar();
 }
 

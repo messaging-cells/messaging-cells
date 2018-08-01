@@ -2,7 +2,7 @@
 //----------------------------------------------------------------------------
 /*! \file shared.h
 
-\brief C shared structures (by host and workerunis). It is included in global.h and \ref cell.hh.
+\brief C shared structures (by host and workerus). It is included in global.h and \ref cell.hh.
 
 */
 
@@ -51,7 +51,7 @@ typedef uint8_t mc_bool_t;
 #define mc_e3_yy_sz 4
 #define mc_e3_yy_sz_pw2 2
 
-#define mc_e3_num_chip_workerunis 16
+#define mc_e3_num_chip_workerus 16
 
 #define mc_workeru_tot_mem		0x8000
 
@@ -70,7 +70,7 @@ typedef uint8_t mc_bool_t;
 	#include "shared_znq.h"
 #endif
 
-#define MC_INVALID_WORKERUNI_NN ((mc_workeru_nn_t)(~((mc_workeru_nn_t)0x0)))
+#define MC_INVALID_WORKERU_NN ((mc_workeru_nn_t)(~((mc_workeru_nn_t)0x0)))
 
 typedef mc_addr_t mc_size_t;
 	
@@ -83,7 +83,7 @@ typedef mc_addr_t mc_size_t;
 	
 #define mc_null 0x0
 
-#define mc_out_num_workerunis mc_e3_num_chip_workerunis
+#define mc_out_num_workerus mc_e3_num_chip_workerus
 
 struct mc_aligned mc_sys_def { 
 	mc_workeru_co_t 	xx;		// absolute xx epiphany space coordinates
@@ -134,9 +134,9 @@ mc_init_glb_sys_sz_with(mc_sys_sz_st* sys_sz, mc_workeru_co_t xx_val, mc_workeru
 	
 // xx and yy are absolute epiphany space coordinates
 // ro and co are relative epiphany space coordinates with respect to the 
-// 		allocated running workerunis (MC_SYS_SZ)
-// id is the workeruni id absolute in epiphany space 
-// nn is a consec with respect to the allocated running workerunis (MC_SYS_SZ)
+// 		allocated running workerus (MC_SYS_SZ)
+// id is the workeru id absolute in epiphany space 
+// nn is a consec with respect to the allocated running workerus (MC_SYS_SZ)
 
 #define mc_pw2_yy_sys (MC_SYS_SZ->yy_sz_pw2)
 
@@ -186,14 +186,14 @@ mc_workeru_id_t
 mck_get_workeru_id();
 #endif
 
-//! Returns true if 'addr' is local to the workeruni with id 'koid'
+//! Returns true if 'addr' is local to the workeru with id 'koid'
 bool mc_inline_fn
-mc_addr_in_workeruni(mc_addr_t addr, mc_workeru_id_t koid) {
+mc_addr_in_workeru(mc_addr_t addr, mc_workeru_id_t koid) {
 	mc_workeru_id_t addr_koid = mc_addr_get_id(addr);
 	return ((addr_koid == 0) || (addr_koid == koid));
 }
 
-//! Returns true if 'addr' is in any of the workerunis of the epiphany system
+//! Returns true if 'addr' is in any of the workerus of the epiphany system
 bool mc_inline_fn
 mc_addr_in_sys(mc_addr_t addr) {
 	mc_workeru_id_t addr_koid = mc_addr_get_id(addr);
@@ -268,7 +268,7 @@ mc_v32_of_p16(uint16_t* p16){
 	return v32;
 }
 
-//! Warranted set of an off-workeruni variable (loops until reading the value). Use only if needed.
+//! Warranted set of an off-workeru variable (loops until reading the value). Use only if needed.
 #define mc_loop_set_var(var, val) \
 	(var) = (val); \
 	while((var) != (val)); \
@@ -338,7 +338,7 @@ struct mc_aligned mc_off_workeru_shared_data_def {
 	mc_workeru_id_t	ck_workeru_id;
 	uint8_t 		is_finished;
 	uint8_t 		is_waiting;
-	void* 			workeruni_data;
+	void* 			workeru_data;
 };
 typedef struct mc_off_workeru_shared_data_def mc_off_workeru_st;
 
@@ -370,8 +370,8 @@ struct mc_aligned mc_off_sys_shared_data_def {
 	mc_workeru_id_t	first_load_workeru_id;
 
 	mc_sys_sz_st 	wrk_sys;
-	mc_off_workeru_st 	sys_workerunis[mc_out_num_workerunis];
-	mc_workeru_out_st 	sys_out_buffs[mc_out_num_workerunis];
+	mc_off_workeru_st 	sys_workerus[mc_out_num_workerus];
+	mc_workeru_out_st 	sys_out_buffs[mc_out_num_workerus];
 };
 typedef struct mc_off_sys_shared_data_def mc_off_sys_st;
 
@@ -416,18 +416,18 @@ mc_isprint(char cc){
 
 // end_macro
 
-//! Maps a host addresses to a workeruni addresses 
+//! Maps a host addresses to a workeru addresses 
 mc_addr_t
 mc_manageru_addr_to_workeru_addr(mc_addr_t h_addr) mc_external_code_ram;
 
-//! Maps a workeruni addresses to a host addresses 
+//! Maps a workeru addresses to a host addresses 
 mc_addr_t
 mc_workeru_addr_to_manageru_addr(mc_addr_t c_addr) mc_external_code_ram;
 
-//! Maps a host pointer to a workeruni pointer
+//! Maps a host pointer to a workeru pointer
 #define mc_manageru_pt_to_workeru_pt(pt) (mc_manageru_addr_to_workeru_addr((mc_addr_t)(pt)))
 
-//! Maps a workeruni pointer to a host pointer
+//! Maps a workeru pointer to a host pointer
 #define mc_workeru_pt_to_manageru_pt(pt) (mc_workeru_addr_to_manageru_addr((mc_addr_t)(pt)))
 
 

@@ -1593,7 +1593,7 @@ void
 netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, nervenode* the_cfl)
 {
 	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
-	SYNC_LOG(" %s_SYNCR_STOP_CHILDREN_%s_t%d_ WORKERUNI=%d \n", ts, net_side_to_str(my_side), 
+	SYNC_LOG(" %s_SYNCR_STOP_CHILDREN_%s_t%d_ WORKERU=%d \n", ts, net_side_to_str(my_side), 
 			the_ti, kernel::get_workeru_nn());
 
 	PTD_CK(the_ti != BJ_INVALID_NUM_TIER);
@@ -1614,7 +1614,7 @@ netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind
 		int aa = 0;
 		mc_load_map_st* ch_map = (my_children)[aa];
 		while(ch_map != mc_null){
-			mc_workeru_nn_t chd_nn = ch_map->num_workeruni;
+			mc_workeru_nn_t chd_nn = ch_map->num_workeru;
 			nervenet* ch_net = bj_nervenet->get_nervenet(mc_nn_to_id(chd_nn));
 			send_sync_transmitter(tiki, ch_net, the_tok, the_ti, the_cfl);
 

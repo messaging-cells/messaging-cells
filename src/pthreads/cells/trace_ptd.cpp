@@ -44,7 +44,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 uint16_t
 mck_get_call_stack_trace(int16_t, void**) {
-	mck_glb_sys_st* glb = MC_WORKERUNI_INFO;
+	mck_glb_sys_st* glb = MC_WORKERU_INFO;
 
 	mcm_get_call_stack_trace(MC_MAX_CALL_STACK_SZ, glb->mck_dbg_call_nams_stack_trace);
 	return 0;
@@ -52,7 +52,7 @@ mck_get_call_stack_trace(int16_t, void**) {
 
 void 
 mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
-	mc_off_workeru_st* off_workeru_pt = MC_WORKERUNI_INFO->off_workeru_pt;
+	mc_off_workeru_st* off_workeru_pt = MC_WORKERU_INFO->off_workeru_pt;
 	if(off_workeru_pt == mc_null){
 		return;
 	}
@@ -64,7 +64,7 @@ mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	}
 	mc_loop_set_var(off_workeru_pt->is_waiting, info);
 
-	uint8_t& sync_sg = MC_WORKERUNI_INFO->mck_sync_signal;
+	uint8_t& sync_sg = MC_WORKERU_INFO->mck_sync_signal;
 	while(sync_sg == 0){
 		sched_yield();
 	}

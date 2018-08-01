@@ -57,15 +57,15 @@ long some_glb_val mc_comm_dat = 6;
 
 comm_cla* some_comm_obj mc_comm_dat = mc_null;
 
-void comm_f1_workeruni(){
+void comm_f1_workeru(){
 	//comm_cla oo;
-	prts("comm_f1_workeruni \n");
-	comm_f2_workeruni();
+	prts("comm_f1_workeru \n");
+	comm_f2_workeru();
 }
 
-void comm_f2_workeruni(){
+void comm_f2_workeru(){
 	//cell a;
-	prts("comm_f2_workeruni \n");
+	prts("comm_f2_workeru \n");
 }
 
 void comm_prt(char* val){

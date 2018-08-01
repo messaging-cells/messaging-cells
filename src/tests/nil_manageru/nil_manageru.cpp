@@ -41,7 +41,7 @@ int mc_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
-		printf("Using workeruni executable: %s \n", mch_epiphany_elf_path);
+		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
 	}
 
 	kernel::init_manageru_sys();

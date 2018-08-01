@@ -41,7 +41,7 @@ int mc_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
-		printf("Using workeruni executable: %s \n", mch_epiphany_elf_path);
+		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
 	}
 
 	kernel::init_manageru_sys();
@@ -63,7 +63,7 @@ int mc_manageru_main(int argc, char *argv[])
 
 	mc_workeru_id_t koid2 = mc_addr_get_id(eph_act1);
 
-	printf("WORKERUNI_ID=%p Kcell=%p koid2=%p eph_act1=%p \n", 
+	printf("WORKERU_ID=%p Kcell=%p koid2=%p eph_act1=%p \n", 
 		(void*)(mc_addr_t)koid, act1, (void*)(mc_addr_t)koid2, (void*)eph_act1);
 
 	//kernel::run_manageru_sys();

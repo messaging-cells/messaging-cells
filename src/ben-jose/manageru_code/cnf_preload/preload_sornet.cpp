@@ -62,9 +62,9 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	PTD_CK(nod->level < prms.tot_lvs);
 
 	if(THE_CNF != mc_null){
-		long num_workerunis = THE_CNF->tot_workerunis;
+		long num_workerus = THE_CNF->tot_workerus;
 		mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
-		PTD_CK(nxt_nn < num_workerunis);
+		PTD_CK(nxt_nn < num_workerus);
 
 		nod->nod_nn = nxt_nn;
 
@@ -73,8 +73,8 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 		cnf.all_pre_sornods.bind_to_my_left(*nod);
 
 		nxt_nn++;
-		if(nxt_nn == num_workerunis){ nxt_nn = 0; }
-		PTD_CK(nxt_nn < num_workerunis);
+		if(nxt_nn == num_workerus){ nxt_nn = 0; }
+		PTD_CK(nxt_nn < num_workerus);
 	}
 
 	PTD_CK(knd != snod_invalid);

@@ -75,22 +75,22 @@ public:
 	grip&	get_available();
 };
 
-// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (workerunis as threads) TO WORK.
-class seq_workeruni {
+// For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (workerus as threads) TO WORK.
+class seq_workeru {
 public:
-	MCK_DECLARE_MEM_METHODS(seq_workeruni, mc_mod0_cod)
+	MCK_DECLARE_MEM_METHODS(seq_workeru, mc_mod0_cod)
 
 	sequence sender;
 	sequence receiver;
 	grip ava_seq;
 };
 
-MCK_DEFINE_ACQUIRE_ALLOC(seq_workeruni, 32)	// defines seq_workeruni::acquire_alloc
+MCK_DEFINE_ACQUIRE_ALLOC(seq_workeru, 32)	// defines seq_workeru::acquire_alloc
 
-#define glb_seq_workeruni ((seq_workeruni*)(mck_get_kernel()->user_data))
-#define glb_sender (&(glb_seq_workeruni->sender))
-#define glb_receiver (&(glb_seq_workeruni->receiver))
-#define glb_ava_seq (glb_seq_workeruni->ava_seq)
+#define glb_seq_workeru ((seq_workeru*)(mck_get_kernel()->user_data))
+#define glb_sender (&(glb_seq_workeru->sender))
+#define glb_receiver (&(glb_seq_workeru->receiver))
+#define glb_ava_seq (glb_seq_workeru->ava_seq)
 
 void 
 sequence_handler(missive* msv){
@@ -157,21 +157,21 @@ void mc_workerus_main() {
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
-	if(! mck_is_ro_co_workeruni(0,0)){
+	if(! mck_is_ro_co_workeru(0,0)){
 		PH_DBG("SKIP\n");
 		kernel::finish_sys();
 		return;
 	}
 
-	seq_workeruni* workeruni_dat = seq_workeruni::acquire_alloc();
-	ker->user_data = workeruni_dat;
+	seq_workeru* workeru_dat = seq_workeru::acquire_alloc();
+	ker->user_data = workeru_dat;
 	ker->user_func = ker_func;
 
 	kernel::set_handlers(2, the_handlers);
 
-	missive::separate(mc_out_num_workerunis);
-	agent_ref::separate(mc_out_num_workerunis);
-	agent_grp::separate(mc_out_num_workerunis);
+	missive::separate(mc_out_num_workerus);
+	agent_ref::separate(mc_out_num_workerus);
+	agent_grp::separate(mc_out_num_workerus);
 
 	PH_DBG("started\n");
 	glb_sender->is_sender = true;

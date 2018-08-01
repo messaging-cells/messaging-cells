@@ -90,8 +90,8 @@ mch_prt_workeru_call_stack_ptd(thread_info_t& thd_inf){
 		return;
 	}
 	mch_out << "---------------------------------------------------\n";
-	mch_out << "STACK_TRACE for workeruni num " << std::dec << thd_inf.thd_ptd.ptd_num;
-	mch_out << " with workeruni_id = 0x" << std::hex << thd_inf.thd_ptd.ptd_workeru_id << "\n";
+	mch_out << "STACK_TRACE for workeru num " << std::dec << thd_inf.thd_ptd.ptd_num;
+	mch_out << " with workeru_id = 0x" << std::hex << thd_inf.thd_ptd.ptd_workeru_id << "\n";
 	for(int aa = 0; aa < MC_MAX_CALL_STACK_SZ; aa++){
 		if(trace[aa] == mc_null){ break; }
 		mch_out << trace[aa] << "\n";
@@ -107,7 +107,7 @@ ck_all_workeru_ids(){
 	for(int aa = 0; aa < TOT_THREADS; aa++){
 		mc_workeru_id_t koid = mc_nn_to_id(aa);
 		if(ALL_THREADS_INFO[aa].thd_ptd.ptd_workeru_id != koid){
-			mch_abort_func(1, "ck_all_workeru_ids. BAD WORKERUNI ID \n");
+			mch_abort_func(1, "ck_all_workeru_ids. BAD WORKERU ID \n");
 		}
 	}
 	return true;
@@ -117,12 +117,12 @@ void
 mch_load_map_rec(mc_workeru_id_t parent, mc_load_map_st* mp){
 	MCH_CK(mp != mc_null);
 
-	mc_workeru_nn_t nn_workeruni = mp->num_workeruni;
-	mc_workeru_id_t koid = mc_nn_to_id(nn_workeruni);
+	mc_workeru_nn_t nn_workeru = mp->num_workeru;
+	mc_workeru_id_t koid = mc_nn_to_id(nn_workeru);
 
-	MCH_CK(nn_workeruni >= 0);
-	MCH_CK(nn_workeruni < TOT_THREADS);
-	thread_info_t& thd_inf = ALL_THREADS_INFO[nn_workeruni];
+	MCH_CK(nn_workeru >= 0);
+	MCH_CK(nn_workeru < TOT_THREADS);
+	thread_info_t& thd_inf = ALL_THREADS_INFO[nn_workeru];
 
 	thd_inf.thd_ptd.ptd_map_loaded = mp;
 	thd_inf.thd_ptd.ptd_map_parent_workeru_id = parent;
@@ -166,8 +166,8 @@ mc_manageru_init(){
 
 	mc_workeru_co_t max_row = mc_tot_xx_sys;
 	mc_workeru_co_t max_col = mc_tot_yy_sys;
-	mc_workeru_id_t workeruni_id = mc_ro_co_to_id(max_row + 1, max_col + 1);
-	mcm_MANAGERU_PTD_INFO->ptd_workeru_id = workeruni_id;
+	mc_workeru_id_t workeru_id = mc_ro_co_to_id(max_row + 1, max_col + 1);
+	mcm_MANAGERU_PTD_INFO->ptd_workeru_id = workeru_id;
 	mcm_MANAGERU_PTD_INFO->ptd_num = ~0;
 
 	memset(&mch_external_ram_load_data, 0, sizeof(mc_link_syms_data_st));
@@ -207,19 +207,19 @@ mc_manageru_run()
 	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_MANAGERU_DATA;
 	//mc_sys_sz_st* sys_sz = MC_SYS_SZ;
 
-	mc_workeru_id_t workeruni_id;
+	mc_workeru_id_t workeru_id;
 	mc_workeru_co_t row, col, max_row, max_col;
 	char f_nm[200];
 
-	mc_workeru_nn_t tot_workerunis = mc_out_num_workerunis;
+	mc_workeru_nn_t tot_workerus = mc_out_num_workerus;
 
-	char* all_f_nam[tot_workerunis];
-	FILE* all_fps[tot_workerunis];
-	bool all_f_locks[tot_workerunis];
+	char* all_f_nam[tot_workerus];
+	FILE* all_fps[tot_workerus];
+	bool all_f_locks[tot_workerus];
 
-	memset(all_f_nam, 0, (sizeof(char*) * tot_workerunis));
-	memset(all_fps, 0, (sizeof(FILE*) * tot_workerunis));
-	memset(all_f_locks, false, (sizeof(bool) * tot_workerunis));
+	memset(all_f_nam, 0, (sizeof(char*) * tot_workerus));
+	memset(all_fps, 0, (sizeof(FILE*) * tot_workerus));
+	memset(all_f_locks, false, (sizeof(bool) * tot_workerus));
 
 	mch_load_map();
 	
@@ -230,37 +230,37 @@ mc_manageru_run()
 
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
-			workeruni_id = mc_ro_co_to_id(row, col);
-			mc_workeru_nn_t num_workeruni = mc_id_to_nn(workeruni_id);
+			workeru_id = mc_ro_co_to_id(row, col);
+			mc_workeru_nn_t num_workeru = mc_id_to_nn(workeru_id);
 
-			thread_info_t& thd_inf = ALL_THREADS_INFO[num_workeruni];
-			thd_inf.thd_ptd.ptd_num = num_workeruni;
+			thread_info_t& thd_inf = ALL_THREADS_INFO[num_workeru];
+			thd_inf.thd_ptd.ptd_num = num_workeru;
 			mc_uint16_to_hex_bytes(thd_inf.thd_ptd.ptd_num, (uint8_t*)(thd_inf.thd_ptd.ptd_name));
-			thd_inf.thd_ptd.ptd_workeru_id = workeruni_id;
+			thd_inf.thd_ptd.ptd_workeru_id = workeru_id;
 			thd_inf.thd_ptd.ptd_workeru_func = &mc_workerus_main;
 			thd_inf.thd_log_fnam = mc_null;
 
-			//printf("STARTING WORKERUNI 0x%03x (%2d,%2d) NUM=%d\n", workeruni_id, row, col, num_workeruni);
+			//printf("STARTING WORKERU 0x%03x (%2d,%2d) NUM=%d\n", workeru_id, row, col, num_workeru);
 
-			if(num_workeruni < mc_out_num_workerunis){
+			if(num_workeru < mc_out_num_workerus){
 				memset(&f_nm, 0, sizeof(f_nm));
-				sprintf(f_nm, "log_workeru_%02d.txt", num_workeruni);
-				all_f_nam[num_workeruni] = strdup((const char*)f_nm);
+				sprintf(f_nm, "log_workeru_%02d.txt", num_workeru);
+				all_f_nam[num_workeru] = strdup((const char*)f_nm);
 				thd_inf.thd_log_fnam = strdup((const char*)f_nm);
-				mch_reset_log_file(all_f_nam[num_workeruni]);
+				mch_reset_log_file(all_f_nam[num_workeru]);
 
 				FILE* flog = fopen(f_nm, "a");
 				if(flog == NULL){
 					fprintf(stderr, "ERROR. Can NOT open file %s\n", f_nm);
 					return;
 				}
-				all_fps[num_workeruni] = flog;
+				all_fps[num_workeru] = flog;
 
 				// init shared data.
-				pt_shd_data->sys_workerunis[num_workeruni].magic_id = MC_MAGIC_ID;
-				MCH_CK(pt_shd_data->sys_workerunis[num_workeruni].magic_id == MC_MAGIC_ID);
+				pt_shd_data->sys_workerus[num_workeru].magic_id = MC_MAGIC_ID;
+				MCH_CK(pt_shd_data->sys_workerus[num_workeru].magic_id == MC_MAGIC_ID);
 
-				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_workeruni]);
+				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_workeru]);
 
 				pt_buff->magic_id = MC_MAGIC_ID;
 				MCH_CK(pt_buff->magic_id == MC_MAGIC_ID);
@@ -268,7 +268,7 @@ mc_manageru_run()
 				mc_rr_init(&(pt_buff->rd_arr), MC_OUT_BUFF_SZ, pt_buff->buff, 1);
 			}
 			
-			// Start one workeruni ptd thread
+			// Start one workeru ptd thread
 
 			int ss = pthread_create(&thd_inf.thd_ptd.ptd_id, NULL,
 								&thread_start, &thd_inf);
@@ -280,18 +280,18 @@ mc_manageru_run()
 
 	MCH_CK(ck_all_workeru_ids());
 
-	bool workeruni_started[tot_workerunis];
-	memset(workeruni_started, 0, (sizeof(bool) * tot_workerunis));
+	bool workeru_started[tot_workerus];
+	memset(workeru_started, 0, (sizeof(bool) * tot_workerus));
 
-	bool workeruni_finished[tot_workerunis];
-	memset(workeruni_finished, 0, (sizeof(bool) * tot_workerunis));
+	bool workeru_finished[tot_workerus];
+	memset(workeru_finished, 0, (sizeof(bool) * tot_workerus));
 
 	/*
-	bool workeruni_started[max_row][max_col];
-	memset(workeruni_started, 0, sizeof(workeruni_started));
+	bool workeru_started[max_row][max_col];
+	memset(workeru_started, 0, sizeof(workeru_started));
 
-	bool workeruni_finished[max_row][max_col];
-	memset(workeruni_finished, 0, sizeof(workeruni_finished));
+	bool workeru_finished[max_row][max_col];
+	memset(workeru_finished, 0, sizeof(workeru_finished));
 	*/
 
 	bool has_work = true;	
@@ -311,15 +311,15 @@ mc_manageru_run()
 
 		for (row=0; row < max_row; row++){
 			for (col=0; col < max_col; col++){
-				workeruni_id = mc_ro_co_to_id(row, col);
-				mc_workeru_nn_t num_workeruni = mc_id_to_nn(workeruni_id);
-				mc_off_workeru_st* sh_dat_1 = &(pt_shd_data->sys_workerunis[num_workeruni]);
-				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_workeruni]);
+				workeru_id = mc_ro_co_to_id(row, col);
+				mc_workeru_nn_t num_workeru = mc_id_to_nn(workeru_id);
+				mc_off_workeru_st* sh_dat_1 = &(pt_shd_data->sys_workerus[num_workeru]);
+				mc_workeru_out_st* pt_buff = &(pt_shd_data->sys_out_buffs[num_workeru]);
 
-				thread_info_t& thd_inf = ALL_THREADS_INFO[num_workeruni];
+				thread_info_t& thd_inf = ALL_THREADS_INFO[num_workeru];
 
-				// Wait for workeruni program execution to finish.
-				if((sh_dat_1->workeruni_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
+				// Wait for workeru program execution to finish.
+				if((sh_dat_1->workeru_data == 0x0) || (sh_dat_1->is_finished == 0x0)){
 					has_work = true;
 					MCH_CK(sh_dat_1->magic_id == MC_MAGIC_ID);
 					continue;
@@ -329,11 +329,11 @@ mc_manageru_run()
 				MCH_CK(	(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL) ||
 						(sh_dat_1->is_finished == MC_FINISHED_VAL)
 				);
-				MCH_CK(sh_dat_1->ck_workeru_id == workeruni_id);
-				if(! workeruni_started[num_workeruni] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
-					workeruni_started[num_workeruni] = true;
+				MCH_CK(sh_dat_1->ck_workeru_id == workeru_id);
+				if(! workeru_started[num_workeru] && (sh_dat_1->is_finished == MC_NOT_FINISHED_VAL)){ 
+					workeru_started[num_workeru] = true;
 					//printf("Waiting for finish 0x%03x (%2d,%2d) NUM=%d\n", 
-					//			workeruni_id, row, col, num_workeruni);
+					//			workeru_id, row, col, num_workeru);
 				}
 
 				//mck_glb_sys_st* inco = &thd_inf.thd_ptd.ptd_glb_sys_data.in_workeru_shd;
@@ -343,16 +343,16 @@ mc_manageru_run()
 				if(sh_dat_1->is_finished == MC_NOT_FINISHED_VAL){
 					has_work = true;
 
-					mch_print_out_buffer(all_fps[num_workeruni], &(all_f_locks[num_workeruni]), 
-							&(pt_buff->rd_arr), all_f_nam[num_workeruni], num_workeruni);
+					mch_print_out_buffer(all_fps[num_workeru], &(all_f_locks[num_workeru]), 
+							&(pt_buff->rd_arr), all_f_nam[num_workeru], num_workeru);
 
 					if(sh_dat_1->is_waiting){
 						if(sh_dat_1->is_waiting == MC_WAITING_ENTER){
 							mch_get_enter(row, col);
 						}
 						if(sh_dat_1->is_waiting == MC_WAITING_BUFFER){
-							mch_print_out_buffer(all_fps[num_workeruni], &(all_f_locks[num_workeruni]), &(pt_buff->rd_arr), 
-												all_f_nam[num_workeruni], num_workeruni);
+							mch_print_out_buffer(all_fps[num_workeru], &(all_f_locks[num_workeru]), &(pt_buff->rd_arr), 
+												all_f_nam[num_workeru], num_workeru);
 						}
 						
 						sh_dat_1->is_waiting = MC_NOT_WAITING;
@@ -362,12 +362,12 @@ mc_manageru_run()
 				} else {
 					MCH_CK(sh_dat_1->is_finished == MC_FINISHED_VAL);
 	
-					if(! workeruni_finished[num_workeruni]){
+					if(! workeru_finished[num_workeru]){
 
-						workeruni_finished[num_workeruni] = true;
+						workeru_finished[num_workeru] = true;
 
-						mch_print_out_buffer(all_fps[num_workeruni], &(all_f_locks[num_workeruni]), 
-								&(pt_buff->rd_arr), all_f_nam[num_workeruni], num_workeruni);
+						mch_print_out_buffer(all_fps[num_workeru], &(all_f_locks[num_workeru]), 
+								&(pt_buff->rd_arr), all_f_nam[num_workeru], num_workeru);
 
 						MCH_CK(mch_rr_ck_zero(&(pt_buff->rd_arr)));
 
@@ -408,7 +408,7 @@ mc_manageru_run()
 	}
 
 	int nn;
-	for (nn=0; nn < mc_out_num_workerunis; nn++){
+	for (nn=0; nn < mc_out_num_workerus; nn++){
 		if(all_f_nam[nn] != mc_null){
 			free(all_f_nam[nn]);
 		}

@@ -47,10 +47,10 @@ Our Resurrected and Living, both in Body and Spirit,
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
-#define MCT_WORKERUNIID(_addr) ((_addr) >> 20)
+#define MCT_WORKERUID(_addr) ((_addr) >> 20)
 static inline bool mct_is_local(uint32_t addr)
 {
-	return MCT_WORKERUNIID(addr) == 0;
+	return MCT_WORKERUID(addr) == 0;
 }
 
 #define addr_in_shd_mem(addr) (! (\
@@ -70,7 +70,7 @@ mc_manageru_main(int argc, char *argv[])
 
 	if(argc > 1){
 		elf_path = argv[1];
-		printf("Using workeruni executable: %s \n", elf_path);
+		printf("Using workeru executable: %s \n", elf_path);
 	}
 
 	mc_link_syms_data_st* lk_dat = &(syms);
@@ -140,7 +140,7 @@ mc_manageru_main(int argc, char *argv[])
 	max_col = dev.cols;
 	for (row=0; row < max_row; row++){
 		for (col=0; col < max_col; col++){
-			void* dst = ((void*) dev.workeruni[row][col].mems.base);
+			void* dst = ((void*) dev.workeru[row][col].mems.base);
 			printf("min=%p dst=%p max=%p\n", min_shd, dst, max_shd);
 			MCH_CK(addr_in_shd_mem(dst));
 		}

@@ -59,12 +59,12 @@ irq3_entry:
 	.global	normal_start
 normal_start:
 ; WARNING !!!!! Your .text code MUST fit in the space you give it in the link script (CODE_SIZE)
-; WARNING !!!!! ALWAYS use modules for inworkeruni funcs. 
+; WARNING !!!!! ALWAYS use modules for inworkeru funcs. 
 ; WARNING !!!!! ALWAYS have LOW STACK consuming functions (use pointers to dynamic allocated structs). 
 ; WARNING !!!!! Kernel already uses about 5k in .text so CODE_SIZE MUST be bigger.
-; WARNING !!!!! sp initialized at addr LD_WORKERUNI_STACK_TOP defined in the link script
-	mov sp, %low(LD_WORKERUNI_STACK_TOP)
-	movt sp, %high(LD_WORKERUNI_STACK_TOP)
+; WARNING !!!!! sp initialized at addr LD_WORKERU_STACK_TOP defined in the link script
+	mov sp, %low(LD_WORKERU_STACK_TOP)
+	movt sp, %high(LD_WORKERU_STACK_TOP)
 	mov fp,0x0
 	mov r0, #0x3ff
 	movts imask, r0

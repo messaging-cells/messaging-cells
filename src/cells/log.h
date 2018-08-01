@@ -74,19 +74,19 @@ typedef enum mc_type_def mc_type_t;
 void
 mck_aux_sout(bool cond, char* msg, mc_out_type_t outt) mc_external_code_ram;
 
-//! Locks this workeruni log file
+//! Locks this workeru log file
 mc_inline_fn void
 mck_lock_log(){
 	mck_aux_sout(mc_true, mc_cstr("lck"), MC_OUT_LOCK_LOG);
 }
 
-//! Unocks this workeruni log file
+//! Unocks this workeru log file
 mc_inline_fn void
 mck_unlock_log(){
 	mck_aux_sout(mc_true, mc_cstr("ulk"), MC_OUT_UNLOCK_LOG);
 }
 
-//! Logs a string in this workeruni log file
+//! Logs a string in this workeru log file
 mc_inline_fn void
 mck_slog(char* msg){
 	mck_aux_sout(mc_true, msg, MC_OUT_LOG);
@@ -95,7 +95,7 @@ mck_slog(char* msg){
 //! Sames as \ref mck_slog but it does a const_cast<char *> for you so you can use directly it in c++.
 #define	mck_slog2(msg) mck_slog(mc_cstr(msg))
 
-//! Conditionally logs a string in this workeruni log file
+//! Conditionally logs a string in this workeru log file
 mc_inline_fn void
 mck_cond_slog(bool cond, char* msg){
 	mck_aux_sout(cond, msg, MC_OUT_LOG);
@@ -122,19 +122,19 @@ mc_out_abort_ptd(){
 	mck_aux_iout(0, MC_OUT_ABORT, MC_X32);
 }
 
-//! Logs an int32_t in this workeruni log file
+//! Logs an int32_t in this workeru log file
 mc_inline_fn void
 mck_ilog(int32_t vv){
 	mck_aux_iout(vv, MC_OUT_LOG, MC_I32);
 }
 
-//! Logs an uint32_t in this workeruni log file
+//! Logs an uint32_t in this workeru log file
 mc_inline_fn void
 mck_ulog(uint32_t vv){
 	mck_aux_iout(vv, MC_OUT_LOG, MC_UI32);
 }
 
-//! Logs an uint32_t as a hexadecimal in this workeruni log file
+//! Logs an uint32_t as a hexadecimal in this workeru log file
 mc_inline_fn void
 mck_xlog(uint32_t vv){
 	mck_aux_iout(vv, MC_OUT_LOG, MC_X32);

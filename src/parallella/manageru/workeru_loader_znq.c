@@ -29,7 +29,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 ------------------------------------------------------------
 
-File: workeruni_loader_znq.c  
+File: workeru_loader_znq.c  
 Based on: e-loader.c
 
 This file is part of the Epiphany Software Development Kit.
@@ -365,7 +365,7 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 	uint8_t* pt_load_end = (pt_load_dst + lk_dat->extnl_load_size);
 
 	uint8_t* pt_module_dst = pt_load_dst;
-	mc_addr_t module_sz = lk_dat->workeruni_module_size;
+	mc_addr_t module_sz = lk_dat->workeru_module_size;
 
 	int module_ii = 0;
 	mcl_module_names_sz = 0;
@@ -427,7 +427,7 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 		uint8_t* pt_src = &src[ld_src_off];
 		size_t blk_sz = ld_src_sz;
 
-		if(ld_sh_addr == lk_dat->workeruni_module_orig){
+		if(ld_sh_addr == lk_dat->workeru_module_orig){
 			if(blk_sz > module_sz){
 				mch_abort_func(11, "Module too big. CODE_LOADING_FAILED_2 !!\n");
 				return E_ERR;
@@ -479,7 +479,7 @@ mcl_load_module_names(load_info_t *ld_dat){
 	uint8_t* pt_ram_base = (uint8_t*)(emem->base);
 	uint8_t* pt_load_dst = (pt_ram_base + lk_dat->extnl_load_disp);
 	uint8_t* pt_load_eph_dst = (uint8_t*)(lk_dat->extnl_load_orig);
-	mc_addr_t module_sz = lk_dat->workeruni_module_size;
+	mc_addr_t module_sz = lk_dat->workeru_module_size;
 
 	char** pt_load_nams = (char**)(pt_load_dst + (mcl_module_names_sz * module_sz));
 

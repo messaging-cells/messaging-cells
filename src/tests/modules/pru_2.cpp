@@ -42,8 +42,8 @@ void m2_f2_shd(){
 	prts("m2_f2_shd \n");		
 }
 
-char* msg2 mc_mod2_dat = mc_cstr("m2_f3_workeruni \n");
-void m2_f3_workeruni(){
+char* msg2 mc_mod2_dat = mc_cstr("m2_f3_workeru \n");
+void m2_f3_workeru(){
 	prts(msg2);
 }
 
@@ -52,10 +52,10 @@ void m2_main() {
 	prts("STARTED m2_main !!\n");	
 
 	m2_f1_shd();
-	m2_f3_workeruni();
+	m2_f3_workeru();
 	m2_f2_shd();
 
-	comm_f1_workeruni();
+	comm_f1_workeru();
 
 	prts("FINISHED m2_main !!\n");	
 }

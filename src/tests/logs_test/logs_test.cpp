@@ -37,10 +37,10 @@ void mc_workerus_main() {
 	mck_glb_init(false);
 
 	mc_workeru_id_t koid = mck_get_workeru_id();
-	mc_workeru_nn_t num_workeruni = mc_id_to_nn(koid);
+	mc_workeru_nn_t num_workeru = mc_id_to_nn(koid);
 
-	char** john = (char**)(all_log_tests[num_workeruni]);
-	long john_sz = all_log_tests_sz[num_workeruni];
+	char** john = (char**)(all_log_tests[num_workeru]);
+	long john_sz = all_log_tests_sz[num_workeru];
 	long ii;
 	for(ii = 0; ii < john_sz; ii++){
 		mck_slog(john[ii]);
