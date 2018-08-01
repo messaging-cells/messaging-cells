@@ -37,10 +37,10 @@ Our Resurrected and Living, both in Body and Spirit,
 #include <e-hal.h>
 #include <epiphany-hal-api-local.h>
 
-#include "core_loader_znq.h"
-
 #include "booter.h"
 #include "tak_mak.hh"
+
+#include "workeru_loader_znq.h"
 
 //define NUM_OPERS 100000
 #define NUM_OPERS 10000000

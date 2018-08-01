@@ -69,10 +69,11 @@ see the files COPYING and COPYING.LESSER.  If not, see
 #include <inttypes.h>
 
 #include "e-hal.h"
-#include "core_loader_znq.h"
-//include "esim-target.h"
+
 #include "shared.h"
 #include "booter.h"
+
+#include "workeru_loader_znq.h"
 
 extern e_platform_t e_platform;
 

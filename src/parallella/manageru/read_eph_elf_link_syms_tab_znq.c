@@ -47,10 +47,11 @@ Our Resurrected and Living, both in Body and Spirit,
 #include <inttypes.h>
 
 #include "e-hal.h"
-#include "core_loader_znq.h"
-//include "esim-target.h"
+
 #include "shared.h"
 #include "booter.h"
+
+#include "workeru_loader_znq.h"
 
 void mch_read_sections_elf(const void *file, mc_link_syms_data_st* syms);
 

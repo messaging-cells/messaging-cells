@@ -12,7 +12,7 @@ SOURCES := \
 	$(SRC_CELLS_DIR)/rr_array.c \
 	$(SRC_CELLS_DIR)/shared.c \
 	$(SRC_PLLA_MGR_CELLS_DIR)/shared_znq.cpp \
-	$(SRC_PLLA_MANAGER_DIR)/core_loader_znq.c \
+	$(SRC_PLLA_MANAGER_DIR)/workeru_loader_znq.c \
 	$(SRC_PLLA_MANAGER_DIR)/prt_eph_call_stack_znq.c \
 	$(SRC_PLLA_MANAGER_DIR)/read_eph_elf_link_syms_tab_znq.c \
 	$(SRC_PLLA_MANAGER_DIR)/booter_znq.cpp \

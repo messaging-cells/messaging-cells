@@ -32,7 +32,8 @@ Our Resurrected and Living, both in Body and Spirit,
 
 #include "shared.h"
 #include "booter.h"
-#include "core_loader_znq.h"
+
+#include "workeru_loader_znq.h"
 
 mc_sys_sz_st mch_system_sz;
 

@@ -3,7 +3,7 @@ SRC_BJ_HOST_DIR := .
 
 # =======================================
 
-TARGET := bj_host_znq.elf
+TARGET := bj_manageru_znq.elf
 
 TGT_LDFLAGS := ${MC_STD_ZNQ_LDFLAGS}
 TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS} -static-libstdc++ -static-libgcc -ldimacs 

@@ -1,5 +1,5 @@
 
-SRC_HOST_DIR := $(SRC_DIR)/cells/manageru
+SRC_MANAGERU_DIR := $(SRC_DIR)/cells/manageru
 SRC_CELLS_DIR := $(SRC_DIR)/cells
 SRC_PTD_CELLS_DIR := $(SRC_DIR)/pthreads/cells
 
@@ -8,7 +8,7 @@ SRC_PTD_CELLS_DIR := $(SRC_DIR)/pthreads/cells
 SRC_CFLAGS := -DMC_IS_PTD_CODE ${STD_EPH_CFLAGS} ${DBG_FLAG} ${g_FLAG} -pthread 
 SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${g_FLAG} -pthread 
 
-SRC_INCDIRS := $(SRC_PTHREADS_MANAGER) $(SRC_HOST_DIR) $(SRC_CELLS_DIR) 
+SRC_INCDIRS := $(SRC_PTHREADS_MANAGER) $(SRC_MANAGERU_DIR) $(SRC_CELLS_DIR) 
 
 SOURCES := \
 	$(SRC_PTD_CELLS_DIR)/umm_malloc_ptd.cpp \

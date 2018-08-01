@@ -29,7 +29,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 ------------------------------------------------------------
 
-File: core_loader_znq.h
+File: workeru_loader_znq.h
 Base on: e-loader.h
 
 This file is part of the Epiphany Software Development Kit.

@@ -40,12 +40,11 @@ Our Resurrected and Living, both in Body and Spirit,
 #include <epiphany-hal-api-local.h>
 
 #include "booter.h"
-#include "core_loader_znq.h"
 #include "all_regs.h"
-
 #include "dlmalloc.h"
-
 #include "cell.hh"
+
+#include "workeru_loader_znq.h"
 
 //=====================================================================================
 

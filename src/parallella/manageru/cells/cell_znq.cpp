@@ -35,7 +35,8 @@ Our Resurrected and Living, both in Body and Spirit,
 #include "booter.h"
 #include "cell.hh"
 #include "dyn_mem.h"
-#include "core_loader_znq.h"
+
+#include "workeru_loader_znq.h"
 
 kernel* mch_PT_THE_KERNEL = mc_null;
 

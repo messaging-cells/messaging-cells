@@ -26,7 +26,7 @@ SOURCES := \
 	$(SRC_PLLA_WORKERS_DIR)/shared_eph.c \
 	$(SRC_PLLA_WORKERS_DIR)/loader_eph.c \
 	$(SRC_PLLA_WORKERS_DIR)/global_eph.c \
-	$(SRC_PLLA_WORKERS_DIR)/call_cores_main_eph.c \
+	$(SRC_PLLA_WORKERS_DIR)/call_workerus_main_eph.c \
 	$(SRC_PLLA_WORKERS_DIR)/cell_eph.cpp \
 	$(SRC_PLLA_WORKERS_DIR)/trace_eph.c \
 	$(SRC_PLLA_WORKERS_DIR)/e_start.s \
