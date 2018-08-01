@@ -32,7 +32,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 #include "cell.hh"
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	mck_glb_init(false);
 
 	mck_slog2("MIN_CORE_PTD\n");	

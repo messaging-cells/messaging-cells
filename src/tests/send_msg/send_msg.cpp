@@ -73,7 +73,7 @@ missive_handler_t the_handlers[] = {
 	recv_cell_handler  // Index 0. Cells with zero in handler_idx will handle missives with this handler.
 };
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	kernel::init_sys();
 
 	kernel::set_handlers(1, the_handlers);

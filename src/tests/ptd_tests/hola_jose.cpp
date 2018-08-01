@@ -35,7 +35,7 @@ Our Resurrected and Living, both in Body and Spirit,
 #include "booter.h"
 #include <cell.hh>
 
-int mc_host_main(int argc, char *argv[])
+int mc_manageru_main(int argc, char *argv[])
 {
 	missive_grp_t grp1;
 	grp1.tot_agts = 123;
@@ -50,5 +50,5 @@ int mc_host_main(int argc, char *argv[])
 	return 0;
 }
 
-void mc_cores_main(){
+void mc_workerus_main(){
 }

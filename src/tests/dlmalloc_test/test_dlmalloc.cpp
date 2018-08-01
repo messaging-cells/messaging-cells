@@ -58,10 +58,10 @@ uint8_t test_heap[TEST_HEAP_SZ];
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
-void mc_cores_main(){
+void mc_workerus_main(){
 }
 
-int mc_host_main(int argc, char *argv[]){
+int mc_manageru_main(int argc, char *argv[]){
 	printf("STARTING dlmalloc test \n");
 
 	unsigned long init_val = 10;

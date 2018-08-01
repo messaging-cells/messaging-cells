@@ -260,14 +260,14 @@ mck_load_module(mc_addr_t ext_addr) mc_external_code_ram;
 //! Sets a sub module id to 'id'
 #define mck_set_sub_module_id(id) { MC_CORE_INFO->current_sub_module_id = (id); }
 
-void mc_host_init() mc_external_code_ram;
-void mc_host_run() mc_external_code_ram;
-void mc_host_finish() mc_external_code_ram;
+void mc_manageru_init() mc_external_code_ram;
+void mc_manageru_run() mc_external_code_ram;
+void mc_manageru_finish() mc_external_code_ram;
 
 extern mc_core_nn_t mch_first_load_core_nn;
 extern char* mch_epiphany_elf_path;
-extern void mc_cores_main() mc_external_code_ram;
-extern int mc_host_main(int argc, char *argv[]) mc_external_code_ram;
+extern void mc_workerus_main() mc_external_code_ram;
+extern int mc_manageru_main(int argc, char *argv[]) mc_external_code_ram;
 
 //! True if this core is in row 'ro' and column 'co'
 #define mck_is_ro_co_core(ro, co) \
@@ -280,18 +280,6 @@ extern int mc_host_main(int argc, char *argv[]) mc_external_code_ram;
 #define mck_is_id_core(id) (MC_CORE_INFO->the_core_id == (id))
 
 #define mck_has_off_core (MC_CORE_INFO->off_core_pt != mc_null)
-
-#define mc_host_saddr_to_core_saddr(h_addr) \
-	(MC_CORE_INFO->eph_shd_mem_base + (((mc_addr_t)h_addr) - MC_CORE_INFO->znq_shd_mem_base))
-
-
-#define mc_core_saddr_to_core_saddr(c_addr) \
-	(MC_CORE_INFO->znq_shd_mem_base + (((mc_addr_t)c_addr) - MC_CORE_INFO->eph_shd_mem_base))
-
-
-#define mck_glb_binder_get_rgt(bdr) (((binder*)mc_host_saddr_to_core_saddr(bdr))->bn_right)
-#define mck_glb_binder_get_lft(bdr) (((binder*)mc_host_saddr_to_core_saddr(bdr))->bn_left)
-
 
 #ifdef __cplusplus
 }

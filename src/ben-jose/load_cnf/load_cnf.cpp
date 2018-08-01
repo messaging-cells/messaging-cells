@@ -95,15 +95,15 @@ void bj_load_shd_cnf(){
 	binder * fst, * lst, * wrk;
 
 	binder* nn_all_pos = &(nn_cnf->all_pre_pos); // nn_cnf is already core_pt so nn_all_pos is core_pt
-	fst = (binder*)mc_host_pt_to_core_pt(nn_all_pos->bn_right);
+	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_pos->bn_right);
 	lst = nn_all_pos;
-	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
+	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_cnf_node* nod = (pre_cnf_node*)wrk;
 
 		PTD_CK(nod->ki == nd_pos);
 		PTD_CK(nod->opp_nod != mc_null);
 
-		pre_cnf_node* opp = (pre_cnf_node*)mc_host_pt_to_core_pt(nod->opp_nod);
+		pre_cnf_node* opp = (pre_cnf_node*)mc_manageru_pt_to_workeru_pt(nod->opp_nod);
 		PTD_CK(opp->ki == nd_neg);
 		PTD_CK(nod->id == -(opp->id));
 		//pre_cnf_node* opp = nod->opp_nod;
@@ -132,9 +132,9 @@ void bj_load_shd_cnf(){
 	}
 
 	binder* nn_all_neu = &(nn_cnf->all_pre_neu); // nn_cnf is already core_pt so nn_all_neu is core_pt
-	fst = (binder*)mc_host_pt_to_core_pt(nn_all_neu->bn_right);
+	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_neu->bn_right);
 	lst = nn_all_neu;
-	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
+	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_cnf_node* sh_neu = (pre_cnf_node*)wrk;
 
 		neuron* my_neu = neuron::acquire();
@@ -150,11 +150,11 @@ void bj_load_shd_cnf(){
 		binder* nn_all_snp = &(sh_neu->all_agts);
 
 		binder * fst2, * lst2, * wrk2;
-		fst2 = (binder*)mc_host_pt_to_core_pt(nn_all_snp->bn_right);
+		fst2 = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_snp->bn_right);
 		lst2 = nn_all_snp;
-		for(wrk2 = fst2; wrk2 != lst2; wrk2 = (binder*)mc_host_pt_to_core_pt(wrk2->bn_right)){
+		for(wrk2 = fst2; wrk2 != lst2; wrk2 = (binder*)mc_manageru_pt_to_workeru_pt(wrk2->bn_right)){
 			agent_ref* sh_snp = (agent_ref*)wrk2;
-			pre_cnf_node* pol = (pre_cnf_node*)mc_host_pt_to_core_pt(sh_snp->glb_agent_ptr);
+			pre_cnf_node* pol = (pre_cnf_node*)mc_manageru_pt_to_workeru_pt(sh_snp->glb_agent_ptr);
 
 			//PTD_CK(pol->loaded != mc_null);
 			while(pol->loaded == mc_null){

@@ -37,7 +37,7 @@ Our Resurrected and Living, both in Body and Spirit,
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
-int mc_host_main(int argc, char *argv[])
+int mc_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];

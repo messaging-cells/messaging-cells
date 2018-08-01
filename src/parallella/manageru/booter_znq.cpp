@@ -94,7 +94,7 @@ print_exception_case(mc_off_core_st* sh_dat_1, e_epiphany_t* dev, unsigned row, 
 }
 
 void
-mc_host_init(){
+mc_manageru_init(){
 	e_epiphany_t & dev = mch_glb_dev;
 
 	e_platform_t platform;
@@ -110,7 +110,7 @@ mc_host_init(){
 		printf("\tbefore calling 'kernel::init_manageru_sys()'\n");
 		printf("2- Make sure linker script for '%s' defines LD_EXTERNAL_* symbols\n\n",
 			   mch_epiphany_elf_path);
-		mch_abort_func(201, "mc_host_init (1). ERROR: Bad ELF\n");
+		mch_abort_func(201, "mc_manageru_init (1). ERROR: Bad ELF\n");
 	}
 
 	// IMPORTANT NOTE:
@@ -131,7 +131,7 @@ mc_host_init(){
 	e_get_platform_info(&platform);
 
 	if (e_alloc(&mch_glb_emem, 0, lk_dat->extnl_ram_size)) {
-		mch_abort_func(202, "mc_host_init (2). ERROR: Can't allocate external memory buffer!\n\n");
+		mch_abort_func(202, "mc_manageru_init (2). ERROR: Can't allocate external memory buffer!\n\n");
 	}
 
 	MCH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)mch_glb_emem.base);
@@ -180,7 +180,7 @@ mc_host_init(){
 	#endif
 
 	if(err == E_ERR){
-		mch_abort_func(203, "mc_host_init (3). ERROR: Loading_group_failed.\n");
+		mch_abort_func(203, "mc_manageru_init (3). ERROR: Loading_group_failed.\n");
 	}
 
 	// init shared data.
@@ -223,7 +223,7 @@ mc_start_first_core(){
 
 
 void
-mc_host_run(){
+mc_manageru_run(){
 	e_epiphany_t & dev = mch_glb_dev;
 
 	//mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
@@ -420,7 +420,7 @@ mc_host_run(){
 }
 
 void
-mc_host_finish(){
+mc_manageru_finish(){
 	e_epiphany_t & dev = mch_glb_dev;
 
 	e_reset_group(&dev); 
@@ -439,7 +439,7 @@ mc_host_finish(){
 
 int main(int argc, char *argv[]) {
 	int rr = 0;
-	rr = mc_host_main(argc, argv);
+	rr = mc_manageru_main(argc, argv);
 	return rr;
 }
 

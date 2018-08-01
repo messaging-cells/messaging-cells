@@ -44,7 +44,7 @@ void
 mck_glb_init(bool is_host) {
 	ZNQ_CODE(
 		if(MC_EXTERNAL_RAM_LOAD_DATA.extnl_ram_orig == 0){
-			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init. Use mc_host_init before.\n"));
+			mck_abort(__LINE__, MC_ABORT_MSG("mck_glb_init. Use mc_manageru_init before.\n"));
 		}
 	);
 	mc_init_dyn_mem();

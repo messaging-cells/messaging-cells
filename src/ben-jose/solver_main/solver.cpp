@@ -77,7 +77,7 @@ link_all_modules_aux_fn(){
 //define BJ_DBG_SORNET 
 #define BJ_NORMAL 
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	kernel::init_sys();
 
 	//PTD_PRT("SOLVER main (KER=%p)\n", (void*)MCK_KERNEL);

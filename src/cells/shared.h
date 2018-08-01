@@ -425,10 +425,10 @@ mc_addr_t
 mc_workeru_addr_to_manageru_addr(mc_addr_t c_addr) mc_external_code_ram;
 
 //! Maps a host pointer to a core pointer
-#define mc_host_pt_to_core_pt(pt) (mc_manageru_addr_to_workeru_addr((mc_addr_t)(pt)))
+#define mc_manageru_pt_to_workeru_pt(pt) (mc_manageru_addr_to_workeru_addr((mc_addr_t)(pt)))
 
 //! Maps a core pointer to a host pointer
-#define mc_core_pt_to_host_pt(pt) (mc_workeru_addr_to_manageru_addr((mc_addr_t)(pt)))
+#define mc_workeru_pt_to_manageru_pt(pt) (mc_workeru_addr_to_manageru_addr((mc_addr_t)(pt)))
 
 
 #ifdef __cplusplus

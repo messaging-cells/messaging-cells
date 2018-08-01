@@ -33,7 +33,7 @@ Our Resurrected and Living, both in Body and Spirit,
 #include "cell.hh"
 #include "tak_mak.hh"
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	mck_glb_init(false);
 
 	tak_mak gg(123);

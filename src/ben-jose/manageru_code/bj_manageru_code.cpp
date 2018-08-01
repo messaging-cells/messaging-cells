@@ -10,9 +10,9 @@
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 void bj_test(int argc, char *argv[]) mc_external_code_ram;
-int bj_host_main(int argc, char *argv[]) mc_external_code_ram;
+int bj_manageru_main(int argc, char *argv[]) mc_external_code_ram;
 
-int bj_host_main(int argc, char *argv[])
+int bj_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
@@ -213,7 +213,7 @@ void bj_test_7(int argc, char *argv[])
 	kernel::finish_manageru_sys();
 }
 
-int mc_host_main(int argc, char *argv[])
+int mc_manageru_main(int argc, char *argv[])
 {
 	int rr = 0;
 
@@ -224,7 +224,7 @@ int mc_host_main(int argc, char *argv[])
 	//PTD_CODE(bj_test_5(argc, argv));
 	//PTD_CODE(bj_test_6(argc, argv));
 	//bj_test_7(argc, argv);
-	rr = bj_host_main(argc, argv);
+	rr = bj_manageru_main(argc, argv);
 
 	printf("HOST_CODE_FINISHED ==================================== \n");
 	return rr;

@@ -223,7 +223,7 @@ kernel::finish_sys(){
 
 void // static
 kernel::init_manageru_sys(){
-	mc_host_init();
+	mc_manageru_init();
 	kernel::init_sys(true);
 	MCK_PT_EXTERNAL_HOST_DATA->pt_host_kernel = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)MCK_KERNEL);
 	MCK_KERNEL->is_host_kernel = true;
@@ -238,13 +238,13 @@ void // static
 kernel::run_manageru_sys(){
 	//ZNQ_CODE(printf("run_manageru_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
 	MCK_KERNEL->host_running = true;
-	mc_host_run();
+	mc_manageru_run();
 }
 
 void // static 
 kernel::finish_manageru_sys(){
 	kernel::finish_sys();
-	mc_host_finish();
+	mc_manageru_finish();
 }
 
 char*
@@ -726,7 +726,7 @@ kernel::handle_work_to_cores(){
 		//PTD_PRT("kernel::handle_work_to_cores. loc_dst_ack_pt= %p \n", &loc_dst_ack_pt);
 		loc_dst_ack_pt = mck_busy_ack;
 
-		missive_grp_t* glb_mgrp = (missive_grp_t*)mc_host_pt_to_core_pt(mgrp);
+		missive_grp_t* glb_mgrp = (missive_grp_t*)mc_manageru_pt_to_workeru_pt(mgrp);
 
 		PTD_CK(core_ker->routed_from_host == mc_null);
 		core_ker->routed_from_host = glb_mgrp;
@@ -811,7 +811,7 @@ kernel::call_host_handlers_of_group(missive_grp_t* core_mgrp){
 	binder * fst, * lst, * wrk;
 
 	mc_core_id_t msvs_id = mc_addr_get_id(core_mgrp);
-	missive_grp_t* rem_mgrp = (missive_grp_t*)mc_core_pt_to_host_pt(core_mgrp);
+	missive_grp_t* rem_mgrp = (missive_grp_t*)mc_workeru_pt_to_manageru_pt(core_mgrp);
 
 	//binder* all_msvs = &(rem_mgrp->all_agts);
 	binder* all_msvs = (binder*)(((uint8_t*)core_mgrp) + mc_offsetof(&missive_grp_t::all_agts));
@@ -819,7 +819,7 @@ kernel::call_host_handlers_of_group(missive_grp_t* core_mgrp){
 	fst = mch_glb_binder_get_rgt(all_msvs, msvs_id);
 	lst = all_msvs;
 	for(wrk = fst; wrk != lst; wrk = mch_glb_binder_get_rgt(wrk, msvs_id)){
-		missive* remote_msv = (missive*)(binder*)mc_core_pt_to_host_pt(wrk);
+		missive* remote_msv = (missive*)(binder*)mc_workeru_pt_to_manageru_pt(wrk);
 
 		cell* hdlr_dst = (remote_msv)->dst;
 		PTD_CK(hdlr_dst != mc_null);
@@ -853,9 +853,9 @@ kernel::handle_work_from_host(){
 
 	//mck_sprt2("handle_work_from_host. FLAG1 \n");
 
-	fst = (binder*)mc_host_pt_to_core_pt(all_msvs->bn_right);
+	fst = (binder*)mc_manageru_pt_to_workeru_pt(all_msvs->bn_right);
 	lst = all_msvs;
-	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
+	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		missive* remote_msv = (missive*)wrk;
 
 		cell* hdlr_dst = (remote_msv)->dst;

@@ -37,9 +37,9 @@ void bj_load_shd_sornet(){
 	binder * fst, * lst, * wrk;
 
 	binder* nn_all_nods = &(nn_cnf->all_pre_sornods); // nn_cnf is already core_pt so nn_all_nods is core_pt
-	fst = (binder*)mc_host_pt_to_core_pt(nn_all_nods->bn_right);
+	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_nods->bn_right);
 	lst = nn_all_nods;
-	for(wrk = fst; wrk != lst; wrk = (binder*)mc_host_pt_to_core_pt(wrk->bn_right)){
+	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_sornode* nod = (pre_sornode*)wrk;
 
 		sorcell* scll = sorcell::acquire();
@@ -49,13 +49,13 @@ void bj_load_shd_sornet(){
 		PTD_CK(scll->up_inp == mc_null);
 		scll->up_idx = nod->up_idx;
 		if(nod->out_up != mc_null){
-			scll->up_inp = (void*)mc_host_pt_to_core_pt(nod->out_up);	// up_inp used as tmp
+			scll->up_inp = (void*)mc_manageru_pt_to_workeru_pt(nod->out_up);	// up_inp used as tmp
 		}
 
 		PTD_CK(scll->down_inp == mc_null);
 		scll->down_idx = nod->down_idx;
 		if(nod->out_down != mc_null){
-			scll->down_inp = (void*)mc_host_pt_to_core_pt(nod->out_down);	// down_inp used as tmp
+			scll->down_inp = (void*)mc_manageru_pt_to_workeru_pt(nod->out_down);	// down_inp used as tmp
 		}
 
 		my_net->all_sorcells.bind_to_my_left(*scll);

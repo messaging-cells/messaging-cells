@@ -60,7 +60,7 @@ static inline bool mct_is_local(uint32_t addr)
 
 
 int 
-mc_host_main(int argc, char *argv[])
+mc_manageru_main(int argc, char *argv[])
 {
 	e_mem_t emem;
 	e_epiphany_t dev;

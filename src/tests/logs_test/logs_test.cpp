@@ -33,7 +33,7 @@ Our Resurrected and Living, both in Body and Spirit,
 #include "data_logs.h"
 #include "cell.hh"
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	mck_glb_init(false);
 
 	mc_core_id_t koid = mck_get_core_id();

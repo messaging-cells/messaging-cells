@@ -270,7 +270,7 @@ In the examples it is used an implicit symmetry: The fact that two objects that 
 exactly the same order in different cores have the same local address.
 
 <p>
-For example when in the \ref mc_cores_main function of the \ref philo.cpp program, 
+For example when in the \ref mc_workerus_main function of the \ref philo.cpp program, 
 the line:
 
 <pre>
@@ -342,7 +342,7 @@ This group corresponds to basically two main features:
 
 
 int main() {
-	mc_cores_main();
+	mc_workerus_main();
 	return 0;
 }
 

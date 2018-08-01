@@ -104,21 +104,21 @@ mck_abort(mc_addr_t err, char* msg) {
 }
 
 void
-mc_host_init(){
+mc_manageru_init(){
 	// a core must never call this
-	mck_abort(__LINE__, MC_ABORT_MSG("mc_host_init abort\n"));
+	mck_abort(__LINE__, MC_ABORT_MSG("mc_manageru_init abort\n"));
 }
 
 void
-mc_host_run(){
+mc_manageru_run(){
 	// a core must never call this
-	mck_abort(__LINE__, MC_ABORT_MSG("mc_host_run abort\n"));
+	mck_abort(__LINE__, MC_ABORT_MSG("mc_manageru_run abort\n"));
 }
 
 void
-mc_host_finish(){
+mc_manageru_finish(){
 	// a core must never call this
-	mck_abort(__LINE__, MC_ABORT_MSG("mc_host_finish abort\n"));
+	mck_abort(__LINE__, MC_ABORT_MSG("mc_manageru_finish abort\n"));
 }
 
 mc_addr_t 

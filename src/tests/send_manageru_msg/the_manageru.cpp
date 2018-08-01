@@ -74,7 +74,7 @@ missive_handler_t host_handlers[] = {
 };
 
 void
-send_host_main(){
+send_manageru_main(){
 	kernel::init_manageru_sys();
 
 	kernel::set_handlers(2, host_handlers);
@@ -99,7 +99,7 @@ send_host_main(){
 	printf("ALL FINISHED ==================================== \n");
 }
 
-int mc_host_main(int argc, char *argv[])
+int mc_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
@@ -110,7 +110,7 @@ int mc_host_main(int argc, char *argv[])
 		MCH_LOAD_WITH_MEMCPY = true;
 	}
 
-	send_host_main();
+	send_manageru_main();
 
 	return 0;
 }

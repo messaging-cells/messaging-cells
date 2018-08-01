@@ -701,7 +701,7 @@ philosopher::call_exit(){
 	}
 #endif // END_OF_PHILO_WITH_DBG
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	kernel::init_sys();
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);

@@ -43,7 +43,7 @@ Our Resurrected and Living, both in Body and Spirit,
 #include "dyn_mem.h"
 #include "binder.hh"
 #include "global.h"
-//include "cores_main.h"
+//include "workerus_main.h"
 
 // look for "class mc_aligned "
 
@@ -937,8 +937,8 @@ mc_kernel_handler(missive* msv) mc_external_code_ram;
 #define mc_glb_binder_get_rgt(bdr, id) ((binder*)mc_addr_set_id((id), ((bdr)->bn_right)))
 #define mc_glb_binder_get_lft(bdr, id) ((binder*)mc_addr_set_id((id), ((bdr)->bn_left)))
 
-#define mch_glb_binder_get_rgt(bdr, id) (binder*)mc_glb_binder_get_rgt((binder*)mc_core_pt_to_host_pt(bdr), id)
-#define mch_glb_binder_get_lft(bdr, id) (binder*)mc_glb_binder_get_lft((binder*)mc_core_pt_to_host_pt(bdr), id)
+#define mch_glb_binder_get_rgt(bdr, id) (binder*)mc_glb_binder_get_rgt((binder*)mc_workeru_pt_to_manageru_pt(bdr), id)
+#define mch_glb_binder_get_lft(bdr, id) (binder*)mc_glb_binder_get_lft((binder*)mc_workeru_pt_to_manageru_pt(bdr), id)
 
 #define MCK_CALL_HANDLER(cls, nam, msv) (((cls*)(mck_as_loc_pt(msv->dst)))->nam(msv))
 

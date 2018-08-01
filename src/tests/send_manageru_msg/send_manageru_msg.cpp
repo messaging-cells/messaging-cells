@@ -51,7 +51,7 @@ missive_handler_t core_handlers[] = {
 	recv_core_handler
 };
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	kernel::init_sys();
 
 	cell::separate(mc_out_num_cores);

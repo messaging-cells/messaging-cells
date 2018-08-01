@@ -43,7 +43,7 @@ Our Resurrected and Living, both in Body and Spirit,
 #include "booter.h"
 #include "string_hst.hh"
 
-//include "cores_main.h"
+//include "workerus_main.h"
 #include "dlmalloc.h"
 
 #include "dyn_mem.h"
@@ -153,7 +153,7 @@ mch_load_map(){
 }
 
 void
-mc_host_init(){
+mc_manageru_init(){
 	ALL_THREADS_INFO = mc_null;
 	HOST_THREAD_ID = pthread_self();
 
@@ -175,7 +175,7 @@ mc_host_init(){
 	TOT_THREADS = mc_tot_nn_sys;
 	ALL_THREADS_INFO = (thread_info_t *)calloc(TOT_THREADS, sizeof(thread_info_t));
 	if (ALL_THREADS_INFO == NULL){
-		mch_abort_func(1, "host_main. NULL ALL_THREADS_INFO \n");
+		mch_abort_func(1, "manageru_main. NULL ALL_THREADS_INFO \n");
 	}
 
 	printf("TOT_THREADS = %d\n", TOT_THREADS);
@@ -202,7 +202,7 @@ mc_host_init(){
 }
 
 void
-mc_host_run()
+mc_manageru_run()
 {
 	mc_off_sys_st* pt_shd_data = MCK_PT_EXTERNAL_HOST_DATA;
 	//mc_sys_sz_st* sys_sz = MC_SYS_SZ;
@@ -237,7 +237,7 @@ mc_host_run()
 			thd_inf.thd_ptd.ptd_num = num_core;
 			mc_uint16_to_hex_bytes(thd_inf.thd_ptd.ptd_num, (uint8_t*)(thd_inf.thd_ptd.ptd_name));
 			thd_inf.thd_ptd.ptd_core_id = core_id;
-			thd_inf.thd_ptd.ptd_core_func = &mc_cores_main;
+			thd_inf.thd_ptd.ptd_core_func = &mc_workerus_main;
 			thd_inf.thd_log_fnam = mc_null;
 
 			//printf("STARTING CORE 0x%03x (%2d,%2d) NUM=%d\n", core_id, row, col, num_core);
@@ -273,7 +273,7 @@ mc_host_run()
 			int ss = pthread_create(&thd_inf.thd_ptd.ptd_id, NULL,
 								&thread_start, &thd_inf);
 			if (ss != 0){
-				mch_abort_func(ss, "host_main. Cannot pthread_create");
+				mch_abort_func(ss, "manageru_main. Cannot pthread_create");
 			}
 		}
 	}
@@ -403,7 +403,7 @@ mc_host_run()
 		void *res;
 		int ss = pthread_join(ALL_THREADS_INFO[tnum].thd_ptd.ptd_id, &res);
 		if(ss != 0){
-			mch_abort_func(ss, "mc_host_finish. Cannot join thread.");
+			mch_abort_func(ss, "mc_manageru_finish. Cannot join thread.");
 		}
 	}
 
@@ -420,7 +420,7 @@ mc_host_run()
 }
 
 void
-mc_host_finish()
+mc_manageru_finish()
 {
 
 	free(ALL_THREADS_INFO);
@@ -443,7 +443,7 @@ void test_dlmalloc_align(){
 
 int main(int argc, char *argv[]) {
 	int rr = 0;
-	rr = mc_host_main(argc, argv);
+	rr = mc_manageru_main(argc, argv);
 	return rr;
 	//test_dlmalloc_align();
 }

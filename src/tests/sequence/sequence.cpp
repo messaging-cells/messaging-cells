@@ -152,7 +152,7 @@ void ker_func(){
 	MC_MARK_USED(nn);
 }
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	kernel::init_sys();
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);

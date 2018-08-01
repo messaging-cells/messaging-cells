@@ -44,7 +44,7 @@ void func_3(char* cc, int aa){
 	func_2('x', aa * 7);
 }
 
-void mc_cores_main() {
+void mc_workerus_main() {
 	mck_glb_init(false);
 
 	mck_slog2("BACKTRACE_TEST\n");	
