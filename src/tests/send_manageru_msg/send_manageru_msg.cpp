@@ -70,7 +70,7 @@ void mc_workerus_main() {
 		kernel::set_handlers(2, core_handlers);
 
 		cell* act1 = kernel::get_workeru_cell();
-		cell* act2 = kernel::get_host_cell();
+		cell* act2 = kernel::get_manageru_cell();
 
 		PTD_CK_PRT((mc_addr_get_id((mc_addr_t)act2) != 0), "act2 = %p\n", act2);
 

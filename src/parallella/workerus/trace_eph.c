@@ -323,7 +323,7 @@ mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	if(info == MC_NOT_WAITING){
 		info = MC_WAITING_ENTER;
 	}
-	mc_set_off_workeru_var(off_workeru_pt->is_waiting, info);
+	mc_loop_set_var(off_workeru_pt->is_waiting, info);
 	mc_asm("gie" "\n\t");
 	
 	// wait for SYNC
@@ -332,7 +332,7 @@ mck_wait_sync(uint32_t info, int16_t sz_trace, void** trace){
 	// restore old_mask
 	mc_asm("gid" "\n\t");
 	mc_asm("movts imask, %0" : : "r" (old_mask));
-	mc_set_off_workeru_var(off_workeru_pt->is_waiting, MC_NOT_WAITING);
+	mc_loop_set_var(off_workeru_pt->is_waiting, MC_NOT_WAITING);
 	mc_asm("gie" "\n\t");
 }
 

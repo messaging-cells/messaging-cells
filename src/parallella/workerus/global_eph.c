@@ -37,7 +37,7 @@ Our Resurrected and Living, both in Body and Spirit,
 //======================================================================
 // off chip shared memory
 
-mc_off_sys_st mck_external_host_data_obj mc_external_host_data_ram;
+mc_off_sys_st mck_external_manageru_data_obj mc_external_manageru_data_ram;
 
 //=====================================================================
 // global data
@@ -92,7 +92,7 @@ mck_abort(mc_addr_t err, char* msg) {
 
 	mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt;
 	if((off_workeru_pt != mc_null) && (off_workeru_pt->magic_id == MC_MAGIC_ID)){
-		mc_set_off_workeru_var(off_workeru_pt->is_finished, MC_FINISHED_VAL);
+		mc_loop_set_var(off_workeru_pt->is_finished, MC_FINISHED_VAL);
 	}
 	
 	mc_asm("mov r62, %0" : : "r" (in_shd));

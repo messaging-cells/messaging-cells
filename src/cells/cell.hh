@@ -336,7 +336,7 @@ extern char* err_cell_08 mc_external_data_ram;
 class mc_aligned kernel { 
 public:
 	uint32_t 	magic_id;
-	bool		is_host_kernel;
+	bool		is_manageru_kernel;
 
 	mck_handler_idx_t 	tot_handlers; //!< \ref kernel::all_handlers size.
 	missive_handler_t* 	all_handlers; //!< Current array of \ref missive handlers of \ref cell s for this core.
@@ -356,12 +356,12 @@ public:
 	missive_grp_t*	routed_from_host;
 	mck_ack_t	routed_ack_from_host;
 
-	mc_bool_t has_from_host_work;
-	mc_bool_t has_to_host_work;
+	mc_bool_t has_from_manageru_work;
+	mc_bool_t has_to_manageru_work;
 
 	grip to_cores_work;
-	grip to_host_work;
-	grip from_host_work;
+	grip to_manageru_work;
+	grip from_manageru_work;
 
 	grip in_work;
 	grip local_work;
@@ -486,7 +486,7 @@ public:
 
 	//! Returns the core_cell (see \ref get_workeru_cell) of the host
 	static cell*
-	get_host_cell() mc_external_code_ram;
+	get_manageru_cell() mc_external_code_ram;
 
 	//! \brief This methods sets \ref kernel::all_handlers to 'hdlrs' and it must have size 'tot_hdlrs'.
 	static void
@@ -527,10 +527,10 @@ public:
 	handle_work_to_cores() mc_external_code_ram;
 
 	void 
-	handle_host_missives() mc_external_code_ram;
+	handle_manageru_missives() mc_external_code_ram;
 
 	void 
-	call_host_handlers_of_group(missive_grp_t* mgrp) mc_external_code_ram;
+	call_manageru_handlers_of_group(missive_grp_t* mgrp) mc_external_code_ram;
 
 	mc_inline_fn
 	void reset_stop_sys(){
@@ -811,12 +811,12 @@ public:
 		PTD_DBG_CODE(dbg_msv |= 0x1);
 
 		PTD_CK(dst != mc_null);
-		if(! MCK_KERNEL->is_host_kernel){
+		if(! MCK_KERNEL->is_manageru_kernel){
 			PTD_CK(mc_addr_get_id((mc_addr_t)dst) != 0);
 			PTD_CK(! mc_addr_in_sys((mc_addr_t)dst));
 			src = (cell*)mck_as_glb_pt(src);
-			MCK_KERNEL->to_host_work.bind_to_my_left(*this);
-			MCK_KERNEL->has_to_host_work = true;
+			MCK_KERNEL->to_manageru_work.bind_to_my_left(*this);
+			MCK_KERNEL->has_to_manageru_work = true;
 		} else {
 			MCK_KERNEL->local_work.bind_to_my_left(*this);
 		}

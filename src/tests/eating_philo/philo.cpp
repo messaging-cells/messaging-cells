@@ -266,8 +266,8 @@ public:
 	grip ava_chopstick;
 	grip ava_philosopher;
 
-	mc_size_t from_host_work_sz;
-	mc_size_t to_host_work_sz;
+	mc_size_t from_manageru_work_sz;
+	mc_size_t to_manageru_work_sz;
 	mc_size_t in_work_sz;
 	mc_size_t local_work_sz;
 	mc_size_t out_work_sz;
@@ -278,8 +278,8 @@ public:
 	mc_size_t cls_available_agent_grp_sz;
 
 	void init_philo_core(){
-		from_host_work_sz = 0;
-		to_host_work_sz = 0;
+		from_manageru_work_sz = 0;
+		to_manageru_work_sz = 0;
 		in_work_sz = 0;
 		local_work_sz = 0;
 		out_work_sz = 0;
@@ -536,7 +536,7 @@ philosopher::handler(missive* msv){
 					mck_iprt(mck_get_kernel()->get_workeru_nn());
 					mck_sprt2("___\n");
 
-					PH_DBG_COD(mc_set_off_workeru_var(dbg_all_full[nn], true);)
+					PH_DBG_COD(mc_loop_set_var(dbg_all_full[nn], true);)
 
 					send(lft_philo, tok_yes_full);
 					send(rgt_philo, tok_yes_full);
@@ -682,14 +682,14 @@ philosopher::call_exit(){
 		kernel* ker = mck_get_kernel();
 		mc_workeru_nn_t nn = ker->get_workeru_nn();
 		if(! ker->did_work && ! dbg_all_idle_prt[nn]){
-			mc_set_off_workeru_var(dbg_all_idle_prt[nn], true);
+			mc_loop_set_var(dbg_all_idle_prt[nn], true);
 		}
 		if(ker->did_work && dbg_all_idle_prt[nn]){
-			mc_set_off_workeru_var(dbg_all_idle_prt[nn], false);
+			mc_loop_set_var(dbg_all_idle_prt[nn], false);
 		}
 		philo_core* phl = dbg_all_philo[nn];
 
-		phl->to_host_work_sz = ker->to_host_work.calc_size();
+		phl->to_manageru_work_sz = ker->to_manageru_work.calc_size();
 		phl->in_work_sz = ker->in_work.calc_size();
 		phl->local_work_sz = ker->local_work.calc_size();
 		phl->out_work_sz = ker->out_work.calc_size();
@@ -709,8 +709,8 @@ void mc_workerus_main() {
 	mc_workeru_nn_t nn = ker->get_workeru_nn();
 
 	PH_DBG_COD(
-		mc_set_off_workeru_var(dbg_all_idle_prt[nn], false);
-		mc_set_off_workeru_var(dbg_all_full[nn], false);
+		mc_loop_set_var(dbg_all_idle_prt[nn], false);
+		mc_loop_set_var(dbg_all_full[nn], false);
 	)
 
 	philo_core* core_dat = philo_core::acquire_alloc();

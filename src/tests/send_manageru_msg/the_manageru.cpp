@@ -39,10 +39,10 @@ Our Resurrected and Living, both in Body and Spirit,
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
-void recv_host_handler(missive* msg);
+void recv_manageru_handler(missive* msg);
 
 void 
-recv_host_handler(missive* msg){
+recv_manageru_handler(missive* msg){
 	PTD_PRT("RCV_MSV=%p \n", msg);
 	PTD_PRT("RCV_msv=%p SRC=%p DST=%p \n", (void*)msg, msg->src, msg->dst);
 	PTD_PRT("RCV_CORE_ID=%x \n", mc_addr_get_id(msg->dst));
@@ -56,7 +56,7 @@ recv_host_handler(missive* msg){
 	MC_MARK_USED(konn);
 
 
-	PTD_LOG("recv_host_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_LOG("recv_manageru_handler. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 	PTD_PRT("RCV_MSV. core_id=%lx core_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
 
 	#ifdef WITH_RESPONSE
@@ -70,7 +70,7 @@ recv_host_handler(missive* msg){
 
 missive_handler_t host_handlers[] = {
 	mc_null,
-	recv_host_handler
+	recv_manageru_handler
 };
 
 void

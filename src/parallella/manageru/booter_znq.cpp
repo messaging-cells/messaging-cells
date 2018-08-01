@@ -135,13 +135,13 @@ mc_manageru_init(){
 
 	MCH_EXTERNAL_RAM_BASE_PT = ((uint8_t*)mch_glb_emem.base);
 
-	mcz_pt_external_host_data_obj = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_host_data_disp);
+	mcz_pt_external_manageru_data_obj = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_manageru_data_disp);
 
 	//uint8_t* extnl_load_base = mch_disp_to_pt(lk_dat->extnl_load_disp);
-	uint8_t* extnl_host_alloc_base = mch_disp_to_pt(lk_dat->extnl_host_alloc_disp);
+	uint8_t* extnl_manageru_alloc_base = mch_disp_to_pt(lk_dat->extnl_manageru_alloc_disp);
 	
 	//mch_glb_load_mspace = create_mspace_with_base(extnl_load_base, lk_dat->extnl_load_size, 0);
-	mch_glb_alloc_mspace = create_mspace_with_base(extnl_host_alloc_base, lk_dat->extnl_host_alloc_size, 0);
+	mch_glb_alloc_mspace = create_mspace_with_base(extnl_manageru_alloc_base, lk_dat->extnl_manageru_alloc_size, 0);
 
 	// dev init
 	
@@ -150,7 +150,7 @@ mc_manageru_init(){
 	mc_sys_sz_st* g_sys_sz = MC_SYS_SZ;
 	mch_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
-	mc_off_sys_st* pt_shd_data = mcz_pt_external_host_data_obj;
+	mc_off_sys_st* pt_shd_data = mcz_pt_external_manageru_data_obj;
 	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 
 	//printf("pt_shd_data=%p \n", pt_shd_data);
@@ -196,7 +196,7 @@ mc_manageru_init(){
 
 	//printf("eph_shared_mem_base= %p \n", (void*)(pt_shd_data->eph_shared_mem_base));
 
-	pt_shd_data->pt_host_kernel = mc_null;
+	pt_shd_data->pt_manageru_kernel = mc_null;
 	pt_shd_data->tot_modules = mcl_module_names_sz;
 
 	pt_shd_data->first_load_workeru_id = mc_nn_to_id(mch_first_load_workeru_nn);
@@ -226,7 +226,7 @@ mc_manageru_run(){
 	e_epiphany_t & dev = mch_glb_dev;
 
 	//mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
-	mc_off_sys_st* pt_shd_data = mcz_pt_external_host_data_obj;
+	mc_off_sys_st* pt_shd_data = mcz_pt_external_manageru_data_obj;
 
 	mc_workeru_co_t row, col, max_row, max_col;
 	mc_workeru_nn_t tot_cores;
@@ -313,7 +313,7 @@ mc_manageru_run(){
 
 		kernel* ker = MCK_KERNEL;
 		if(ker != mc_null){
-			ker->handle_host_missives();
+			ker->handle_manageru_missives();
 			has_work = ker->did_work;
 		}
 
@@ -399,7 +399,7 @@ mc_manageru_run(){
 
 	printf("SHD_DATA_addr_as_seen_from_eph=%p\n", pt_shd_data->pt_this_from_eph);
 	printf("SHD_DATA_addr_as_seen_from_znq=%p\n", pt_shd_data->pt_this_from_znq);
-	printf("SHD_DATA_displacement_from_shd_mem_base_adddr= %p\n", (void*)(lk_dat->extnl_host_data_disp));
+	printf("SHD_DATA_displacement_from_shd_mem_base_adddr= %p\n", (void*)(lk_dat->extnl_manageru_data_disp));
 
 	printf("pt_shd_data=%p \n", pt_shd_data);
 	*/
@@ -433,7 +433,7 @@ mc_manageru_finish(){
 	e_free(&mch_glb_emem);
 	e_finalize();
 
-	//prt_host_aligns();
+	//prt_manageru_aligns();
 }
 
 int main(int argc, char *argv[]) {

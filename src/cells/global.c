@@ -105,15 +105,15 @@ mck_glb_init(bool is_host) {
 		}
 
 		// glb_dat->off_workeru_pt init	
-		//mc_set_off_workeru_var(glb_dat->off_workeru_pt->magic_id, MC_MAGIC_ID);
+		//mc_loop_set_var(glb_dat->off_workeru_pt->magic_id, MC_MAGIC_ID);
 		void* glb_dat_wid = (void*)mc_addr_set_id(koid, glb_dat);
 		MC_MARK_USED(glb_dat_wid);
 
-		mc_set_off_workeru_var(glb_dat->off_workeru_pt->ck_workeru_id, koid);
-		mc_set_off_workeru_var(glb_dat->off_workeru_pt->core_data, glb_dat_wid);
+		mc_loop_set_var(glb_dat->off_workeru_pt->ck_workeru_id, koid);
+		mc_loop_set_var(glb_dat->off_workeru_pt->core_data, glb_dat_wid);
 		
 		mck_set_finished(MC_NOT_FINISHED_VAL);
-		mc_set_off_workeru_var(glb_dat->off_workeru_pt->is_waiting, MC_NOT_WAITING);
+		mc_loop_set_var(glb_dat->off_workeru_pt->is_waiting, MC_NOT_WAITING);
 	}
 
 	EPH_CODE(
@@ -137,15 +137,15 @@ mc_extnl_ram_load_data_fill(mc_link_syms_data_st* syms){
 	mc_addr_t ex_orig = syms->extnl_ram_orig;
 	syms->extnl_code_disp = syms->extnl_code_orig - ex_orig;
 	syms->extnl_load_disp = syms->extnl_load_orig - ex_orig;
-	syms->extnl_host_data_disp = syms->extnl_host_data_orig - ex_orig;
-	syms->extnl_host_alloc_disp = syms->extnl_host_alloc_orig - ex_orig;
+	syms->extnl_manageru_data_disp = syms->extnl_manageru_data_orig - ex_orig;
+	syms->extnl_manageru_alloc_disp = syms->extnl_manageru_alloc_orig - ex_orig;
 }
 
 void 
 mck_set_finished(uint8_t val) {
 	mc_off_workeru_st* off_workeru_pt = MC_CORE_INFO->off_workeru_pt; 
 	if(off_workeru_pt != mc_null){
-		mc_set_off_workeru_var(off_workeru_pt->is_finished, val);
+		mc_loop_set_var(off_workeru_pt->is_finished, val);
 	}
 }
 

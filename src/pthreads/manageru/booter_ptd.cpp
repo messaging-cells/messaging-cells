@@ -196,7 +196,7 @@ mc_manageru_init(){
 	pt_shd_data->wrk_sys = *sys_sz;
 	MCH_CK(mch_ck_sys_data(&(pt_shd_data->wrk_sys)));
 
-	pt_shd_data->pt_host_kernel = mc_null;
+	pt_shd_data->pt_manageru_kernel = mc_null;
 
 	pt_shd_data->first_load_workeru_id = mc_nn_to_id(mch_first_load_workeru_nn);
 }
@@ -305,7 +305,7 @@ mc_manageru_run()
 
 		kernel* ker = MCK_KERNEL;
 		if(ker != mc_null){
-			ker->handle_host_missives();
+			ker->handle_manageru_missives();
 			has_work = ker->did_work;
 		}
 

@@ -102,7 +102,7 @@ mc_manageru_main(int argc, char *argv[])
 	mc_sys_sz_st* g_sys_sz = MC_SYS_SZ;
 	mch_init_glb_sys_sz_with_dev(g_sys_sz, &dev);
 
-	mc_off_sys_st* pt_shd_data = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_host_data_disp);
+	mc_off_sys_st* pt_shd_data = (mc_off_sys_st*)mch_disp_to_pt(lk_dat->extnl_manageru_data_disp);
 	MCH_CK(sizeof(*pt_shd_data) == sizeof(mc_off_sys_st));
 
 	/*
@@ -112,17 +112,17 @@ mc_manageru_main(int argc, char *argv[])
 	printf("extnl_ram_size = %p \n", (void*)syms.extnl_ram_size);
 	printf("extnl_code_size = %p \n", (void*)syms.extnl_code_size);
 	printf("extnl_load_size = %p \n", (void*)syms.extnl_load_size);
-	printf("extnl_host_data_size = %p \n", (void*)syms.extnl_host_data_size);
-	printf("extnl_host_alloc_size = %p \n", (void*)syms.extnl_host_alloc_size);
+	printf("extnl_manageru_data_size = %p \n", (void*)syms.extnl_manageru_data_size);
+	printf("extnl_manageru_alloc_size = %p \n", (void*)syms.extnl_manageru_alloc_size);
 	printf("extnl_ram_orig = %p \n", (void*)syms.extnl_ram_orig);
 	printf("extnl_code_orig = %p \n", (void*)syms.extnl_code_orig);
 	printf("extnl_load_orig = %p \n", (void*)syms.extnl_load_orig);
-	printf("extnl_host_data_orig = %p \n", (void*)syms.extnl_host_data_orig);
-	printf("extnl_host_alloc_orig = %p \n", (void*)syms.extnl_host_alloc_orig);
+	printf("extnl_manageru_data_orig = %p \n", (void*)syms.extnl_manageru_data_orig);
+	printf("extnl_manageru_alloc_orig = %p \n", (void*)syms.extnl_manageru_alloc_orig);
 	printf("extnl_code_disp = %p \n", (void*)syms.extnl_code_disp);
 	printf("extnl_load_disp = %p \n", (void*)syms.extnl_load_disp);
-	printf("extnl_host_data_disp = %p \n", (void*)syms.extnl_host_data_disp);
-	printf("extnl_host_alloc_disp = %p \n", (void*)syms.extnl_host_alloc_disp);
+	printf("extnl_manageru_data_disp = %p \n", (void*)syms.extnl_manageru_data_disp);
+	printf("extnl_manageru_alloc_disp = %p \n", (void*)syms.extnl_manageru_alloc_disp);
 	*/
 
 	memset(pt_shd_data, 0, sizeof(*pt_shd_data));

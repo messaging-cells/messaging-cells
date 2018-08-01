@@ -37,7 +37,7 @@ Our Resurrected and Living, both in Body and Spirit,
 //======================================================================
 // off chip shared memory
 
-mc_off_sys_st* mcz_pt_external_host_data_obj = mc_null;
+mc_off_sys_st* mcz_pt_external_manageru_data_obj = mc_null;
 
 //=====================================================================
 // global funcs

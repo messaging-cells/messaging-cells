@@ -240,7 +240,7 @@ mc_c_decl {
 /*
 	host_binder() mc_external_code_ram;
 	~host_binder() mc_external_code_ram;
-	void	init_host_binder() mc_external_code_ram;
+	void	init_manageru_binder() mc_external_code_ram;
 	bool	is_alone() mc_external_code_ram;
 	void	let_go() mc_external_code_ram;
 	bool	ck_binder() mc_external_code_ram;

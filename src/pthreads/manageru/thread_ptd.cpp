@@ -131,7 +131,7 @@ mck_get_thread_idx(){
 
 ptd_info_t*
 mck_get_ptd_info(){
-	if(mc_is_host_thread()){
+	if(mc_is_manageru_thread()){
 		PTD_CK(mcm_HOST_PTD_INFO != mc_null);
 		return mcm_HOST_PTD_INFO;
 	}
@@ -244,7 +244,7 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 
 char*
 mcm_get_ptd_log_fnam(){
-	if(mc_is_host_thread()){
+	if(mc_is_manageru_thread()){
 		return mc_null;
 	}
 	uint16_t thd_idx = mck_get_thread_idx();
@@ -255,7 +255,7 @@ mcm_get_ptd_log_fnam(){
 /*
 void
 mcm_log(const char *fmt, ...){
-	//PTD_CK(! mc_is_host_thread());
+	//PTD_CK(! mc_is_manageru_thread());
 
 	char pp[MC_MAX_STR_SZ];
 	va_list ap;
@@ -275,7 +275,7 @@ mcm_log(const char *fmt, ...){
 
 void
 mcm_printf(const char *fmt, ...){
-	//PTD_CK(! mc_is_host_thread());
+	//PTD_CK(! mc_is_manageru_thread());
 
 	char pp[MC_MAX_STR_SZ];
 	va_list ap;
@@ -320,7 +320,7 @@ thread_start(void *arg){
 
 void 
 thread_abort(){
-	if(mc_is_host_thread()){
+	if(mc_is_manageru_thread()){
 		abort();
 	}
 	mc_out_abort_ptd();

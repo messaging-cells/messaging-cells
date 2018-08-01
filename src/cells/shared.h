@@ -269,7 +269,7 @@ mc_v32_of_p16(uint16_t* p16){
 }
 
 //! Warranted set of an off-core variable (loops until reading the value). Use only if needed.
-#define mc_set_off_workeru_var(var, val) \
+#define mc_loop_set_var(var, val) \
 	(var) = (val); \
 	while((var) != (val)); \
 		
@@ -361,7 +361,7 @@ struct mc_aligned mc_off_sys_shared_data_def {
 	//uint32_t 		dbg_error_code;
 	void* 			pt_this_from_znq;
 	void* 			pt_this_from_eph;
-	void* 			pt_host_kernel;
+	void* 			pt_manageru_kernel;
 	mc_addr_t		znq_shared_mem_base;
 	mc_addr_t		eph_shared_mem_base;
 

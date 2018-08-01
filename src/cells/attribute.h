@@ -174,7 +174,7 @@ mc_c_decl {
 
 #define mc_external_code_ram mc_section("external_code_ram")
 #define mc_external_data_ram mc_section("external_data_ram")
-#define mc_external_host_data_ram mc_section("external_host_data_ram")
+#define mc_external_manageru_data_ram mc_section("external_manageru_data_ram")
 #define mc_alloc_ram mc_section("alloc_ram")
 
 #define mc_lk_syms_dat mc_section(mc_lk_syms_section_nm)

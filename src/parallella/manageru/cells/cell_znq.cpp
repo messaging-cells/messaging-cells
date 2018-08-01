@@ -54,7 +54,7 @@ mck_send_irq(mc_workeru_id_t koid, uint16_t num_irq) {
 kernel* //static 
 kernel::get_workeru_kernel(mc_workeru_id_t id){
 	mc_workeru_nn_t nn = mc_id_to_nn(id);
-	mc_off_sys_st* pt_shd_data = mcz_pt_external_host_data_obj;
+	mc_off_sys_st* pt_shd_data = mcz_pt_external_manageru_data_obj;
 	mck_glb_sys_st* glb_dat = 
 		(mck_glb_sys_st*)mc_eph_addr_to_znq_addr((mc_addr_t)(pt_shd_data->sys_cores[nn]).core_data);
 	if(glb_dat == mc_null){

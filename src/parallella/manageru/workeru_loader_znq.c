@@ -105,7 +105,7 @@ uint8_t*
 mc_memload(uint8_t* dest, const uint8_t* src, uint32_t sz){
 	uint32_t idx = 0;
 	for(idx = 0; idx < sz; idx++){
-		mc_set_off_workeru_var(dest[idx], src[idx]);
+		mc_loop_set_var(dest[idx], src[idx]);
 	}
 	return dest;
 }
@@ -167,7 +167,7 @@ mc_start_load(load_info_t *ld_dat){
 	struct stat  st;
 	void        *file;
 
-	e_set_host_verbosity(H_D0);
+	//e_set_manageru_verbosity(H_D0);
 
 	const char *executable = ld_dat->executable;
 	e_epiphany_t *dev = ld_dat->dev;
@@ -356,7 +356,7 @@ mcl_load_elf(int row, int col, load_info_t *ld_dat)
 	mc_link_syms_data_st* lk_dat = &(MC_EXTERNAL_RAM_LOAD_DATA);
 
 	uint8_t* pt_ram_base = (uint8_t*)(emem->base);
-	uint8_t* pt_end_code = (pt_ram_base + lk_dat->extnl_host_data_disp);
+	uint8_t* pt_end_code = (pt_ram_base + lk_dat->extnl_manageru_data_disp);
 	uint8_t* pt_end_mem = (pt_ram_base + lk_dat->extnl_ram_size);
 	MCL_MARK_USED(pt_end_code);
 	MCL_MARK_USED(pt_end_mem);

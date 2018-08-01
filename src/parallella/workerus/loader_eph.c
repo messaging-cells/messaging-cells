@@ -45,21 +45,21 @@ mc_link_syms_data_st mck_external_ram_load_data mc_lk_syms_dat = {
 	.extnl_ram_size = MC_VAL_EXTERNAL_RAM_SIZE,
 	.extnl_code_size = MC_VAL_EXTERNAL_CODE_SIZE,
 	.extnl_load_size = MC_VAL_EXTERNAL_LOAD_SIZE,
-	.extnl_host_data_size = MC_VAL_EXTERNAL_HOST_DATA_SIZE,
-	.extnl_host_alloc_size = MC_VAL_EXTERNAL_HOST_ALLOC_SIZE,
+	.extnl_manageru_data_size = MC_VAL_EXTERNAL_HOST_DATA_SIZE,
+	.extnl_manageru_alloc_size = MC_VAL_EXTERNAL_HOST_ALLOC_SIZE,
 	.extnl_ram_orig = MC_VAL_EXTERNAL_RAM_ORIG,
 	.extnl_code_orig = MC_VAL_EXTERNAL_CODE_ORIG,
 	.extnl_load_orig = MC_VAL_EXTERNAL_LOAD_ORIG,
-	.extnl_host_data_orig = MC_VAL_EXTERNAL_HOST_DATA_ORIG,
-	.extnl_host_alloc_orig = MC_VAL_EXTERNAL_HOST_ALLOC_ORIG,
+	.extnl_manageru_data_orig = MC_VAL_EXTERNAL_HOST_DATA_ORIG,
+	.extnl_manageru_alloc_orig = MC_VAL_EXTERNAL_HOST_ALLOC_ORIG,
 
 	.core_module_orig = MC_VAL_CORE_MODULE_ORIG,
 	.core_module_size = MC_VAL_CORE_MODULE_SIZE,
 
 	.extnl_code_disp = 0,
 	.extnl_load_disp = 0,
-	.extnl_host_data_disp = 0,
-	.extnl_host_alloc_disp = 0
+	.extnl_manageru_data_disp = 0,
+	.extnl_manageru_alloc_disp = 0
 };
 
 void*
@@ -138,13 +138,13 @@ mc_load_map(){
 		mc_memcpy(dst, (uint8_t*)0x0, mc_workeru_tot_mem);
 
 		unsigned *ivt = (unsigned*)mc_addr_set_id(ch_id, 0x0);
-		mc_set_off_workeru_var(*ivt, mck_original_ivt_0);
+		mc_loop_set_var(*ivt, mck_original_ivt_0);
 
 		mc_load_map_st** ch_ld_map = (mc_load_map_st**)mc_addr_set_id(ch_id, pt_ld_map);
-		mc_set_off_workeru_var(*ch_ld_map, ch_map);
+		mc_loop_set_var(*ch_ld_map, ch_map);
 
 		mc_workeru_id_t* ch_ld_parent = (mc_workeru_id_t*)mc_addr_set_id(ch_id, pt_parent);
-		mc_set_off_workeru_var(*ch_ld_parent, koid);
+		mc_loop_set_var(*ch_ld_parent, koid);
 
 		uint32_t* rem_reg = (uint32_t*)mc_addr_set_id(ch_id, MC_REG_ILATST);
 

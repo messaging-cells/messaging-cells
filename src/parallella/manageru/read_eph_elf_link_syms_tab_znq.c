@@ -67,7 +67,7 @@ mch_read_eph_link_syms(const char *executable, mc_link_syms_data_st* syms){
 	}
 	memset(syms, 0, sizeof(mc_link_syms_data_st));
 
-	e_set_host_verbosity(H_D0);
+	//e_set_manageru_verbosity(H_D0);
 
 	fd = open(executable, O_RDONLY);
 	if (fd == -1) {

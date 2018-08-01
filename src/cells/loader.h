@@ -101,21 +101,21 @@ struct mc_aligned mc_link_syms_data_def {
 	mc_addr_t extnl_ram_size;
 	mc_addr_t extnl_code_size;
 	mc_addr_t extnl_load_size;
-	mc_addr_t extnl_host_data_size;
-	mc_addr_t extnl_host_alloc_size;
+	mc_addr_t extnl_manageru_data_size;
+	mc_addr_t extnl_manageru_alloc_size;
 	mc_addr_t extnl_ram_orig;
 	mc_addr_t extnl_code_orig;
 	mc_addr_t extnl_load_orig;
-	mc_addr_t extnl_host_data_orig;
-	mc_addr_t extnl_host_alloc_orig;
+	mc_addr_t extnl_manageru_data_orig;
+	mc_addr_t extnl_manageru_alloc_orig;
 
 	mc_addr_t core_module_orig;
 	mc_addr_t core_module_size;
 
 	mc_addr_t extnl_code_disp;
 	mc_addr_t extnl_load_disp;
-	mc_addr_t extnl_host_data_disp;
-	mc_addr_t extnl_host_alloc_disp;
+	mc_addr_t extnl_manageru_data_disp;
+	mc_addr_t extnl_manageru_alloc_disp;
 };
 typedef struct mc_link_syms_data_def mc_link_syms_data_st;
 

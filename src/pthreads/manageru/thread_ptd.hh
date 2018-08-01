@@ -121,7 +121,7 @@ void*
 mcm_addr_with_fn(mc_workeru_id_t id, void* addr);
 
 mc_inline_fn bool
-mc_is_host_thread(){
+mc_is_manageru_thread(){
 	return (pthread_self() == HOST_THREAD_ID);
 }
 
