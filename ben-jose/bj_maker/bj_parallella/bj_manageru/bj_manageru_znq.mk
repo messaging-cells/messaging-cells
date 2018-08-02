@@ -1,6 +1,4 @@
 
-SRC_BJ_MANAGERU_DIR := .
-
 # =======================================
 
 TARGET := bj_manageru_znq.elf
@@ -23,7 +21,7 @@ SRC_INCDIRS := ${BJ_MANAGERU_INCLUDES}
 SUBMAKEFILES := ./lib-dimacs-znq.mk ./cnf_preload_znq.mk ./sornet_preload_znq.mk 
 
 SOURCES := \
-	bj_manageru_code.cpp \
+	${SRC_BJ_MANAGERU_DIR}/bj_manageru_code.cpp \
 
 
 

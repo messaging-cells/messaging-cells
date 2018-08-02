@@ -1,6 +1,4 @@
 
-SRC_BJ_MANAGERU_DIR := .
-
 # =======================================
 
 TARGET := ben-jose-ptd.elf
@@ -21,8 +19,7 @@ SRC_INCDIRS := ${BJ_MANAGERU_INCLUDES}
 
 SUBMAKEFILES := ./lib-dimacs-ptd.mk ./all_modules_ptd.mk 
 
-SOURCES := \
-	../manageru_code/bj_manageru_code.cpp \
+SOURCES := ${SRC_BJ_MANAGERU_DIR}/bj_manageru_code.cpp 
 
 
 

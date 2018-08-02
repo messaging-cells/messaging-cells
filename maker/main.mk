@@ -53,9 +53,11 @@ SUBMAKEFILES := \
 	parallella/workerus/mc-eph-cell-lib.mk \
 
 
+# sh install/prepare_include_dir_sh \
+
 
 default: all
-	@echo "FINISHED_BUILDING_MESSAGING_CELLS"
+	bash install/prepare_include_dir_sh ; echo "FINISHED_BUILDING_MESSAGING_CELLS"
 	
 parallella: ${TARGET_DIR}/libmck-cell.a \
 	${TARGET_DIR}/libmck-tak-mak.a \

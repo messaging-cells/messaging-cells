@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo "Preparing install include dir" 
+
+CURR_DIR=$(pwd)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BASE_DIR=$SCRIPT_DIR/../..
+
+INCLU_DIR=$BASE_DIR/bin/lib-cells/mc_include
+
+cd $SCRIPT_DIR
+
+mkdir -p $INCLU_DIR
+
+IFS=$'\n'       # make newlines the only separator
+set -f          # disable globbing
+for ii in $(cat < USER_INCLUDE_FILES.txt); do
+	TMP_NAME=`find $BASE_DIR/src -name $ii` ;
+	cp -vau $TMP_NAME $INCLU_DIR
+done
+
+cd $CURR_DIR
+

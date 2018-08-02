@@ -17,4 +17,4 @@ SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${MC_DBG_FLAG}
 
 SRC_INCDIRS := $(MC_STD_INCDIRS)
 
-SOURCES := nil_manageru.cpp
+SOURCES := ${SRC_BJ_MANAGERU_DIR}/nil_manageru.cpp

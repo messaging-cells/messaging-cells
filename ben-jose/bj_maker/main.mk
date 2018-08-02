@@ -54,40 +54,39 @@ MC_ZNQ_LIBS := ${MC_LIB_DIR_2}/libmcz-cell.a ${MC_LIB_DIR_2}/libmcz-tak-mak.a ${
 MC_PTD_LIBS := ${MC_LIB_DIR_2}/libmcm-cell.a ${MC_LIB_DIR_2}/libmcm-tak-mak.a ${MC_LIB_DIR_2}/libmcm-dlmalloc.a
 MC_EPH_LIBS := ${MC_LIB_DIR_2}/libmck-cell.a ${MC_LIB_DIR_2}/libmck-tak-mak.a
 
-MC_STD_INCDIRS := ../../cells ../../cells/manageru ${MC_ETOOLS}/host/include
+# MC_STD_INCDIRS := ../../cells ../../cells/manageru ${MC_ETOOLS}/host/include
 
-SRC_BJ_DIR := ${MC_CURR_DIR}
+SRC_BJ_DIR := ${MC_CURR_DIR}/..
+
+MC_STD_INCDIRS := ${SRC_BJ_DIR}/../bin/lib-cells/mc_include ${MC_ETOOLS}/host/include
+SRC_BJ_MANAGERU_DIR := ${SRC_BJ_DIR}/bj_manageru
+SRC_BJ_WORKERU_DIR := ${SRC_BJ_DIR}/bj_workeru
+
 
 BJ_WORKERUS_INCLUDES := \
 	${MC_STD_INCDIRS} \
-	${SRC_BJ_DIR}/nervenet \
-	${SRC_BJ_DIR}/dbg_only \
-	${SRC_BJ_DIR}/load_cnf \
-	${SRC_BJ_DIR}/propag \
-	${SRC_BJ_DIR}/stabi \
-	${SRC_BJ_DIR}/sornet \
-	${SRC_BJ_DIR}/solver_main \
+	${SRC_BJ_WORKERU_DIR} \
 
 
 BJ_MANAGERU_INCLUDES := \
 	${BJ_WORKERUS_INCLUDES} \
-	${SRC_BJ_DIR}/manageru_code/cnf_preload \
-	${SRC_BJ_DIR}/manageru_code/dimacs \
-	${SRC_BJ_DIR}/manageru_code/utils 
+	${SRC_BJ_MANAGERU_DIR}/cnf_preload \
+	${SRC_BJ_MANAGERU_DIR}/dimacs \
+	${SRC_BJ_MANAGERU_DIR}/utils 
 
 
 
 SUBMAKEFILES := \
-	./manageru_code/no_nil_manageru.mk \
-	./manageru_code/bj_manageru_znq.mk \
-	./maker_bj_ptd/bj_ptd.mk \
-	./dbg_only/dbg_only.mk \
-	./nervenet/nervenet.mk \
-	./load_cnf/load_cnf.mk \
-	./sornet/sornet.mk \
-	./propag/propag.mk \
-	./stabi/stabi.mk \
-	./solver_main/solver.mk \
+	./bj_parallella/bj_manageru/no_nil_manageru.mk \
+	./bj_parallella/bj_manageru/bj_manageru_znq.mk \
+	./bj_parallella/bj_workeru/dbg_only.mk \
+	./bj_parallella/bj_workeru/nervenet.mk \
+	./bj_parallella/bj_workeru/load_cnf.mk \
+	./bj_parallella/bj_workeru/sornet.mk \
+	./bj_parallella/bj_workeru/propag.mk \
+	./bj_parallella/bj_workeru/stabi.mk \
+	./bj_parallella/bj_workeru/solver.mk \
+	./bj_pthreads/bj_ptd.mk \
 
 
 default: all

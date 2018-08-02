@@ -18,22 +18,5 @@ SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_
 
 SRC_INCDIRS := ${BJ_WORKERUS_INCLUDES} 
 
-SOURCES := nervenet.cpp 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SOURCES := ${SRC_BJ_WORKERU_DIR}/nervenet.cpp 
 

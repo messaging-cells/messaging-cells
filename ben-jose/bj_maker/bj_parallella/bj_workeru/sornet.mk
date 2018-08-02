@@ -1,9 +1,10 @@
 
 # =======================================
 
-TARGET := libdbg_only.a
+TARGET := libsornet.a
 
-TGT_PREREQS := ${MC_EPH_LIBS} libnervenet.a
+TGT_PREREQS := ${MC_EPH_LIBS} \
+	libnervenet.a
 
 TGT_CC := e-gcc
 TGT_CXX := e-g++
@@ -18,25 +19,7 @@ TGT_POSTMAKE := ${POST_OPERS}
 SRC_CFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} 
 SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} 
 
-SRC_INCDIRS := ${BJ_WORKERUS_INCLUDES} \
-	${SRC_BJ_DIR}/manageru_code/cnf_preload \
+SRC_INCDIRS := ${BJ_WORKERUS_INCLUDES} 
 
-SOURCES := dbg_only.cpp
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SOURCES := ${SRC_BJ_WORKERU_DIR}/sornet.cpp
 
