@@ -1,11 +1,8 @@
 
-# =======================================
 
-TARGET := libstabi.a
+TARGET := ${BJ_PLLA_LIB_DIR}/libstabi.a
 
-TGT_PREREQS := ${MC_EPH_LIBS} \
-	libnervenet.a
-
+TGT_PREREQS := ${MC_EPH_LIBS} ${BJ_PLLA_LIB_DIR}/libnervenet.a
 
 TGT_CC := e-gcc
 TGT_CXX := e-g++

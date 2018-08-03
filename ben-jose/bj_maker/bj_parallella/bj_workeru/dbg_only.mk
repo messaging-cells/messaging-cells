@@ -1,9 +1,8 @@
 
-# =======================================
 
-TARGET := libdbg_only.a
+TARGET := ${BJ_PLLA_LIB_DIR}/libdbg_only.a
 
-TGT_PREREQS := ${MC_EPH_LIBS} libnervenet.a
+TGT_PREREQS := ${MC_EPH_LIBS} ${BJ_PLLA_LIB_DIR}/libnervenet.a
 
 TGT_CC := e-gcc
 TGT_CXX := e-g++

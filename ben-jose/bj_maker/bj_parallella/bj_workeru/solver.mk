@@ -1,29 +1,29 @@
 
-BJ_LDF := bj-lk-script.ldf
+BJ_LDF := bj_parallella/bj-lk-script.ldf
 
-TARGET := ben-jose.elf
+TARGET := ${BJ_PLLA_BIN_DIR}/ben-jose.elf
 
 TGT_LDFLAGS := -T ${BJ_LDF} ${MC_EPH_LDFLAGS_2} --no-check-sections -L${TARGET_DIR}
 TGT_LDLIBS  := -ldbg_only -lload_cnf -lnervenet -lpropag -lstabi -lsornet ${MC_STD_EPH_LDLIBS}
-# TGT_LDLIBS  := -ldbg_only -lload_cnf -lnervenet -lsornet ${MC_STD_EPH_LDLIBS}
 
 TGT_PREREQS := \
 	${MC_EPH_LIBS} \
-	libdbg_only.a \
-	libnervenet.a \
-	libload_cnf.a \
-	libpropag.a \
-	libstabi.a \
-	libsornet.a \
+	${BJ_PLLA_LIB_DIR}/libdbg_only.a \
+	${BJ_PLLA_LIB_DIR}/libnervenet.a \
+	${BJ_PLLA_LIB_DIR}/libload_cnf.a \
+	${BJ_PLLA_LIB_DIR}/libpropag.a \
+	${BJ_PLLA_LIB_DIR}/libstabi.a \
+	${BJ_PLLA_LIB_DIR}/libsornet.a \
 
 
+CNFS_PLLA_LNK_DIR := $(TARGET_DIR)/${BJ_PLLA_BIN_DIR}
+CNFS_PLLA_LNK_DIR := $(call CANONICAL_PATH,${CNFS_PLLA_LNK_DIR})
 
-#	${TARGET_DIR}/libload_cnf.a \
-
-CNFS_LNK := $(TARGET_DIR)/cnfs
+CNFS_PLLA_LNK := ${CNFS_PLLA_LNK_DIR}/cnfs
+CNFS_PLLA_LNK := $(call CANONICAL_PATH,${CNFS_PLLA_LNK})
 
 define POST_OPERS
-	if [ ! -e $(CNFS_LNK) ]; then ln -s ../../../tests-ben-jose/cnfs/ $(TARGET_DIR); fi;
+	if [ ! -e $(CNFS_PLLA_LNK) ]; then ln -s ${CNFS_DIR} ${CNFS_PLLA_LNK_DIR}; fi;
 	e-objdump -h $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET)_sizes.txt
 	e-objdump -D $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET).s
 	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 

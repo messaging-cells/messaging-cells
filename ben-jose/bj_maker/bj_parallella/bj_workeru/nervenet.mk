@@ -1,10 +1,10 @@
 
-TARGET := libnervenet.a
+TARGET := ${BJ_PLLA_LIB_DIR}/libnervenet.a
 
 TGT_PREREQS := ${MC_EPH_LIBS}
 
 define POST_OPERS
-	mod_get_common_syms.sh $(TARGET_DIR)/$(TARGET)
+	bj_parallella/mod_get_common_syms.sh $(TARGET_DIR)/$(TARGET)
 	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 
 endef
 

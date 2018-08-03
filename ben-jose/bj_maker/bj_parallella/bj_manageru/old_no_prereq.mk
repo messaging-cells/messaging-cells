@@ -4,11 +4,10 @@ SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================
 
-TARGET := no_prerreq.elf
+TARGET := ${BJ_PLLA_BIN_DIR}/no_prerreq.elf
 
 TGT_LDFLAGS := ${MC_STD_ZNQ_LDFLAGS}
 TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS}
-# TGT_PREREQS := ${MC_ZNQ_LIBS}
 
 TGT_CC := $(CROSS_COMPILE)gcc
 TGT_CXX := $(CROSS_COMPILE)g++

@@ -1,11 +1,10 @@
 
-# =======================================
 
-TARGET := bj_manageru_znq.elf
+TARGET := ${BJ_PLLA_BIN_DIR}/bj_manageru_znq.elf
 
 TGT_LDFLAGS := ${MC_STD_ZNQ_LDFLAGS}
 TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS} -static-libstdc++ -static-libgcc -ldimacs 
-TGT_PREREQS := ${MC_ZNQ_LIBS} libdimacs.a 
+TGT_PREREQS := ${MC_ZNQ_LIBS} ${BJ_PLLA_LIB_DIR}/libdimacs.a 
 
 TGT_CC := $(CROSS_COMPILE)gcc
 TGT_CXX := $(CROSS_COMPILE)g++

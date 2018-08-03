@@ -1,7 +1,7 @@
 
 # =======================================
 
-TARGET := bj-no-nil-manageru.elf
+TARGET := ${BJ_PLLA_BIN_DIR}/bj-no-nil-manageru.elf
 
 TGT_LDFLAGS := ${MC_STD_ZNQ_LDFLAGS}
 TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS}
