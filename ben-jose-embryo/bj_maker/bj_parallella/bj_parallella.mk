@@ -31,8 +31,8 @@ MC_ZNQ_LDFLAGS_1 := -L${MC_ETOOLS}/host/lib
 MC_STD_ZNQ_LDFLAGS := -L${BJ_MC_LIBS_PLLA} -L${TARGET_DIR} -L${BJ_PLLA_LIB_FLG_DIR} ${MC_ZNQ_LDFLAGS_1} 
 
 MC_STD_C_LDLIBS := -lc -lepiphany -lgcc -lg 
-MC_STD_ZNQ_LDLIBS := -lmcz-cell -lmcz-tak-mak -lmcz-dlmalloc -le-hal -lm 
-MC_STD_EPH_LDLIBS := -lmck-cell -lmck-tak-mak 
+MC_STD_ZNQ_LDLIBS := -lmc-znq-cell -lmc-znq-tak-mak -lmc-znq-dlmalloc -le-hal -lm 
+MC_STD_EPH_LDLIBS := -lmc-eph-cell -lmc-eph-tak-mak 
 
 MC_ZNQ_LIBS := 
 MC_EPH_LIBS := 

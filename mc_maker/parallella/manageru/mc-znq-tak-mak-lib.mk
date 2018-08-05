@@ -3,7 +3,7 @@ SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================
 
-TARGET := ${MC_PLLA_LIB_DIR}/libmcz-tak-mak.a
+TARGET := ${MC_PLLA_LIB_DIR}/libmc-znq-tak-mak.a
 
 TGT_CC := $(CROSS_COMPILE)gcc
 TGT_CXX := $(CROSS_COMPILE)g++

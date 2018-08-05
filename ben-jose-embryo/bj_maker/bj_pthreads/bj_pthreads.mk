@@ -7,7 +7,7 @@ BJ_PTD_LIB_DIR := pthreads/lib/
 BJ_PTD_BIN_DIR := pthreads/bin/
 
 MC_STD_PTD_LDFLAGS := -L${BJ_MC_LIBS_PTD} -L${TARGET_DIR}/${BJ_PTD_LIB_DIR}
-MC_STD_PTD_LDLIBS := -lmcm-cell -lmcm-tak-mak -lmcm-dlmalloc -lpthread
+MC_STD_PTD_LDLIBS := -lmc-ptd-cell -lmc-ptd-tak-mak -lmc-ptd-dlmalloc -lpthread
 
 # =======================================
 

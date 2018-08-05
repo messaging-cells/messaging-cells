@@ -41,8 +41,8 @@ DBG_FLAG := -DFULL_DEBUG
 TARGET := znq_dlmalloc_test.elf
 
 TGT_LDFLAGS := -L${TARGET_DIR} 
-TGT_LDLIBS  := -lmcz-tak-mak -lmcz-dlmalloc
-TGT_PREREQS := libmcz-tak-mak.a libmcz-dlmalloc.a
+TGT_LDLIBS  := -lmc-znq-tak-mak -lmc-znq-dlmalloc
+TGT_PREREQS := libmc-znq-tak-mak.a libmc-znq-dlmalloc.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

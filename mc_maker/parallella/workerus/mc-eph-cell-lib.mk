@@ -4,7 +4,7 @@ SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================
 
-TARGET := ${MC_PLLA_LIB_DIR}/libmck-cell.a
+TARGET := ${MC_PLLA_LIB_DIR}/libmc-eph-cell.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

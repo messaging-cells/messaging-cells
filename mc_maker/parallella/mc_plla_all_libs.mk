@@ -23,10 +23,12 @@ SUBMAKEFILES := \
 	workerus/mc-eph-tak-mak-lib.mk \
 	workerus/mc-eph-cell-lib.mk \
 
-parallella: ${TARGET_DIR}/libmck-cell.a \
-	${TARGET_DIR}/libmck-tak-mak.a \
-	${TARGET_DIR}/libmcz-tak-mak.a \
-	${TARGET_DIR}/libmcz-dlmalloc.a \
-	${TARGET_DIR}/libmcz-cell.a 
+.PHONY: mc_parallella_libs
+mc_parallella_libs: \
+	${TARGET_DIR}/${MC_PLLA_LIB_DIR}/libmc-eph-tak-mak.a \
+	${TARGET_DIR}/${MC_PLLA_LIB_DIR}/libmc-eph-cell.a \
+	${TARGET_DIR}/${MC_PLLA_LIB_DIR}/libmc-znq-tak-mak.a \
+	${TARGET_DIR}/${MC_PLLA_LIB_DIR}/libmc-znq-dlmalloc.a \
+	${TARGET_DIR}/${MC_PLLA_LIB_DIR}/libmc-znq-cell.a 
 	@echo "FINISHED_BUILDING_PARALLELLA_MESSAGING_CELLS"
 
