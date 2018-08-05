@@ -1,7 +1,7 @@
 
 BJ_LDF := bj_parallella/bj-lk-script.ldf
 
-TARGET := ${BJ_PLLA_BIN_DIR}/ben-jose.elf
+TARGET := ${BJ_PLLA_BIN_DIR}/ben-jose-embryo.elf
 
 TGT_LDFLAGS := -T ${BJ_LDF} ${MC_EPH_LDFLAGS_2} --no-check-sections -L${TARGET_DIR}
 TGT_LDLIBS  := -ldbg_only -lload_cnf -lnervenet -lpropag -lstabi -lsornet ${MC_STD_EPH_LDLIBS}

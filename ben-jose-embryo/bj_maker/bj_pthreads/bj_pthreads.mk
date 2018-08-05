@@ -2,7 +2,7 @@
 BJ_PTD_LIB_DIR := pthreads/lib/
 BJ_PTD_BIN_DIR := pthreads/bin/
 BJ_PTD_TGT_DIMACS := ${BJ_PTD_LIB_DIR}/libdimacs-ptd.a
-BJ_PTD_TGT_BEN_JOSE := ${BJ_PTD_BIN_DIR}/ben-jose-ptd.elf
+BJ_PTD_TGT_BEN_JOSE := ${BJ_PTD_BIN_DIR}/ben-jose-embryo-ptd.elf
 
 # MC_STD_PTD_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} -L${TARGET_DIR}/${BJ_PTD_LIB_DIR}
 MC_STD_PTD_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR}/${BJ_PTD_LIB_DIR}

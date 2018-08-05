@@ -1,11 +1,9 @@
 
-CNFS_DIR := ../../../tests-ben-jose/cnfs
-CNFS_DIR := $(call CANONICAL_PATH,${CNFS_DIR})
-
+CNFS_DIR := ../../../../../../tests-ben-jose/cnfs
 MC_LIB_DIR := ../../bin/lib-cells
 
-BUILD_DIR := ../../tmp-build/ben-jose
-TARGET_DIR := ../../bin/ben-jose
+BUILD_DIR := ./bj_tmp_build
+TARGET_DIR := ./bj_install
 
 MC_DBG_FLAG := -DFULL_DEBUG
 

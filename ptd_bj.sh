@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd bin/ben-jose/pthreads/bin
-./ben-jose-ptd.elf xxx $*
+cd ./ben-jose-embryo/bj_maker/bj_install/pthreads/bin
+./ben-jose-embryo-ptd.elf xxx $*

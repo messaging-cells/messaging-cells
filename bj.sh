@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd bin/ben-jose/parallella/bin
-./bj_manageru_znq.elf ./ben-jose.elf $*
+cd ./ben-jose-embryo/bj_maker/bj_install/parallella/bin
+./bj_manageru_znq.elf ./ben-jose-embryo.elf $*

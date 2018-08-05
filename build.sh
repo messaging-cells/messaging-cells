@@ -10,7 +10,7 @@ cd src/tests
 make
 cd ../..
 
-cd ben-jose/bj_maker
+cd ben-jose-embryo/bj_maker
 make
 cd ../..
 
