@@ -2,7 +2,7 @@
 
 # set -e
 
-cd maker
+cd mc_maker
 make
 cd ..
 

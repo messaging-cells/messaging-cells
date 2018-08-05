@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # generate ALL_INCLUDE.txt with:
-# cat maker/install/USER_INCLUDE_FILES.txt | xargs -L 1 find . -name > maker/install/ALL_INCLUDE.txt
+# cat mc_maker/mc_prep_includes/USER_INCLUDE_FILES.txt | xargs -L 1 find . -name > mc_maker/mc_prep_includes/ALL_INCLUDE.txt
 
 echo "Preparing install include dir" 
 
@@ -9,16 +9,15 @@ CURR_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BASE_DIR=$SCRIPT_DIR/../..
 
-INCLU_DIR=$BASE_DIR/bin/lib-cells/mc_include
 
 cd $SCRIPT_DIR
 
+INCLU_DIR=../mc_install/mc_include
 mkdir -p $INCLU_DIR
 
 IFS=$'\n'       # make newlines the only separator
 set -f          # disable globbing
 for ii in $(cat < ALL_INCLUDE.txt); do
-	# TMP_NAME=`find $BASE_DIR/src -name $ii` ;
 	cp -vau $BASE_DIR/$ii $INCLU_DIR
 done
 

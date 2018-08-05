@@ -1,5 +1,5 @@
 
-TARGET := ${BJ_PTD_TGT_DIMACS}
+TARGET := ${BJ_PTD_LIB_DIR}/libdimacs-ptd.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd bin/tests
+cd src/tests/ct_install/
 ./sequence_3_ptd.elf $*

@@ -1,6 +1,6 @@
 
 
-TARGET := libmcm-cell.a
+TARGET := ${MC_PTD_LIB_DIR}/libmcm-cell.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

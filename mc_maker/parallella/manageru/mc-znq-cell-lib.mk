@@ -12,9 +12,9 @@ SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================
 
-TARGET := libmcz-cell.a
+TARGET := ${MC_PLLA_LIB_DIR}/libmcz-cell.a
 
-TGT_PREREQS := libmcz-dlmalloc.a
+TGT_PREREQS := ${MC_PLLA_LIB_DIR}/libmcz-dlmalloc.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 

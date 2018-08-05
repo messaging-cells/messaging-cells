@@ -1,6 +1,9 @@
 
 CNFS_DIR := ../../../../../../tests-ben-jose/cnfs
-MC_LIB_DIR := ../../bin/lib-cells
+
+BJ_MC_DIR_INCLUDES := ../../mc_maker/mc_install/mc_include
+BJ_MC_DIR_INCLUDES := $(call CANONICAL_PATH,${BJ_MC_DIR_INCLUDES})
+# $(warning "BJ_MC_DIR_INCLUDES is "${BJ_MC_DIR_INCLUDES})
 
 BUILD_DIR := ./bj_tmp_build
 TARGET_DIR := ./bj_install
@@ -17,10 +20,9 @@ MC_CURR_DIR := $(shell pwd)
 
 SRC_BJ_DIR := ${MC_CURR_DIR}/..
 
-MC_STD_INCDIRS := ${SRC_BJ_DIR}/../bin/lib-cells/mc_include ${MC_ETOOLS}/host/include
+MC_STD_INCDIRS := ${BJ_MC_DIR_INCLUDES} ${MC_ETOOLS}/host/include
 SRC_BJ_MANAGERU_DIR := ${SRC_BJ_DIR}/bj_manageru
 SRC_BJ_WORKERU_DIR := ${SRC_BJ_DIR}/bj_workeru
-
 
 BJ_WORKERUS_INCLUDES := \
 	${MC_STD_INCDIRS} \

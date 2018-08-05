@@ -1,20 +1,21 @@
 
+BJ_MC_LIBS_PTD := ../../mc_maker/mc_install/pthreads/lib
+BJ_MC_LIBS_PTD := $(call CANONICAL_PATH,${BJ_MC_LIBS_PTD})
+# $(warning "BJ_MC_LIBS_PTD is "${BJ_MC_LIBS_PTD})
+
 BJ_PTD_LIB_DIR := pthreads/lib/
 BJ_PTD_BIN_DIR := pthreads/bin/
-BJ_PTD_TGT_DIMACS := ${BJ_PTD_LIB_DIR}/libdimacs-ptd.a
-BJ_PTD_TGT_BEN_JOSE := ${BJ_PTD_BIN_DIR}/ben-jose-embryo-ptd.elf
 
-# MC_STD_PTD_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} -L${TARGET_DIR}/${BJ_PTD_LIB_DIR}
-MC_STD_PTD_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR}/${BJ_PTD_LIB_DIR}
+MC_STD_PTD_LDFLAGS := -L${BJ_MC_LIBS_PTD} -L${TARGET_DIR}/${BJ_PTD_LIB_DIR}
 MC_STD_PTD_LDLIBS := -lmcm-cell -lmcm-tak-mak -lmcm-dlmalloc -lpthread
 
 # =======================================
 
-TARGET := ${BJ_PTD_TGT_BEN_JOSE}
+TARGET := ${BJ_PTD_BIN_DIR}/ben-jose-embryo-ptd.elf
 
 TGT_LDFLAGS := ${MC_STD_PTD_LDFLAGS} -rdynamic
 TGT_LDLIBS  := ${MC_STD_PTD_LDLIBS} -lstdc++ -ldimacs-ptd 
-TGT_PREREQS := ${BJ_PTD_TGT_DIMACS}
+TGT_PREREQS := ${BJ_PTD_LIB_DIR}/libdimacs-ptd.a
 
 CNFS_LNK_DIR := $(TARGET_DIR)/${BJ_PTD_BIN_DIR}
 CNFS_LNK_DIR := $(call CANONICAL_PATH,${CNFS_LNK_DIR})

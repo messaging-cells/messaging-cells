@@ -1,12 +1,10 @@
 
-# H_INC_1=${ETOOLS}/host/include
-
 SRC_PLLA_WORKERS_DIR := $(SRC_DIR)/parallella/workerus
 SRC_CELLS_DIR := $(SRC_DIR)/cells
 
 # =======================================
 
-TARGET := libmck-cell.a
+TARGET := ${MC_PLLA_LIB_DIR}/libmck-cell.a
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
@@ -18,7 +16,6 @@ SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${STD_EPH_CXXFLAGS} ${DBG_FLAG} ${SRC_IN_SECTIO
 
 SRC_INCDIRS := $(SRC_CELLS_DIR) $(SRC_PLLA_MANAGER_DIR)
 
-#	$(SRC_CELLS_DIR)/link_syms_struct_eph.c \
 
 SOURCES := \
 	$(SRC_PLLA_WORKERS_DIR)/interruptions_eph.c \

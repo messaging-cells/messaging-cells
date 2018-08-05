@@ -1,13 +1,12 @@
 #!/bin/bash
 
-echo "FULL_CLEAN" 
+echo "Messaging Cells clean" 
 
 CURR_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd $SCRIPT_DIR
-mc_maker/clean.sh
-src/tests/clean.sh
-ben-jose-embryo/bj_maker/clean.sh
+rm -rf ./mc_tmp_build
+rm -rf ./mc_install
 cd $CURR_DIR
 

@@ -1,4 +1,7 @@
 
+BJ_MC_LIBS_PLLA := ../../mc_maker/mc_install/parallella/lib
+BJ_MC_LIBS_PLLA := $(call CANONICAL_PATH,${BJ_MC_LIBS_PLLA})
+# $(warning "BJ_MC_LIBS_PLLA is "${BJ_MC_LIBS_PLLA})
 
 BJ_PLLA_LIB_DIR := parallella/lib/
 BJ_PLLA_BIN_DIR := parallella/bin/
@@ -22,10 +25,10 @@ MC_ESDK=${EPIPHANY_HOME}
 MC_ETOOLS=${MC_ESDK}/tools
 
 MC_EPH_LDFLAGS_1 := -L${MC_ETOOLS}/e-gnu/epiphany-elf/lib -L${MC_ETOOLS}/e-gnu/lib/gcc/epiphany-elf/5.4.0/
-MC_EPH_LDFLAGS_2 := -L${MC_LIB_DIR} -L${TARGET_DIR} -L${BJ_PLLA_LIB_FLG_DIR} ${MC_EPH_LDFLAGS_1} --strip-debug -static 
+MC_EPH_LDFLAGS_2 := -L${BJ_MC_LIBS_PLLA} -L${TARGET_DIR} -L${BJ_PLLA_LIB_FLG_DIR} ${MC_EPH_LDFLAGS_1} --strip-debug -static 
 
 MC_ZNQ_LDFLAGS_1 := -L${MC_ETOOLS}/host/lib 
-MC_STD_ZNQ_LDFLAGS := -L${MC_LIB_DIR} -L${TARGET_DIR} -L${BJ_PLLA_LIB_FLG_DIR} ${MC_ZNQ_LDFLAGS_1} 
+MC_STD_ZNQ_LDFLAGS := -L${BJ_MC_LIBS_PLLA} -L${TARGET_DIR} -L${BJ_PLLA_LIB_FLG_DIR} ${MC_ZNQ_LDFLAGS_1} 
 
 MC_STD_C_LDLIBS := -lc -lepiphany -lgcc -lg 
 MC_STD_ZNQ_LDLIBS := -lmcz-cell -lmcz-tak-mak -lmcz-dlmalloc -le-hal -lm 
