@@ -29,10 +29,7 @@
 #
 #------------------------------------------------------------
 
-
-# =======================================
-
-TARGET := manageru_sort_net_znq.elf
+TARGET := sort_net_manageru_znq.elf
 
 TGT_LDFLAGS := ${MC_STD_ZNQ_LDFLAGS}
 TGT_LDLIBS  := ${MC_STD_ZNQ_LDLIBS}
@@ -49,5 +46,7 @@ SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${MC_DBG_FLAG}
 
 SRC_INCDIRS := $(MC_STD_INCDIRS)
 
-SOURCES := manageru_preload.cpp manageru_sort_net.cpp
+SUBMAKEFILES := manageru_preload_znq.mk
+
+SOURCES := manageru_sort_net.cpp
 

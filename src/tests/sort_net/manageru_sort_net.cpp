@@ -9,6 +9,11 @@ char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 int mc_manageru_main(int argc, char *argv[])
 {
+	if(argc > 1){
+		mch_epiphany_elf_path = argv[1];
+		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
+	}
+	
 	kernel::init_manageru_sys();
 
 	THE_SORT_NET = mc_malloc32(pre_load_snet, 1);
