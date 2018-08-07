@@ -137,7 +137,7 @@ enum philo_tok_t : uint8_t {
 //endif // END_OF_PHILO_WITH_DBG
 
 /*! \class chopstick
-\brief Class for chopsticks. 
+\brief Class for chopsticks (\ref philo.cpp example). 
 
 */
 class chopstick : public cell {
@@ -172,7 +172,7 @@ public:
 };
 
 /*! \class philosopher
-\brief Class for philosophers. 
+\brief Class for philosophers (\ref philo.cpp example ). 
 
 */
 class philosopher : public cell {

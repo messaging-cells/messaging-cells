@@ -3,9 +3,11 @@
 
 #include "cell.hh"
 #include "dimacs.h"
-#include "load_cnf.hh"
+//include "load_cnf.hh"   // only needed for tests (when BJ_WITH_MANAGERU_TESTS is defined)
 #include "preload.hh"
 #include "file_funcs.h"
+
+// define BJ_WITH_MANAGERU_TESTS
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
@@ -88,7 +90,9 @@ int bj_manageru_main(int argc, char *argv[])
 	return 0;
 }
 
-#ifdef MC_IS_PTD_CODE
+//ifdef MC_IS_PTD_CODE
+
+#if defined(MC_IS_PTD_CODE) && defined(BJ_WITH_MANAGERU_TESTS)
 
 void bj_test_1(int argc, char *argv[])
 {

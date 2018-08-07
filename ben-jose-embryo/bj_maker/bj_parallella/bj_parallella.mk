@@ -37,8 +37,8 @@ MC_STD_EPH_LDLIBS := -lmc-eph-cell -lmc-eph-tak-mak
 MC_ZNQ_LIBS := 
 MC_EPH_LIBS := 
 
+
 SUBMAKEFILES := \
-	./bj_manageru/no_nil_manageru.mk \
 	./bj_manageru/bj_manageru_znq.mk \
 	./bj_workeru/dbg_only.mk \
 	./bj_workeru/nervenet.mk \

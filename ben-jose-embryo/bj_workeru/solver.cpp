@@ -7,7 +7,7 @@
 #include "stabi.hh"
 #include "sornet.hh"
 
-mc_c_decl int main();
+//mc_c_decl int main();
 
 #define TOT_MODS 5
 

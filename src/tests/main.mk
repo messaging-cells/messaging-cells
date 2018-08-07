@@ -119,12 +119,12 @@ SUBMAKEFILES := \
 	./send_msg/send_msg_ptd.mk \
 	./eating_philo/philo_ptd.mk \
 	./eating_philo/philo_eph.mk \
-	./min_manageru/min_manageru.mk \
-	./min_manageru/min_manageru_ptd.mk \
 	./send_manageru_msg/send_manageru_msg_ptd.mk \
 	./send_manageru_msg/send_manageru_msg_eph.mk \
 	./send_manageru_msg/send_manageru_msg_znq.mk \
 	./modules/modules.mk \
+	./sort_net/sort_net_ptd.mk \
+	./sort_net/sort_net_plla.mk \
 
 
 
