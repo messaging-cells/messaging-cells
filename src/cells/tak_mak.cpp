@@ -70,6 +70,7 @@ Makoto and Takuji.
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
 
+#include "attribute.h"
 #include "tak_mak.hh"
 
 long	
@@ -82,6 +83,8 @@ to_interval(long val, long min, long max){
 	long rr = (val % diff);
 	if(rr < 0){ rr = -rr; }
 	resp = min + rr;
+	PTD_CK(resp >= min);
+	PTD_CK(resp < max);
 	return resp;
 }
 

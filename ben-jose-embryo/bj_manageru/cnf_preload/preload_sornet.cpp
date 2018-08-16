@@ -34,6 +34,7 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	prms.curr_nod_id++;
 	nod->nod_id = prms.curr_nod_id;
 
+	PTD_CK(up_idx < down_idx);
 	PTD_CK(up_idx < prms.tot_nods);
 	PTD_CK(down_idx < prms.tot_nods);
 
@@ -162,4 +163,36 @@ create_sornet(num_nod_t num_to_sort){
 	PTD_PRT("\nTOT_INPUT_NODS=%ld TOT_LVS=%ld \n", prms.tot_nods, prms.tot_lvs);
 }
 
-//				pre_sornode* nod = pre_sornode::acquire();
+void
+create_ranknet(num_nod_t num_to_rank){
+	if(THE_CNF == mc_null){
+		printf("THE_CNF IS null !!! \n");
+		return;
+	}
+	long num_workerus = THE_CNF->tot_workerus;
+	
+	THE_CNF->tot_pre_soroutput_nod = num_to_rank;
+	THE_CNF->all_pre_soroutput_nod = mc_malloc32(pre_sorout*, num_to_rank);
+	mc_init_arr_vals(num_to_rank, THE_CNF->all_pre_soroutput_nod, mc_null);
+
+	mc_workeru_nn_t nxt_nn = 0;
+	pre_sorout* prv = mc_null;
+	for(num_nod_t aa = 0; aa < num_to_rank; aa++){
+		pre_sorout* nod = pre_sorout::acquire();
+		MCK_CK(nod != mc_null);
+		
+		nod->idx = aa;
+		nod->prv = prv;
+		prv = nod;
+		
+		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
+		cnf.tot_pre_sorouts++;
+		cnf.all_pre_sorouts.bind_to_my_left(*nod);
+		
+		(THE_CNF->all_pre_soroutput_nod)[aa] = nod;
+
+		nxt_nn++;
+		if(nxt_nn == num_workerus){ nxt_nn = 0; }
+		PTD_CK(nxt_nn < num_workerus);		
+	}
+}

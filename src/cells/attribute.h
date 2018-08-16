@@ -115,12 +115,14 @@ mc_c_decl {
 
 	#define PTD_PRT(...) PTD_COND_PRT(true, __VA_ARGS__)
 
+	#define PTD_PRINTF(...) MC_DBG(printf(__VA_ARGS__))
+	
 	#define PTD_PRT_STACK(cond, ...) MC_DBG( \
 		mcm_call_assert(mc_null, false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
 
 	#define PTD_LOG_STACK(cond, ...) MC_DBG( \
 		mcm_call_assert(mcm_get_ptd_log_fnam(), false, true, cond, __FILE__, __LINE__, #cond, __VA_ARGS__))
-
+	
 	#define EPH_CODE(cod) 
 
 #else //NOT  MC_IS_PTD_CODE :
@@ -156,6 +158,7 @@ mc_c_decl {
 	#define PTD_PRT_STACK(cond, ...)
 	#define PTD_LOG_STACK(cond, ...)
 	#define PTD_PRT(...) 
+	#define PTD_PRINTF(...) 
 	#define PTD_LOG(...) 
 
 //---------------------------------------------------------------------------------------

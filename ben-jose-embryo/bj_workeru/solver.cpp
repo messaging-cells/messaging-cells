@@ -74,8 +74,8 @@ link_all_modules_aux_fn(){
 }
 
 //define BJ_DBG_ONLY 
-//define BJ_DBG_SORNET 
-#define BJ_NORMAL 
+#define BJ_DBG_SORNET 
+//define BJ_NORMAL 
 
 void mc_workerus_main() {
 	kernel::init_sys();

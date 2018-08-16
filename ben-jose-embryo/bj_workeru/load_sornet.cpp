@@ -4,16 +4,16 @@
 #include "load_cnf.hh"
 #include "preload.hh"
 
-#define bj_get_loaded_of_sornode(pt) (((pre_sornode*)(pt))->loaded)
+#define bj_get_loaded_of_pt(pt_cls, pt) (((pt_cls*)(pt))->loaded)
 
-#define bj_set_sorcell_pt(nod, out, reset) \
+#define bj_wait_set_pt(nod_cls, nod, out_cls, out, reset) \
 	if(nod != mc_null){ \
-		while(bj_get_loaded_of_sornode(nod) == mc_null){ \
+		while(bj_get_loaded_of_pt(nod_cls, nod) == mc_null){ \
 			/* SPIN UNTIL SET (may be set by an other workeru) */ \
 			PTD_CODE(sched_yield()); \
 		} \
-		PTD_CK(bj_get_loaded_of_sornode(nod) != mc_null); \
-		out = (sorcell*)bj_get_loaded_of_sornode(nod); \
+		PTD_CK(bj_get_loaded_of_pt(nod_cls, nod) != mc_null); \
+		out = (out_cls*)bj_get_loaded_of_pt(nod_cls, nod); \
 		if(reset){ nod = mc_null; } \
 	} \
 
@@ -30,9 +30,6 @@ void bj_load_shd_sornet(){
 	sorcell::separate(tot_sclls);
 
 	PTD_LOG("Separated_sorcells %ld\n", tot_sclls);
-
-	//num_nod_t tot_pre_sornods;
-	//grip	all_pre_sornods;
 
 	binder * fst, * lst, * wrk;
 
@@ -70,8 +67,8 @@ void bj_load_shd_sornet(){
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		sorcell* scll = (sorcell*)wrk;
 
-		bj_set_sorcell_pt(scll->up_inp, scll->up_out, true);
-		bj_set_sorcell_pt(scll->down_inp, scll->down_out, true);
+		bj_wait_set_pt(pre_sornode, scll->up_inp, sorcell, scll->up_out, true);
+		bj_wait_set_pt(pre_sornode, scll->down_inp, sorcell, scll->down_out, true);
 
 		PTD_CK(scll->up_inp == mc_null);
 		PTD_CK(scll->down_inp == mc_null);
@@ -97,16 +94,96 @@ void bj_load_shd_sornet(){
 
 		my_net->all_output_sorobjs = mc_malloc32(void*, tot_sorinp);
 		mc_init_arr_vals(tot_sorinp, my_net->all_output_sorobjs, mc_null);
+		my_net->all_output_sorgrps = mc_malloc32(num_nod_t, tot_sorinp);
+		mc_init_arr_vals(tot_sorinp, my_net->all_output_sorgrps, 0);
 
 		sorcell** all_sorcell = my_net->all_input_sorcells;
 		
 		num_nod_t aa;
 		for(aa = 0; aa < tot_sorinp; aa++){
 			sorcell* inp_aa = (sorcell*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(all_input[aa]));
-			bj_set_sorcell_pt(inp_aa, all_sorcell[aa], false);
+			bj_wait_set_pt(pre_sornode, inp_aa, sorcell, all_sorcell[aa], false);
 		}
 	}
 
 	//mck_slog2("end_of_bj_load_shd_sornet  \n");	
+}
+
+void bj_load_shd_ranknet(){
+	kernel* ker = mck_get_kernel();
+	nervenet* my_net = bj_nervenet;
+	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
+	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->manageru_load_data);
+
+	num_nod_t tot_loc_outs = nn_cnf->tot_pre_sorouts;
+	num_nod_t tot_glb_outs = pre_cnf->tot_pre_soroutput_nod;
+
+	my_net->tot_sorouts = tot_loc_outs;
+
+	sorout::separate(tot_loc_outs);
+
+	PTD_LOG("Separated_sorouts %ld\n", tot_loc_outs);
+
+	binder * fst, * lst, * wrk;
+
+	binder* nn_all_outs = &(nn_cnf->all_pre_sorouts); // nn_cnf is already workeru_pt so nn_all_outs is workeru_pt
+	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_outs->bn_right);
+	lst = nn_all_outs;
+	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
+		pre_sorout* nod = (pre_sorout*)wrk;
+
+		sorout* srout = sorout::acquire();
+
+		PTD_CK(srout->obj == mc_null);
+		srout->idx = nod->idx;
+		if(tot_glb_outs == (srout->idx + 1)){
+			PTD_LOG("LAST_IS %ld %ld\n", srout->idx, tot_glb_outs);
+			mc_set_flag(srout->jump_flags, bj_sorout_is_last_flag);
+		}
+		if(nod->prv != mc_null){
+			srout->obj = (void*)mc_manageru_pt_to_workeru_pt(nod->prv);	// obj used as tmp
+		}
+
+		my_net->all_sorouts.bind_to_my_left(*srout);
+
+		PTD_CK(nod->loaded == mc_null);
+		nod->loaded = mck_as_glb_pt(srout);
+	}
+
+	binder* nn_all_srouts = &(my_net->all_sorouts); 
+	fst = (binder*)(nn_all_srouts->bn_right);
+	lst = nn_all_srouts;
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		sorout* srout = (sorout*)wrk;
+
+		bj_wait_set_pt(pre_sorout, srout->obj, sorout, srout->prv, true);
+		PTD_CK(srout->obj == mc_null);
+	};
+
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
+
+	if(nn == 0){
+		pre_sorout** all_outs = 
+			(pre_sorout**)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_pre_soroutput_nod));
+
+		//PTD_LOG("TOT_ARR_SOROUTS=%ld \n", tot_glb_outs);
+		mck_slog2("TOT_ARR_SOROUTS=");
+		mck_ilog(tot_glb_outs);	
+		mck_slog2("\n");
+
+		my_net->tot_arr_sorouts = tot_glb_outs;
+		my_net->arr_sorouts = mc_malloc32(sorout*, tot_glb_outs);
+		mc_init_arr_vals(tot_glb_outs, my_net->arr_sorouts, mc_null);
+
+		sorout** arr_sorouts = my_net->arr_sorouts;
+		
+		num_nod_t aa;
+		for(aa = 0; aa < tot_glb_outs; aa++){
+			sorout* out_aa = (sorout*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(all_outs[aa]));
+			bj_wait_set_pt(pre_sorout, out_aa, sorout, arr_sorouts[aa], false);
+		}
+	}
+
+	//mck_slog2("end_of_bj_load_shd_sornet  \n");
 }
 

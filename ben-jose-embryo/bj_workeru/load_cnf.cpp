@@ -404,6 +404,8 @@ void bj_load_main() {
 	mck_slog2("end_of_load_shd_cnf \n");	
 	bj_load_shd_sornet();
 	mck_slog2("end_of_load_sornet \n");	
+	bj_load_shd_ranknet();
+	mck_slog2("end_of_load_ranknet \n");	
 
 	//MC_DBG(if(kernel::get_workeru_nn() == 0){ bj_test_func_1(); });
 

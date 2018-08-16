@@ -3,11 +3,15 @@
 
 #include "cell.hh"
 #include "dimacs.h"
-//include "load_cnf.hh"   // only needed for tests (when BJ_WITH_MANAGERU_TESTS is defined)
 #include "preload.hh"
 #include "file_funcs.h"
 
-// define BJ_WITH_MANAGERU_TESTS
+//define BJ_WITH_MANAGERU_TESTS
+
+#ifdef BJ_WITH_MANAGERU_TESTS
+#include "load_cnf.hh"
+#include "tak_mak.hh"
+#endif
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
@@ -193,11 +197,28 @@ void bj_test_6(int argc, char *argv[])
 	printf("pow2 = %ld \n", num_to_sort);
 }
 
-#endif
-
 void bj_test_7(int argc, char *argv[])
 {
 	printf("TEST_7 \n");
+	if(argc < 4){
+		printf("Usage: %s <val> <min> <max>\n", argv[0]);
+		return;
+	}
+	
+	long val = atol(argv[1]);
+	long min = atol(argv[2]);
+	long max = atol(argv[3]);
+	num_nod_t inter = (num_nod_t)to_interval(val, min, max);
+	//long inter = to_interval(val, min, max);
+	printf("(%ld %ld %ld) fixed = %ld \n", val, min, max, inter);
+}
+
+#endif
+
+#ifdef BJ_WITH_MANAGERU_TESTS
+void bj_mc_test_1(int argc, char *argv[])
+{
+	printf("TEST_MC_1 \n");
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
 		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
@@ -217,6 +238,8 @@ void bj_test_7(int argc, char *argv[])
 	kernel::finish_manageru_sys();
 }
 
+#endif
+
 int mc_manageru_main(int argc, char *argv[])
 {
 	int rr = 0;
@@ -227,7 +250,9 @@ int mc_manageru_main(int argc, char *argv[])
 	//PTD_CODE(bj_test_4(argc, argv));
 	//PTD_CODE(bj_test_5(argc, argv));
 	//PTD_CODE(bj_test_6(argc, argv));
-	//bj_test_7(argc, argv);
+	//PTD_CODE(bj_test_7(argc, argv));
+	//bj_mc_test_1(argc, argv);
+	
 	rr = bj_manageru_main(argc, argv);
 
 	printf("MANAGERU_CODE_FINISHED ==================================== \n");

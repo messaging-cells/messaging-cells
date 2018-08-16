@@ -14,5 +14,6 @@
 ./src/cells/shared.h
 ./src/cells/shared_ptd.h
 ./src/cells/shared_znq.h
+./src/cells/tak_mak.hh
 ./src/cells/trace.h
 ./src/cells/umm_malloc.h

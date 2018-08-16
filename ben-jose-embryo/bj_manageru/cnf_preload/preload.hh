@@ -42,11 +42,13 @@ Declaration of functions to preload cnfs in dimacs files.
 #include "solver.hh"
 
 class pre_sornode;
+class pre_sorout;
 class pre_cnf_node;
 class pre_cnf_net;
 class pre_load_cnf;
 
 extern grip ava_pre_sornode;
+extern grip ava_pre_sorout;
 extern grip ava_pre_cnf_node;
 extern grip ava_pre_cnf_net;
 
@@ -79,7 +81,7 @@ public:
 \brief Class for sornet nodes to load.
 
 */
-class mc_aligned pre_sornode : public agent_grp {
+class mc_aligned pre_sornode : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_sornode, bj_load_cod)
 
@@ -123,6 +125,29 @@ public:
 		PTD_CK(false);
 		return conn_invalid;
 	}
+};
+
+/*! \class pre_sorout
+\brief Class for sornet nodes to load.
+
+*/
+class mc_aligned pre_sorout : public agent {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_sorout, bj_load_cod)
+
+	num_nod_t 		idx;
+	pre_sorout* 	prv;
+
+	void* 			loaded;
+
+	pre_sorout(){
+		idx = 0;
+		prv = mc_null;
+
+		loaded = mc_null;
+	}
+
+	~pre_sorout(){}
 };
 
 /*! \class pre_cnf_node
@@ -172,19 +197,11 @@ public:
 	num_nod_t tot_pre_sornods;
 	grip	all_pre_sornods;
 
+	num_nod_t tot_pre_sorouts;
+	grip	all_pre_sorouts;
+	
 	num_nod_t tmp_nod_idx;
 
-	/*
-	num_nod_t tot_pre_sorinput_nod;
-	pre_sornode**	all_pre_sorinput_nod;
-	
-	num_nod_t tot_pre_sorinput_pol;
-	pre_sornode**	all_pre_sorinput_pol;
-
-	num_nod_t tot_pre_sorinput_neu;
-	pre_sornode**	all_pre_sorinput_neu;	
-	*/
-	
 	pre_cnf_net(){
 		tot_pre_neus = 0;
 		tot_pre_vars = 0;
@@ -194,6 +211,8 @@ public:
 		// sornet info
 		tot_pre_sornods = 0;
 
+		tot_pre_sorouts = 0;
+		
 		tmp_nod_idx = 0;
 
 		/*
@@ -235,6 +254,9 @@ public:
 	num_nod_t tot_pre_sorinput_nod;
 	pre_sornode**	all_pre_sorinput_nod;
 
+	num_nod_t tot_pre_soroutput_nod;
+	pre_sorout**	all_pre_soroutput_nod;
+	
 	long tot_workerus;
 	pre_cnf_net*		all_cnf;	//!< Array of \ref pre_cnf_net s to load in each workeru.
 
@@ -256,6 +278,9 @@ public:
 
 		tot_pre_sorinput_nod = 0;
 		all_pre_sorinput_nod = mc_null;
+		
+		tot_pre_soroutput_nod = 0;
+		all_pre_soroutput_nod = mc_null;
 
 		tot_workerus = 0;
 		all_cnf = mc_null;
@@ -282,6 +307,8 @@ get_tot_levels(num_nod_t nn);
 void
 create_sornet(num_nod_t num_to_sort);
 
+void
+create_ranknet(num_nod_t num_to_sort);
 
 #endif		// PRELOAD_CNF_H
 

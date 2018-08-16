@@ -51,6 +51,8 @@ void bj_load_init_handlers() bj_load_cod;
 void bj_load_shd_cnf() bj_load_cod;
 void bj_load_shd_sornet() bj_load_cod;
 
+void bj_load_shd_ranknet() bj_load_cod;
+
 
 #endif		// LOAD_CNF_H
 

@@ -40,11 +40,15 @@ Declaration of nervenet class.
 
 
 #ifdef MC_IS_PTD_CODE
-#include <stdio.h>
-#include <string.h>
+	#include <stdio.h>
+	#include <string.h>
 
-#include <sstream>
-typedef std::ostringstream bj_dbg_str_stream;
+	#include <sstream>
+	typedef std::ostringstream bj_dbg_str_stream;
+
+	#ifdef FULL_DEBUG
+		#include "tak_mak.hh"
+	#endif
 #endif
 
 
@@ -65,6 +69,7 @@ class neurostate;
 class neuron;
 class polaron;
 class sorcell;
+class sorout;
 class netstate;
 class nervenet;
 
@@ -78,6 +83,13 @@ enum binval_t : uint8_t {
 	binval_invalid = 0,
 	binval_bottom = 11,
 	binval_top = 22
+};
+
+enum sorkind_t : uint8_t {
+	sorkind_invalid,
+	sorkind_bin,
+	sorkind_num,
+	sorkind_rnk
 };
 
 enum net_side_t : uint8_t {
@@ -141,6 +153,11 @@ enum sornet_tok_t : mck_token_t {
 	bj_tok_sornet_start,
 	bj_tok_sornet_out,
 	bj_tok_sornet_bin,
+	bj_tok_sornet_num,
+	bj_tok_sornet_rank_start,
+	bj_tok_sornet_rank_jump,
+	bj_tok_sornet_rank_step,
+	bj_tok_sornet_rank_out,
 	bj_tok_sornet_end
 };
 
@@ -152,6 +169,7 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_neuron,
 	idx_polaron,
 	idx_sorcell,
+	idx_sorout,
 	idx_tierdata,
 	idx_nervenet,
 	idx_total
@@ -247,6 +265,7 @@ BJ_DECLARE_CLS_NAM(nervenode)
 BJ_DECLARE_CLS_NAM(neuron)
 BJ_DECLARE_CLS_NAM(polaron)
 BJ_DECLARE_CLS_NAM(sorcell)
+BJ_DECLARE_CLS_NAM(sorout)
 BJ_DECLARE_CLS_NAM(tierdata)
 BJ_DECLARE_CLS_NAM(nervenet)
 
@@ -348,8 +367,10 @@ public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_sornet_cod)
 	//MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_nervenet_mem)
 
+	sorkind_t	knd;
 	num_nod_t	idx;
 	void*		obj;
+	num_nod_t 	grp_idx;
 
 	sornet_transmitter() mc_external_code_ram;
 	~sornet_transmitter() mc_external_code_ram;
@@ -669,14 +690,14 @@ class mc_aligned sorcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorcell, mc_external_code_ram)
 
-	num_nod_t 	color;
-
 	num_nod_t 	dbg_level;
 
+	num_nod_t 	up_grp_idx;
 	num_nod_t 	up_idx;
 	void*		up_inp;
 	sorcell*	up_out;
 
+	num_nod_t 	down_grp_idx;
 	num_nod_t 	down_idx;
 	void*		down_inp;
 	sorcell*	down_out;
@@ -688,13 +709,67 @@ public:
 	void init_me(int caller = 0) mc_external_code_ram;
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
-	bj_cmp_obj_func_t sornet_get_cmp_func(sornet_tok_t tmt_tok) bj_sornet_cod;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod_t idx) bj_sornet_cod;
+bj_cmp_obj_func_t sornet_get_cmp_func(sorkind_t knd) bj_sornet_cod;
+void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t grp_idx,
+						void* obj, cell* dst, num_nod_t idx) bj_sornet_cod;
+
+#define	bj_sorout_is_last_flag 			mc_flag0
+#define	bj_sorout_sent_jump_flag 		mc_flag1
+#define	bj_sorout_received_jump_flag 	mc_flag2
+#define	bj_sorout_sent_step_flag 		mc_flag3
+#define	bj_sorout_received_step_flag 	mc_flag4
+#define	bj_sorout_is_head_flag 			mc_flag5
+#define	bj_sorout_is_tail_flag 			mc_flag6
+#define	bj_sorout_is_finished_flag 		mc_flag7
+						
+#define	bj_sorout_dbg_is_grp_flag 		bj_sorout_is_tail_flag
+
+class mc_aligned sorout : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorout, mc_external_code_ram)
+
+	num_nod_t 	num_step;
+	
+	mc_flags_t	jump_flags;
+	num_nod_t 	color;
+
+	num_nod_t 	grp_idx;
+	num_nod_t 	idx;
+	void*		obj;
+	
+	sorout*		prv;
+	sorout*		nxt_jump;
+	sorout*		req;
+	sorout*		last_jump;
+	
+	sorout() mc_external_code_ram;
+	~sorout() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
+	void sornet_handler(missive* msv) bj_sornet_cod;
+
+	void reset_flags() bj_sornet_cod;
+	void reset_jump() bj_sornet_cod;
+	void send_next_jump() bj_sornet_cod;
+
+	bool is_head() bj_sornet_cod;
+	bool is_tail() bj_sornet_cod;
+	bool has_sent_jump() bj_sornet_cod;
+	bool has_received_jump() bj_sornet_cod;
+	bool has_received_request() bj_sornet_cod;
+	bool has_sent_step() bj_sornet_cod;
+	bool has_received_step() bj_sornet_cod;
+	
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
 
 #define	bj_sent_inert_flag mc_flag0
 
@@ -839,6 +914,7 @@ public:
 	mc_alloc_size_t dbg_tot_new_neuron;
 	mc_alloc_size_t dbg_tot_new_polaron;
 	mc_alloc_size_t dbg_tot_new_sorcell;
+	mc_alloc_size_t dbg_tot_new_sorout;
 	mc_alloc_size_t dbg_tot_new_tierdata;
 
 	dbg_stats() mc_external_code_ram;
@@ -882,6 +958,7 @@ public:
 	grip		ava_neurons;
 	grip		ava_polarons;
 	grip		ava_sorcells;
+	grip		ava_sorouts;
 	grip		ava_tierdatas;
 
 	missive_handler_t all_handlers[idx_total];
@@ -911,17 +988,29 @@ public:
 	num_nod_t tot_sorcells;
 	grip	all_sorcells;
 
+	num_nod_t tot_sorouts;
+	grip	all_sorouts;
+	
 	mini_bit_arr_t 	dbg_sornet_curr_cntr;
 	mini_bit_arr_t 	dbg_sornet_max_cntr;
+	
+	PTD_DBG_CODE(tak_mak dbg_random_gen);
+	num_nod_t*	dbg_all_input_vals;
 
 	binval_t	net_top;
 	binval_t	net_bottom;
 
 	num_nod_t 	tot_input_sorcells;
 	sorcell**	all_input_sorcells;
-	num_nod_t 	tot_rcv_output_sorobjs;
+	
+	num_nod_t 	dbg_tot_rcv_output_sorobjs;
+	
 	void**		all_output_sorobjs;
+	num_nod_t*	all_output_sorgrps;
 
+	num_nod_t 	tot_arr_sorouts;
+	sorout**	arr_sorouts;
+	
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
 
@@ -951,11 +1040,22 @@ public:
 
 	bool sornet_check_order(bj_cmp_obj_func_t fn) bj_sornet_cod;
 
-	mini_bit_arr_t sornet_dbg_bin_get_mini_sorted_arr() bj_sornet_cod;
-	bool sornet_dbg_send_cntr() bj_sornet_cod;
-	void sornet_dbg_end_step() bj_sornet_cod;
-	void sornet_dbg_bin_handler(missive* msv) bj_sornet_cod;
+	void sornet_dbg_tests_handler(missive* msv) bj_sornet_cod;
+	bool sornet_dbg_send_nxt_step(sorkind_t knd) bj_sornet_cod;
+	void sornet_dbg_end_step(sorkind_t knd) bj_sornet_cod;
 
+	void sornet_dbg_bin_send_step() bj_sornet_cod;
+	void sornet_dbg_bin_end_step() bj_sornet_cod;
+	mini_bit_arr_t sornet_dbg_bin_get_mini_sorted_arr() bj_sornet_cod;
+
+	void sornet_dbg_num_init_val_arr() bj_sornet_cod;
+	void sornet_dbg_num_send_step() bj_sornet_cod;
+	void sornet_dbg_num_end_step() bj_sornet_cod;
+
+	num_nod_t sornet_dbg_rnk_get_nw_grp() bj_sornet_cod;
+	void sornet_dbg_rnk_init_grp_arr() bj_sornet_cod;
+	void sornet_dbg_rnk_send_step() bj_sornet_cod;
+	void sornet_dbg_rnk_end_step() bj_sornet_cod;
 
 	nervenet* get_nervenet(mc_workeru_id_t workeru_id);
 
@@ -979,6 +1079,7 @@ public:
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
 #define bj_ava_polarons (bj_nervenet->ava_polarons)
 #define bj_ava_sorcells (bj_nervenet->ava_sorcells)
+#define bj_ava_sorouts (bj_nervenet->ava_sorouts)
 #define bj_ava_tierdatas (bj_nervenet->ava_tierdatas)
 
 #define bj_handlers (bj_nervenet->all_handlers)
