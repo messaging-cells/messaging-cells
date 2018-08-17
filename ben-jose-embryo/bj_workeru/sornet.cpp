@@ -123,7 +123,7 @@ sorcell::sornet_handler(missive* msv){
 
 void
 bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t grp_idx,
-				   void* obj, cell* dst, num_nod_t idx)
+				   void* obj, cell* dst, num_nod_t idx, num_nod_t stp)
 {
 	PTD_CK(src != mc_null);
 	PTD_CK_PRT(((knd == sorkind_rnk) || (obj != mc_null) || (tok == bj_tok_sornet_start)), 
@@ -140,6 +140,7 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t grp_idx
 	trm->idx = idx;
 	trm->obj = obj;
 	trm->grp_idx = grp_idx;
+	trm->stp = stp;
 
 	if(trm->dst == mc_null){
 		nervenet* root_net = bj_nervenet->get_nervenet(mc_nn_to_id(0));
@@ -653,6 +654,11 @@ nervenet::sornet_dbg_rnk_init_grp_arr(){
 
 void
 nervenet::sornet_dbg_rnk_send_step(){
+	act_left_side.send_sync_to_children(bj_tok_sync_to_children, 
+										BJ_SORNET_TIER, tiki_invalid, mc_null);
+	PTD_LOG("_RNK_RECODING_THIS_FUNC () \n");
+	
+	/*
 	PTD_CK(kernel::get_workeru_nn() == 0);
 	cell* src = this;
 
@@ -671,7 +677,7 @@ nervenet::sornet_dbg_rnk_send_step(){
 		num_nod_t tmt_grp_idx = srout->grp_idx;
 		bj_send_sornet_tmt(src, bj_tok_sornet_rank_start, sorkind_rnk, tmt_grp_idx, mc_null, srout, aa);
 	}
-
+	*/
 }
 
 void
@@ -730,27 +736,6 @@ sorout::has_received_jump(){
 	return hh;
 }
 
-bool
-sorout::has_received_request(){
-	bool hh = (req != mc_null);
-	if(is_tail()){ hh = true; }
-	return hh;
-}
-
-bool
-sorout::has_received_step(){
-	bool hh = mc_get_flag(jump_flags, bj_sorout_received_step_flag);
-	if(is_head()){ hh = true; }
-	return hh;
-}
-
-bool
-sorout::has_sent_step(){
-	bool hh = mc_get_flag(jump_flags, bj_sorout_sent_step_flag);
-	//if(is_tail()){ hh = true; }
-	return hh;
-}
-
 void
 sorout::reset_flags(){
 	bool is_lst = mc_get_flag(jump_flags, bj_sorout_is_last_flag);
@@ -762,12 +747,11 @@ sorout::reset_flags(){
 }
 
 void
-sorout::reset_jump(){
+sorout::send_next_jump(){
 	cell* src = this;
-	if(req == src){
-		mc_set_flag(jump_flags, bj_sorout_is_tail_flag);
-		PTD_LOG("%ld_RNK_%ld_BECOMES_TAIL \n", num_step, idx);
-	}
+
+	num_step++;
+	
 	if(nxt_jump == mc_null){
 		mc_set_flag(jump_flags, bj_sorout_is_head_flag);
 		PTD_LOG("%ld_RNK_%ld_BECOMES_HEAD \n", num_step, idx);
@@ -776,18 +760,7 @@ sorout::reset_jump(){
 	mc_reset_flag(jump_flags, bj_sorout_received_jump_flag);
 	mc_reset_flag(jump_flags, bj_sorout_sent_jump_flag);
 	
-	req = mc_null;
 	last_jump = nxt_jump;
-}
-
-void
-sorout::send_next_jump(){
-	cell* src = this;
-
-	num_step++;
-
-	mc_reset_flag(jump_flags, bj_sorout_sent_step_flag);
-	mc_reset_flag(jump_flags, bj_sorout_received_step_flag);
 	
 	bool has_jump = (nxt_jump != mc_null);
 	bool is_finished = mc_get_flag(jump_flags, bj_sorout_is_finished_flag);
@@ -796,18 +769,38 @@ sorout::send_next_jump(){
 			mc_set_flag(jump_flags, bj_sorout_is_finished_flag);
 			PTD_LOG("%ld_RNK_%ld_BECOMES_FINISHED \n", num_step, idx);
 		}
-		
-		bj_send_sornet_tmt(src, bj_tok_sornet_rank_jump, sorkind_rnk, grp_idx, mc_null, nxt_jump, idx);
-		PTD_LOG("%ld_RNK_%ld_>%ld_ASK_JMP \n", num_step, idx, bj_sorout_idx(nxt_jump));
-		
-		if(is_tail() && has_jump){
-			PTD_CK(idx > nxt_jump->idx);
-			bj_send_sornet_tmt(src, bj_tok_sornet_rank_step, sorkind_rnk, 
-								grp_idx, nxt_jump, nxt_jump, idx);
-			PTD_LOG("%ld_RNK_%ld_>%ld_SND_REQ_%ld \n", num_step, idx, nxt_jump->idx, nxt_jump->idx);
+
+		void* obj = mc_null;
+		if(is_tail()){
+			obj = src;
 		}
+		bj_send_sornet_tmt(src, bj_tok_sornet_rank_jump, sorkind_rnk, 
+						   grp_idx, obj, nxt_jump, idx, num_step);
+		PTD_LOG("%ld_RNK_%ld_>%ld_ASK_JMP \n", num_step, idx, bj_sorout_idx(nxt_jump));		
+	}
+}
+
+void
+sorout::answer_jump(sorout* dst, bool become_tail){
+	sorout* src = this;
+	
+	PTD_CK(dst != mc_null);
+	PTD_CK(idx < dst->idx);
+	PTD_CK_PRT((! has_sent_jump()), "%ld_RNK_%ld_>%ld_ALREADY_ANS_JMP_%ld \n", 
+				num_step, idx, dst->idx, bj_sorout_idx(last_jump));
+	
+	if(become_tail){
+		mc_set_flag(jump_flags, bj_sorout_is_tail_flag);
+		PTD_LOG("%ld_RNK_%ld_BECOMES_TAIL \n", num_step, idx);
 	}
 	
+	mc_set_flag(jump_flags, bj_sorout_sent_jump_flag);
+	bj_send_sornet_tmt(src, bj_tok_sornet_rank_jump, sorkind_rnk, 
+						grp_idx, last_jump, dst, idx, num_step);
+	PTD_LOG("%ld_RNK_%ld_>%ld_ANS_JMP_%ld_ \n", num_step, idx, dst->idx, 
+			bj_sorout_idx(last_jump));
+
+	PTD_CK(has_sent_jump());
 }
 
 void
@@ -818,8 +811,9 @@ sorout::sornet_handler(missive* msv){
 	num_nod_t tmt_idx = sn_tmt->idx;
 	void* tmt_obj = sn_tmt->obj;
 	num_nod_t tmt_grp_idx = sn_tmt->grp_idx;
+	num_nod_t tmt_stp = sn_tmt->stp;
 
-	sorout* src = this;
+	//sorout* src = this;
 
 	if(tmt_tok == bj_tok_sornet_rank_start){
 		num_step = 0;
@@ -835,7 +829,6 @@ sorout::sornet_handler(missive* msv){
 		PTD_LOG("%ld_RNK_%ld_START \n", num_step, idx);
 		
 		reset_flags();
-		reset_jump();
 		send_next_jump();
 		return;
 	}
@@ -851,6 +844,7 @@ sorout::sornet_handler(missive* msv){
 			PTD_CK(tmt_idx < idx);
 			//PTD_CK(tmt_obj != mc_null);
 			PTD_CK(! has_received_jump());
+			PTD_CK(tmt_stp == num_step);
 			
 			mc_set_flag(jump_flags, bj_sorout_received_jump_flag);
 			nxt_jump = (sorout*)tmt_obj;
@@ -861,70 +855,38 @@ sorout::sornet_handler(missive* msv){
 			PTD_CK(has_received_jump());
 		} else {
 			PTD_CK(tmt_idx > idx);
-			PTD_CK(tmt_obj == mc_null);
-			PTD_CK_PRT((! has_sent_jump()), "%ld_RNK_%ld_>%ld_ALREADY_SENT_%ld \n", 
-					   num_step, idx, tmt_src->idx, bj_sorout_idx(last_jump));
+			PTD_CK((tmt_obj == mc_null) || (tmt_obj == tmt_src));
+			bool become_tail = (tmt_obj == tmt_src);
 			
-			mc_set_flag(jump_flags, bj_sorout_sent_jump_flag);
-			bj_send_sornet_tmt(src, bj_tok_sornet_rank_jump, sorkind_rnk, grp_idx, last_jump, tmt_src, idx);
-			PTD_LOG("%ld_RNK_%ld_>%ld_ANS_JMP_%ld_ \n", num_step, idx, tmt_src->idx, 
-					bj_sorout_idx(last_jump));
-
-			if(last_jump != mc_null){
-				PTD_CK(idx > last_jump->idx);
-				bj_send_sornet_tmt(src, bj_tok_sornet_rank_step, sorkind_rnk, 
-								   grp_idx, tmt_src, last_jump, idx);
-				PTD_LOG("%ld_RNK_%ld_>%ld_SND_REQ_%ld \n", num_step, idx, last_jump->idx, tmt_src->idx);
+			if(tmt_stp > num_step){
+				PTD_CK_PRT((tmt_stp == (num_step + 1)), "%ld_RNK_%ld_<%ld_BAD_STEP_%ld \n", 
+						   num_step, idx, tmt_src->idx, tmt_stp);
+				if(become_tail){
+					PTD_CK(! mc_get_flag(jump_flags, bj_sorout_req_is_tail_flag));
+					mc_set_flag(jump_flags, bj_sorout_req_is_tail_flag);
+				}
+				PTD_CK(req == mc_null);
+				req = tmt_src;
+			} else {
+				PTD_CK(tmt_stp == num_step);
+				answer_jump(tmt_src, become_tail);
 			}
+
 			dbg_ha_ok = true;
-			PTD_CK(has_sent_jump());
 		}
 	}
 
-	if(tmt_tok == bj_tok_sornet_rank_step){
-		PTD_CK(tmt_idx != idx);
-		if(tmt_idx > idx){
-			PTD_CK(tmt_obj != mc_null);
-			PTD_CK_PRT((! has_received_request()), 
-					   "%ld_RNK_%ld_<%ld_RCV_REQ", num_step, idx, tmt_src->idx);
-			req = (sorout*)tmt_obj;
-			PTD_LOG("%ld_RNK_%ld_<%ld_RCV_REQ_%ld \n", num_step, idx, tmt_src->idx, req->idx);
-			dbg_ha_ok = true;
-			PTD_CK(has_received_request());
-		} else {
-			PTD_CK(tmt_idx < idx);
-			PTD_CK(tmt_obj == src);
-			PTD_CK(! has_received_step());
-			mc_set_flag(jump_flags, bj_sorout_received_step_flag);
-			PTD_LOG("%ld_RNK_%ld_<%ld_RCV_STP \n", num_step, idx, tmt_src->idx);
-			dbg_ha_ok = true;
-			PTD_CK(has_received_step());
-		}
-	}
-	
 	PTD_CK(dbg_ha_ok);
 	
-	if(has_received_jump() && has_sent_jump() && has_received_request()){
-		sorout* tgt = req;
-		PTD_CK((tgt != mc_null) || is_tail());
-		
-		reset_jump();
-
-		PTD_CK(! has_sent_step());
-		mc_set_flag(jump_flags, bj_sorout_sent_step_flag);
-		
-		if(! is_tail()){
-			PTD_CK(tgt != src);
-			PTD_CK(idx < tgt->idx);
-			bj_send_sornet_tmt(src, bj_tok_sornet_rank_step, sorkind_rnk, grp_idx, tgt, tgt, idx);
-			PTD_LOG("%ld_RNK_%ld_>%ld_SND_STP \n", num_step, idx, tgt->idx);
-		} else {
-			PTD_LOG("%ld_RNK_%ld_IS_TAIL_NOT_snding_stp \n", num_step, idx);
-		}
-	}
-	
-	if(has_received_step() && has_sent_step()){
+	if(has_received_jump() && has_sent_jump()){
 		send_next_jump();
-	}
+		
+		if(req != mc_null){
+			bool become_tail = mc_get_flag(jump_flags, bj_sorout_req_is_tail_flag);
+			mc_reset_flag(jump_flags, bj_sorout_req_is_tail_flag);
+			answer_jump(req, become_tail);
+			req = mc_null;
+		}
+	}	
 }
 

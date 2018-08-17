@@ -371,6 +371,7 @@ public:
 	num_nod_t	idx;
 	void*		obj;
 	num_nod_t 	grp_idx;
+	num_nod_t 	stp;
 
 	sornet_transmitter() mc_external_code_ram;
 	~sornet_transmitter() mc_external_code_ram;
@@ -716,18 +717,17 @@ public:
 
 bj_cmp_obj_func_t sornet_get_cmp_func(sorkind_t knd) bj_sornet_cod;
 void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t grp_idx,
-						void* obj, cell* dst, num_nod_t idx) bj_sornet_cod;
+						void* obj, cell* dst, num_nod_t idx, num_nod_t stp = 0) bj_sornet_cod;
 
 #define	bj_sorout_is_last_flag 			mc_flag0
 #define	bj_sorout_sent_jump_flag 		mc_flag1
 #define	bj_sorout_received_jump_flag 	mc_flag2
-#define	bj_sorout_sent_step_flag 		mc_flag3
-#define	bj_sorout_received_step_flag 	mc_flag4
-#define	bj_sorout_is_head_flag 			mc_flag5
-#define	bj_sorout_is_tail_flag 			mc_flag6
-#define	bj_sorout_is_finished_flag 		mc_flag7
+#define	bj_sorout_is_head_flag 			mc_flag3
+#define	bj_sorout_is_tail_flag 			mc_flag4
+#define	bj_sorout_req_is_tail_flag 		mc_flag5
+#define	bj_sorout_is_finished_flag 		mc_flag6
 						
-#define	bj_sorout_dbg_is_grp_flag 		bj_sorout_is_tail_flag
+#define	bj_sorout_dbg_is_grp_flag 		bj_sorout_is_finished_flag
 
 class mc_aligned sorout : public cell {
 public:
@@ -756,16 +756,13 @@ public:
 	void sornet_handler(missive* msv) bj_sornet_cod;
 
 	void reset_flags() bj_sornet_cod;
-	void reset_jump() bj_sornet_cod;
 	void send_next_jump() bj_sornet_cod;
+	void answer_jump(sorout* dst, bool become_tail) bj_sornet_cod;
 
 	bool is_head() bj_sornet_cod;
 	bool is_tail() bj_sornet_cod;
 	bool has_sent_jump() bj_sornet_cod;
 	bool has_received_jump() bj_sornet_cod;
-	bool has_received_request() bj_sornet_cod;
-	bool has_sent_step() bj_sornet_cod;
-	bool has_received_step() bj_sornet_cod;
 	
 	virtual
 	char* 	get_class_name() mc_external_code_ram;

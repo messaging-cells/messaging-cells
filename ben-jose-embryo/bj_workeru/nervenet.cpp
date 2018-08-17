@@ -248,6 +248,7 @@ sornet_transmitter::init_me(int caller){
 	idx = 0;
 	obj = mc_null;
 	grp_idx = 0;
+	stp = 0;
 }
 
 //--------------
