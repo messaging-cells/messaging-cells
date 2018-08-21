@@ -69,7 +69,6 @@ class neurostate;
 class neuron;
 class polaron;
 class sorcell;
-class sorout;
 class netstate;
 class nervenet;
 
@@ -169,7 +168,6 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_neuron,
 	idx_polaron,
 	idx_sorcell,
-	idx_sorout,
 	idx_tierdata,
 	idx_nervenet,
 	idx_total
@@ -265,7 +263,6 @@ BJ_DECLARE_CLS_NAM(nervenode)
 BJ_DECLARE_CLS_NAM(neuron)
 BJ_DECLARE_CLS_NAM(polaron)
 BJ_DECLARE_CLS_NAM(sorcell)
-BJ_DECLARE_CLS_NAM(sorout)
 BJ_DECLARE_CLS_NAM(tierdata)
 BJ_DECLARE_CLS_NAM(nervenet)
 
@@ -687,6 +684,8 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+#define BJ_INVALID_SORCELL_NUM_GRP -1
+
 class mc_aligned sorcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorcell, mc_external_code_ram)
@@ -711,6 +710,9 @@ public:
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
 
+	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
@@ -719,54 +721,6 @@ bj_cmp_obj_func_t sornet_get_cmp_func(sorkind_t knd) bj_sornet_cod;
 void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t grp_idx,
 						void* obj, cell* dst, num_nod_t idx, num_nod_t stp = 0) bj_sornet_cod;
 
-#define	bj_sorout_is_last_flag 			mc_flag0
-#define	bj_sorout_sent_jump_flag 		mc_flag1
-#define	bj_sorout_received_jump_flag 	mc_flag2
-#define	bj_sorout_is_head_flag 			mc_flag3
-#define	bj_sorout_is_tail_flag 			mc_flag4
-#define	bj_sorout_req_is_tail_flag 		mc_flag5
-#define	bj_sorout_is_finished_flag 		mc_flag6
-						
-#define	bj_sorout_dbg_is_grp_flag 		bj_sorout_is_finished_flag
-
-class mc_aligned sorout : public cell {
-public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorout, mc_external_code_ram)
-
-	num_nod_t 	num_step;
-	
-	mc_flags_t	jump_flags;
-	num_nod_t 	color;
-
-	num_nod_t 	grp_idx;
-	num_nod_t 	idx;
-	void*		obj;
-	
-	sorout*		prv;
-	sorout*		nxt_jump;
-	sorout*		req;
-	sorout*		last_jump;
-	
-	sorout() mc_external_code_ram;
-	~sorout() mc_external_code_ram;
-
-	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0) mc_external_code_ram;
-
-	void sornet_handler(missive* msv) bj_sornet_cod;
-
-	void reset_flags() bj_sornet_cod;
-	void send_next_jump() bj_sornet_cod;
-	void answer_jump(sorout* dst, bool become_tail) bj_sornet_cod;
-
-	bool is_head() bj_sornet_cod;
-	bool is_tail() bj_sornet_cod;
-	bool has_sent_jump() bj_sornet_cod;
-	bool has_received_jump() bj_sornet_cod;
-	
-	virtual
-	char* 	get_class_name() mc_external_code_ram;
-};
 
 #define	bj_sent_inert_flag mc_flag0
 
@@ -911,7 +865,6 @@ public:
 	mc_alloc_size_t dbg_tot_new_neuron;
 	mc_alloc_size_t dbg_tot_new_polaron;
 	mc_alloc_size_t dbg_tot_new_sorcell;
-	mc_alloc_size_t dbg_tot_new_sorout;
 	mc_alloc_size_t dbg_tot_new_tierdata;
 
 	dbg_stats() mc_external_code_ram;
@@ -955,7 +908,6 @@ public:
 	grip		ava_neurons;
 	grip		ava_polarons;
 	grip		ava_sorcells;
-	grip		ava_sorouts;
 	grip		ava_tierdatas;
 
 	missive_handler_t all_handlers[idx_total];
@@ -985,8 +937,8 @@ public:
 	num_nod_t tot_sorcells;
 	grip	all_sorcells;
 
-	num_nod_t tot_sorouts;
-	grip	all_sorouts;
+	num_nod_t tot_rnkcells;
+	grip	all_rnkcells;
 	
 	mini_bit_arr_t 	dbg_sornet_curr_cntr;
 	mini_bit_arr_t 	dbg_sornet_max_cntr;
@@ -1005,8 +957,12 @@ public:
 	void**		all_output_sorobjs;
 	num_nod_t*	all_output_sorgrps;
 
-	num_nod_t 	tot_arr_sorouts;
-	sorout**	arr_sorouts;
+	num_nod_t 	tot_input_rnkcells;
+	sorcell**	all_input_rnkcells;
+	
+	num_nod_t*	all_input_rnkgrps;
+	num_nod_t*	all_output_rnkgrps;
+	bool*		dbg_is_input_rnkgrps;
 	
 	nervenet() mc_external_code_ram;
 	~nervenet() mc_external_code_ram;
@@ -1050,7 +1006,7 @@ public:
 	void sornet_dbg_num_end_step() bj_sornet_cod;
 
 	num_nod_t sornet_dbg_rnk_get_nw_grp() bj_sornet_cod;
-	void sornet_dbg_rnk_init_grp_arr() bj_sornet_cod;
+	void sornet_dbg_rnk_init_grp_arr(bool just_ones) bj_sornet_cod;
 	void sornet_dbg_rnk_send_step() bj_sornet_cod;
 	void sornet_dbg_rnk_end_step() bj_sornet_cod;
 
@@ -1076,7 +1032,6 @@ public:
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
 #define bj_ava_polarons (bj_nervenet->ava_polarons)
 #define bj_ava_sorcells (bj_nervenet->ava_sorcells)
-#define bj_ava_sorouts (bj_nervenet->ava_sorouts)
 #define bj_ava_tierdatas (bj_nervenet->ava_tierdatas)
 
 #define bj_handlers (bj_nervenet->all_handlers)

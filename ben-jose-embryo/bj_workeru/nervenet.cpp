@@ -50,7 +50,6 @@ MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synapse, 32, bj_ava_synapses, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(neuron, 32, bj_ava_neurons, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(polaron, 32, bj_ava_polarons, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sorcell, 32, bj_ava_sorcells, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sorout, 32, bj_ava_sorouts, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
 
 BJ_DEFINE_GET_CLS_NAM(synset)
@@ -64,7 +63,6 @@ BJ_DEFINE_GET_CLS_NAM(nervenode)
 BJ_DEFINE_GET_CLS_NAM(neuron)
 BJ_DEFINE_GET_CLS_NAM(polaron)
 BJ_DEFINE_GET_CLS_NAM(sorcell)
-BJ_DEFINE_GET_CLS_NAM(sorout)
 BJ_DEFINE_GET_CLS_NAM(tierdata)
 BJ_DEFINE_GET_CLS_NAM(nervenet)
 
@@ -190,7 +188,7 @@ nervenet::nervenet(){
 
 	tot_sorcells = 0;
 	
-	tot_sorouts = 0;
+	tot_rnkcells = 0;
 
 	dbg_sornet_curr_cntr = 0;
 	dbg_sornet_max_cntr = 0;
@@ -207,8 +205,12 @@ nervenet::nervenet(){
 	all_output_sorobjs = mc_null;
 	all_output_sorgrps = mc_null;
 
-	tot_arr_sorouts = 0;
-	arr_sorouts = mc_null;	
+	tot_input_rnkcells = 0;
+	all_input_rnkcells = mc_null;
+	
+	all_input_rnkgrps = mc_null;
+	all_output_rnkgrps = mc_null;
+	dbg_is_input_rnkgrps = mc_null;
 }
 
 nervenet::~nervenet(){} 
@@ -452,43 +454,15 @@ sorcell::init_me(int caller){
 
 	dbg_level = 0;
 
-	up_grp_idx = 0;
+	up_grp_idx = BJ_INVALID_SORCELL_NUM_GRP;
 	up_idx = 0;
 	up_inp = mc_null;
 	up_out = mc_null;
 
-	down_grp_idx = 0;
+	down_grp_idx = BJ_INVALID_SORCELL_NUM_GRP;
 	down_idx = 0;
 	down_inp = mc_null;
 	down_out = mc_null;
-}
-
-sorout::sorout(){ 
-	PTD_CK(bj_nervenet != mc_null);
-	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_sorout ++);
-	mck_slog2("alloc__sorout\n");
-	init_me();
-} 
-
-sorout::~sorout(){} 
-
-void
-sorout::init_me(int caller){
-	handler_idx = idx_sorout;
-
-	num_step = 0;
-	
-	jump_flags = 0;
-	color = 0;
-
-	grp_idx = 0;
-	idx = 0;
-	obj = mc_null;
-	
-	prv = mc_null;
-	nxt_jump = mc_null;
-	req = mc_null;
-	last_jump = mc_null;
 }
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
@@ -1116,7 +1090,6 @@ dbg_stats::init_me(int caller){
 	dbg_tot_new_neuron = 0;
 	dbg_tot_new_polaron = 0;
 	dbg_tot_new_sorcell = 0;
-	dbg_tot_new_sorout = 0;
 	dbg_tot_new_tierdata = 0;
 }
 
@@ -1133,7 +1106,6 @@ dbg_stats::dbg_prt_all(){
 	PTD_LOG("dbg_tot_new_neuron = %d \n", dbg_tot_new_neuron);
 	PTD_LOG("dbg_tot_new_polaron = %d \n", dbg_tot_new_polaron);
 	PTD_LOG("dbg_tot_new_sorcell = %d \n", dbg_tot_new_sorcell);
-	PTD_LOG("dbg_tot_new_sorout = %d \n", dbg_tot_new_sorout);
 	PTD_LOG("dbg_tot_new_tierdata = %d \n", dbg_tot_new_tierdata);
 }
 
@@ -1181,9 +1153,6 @@ void bj_print_class_szs(){
 		mck_slog2("__\n");
 		mck_slog2("sorcell__");
 		mck_ilog(sizeof(sorcell));
-		mck_slog2("__\n");
-		mck_slog2("sorout__");
-		mck_ilog(sizeof(sorout));
 		mck_slog2("__\n");
 		mck_slog2("tierdata__");
 		mck_ilog(sizeof(tierdata));

@@ -40,10 +40,12 @@ Declaration of main bj solver function.
 
 #include "cell.hh"
 
-#define BJ_DBG_TOT_INPUT_SORNODES 8
-//define BJ_DBG_TOT_OUTPUT_SOROUTS 21
-#define BJ_DBG_TOT_OUTPUT_SOROUTS 21
-#define BJ_DBG_TOT_OUTPUT_TESTS 2
+#define BJ_DBG_TOT_NUM_TESTS 400
+#define BJ_DBG_TOT_RNK_TESTS 400
+
+#define BJ_DBG_TOT_INPUT_SORNODES 80
+#define BJ_DBG_TOT_INPUT_RNKNODES 160
+#define BJ_DBG_RNK_SZ_DIV 1
 
 #define bj_dbg_only_cod mc_mod1_cod
 #define bj_dbg_only_dat mc_mod1_dat

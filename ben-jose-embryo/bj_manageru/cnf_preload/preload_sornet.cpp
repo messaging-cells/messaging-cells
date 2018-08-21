@@ -21,6 +21,24 @@ get_bigger_pow2(num_nod_t nn){
 	return pp;
 }
 
+void
+add_sornod_to_glb_cnf(pre_sornode* nod, mc_workeru_nn_t& nxt_nn){
+	if(THE_CNF != mc_null){
+		long num_workerus = THE_CNF->tot_workerus;
+		PTD_CK(nxt_nn < num_workerus);
+
+		nod->nod_nn = nxt_nn;
+
+		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
+		cnf.tot_pre_sornods++;
+		cnf.all_pre_sornods.bind_to_my_left(*nod);
+
+		nxt_nn++;
+		if(nxt_nn == num_workerus){ nxt_nn = 0; }
+		PTD_CK(nxt_nn < num_workerus);
+	}
+}
+
 pre_sornode*
 create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms& prms){
 	pre_sornode* nod = pre_sornode::acquire();
@@ -62,6 +80,9 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	PTD_CK(nod->level >= 0);
 	PTD_CK(nod->level < prms.tot_lvs);
 
+	mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
+	add_sornod_to_glb_cnf(nod, nxt_nn);
+	/*
 	if(THE_CNF != mc_null){
 		long num_workerus = THE_CNF->tot_workerus;
 		mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
@@ -77,6 +98,7 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 		if(nxt_nn == num_workerus){ nxt_nn = 0; }
 		PTD_CK(nxt_nn < num_workerus);
 	}
+	*/
 
 	PTD_CK(knd != snod_invalid);
 	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld] \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), nod->nod_id, 
@@ -164,35 +186,130 @@ create_sornet(num_nod_t num_to_sort){
 }
 
 void
+bj_set_rnk_out(pre_sornode* nod, num_nod_t idx, pre_sornode* out){
+	PTD_CK(nod != mc_null);
+	PTD_CK(out != mc_null);
+	
+	if(nod->up_idx == idx){
+		nod->out_up = out;
+	} else{
+		PTD_CK(nod->down_idx == idx);
+		nod->out_down = out;
+	}
+}
+
+void
+add_ranknod_to_glb_cnf(pre_sornode* nod, mc_workeru_nn_t& nxt_nn){
+	if(THE_CNF != mc_null){
+		long num_workerus = THE_CNF->tot_workerus;
+		PTD_CK(nxt_nn < num_workerus);
+
+		nod->nod_nn = nxt_nn;
+
+		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
+		cnf.tot_pre_rnknods++;
+		cnf.all_pre_rnknods.bind_to_my_left(*nod);
+
+		nxt_nn++;
+		if(nxt_nn == num_workerus){ nxt_nn = 0; }
+		PTD_CK(nxt_nn < num_workerus);
+	}
+}
+
+void
 create_ranknet(num_nod_t num_to_rank){
 	if(THE_CNF == mc_null){
 		printf("THE_CNF IS null !!! \n");
 		return;
 	}
-	long num_workerus = THE_CNF->tot_workerus;
+	//long num_workerus = THE_CNF->tot_workerus;
+
+	sornet_prms prms;
 	
-	THE_CNF->tot_pre_soroutput_nod = num_to_rank;
-	THE_CNF->all_pre_soroutput_nod = mc_malloc32(pre_sorout*, num_to_rank);
-	mc_init_arr_vals(num_to_rank, THE_CNF->all_pre_soroutput_nod, mc_null);
+	num_nod_t tot_out_nod = num_to_rank;
+	pre_sornode**	all_out_nod = mc_malloc32(pre_sornode*, tot_out_nod);;
+	mc_init_arr_vals(tot_out_nod, all_out_nod, mc_null);
 
-	mc_workeru_nn_t nxt_nn = 0;
-	pre_sorout* prv = mc_null;
-	for(num_nod_t aa = 0; aa < num_to_rank; aa++){
-		pre_sorout* nod = pre_sorout::acquire();
-		MCK_CK(nod != mc_null);
-		
-		nod->idx = aa;
-		nod->prv = prv;
-		prv = nod;
-		
-		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
-		cnf.tot_pre_sorouts++;
-		cnf.all_pre_sorouts.bind_to_my_left(*nod);
-		
-		(THE_CNF->all_pre_soroutput_nod)[aa] = nod;
+	num_nod_t tot_in_nod = num_to_rank;
+	pre_sornode**	all_in_nod = mc_malloc32(pre_sornode*, tot_in_nod);
+	mc_init_arr_vals(tot_in_nod, all_in_nod, mc_null);
 
-		nxt_nn++;
-		if(nxt_nn == num_workerus){ nxt_nn = 0; }
-		PTD_CK(nxt_nn < num_workerus);		
+	THE_CNF->tot_pre_rank_in_nod = tot_in_nod;
+	THE_CNF->all_pre_rank_in_nod = all_in_nod;
+	
+	long jmp_sz = 1;
+	bool lv_has_jmps = false;
+	num_nod_t fst = 0;
+	num_nod_t nod_id = 0;
+	
+	while(true){
+		bool added_jmp = false;
+		mc_workeru_nn_t nxt_nn = 0;
+		for(num_nod_t  aa = fst; aa < tot_out_nod; aa += (jmp_sz + 1)){
+			num_nod_t bb = aa + jmp_sz;
+			if(bb >= tot_out_nod){
+				break;
+			}
+			added_jmp = true;
+			
+			pre_sornode* nod = pre_sornode::acquire();
+			MCK_CK(nod != mc_null);
+			
+			nod_id++;
+
+			nod->nod_id = nod_id;
+			nod->up_idx = aa;
+			nod->down_idx = bb;
+			
+			PTD_DBG_CODE(
+				num_nod_t n1_id = 0;
+				num_nod_t n2_id = 0;
+			);
+			
+			pre_sornode* n1 = all_out_nod[aa];
+			pre_sornode* n2 = all_out_nod[bb];
+			if(n1 == mc_null){
+				all_out_nod[aa] = nod;
+				all_in_nod[aa] = nod;
+			} else {
+				PTD_CK(all_in_nod[aa] != mc_null);
+				PTD_DBG_CODE(n1_id = n1->nod_id);
+				bj_set_rnk_out(n1, aa, nod);
+				all_out_nod[aa] = nod;
+			}
+			
+			if(n2 == mc_null){
+				all_out_nod[bb] = nod;
+				all_in_nod[bb] = nod;
+			} else {
+				PTD_CK(all_in_nod[bb] != mc_null);
+				PTD_DBG_CODE(n2_id = n2->nod_id);
+				bj_set_rnk_out(n2, bb, nod);
+				all_out_nod[bb] = nod;
+			}
+
+			add_ranknod_to_glb_cnf(nod, nxt_nn);
+			
+			PTD_PRT("RNK_NOD_%ld %ld[%ld %ld] \t(%ld %ld) \n", nod->nod_id, jmp_sz, aa, bb, n1_id, n2_id);
+		}
+		bool inc_sz = false;
+		if(added_jmp){
+			lv_has_jmps = true;
+			fst++;
+			if(fst == (jmp_sz + 1)){
+				inc_sz = true;
+			}
+		} else {
+			inc_sz = true;
+		}
+		if(inc_sz){
+			if(! lv_has_jmps){
+				break;
+			}
+			lv_has_jmps = false;
+			fst = 0;
+			jmp_sz *= 2;
+		}
 	}
 }
+

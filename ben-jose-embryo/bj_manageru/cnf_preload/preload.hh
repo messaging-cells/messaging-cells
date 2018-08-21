@@ -197,8 +197,8 @@ public:
 	num_nod_t tot_pre_sornods;
 	grip	all_pre_sornods;
 
-	num_nod_t tot_pre_sorouts;
-	grip	all_pre_sorouts;
+	num_nod_t tot_pre_rnknods;
+	grip	all_pre_rnknods;
 	
 	num_nod_t tmp_nod_idx;
 
@@ -211,7 +211,7 @@ public:
 		// sornet info
 		tot_pre_sornods = 0;
 
-		tot_pre_sorouts = 0;
+		tot_pre_rnknods = 0;
 		
 		tmp_nod_idx = 0;
 
@@ -254,8 +254,8 @@ public:
 	num_nod_t tot_pre_sorinput_nod;
 	pre_sornode**	all_pre_sorinput_nod;
 
-	num_nod_t tot_pre_soroutput_nod;
-	pre_sorout**	all_pre_soroutput_nod;
+	num_nod_t tot_pre_rank_in_nod;
+	pre_sornode**	all_pre_rank_in_nod;
 	
 	long tot_workerus;
 	pre_cnf_net*		all_cnf;	//!< Array of \ref pre_cnf_net s to load in each workeru.
@@ -279,9 +279,9 @@ public:
 		tot_pre_sorinput_nod = 0;
 		all_pre_sorinput_nod = mc_null;
 		
-		tot_pre_soroutput_nod = 0;
-		all_pre_soroutput_nod = mc_null;
-
+		tot_pre_rank_in_nod = 0;
+		all_pre_rank_in_nod = mc_null;
+		
 		tot_workerus = 0;
 		all_cnf = mc_null;
 	}

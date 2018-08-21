@@ -5,8 +5,8 @@
 #define BJ_SORNET_TIER 0
 
 //define BJ_SORNET_BIN_TEST
-//define BJ_SORNET_NUM_TEST
-#define BJ_SORNET_RANK_TEST
+#define BJ_SORNET_NUM_TEST
+//define BJ_SORNET_RANK_TEST
 
 #ifdef BJ_SORNET_BIN_TEST
 #define BJ_DBG_SORBINS(prm) prm
@@ -26,16 +26,11 @@
 #define BJ_DBG_RANK_OUTS(prm) 
 #endif
 
-#define bj_sorout_idx(pt_sout) ((pt_sout != mc_null)?(pt_sout->idx):(-1))
+#define bj_pt_obj_as_num(pt_oo) (*((num_nod_t*)(pt_oo)))
 
 void 
 sorcell_sornet_handler(missive* msv){
 	MCK_CALL_HANDLER(sorcell, sornet_handler, msv);
-}
-
-void 
-sorout_sornet_handler(missive* msv){
-	MCK_CALL_HANDLER(sorout, sornet_handler, msv);
 }
 
 void 
@@ -48,7 +43,6 @@ void bj_sornet_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
 	hndlrs[idx_sorcell] = sorcell_sornet_handler;
-	hndlrs[idx_sorout] = sorout_sornet_handler;
 	hndlrs[idx_nervenet] = nervenet_sornet_handler;
 
 	kernel::set_handlers(idx_total, hndlrs);
@@ -76,6 +70,23 @@ sornet_get_cmp_func(sorkind_t knd){
 void
 sorcell::sornet_handler(missive* msv){
 	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
+	sorkind_t tmt_knd = sn_tmt->knd;
+	switch(tmt_knd){
+		case sorkind_bin:
+		case sorkind_num:
+			sornet_srt_handler(sn_tmt);
+			break;
+		case sorkind_rnk:
+			sornet_rnk_handler(sn_tmt);
+			break;
+		default:
+			mck_abort(1, mc_cstr("Invalid sorkind (sornet_handler)"));
+		break;
+	}
+}
+
+void
+sorcell::sornet_srt_handler(sornet_transmitter* sn_tmt){
 	sorkind_t tmt_knd = sn_tmt->knd;
 	sornet_tok_t tmt_tok = (sornet_tok_t)(sn_tmt->tok);
 	num_nod_t tmt_idx = sn_tmt->idx;
@@ -114,7 +125,9 @@ sorcell::sornet_handler(missive* msv){
 		}
 
 		up_inp = mc_null;
+		up_grp_idx = BJ_INVALID_SORCELL_NUM_GRP;
 		down_inp = mc_null;
+		down_grp_idx = BJ_INVALID_SORCELL_NUM_GRP;
 
 		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_idx, down_idx);
 	}
@@ -220,8 +233,10 @@ void bj_sornet_main() {
 	//	bj_dbg_prt_nd_neu_flag | bj_dbg_prt_nd_pol_flag);
 
 	if(nn == 0){
-		mini_bit_arr_t max_cntr = (((mini_bit_arr_t)1) << BJ_DBG_TOT_INPUT_SORNODES) + 1;
-		BJ_DBG_RANK_OUTS(max_cntr = BJ_DBG_TOT_OUTPUT_TESTS);
+		mini_bit_arr_t max_cntr = 0;
+		BJ_DBG_SORBINS(max_cntr = ((((mini_bit_arr_t)1) << BJ_DBG_TOT_INPUT_SORNODES) + 1));
+		BJ_DBG_SORNUMS(max_cntr = BJ_DBG_TOT_NUM_TESTS);
+		BJ_DBG_RANK_OUTS(max_cntr = BJ_DBG_TOT_RNK_TESTS);
 		
 		my_net->dbg_sornet_max_cntr = max_cntr;
 		sorkind_t knd = sorkind_invalid;
@@ -282,10 +297,13 @@ nervenet::sornet_dbg_tests_handler(missive* msv){
 		}
 	}
 	if(tmt_tok == bj_tok_sornet_rank_out){
-		PTD_CK(tmt_idx < tot_arr_sorouts);
+		PTD_CK(tmt_idx < tot_input_rnkcells);
 
+		PTD_CK(all_output_rnkgrps[tmt_idx] == BJ_INVALID_SORCELL_NUM_GRP);
+		all_output_rnkgrps[tmt_idx] = tmt_grp_idx;
+		
 		dbg_tot_rcv_output_sorobjs++;
-		if(dbg_tot_rcv_output_sorobjs == tot_arr_sorouts){
+		if(dbg_tot_rcv_output_sorobjs == tot_input_rnkcells){
 			sornet_dbg_end_step(tmt_knd);
 		}
 	}
@@ -466,8 +484,6 @@ nervenet::sornet_dbg_bin_send_step(){
 
 #ifdef BJ_SORNET_NUM_TEST
 
-#define bj_pt_obj_as_num(pt_oo) (*((num_nod_t*)(pt_oo)))
-
 int
 bj_cmp_num_objs(void* obj1, void* obj2){
 	num_nod_t v1 = bj_pt_obj_as_num(obj1);
@@ -553,9 +569,9 @@ nervenet::sornet_dbg_num_end_step(){
 		num_nod_t vv = bj_pt_obj_as_num(obj);
 		printf("%ld ", vv);
 		if(aa > 0){
-			void* obj_prv = all_output_sorobjs[aa-1];
+			void* obj_prv = all_output_sorobjs[aa - 1];
 			num_nod_t vv_prv = bj_pt_obj_as_num(obj_prv);
-			num_nod_t grp_prv = all_output_sorgrps[aa-1];
+			num_nod_t grp_prv = all_output_sorgrps[aa - 1];
 			num_nod_t grp = all_output_sorgrps[aa];
 			PTD_CK((aa == 0) || ((vv_prv == vv) ? (grp_prv == grp) : (grp_prv != grp)));
 		}
@@ -586,17 +602,14 @@ nervenet::sornet_dbg_rnk_get_nw_grp(){
 #if defined(MC_IS_PTD_CODE) && defined(FULL_DEBUG)
 	tak_mak& gg = dbg_random_gen;
 	bool ending = false;
-	nxt_grp = (num_nod_t)gg.gen_rand_int32_ie(0, tot_arr_sorouts);
+	nxt_grp = (num_nod_t)gg.gen_rand_int32_ie(0, tot_input_rnkcells);
 	while(true){
-		sorout* srout = arr_sorouts[nxt_grp];
-		PTD_CK(srout != mc_null);
-		
-		bool is_grp = mc_get_flag(srout->jump_flags, bj_sorout_dbg_is_grp_flag);
+		bool is_grp = dbg_is_input_rnkgrps[nxt_grp];
 		if(! is_grp){
 			break;
 		}
 		nxt_grp++;
-		if(nxt_grp == tot_arr_sorouts){
+		if(nxt_grp == tot_input_rnkcells){
 			nxt_grp = 0;
 			
 			if(ending){ break; }
@@ -604,80 +617,79 @@ nervenet::sornet_dbg_rnk_get_nw_grp(){
 		}
 	}
 	PTD_CK(nxt_grp >= 0);
-	PTD_CK(nxt_grp < tot_arr_sorouts);
-	PTD_CK(! mc_get_flag(arr_sorouts[nxt_grp]->jump_flags, bj_sorout_dbg_is_grp_flag));
-	
-	mc_set_flag(arr_sorouts[nxt_grp]->jump_flags, bj_sorout_dbg_is_grp_flag);
+	PTD_CK(nxt_grp < tot_input_rnkcells);
+	dbg_is_input_rnkgrps[nxt_grp] = true;
 	
 #endif
 	return nxt_grp;
 }
 
 void
-nervenet::sornet_dbg_rnk_init_grp_arr(){
+nervenet::sornet_dbg_rnk_init_grp_arr(bool just_ones){
 #if defined(MC_IS_PTD_CODE) && defined(FULL_DEBUG)
 	PTD_CK(kernel::get_workeru_nn() == 0);
 	
 	tak_mak& gg = dbg_random_gen;
 	
-	unsigned long max_val = tot_arr_sorouts - 1;
+	unsigned long max_val = tot_input_rnkcells - 1;
+	unsigned long max_grp_sz = (max_val / BJ_DBG_RNK_SZ_DIV);
 
 	num_nod_t grp_ii = 0;
 	num_nod_t grp_sz = 0;
 	num_nod_t grp_id = 0;
 	
-	PTD_CK(arr_sorouts != mc_null);
-
-	for(num_nod_t aa = 0; aa < tot_arr_sorouts; aa++){
-		sorout* srout = arr_sorouts[aa];
-		mc_reset_flag(srout->jump_flags, bj_sorout_dbg_is_grp_flag);
-	}
+	PTD_CK(all_input_rnkcells != mc_null);
 	
-	for(num_nod_t aa = 0; aa < tot_arr_sorouts; aa++){
+	if(just_ones){
+		PTD_CK(tot_input_rnkcells > 0);
+		mc_init_arr_vals(tot_input_rnkcells, all_input_rnkgrps, 1);
+		all_input_rnkgrps[0] = 0;
+		return;
+	}
+
+	mc_init_arr_vals(tot_input_rnkcells, all_input_rnkgrps, BJ_INVALID_SORCELL_NUM_GRP);
+	mc_init_arr_vals(tot_input_rnkcells, all_output_rnkgrps, BJ_INVALID_SORCELL_NUM_GRP);
+	mc_init_arr_vals(tot_input_rnkcells, dbg_is_input_rnkgrps, false);
+	
+	for(num_nod_t aa = 0; aa < tot_input_rnkcells; aa++){
 		if(grp_ii == grp_sz){
 			grp_ii = 0;
-			grp_sz = (num_nod_t)gg.gen_rand_int32_ie(1, max_val / 2);
+			grp_sz = (num_nod_t)gg.gen_rand_int32_ie(1, max_grp_sz);
 			grp_id = sornet_dbg_rnk_get_nw_grp();
 		}
 		grp_ii++;
-
-		sorout* srout = arr_sorouts[aa];
-		srout->grp_idx = grp_id;
+		PTD_CK(grp_id != BJ_INVALID_SORCELL_NUM_GRP);
+		all_input_rnkgrps[aa] = grp_id;
 	}
 
-	for(num_nod_t aa = 0; aa < tot_arr_sorouts; aa++){
-		sorout* srout = arr_sorouts[aa];
-		mc_reset_flag(srout->jump_flags, bj_sorout_dbg_is_grp_flag);
-	}
 #endif
 }
 
 void
 nervenet::sornet_dbg_rnk_send_step(){
-	act_left_side.send_sync_to_children(bj_tok_sync_to_children, 
-										BJ_SORNET_TIER, tiki_invalid, mc_null);
-	PTD_LOG("_RNK_RECODING_THIS_FUNC () \n");
+	//act_left_side.send_sync_to_children(bj_tok_sync_to_children, 
+	//									BJ_SORNET_TIER, tiki_invalid, mc_null);
+	//PTD_LOG("_RNK_RECODING_THIS_FUNC () \n");
 	
-	/*
 	PTD_CK(kernel::get_workeru_nn() == 0);
 	cell* src = this;
 
-	PTD_LOG("send_cntr counter=%d tot_outs=%d \n", dbg_sornet_curr_cntr, tot_arr_sorouts);
+	PTD_LOG("send_cntr counter=%d tot_outs=%d \n", dbg_sornet_curr_cntr, tot_input_rnkcells);
 	
-	sornet_dbg_rnk_init_grp_arr();
+	sornet_dbg_rnk_init_grp_arr(false);
 
-	PTD_CK(arr_sorouts != mc_null);
+	PTD_CK(all_input_rnkcells != mc_null);
 	
 	num_nod_t aa;
-	for(aa = 0; aa < tot_arr_sorouts; aa++){
-		sorout* srout = arr_sorouts[aa];
+	for(aa = 0; aa < tot_input_rnkcells; aa++){
+		sorcell* srout = all_input_rnkcells[aa];
 		PTD_CK(srout != mc_null);
-		PTD_CK(srout->idx == aa);
+
+		void* obj = (void*)(&(all_input_rnkgrps[aa]));
+		PTD_CK(obj != mc_null);
 		
-		num_nod_t tmt_grp_idx = srout->grp_idx;
-		bj_send_sornet_tmt(src, bj_tok_sornet_rank_start, sorkind_rnk, tmt_grp_idx, mc_null, srout, aa);
+		bj_send_sornet_tmt(src, bj_tok_sornet_rank_start, sorkind_rnk, aa, obj, srout, aa);
 	}
-	*/
 }
 
 void
@@ -686,23 +698,32 @@ nervenet::sornet_dbg_rnk_end_step(){
 
 	PTD_PRINTF("IDXS=[");
 	num_nod_t aa;
-	for(aa = 0; aa < tot_arr_sorouts; aa++){
-		PTD_PRINTF("%ld ", arr_sorouts[aa]->idx);
+	for(aa = 0; aa < tot_input_rnkcells; aa++){
+		PTD_PRINTF("%ld ", aa);
+		PTD_DBG_CODE(
 		if(aa > 0){
-			//num_nod_t col_0 = arr_sorouts[aa-1]->color;
-			//num_nod_t col_1 = arr_sorouts[aa]->color;
-			//PTD_CK(col_0 < col_1);
+			num_nod_t grp_0 = all_input_rnkgrps[aa - 1];
+			num_nod_t grp_1 = all_input_rnkgrps[aa];
+			num_nod_t col_0 = all_output_rnkgrps[aa - 1];
+			num_nod_t col_1 = all_output_rnkgrps[aa];
+			if(grp_0 == grp_1){
+				PTD_CK(col_0 == col_1);
+			} else {
+				PTD_CK(col_0 < col_1);
+			}
 		}
+		);
 	}
 	PTD_PRINTF("]\n");
 	PTD_PRINTF("GRPS=[");
-	for(aa = 0; aa < tot_arr_sorouts; aa++){
-		PTD_PRINTF("%ld ", arr_sorouts[aa]->grp_idx);
+	for(aa = 0; aa < tot_input_rnkcells; aa++){
+		PTD_PRINTF("%ld ", all_input_rnkgrps[aa]);
 	}
 	PTD_PRINTF("]\n");
+	
 	PTD_PRINTF("COLS=[");
-	for(aa = 0; aa < tot_arr_sorouts; aa++){
-		PTD_PRINTF("%ld ", arr_sorouts[aa]->color);
+	for(aa = 0; aa < tot_input_rnkcells; aa++){
+		PTD_PRINTF("%ld ", all_output_rnkgrps[aa]);
 	}
 	PTD_PRINTF("]\n");
 	
@@ -712,181 +733,54 @@ nervenet::sornet_dbg_rnk_end_step(){
 // END_OF_RANK_OUTS_CODE
 //----------------------------------------------------------------------------------
 
-bool
-sorout::is_head(){
-	return mc_get_flag(jump_flags, bj_sorout_is_head_flag);
-}
-
-bool
-sorout::is_tail(){
-	return mc_get_flag(jump_flags, bj_sorout_is_tail_flag);
-}
-
-bool
-sorout::has_sent_jump(){
-	bool hh = mc_get_flag(jump_flags, bj_sorout_sent_jump_flag);
-	if(is_tail()){ hh = true; }
-	return hh;
-}
-
-bool
-sorout::has_received_jump(){
-	bool hh = mc_get_flag(jump_flags, bj_sorout_received_jump_flag);
-	if(is_head()){ hh = true; }
-	return hh;
+int
+bj_cmp_rnk_objs(void* obj1, void* obj2){
+	num_nod_t v1 = bj_pt_obj_as_num(obj1);
+	num_nod_t v2 = bj_pt_obj_as_num(obj2);
+	if(v1 < v2){ return -1; }
+	if(v1 > v2){ return 1;}
+	return 0;
 }
 
 void
-sorout::reset_flags(){
-	bool is_lst = mc_get_flag(jump_flags, bj_sorout_is_last_flag);
-	jump_flags = 0;
-	if(is_lst){
-		mc_set_flag(jump_flags, bj_sorout_is_last_flag);
-		mc_set_flag(jump_flags, bj_sorout_is_tail_flag);
-	}
-}
-
-void
-sorout::send_next_jump(){
-	cell* src = this;
-
-	num_step++;
-	
-	if(nxt_jump == mc_null){
-		mc_set_flag(jump_flags, bj_sorout_is_head_flag);
-		PTD_LOG("%ld_RNK_%ld_BECOMES_HEAD \n", num_step, idx);
-	}
-	
-	mc_reset_flag(jump_flags, bj_sorout_received_jump_flag);
-	mc_reset_flag(jump_flags, bj_sorout_sent_jump_flag);
-	
-	last_jump = nxt_jump;
-	
-	bool has_jump = (nxt_jump != mc_null);
-	bool is_finished = mc_get_flag(jump_flags, bj_sorout_is_finished_flag);
-	if(has_jump || ! is_finished){
-		if(! is_finished && ! has_jump){
-			mc_set_flag(jump_flags, bj_sorout_is_finished_flag);
-			PTD_LOG("%ld_RNK_%ld_BECOMES_FINISHED \n", num_step, idx);
-		}
-
-		void* obj = mc_null;
-		if(is_tail()){
-			obj = src;
-		}
-		bj_send_sornet_tmt(src, bj_tok_sornet_rank_jump, sorkind_rnk, 
-						   grp_idx, obj, nxt_jump, idx, num_step);
-		PTD_LOG("%ld_RNK_%ld_>%ld_ASK_JMP \n", num_step, idx, bj_sorout_idx(nxt_jump));		
-	}
-}
-
-void
-sorout::answer_jump(sorout* dst, bool become_tail){
-	sorout* src = this;
-	
-	PTD_CK(dst != mc_null);
-	PTD_CK(idx < dst->idx);
-	PTD_CK_PRT((! has_sent_jump()), "%ld_RNK_%ld_>%ld_ALREADY_ANS_JMP_%ld \n", 
-				num_step, idx, dst->idx, bj_sorout_idx(last_jump));
-	
-	if(become_tail){
-		mc_set_flag(jump_flags, bj_sorout_is_tail_flag);
-		PTD_LOG("%ld_RNK_%ld_BECOMES_TAIL \n", num_step, idx);
-	}
-	
-	mc_set_flag(jump_flags, bj_sorout_sent_jump_flag);
-	bj_send_sornet_tmt(src, bj_tok_sornet_rank_jump, sorkind_rnk, 
-						grp_idx, last_jump, dst, idx, num_step);
-	PTD_LOG("%ld_RNK_%ld_>%ld_ANS_JMP_%ld_ \n", num_step, idx, dst->idx, 
-			bj_sorout_idx(last_jump));
-
-	PTD_CK(has_sent_jump());
-}
-
-void
-sorout::sornet_handler(missive* msv){
-	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
-	//sorkind_t tmt_knd = sn_tmt->knd;
+sorcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
+	sorkind_t tmt_knd = sn_tmt->knd;
 	sornet_tok_t tmt_tok = (sornet_tok_t)(sn_tmt->tok);
 	num_nod_t tmt_idx = sn_tmt->idx;
 	void* tmt_obj = sn_tmt->obj;
 	num_nod_t tmt_grp_idx = sn_tmt->grp_idx;
-	num_nod_t tmt_stp = sn_tmt->stp;
+	
+	PTD_CK(tmt_grp_idx >= 0);
 
-	//sorout* src = this;
-
-	if(tmt_tok == bj_tok_sornet_rank_start){
-		num_step = 0;
-		
-		grp_idx = tmt_grp_idx;
-		idx = tmt_idx;
-		obj = tmt_obj;
-
-		color = 0;
-		nxt_jump = prv;		
-		req = mc_null;
-		
-		PTD_LOG("%ld_RNK_%ld_START \n", num_step, idx);
-		
-		reset_flags();
-		send_next_jump();
-		return;
+	if(tmt_idx == up_idx){
+		PTD_CK(up_inp == mc_null);
+		up_inp = tmt_obj;
+		up_grp_idx = tmt_grp_idx;
+	}
+	if(tmt_idx == down_idx){
+		PTD_CK(down_inp == mc_null);
+		down_inp = tmt_obj;
+		down_grp_idx = tmt_grp_idx;
 	}
 
-	bool dbg_ha_ok = false;
-	MC_MARK_USED(dbg_ha_ok);
-	
-	sorout* tmt_src = (sorout*)(sn_tmt->src);
-	PTD_CK(tmt_src != mc_null);
-	
-	if(tmt_tok == bj_tok_sornet_rank_jump){
-		if(tmt_src == nxt_jump){
-			PTD_CK(tmt_idx < idx);
-			//PTD_CK(tmt_obj != mc_null);
-			PTD_CK(! has_received_jump());
-			PTD_CK(tmt_stp == num_step);
-			
-			mc_set_flag(jump_flags, bj_sorout_received_jump_flag);
-			nxt_jump = (sorout*)tmt_obj;
-			
-			PTD_LOG("%ld_RNK_%ld_<%ld_RCV_JMP_%ld_ \n", num_step, idx, tmt_src->idx, 
-					bj_sorout_idx(nxt_jump));
-			dbg_ha_ok = true;
-			PTD_CK(has_received_jump());
-		} else {
-			PTD_CK(tmt_idx > idx);
-			PTD_CK((tmt_obj == mc_null) || (tmt_obj == tmt_src));
-			bool become_tail = (tmt_obj == tmt_src);
-			
-			if(tmt_stp > num_step){
-				PTD_CK_PRT((tmt_stp == (num_step + 1)), "%ld_RNK_%ld_<%ld_BAD_STEP_%ld \n", 
-						   num_step, idx, tmt_src->idx, tmt_stp);
-				if(become_tail){
-					PTD_CK(! mc_get_flag(jump_flags, bj_sorout_req_is_tail_flag));
-					mc_set_flag(jump_flags, bj_sorout_req_is_tail_flag);
-				}
-				PTD_CK(req == mc_null);
-				req = tmt_src;
-			} else {
-				PTD_CK(tmt_stp == num_step);
-				answer_jump(tmt_src, become_tail);
-			}
-
-			dbg_ha_ok = true;
+	cell* src = this;
+	if((up_inp != mc_null) && (down_inp != mc_null)){
+		int cv = bj_cmp_rnk_objs(up_inp, down_inp);
+		if(cv == 0){
+			num_nod_t min_grp = mc_min(up_grp_idx, down_grp_idx);
+			up_grp_idx = min_grp;
+			down_grp_idx = min_grp;
 		}
-	}
-
-	PTD_CK(dbg_ha_ok);
-	
-	if(has_received_jump() && has_sent_jump()){
-		send_next_jump();
 		
-		if(req != mc_null){
-			bool become_tail = mc_get_flag(jump_flags, bj_sorout_req_is_tail_flag);
-			mc_reset_flag(jump_flags, bj_sorout_req_is_tail_flag);
-			answer_jump(req, become_tail);
-			req = mc_null;
-		}
-	}	
+		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_grp_idx, up_inp, up_out, up_idx);
+		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_grp_idx, down_inp, down_out, down_idx);
+
+		up_inp = mc_null;
+		up_grp_idx = BJ_INVALID_SORCELL_NUM_GRP;
+		down_inp = mc_null;
+		down_grp_idx = BJ_INVALID_SORCELL_NUM_GRP;
+		
+		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_idx, down_idx);
+	}
 }
 
