@@ -79,30 +79,17 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 
 	PTD_CK(nod->level >= 0);
 	PTD_CK(nod->level < prms.tot_lvs);
+	
+	if(nod->level == prms.first_lv_for_merge_sz){
+		nod->sor_sz = prms.curr_merge_sz;
+	}
 
 	mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
 	add_sornod_to_glb_cnf(nod, nxt_nn);
-	/*
-	if(THE_CNF != mc_null){
-		long num_workerus = THE_CNF->tot_workerus;
-		mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
-		PTD_CK(nxt_nn < num_workerus);
-
-		nod->nod_nn = nxt_nn;
-
-		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
-		cnf.tot_pre_sornods++;
-		cnf.all_pre_sornods.bind_to_my_left(*nod);
-
-		nxt_nn++;
-		if(nxt_nn == num_workerus){ nxt_nn = 0; }
-		PTD_CK(nxt_nn < num_workerus);
-	}
-	*/
 
 	PTD_CK(knd != snod_invalid);
-	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld] \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), nod->nod_id, 
-			nod->level, up_idx, down_idx, ptd_up_nid, ptd_down_nid);
+	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld]%ld \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
+			nod->nod_id, nod->level, up_idx, down_idx, nod->sor_sz, ptd_up_nid, ptd_down_nid);
 	ZNQ_CODE(printf("%s_NOD (%ld)  %ld[%ld %ld] \t(%d %d) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
 				nod->nod_id, nod->level, up_idx, down_idx, ptd_up_nid, ptd_down_nid));
 
@@ -154,6 +141,14 @@ create_net_merger(num_nod_t pos, num_nod_t sz, sornet_prms& prms){
 void
 create_net_sorter(num_nod_t pos, num_nod_t sz, sornet_prms& prms){
 	if(sz == 1){ return; }
+	
+	prms.curr_merge_sz = sz;
+	pre_sornode* fst_nod = prms.arr_nods[pos];
+	if(fst_nod != mc_null){
+		prms.first_lv_for_merge_sz = fst_nod->level + 1;
+		PTD_PRT("\nNET_MERGE_SZ=%ld FST_LV=%ld \n", prms.curr_merge_sz, prms.first_lv_for_merge_sz);
+	}
+	
 	num_nod_t hlf = sz/2;
 	create_net_merger(pos, sz, prms);
 	create_net_sorter(pos, hlf, prms);

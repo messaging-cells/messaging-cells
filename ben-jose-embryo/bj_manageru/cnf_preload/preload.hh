@@ -42,13 +42,11 @@ Declaration of functions to preload cnfs in dimacs files.
 #include "solver.hh"
 
 class pre_sornode;
-class pre_sorout;
 class pre_cnf_node;
 class pre_cnf_net;
 class pre_load_cnf;
 
 extern grip ava_pre_sornode;
-extern grip ava_pre_sorout;
 extern grip ava_pre_cnf_node;
 extern grip ava_pre_cnf_net;
 
@@ -75,6 +73,9 @@ public:
 	mc_workeru_nn_t* arr_lvs = mc_null;
 
 	num_nod_t curr_nod_id = 0;
+
+	num_nod_t curr_merge_sz = 0;
+	num_nod_t first_lv_for_merge_sz = 0;
 };
 
 /*! \class pre_sornode
@@ -90,6 +91,8 @@ public:
 
 	mc_workeru_nn_t	nod_nn;
 
+	num_nod_t 		sor_sz;
+	
 	num_nod_t 		up_idx;
 	connect_kind_t	up_conn;
 	pre_sornode* 	out_up;
@@ -105,6 +108,8 @@ public:
 		level = 0;
 
 		nod_nn = MC_INVALID_WORKERU_NN;
+		
+		sor_sz = 0;
 
 		up_idx = 0;
 		up_conn = conn_invalid;
@@ -125,29 +130,6 @@ public:
 		PTD_CK(false);
 		return conn_invalid;
 	}
-};
-
-/*! \class pre_sorout
-\brief Class for sornet nodes to load.
-
-*/
-class mc_aligned pre_sorout : public agent {
-public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_sorout, bj_load_cod)
-
-	num_nod_t 		idx;
-	pre_sorout* 	prv;
-
-	void* 			loaded;
-
-	pre_sorout(){
-		idx = 0;
-		prv = mc_null;
-
-		loaded = mc_null;
-	}
-
-	~pre_sorout(){}
 };
 
 /*! \class pre_cnf_node
@@ -214,15 +196,6 @@ public:
 		tot_pre_rnknods = 0;
 		
 		tmp_nod_idx = 0;
-
-		/*
-		tot_pre_sorinput_nod = 0;
-		all_pre_sorinput_nod = mc_null;
-		tot_pre_sorinput_pol = 0;
-		all_pre_sorinput_pol = mc_null;
-		tot_pre_sorinput_neu = 0;
-		all_pre_sorinput_neu = mc_null;
-		*/
 	}
 
 	~pre_cnf_net(){}

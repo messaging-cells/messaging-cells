@@ -183,8 +183,10 @@ void bj_load_shd_ranknet(){
 
 		my_net->all_input_rnkgrps = mc_malloc32(num_nod_t, tot_rnkinp);
 		mc_init_arr_vals(tot_rnkinp, my_net->all_input_rnkgrps, BJ_INVALID_SORCELL_NUM_GRP);
-		my_net->all_output_rnkgrps = mc_malloc32(num_nod_t, tot_rnkinp);
-		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnkgrps, BJ_INVALID_SORCELL_NUM_GRP);
+		my_net->all_output_rnk_min_grps = mc_malloc32(num_nod_t, tot_rnkinp);
+		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnk_min_grps, BJ_INVALID_SORCELL_NUM_GRP);
+		my_net->all_output_rnk_max_grps = mc_malloc32(num_nod_t, tot_rnkinp);
+		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnk_max_grps, BJ_INVALID_SORCELL_NUM_GRP);
 		my_net->dbg_is_input_rnkgrps = mc_malloc32(bool, tot_rnkinp);
 		mc_init_arr_vals(tot_rnkinp, my_net->dbg_is_input_rnkgrps, false);
 
