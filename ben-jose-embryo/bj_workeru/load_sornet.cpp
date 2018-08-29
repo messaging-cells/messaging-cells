@@ -91,11 +91,15 @@ void bj_load_shd_sornet(){
 		my_net->tot_input_sorcells = tot_sorinp;
 		my_net->all_input_sorcells = mc_malloc32(sorcell*, tot_sorinp);
 		mc_init_arr_vals(tot_sorinp, my_net->all_input_sorcells, mc_null);
+		my_net->all_input_srt_min_grps = mc_malloc32(num_nod_t, tot_sorinp);
+		mc_init_arr_vals(tot_sorinp, my_net->all_input_srt_min_grps, BJ_INVALID_SORCELL_NUM_GRP);
+		my_net->all_input_srt_max_grps = mc_malloc32(num_nod_t, tot_sorinp);
+		mc_init_arr_vals(tot_sorinp, my_net->all_input_srt_max_grps, BJ_INVALID_SORCELL_NUM_GRP);
 
 		my_net->all_output_sorobjs = mc_malloc32(void*, tot_sorinp);
 		mc_init_arr_vals(tot_sorinp, my_net->all_output_sorobjs, mc_null);
-		my_net->all_output_sorgrps = mc_malloc32(num_nod_t, tot_sorinp);
-		mc_init_arr_vals(tot_sorinp, my_net->all_output_sorgrps, 0);
+		my_net->all_output_sorcols = mc_malloc32(num_nod_t, tot_sorinp);
+		mc_init_arr_vals(tot_sorinp, my_net->all_output_sorcols, 0);
 
 		sorcell** all_sorcell = my_net->all_input_sorcells;
 		

@@ -199,11 +199,13 @@ nervenet::nervenet(){
 
 	tot_input_sorcells = 0;
 	all_input_sorcells = mc_null;
+	all_input_srt_min_grps = mc_null;
+	all_input_srt_max_grps = mc_null;
 	
 	dbg_tot_rcv_output_sorobjs = 0;
 	
 	all_output_sorobjs = mc_null;
-	all_output_sorgrps = mc_null;
+	all_output_sorcols = mc_null;
 
 	tot_input_rnkcells = 0;
 	all_input_rnkcells = mc_null;
@@ -250,6 +252,7 @@ sornet_transmitter::init_me(int caller){
 	knd = sorkind_invalid;
 	idx = 0;
 	obj = mc_null;
+	col = BJ_INVALID_SORCELL_NUM_GRP;
 	grp_min_idx = BJ_INVALID_SORCELL_NUM_GRP;
 	grp_max_idx = BJ_INVALID_SORCELL_NUM_GRP;
 }
@@ -455,12 +458,14 @@ sorcell::init_me(int caller){
 
 	dbg_level = 0;
 
+	up_col = BJ_INVALID_SORCELL_NUM_GRP;
 	up_grp_min_idx = BJ_INVALID_SORCELL_NUM_GRP;
 	up_grp_max_idx = BJ_INVALID_SORCELL_NUM_GRP;
 	up_idx = 0;
 	up_inp = mc_null;
 	up_out = mc_null;
 
+	down_col = BJ_INVALID_SORCELL_NUM_GRP;
 	down_grp_min_idx = BJ_INVALID_SORCELL_NUM_GRP;
 	down_grp_max_idx = BJ_INVALID_SORCELL_NUM_GRP;
 	down_idx = 0;

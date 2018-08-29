@@ -367,6 +367,7 @@ public:
 	sorkind_t	knd;
 	num_nod_t	idx;
 	void*		obj;
+	num_nod_t 	col;
 	num_nod_t 	grp_min_idx;
 	num_nod_t 	grp_max_idx;
 
@@ -692,12 +693,14 @@ public:
 
 	num_nod_t 	dbg_level;
 
+	num_nod_t 	up_col;
 	num_nod_t 	up_grp_min_idx;
 	num_nod_t 	up_grp_max_idx;
 	num_nod_t 	up_idx;
 	void*		up_inp;
 	sorcell*	up_out;
 
+	num_nod_t 	down_col;
 	num_nod_t 	down_grp_min_idx;
 	num_nod_t 	down_grp_max_idx;
 	num_nod_t 	down_idx;
@@ -710,9 +713,12 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 	
+	void calc_color() bj_sornet_cod;
 	void calc_groups() bj_sornet_cod;
 	void sornet_reset() bj_sornet_cod;
 	void sornet_set_fields(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	bool is_up_direct() bj_sornet_cod;
+	bool is_down_direct() bj_sornet_cod;
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
 
@@ -724,7 +730,7 @@ public:
 };
 
 bj_cmp_obj_func_t sornet_get_cmp_func(sorkind_t knd) bj_sornet_cod;
-void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, 
+void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t col, 
 						num_nod_t grp_min_idx, num_nod_t grp_max_idx,
 						void* obj, cell* dst, num_nod_t idx) bj_sornet_cod;
 
@@ -772,16 +778,6 @@ public:
 	mc_inline_fn bool is_inert(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && ((inp_neus - off_neus) == dly_neus));
 	}
-
-	/*
-	mc_inline_fn bool got_all_neus(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == (rcv_neus + stl_neus)));
-	}
-
-	mc_inline_fn bool is_inert(){
-		return ((inp_neus != BJ_INVALID_NUM_NODE) && (inp_neus == stl_neus));
-	}
-	*/
 
 	mc_inline_fn tierdata& prv_tier(){
 		return *((tierdata*)bn_left);
@@ -883,6 +879,18 @@ public:
 	void dbg_prt_all() mc_external_code_ram;
 };
 
+
+struct mc_aligned ini_grps_prms {
+public:
+	PTD_DBG_CODE(tak_mak* num_gen = mc_null);
+	num_nod_t tot_input_objs = 0;
+	void**	all_output_objs = mc_null;
+	num_nod_t* all_min_grps = mc_null;
+	num_nod_t* all_max_grps = mc_null;
+	bool* is_input_grp = mc_null;
+};
+
+
 #define BJ_MAX_ID_ARR_SZ 260
 
 #define BJ_DBG_STR_CAP 2048
@@ -958,11 +966,13 @@ public:
 
 	num_nod_t 	tot_input_sorcells;
 	sorcell**	all_input_sorcells;
+	num_nod_t*	all_input_srt_min_grps;
+	num_nod_t*	all_input_srt_max_grps;
 	
 	num_nod_t 	dbg_tot_rcv_output_sorobjs;
 	
 	void**		all_output_sorobjs;
-	num_nod_t*	all_output_sorgrps;
+	num_nod_t*	all_output_sorcols;
 
 	num_nod_t 	tot_input_rnkcells;
 	sorcell**	all_input_rnkcells;
@@ -999,7 +1009,7 @@ public:
 
 	void send_all_neus(mck_token_t tok);
 
-	bool sornet_check_order(bj_cmp_obj_func_t fn) bj_sornet_cod;
+	bool sornet_check_order(sorkind_t knd) bj_sornet_cod;
 
 	void sornet_dbg_tests_handler(missive* msv) bj_sornet_cod;
 	bool sornet_dbg_send_nxt_step(sorkind_t knd) bj_sornet_cod;
@@ -1012,9 +1022,8 @@ public:
 	void sornet_dbg_num_init_val_arr() bj_sornet_cod;
 	void sornet_dbg_num_send_step() bj_sornet_cod;
 	void sornet_dbg_num_end_step() bj_sornet_cod;
+	void sornet_dbg_num_print_input() bj_sornet_cod;
 
-	num_nod_t sornet_dbg_rnk_get_nw_grp() bj_sornet_cod;
-	void sornet_dbg_rnk_init_grp_arr(bool just_ones) bj_sornet_cod;
 	void sornet_dbg_rnk_send_step() bj_sornet_cod;
 	void sornet_dbg_rnk_end_step() bj_sornet_cod;
 
@@ -1025,6 +1034,9 @@ public:
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
+
+num_nod_t bj_dbg_sornet_get_nw_grp(ini_grps_prms& prms) bj_sornet_cod;
+void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) bj_sornet_cod;
 
 #define bj_num_sep_tiersets (bj_nervenet->num_sep_tiersets)
 #define bj_num_sep_tierdatas (bj_nervenet->num_sep_tierdatas)
