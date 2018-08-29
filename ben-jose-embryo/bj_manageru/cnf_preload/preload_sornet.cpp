@@ -81,7 +81,7 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	PTD_CK(nod->level < prms.tot_lvs);
 	
 	if(nod->level == prms.first_lv_for_merge_sz){
-		nod->sor_sz = prms.curr_merge_sz;
+		nod->srt_sz = prms.curr_merge_sz;
 	}
 
 	mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
@@ -89,7 +89,7 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 
 	PTD_CK(knd != snod_invalid);
 	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld]%ld \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
-			nod->nod_id, nod->level, up_idx, down_idx, nod->sor_sz, ptd_up_nid, ptd_down_nid);
+			nod->nod_id, nod->level, up_idx, down_idx, nod->srt_sz, ptd_up_nid, ptd_down_nid);
 	ZNQ_CODE(printf("%s_NOD (%ld)  %ld[%ld %ld] \t(%d %d) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
 				nod->nod_id, nod->level, up_idx, down_idx, ptd_up_nid, ptd_down_nid));
 

@@ -191,11 +191,13 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 		fflush(stdout); 
 		fflush(out_file); 
 
-		ptd_info_t* inf = mck_get_ptd_info();
 		if(is_assert || prt_stck){
 			fprintf(out_file, "\n------------------------------------------------------------------\n");
 		}
-		fprintf(out_file, "%d:%x --> ", inf->ptd_num, inf->ptd_workeru_id);
+		if(MANAGERU_THREAD_ID != 0){
+			ptd_info_t* inf = mck_get_ptd_info();
+			fprintf(out_file, "%d:%x --> ", inf->ptd_num, inf->ptd_workeru_id);
+		}
 		if(fnam != mc_null){
 			fprintf(out_file, "FILE %s(%d): ", fnam, line);
 		}
@@ -251,51 +253,6 @@ mcm_get_ptd_log_fnam(){
 	char* log_fnam = ALL_THREADS_INFO[thd_idx].thd_log_fnam;
 	return log_fnam;
 }
-
-/*
-void
-mcm_log(const char *fmt, ...){
-	//PTD_CK(! mc_is_manageru_thread());
-
-	char pp[MC_MAX_STR_SZ];
-	va_list ap;
-
-	va_start(ap, fmt);
-	int size = vsnprintf(pp, MC_MAX_STR_SZ, fmt, ap);
-	va_end(ap);
-
-	pp[MC_MAX_STR_SZ - 1] = '\0';
-
-	if(size < 0){ 
-		mch_abort_func((mc_addr_t)mcm_log, "mcm_log. ERROR. \n");
-	}
-
-	mck_slog2(pp);
-}
-
-void
-mcm_printf(const char *fmt, ...){
-	//PTD_CK(! mc_is_manageru_thread());
-
-	char pp[MC_MAX_STR_SZ];
-	va_list ap;
-
-	va_start(ap, fmt);
-	int size = vsnprintf(pp, MC_MAX_STR_SZ, fmt, ap);
-	va_end(ap);
-
-	pp[MC_MAX_STR_SZ - 1] = '\0';
-
-	if(size < 0){ 
-		mch_abort_func((mc_addr_t)mcm_printf, "mcm_printf. ERROR. \n");
-	}
-
-	ptd_info_t* inf = mck_get_ptd_info();
-
-	printf("%d:%x --> %s", inf->ptd_num, inf->ptd_workeru_id, pp);
-	fflush(stdout); 
-}
-*/
 
 void *
 thread_start(void *arg){

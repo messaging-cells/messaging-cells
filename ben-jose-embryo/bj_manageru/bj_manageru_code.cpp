@@ -100,7 +100,7 @@ int bj_manageru_main(int argc, char *argv[])
 
 void bj_test_1(int argc, char *argv[])
 {
-	printf("TEST_1 \n");
+	printf("bj_test_1 \n");
 	binder b1;
 	binder b2;
 	synapse s1;
@@ -129,7 +129,7 @@ typedef uint16_t test_int_t;
 
 void bj_test_2(int argc, char *argv[])
 {
-	printf("TEST_2 \n");
+	printf("bj_test_2 \n");
 	unsigned long imax = mc_maxof(test_int_t);
 
 	printf("imax = %lu\n", imax);
@@ -153,7 +153,7 @@ neuron::pru_callee(callee_prms& pms){
 
 void bj_test_3(int argc, char *argv[])
 {
-	printf("TEST_3 \n");
+	printf("bj_test_3 \n");
 	neuron nn1;
 	synapse snp1;
 
@@ -167,7 +167,7 @@ void bj_test_3(int argc, char *argv[])
 
 void bj_test_4(int argc, char *argv[])
 {
-	printf("TEST_4 \n");
+	printf("bj_test_4 \n");
 	long aa = 1234;
 	long bb = (aa >> 3);
 
@@ -176,7 +176,7 @@ void bj_test_4(int argc, char *argv[])
 
 void bj_test_5(int argc, char *argv[])
 {
-	printf("TEST_5 \n");
+	printf("bj_test_5 \n");
 	mc_flags_t ff = 0;
 
 	mc_set_flag(ff, mc_flag1);
@@ -187,7 +187,7 @@ void bj_test_5(int argc, char *argv[])
 
 void bj_test_6(int argc, char *argv[])
 {
-	printf("TEST_6 \n");
+	printf("bj_test_6 \n");
 	if(argc < 2){
 		printf("%s <num>\n", argv[0]);
 		return; 
@@ -199,7 +199,7 @@ void bj_test_6(int argc, char *argv[])
 
 void bj_test_7(int argc, char *argv[])
 {
-	printf("TEST_7 \n");
+	printf("bj_test_7 \n");
 	if(argc < 4){
 		printf("Usage: %s <val> <min> <max>\n", argv[0]);
 		return;
@@ -218,7 +218,7 @@ void bj_test_7(int argc, char *argv[])
 #ifdef BJ_WITH_MANAGERU_TESTS
 void bj_mc_test_1(int argc, char *argv[])
 {
-	printf("TEST_MC_1 \n");
+	printf("bj_mc_test_1 \n");
 	if(argc > 1){
 		mch_epiphany_elf_path = argv[1];
 		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
@@ -238,6 +238,21 @@ void bj_mc_test_1(int argc, char *argv[])
 	kernel::finish_manageru_sys();
 }
 
+void bj_mc_test_2(int argc, char *argv[])
+{
+	printf("bj_mc_test_2 \n");
+	if(argc < 3){
+		printf("%s <min> <max> \n", argv[0]);
+		return; 
+	}
+	num_nod_t min_idx = atol(argv[1]);
+	num_nod_t max_idx = atol(argv[2]);
+
+	num_nod_t grp_sz = 0;
+	//grp_sz = bj_sornet_calc_grp_sz(min_idx, max_idx);
+	printf("grp_sz = %ld \n", grp_sz);
+}
+
 #endif
 
 int mc_manageru_main(int argc, char *argv[])
@@ -252,6 +267,7 @@ int mc_manageru_main(int argc, char *argv[])
 	//PTD_CODE(bj_test_6(argc, argv));
 	//PTD_CODE(bj_test_7(argc, argv));
 	//bj_mc_test_1(argc, argv);
+	//bj_mc_test_2(argc, argv);
 	
 	rr = bj_manageru_main(argc, argv);
 

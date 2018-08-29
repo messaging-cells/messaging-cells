@@ -43,6 +43,8 @@ void bj_load_shd_sornet(){
 
 		scll->dbg_level = nod->level;
 
+		scll->srt_sz = nod->srt_sz;
+		
 		PTD_CK(scll->up_inp == mc_null);
 		scll->up_idx = nod->up_idx;
 		if(nod->out_up != mc_null){
@@ -137,6 +139,8 @@ void bj_load_shd_ranknet(){
 
 		scll->dbg_level = nod->level;
 
+		scll->srt_sz = nod->srt_sz;
+		
 		PTD_CK(scll->up_inp == mc_null);
 		scll->up_idx = nod->up_idx;
 		if(nod->out_up != mc_null){

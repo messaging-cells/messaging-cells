@@ -66,6 +66,7 @@ Declaration of main bj solver function.
 #define bj_nervenet_dat 
 #define bj_nervenet_mem mc_mod0_cod
 
+typedef unsigned long u_num_nod_t;
 typedef long num_nod_t;
 typedef uint8_t num_syn_t;
 typedef uint32_t num_tier_t;

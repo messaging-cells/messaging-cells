@@ -693,6 +693,8 @@ public:
 
 	num_nod_t 	dbg_level;
 
+	num_nod_t 	srt_sz;
+	
 	num_nod_t 	up_col;
 	num_nod_t 	up_grp_min_idx;
 	num_nod_t 	up_grp_max_idx;
@@ -734,6 +736,7 @@ void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t co
 						num_nod_t grp_min_idx, num_nod_t grp_max_idx,
 						void* obj, cell* dst, num_nod_t idx) bj_sornet_cod;
 
+num_nod_t bj_sornet_calc_grp_sz(num_nod_t grp_min_idx, num_nod_t grp_max_idx) bj_sornet_cod;
 
 #define	bj_sent_inert_flag mc_flag0
 
