@@ -269,7 +269,7 @@ BJ_DECLARE_CLS_NAM(nervenet)
 #define	bj_ss_ranked_snps_flag mc_flag1
 
 int
-bj_cmp_num_syn(num_syn_t const & n1, num_syn_t const & n2);
+bj_cmp_num_syn(num_syn_t const & n1, num_syn_t const & n2) mc_external_code_ram;
 
 class mc_aligned synset : public agent {
 public:
@@ -359,17 +359,33 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+#define BJ_INVALID_SRT_GRP BJ_INVALID_IDX
+
+struct mc_aligned sornapse {
+public:
+	num_nod_t 	min_col = BJ_INVALID_SRT_GRP;
+	num_nod_t 	max_col = BJ_INVALID_SRT_GRP;
+	num_nod_t 	min_grp = BJ_INVALID_SRT_GRP;
+	num_nod_t 	max_grp = BJ_INVALID_SRT_GRP;
+	num_nod_t 	idx = 0;
+	void*		inp = mc_null;
+	sorcell*	out = mc_null;	
+};
+
+void bj_sornapse_reset(sornapse& snp) bj_sornet_cod;
+void bj_sornapse_init(sornapse& snp) bj_sornet_cod;
+
 class mc_aligned sornet_transmitter : public transmitter {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_sornet_cod)
-	//MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_nervenet_mem)
 
 	sorkind_t	knd;
 	num_nod_t	idx;
-	void*		obj;
-	num_nod_t 	col;
-	num_nod_t 	grp_min_idx;
-	num_nod_t 	grp_max_idx;
+	void*		inp;
+	num_nod_t 	min_col;
+	num_nod_t 	max_col;
+	num_nod_t 	min_grp;
+	num_nod_t 	max_grp;
 
 	sornet_transmitter() mc_external_code_ram;
 	~sornet_transmitter() mc_external_code_ram;
@@ -685,7 +701,6 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-#define BJ_INVALID_SORCELL_NUM_GRP -1
 
 class mc_aligned sorcell : public cell {
 public:
@@ -695,20 +710,9 @@ public:
 
 	num_nod_t 	srt_sz;
 	
-	num_nod_t 	up_col;
-	num_nod_t 	up_grp_min_idx;
-	num_nod_t 	up_grp_max_idx;
-	num_nod_t 	up_idx;
-	void*		up_inp;
-	sorcell*	up_out;
-
-	num_nod_t 	down_col;
-	num_nod_t 	down_grp_min_idx;
-	num_nod_t 	down_grp_max_idx;
-	num_nod_t 	down_idx;
-	void*		down_inp;
-	sorcell*	down_out;
-
+	sornapse	up_snp;
+	sornapse	down_snp;
+	
 	sorcell() mc_external_code_ram;
 	~sorcell() mc_external_code_ram;
 
@@ -732,11 +736,11 @@ public:
 };
 
 bj_cmp_obj_func_t sornet_get_cmp_func(sorkind_t knd) bj_sornet_cod;
-void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t col, 
-						num_nod_t grp_min_idx, num_nod_t grp_max_idx,
+void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col, num_nod_t max_col, 
+						num_nod_t min_grp, num_nod_t max_grp,
 						void* obj, cell* dst, num_nod_t idx) bj_sornet_cod;
 
-num_nod_t bj_sornet_calc_grp_sz(num_nod_t grp_min_idx, num_nod_t grp_max_idx) bj_sornet_cod;
+num_nod_t bj_sornet_calc_grp_sz(num_nod_t min_grp, num_nod_t max_grp) bj_sornet_cod;
 
 #define	bj_sent_inert_flag mc_flag0
 

@@ -251,10 +251,11 @@ sornet_transmitter::init_me(int caller){
 	transmitter::init_me(caller);
 	knd = sorkind_invalid;
 	idx = 0;
-	obj = mc_null;
-	col = BJ_INVALID_SORCELL_NUM_GRP;
-	grp_min_idx = BJ_INVALID_SORCELL_NUM_GRP;
-	grp_max_idx = BJ_INVALID_SORCELL_NUM_GRP;
+	inp = mc_null;
+	max_col = BJ_INVALID_SRT_GRP;
+	min_col = BJ_INVALID_SRT_GRP;
+	min_grp = BJ_INVALID_SRT_GRP;
+	max_grp = BJ_INVALID_SRT_GRP;
 }
 
 //--------------
@@ -457,20 +458,9 @@ sorcell::init_me(int caller){
 	handler_idx = idx_sorcell;
 
 	dbg_level = 0;
+	
+	srt_sz = 0;
 
-	up_col = BJ_INVALID_SORCELL_NUM_GRP;
-	up_grp_min_idx = BJ_INVALID_SORCELL_NUM_GRP;
-	up_grp_max_idx = BJ_INVALID_SORCELL_NUM_GRP;
-	up_idx = 0;
-	up_inp = mc_null;
-	up_out = mc_null;
-
-	down_col = BJ_INVALID_SORCELL_NUM_GRP;
-	down_grp_min_idx = BJ_INVALID_SORCELL_NUM_GRP;
-	down_grp_max_idx = BJ_INVALID_SORCELL_NUM_GRP;
-	down_idx = 0;
-	down_inp = mc_null;
-	down_out = mc_null;
 }
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {

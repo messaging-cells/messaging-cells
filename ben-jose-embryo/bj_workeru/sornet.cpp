@@ -20,6 +20,9 @@
 #define BJ_DBG_SORNUMS(prm) 
 #endif
 
+#define BJ_DBG_GRPS_SORNUMS(prm) prm
+
+
 #ifdef BJ_SORNET_RANK_TEST
 #define BJ_DBG_RANK_OUTS(prm) prm
 #else
@@ -89,67 +92,84 @@ sorcell::sornet_handler(missive* msv){
 
 void
 sorcell::calc_color(){
-	num_nod_t min_col = mc_min(up_col, down_col);
-	up_col = min_col;
-	down_col = min_col;
+	num_nod_t min_col = mc_min(up_snp.min_col, down_snp.min_col);
+	up_snp.min_col = min_col;
+	down_snp.min_col = min_col;
+
+	num_nod_t max_col = mc_max(up_snp.max_col, down_snp.max_col);
+	up_snp.max_col = max_col;
+	down_snp.max_col = max_col;
 }
+
+/*void
+sorcell::calc_groups(){
+	num_nod_t min_grp = mc_min(up_snp.min_grp, down_snp.min_grp);
+	up_snp.min_grp = min_grp;
+	down_snp.min_grp = min_grp;
+	
+	num_nod_t max_grp = mc_max(up_snp.max_grp, down_snp.max_grp);
+	up_snp.max_grp = max_grp;
+	down_snp.max_grp = max_grp;
+}*/
 
 void
-sorcell::calc_groups(){
-	num_nod_t min_grp = mc_min(up_grp_min_idx, down_grp_min_idx);
-	up_grp_min_idx = min_grp;
-	down_grp_min_idx = min_grp;
-	
-	num_nod_t max_grp = mc_max(up_grp_max_idx, down_grp_max_idx);
-	up_grp_max_idx = max_grp;
-	down_grp_max_idx = max_grp;
+bj_sornapse_init(sornapse& snp){
+	bj_sornapse_reset(snp);
+	snp.idx = 0;
+	snp.out = mc_null;	
 }
-
+	
+void
+bj_sornapse_reset(sornapse& snp){
+	snp.min_col = BJ_INVALID_SRT_GRP;
+	snp.max_col = BJ_INVALID_SRT_GRP;
+	snp.min_grp = BJ_INVALID_SRT_GRP;
+	snp.max_grp = BJ_INVALID_SRT_GRP;
+	snp.inp = mc_null;
+}
+	
 void
 sorcell::sornet_reset(){
-	up_inp = mc_null;
-	up_col = BJ_INVALID_SORCELL_NUM_GRP;
-	up_grp_min_idx = BJ_INVALID_SORCELL_NUM_GRP;
-	up_grp_max_idx = BJ_INVALID_SORCELL_NUM_GRP;
-	down_inp = mc_null;
-	down_col = BJ_INVALID_SORCELL_NUM_GRP;
-	down_grp_min_idx = BJ_INVALID_SORCELL_NUM_GRP;
-	down_grp_max_idx = BJ_INVALID_SORCELL_NUM_GRP;
+	bj_sornapse_reset(up_snp);
+	bj_sornapse_reset(down_snp);
 }
 
 void
 sorcell::sornet_set_fields(sornet_transmitter* sn_tmt){
 	num_nod_t tmt_idx = sn_tmt->idx;
-	void* tmt_obj = sn_tmt->obj;
-	num_nod_t tmt_col = sn_tmt->col;
-	num_nod_t tmt_grp_min_idx = sn_tmt->grp_min_idx;
-	num_nod_t tmt_grp_max_idx = sn_tmt->grp_max_idx;
+	void* tmt_inp = sn_tmt->inp;
+	num_nod_t tmt_min_col = sn_tmt->min_col;
+	num_nod_t tmt_max_col = sn_tmt->max_col;
+	num_nod_t tmt_min_grp = sn_tmt->min_grp;
+	num_nod_t tmt_max_grp = sn_tmt->max_grp;
 
-	if(tmt_idx == up_idx){
-		PTD_CK(up_inp == mc_null);
-		up_inp = tmt_obj;
-		up_col = tmt_col;
-		up_grp_min_idx = tmt_grp_min_idx;
-		up_grp_max_idx = tmt_grp_max_idx;
+	if(tmt_idx == up_snp.idx){
+		PTD_CK(up_snp.inp == mc_null);
+		up_snp.inp = tmt_inp;
+		up_snp.min_col = tmt_min_col;
+		up_snp.max_col = tmt_max_col;
+		up_snp.min_grp = tmt_min_grp;
+		up_snp.max_grp = tmt_max_grp;
 		
-		PTD_CK(bj_idx_inside(up_idx, up_grp_min_idx, up_grp_max_idx));
+		PTD_CK(bj_idx_inside(up_snp.idx, up_snp.min_grp, up_snp.max_grp));
 	}
-	if(tmt_idx == down_idx){
-		PTD_CK(down_inp == mc_null);
-		down_inp = tmt_obj;
-		down_col = tmt_col;
-		down_grp_min_idx = tmt_grp_min_idx;
-		down_grp_max_idx = tmt_grp_max_idx;
+	if(tmt_idx == down_snp.idx){
+		PTD_CK(down_snp.inp == mc_null);
+		down_snp.inp = tmt_inp;
+		down_snp.min_col = tmt_min_col;
+		down_snp.max_col = tmt_max_col;
+		down_snp.min_grp = tmt_min_grp;
+		down_snp.max_grp = tmt_max_grp;
 		
-		PTD_CK(bj_idx_inside(down_idx, down_grp_min_idx, down_grp_max_idx));
+		PTD_CK(bj_idx_inside(down_snp.idx, down_snp.min_grp, down_snp.max_grp));
 	}
 	
-	PTD_CK((up_inp != mc_null) || (down_inp != mc_null));
+	PTD_CK((up_snp.inp != mc_null) || (down_snp.inp != mc_null));
 }
 
 void
-bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t col, 
-				   num_nod_t grp_min_idx, num_nod_t grp_max_idx,
+bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col, num_nod_t max_col, 
+				   num_nod_t min_grp, num_nod_t max_grp,
 				   void* obj, cell* dst, num_nod_t idx)
 {
 	PTD_CK(src != mc_null);
@@ -157,29 +177,30 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t col,
 			   "KIND=%d \n", knd);
 	PTD_CK(knd != sorkind_invalid);
 
-	sornet_transmitter* trm = sornet_transmitter::acquire();
-	trm->wrk_side = side_left;
+	sornet_transmitter* sn_tmt = sornet_transmitter::acquire();
+	sn_tmt->wrk_side = side_left;
 
-	trm->src = src;
-	trm->dst = dst;
-	trm->knd = knd;
-	trm->tok = tok;
-	trm->idx = idx;
-	trm->obj = obj;
-	trm->col = col;
-	trm->grp_min_idx = grp_min_idx;
-	trm->grp_max_idx = grp_max_idx;
+	sn_tmt->src = src;
+	sn_tmt->dst = dst;
+	sn_tmt->knd = knd;
+	sn_tmt->tok = tok;
+	sn_tmt->idx = idx;
+	sn_tmt->inp = obj;
+	sn_tmt->min_col = min_col;
+	sn_tmt->max_col = max_col;
+	sn_tmt->min_grp = min_grp;
+	sn_tmt->max_grp = max_grp;
 
-	if(trm->dst == mc_null){
+	if(sn_tmt->dst == mc_null){
 		nervenet* root_net = bj_nervenet->get_nervenet(mc_nn_to_id(0));
-		trm->dst = root_net;
+		sn_tmt->dst = root_net;
 		switch(knd){
 			case sorkind_bin:
 			case sorkind_num:
-				trm->tok = bj_tok_sornet_out;
+				sn_tmt->tok = bj_tok_sornet_out;
 				break;
 			case sorkind_rnk:
-				trm->tok = bj_tok_sornet_rank_out;
+				sn_tmt->tok = bj_tok_sornet_rank_out;
 				break;
 			default:
 				mck_abort(1, mc_cstr("Invalid sorkind (bj_send_sornet_tmt)"));
@@ -187,7 +208,7 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t col,
 		}
 	}
 
-	trm->send();
+	sn_tmt->send();
 }
 
 void bj_sornet_kernel_func(){
@@ -240,7 +261,7 @@ void bj_sornet_main() {
 		BJ_DBG_SORBINS(knd = sorkind_bin);
 		BJ_DBG_SORNUMS(knd = sorkind_num);
 		BJ_DBG_RANK_OUTS(knd = sorkind_rnk);
-		bj_send_sornet_tmt(my_net, bj_tok_sornet_start, knd, 0, 0, 0, mc_null, my_net, 0);
+		bj_send_sornet_tmt(my_net, bj_tok_sornet_start, knd, 0, 0, 0, 0, mc_null, my_net, 0);
 
 		PTD_PRT("dbg_sornet_max_cntr=%d\n", max_cntr);
 		PTD_LOG("dbg_sornet_max_cntr=%d\n", max_cntr);
@@ -271,10 +292,11 @@ nervenet::sornet_dbg_tests_handler(missive* msv){
 	sorkind_t tmt_knd = sn_tmt->knd;
 	sornet_tok_t tmt_tok = (sornet_tok_t)(sn_tmt->tok);
 	num_nod_t tmt_idx = sn_tmt->idx;
-	void* tmt_obj = sn_tmt->obj;
-	num_nod_t tmt_col = sn_tmt->col;
-	num_nod_t tmt_grp_min_idx = sn_tmt->grp_min_idx;
-	num_nod_t tmt_grp_max_idx = sn_tmt->grp_max_idx;
+	void* tmt_inp = sn_tmt->inp;
+	num_nod_t tmt_min_col = sn_tmt->min_col;
+	num_nod_t tmt_max_col = sn_tmt->max_col;
+	//num_nod_t tmt_min_grp = sn_tmt->min_grp;
+	//num_nod_t tmt_max_grp = sn_tmt->max_grp;
 
 	if(tmt_tok == bj_tok_sornet_start){
 		bool has_more = sornet_dbg_send_nxt_step(tmt_knd);
@@ -286,9 +308,9 @@ nervenet::sornet_dbg_tests_handler(missive* msv){
 	if(tmt_tok == bj_tok_sornet_out){
 		PTD_CK(tmt_idx < tot_input_sorcells);
 		PTD_CK(all_output_sorobjs[tmt_idx] == mc_null);
-		all_output_sorobjs[tmt_idx] = tmt_obj;
+		all_output_sorobjs[tmt_idx] = tmt_inp;
 		PTD_CK(all_output_sorcols[tmt_idx] == 0);
-		all_output_sorcols[tmt_idx] = tmt_col;
+		all_output_sorcols[tmt_idx] = tmt_min_col;
 
 		dbg_tot_rcv_output_sorobjs++;
 		if(dbg_tot_rcv_output_sorobjs == tot_input_sorcells){
@@ -298,10 +320,10 @@ nervenet::sornet_dbg_tests_handler(missive* msv){
 	if(tmt_tok == bj_tok_sornet_rank_out){
 		PTD_CK(tmt_idx < tot_input_rnkcells);
 
-		PTD_CK(all_output_rnk_min_grps[tmt_idx] == BJ_INVALID_SORCELL_NUM_GRP);
-		all_output_rnk_min_grps[tmt_idx] = tmt_grp_min_idx;
-		PTD_CK(all_output_rnk_max_grps[tmt_idx] == BJ_INVALID_SORCELL_NUM_GRP);
-		all_output_rnk_max_grps[tmt_idx] = tmt_grp_max_idx;
+		PTD_CK(all_output_rnk_min_grps[tmt_idx] == BJ_INVALID_SRT_GRP);
+		all_output_rnk_min_grps[tmt_idx] = tmt_min_col;
+		PTD_CK(all_output_rnk_max_grps[tmt_idx] == BJ_INVALID_SRT_GRP);
+		all_output_rnk_max_grps[tmt_idx] = tmt_max_col;
 		
 		dbg_tot_rcv_output_sorobjs++;
 		if(dbg_tot_rcv_output_sorobjs == tot_input_rnkcells){
@@ -353,7 +375,7 @@ nervenet::sornet_check_order(sorkind_t knd){
 	bool by_grp = false;
 	if(knd == sorkind_num){
 		PTD_CK(tot_input_sorcells > 0);
-		by_grp = (all_min_grps[0] != BJ_INVALID_SORCELL_NUM_GRP);
+		by_grp = (all_min_grps[0] != BJ_INVALID_SRT_GRP);
 	}
 	
 	num_nod_t aa;
@@ -433,7 +455,7 @@ nervenet::sornet_dbg_end_step(sorkind_t knd){
 	dbg_tot_rcv_output_sorobjs = 0;
 
 	nervenet* my_net = this;
-	bj_send_sornet_tmt(my_net, bj_tok_sornet_start, knd, 0, 0, 0, mc_null, my_net, 0);
+	bj_send_sornet_tmt(my_net, bj_tok_sornet_start, knd, 0, 0, 0, 0, mc_null, my_net, 0);
 }
 
 num_nod_t
@@ -505,9 +527,9 @@ bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones){
 		return;
 	}
 
-	mc_init_arr_vals(tot_inp_objs, all_min_grps, BJ_INVALID_SORCELL_NUM_GRP);
+	mc_init_arr_vals(tot_inp_objs, all_min_grps, BJ_INVALID_SRT_GRP);
 	if(all_max_grps != mc_null){
-		mc_init_arr_vals(tot_inp_objs, all_max_grps, BJ_INVALID_SORCELL_NUM_GRP);
+		mc_init_arr_vals(tot_inp_objs, all_max_grps, BJ_INVALID_SRT_GRP);
 	}
 	
 	for(num_nod_t aa = 0; aa < tot_inp_objs; aa++){
@@ -530,7 +552,7 @@ bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones){
 			}
 		}
 		grp_ii++;
-		PTD_CK(grp_mn_idx != BJ_INVALID_SORCELL_NUM_GRP);
+		PTD_CK(grp_mn_idx != BJ_INVALID_SRT_GRP);
 		all_min_grps[aa] = grp_mn_idx;
 		
 		if(all_max_grps != mc_null){
@@ -632,7 +654,7 @@ nervenet::sornet_dbg_bin_send_step(){
 		PTD_CK(srcll != mc_null);
 		PTD_CK(src != mc_null);
 
-		bj_send_sornet_tmt(src, bj_tok_sornet_bin, sorkind_bin, aa, mn_idx, mx_idx, obj, srcll, aa);
+		bj_send_sornet_tmt(src, bj_tok_sornet_bin, sorkind_bin, aa, aa, mn_idx, mx_idx, obj, srcll, aa);
 	}
 }
 
@@ -661,8 +683,8 @@ nervenet::sornet_dbg_rnk_send_step(){
 	
 	PTD_CK(all_input_rnkcells != mc_null);
 	
-	mc_init_arr_vals(tot_input_rnkcells, all_output_rnk_min_grps, BJ_INVALID_SORCELL_NUM_GRP);
-	mc_init_arr_vals(tot_input_rnkcells, all_output_rnk_max_grps, BJ_INVALID_SORCELL_NUM_GRP);
+	mc_init_arr_vals(tot_input_rnkcells, all_output_rnk_min_grps, BJ_INVALID_SRT_GRP);
+	mc_init_arr_vals(tot_input_rnkcells, all_output_rnk_max_grps, BJ_INVALID_SRT_GRP);
 	
 	ini_grps_prms prms;
 	PTD_DBG_CODE(prms.num_gen = &dbg_random_gen);
@@ -681,7 +703,7 @@ nervenet::sornet_dbg_rnk_send_step(){
 		void* obj = (void*)(&(all_input_rnkgrps[aa]));
 		PTD_CK(obj != mc_null);
 		
-		bj_send_sornet_tmt(src, bj_tok_sornet_rank_start, sorkind_rnk, aa, aa, aa, obj, srout, aa);
+		bj_send_sornet_tmt(src, bj_tok_sornet_rank_start, sorkind_rnk, aa, aa, aa, aa, obj, srout, aa);
 	}
 }
 
@@ -796,8 +818,6 @@ nervenet::sornet_dbg_num_init_val_arr(){
 #endif
 }
 
-#define BJ_DBG_GRPS_SORNUMS(prm) prm
-
 void
 nervenet::sornet_dbg_num_send_step(){
 	cell* src = this;
@@ -817,7 +837,7 @@ nervenet::sornet_dbg_num_send_step(){
 		bj_dbg_sornet_init_grp_arr(prms, false);
 		
 		PTD_CK(tot_input_sorcells > 0);
-		PTD_CK(all_input_srt_min_grps[0] != BJ_INVALID_SORCELL_NUM_GRP);
+		PTD_CK(all_input_srt_min_grps[0] != BJ_INVALID_SRT_GRP);
 		
 		sornet_dbg_num_print_input();
 	);
@@ -845,7 +865,7 @@ nervenet::sornet_dbg_num_send_step(){
 			mx_idx = all_input_srt_max_grps[aa];
 		);
 		
-		bj_send_sornet_tmt(src, bj_tok_sornet_num, sorkind_num, aa, mn_idx, mx_idx, obj, srcll, aa);
+		bj_send_sornet_tmt(src, bj_tok_sornet_num, sorkind_num, aa, aa, mn_idx, mx_idx, obj, srcll, aa);
 	}
 }
 
@@ -898,7 +918,7 @@ nervenet::sornet_dbg_num_end_step(){
 		}
 	}
 	printf("]\n");
-	printf("GROUPS=[");
+	printf("COLORS=[");
 	for(aa = 0; aa < tot_input_sorcells; aa++){
 		printf("%ld ", all_output_sorcols[aa]);
 	}
@@ -928,26 +948,28 @@ sorcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 	sornet_set_fields(sn_tmt);
 	
 	cell* src = this;
-	if((up_inp != mc_null) && (down_inp != mc_null)){
-		int cv = bj_cmp_rnk_objs(up_inp, down_inp);
+	if((up_snp.inp != mc_null) && (down_snp.inp != mc_null)){
+		int cv = bj_cmp_rnk_objs(up_snp.inp, down_snp.inp);
 		if(cv == 0){
-			calc_groups();
+			calc_color();
 		}
 		
-		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_col, up_grp_min_idx, up_grp_max_idx, 
-						   up_inp, up_out, up_idx);
-		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_col, down_grp_min_idx, down_grp_max_idx, 
-						   down_inp, down_out, down_idx);
+		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_snp.min_col, up_snp.max_col, 
+						   up_snp.min_grp, up_snp.max_grp, 
+						   up_snp.inp, up_snp.out, up_snp.idx);
+		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_snp.min_col, down_snp.max_col, 
+						   down_snp.min_grp, down_snp.max_grp, 
+						   down_snp.inp, down_snp.out, down_snp.idx);
 
 		sornet_reset();
-		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_idx, down_idx);
+		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_snp.idx, down_snp.idx);
 	}
 }
 
 bool
 sorcell::is_up_direct(){
-	if((up_inp != mc_null) && ! bj_idx_inside(down_idx, up_grp_min_idx, up_grp_max_idx)){
-		PTD_CK(down_inp == mc_null);
+	if((up_snp.inp != mc_null) && ! bj_idx_inside(down_snp.idx, up_snp.min_grp, up_snp.max_grp)){
+		PTD_CK(down_snp.inp == mc_null);
 		return true;
 	}
 	return false;
@@ -955,8 +977,8 @@ sorcell::is_up_direct(){
 
 bool
 sorcell::is_down_direct(){
-	if((down_inp != mc_null) && ! bj_idx_inside(up_idx, down_grp_min_idx, down_grp_max_idx)){
-		PTD_CK(up_inp == mc_null);
+	if((down_snp.inp != mc_null) && ! bj_idx_inside(up_snp.idx, down_snp.min_grp, down_snp.max_grp)){
+		PTD_CK(up_snp.inp == mc_null);
 		return true;
 	}
 	return false;
@@ -970,29 +992,31 @@ sorcell::sornet_srt_handler(sornet_transmitter* sn_tmt){
 	sornet_set_fields(sn_tmt);
 	
 	cell* src = this;
-	sorcell* up_dst = up_out;
-	sorcell* down_dst = down_out;
+	sorcell* up_dst = up_snp.out;
+	sorcell* down_dst = down_snp.out;
 	
 	if(is_up_direct()){
-		num_nod_t out_sz = bj_sornet_calc_grp_sz(up_grp_min_idx, up_grp_max_idx);
+		num_nod_t out_sz = bj_sornet_calc_grp_sz(up_snp.min_grp, up_snp.max_grp);
 		if(out_sz == srt_sz){ 
 			up_dst = mc_null; 
 		}
 		
-		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_col, up_grp_min_idx, up_grp_max_idx, 
-							up_inp, up_dst, up_idx);
+		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_snp.min_col, up_snp.max_col, 
+						   up_snp.min_grp, up_snp.max_grp, 
+							up_snp.inp, up_dst, up_snp.idx);
 		sornet_reset();
 		return;
 	}
 
 	if(is_down_direct()){
-		num_nod_t out_sz = bj_sornet_calc_grp_sz(down_grp_min_idx, down_grp_max_idx);
+		num_nod_t out_sz = bj_sornet_calc_grp_sz(down_snp.min_grp, down_snp.max_grp);
 		if(out_sz == srt_sz){ 
 			down_dst = mc_null; 
 		}
 		
-		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_col, down_grp_min_idx, down_grp_max_idx, 
-							down_inp, down_dst, down_idx);
+		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_snp.min_col, down_snp.max_col, 
+						   down_snp.min_grp, down_snp.max_grp, 
+							down_snp.inp, down_dst, down_snp.idx);
 		sornet_reset();
 		return;
 	}
@@ -1000,43 +1024,47 @@ sorcell::sornet_srt_handler(sornet_transmitter* sn_tmt){
 	bj_cmp_obj_func_t fn = sornet_get_cmp_func(tmt_knd);
 	PTD_CK(fn != mc_null);
 
-	if((up_inp != mc_null) && (down_inp != mc_null)){
-		PTD_CK(up_grp_min_idx == down_grp_min_idx);
-		PTD_CK(up_grp_max_idx == down_grp_max_idx);
+	if((up_snp.inp != mc_null) && (down_snp.inp != mc_null)){
+		PTD_CK(up_snp.min_grp == down_snp.min_grp);
+		PTD_CK(up_snp.max_grp == down_snp.max_grp);
 		
-		num_nod_t out_sz = bj_sornet_calc_grp_sz(up_grp_min_idx, up_grp_max_idx);
+		num_nod_t out_sz = bj_sornet_calc_grp_sz(up_snp.min_grp, up_snp.max_grp);
 		if(out_sz == srt_sz){
 			up_dst = mc_null;
 			down_dst = mc_null;
 		}
 		
-		int cv = (*fn)(up_inp, down_inp);
+		int cv = (*fn)(up_snp.inp, down_snp.inp);
 		if(cv < 0){
-			bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_col, up_grp_min_idx, up_grp_max_idx, 
-							   up_inp, up_dst, up_idx);
-			bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_col, down_grp_min_idx, down_grp_max_idx, 
-							   down_inp, down_dst, down_idx);
+			bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_snp.min_col, up_snp.max_col, 
+							   up_snp.min_grp, up_snp.max_grp, 
+							   up_snp.inp, up_dst, up_snp.idx);
+			bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_snp.min_col, down_snp.max_col, 
+							   down_snp.min_grp, down_snp.max_grp, 
+							   down_snp.inp, down_dst, down_snp.idx);
 		} else {
 			if(cv == 0){
 				calc_color();
 			}
-			bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_col, up_grp_min_idx, up_grp_max_idx, 
-							   up_inp, down_dst, down_idx);
-			bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_col, down_grp_min_idx, down_grp_max_idx, 
-							   down_inp, up_dst, up_idx);
+			bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_snp.min_col, up_snp.max_col, 
+							   up_snp.min_grp, up_snp.max_grp, 
+							   up_snp.inp, down_dst, down_snp.idx);
+			bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_snp.min_col, down_snp.max_col, 
+							   down_snp.min_grp, down_snp.max_grp, 
+							   down_snp.inp, up_dst, up_snp.idx);
 		}
 
 		sornet_reset();
-		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_idx, down_idx);
+		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_snp.idx, down_snp.idx);
 	}
 }
 
 num_nod_t
-bj_sornet_calc_grp_sz(num_nod_t grp_min_idx, num_nod_t grp_max_idx){
-	PTD_CK(grp_min_idx >= 0);
-	PTD_CK(grp_max_idx >= 0);
-	u_num_nod_t mn = grp_min_idx;
-	u_num_nod_t mx = grp_max_idx;
+bj_sornet_calc_grp_sz(num_nod_t min_grp, num_nod_t max_grp){
+	PTD_CK(min_grp >= 0);
+	PTD_CK(max_grp >= 0);
+	u_num_nod_t mn = min_grp;
+	u_num_nod_t mx = max_grp;
 	u_num_nod_t bi_xor = mn ^ mx;
 	u_num_nod_t num_bits = sizeof(u_num_nod_t) * 8;
 	bool got_zero = false;
