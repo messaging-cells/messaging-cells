@@ -187,9 +187,11 @@ bj_set_rnk_out(pre_sornode* nod, num_nod_t idx, pre_sornode* out){
 	
 	if(nod->up_idx == idx){
 		nod->out_up = out;
+		mc_reset_flag(nod->rnk_flags, bj_rnk_up_end_flag);
 	} else{
 		PTD_CK(nod->down_idx == idx);
 		nod->out_down = out;
+		mc_reset_flag(nod->rnk_flags, bj_rnk_down_end_flag);
 	}
 }
 
@@ -232,7 +234,7 @@ create_ranknet(num_nod_t num_to_rank){
 	THE_CNF->tot_pre_rank_in_nod = tot_in_nod;
 	THE_CNF->all_pre_rank_in_nod = all_in_nod;
 	
-	long jmp_sz = 1;
+	num_nod_t jmp_sz = 1;
 	bool lv_has_jmps = false;
 	num_nod_t fst = 0;
 	num_nod_t nod_id = 0;
@@ -252,6 +254,10 @@ create_ranknet(num_nod_t num_to_rank){
 			
 			nod_id++;
 
+			mc_set_flag(nod->rnk_flags, bj_rnk_up_end_flag);
+			mc_set_flag(nod->rnk_flags, bj_rnk_down_end_flag);
+			nod->srt_sz = jmp_sz;
+			
 			nod->nod_id = nod_id;
 			nod->up_idx = aa;
 			nod->down_idx = bb;

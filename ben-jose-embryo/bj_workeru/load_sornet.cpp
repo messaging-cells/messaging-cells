@@ -44,6 +44,7 @@ void bj_load_shd_sornet(){
 		scll->dbg_level = nod->level;
 
 		scll->srt_sz = nod->srt_sz;
+		scll->rnk_flags = nod->rnk_flags;
 		
 		PTD_CK(scll->up_snp.inp == mc_null);
 		scll->up_snp.idx = nod->up_idx;
@@ -191,10 +192,14 @@ void bj_load_shd_ranknet(){
 
 		my_net->all_input_rnkgrps = mc_malloc32(num_nod_t, tot_rnkinp);
 		mc_init_arr_vals(tot_rnkinp, my_net->all_input_rnkgrps, BJ_INVALID_SRT_GRP);
-		my_net->all_output_rnk_min_grps = mc_malloc32(num_nod_t, tot_rnkinp);
-		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnk_min_grps, BJ_INVALID_SRT_GRP);
-		my_net->all_output_rnk_max_grps = mc_malloc32(num_nod_t, tot_rnkinp);
-		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnk_max_grps, BJ_INVALID_SRT_GRP);
+		my_net->all_input_rnk_min_grps = mc_malloc32(num_nod_t, tot_rnkinp);
+		mc_init_arr_vals(tot_rnkinp, my_net->all_input_rnk_min_grps, BJ_INVALID_SRT_GRP);
+		my_net->all_input_rnk_max_grps = mc_malloc32(num_nod_t, tot_rnkinp);
+		mc_init_arr_vals(tot_rnkinp, my_net->all_input_rnk_max_grps, BJ_INVALID_SRT_GRP);
+		my_net->all_output_rnk_min_cols = mc_malloc32(num_nod_t, tot_rnkinp);
+		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnk_min_cols, BJ_INVALID_SRT_GRP);
+		my_net->all_output_rnk_max_cols = mc_malloc32(num_nod_t, tot_rnkinp);
+		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnk_max_cols, BJ_INVALID_SRT_GRP);
 		my_net->dbg_is_input_rnkgrps = mc_malloc32(bool, tot_rnkinp);
 		mc_init_arr_vals(tot_rnkinp, my_net->dbg_is_input_rnkgrps, false);
 

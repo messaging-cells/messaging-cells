@@ -92,6 +92,7 @@ public:
 	mc_workeru_nn_t	nod_nn;
 
 	num_nod_t 		srt_sz;
+	mc_flags_t		rnk_flags;
 	
 	num_nod_t 		up_idx;
 	connect_kind_t	up_conn;
@@ -110,6 +111,7 @@ public:
 		nod_nn = MC_INVALID_WORKERU_NN;
 		
 		srt_sz = 0;
+		rnk_flags = 0;
 
 		up_idx = 0;
 		up_conn = conn_invalid;

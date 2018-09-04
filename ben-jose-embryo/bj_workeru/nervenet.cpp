@@ -211,8 +211,10 @@ nervenet::nervenet(){
 	all_input_rnkcells = mc_null;
 	
 	all_input_rnkgrps = mc_null;
-	all_output_rnk_min_grps = mc_null;
-	all_output_rnk_max_grps = mc_null;
+	all_input_rnk_min_grps = mc_null;
+	all_input_rnk_max_grps = mc_null;
+	all_output_rnk_min_cols = mc_null;
+	all_output_rnk_max_cols = mc_null;
 	dbg_is_input_rnkgrps = mc_null;
 }
 
@@ -460,7 +462,7 @@ sorcell::init_me(int caller){
 	dbg_level = 0;
 	
 	srt_sz = 0;
-
+	rnk_flags = 0;
 }
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {

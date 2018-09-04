@@ -359,22 +359,6 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-#define BJ_INVALID_SRT_GRP BJ_INVALID_IDX
-
-struct mc_aligned sornapse {
-public:
-	num_nod_t 	min_col = BJ_INVALID_SRT_GRP;
-	num_nod_t 	max_col = BJ_INVALID_SRT_GRP;
-	num_nod_t 	min_grp = BJ_INVALID_SRT_GRP;
-	num_nod_t 	max_grp = BJ_INVALID_SRT_GRP;
-	num_nod_t 	idx = 0;
-	void*		inp = mc_null;
-	sorcell*	out = mc_null;	
-};
-
-void bj_sornapse_reset(sornapse& snp) bj_sornet_cod;
-void bj_sornapse_init(sornapse& snp) bj_sornet_cod;
-
 class mc_aligned sornet_transmitter : public transmitter {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_sornet_cod)
@@ -701,6 +685,25 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+#define BJ_INVALID_SRT_GRP BJ_INVALID_IDX
+
+struct mc_aligned sornapse {
+public:
+	num_nod_t 	min_col = BJ_INVALID_SRT_GRP;
+	num_nod_t 	max_col = BJ_INVALID_SRT_GRP;
+	num_nod_t 	min_grp = BJ_INVALID_SRT_GRP;
+	num_nod_t 	max_grp = BJ_INVALID_SRT_GRP;
+	num_nod_t 	idx = 0;
+	void*		inp = mc_null;
+	sorcell*	out = mc_null;
+
+	void reset() bj_sornet_cod;
+	void init() bj_sornet_cod;
+	
+	bool jump_to_end(sorkind_t tmt_knd, num_nod_t srt_sz, bool is_end) bj_sornet_cod;
+	bool jump_to_srt_end(num_nod_t srt_sz) bj_sornet_cod;
+	bool jump_to_rnk_end(num_nod_t srt_sz, bool is_end) bj_sornet_cod;
+};
 
 class mc_aligned sorcell : public cell {
 public:
@@ -709,6 +712,7 @@ public:
 	num_nod_t 	dbg_level;
 
 	num_nod_t 	srt_sz;
+	mc_flags_t  rnk_flags;
 	
 	sornapse	up_snp;
 	sornapse	down_snp;
@@ -720,7 +724,6 @@ public:
 	void init_me(int caller = 0) mc_external_code_ram;
 	
 	void calc_color() bj_sornet_cod;
-	void calc_groups() bj_sornet_cod;
 	void sornet_reset() bj_sornet_cod;
 	void sornet_set_fields(sornet_transmitter* sn_tmt) bj_sornet_cod;
 	bool is_up_direct() bj_sornet_cod;
@@ -728,6 +731,8 @@ public:
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
 
+	void sornet_handle_direct(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	
 	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
 	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
 	
@@ -894,6 +899,7 @@ public:
 	void**	all_output_objs = mc_null;
 	num_nod_t* all_min_grps = mc_null;
 	num_nod_t* all_max_grps = mc_null;
+	num_nod_t* all_rnk_grps = mc_null;
 	bool* is_input_grp = mc_null;
 };
 
@@ -985,8 +991,10 @@ public:
 	sorcell**	all_input_rnkcells;
 	
 	num_nod_t*	all_input_rnkgrps;
-	num_nod_t*	all_output_rnk_min_grps;
-	num_nod_t*	all_output_rnk_max_grps;
+	num_nod_t*	all_input_rnk_min_grps;
+	num_nod_t*	all_input_rnk_max_grps;
+	num_nod_t*	all_output_rnk_min_cols;
+	num_nod_t*	all_output_rnk_max_cols;
 	bool*		dbg_is_input_rnkgrps;
 	
 	nervenet() mc_external_code_ram;
@@ -1033,6 +1041,7 @@ public:
 
 	void sornet_dbg_rnk_send_step() bj_sornet_cod;
 	void sornet_dbg_rnk_end_step() bj_sornet_cod;
+	void sornet_dbg_rnk_print_input() bj_sornet_cod;
 
 	nervenet* get_nervenet(mc_workeru_id_t workeru_id);
 
@@ -1043,6 +1052,7 @@ public:
 };
 
 num_nod_t bj_dbg_sornet_get_nw_grp(ini_grps_prms& prms) bj_sornet_cod;
+num_nod_t bj_dbg_rnk_get_grp_max(num_nod_t min_idx, num_nod_t grp_sz, ini_grps_prms& prms) bj_sornet_cod;
 void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) bj_sornet_cod;
 
 #define bj_num_sep_tiersets (bj_nervenet->num_sep_tiersets)
