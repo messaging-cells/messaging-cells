@@ -459,6 +459,7 @@ void
 sorcell::init_me(int caller){
 	handler_idx = idx_sorcell;
 
+	dbg_id = 0;
 	dbg_level = 0;
 	
 	srt_sz = 0;

@@ -185,13 +185,18 @@ bj_set_rnk_out(pre_sornode* nod, num_nod_t idx, pre_sornode* out){
 	PTD_CK(nod != mc_null);
 	PTD_CK(out != mc_null);
 	
+	bool sm_sz = (nod->srt_sz == out->srt_sz);
 	if(nod->up_idx == idx){
 		nod->out_up = out;
-		mc_reset_flag(nod->rnk_flags, bj_rnk_up_end_flag);
+		if(sm_sz){
+			nod->reset_up_end();
+		}
 	} else{
 		PTD_CK(nod->down_idx == idx);
 		nod->out_down = out;
-		mc_reset_flag(nod->rnk_flags, bj_rnk_down_end_flag);
+		if(sm_sz){
+			nod->reset_down_end();
+		}
 	}
 }
 
@@ -254,13 +259,15 @@ create_ranknet(num_nod_t num_to_rank){
 			
 			nod_id++;
 
-			mc_set_flag(nod->rnk_flags, bj_rnk_up_end_flag);
-			mc_set_flag(nod->rnk_flags, bj_rnk_down_end_flag);
 			nod->srt_sz = jmp_sz;
 			
 			nod->nod_id = nod_id;
 			nod->up_idx = aa;
 			nod->down_idx = bb;
+
+			PTD_CK(nod->rnk_flags == 0);
+			nod->set_up_end();
+			nod->set_down_end();
 			
 			PTD_DBG_CODE(
 				num_nod_t n1_id = 0;
@@ -277,6 +284,7 @@ create_ranknet(num_nod_t num_to_rank){
 				PTD_DBG_CODE(n1_id = n1->nod_id);
 				bj_set_rnk_out(n1, aa, nod);
 				all_out_nod[aa] = nod;
+				//PTD_CK(n1->rnk_flags == 0);
 			}
 			
 			if(n2 == mc_null){
@@ -287,6 +295,7 @@ create_ranknet(num_nod_t num_to_rank){
 				PTD_DBG_CODE(n2_id = n2->nod_id);
 				bj_set_rnk_out(n2, bb, nod);
 				all_out_nod[bb] = nod;
+				//PTD_CK(n2->rnk_flags == 0);
 			}
 
 			add_ranknod_to_glb_cnf(nod, nxt_nn);
@@ -314,3 +323,38 @@ create_ranknet(num_nod_t num_to_rank){
 	}
 }
 
+void
+pre_sornode::dbg_log_nod(){
+	bool up_end = mc_get_flag(rnk_flags, bj_rnk_up_end_flag);
+	bool down_end = mc_get_flag(rnk_flags, bj_rnk_down_end_flag);
+	printf("rnk_nod_%ld %ld[%ld %ld] f(%d,%d) \n", nod_id, srt_sz, up_idx, down_idx, up_end, down_end);
+}
+
+void
+pre_sornode::reset_up_end(){
+	PTD_CK(mc_get_flag(rnk_flags, bj_rnk_up_end_flag));
+	mc_reset_flag(rnk_flags, bj_rnk_up_end_flag);
+	PTD_DBG_CODE(dbg_log_nod());
+}
+
+void
+pre_sornode::set_up_end(){
+	PTD_CK(! mc_get_flag(rnk_flags, bj_rnk_up_end_flag));
+	mc_set_flag(rnk_flags, bj_rnk_up_end_flag);
+	PTD_DBG_CODE(dbg_log_nod());
+}
+
+void
+pre_sornode::reset_down_end(){
+	PTD_CK(mc_get_flag(rnk_flags, bj_rnk_down_end_flag));
+	mc_reset_flag(rnk_flags, bj_rnk_down_end_flag);
+	PTD_DBG_CODE(dbg_log_nod());
+}
+
+void
+pre_sornode::set_down_end(){
+	PTD_CK(! mc_get_flag(rnk_flags, bj_rnk_down_end_flag));
+	mc_set_flag(rnk_flags, bj_rnk_down_end_flag);
+	PTD_DBG_CODE(dbg_log_nod());
+}
+	

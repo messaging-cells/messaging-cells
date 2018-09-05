@@ -709,6 +709,7 @@ class mc_aligned sorcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorcell, mc_external_code_ram)
 
+	num_nod_t 	dbg_id;
 	num_nod_t 	dbg_level;
 
 	num_nod_t 	srt_sz;
@@ -722,7 +723,7 @@ public:
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
-	
+
 	void calc_color() bj_sornet_cod;
 	void sornet_reset() bj_sornet_cod;
 	void sornet_set_fields(sornet_transmitter* sn_tmt) bj_sornet_cod;
@@ -735,6 +736,8 @@ public:
 	
 	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
 	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+
+	void sornet_dbg_prt() mc_external_code_ram;
 	
 	virtual
 	char* 	get_class_name() mc_external_code_ram;

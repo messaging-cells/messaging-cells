@@ -19,6 +19,16 @@
 
 // end_macro
 
+void
+sorcell::sornet_dbg_prt(){
+	bool up_end = mc_get_flag(rnk_flags, bj_rnk_up_end_flag);
+	MC_MARK_USED(up_end);
+	bool down_end = mc_get_flag(rnk_flags, bj_rnk_down_end_flag);
+	MC_MARK_USED(down_end);
+	PTD_PRINTF("lding_scll_%ld %ld[%ld %ld] f(%d,%d) \n", 
+			   dbg_id, srt_sz, up_snp.idx, down_snp.idx, up_end, down_end);
+}
+
 void bj_load_shd_sornet(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
@@ -41,9 +51,12 @@ void bj_load_shd_sornet(){
 
 		sorcell* scll = sorcell::acquire();
 
+		scll->dbg_id = nod->nod_id;
 		scll->dbg_level = nod->level;
 
 		scll->srt_sz = nod->srt_sz;
+		
+		PTD_CK(nod->rnk_flags == 0);
 		scll->rnk_flags = nod->rnk_flags;
 		
 		PTD_CK(scll->up_snp.inp == mc_null);
@@ -62,6 +75,8 @@ void bj_load_shd_sornet(){
 
 		PTD_CK(nod->loaded == mc_null);
 		nod->loaded = mck_as_glb_pt(scll);
+		
+
 	}
 
 	binder* nn_all_sclls = &(my_net->all_sorcells); // nn_cnf is already workeru_pt so nn_all_sclls is workeru_pt
@@ -141,6 +156,8 @@ void bj_load_shd_ranknet(){
 		scll->dbg_level = nod->level;
 
 		scll->srt_sz = nod->srt_sz;
+		
+		scll->rnk_flags = nod->rnk_flags;
 		
 		PTD_CK(scll->up_snp.inp == mc_null);
 		scll->up_snp.idx = nod->up_idx;

@@ -126,6 +126,13 @@ public:
 
 	~pre_sornode(){}
 
+	void reset_up_end();
+	void set_up_end();
+	void reset_down_end();
+	void set_down_end();
+
+	void dbg_log_nod();
+	
 	connect_kind_t	get_conn_kind(num_nod_t conn_idx){
 		if(conn_idx == up_idx){ return conn_up; }
 		if(conn_idx == down_idx){ return conn_down; }

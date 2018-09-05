@@ -1056,7 +1056,6 @@ sorcell::sornet_handle_direct(sornet_transmitter* sn_tmt){
 		bool is_end = mc_get_flag(rnk_flags, bj_rnk_up_end_flag);
 		if(up_snp.jump_to_end(tmt_knd, srt_sz, is_end)){
 			up_dst = mc_null; 
-			//PTD_CK(false);
 		}
 		
 		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, up_snp.min_col, up_snp.max_col, 
@@ -1070,7 +1069,6 @@ sorcell::sornet_handle_direct(sornet_transmitter* sn_tmt){
 		bool is_end = mc_get_flag(rnk_flags, bj_rnk_down_end_flag);
 		if(down_snp.jump_to_end(tmt_knd, srt_sz, is_end)){
 			down_dst = mc_null; 
-			//PTD_CK(false);
 		}
 		
 		bj_send_sornet_tmt(src, tmt_tok, tmt_knd, down_snp.min_col, down_snp.max_col, 
@@ -1149,12 +1147,10 @@ sorcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 		bool is_up_end = mc_get_flag(rnk_flags, bj_rnk_up_end_flag);
 		if(up_snp.jump_to_rnk_end(srt_sz, is_up_end)){
 			up_dst = mc_null;
-			//PTD_CK(false);
 		}
 		bool is_dw_end = mc_get_flag(rnk_flags, bj_rnk_down_end_flag);
 		if(down_snp.jump_to_rnk_end(srt_sz, is_dw_end)){
 			down_dst = mc_null;
-			//PTD_CK(false);
 		}
 		
 		int cv = bj_cmp_rnk_objs(up_snp.inp, down_snp.inp);
