@@ -40,11 +40,11 @@ Declaration of main bj solver function.
 
 #include "cell.hh"
 
-#define BJ_DBG_TOT_NUM_TESTS 2
-#define BJ_DBG_TOT_RNK_TESTS 200
+#define BJ_DBG_TOT_NUM_TESTS 200
+#define BJ_DBG_TOT_RNK_TESTS 2
 
-#define BJ_DBG_TOT_INPUT_SORNODES 8
-#define BJ_DBG_TOT_INPUT_RNKNODES 80
+#define BJ_DBG_TOT_INPUT_SORNODES 80
+#define BJ_DBG_TOT_INPUT_RNKNODES 8
 #define BJ_DBG_MAX_GRP_SZ 5
 
 #define BJ_INVALID_IDX -1

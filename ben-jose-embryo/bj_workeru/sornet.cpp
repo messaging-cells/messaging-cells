@@ -5,8 +5,8 @@
 #define BJ_SORNET_TIER 0
 
 //define BJ_SORNET_BIN_TEST
-//define BJ_SORNET_NUM_TEST
-#define BJ_SORNET_RANK_TEST
+#define BJ_SORNET_NUM_TEST
+//define BJ_SORNET_RANK_TEST
 
 #ifdef BJ_SORNET_BIN_TEST
 #define BJ_DBG_SORBINS(prm) prm
@@ -20,7 +20,7 @@
 #define BJ_DBG_SORNUMS(prm) 
 #endif
 
-#define BJ_DBG_GRPS_SORNUMS(prm) prm
+#define BJ_DBG_GRPS_SORNUMS(prm) 
 
 #ifdef BJ_SORNET_RANK_TEST
 #define BJ_DBG_RANK_OUTS(prm) prm

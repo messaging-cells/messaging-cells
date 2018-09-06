@@ -95,11 +95,9 @@ public:
 	mc_flags_t		rnk_flags;
 	
 	num_nod_t 		up_idx;
-	connect_kind_t	up_conn;
 	pre_sornode* 	out_up;
 
 	num_nod_t 		down_idx;
-	connect_kind_t	down_conn;
 	pre_sornode* 	out_down;
 
 	void* 			loaded;
@@ -113,12 +111,10 @@ public:
 		srt_sz = 0;
 		rnk_flags = 0;
 
-		up_idx = 0;
-		up_conn = conn_invalid;
+		up_idx = BJ_INVALID_IDX;
 		out_up = mc_null;
 
-		down_idx = 0;
-		down_conn = conn_invalid;
+		down_idx = BJ_INVALID_IDX;
 		out_down = mc_null;
 
 		loaded = mc_null;
@@ -131,14 +127,7 @@ public:
 	void reset_down_end();
 	void set_down_end();
 
-	void dbg_log_nod();
-	
-	connect_kind_t	get_conn_kind(num_nod_t conn_idx){
-		if(conn_idx == up_idx){ return conn_up; }
-		if(conn_idx == down_idx){ return conn_down; }
-		PTD_CK(false);
-		return conn_invalid;
-	}
+	void dbg_log_nod();	
 };
 
 /*! \class pre_cnf_node

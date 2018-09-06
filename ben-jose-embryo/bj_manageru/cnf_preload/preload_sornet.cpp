@@ -39,47 +39,64 @@ add_sornod_to_glb_cnf(pre_sornode* nod, mc_workeru_nn_t& nxt_nn){
 	}
 }
 
-pre_sornode*
+void
 create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms& prms){
+	PTD_CK(up_idx >= 0);
+	PTD_CK(down_idx >= 0);
+	//PTD_CK(up_idx < prms.tot_nods);
+	//PTD_CK(down_idx < prms.tot_nods);
+	if(up_idx >= prms.tot_nods){
+		return;
+	}
+	if(down_idx >= prms.tot_nods){
+		down_idx = BJ_INVALID_IDX;
+	}
+	
 	pre_sornode* nod = pre_sornode::acquire();
 	MCK_CK(nod != mc_null);
-	
-	mc_workeru_nn_t ptd_up_nid = 0;
-	mc_workeru_nn_t ptd_down_nid = 0;
-	MC_MARK_USED(ptd_up_nid);
-	MC_MARK_USED(ptd_down_nid);
 	
 	prms.curr_nod_id++;
 	nod->nod_id = prms.curr_nod_id;
 
-	PTD_CK(up_idx < down_idx);
+	PTD_CK((down_idx == BJ_INVALID_IDX) || (up_idx < down_idx));
 	PTD_CK(up_idx < prms.tot_nods);
 	PTD_CK(down_idx < prms.tot_nods);
 
 	nod->up_idx = up_idx;
-	nod->down_idx = down_idx;
-
 	nod->out_up = prms.arr_nods[up_idx];
-	nod->out_down = prms.arr_nods[down_idx];
-
 	prms.arr_nods[up_idx] = nod;
-	prms.arr_nods[down_idx] = nod;
-
+	
+	if(down_idx != BJ_INVALID_IDX){
+		nod->down_idx = down_idx;
+		nod->out_down = prms.arr_nods[down_idx];
+		prms.arr_nods[down_idx] = nod;
+	}
+	
 	if(nod->out_up != mc_null){
 		nod->level = nod->out_up->level + 1;
-		PTD_CK(nod->out_down != mc_null);
-		PTD_CK(nod->out_down->level == nod->out_up->level);
-
-		ptd_up_nid = nod->out_up->nod_id;
-		ptd_down_nid = nod->out_down->nod_id;
-
-		nod->up_conn = nod->out_up->get_conn_kind(up_idx);
-		nod->down_conn = nod->out_down->get_conn_kind(down_idx);
 	}
+
+	PTD_DBG_CODE(
+		mc_workeru_nn_t ptd_dbg_up_nid = 0;
+		mc_workeru_nn_t ptd_dbg_down_nid = 0;
+		MC_MARK_USED(ptd_dbg_up_nid);
+		MC_MARK_USED(ptd_dbg_down_nid);
+
+		if(nod->out_up != mc_null){
+			ptd_dbg_up_nid = nod->out_up->nod_id;
+		}
+		if(nod->out_down != mc_null){
+			PTD_CK(nod->out_up != mc_null);
+			PTD_CK(nod->out_down->level == nod->out_up->level);
+
+			ptd_dbg_down_nid = nod->out_down->nod_id;
+		}
+	);
 
 	PTD_CK(nod->level >= 0);
 	PTD_CK(nod->level < prms.tot_lvs);
 	
+	PTD_CK(prms.first_lv_for_merge_sz != BJ_INVALID_IDX);
 	if(nod->level == prms.first_lv_for_merge_sz){
 		nod->srt_sz = prms.curr_merge_sz;
 	}
@@ -89,11 +106,9 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 
 	PTD_CK(knd != snod_invalid);
 	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld]%ld \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
-			nod->nod_id, nod->level, up_idx, down_idx, nod->srt_sz, ptd_up_nid, ptd_down_nid);
-	ZNQ_CODE(printf("%s_NOD (%ld)  %ld[%ld %ld] \t(%d %d) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
-				nod->nod_id, nod->level, up_idx, down_idx, ptd_up_nid, ptd_down_nid));
-
-	return nod;
+			nod->nod_id, nod->level, up_idx, down_idx, nod->srt_sz, ptd_dbg_up_nid, ptd_dbg_down_nid);
+	ZNQ_CODE(printf("%s_NOD (%ld)  %ld[%ld %ld] \n", ((knd == snod_alte)?("ALT"):("HLF")), 
+				nod->nod_id, nod->level, up_idx, down_idx));
 }
 
 void
@@ -143,10 +158,14 @@ create_net_sorter(num_nod_t pos, num_nod_t sz, sornet_prms& prms){
 	if(sz == 1){ return; }
 	
 	prms.curr_merge_sz = sz;
-	pre_sornode* fst_nod = prms.arr_nods[pos];
-	if(fst_nod != mc_null){
-		prms.first_lv_for_merge_sz = fst_nod->level + 1;
-		PTD_PRT("\nNET_MERGE_SZ=%ld FST_LV=%ld \n", prms.curr_merge_sz, prms.first_lv_for_merge_sz);
+	if(pos < prms.tot_nods){
+		pre_sornode* fst_nod = prms.arr_nods[pos];
+		if(fst_nod != mc_null){
+			prms.first_lv_for_merge_sz = fst_nod->level + 1;
+			PTD_PRT("\nNET_MERGE_SZ=%ld FST_LV=%ld \n", prms.curr_merge_sz, prms.first_lv_for_merge_sz);
+		}
+	} else {
+		prms.first_lv_for_merge_sz = BJ_INVALID_IDX;
 	}
 	
 	num_nod_t hlf = sz/2;
@@ -159,8 +178,10 @@ void
 create_sornet(num_nod_t num_to_sort){
 	sornet_prms prms;
 
-	//MUST be a power of 2
-	prms.tot_nods = get_bigger_pow2(num_to_sort);
+	num_nod_t tot_pow2_nods = get_bigger_pow2(num_to_sort);
+	
+	prms.tot_nods = num_to_sort;
+	//prms.tot_nods = tot_pow2_nods;
 	prms.arr_nods = mc_malloc32(pre_sornode*, prms.tot_nods);
 	mc_init_arr_vals(prms.tot_nods, prms.arr_nods, mc_null);
 
@@ -171,13 +192,15 @@ create_sornet(num_nod_t num_to_sort){
 		THE_CNF->all_pre_sorinput_nod = prms.arr_nods;
 	}
 
-	prms.tot_lvs = get_tot_levels(prms.tot_nods);
+	prms.tot_lvs = get_tot_levels(tot_pow2_nods);
 	prms.arr_lvs = (mc_workeru_nn_t*)calloc(prms.tot_lvs, sizeof(mc_workeru_nn_t));
 
-	create_net_sorter(0, prms.tot_nods, prms);
+	create_net_sorter(0, tot_pow2_nods, prms);
 
-	ZNQ_CODE(printf("\nTOT_INPUT_NODS=%ld TOT_LVS=%ld \n", prms.tot_nods, prms.tot_lvs));
-	PTD_PRT("\nTOT_INPUT_NODS=%ld TOT_LVS=%ld \n", prms.tot_nods, prms.tot_lvs);
+	ZNQ_CODE(printf("\nTOT_INPUT_NODS=%ld TOT_POW2_NODS=%ld TOT_LVS=%ld \n", 
+					prms.tot_nods, tot_pow2_nods, prms.tot_lvs));
+	PTD_PRT("\nTOT_INPUT_NODS=%ld TOT_POW2_NODS=%ld TOT_LVS=%ld \n", 
+					prms.tot_nods, tot_pow2_nods, prms.tot_lvs);
 }
 
 void
