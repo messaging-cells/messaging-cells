@@ -16,6 +16,7 @@ nervenode__240__
 neuron__240__
 polaron__248__
 sorcell__56__
+endcell__??__
 tierdata__56__
 netstate__48__
 dbg_stats__32__
@@ -50,6 +51,7 @@ MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synapse, 32, bj_ava_synapses, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(neuron, 32, bj_ava_neurons, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(polaron, 32, bj_ava_polarons, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sorcell, 32, bj_ava_sorcells, 0)
+MCK_DEFINE_MEM_METHODS_AND_GET_AVA(endcell, 32, bj_ava_endcells, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
 
 BJ_DEFINE_GET_CLS_NAM(synset)
@@ -63,6 +65,7 @@ BJ_DEFINE_GET_CLS_NAM(nervenode)
 BJ_DEFINE_GET_CLS_NAM(neuron)
 BJ_DEFINE_GET_CLS_NAM(polaron)
 BJ_DEFINE_GET_CLS_NAM(sorcell)
+BJ_DEFINE_GET_CLS_NAM(endcell)
 BJ_DEFINE_GET_CLS_NAM(tierdata)
 BJ_DEFINE_GET_CLS_NAM(nervenet)
 
@@ -190,6 +193,8 @@ nervenet::nervenet(){
 	
 	tot_rnkcells = 0;
 
+	tot_endcells = 0;
+	
 	dbg_sornet_curr_cntr = 0;
 	dbg_sornet_max_cntr = 0;
 	dbg_all_input_vals = mc_null;
@@ -459,11 +464,22 @@ void
 sorcell::init_me(int caller){
 	handler_idx = idx_sorcell;
 
-	dbg_id = 0;
-	dbg_level = 0;
-	
 	srt_sz = 0;
-	rnk_flags = 0;
+	edge_flags = 0;
+}
+
+endcell::endcell(){ 
+	PTD_CK(bj_nervenet != mc_null);
+	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_endcell ++);
+	mck_slog2("alloc__endcell\n");
+	init_me();
+} 
+
+endcell::~endcell(){} 
+
+void
+endcell::init_me(int caller){
+	handler_idx = idx_endcell;
 }
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
@@ -1091,6 +1107,7 @@ dbg_stats::init_me(int caller){
 	dbg_tot_new_neuron = 0;
 	dbg_tot_new_polaron = 0;
 	dbg_tot_new_sorcell = 0;
+	dbg_tot_new_endcell = 0;
 	dbg_tot_new_tierdata = 0;
 }
 
@@ -1107,6 +1124,7 @@ dbg_stats::dbg_prt_all(){
 	PTD_LOG("dbg_tot_new_neuron = %d \n", dbg_tot_new_neuron);
 	PTD_LOG("dbg_tot_new_polaron = %d \n", dbg_tot_new_polaron);
 	PTD_LOG("dbg_tot_new_sorcell = %d \n", dbg_tot_new_sorcell);
+	PTD_LOG("dbg_tot_new_endcell = %d \n", dbg_tot_new_endcell);
 	PTD_LOG("dbg_tot_new_tierdata = %d \n", dbg_tot_new_tierdata);
 }
 
@@ -1154,6 +1172,9 @@ void bj_print_class_szs(){
 		mck_slog2("__\n");
 		mck_slog2("sorcell__");
 		mck_ilog(sizeof(sorcell));
+		mck_slog2("__\n");
+		mck_slog2("endcell__");
+		mck_ilog(sizeof(endcell));
 		mck_slog2("__\n");
 		mck_slog2("tierdata__");
 		mck_ilog(sizeof(tierdata));

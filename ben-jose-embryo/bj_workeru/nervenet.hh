@@ -55,7 +55,7 @@ Declaration of nervenet class.
 #include "cell.hh"
 #include "solver.hh"
 
-
+class pre_sornode;
 class pre_cnf_node;
 class pre_cnf_net;
 
@@ -69,6 +69,7 @@ class neurostate;
 class neuron;
 class polaron;
 class sorcell;
+class endcell;
 class netstate;
 class nervenet;
 
@@ -168,6 +169,7 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_neuron,
 	idx_polaron,
 	idx_sorcell,
+	idx_endcell,
 	idx_tierdata,
 	idx_nervenet,
 	idx_total
@@ -263,6 +265,7 @@ BJ_DECLARE_CLS_NAM(nervenode)
 BJ_DECLARE_CLS_NAM(neuron)
 BJ_DECLARE_CLS_NAM(polaron)
 BJ_DECLARE_CLS_NAM(sorcell)
+BJ_DECLARE_CLS_NAM(endcell)
 BJ_DECLARE_CLS_NAM(tierdata)
 BJ_DECLARE_CLS_NAM(nervenet)
 
@@ -696,6 +699,7 @@ public:
 	num_nod_t 	idx = 0;
 	void*		inp = mc_null;
 	sorcell*	out = mc_null;
+	endcell*	axon = mc_null;
 
 	void reset() bj_sornet_cod;
 	void init() bj_sornet_cod;
@@ -707,13 +711,10 @@ public:
 
 class mc_aligned sorcell : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorcell, mc_external_code_ram)
-
-	num_nod_t 	dbg_id;
-	num_nod_t 	dbg_level;
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(sorcell, mc_external_code_ram, mc_external_code_ram)
 
 	num_nod_t 	srt_sz;
-	mc_flags_t  rnk_flags;
+	mc_flags_t  edge_flags;
 	
 	sornapse	up_snp;
 	sornapse	down_snp;
@@ -738,7 +739,27 @@ public:
 	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
 
 	void sornet_dbg_prt() mc_external_code_ram;
+
+	void load_from(pre_sornode* nod) bj_load_cod;
 	
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
+class mc_aligned endcell : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(endcell, mc_external_code_ram, mc_external_code_ram)
+
+	sornapse	out_snp;
+	
+	endcell() mc_external_code_ram;
+	~endcell() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
+	void sornet_handler(missive* msv) bj_sornet_cod;
+
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
@@ -883,6 +904,7 @@ public:
 	mc_alloc_size_t dbg_tot_new_neuron;
 	mc_alloc_size_t dbg_tot_new_polaron;
 	mc_alloc_size_t dbg_tot_new_sorcell;
+	mc_alloc_size_t dbg_tot_new_endcell;
 	mc_alloc_size_t dbg_tot_new_tierdata;
 
 	dbg_stats() mc_external_code_ram;
@@ -939,6 +961,7 @@ public:
 	grip		ava_neurons;
 	grip		ava_polarons;
 	grip		ava_sorcells;
+	grip		ava_endcells;
 	grip		ava_tierdatas;
 
 	missive_handler_t all_handlers[idx_total];
@@ -971,6 +994,9 @@ public:
 	num_nod_t tot_rnkcells;
 	grip	all_rnkcells;
 	
+	num_nod_t tot_endcells;
+	grip	all_endcells;
+
 	mini_bit_arr_t 	dbg_sornet_curr_cntr;
 	mini_bit_arr_t 	dbg_sornet_max_cntr;
 	
@@ -1072,6 +1098,7 @@ void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) bj_sornet_c
 #define bj_ava_neurons (bj_nervenet->ava_neurons)
 #define bj_ava_polarons (bj_nervenet->ava_polarons)
 #define bj_ava_sorcells (bj_nervenet->ava_sorcells)
+#define bj_ava_endcells (bj_nervenet->ava_endcells)
 #define bj_ava_tierdatas (bj_nervenet->ava_tierdatas)
 
 #define bj_handlers (bj_nervenet->all_handlers)

@@ -20,7 +20,7 @@
 #define BJ_DBG_SORNUMS(prm) 
 #endif
 
-#define BJ_DBG_GRPS_SORNUMS(prm) 
+#define BJ_DBG_GRPS_SORNUMS(prm)
 
 #ifdef BJ_SORNET_RANK_TEST
 #define BJ_DBG_RANK_OUTS(prm) prm
@@ -28,7 +28,7 @@
 #define BJ_DBG_RANK_OUTS(prm) 
 #endif
 
-#define BJ_DBG_GRPS_RANK(prm) prm
+#define BJ_DBG_GRPS_RANK(prm) 
 
 #define bj_pt_obj_as_num(pt_oo) (*((num_nod_t*)(pt_oo)))
 
@@ -110,6 +110,7 @@ sornapse::init(){
 	reset();
 	idx = 0;
 	out = mc_null;	
+	axon = mc_null;	
 }
 	
 void
@@ -1053,7 +1054,7 @@ sorcell::sornet_handle_direct(sornet_transmitter* sn_tmt){
 	sorcell* down_dst = down_snp.out;
 	
 	if(is_up_direct()){
-		bool is_end = mc_get_flag(rnk_flags, bj_rnk_up_end_flag);
+		bool is_end = mc_get_flag(edge_flags, bj_rnk_up_end_flag);
 		if(up_snp.jump_to_end(tmt_knd, srt_sz, is_end)){
 			up_dst = mc_null; 
 		}
@@ -1066,7 +1067,7 @@ sorcell::sornet_handle_direct(sornet_transmitter* sn_tmt){
 	}
 
 	if(is_down_direct()){
-		bool is_end = mc_get_flag(rnk_flags, bj_rnk_down_end_flag);
+		bool is_end = mc_get_flag(edge_flags, bj_rnk_down_end_flag);
 		if(down_snp.jump_to_end(tmt_knd, srt_sz, is_end)){
 			down_dst = mc_null; 
 		}
@@ -1124,7 +1125,7 @@ sorcell::sornet_srt_handler(sornet_transmitter* sn_tmt){
 		}
 
 		sornet_reset();
-		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_snp.idx, down_snp.idx);
+		//PTD_LOG("SCELL (%d %d) fired\n", up_snp.idx, down_snp.idx);
 	}
 }
 
@@ -1144,11 +1145,11 @@ sorcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 		PTD_CK(up_snp.min_grp == down_snp.min_grp);
 		PTD_CK(up_snp.max_grp == down_snp.max_grp);
 		
-		bool is_up_end = mc_get_flag(rnk_flags, bj_rnk_up_end_flag);
+		bool is_up_end = mc_get_flag(edge_flags, bj_rnk_up_end_flag);
 		if(up_snp.jump_to_rnk_end(srt_sz, is_up_end)){
 			up_dst = mc_null;
 		}
-		bool is_dw_end = mc_get_flag(rnk_flags, bj_rnk_down_end_flag);
+		bool is_dw_end = mc_get_flag(edge_flags, bj_rnk_down_end_flag);
 		if(down_snp.jump_to_rnk_end(srt_sz, is_dw_end)){
 			down_dst = mc_null;
 		}
@@ -1166,7 +1167,7 @@ sorcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 						   down_snp.inp, down_dst, down_snp.idx);
 
 		sornet_reset();
-		//PTD_LOG("SCELL %d(%d %d) fired\n", dbg_level, up_snp.idx, down_snp.idx);
+		//PTD_LOG("SCELL (%d %d) fired\n", up_snp.idx, down_snp.idx);
 	}
 }
 

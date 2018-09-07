@@ -41,10 +41,10 @@ Declaration of main bj solver function.
 #include "cell.hh"
 
 #define BJ_DBG_TOT_NUM_TESTS 200
-#define BJ_DBG_TOT_RNK_TESTS 2
+#define BJ_DBG_TOT_RNK_TESTS 200
 
 #define BJ_DBG_TOT_INPUT_SORNODES 80
-#define BJ_DBG_TOT_INPUT_RNKNODES 8
+#define BJ_DBG_TOT_INPUT_RNKNODES 80
 #define BJ_DBG_MAX_GRP_SZ 5
 
 #define BJ_INVALID_IDX -1
@@ -68,8 +68,10 @@ Declaration of main bj solver function.
 #define bj_nervenet_dat 
 #define bj_nervenet_mem mc_mod0_cod
 
-#define	bj_rnk_up_end_flag 		mc_flag0
-#define	bj_rnk_down_end_flag 	mc_flag1
+#define	bj_rnk_up_out_flag 		mc_flag0
+#define	bj_rnk_down_out_flag 	mc_flag1
+#define	bj_rnk_up_end_flag 		mc_flag2
+#define	bj_rnk_down_end_flag 	mc_flag3
 
 typedef unsigned long u_num_nod_t;
 typedef long num_nod_t;

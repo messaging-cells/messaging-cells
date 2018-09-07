@@ -42,11 +42,13 @@ Declaration of functions to preload cnfs in dimacs files.
 #include "solver.hh"
 
 class pre_sornode;
+class pre_endnode;
 class pre_cnf_node;
 class pre_cnf_net;
 class pre_load_cnf;
 
 extern grip ava_pre_sornode;
+extern grip ava_pre_endnode;
 extern grip ava_pre_cnf_node;
 extern grip ava_pre_cnf_net;
 
@@ -68,6 +70,7 @@ struct mc_aligned sornet_prms {
 public:
 	num_nod_t tot_nods = 0;
 	pre_sornode** arr_nods = mc_null;
+	pre_endnode** arr_endnods = mc_null;
 
 	num_nod_t tot_lvs = 0;
 	mc_workeru_nn_t* arr_lvs = mc_null;
@@ -76,6 +79,13 @@ public:
 
 	num_nod_t curr_merge_sz = 0;
 	num_nod_t first_lv_for_merge_sz = 0;
+};
+
+struct mc_aligned pre_sornapse {
+public:
+	num_nod_t 		idx = BJ_INVALID_IDX;
+	pre_sornode* 	out = mc_null;
+	pre_endnode* 	axon = mc_null;
 };
 
 /*! \class pre_sornode
@@ -89,16 +99,11 @@ public:
 	num_nod_t	 	nod_id;
 	num_nod_t 		level;
 
-	mc_workeru_nn_t	nod_nn;
-
 	num_nod_t 		srt_sz;
-	mc_flags_t		rnk_flags;
+	mc_flags_t		edge_flags;
 	
-	num_nod_t 		up_idx;
-	pre_sornode* 	out_up;
-
-	num_nod_t 		down_idx;
-	pre_sornode* 	out_down;
+	pre_sornapse	up_pns;
+	pre_sornapse	down_pns;
 
 	void* 			loaded;
 
@@ -106,16 +111,8 @@ public:
 		nod_id = 0;
 		level = 0;
 
-		nod_nn = MC_INVALID_WORKERU_NN;
-		
 		srt_sz = 0;
-		rnk_flags = 0;
-
-		up_idx = BJ_INVALID_IDX;
-		out_up = mc_null;
-
-		down_idx = BJ_INVALID_IDX;
-		out_down = mc_null;
+		edge_flags = 0;
 
 		loaded = mc_null;
 	}
@@ -128,6 +125,23 @@ public:
 	void set_down_end();
 
 	void dbg_log_nod();	
+};
+
+/*! \class pre_endnode
+\brief Class for output sornet nodes to load.
+
+*/
+class mc_aligned pre_endnode : public agent {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_endnode, bj_load_cod)
+
+	void* 			loaded;
+
+	pre_endnode(){
+		loaded = mc_null;
+	}
+
+	~pre_endnode(){}
 };
 
 /*! \class pre_cnf_node
@@ -180,6 +194,12 @@ public:
 	num_nod_t tot_pre_rnknods;
 	grip	all_pre_rnknods;
 	
+	num_nod_t tot_pre_srt_endnods;
+	grip	all_pre_srt_endnods;
+	
+	num_nod_t tot_pre_rnk_endnods;
+	grip	all_pre_rnk_endnods;
+	
 	num_nod_t tmp_nod_idx;
 
 	pre_cnf_net(){
@@ -190,8 +210,9 @@ public:
 
 		// sornet info
 		tot_pre_sornods = 0;
-
 		tot_pre_rnknods = 0;
+		tot_pre_srt_endnods = 0;
+		tot_pre_rnk_endnods = 0;
 		
 		tmp_nod_idx = 0;
 	}

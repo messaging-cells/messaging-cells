@@ -204,12 +204,21 @@ nam::acquire(mc_alloc_size_t sz){ \
 
 #define MCK_DECLARE_GET_AVAILABLE() virtual grip& get_available();
 
+#define MCK_DECLARE_GET_AVAILABLE_2(module) virtual grip& get_available() module;
+
 #define MCK_DEFINE_GET_AVAILABLE(nam, all_ava) grip& nam::get_available(){ return all_ava; }
 
 //! Calls MCK_DECLARE_MEM_METHODS and MCK_DECLARE_GET_AVAILABLE
 #define MCK_DECLARE_MEM_METHODS_AND_GET_AVA(nam, module) \
 	MCK_DECLARE_MEM_METHODS(nam, module) \
 	MCK_DECLARE_GET_AVAILABLE() \
+
+// end_macro
+
+//! Calls MCK_DECLARE_MEM_METHODS and MCK_DECLARE_GET_AVAILABLE
+#define MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(nam, module1, module2) \
+	MCK_DECLARE_MEM_METHODS(nam, module1) \
+	MCK_DECLARE_GET_AVAILABLE_2(module2) \
 
 // end_macro
 

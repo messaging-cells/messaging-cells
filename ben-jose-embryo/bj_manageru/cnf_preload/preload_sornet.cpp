@@ -22,12 +22,78 @@ get_bigger_pow2(num_nod_t nn){
 }
 
 void
-add_sornod_to_glb_cnf(pre_sornode* nod, mc_workeru_nn_t& nxt_nn){
+pre_sornode::dbg_log_nod(){
+	bool up_end = mc_get_flag(edge_flags, bj_rnk_up_end_flag);
+	bool down_end = mc_get_flag(edge_flags, bj_rnk_down_end_flag);
+	printf("rnk_nod_%ld %ld[%ld %ld] f(%d,%d) \n", nod_id, srt_sz, 
+		   up_pns.idx, down_pns.idx, up_end, down_end);
+}
+
+void
+pre_sornode::reset_up_end(){
+	PTD_CK(mc_get_flag(edge_flags, bj_rnk_up_end_flag));
+	mc_reset_flag(edge_flags, bj_rnk_up_end_flag);
+	PTD_DBG_CODE(dbg_log_nod());
+}
+
+void
+pre_sornode::set_up_end(){
+	PTD_CK(! mc_get_flag(edge_flags, bj_rnk_up_end_flag));
+	mc_set_flag(edge_flags, bj_rnk_up_end_flag);
+	PTD_DBG_CODE(dbg_log_nod());
+}
+
+void
+pre_sornode::reset_down_end(){
+	PTD_CK(mc_get_flag(edge_flags, bj_rnk_down_end_flag));
+	mc_reset_flag(edge_flags, bj_rnk_down_end_flag);
+	PTD_DBG_CODE(dbg_log_nod());
+}
+
+void
+pre_sornode::set_down_end(){
+	PTD_CK(! mc_get_flag(edge_flags, bj_rnk_down_end_flag));
+	mc_set_flag(edge_flags, bj_rnk_down_end_flag);
+	PTD_DBG_CODE(dbg_log_nod());
+}
+	
+void
+add_srt_endnod_to_glb_cnf(pre_endnode* nod, mc_workeru_nn_t& nxt_nn){
 	if(THE_CNF != mc_null){
 		long num_workerus = THE_CNF->tot_workerus;
 		PTD_CK(nxt_nn < num_workerus);
 
-		nod->nod_nn = nxt_nn;
+		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
+		cnf.tot_pre_srt_endnods++;
+		cnf.all_pre_srt_endnods.bind_to_my_left(*nod);
+
+		nxt_nn++;
+		if(nxt_nn == num_workerus){ nxt_nn = 0; }
+		PTD_CK(nxt_nn < num_workerus);
+	}
+}
+
+void
+add_rnk_endnod_to_glb_cnf(pre_endnode* nod, mc_workeru_nn_t& nxt_nn){
+	if(THE_CNF != mc_null){
+		long num_workerus = THE_CNF->tot_workerus;
+		PTD_CK(nxt_nn < num_workerus);
+
+		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
+		cnf.tot_pre_rnk_endnods++;
+		cnf.all_pre_rnk_endnods.bind_to_my_left(*nod);
+
+		nxt_nn++;
+		if(nxt_nn == num_workerus){ nxt_nn = 0; }
+		PTD_CK(nxt_nn < num_workerus);
+	}
+}
+
+void
+add_sornod_to_glb_cnf(pre_sornode* nod, mc_workeru_nn_t& nxt_nn){
+	if(THE_CNF != mc_null){
+		long num_workerus = THE_CNF->tot_workerus;
+		PTD_CK(nxt_nn < num_workerus);
 
 		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
 		cnf.tot_pre_sornods++;
@@ -43,8 +109,6 @@ void
 create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms& prms){
 	PTD_CK(up_idx >= 0);
 	PTD_CK(down_idx >= 0);
-	//PTD_CK(up_idx < prms.tot_nods);
-	//PTD_CK(down_idx < prms.tot_nods);
 	if(up_idx >= prms.tot_nods){
 		return;
 	}
@@ -62,18 +126,20 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	PTD_CK(up_idx < prms.tot_nods);
 	PTD_CK(down_idx < prms.tot_nods);
 
-	nod->up_idx = up_idx;
-	nod->out_up = prms.arr_nods[up_idx];
+	nod->up_pns.idx = up_idx;
+	nod->up_pns.out = prms.arr_nods[up_idx];
+	nod->up_pns.axon = prms.arr_endnods[up_idx];
 	prms.arr_nods[up_idx] = nod;
 	
 	if(down_idx != BJ_INVALID_IDX){
-		nod->down_idx = down_idx;
-		nod->out_down = prms.arr_nods[down_idx];
+		nod->down_pns.idx = down_idx;
+		nod->down_pns.out = prms.arr_nods[down_idx];
+		nod->down_pns.axon = prms.arr_endnods[down_idx];
 		prms.arr_nods[down_idx] = nod;
 	}
 	
-	if(nod->out_up != mc_null){
-		nod->level = nod->out_up->level + 1;
+	if(nod->up_pns.out != mc_null){
+		nod->level = nod->up_pns.out->level + 1;
 	}
 
 	PTD_DBG_CODE(
@@ -82,14 +148,14 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 		MC_MARK_USED(ptd_dbg_up_nid);
 		MC_MARK_USED(ptd_dbg_down_nid);
 
-		if(nod->out_up != mc_null){
-			ptd_dbg_up_nid = nod->out_up->nod_id;
+		if(nod->up_pns.out != mc_null){
+			ptd_dbg_up_nid = nod->up_pns.out->nod_id;
 		}
-		if(nod->out_down != mc_null){
-			PTD_CK(nod->out_up != mc_null);
-			PTD_CK(nod->out_down->level == nod->out_up->level);
+		if(nod->down_pns.out != mc_null){
+			PTD_CK(nod->up_pns.out != mc_null);
+			PTD_CK(nod->down_pns.out->level == nod->up_pns.out->level);
 
-			ptd_dbg_down_nid = nod->out_down->nod_id;
+			ptd_dbg_down_nid = nod->down_pns.out->nod_id;
 		}
 	);
 
@@ -181,9 +247,18 @@ create_sornet(num_nod_t num_to_sort){
 	num_nod_t tot_pow2_nods = get_bigger_pow2(num_to_sort);
 	
 	prms.tot_nods = num_to_sort;
-	//prms.tot_nods = tot_pow2_nods;
 	prms.arr_nods = mc_malloc32(pre_sornode*, prms.tot_nods);
 	mc_init_arr_vals(prms.tot_nods, prms.arr_nods, mc_null);
+	prms.arr_endnods = mc_malloc32(pre_endnode*, prms.tot_nods);
+	mc_init_arr_vals(prms.tot_nods, prms.arr_endnods, mc_null);
+	
+	mc_workeru_nn_t nxt_nn = 0;
+	num_nod_t aa = 0;
+	for(aa = 0; aa < num_to_sort; aa++){
+		pre_endnode* end_nd = pre_endnode::acquire();
+		prms.arr_endnods[aa] = end_nd;
+		add_srt_endnod_to_glb_cnf(end_nd, nxt_nn);
+	}
 
 	if(THE_CNF != mc_null){
 		printf("THE_CNF not null \n");
@@ -209,14 +284,14 @@ bj_set_rnk_out(pre_sornode* nod, num_nod_t idx, pre_sornode* out){
 	PTD_CK(out != mc_null);
 	
 	bool sm_sz = (nod->srt_sz == out->srt_sz);
-	if(nod->up_idx == idx){
-		nod->out_up = out;
+	if(nod->up_pns.idx == idx){
+		nod->up_pns.out = out;
 		if(sm_sz){
 			nod->reset_up_end();
 		}
 	} else{
-		PTD_CK(nod->down_idx == idx);
-		nod->out_down = out;
+		PTD_CK(nod->down_pns.idx == idx);
+		nod->down_pns.out = out;
 		if(sm_sz){
 			nod->reset_down_end();
 		}
@@ -228,8 +303,6 @@ add_ranknod_to_glb_cnf(pre_sornode* nod, mc_workeru_nn_t& nxt_nn){
 	if(THE_CNF != mc_null){
 		long num_workerus = THE_CNF->tot_workerus;
 		PTD_CK(nxt_nn < num_workerus);
-
-		nod->nod_nn = nxt_nn;
 
 		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
 		cnf.tot_pre_rnknods++;
@@ -247,13 +320,23 @@ create_ranknet(num_nod_t num_to_rank){
 		printf("THE_CNF IS null !!! \n");
 		return;
 	}
-	//long num_workerus = THE_CNF->tot_workerus;
 
 	sornet_prms prms;
 	
 	num_nod_t tot_out_nod = num_to_rank;
-	pre_sornode**	all_out_nod = mc_malloc32(pre_sornode*, tot_out_nod);;
+	pre_sornode**	all_out_nod = mc_malloc32(pre_sornode*, tot_out_nod);
 	mc_init_arr_vals(tot_out_nod, all_out_nod, mc_null);
+	
+	pre_endnode** arr_endnods = mc_malloc32(pre_endnode*, tot_out_nod);
+	mc_init_arr_vals(tot_out_nod, arr_endnods, mc_null);
+	
+	mc_workeru_nn_t nxt_nn = 0;
+	num_nod_t aa = 0;
+	for(aa = 0; aa < tot_out_nod; aa++){
+		pre_endnode* end_nd = pre_endnode::acquire();
+		arr_endnods[aa] = end_nd;
+		add_rnk_endnod_to_glb_cnf(end_nd, nxt_nn);
+	}
 
 	num_nod_t tot_in_nod = num_to_rank;
 	pre_sornode**	all_in_nod = mc_malloc32(pre_sornode*, tot_in_nod);
@@ -285,10 +368,12 @@ create_ranknet(num_nod_t num_to_rank){
 			nod->srt_sz = jmp_sz;
 			
 			nod->nod_id = nod_id;
-			nod->up_idx = aa;
-			nod->down_idx = bb;
+			nod->up_pns.idx = aa;
+			nod->up_pns.axon = arr_endnods[aa];
+			nod->down_pns.idx = bb;
+			nod->down_pns.axon = arr_endnods[bb];
 
-			PTD_CK(nod->rnk_flags == 0);
+			PTD_CK(nod->edge_flags == 0);
 			nod->set_up_end();
 			nod->set_down_end();
 			
@@ -307,7 +392,6 @@ create_ranknet(num_nod_t num_to_rank){
 				PTD_DBG_CODE(n1_id = n1->nod_id);
 				bj_set_rnk_out(n1, aa, nod);
 				all_out_nod[aa] = nod;
-				//PTD_CK(n1->rnk_flags == 0);
 			}
 			
 			if(n2 == mc_null){
@@ -318,7 +402,6 @@ create_ranknet(num_nod_t num_to_rank){
 				PTD_DBG_CODE(n2_id = n2->nod_id);
 				bj_set_rnk_out(n2, bb, nod);
 				all_out_nod[bb] = nod;
-				//PTD_CK(n2->rnk_flags == 0);
 			}
 
 			add_ranknod_to_glb_cnf(nod, nxt_nn);
@@ -346,38 +429,3 @@ create_ranknet(num_nod_t num_to_rank){
 	}
 }
 
-void
-pre_sornode::dbg_log_nod(){
-	bool up_end = mc_get_flag(rnk_flags, bj_rnk_up_end_flag);
-	bool down_end = mc_get_flag(rnk_flags, bj_rnk_down_end_flag);
-	printf("rnk_nod_%ld %ld[%ld %ld] f(%d,%d) \n", nod_id, srt_sz, up_idx, down_idx, up_end, down_end);
-}
-
-void
-pre_sornode::reset_up_end(){
-	PTD_CK(mc_get_flag(rnk_flags, bj_rnk_up_end_flag));
-	mc_reset_flag(rnk_flags, bj_rnk_up_end_flag);
-	PTD_DBG_CODE(dbg_log_nod());
-}
-
-void
-pre_sornode::set_up_end(){
-	PTD_CK(! mc_get_flag(rnk_flags, bj_rnk_up_end_flag));
-	mc_set_flag(rnk_flags, bj_rnk_up_end_flag);
-	PTD_DBG_CODE(dbg_log_nod());
-}
-
-void
-pre_sornode::reset_down_end(){
-	PTD_CK(mc_get_flag(rnk_flags, bj_rnk_down_end_flag));
-	mc_reset_flag(rnk_flags, bj_rnk_down_end_flag);
-	PTD_DBG_CODE(dbg_log_nod());
-}
-
-void
-pre_sornode::set_down_end(){
-	PTD_CK(! mc_get_flag(rnk_flags, bj_rnk_down_end_flag));
-	mc_set_flag(rnk_flags, bj_rnk_down_end_flag);
-	PTD_DBG_CODE(dbg_log_nod());
-}
-	

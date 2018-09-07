@@ -49,8 +49,10 @@ void print_childs() bj_load_cod;
 void bj_load_main() bj_load_cod;
 void bj_load_init_handlers() bj_load_cod;
 void bj_load_shd_cnf() bj_load_cod;
-void bj_load_shd_sornet() bj_load_cod;
 
+void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all_ecells, 
+					  binder* nn_all_nods, binder* nn_all_sclls) bj_load_cod;
+void bj_load_shd_sornet() bj_load_cod;
 void bj_load_shd_ranknet() bj_load_cod;
 
 
