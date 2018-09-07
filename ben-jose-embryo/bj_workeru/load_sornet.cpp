@@ -6,7 +6,7 @@
 
 #define bj_get_loaded_of_pt(pt_cls, pt) (((pt_cls*)(pt))->loaded)
 
-#define bj_wait_set_pt(nod_cls, nod, out_cls, out, reset) \
+#define bj_wait_set_pt(nod_cls, nod, out_cls, out) \
 	if(nod != mc_null){ \
 		while(bj_get_loaded_of_pt(nod_cls, nod) == mc_null){ \
 			/* SPIN UNTIL SET (may be set by an other workeru) */ \
@@ -14,7 +14,6 @@
 		} \
 		PTD_CK(bj_get_loaded_of_pt(nod_cls, nod) != mc_null); \
 		out = (out_cls*)bj_get_loaded_of_pt(nod_cls, nod); \
-		if(reset){ nod = mc_null; } \
 	} \
 
 // end_macro
@@ -49,16 +48,16 @@ sorcell::load_from(pre_sornode* nod){
 	}
 	
 	void* pt_up_axon = (void*)mc_manageru_pt_to_workeru_pt(nod->up_pns.axon);
-	bj_wait_set_pt(pre_endnode, pt_up_axon, endcell, up_snp.axon, false);
+	bj_wait_set_pt(pre_endnode, pt_up_axon, endcell, up_snp.axon);
 	void* pt_down_axon = (void*)mc_manageru_pt_to_workeru_pt(nod->down_pns.axon);
-	bj_wait_set_pt(pre_endnode, pt_down_axon, endcell, down_snp.axon, false);
+	bj_wait_set_pt(pre_endnode, pt_down_axon, endcell, down_snp.axon);
 
 	PTD_CK(nod->loaded == mc_null);
 	nod->loaded = mck_as_glb_pt(scll);
 }
 
 void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all_ecells, 
-					  binder* nn_all_nods, binder* nn_all_sclls)
+					  binder* nn_all_nods, binder* nn_all_sclls, void* invalid_val)
 {
 	sorcell::separate(tot_nods);
 
@@ -93,23 +92,28 @@ void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		sorcell* scll = (sorcell*)wrk;
 
-		bj_wait_set_pt(pre_sornode, scll->up_snp.inp, sorcell, scll->up_snp.out, true);
-		bj_wait_set_pt(pre_sornode, scll->down_snp.inp, sorcell, scll->down_snp.out, true);
+		bj_wait_set_pt(pre_sornode, scll->up_snp.inp, sorcell, scll->up_snp.out);
+		bj_wait_set_pt(pre_sornode, scll->down_snp.inp, sorcell, scll->down_snp.out);
+		
+		scll->up_snp.inp = invalid_val;
+		scll->down_snp.inp = invalid_val;
 
-		PTD_CK(scll->up_snp.inp == mc_null);
-		PTD_CK(scll->down_snp.inp == mc_null);
+		PTD_CK(scll->up_snp.inp == invalid_val);
+		PTD_CK(scll->down_snp.inp == invalid_val);
 	};
 }
 
 void bj_load_shd_sornet(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
+	void* invalid_val = BJ_INVALID_SRT_OBJ;
 
 	binder* nn_all_endnods = &(nn_cnf->all_pre_srt_endnods); // nn_cnf is already workeru_pt 
 	binder* nn_all_eclls = &(my_net->all_endcells); // nn_cnf is already workeru_pt 
 	binder* nn_all_nods = &(nn_cnf->all_pre_sornods); // nn_cnf is already workeru_pt 
 	binder* nn_all_sclls = &(my_net->all_sorcells); // nn_cnf is already workeru_pt 
-	bj_load_shd_nods(nn_cnf->tot_pre_sornods, nn_all_endnods, nn_all_eclls, nn_all_nods, nn_all_sclls);
+	bj_load_shd_nods(nn_cnf->tot_pre_sornods, nn_all_endnods, nn_all_eclls, 
+					 nn_all_nods, nn_all_sclls, invalid_val);
 	
 	kernel* ker = mck_get_kernel();
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
@@ -142,7 +146,7 @@ void bj_load_shd_sornet(){
 		num_nod_t aa;
 		for(aa = 0; aa < tot_sorinp; aa++){
 			sorcell* inp_aa = (sorcell*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(all_input[aa]));
-			bj_wait_set_pt(pre_sornode, inp_aa, sorcell, all_sorcell[aa], false);
+			bj_wait_set_pt(pre_sornode, inp_aa, sorcell, all_sorcell[aa]);
 		}
 	}
 
@@ -152,12 +156,14 @@ void bj_load_shd_sornet(){
 void bj_load_shd_ranknet(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
+	void* invalid_val = BJ_INVALID_RNK_OBJ;
 
 	binder* nn_all_endnods = &(nn_cnf->all_pre_rnk_endnods); // nn_cnf is already workeru_pt 
 	binder* nn_all_eclls = &(my_net->all_endcells); // nn_cnf is already workeru_pt 
 	binder* nn_all_nods = &(nn_cnf->all_pre_rnknods); // nn_cnf is already workeru_pt
 	binder* nn_all_sclls = &(my_net->all_rnkcells); // nn_cnf is already workeru_pt
-	bj_load_shd_nods(nn_cnf->tot_pre_rnknods, nn_all_endnods, nn_all_eclls, nn_all_nods, nn_all_sclls);
+	bj_load_shd_nods(nn_cnf->tot_pre_rnknods, nn_all_endnods, nn_all_eclls, 
+					 nn_all_nods, nn_all_sclls, invalid_val);
 
 	kernel* ker = mck_get_kernel();
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
@@ -194,7 +200,7 @@ void bj_load_shd_ranknet(){
 		num_nod_t aa;
 		for(aa = 0; aa < tot_rnkinp; aa++){
 			sorcell* inp_aa = (sorcell*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(all_input[aa]));
-			bj_wait_set_pt(pre_sornode, inp_aa, sorcell, all_rnkcell[aa], false);
+			bj_wait_set_pt(pre_sornode, inp_aa, sorcell, all_rnkcell[aa]);
 		}
 	}
 

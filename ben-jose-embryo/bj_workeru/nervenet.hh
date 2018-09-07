@@ -690,6 +690,9 @@ public:
 
 #define BJ_INVALID_SRT_GRP BJ_INVALID_IDX
 
+#define BJ_INVALID_SRT_OBJ mc_null
+#define BJ_INVALID_RNK_OBJ ((void*)BJ_INVALID_IDX)
+
 struct mc_aligned sornapse {
 public:
 	num_nod_t 	min_col = BJ_INVALID_SRT_GRP;
@@ -701,8 +704,7 @@ public:
 	sorcell*	out = mc_null;
 	endcell*	axon = mc_null;
 
-	void reset() bj_sornet_cod;
-	void init() bj_sornet_cod;
+	void reset(void* invalid_val) bj_sornet_cod;
 	
 	bool jump_to_end(sorkind_t tmt_knd, num_nod_t srt_sz, bool is_end) bj_sornet_cod;
 	bool jump_to_srt_end(num_nod_t srt_sz) bj_sornet_cod;
@@ -726,14 +728,14 @@ public:
 	void init_me(int caller = 0) mc_external_code_ram;
 
 	void calc_color() bj_sornet_cod;
-	void sornet_reset() bj_sornet_cod;
-	void sornet_set_fields(sornet_transmitter* sn_tmt) bj_sornet_cod;
-	bool is_up_direct() bj_sornet_cod;
-	bool is_down_direct() bj_sornet_cod;
+	void sornet_reset(void* invalid_val) bj_sornet_cod;
+	void sornet_set_fields(sornet_transmitter* sn_tmt, void* invalid_val) bj_sornet_cod;
+	bool is_up_direct(void* invalid_val) bj_sornet_cod;
+	bool is_down_direct(void* invalid_val) bj_sornet_cod;
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
 
-	void sornet_handle_direct(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	void sornet_handle_direct(sornet_transmitter* sn_tmt, void* invalid_val) bj_sornet_cod;
 	
 	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
 	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;

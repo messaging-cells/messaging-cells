@@ -51,7 +51,7 @@ void bj_load_init_handlers() bj_load_cod;
 void bj_load_shd_cnf() bj_load_cod;
 
 void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all_ecells, 
-					  binder* nn_all_nods, binder* nn_all_sclls) bj_load_cod;
+					  binder* nn_all_nods, binder* nn_all_sclls, void* invalid_val) bj_load_cod;
 void bj_load_shd_sornet() bj_load_cod;
 void bj_load_shd_ranknet() bj_load_cod;
 

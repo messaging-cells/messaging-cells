@@ -41,7 +41,7 @@ Declaration of functions to use the sornet.
 #include "nervenet.hh"
 
 void sorcell_sornet_handler(missive* msv) bj_sornet_cod;
-void sorout_sornet_handler(missive* msv) bj_sornet_cod;
+void endcell_sornet_handler(missive* msv) bj_sornet_cod;
 void nervenet_sornet_handler(missive* msv) bj_sornet_cod;
 
 int bj_cmp_bin_objs(void* obj1, void* obj2) bj_sornet_cod;
