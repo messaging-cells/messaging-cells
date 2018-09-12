@@ -209,6 +209,8 @@ nervenet::nervenet(){
 	
 	dbg_tot_rcv_output_sorobjs = 0;
 	
+	all_srt_endcells = mc_null;
+	
 	all_output_sorobjs = mc_null;
 	all_output_sorcols = mc_null;
 
@@ -218,6 +220,7 @@ nervenet::nervenet(){
 	all_input_rnkgrps = mc_null;
 	all_input_rnk_min_grps = mc_null;
 	all_input_rnk_max_grps = mc_null;
+	
 	all_output_rnk_min_cols = mc_null;
 	all_output_rnk_max_cols = mc_null;
 	dbg_is_input_rnkgrps = mc_null;

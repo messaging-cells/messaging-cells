@@ -251,26 +251,57 @@ create_sornet(num_nod_t num_to_sort){
 	mc_init_arr_vals(prms.tot_nods, prms.arr_nods, mc_null);
 	prms.arr_endnods = mc_malloc32(pre_endnode*, prms.tot_nods);
 	mc_init_arr_vals(prms.tot_nods, prms.arr_endnods, mc_null);
-	
-	mc_workeru_nn_t nxt_nn = 0;
-	num_nod_t aa = 0;
-	for(aa = 0; aa < num_to_sort; aa++){
-		pre_endnode* end_nd = pre_endnode::acquire();
-		prms.arr_endnods[aa] = end_nd;
-		add_srt_endnod_to_glb_cnf(end_nd, nxt_nn);
-	}
 
+	pre_sornode** all_rnk_in_nod = mc_null;
+	pre_endnode** arr_rnk_endnods = mc_null;
+	
 	if(THE_CNF != mc_null){
 		printf("THE_CNF not null \n");
 
 		THE_CNF->tot_pre_sorinput_nod = prms.tot_nods;
 		THE_CNF->all_pre_sorinput_nod = prms.arr_nods;
+		THE_CNF->tot_pre_srt_end_nod = prms.tot_nods;
+		THE_CNF->all_pre_srt_end_nod = prms.arr_endnods;
+		
+		if(THE_CNF->all_pre_rank_in_nod != mc_null){
+			PTD_CK(THE_CNF->tot_pre_rank_in_nod == num_to_sort);
+			PTD_CK(THE_CNF->tot_pre_rank_end_nod == num_to_sort);
+			all_rnk_in_nod = THE_CNF->all_pre_rank_in_nod;
+			arr_rnk_endnods = THE_CNF->all_pre_rank_end_nod;
+			PTD_CK(arr_rnk_endnods != mc_null);
+		}
+	}
+	
+	mc_workeru_nn_t nxt_nn = 0;
+	num_nod_t aa = 0;
+	for(aa = 0; aa < num_to_sort; aa++){
+		pre_endnode* end_nd = pre_endnode::acquire();
+		end_nd->nxt.idx = aa;
+		
+		if(all_rnk_in_nod != mc_null){
+			PTD_CK(all_rnk_in_nod[aa] != mc_null);
+			PTD_CK(arr_rnk_endnods[aa] != mc_null);
+			PTD_CK(arr_rnk_endnods[aa]->nxt.idx == aa);
+			
+			end_nd->nxt.out = all_rnk_in_nod[aa];
+			end_nd->nxt.axon = arr_rnk_endnods[aa];
+		}
+		
+		prms.arr_endnods[aa] = end_nd;
+		add_srt_endnod_to_glb_cnf(end_nd, nxt_nn);
 	}
 
 	prms.tot_lvs = get_tot_levels(tot_pow2_nods);
 	prms.arr_lvs = (mc_workeru_nn_t*)calloc(prms.tot_lvs, sizeof(mc_workeru_nn_t));
 
 	create_net_sorter(0, tot_pow2_nods, prms);
+	
+	for(aa = 0; aa < num_to_sort; aa++){
+		if(all_rnk_in_nod != mc_null){
+			PTD_CK(prms.arr_nods[aa] != mc_null);
+			arr_rnk_endnods[aa]->nxt.out = prms.arr_nods[aa];
+		}
+	}
 
 	ZNQ_CODE(printf("\nTOT_INPUT_NODS=%ld TOT_POW2_NODS=%ld TOT_LVS=%ld \n", 
 					prms.tot_nods, tot_pow2_nods, prms.tot_lvs));
@@ -334,16 +365,18 @@ create_ranknet(num_nod_t num_to_rank){
 	num_nod_t aa = 0;
 	for(aa = 0; aa < tot_out_nod; aa++){
 		pre_endnode* end_nd = pre_endnode::acquire();
+		end_nd->nxt.idx = aa;
 		arr_endnods[aa] = end_nd;
 		add_rnk_endnod_to_glb_cnf(end_nd, nxt_nn);
 	}
 
-	num_nod_t tot_in_nod = num_to_rank;
-	pre_sornode**	all_in_nod = mc_malloc32(pre_sornode*, tot_in_nod);
-	mc_init_arr_vals(tot_in_nod, all_in_nod, mc_null);
+	pre_sornode**	all_in_nod = mc_malloc32(pre_sornode*, tot_out_nod);
+	mc_init_arr_vals(tot_out_nod, all_in_nod, mc_null);
 
-	THE_CNF->tot_pre_rank_in_nod = tot_in_nod;
+	THE_CNF->tot_pre_rank_in_nod = tot_out_nod;
 	THE_CNF->all_pre_rank_in_nod = all_in_nod;
+	THE_CNF->tot_pre_rank_end_nod = tot_out_nod;
+	THE_CNF->all_pre_rank_end_nod = arr_endnods;
 	
 	num_nod_t jmp_sz = 1;
 	bool lv_has_jmps = false;

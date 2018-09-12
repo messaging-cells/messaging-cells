@@ -252,8 +252,8 @@ preload_cnf(long sz, const long* arr){
 	}
 
 	//num_nod_t num_to_sort = mc_max((num_vars * 2), num_ccls);
-	create_sornet(BJ_DBG_TOT_INPUT_SORNODES);
 	create_ranknet(BJ_DBG_TOT_INPUT_RNKNODES);
+	create_sornet(BJ_DBG_TOT_INPUT_SORNODES);
 }
 
 

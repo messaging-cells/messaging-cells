@@ -402,10 +402,14 @@ void bj_load_main() {
 
 	bj_load_shd_cnf();
 	mck_slog2("end_of_load_shd_cnf \n");	
-	bj_load_shd_sornet();
-	mck_slog2("end_of_load_sornet \n");	
 	bj_load_shd_ranknet();
 	mck_slog2("end_of_load_ranknet \n");	
+	bj_load_shd_sornet();
+	mck_slog2("end_of_load_sornet \n");	
+	bj_init_ends_srt_sornet();
+	mck_slog2("end_of_init_srt_endcells\n");	
+	bj_init_ends_rnk_sornet();
+	mck_slog2("end_of_init_rnk_endcells\n");	
 
 	//MC_DBG(if(kernel::get_workeru_nn() == 0){ bj_test_func_1(); });
 

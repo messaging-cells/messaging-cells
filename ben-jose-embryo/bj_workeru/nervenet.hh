@@ -157,6 +157,7 @@ enum sornet_tok_t : mck_token_t {
 	bj_tok_sornet_rank_start,
 	bj_tok_sornet_rank_jump,
 	bj_tok_sornet_rank_step,
+	bj_tok_sornet_rank_obj,
 	bj_tok_sornet_rank_out,
 	bj_tok_sornet_end
 };
@@ -376,6 +377,8 @@ public:
 
 	sornet_transmitter() mc_external_code_ram;
 	~sornet_transmitter() mc_external_code_ram;
+	
+	void copy_sornet_transmitter(sornet_transmitter& orig) bj_sornet_cod;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) bj_sornet_cod;
@@ -706,6 +709,8 @@ public:
 
 	void reset(void* invalid_val) bj_sornet_cod;
 	
+	void set_snp_fields(sornet_transmitter* sn_tmt, bool set_inp = true) bj_sornet_cod;
+	
 	bool jump_to_end(sorkind_t tmt_knd, num_nod_t srt_sz, bool is_end) bj_sornet_cod;
 	bool jump_to_srt_end(num_nod_t srt_sz) bj_sornet_cod;
 	bool jump_to_rnk_end(num_nod_t srt_sz, bool is_end) bj_sornet_cod;
@@ -752,7 +757,7 @@ class mc_aligned endcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(endcell, mc_external_code_ram, mc_external_code_ram)
 
-	sornapse	out_snp;
+	sornapse	end_snp;
 	
 	endcell() mc_external_code_ram;
 	~endcell() mc_external_code_ram;
@@ -762,6 +767,9 @@ public:
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
 
+	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
@@ -769,7 +777,7 @@ public:
 bj_cmp_obj_func_t sornet_get_cmp_func(sorkind_t knd) bj_sornet_cod;
 void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col, num_nod_t max_col, 
 						num_nod_t min_grp, num_nod_t max_grp,
-						void* obj, cell* dst, num_nod_t idx) bj_sornet_cod;
+						void* obj, cell* dst, num_nod_t idx, endcell* ecll = mc_null) bj_sornet_cod;
 
 num_nod_t bj_sornet_calc_grp_sz(num_nod_t min_grp, num_nod_t max_grp) bj_sornet_cod;
 
@@ -1014,6 +1022,8 @@ public:
 	num_nod_t*	all_input_srt_max_grps;
 	
 	num_nod_t 	dbg_tot_rcv_output_sorobjs;
+
+	endcell**	all_srt_endcells;
 	
 	void**		all_output_sorobjs;
 	num_nod_t*	all_output_sorcols;
@@ -1057,22 +1067,22 @@ public:
 
 	bool sornet_check_order(sorkind_t knd) bj_sornet_cod;
 
-	void sornet_dbg_tests_handler(missive* msv) bj_sornet_cod;
-	bool sornet_dbg_send_nxt_step(sorkind_t knd) bj_sornet_cod;
-	void sornet_dbg_end_step(sorkind_t knd) bj_sornet_cod;
+	void sornet_dbg_tests_handler(missive* msv) mc_external_code_ram;
+	bool sornet_dbg_send_nxt_step(sorkind_t knd) mc_external_code_ram;
+	void sornet_dbg_end_step(sorkind_t knd) mc_external_code_ram;
 
-	void sornet_dbg_bin_send_step() bj_sornet_cod;
-	void sornet_dbg_bin_end_step() bj_sornet_cod;
-	mini_bit_arr_t sornet_dbg_bin_get_mini_sorted_arr() bj_sornet_cod;
+	void sornet_dbg_bin_send_step() mc_external_code_ram;
+	void sornet_dbg_bin_end_step() mc_external_code_ram;
+	mini_bit_arr_t sornet_dbg_bin_get_mini_sorted_arr() mc_external_code_ram;
 
-	void sornet_dbg_num_init_val_arr() bj_sornet_cod;
-	void sornet_dbg_num_send_step() bj_sornet_cod;
-	void sornet_dbg_num_end_step() bj_sornet_cod;
-	void sornet_dbg_num_print_input() bj_sornet_cod;
+	void sornet_dbg_num_init_val_arr() mc_external_code_ram;
+	void sornet_dbg_num_send_step() mc_external_code_ram;
+	void sornet_dbg_num_end_step() mc_external_code_ram;
+	void sornet_dbg_num_print_input() mc_external_code_ram;
 
-	void sornet_dbg_rnk_send_step() bj_sornet_cod;
-	void sornet_dbg_rnk_end_step() bj_sornet_cod;
-	void sornet_dbg_rnk_print_input() bj_sornet_cod;
+	void sornet_dbg_rnk_send_step() mc_external_code_ram;
+	void sornet_dbg_rnk_end_step() mc_external_code_ram;
+	void sornet_dbg_rnk_print_input() mc_external_code_ram;
 
 	nervenet* get_nervenet(mc_workeru_id_t workeru_id);
 

@@ -135,6 +135,7 @@ class mc_aligned pre_endnode : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_endnode, bj_load_cod)
 
+	pre_sornapse	nxt;
 	void* 			loaded;
 
 	pre_endnode(){
@@ -246,8 +247,14 @@ public:
 	num_nod_t tot_pre_sorinput_nod;
 	pre_sornode**	all_pre_sorinput_nod;
 
+	num_nod_t tot_pre_srt_end_nod;
+	pre_endnode**	all_pre_srt_end_nod;
+	
 	num_nod_t tot_pre_rank_in_nod;
 	pre_sornode**	all_pre_rank_in_nod;
+
+	num_nod_t tot_pre_rank_end_nod;
+	pre_endnode**	all_pre_rank_end_nod;
 	
 	long tot_workerus;
 	pre_cnf_net*		all_cnf;	//!< Array of \ref pre_cnf_net s to load in each workeru.

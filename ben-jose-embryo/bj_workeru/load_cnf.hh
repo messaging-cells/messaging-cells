@@ -50,8 +50,14 @@ void bj_load_main() bj_load_cod;
 void bj_load_init_handlers() bj_load_cod;
 void bj_load_shd_cnf() bj_load_cod;
 
+void bj_init_end_cells(binder* nn_all_endnods) bj_load_cod;
+
 void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all_ecells, 
 					  binder* nn_all_nods, binder* nn_all_sclls, void* invalid_val) bj_load_cod;
+					  
+void bj_init_ends_srt_sornet() bj_load_cod;
+void bj_init_ends_rnk_sornet() bj_load_cod;
+	
 void bj_load_shd_sornet() bj_load_cod;
 void bj_load_shd_ranknet() bj_load_cod;
 

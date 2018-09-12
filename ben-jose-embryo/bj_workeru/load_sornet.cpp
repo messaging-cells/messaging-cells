@@ -56,10 +56,34 @@ sorcell::load_from(pre_sornode* nod){
 	nod->loaded = mck_as_glb_pt(scll);
 }
 
+void bj_init_end_cells(binder* nn_all_endnods)
+{
+	binder * fst, * lst, * wrk;
+	
+	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_endnods->bn_right);
+	lst = nn_all_endnods;
+	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
+		pre_endnode* end_nd = (pre_endnode*)wrk;
+		PTD_CK(end_nd->loaded != mc_null);
+		endcell* ecll = (endcell*)(end_nd->loaded);
+		
+		PTD_CK(end_nd->nxt.idx == ecll->end_snp.idx);
+		if(end_nd->nxt.out != mc_null){
+			PTD_CK(ecll->end_snp.axon == mc_null);
+			bj_wait_set_pt(pre_sornode, end_nd->nxt.out, sorcell, ecll->end_snp.out);
+		}
+		if(end_nd->nxt.axon != mc_null){
+			PTD_CK(ecll->end_snp.axon == mc_null);
+			bj_wait_set_pt(pre_endnode, end_nd->nxt.axon, endcell, ecll->end_snp.axon);
+		}
+	}
+}
+
 void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all_ecells, 
 					  binder* nn_all_nods, binder* nn_all_sclls, void* invalid_val)
 {
 	sorcell::separate(tot_nods);
+	endcell::separate(tot_nods);
 
 	PTD_LOG("Separated_sorcells for NET %ld\n", tot_nods);
 
@@ -72,6 +96,7 @@ void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all
 		endcell* ecll = endcell::acquire();
 		
 		PTD_CK(end_nd->loaded == mc_null);
+		ecll->end_snp.idx = end_nd->nxt.idx;
 		end_nd->loaded = mck_as_glb_pt(ecll);
 		
 		nn_all_ecells->bind_to_my_left(*ecll);
@@ -103,6 +128,18 @@ void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all
 	};
 }
 
+void bj_init_ends_srt_sornet(){
+	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
+	binder* nn_all_endnods = &(nn_cnf->all_pre_srt_endnods); // nn_cnf is already workeru_pt 
+	bj_init_end_cells(nn_all_endnods);
+}
+
+void bj_init_ends_rnk_sornet(){
+	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
+	binder* nn_all_endnods = &(nn_cnf->all_pre_rnk_endnods); // nn_cnf is already workeru_pt 
+	bj_init_end_cells(nn_all_endnods);
+}
+
 void bj_load_shd_sornet(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
@@ -122,6 +159,8 @@ void bj_load_shd_sornet(){
 		pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->manageru_load_data);
 		pre_sornode** all_input = 
 			(pre_sornode**)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_pre_sorinput_nod));
+		pre_endnode** all_ends = 
+			(pre_endnode**)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_pre_srt_end_nod));
 
 		num_nod_t tot_sorinp = pre_cnf->tot_pre_sorinput_nod;
 		mck_slog2("TOT_INPUT_SORCELLS=");
@@ -136,17 +175,24 @@ void bj_load_shd_sornet(){
 		my_net->all_input_srt_max_grps = mc_malloc32(num_nod_t, tot_sorinp);
 		mc_init_arr_vals(tot_sorinp, my_net->all_input_srt_max_grps, BJ_INVALID_SRT_GRP);
 
+		my_net->all_srt_endcells = mc_malloc32(endcell*, tot_sorinp);
+		mc_init_arr_vals(tot_sorinp, my_net->all_srt_endcells, mc_null);
+		
 		my_net->all_output_sorobjs = mc_malloc32(void*, tot_sorinp);
 		mc_init_arr_vals(tot_sorinp, my_net->all_output_sorobjs, mc_null);
 		my_net->all_output_sorcols = mc_malloc32(num_nod_t, tot_sorinp);
 		mc_init_arr_vals(tot_sorinp, my_net->all_output_sorcols, 0);
 
 		sorcell** all_sorcell = my_net->all_input_sorcells;
+		endcell** all_endcell = my_net->all_srt_endcells;
 		
 		num_nod_t aa;
 		for(aa = 0; aa < tot_sorinp; aa++){
 			sorcell* inp_aa = (sorcell*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(all_input[aa]));
 			bj_wait_set_pt(pre_sornode, inp_aa, sorcell, all_sorcell[aa]);
+
+			endcell* end_aa = (endcell*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(all_ends[aa]));
+			bj_wait_set_pt(pre_endnode, end_aa, endcell, all_endcell[aa]);
 		}
 	}
 
@@ -188,10 +234,12 @@ void bj_load_shd_ranknet(){
 		mc_init_arr_vals(tot_rnkinp, my_net->all_input_rnk_min_grps, BJ_INVALID_SRT_GRP);
 		my_net->all_input_rnk_max_grps = mc_malloc32(num_nod_t, tot_rnkinp);
 		mc_init_arr_vals(tot_rnkinp, my_net->all_input_rnk_max_grps, BJ_INVALID_SRT_GRP);
+		
 		my_net->all_output_rnk_min_cols = mc_malloc32(num_nod_t, tot_rnkinp);
 		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnk_min_cols, BJ_INVALID_SRT_GRP);
 		my_net->all_output_rnk_max_cols = mc_malloc32(num_nod_t, tot_rnkinp);
 		mc_init_arr_vals(tot_rnkinp, my_net->all_output_rnk_max_cols, BJ_INVALID_SRT_GRP);
+		
 		my_net->dbg_is_input_rnkgrps = mc_malloc32(bool, tot_rnkinp);
 		mc_init_arr_vals(tot_rnkinp, my_net->dbg_is_input_rnkgrps, false);
 
