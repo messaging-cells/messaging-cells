@@ -38,12 +38,12 @@ synapse::stabi_handler(missive* msv){
 	dat.msv = msv;
 	dat.snp = this;
 	dat.tok = (stabi_tok_t)(sb_tmt->tok);
-	dat.sd = sb_tmt->wrk_side;
-	dat.ti = sb_tmt->wrk_tier;
-	dat.id_arr_sz = sb_tmt->id_arr_sz;
-	dat.id_arr = sb_tmt->id_arr;
+	//dat.sd = sb_tmt->wrk_side;
+	dat.ti = sb_tmt->d.stb.wrk_tier;
+	dat.id_arr_sz = sb_tmt->d.stb.id_arr_sz;
+	dat.id_arr = sb_tmt->d.stb.id_arr;
 
-	PTD_CK(dat.sd == side_left);
+	//PTD_CK(dat.sd == side_left);
 	PTD_CK(dat.ti != BJ_INVALID_NUM_TIER);
 	PTD_CK(stabi_vessel != mc_null);
 
@@ -194,7 +194,7 @@ int bj_cmp_synapses(synapse* snp1, synapse* snp2, signal_data* dat){
 
 void
 nervenode::stabi_recv_transmitter(signal_data* dat){
-	PTD_CK(dat->sd == side_left);
+	//PTD_CK(dat->sd == side_left);
 	PTD_CODE(
 		neurostate& stt = left_side;
 		PTD_CK(stt.stabi_num_tier != BJ_INVALID_NUM_TIER);
@@ -277,7 +277,7 @@ nervenode::stabi_recv_ping(signal_data* dat){
 
 void
 synapse::stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd, bool dbg_is_forced){
-	net_side_t sd = side_left;
+	//net_side_t sd = side_left;
 
 	if(bj_nervenet->act_left_side.sync_is_ending){ return; }
 
@@ -287,23 +287,27 @@ synapse::stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd, bool dbg_is
 	MC_DBG(node_kind_t the_ki = owner->ki);
 	MCK_CK((the_ki == nd_pos) || (the_ki == nd_neg) || (the_ki == nd_neu));
 	PTD_CODE(nervenode* rem_nd = mate->owner);
-	PTD_LOG("::stabi_send_transmitter_%s_t%d_%s [%s %ld ->> %s %s %ld k%d] \n", net_side_to_str(sd), ti, 
-		stabi_tok_to_str(tok), node_kind_to_str(owner->ki), owner->id, 
+	PTD_LOG("::stabi_send_transmitter_%s_t%d_%s [%s %ld ->> %s %s %ld k%d] \n", 
+			net_side_to_str(side_left), ti, stabi_tok_to_str(tok), node_kind_to_str(owner->ki), owner->id, 
 		((dbg_is_forced)?("FORCED"):("")), node_kind_to_str(rem_nd->ki), rem_nd->id, 
 		mc_id_to_nn(mc_addr_get_id(mate)));
 
 	stabi_transmitter* trm = stabi_transmitter::acquire();
+	trm->d.stb.wrk_tier = BJ_INVALID_NUM_TIER;
+	trm->d.stb.id_arr_sz = 0;
+	trm->d.stb.id_arr = mc_null;
+	
 	trm->src = this;
 	trm->dst = mate;
 	trm->tok = tok;
-	trm->wrk_side = sd;
-	trm->wrk_tier = ti;
+	//trm->wrk_side = sd;
+	trm->d.stb.wrk_tier = ti;
 	if(src_nd != mc_null){
-		trm->id_arr_sz = src_nd->stabi_arr_sz;
-		trm->id_arr = src_nd->stabi_arr;
+		trm->d.stb.id_arr_sz = src_nd->stabi_arr_sz;
+		trm->d.stb.id_arr = src_nd->stabi_arr;
 		EPH_CODE(
 			if(! mc_addr_is_local(mate)){
-				trm->id_arr = (num_syn_t*)mck_as_glb_pt(src_nd->stabi_arr);
+				trm->d.stb.id_arr = (num_syn_t*)mck_as_glb_pt(src_nd->stabi_arr);
 			}
 		);
 	}

@@ -51,7 +51,7 @@ void bj_dbg_separate(){
 		my_net->num_sep_tiersets = sep_tsts;
 	}
 
-	transmitter::separate(sep_msvs);
+	dbg_transmitter::separate(sep_msvs);
 	synset::separate(sep_ssts);
 	tierset::separate(-1);
 	synapse::separate(sep_snps);
@@ -60,8 +60,8 @@ void bj_dbg_separate(){
 
 	PTD_LOG("Separated transmitters %ld\n", sep_msvs);
 
-	transmitter* msv = transmitter::acquire();
-	PTD_CK(msv->wrk_side == side_invalid);
+	dbg_transmitter* msv = dbg_transmitter::acquire();
+	PTD_CK(msv->d.prp.wrk_side == side_invalid);
 	msv->src = my_net;
 	msv->dst = my_net;
 	msv->tok = bj_tok_load_no_lits;

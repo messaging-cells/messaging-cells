@@ -47,14 +47,14 @@ neuron::propag_handler(missive* msv){
 
 void
 synapse::propag_handler(missive* msv){
-	transmitter* tmt = (transmitter*)msv;
+	propag_transmitter* tmt = (propag_transmitter*)msv;
 
 	signal_data dat;
 	dat.msv = msv;
 	dat.snp = this;
 	dat.tok = (propag_tok_t)(tmt->tok);
-	dat.sd = tmt->wrk_side;
-	dat.ti = tmt->wrk_tier;
+	dat.sd = tmt->d.prp.wrk_side;
+	dat.ti = tmt->d.prp.wrk_tier;
 
 	PTD_CK(dat.ti != BJ_INVALID_NUM_TIER);
 
@@ -79,12 +79,12 @@ synapse::propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_fo
 		((dbg_is_forced)?("FORCED"):("")), node_kind_to_str(rem_nd->ki), rem_nd->id, 
 		mc_id_to_nn(mc_addr_get_id(mate)));
 
-	transmitter* trm = transmitter::acquire();
+	propag_transmitter* trm = propag_transmitter::acquire();
 	trm->src = this;
 	trm->dst = mate;
 	trm->tok = tok;
-	trm->wrk_side = sd;
-	trm->wrk_tier = ti;
+	trm->d.prp.wrk_side = sd;
+	trm->d.prp.wrk_tier = ti;
 	trm->send();
 }
 

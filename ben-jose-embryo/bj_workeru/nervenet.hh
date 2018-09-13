@@ -59,10 +59,10 @@ class pre_sornode;
 class pre_cnf_node;
 class pre_cnf_net;
 
-class transmitter;
-class sornet_transmitter;
-class stabi_transmitter;
-class sync_transmitter;
+class base_transmitter;
+//class sornet_transmitter;
+//class stabi_transmitter;
+//class sync_transmitter;
 class synapse;
 class nervenode;
 class neurostate;
@@ -257,10 +257,10 @@ public:
 
 BJ_DECLARE_CLS_NAM(synset)
 BJ_DECLARE_CLS_NAM(tierset)
-BJ_DECLARE_CLS_NAM(transmitter)
-BJ_DECLARE_CLS_NAM(sornet_transmitter)
-BJ_DECLARE_CLS_NAM(stabi_transmitter)
-BJ_DECLARE_CLS_NAM(sync_transmitter)
+BJ_DECLARE_CLS_NAM(base_transmitter)
+//BJ_DECLARE_CLS_NAM(sornet_transmitter)
+//BJ_DECLARE_CLS_NAM(stabi_transmitter)
+//BJ_DECLARE_CLS_NAM(sync_transmitter)
 BJ_DECLARE_CLS_NAM(synapse)
 BJ_DECLARE_CLS_NAM(nervenode)
 BJ_DECLARE_CLS_NAM(neuron)
@@ -341,29 +341,74 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-class mc_aligned transmitter : public missive {
+struct mc_aligned propag_transmitter_data {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(transmitter, bj_nervenet_mem)
-
 	net_side_t wrk_side;
 	num_tier_t wrk_tier;
+};
 
-	transmitter() mc_external_code_ram;
-	~transmitter() mc_external_code_ram;
+struct mc_aligned sornet_transmitter_data {
+public:
+	sorkind_t	knd;
+	num_nod_t	idx;
+	void*		inp;
+	num_nod_t 	min_col;
+	num_nod_t 	max_col;
+	num_nod_t 	min_grp;
+	num_nod_t 	max_grp;
+};
+
+struct mc_aligned stabi_transmitter_data {
+public:
+	num_tier_t wrk_tier;
+	num_syn_t	id_arr_sz;
+	num_syn_t*  id_arr;
+};
+
+struct mc_aligned sync_transmitter_data {
+public:
+	net_side_t wrk_side;
+	num_tier_t wrk_tier;
+	nervenode* 	 cfl_src;
+};
+
+union mc_aligned all_transmitter_data {
+public:
+	propag_transmitter_data prp;
+	sync_transmitter_data syc;
+	stabi_transmitter_data stb;
+	sornet_transmitter_data srt;
+};
+
+typedef base_transmitter sornet_transmitter;
+
+class mc_aligned base_transmitter : public missive {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(base_transmitter, bj_nervenet_mem)
+
+	all_transmitter_data d;
+
+	base_transmitter() mc_external_code_ram;
+	~base_transmitter() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
-
-	/*PTD_DBG_CODE(
-		virtual mc_opt_sz_fn 
-		void	dbg_release(int dbg_caller) mc_external_code_ram;
-	);*/
-
+	
+	void init_sornet_transmitter() bj_sornet_cod;
+	void copy_sornet_transmitter(sornet_transmitter& orig) bj_sornet_cod;
+	
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-class mc_aligned sornet_transmitter : public transmitter {
+typedef base_transmitter dbg_transmitter;
+typedef base_transmitter load_transmitter;
+typedef base_transmitter propag_transmitter;
+typedef base_transmitter sync_transmitter;
+typedef base_transmitter stabi_transmitter;
+
+/*
+class mc_aligned sornet_transmitter : public missive {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_sornet_cod)
 
@@ -387,10 +432,11 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-class mc_aligned stabi_transmitter : public transmitter {
+class mc_aligned stabi_transmitter : public missive {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(stabi_transmitter, bj_nervenet_mem)
 
+	num_tier_t wrk_tier;
 	num_syn_t	id_arr_sz;
 	num_syn_t*  id_arr;
 
@@ -402,14 +448,17 @@ public:
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
-};
+};*/
 
 #define bj_id_arr_copy(dst, sz, src) for(num_syn_t idx = 0; idx < sz; idx++){ dst[idx] = src[idx]; }
 
-class mc_aligned sync_transmitter : public transmitter {
+/*
+class mc_aligned sync_transmitter : public missive {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sync_transmitter, bj_nervenet_mem)
 
+	net_side_t wrk_side;
+	num_tier_t wrk_tier;
 	nervenode* 	 cfl_src;
 
 	sync_transmitter() mc_external_code_ram;
@@ -420,7 +469,7 @@ public:
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
-};
+};*/
 
 class mc_aligned synapse : public cell {
 public:
@@ -904,10 +953,10 @@ class mc_aligned dbg_stats {
 public:
 	mc_alloc_size_t dbg_tot_new_synset;
 	mc_alloc_size_t dbg_tot_new_tierset;
-	mc_alloc_size_t dbg_tot_new_transmitter;
-	mc_alloc_size_t dbg_tot_new_sornet_transmitter;
-	mc_alloc_size_t dbg_tot_new_stabi_transmitter;
-	mc_alloc_size_t dbg_tot_new_sync_transmitter;
+	mc_alloc_size_t dbg_tot_new_base_transmitter;
+	//mc_alloc_size_t dbg_tot_new_sornet_transmitter;
+	//mc_alloc_size_t dbg_tot_new_stabi_transmitter;
+	//mc_alloc_size_t dbg_tot_new_sync_transmitter;
 	mc_alloc_size_t dbg_tot_new_synapse;
 	mc_alloc_size_t dbg_tot_new_neurostate;
 	mc_alloc_size_t dbg_tot_new_nervenode;
@@ -961,10 +1010,10 @@ public:
 	mc_alloc_size_t	num_sep_tiersets;
 	mc_alloc_size_t	num_sep_tierdatas;
 
-	grip		ava_transmitters;
-	grip		ava_sornet_transmitters;
-	grip		ava_stabi_transmitters;
-	grip		ava_sync_transmitters;
+	grip		ava_base_transmitters;
+	//grip		ava_sornet_transmitters;
+	//grip		ava_stabi_transmitters;
+	//grip		ava_sync_transmitters;
 	grip		ava_synsets;
 	grip		ava_tiersets;
 	grip		ava_synapses;
@@ -1100,10 +1149,10 @@ void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) bj_sornet_c
 #define bj_num_sep_tierdatas (bj_nervenet->num_sep_tierdatas)
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
-#define bj_ava_transmitters (bj_nervenet->ava_transmitters)
-#define bj_ava_sornet_transmitters (bj_nervenet->ava_sornet_transmitters)
-#define bj_ava_stabi_transmitters (bj_nervenet->ava_stabi_transmitters)
-#define bj_ava_sync_transmitters (bj_nervenet->ava_sync_transmitters)
+#define bj_ava_base_transmitters (bj_nervenet->ava_base_transmitters)
+//define bj_ava_sornet_transmitters (bj_nervenet->ava_sornet_transmitters)
+//define bj_ava_stabi_transmitters (bj_nervenet->ava_stabi_transmitters)
+//define bj_ava_sync_transmitters (bj_nervenet->ava_sync_transmitters)
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
 #define bj_ava_tiersets (bj_nervenet->ava_tiersets)
 #define bj_ava_synapses (bj_nervenet->ava_synapses)

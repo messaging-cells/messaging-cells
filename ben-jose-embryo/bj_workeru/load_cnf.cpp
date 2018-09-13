@@ -81,7 +81,7 @@ void bj_load_shd_cnf(){
 		my_net->num_sep_tiersets = sep_tsts;
 	}
 
-	transmitter::separate(sep_msvs);
+	load_transmitter::separate(sep_msvs);
 	synset::separate(sep_ssts);
 	tierset::separate(-1);
 	synapse::separate(sep_snps);
@@ -174,8 +174,8 @@ void bj_load_shd_cnf(){
 			my_neu->left_side.step_active_set.add_left_synapse(my_snp, false);
 			my_neu->left_side.update_prv_tot_active();
 
-			transmitter* msv = transmitter::acquire();
-			PTD_CK(msv->wrk_side == side_invalid);
+			load_transmitter* msv = load_transmitter::acquire();
+			PTD_CK(msv->d.prp.wrk_side == side_invalid);
 			msv->src = my_snp;
 			msv->dst = my_pol;
 			msv->tok = bj_tok_load_nw_syn;
@@ -198,8 +198,8 @@ void bj_load_shd_cnf(){
 	}
 
 	if(tots.tot_lits == 0){
-		transmitter* msv = transmitter::acquire();
-		PTD_CK(msv->wrk_side == side_invalid);
+		load_transmitter* msv = load_transmitter::acquire();
+		PTD_CK(msv->d.prp.wrk_side == side_invalid);
 		msv->src = my_net;
 		msv->dst = my_net;
 		msv->tok = bj_tok_load_no_lits;
@@ -245,8 +245,8 @@ polaron::load_handler(missive* msv){
 	left_side.step_active_set.add_left_synapse(my_snp, false);
 	left_side.update_prv_tot_active();
 
-	transmitter* msv2 = transmitter::acquire();
-	PTD_CK(msv2->wrk_side == side_invalid);
+	load_transmitter* msv2 = load_transmitter::acquire();
+	PTD_CK(msv2->d.prp.wrk_side == side_invalid);
 	msv2->src = my_snp;
 	msv2->dst = mt_snp;
 	msv2->tok = bj_tok_load_nw_syn;
