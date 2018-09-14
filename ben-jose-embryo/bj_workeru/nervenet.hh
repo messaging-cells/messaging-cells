@@ -60,9 +60,6 @@ class pre_cnf_node;
 class pre_cnf_net;
 
 class base_transmitter;
-//class sornet_transmitter;
-//class stabi_transmitter;
-//class sync_transmitter;
 class synapse;
 class nervenode;
 class neurostate;
@@ -163,7 +160,7 @@ enum sornet_tok_t : mck_token_t {
 };
 
 enum bj_hdlr_idx_t : uint8_t {
-	idx_invalid,
+	idx_invalid = mc_idx_last + 1,
 	idx_synset,
 	idx_tierset,
 	idx_synapse,
@@ -258,9 +255,6 @@ public:
 BJ_DECLARE_CLS_NAM(synset)
 BJ_DECLARE_CLS_NAM(tierset)
 BJ_DECLARE_CLS_NAM(base_transmitter)
-//BJ_DECLARE_CLS_NAM(sornet_transmitter)
-//BJ_DECLARE_CLS_NAM(stabi_transmitter)
-//BJ_DECLARE_CLS_NAM(sync_transmitter)
 BJ_DECLARE_CLS_NAM(synapse)
 BJ_DECLARE_CLS_NAM(nervenode)
 BJ_DECLARE_CLS_NAM(neuron)
@@ -380,6 +374,11 @@ public:
 	sornet_transmitter_data srt;
 };
 
+typedef base_transmitter dbg_transmitter;
+typedef base_transmitter load_transmitter;
+typedef base_transmitter propag_transmitter;
+typedef base_transmitter sync_transmitter;
+typedef base_transmitter stabi_transmitter;
 typedef base_transmitter sornet_transmitter;
 
 class mc_aligned base_transmitter : public missive {
@@ -401,75 +400,7 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-typedef base_transmitter dbg_transmitter;
-typedef base_transmitter load_transmitter;
-typedef base_transmitter propag_transmitter;
-typedef base_transmitter sync_transmitter;
-typedef base_transmitter stabi_transmitter;
-
-/*
-class mc_aligned sornet_transmitter : public missive {
-public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, bj_sornet_cod)
-
-	sorkind_t	knd;
-	num_nod_t	idx;
-	void*		inp;
-	num_nod_t 	min_col;
-	num_nod_t 	max_col;
-	num_nod_t 	min_grp;
-	num_nod_t 	max_grp;
-
-	sornet_transmitter() mc_external_code_ram;
-	~sornet_transmitter() mc_external_code_ram;
-	
-	void copy_sornet_transmitter(sornet_transmitter& orig) bj_sornet_cod;
-
-	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0) bj_sornet_cod;
-
-	virtual
-	char* 	get_class_name() mc_external_code_ram;
-};
-
-class mc_aligned stabi_transmitter : public missive {
-public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(stabi_transmitter, bj_nervenet_mem)
-
-	num_tier_t wrk_tier;
-	num_syn_t	id_arr_sz;
-	num_syn_t*  id_arr;
-
-	stabi_transmitter() mc_external_code_ram;
-	~stabi_transmitter() mc_external_code_ram;
-
-	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0);
-
-	virtual
-	char* 	get_class_name() mc_external_code_ram;
-};*/
-
 #define bj_id_arr_copy(dst, sz, src) for(num_syn_t idx = 0; idx < sz; idx++){ dst[idx] = src[idx]; }
-
-/*
-class mc_aligned sync_transmitter : public missive {
-public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sync_transmitter, bj_nervenet_mem)
-
-	net_side_t wrk_side;
-	num_tier_t wrk_tier;
-	nervenode* 	 cfl_src;
-
-	sync_transmitter() mc_external_code_ram;
-	~sync_transmitter() mc_external_code_ram;
-
-	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0);
-
-	virtual
-	char* 	get_class_name() mc_external_code_ram;
-};*/
 
 class mc_aligned synapse : public cell {
 public:
@@ -954,9 +885,6 @@ public:
 	mc_alloc_size_t dbg_tot_new_synset;
 	mc_alloc_size_t dbg_tot_new_tierset;
 	mc_alloc_size_t dbg_tot_new_base_transmitter;
-	//mc_alloc_size_t dbg_tot_new_sornet_transmitter;
-	//mc_alloc_size_t dbg_tot_new_stabi_transmitter;
-	//mc_alloc_size_t dbg_tot_new_sync_transmitter;
 	mc_alloc_size_t dbg_tot_new_synapse;
 	mc_alloc_size_t dbg_tot_new_neurostate;
 	mc_alloc_size_t dbg_tot_new_nervenode;
@@ -1011,9 +939,6 @@ public:
 	mc_alloc_size_t	num_sep_tierdatas;
 
 	grip		ava_base_transmitters;
-	//grip		ava_sornet_transmitters;
-	//grip		ava_stabi_transmitters;
-	//grip		ava_sync_transmitters;
 	grip		ava_synsets;
 	grip		ava_tiersets;
 	grip		ava_synapses;
@@ -1150,9 +1075,6 @@ void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) bj_sornet_c
 
 #define bj_nervenet ((nervenet*)(kernel::get_sys()->user_data))
 #define bj_ava_base_transmitters (bj_nervenet->ava_base_transmitters)
-//define bj_ava_sornet_transmitters (bj_nervenet->ava_sornet_transmitters)
-//define bj_ava_stabi_transmitters (bj_nervenet->ava_stabi_transmitters)
-//define bj_ava_sync_transmitters (bj_nervenet->ava_sync_transmitters)
 #define bj_ava_synsets (bj_nervenet->ava_synsets)
 #define bj_ava_tiersets (bj_nervenet->ava_tiersets)
 #define bj_ava_synapses (bj_nervenet->ava_synapses)

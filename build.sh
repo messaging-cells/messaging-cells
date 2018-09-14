@@ -2,16 +2,18 @@
 
 # set -e
 
+CURR_DIR=`pwd`
+
 cd mc_maker
 make
-cd ..
+cd $CURR_DIR
 
-cd src/tests
+cd src/tests/src
 make
-cd ../..
+cd $CURR_DIR
 
 cd ben-jose-embryo/bj_maker
 make
-cd ../..
+cd $CURR_DIR
 
 

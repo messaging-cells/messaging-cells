@@ -725,6 +725,16 @@ bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
 #define	mc_usr_flag6 mc_flag6
 #define	mc_usr_flag7 mc_flag7
 
+enum mc_idx_t : uint8_t {
+	mc_idx_kernel,
+	mc_idx_agent,
+	mc_idx_cell,
+	mc_idx_missive,
+	mc_idx_agent_ref,
+	mc_idx_agent_grp,
+	mc_idx_last
+};
+
 class mc_aligned cell: public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(cell, mc_mod0_cod);

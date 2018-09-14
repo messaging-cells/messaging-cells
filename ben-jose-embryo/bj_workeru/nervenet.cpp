@@ -8,8 +8,6 @@ PLLA class_sizes:
 synset__40__
 tierset__32__
 base_transmitter__32__
-stabi_transmitter__40__
-sync_transmitter__40__
 synapse__48__
 neurostate__104__
 nervenode__240__
@@ -42,9 +40,6 @@ missive_handler_t bj_nil_handlers[1] = { mc_null };
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(base_transmitter, 32, bj_ava_base_transmitters, 0)
-//MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sornet_transmitter, 32, bj_ava_sornet_transmitters, 0)
-//MCK_DEFINE_MEM_METHODS_AND_GET_AVA(stabi_transmitter, 32, bj_ava_stabi_transmitters, 0)
-//MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sync_transmitter, 32, bj_ava_sync_transmitters, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synset, 32, bj_ava_synsets, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierset, 32, bj_ava_tiersets, bj_num_sep_tiersets)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synapse, 32, bj_ava_synapses, 0)
@@ -57,9 +52,6 @@ MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierdata, 32, bj_ava_tierdatas, bj_num_sep_ti
 BJ_DEFINE_GET_CLS_NAM(synset)
 BJ_DEFINE_GET_CLS_NAM(tierset)
 BJ_DEFINE_GET_CLS_NAM(base_transmitter)
-//BJ_DEFINE_GET_CLS_NAM(sornet_transmitter)
-//BJ_DEFINE_GET_CLS_NAM(stabi_transmitter)
-//BJ_DEFINE_GET_CLS_NAM(sync_transmitter)
 BJ_DEFINE_GET_CLS_NAM(synapse)
 BJ_DEFINE_GET_CLS_NAM(nervenode)
 BJ_DEFINE_GET_CLS_NAM(neuron)
@@ -257,68 +249,6 @@ base_transmitter::init_sornet_transmitter(){
 }
 
 //--------------
-
-/*sornet_transmitter::sornet_transmitter(){
-	PTD_CK(bj_nervenet != mc_null);
-	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_sornet_transmitter ++);
-	mck_slog2("alloc__sornet_transmitter\n");
-	//init_me();
-} 
-
-sornet_transmitter::~sornet_transmitter(){} 
-
-void
-sornet_transmitter::init_me(int caller){
-	missive::init_me(caller);
-	//transmitter::init_me(caller);
-	knd = sorkind_invalid;
-	idx = 0;
-	inp = mc_null;
-	max_col = BJ_INVALID_SRT_GRP;
-	min_col = BJ_INVALID_SRT_GRP;
-	min_grp = BJ_INVALID_SRT_GRP;
-	max_grp = BJ_INVALID_SRT_GRP;
-}*/
-
-//--------------
-
-/*stabi_transmitter::stabi_transmitter(){
-	PTD_CK(bj_nervenet != mc_null);
-	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_stabi_transmitter ++);
-	mck_slog2("alloc__stabi_transmitter\n");
-	//init_me();
-} 
-
-stabi_transmitter::~stabi_transmitter(){} 
-
-void
-stabi_transmitter::init_me(int caller){
-	missive::init_me(caller);
-	//transmitter::init_me(caller);
-	wrk_tier = BJ_INVALID_NUM_TIER;
-	id_arr_sz = 0;
-	id_arr = mc_null;
-}*/
-
-//--------------
-
-/*sync_transmitter::sync_transmitter(){
-	PTD_CK(bj_nervenet != mc_null);
-	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_sync_transmitter ++);
-	mck_slog2("alloc__sync_transmitter\n");
-	//init_me();
-} 
-
-sync_transmitter::~sync_transmitter(){} 
-
-void
-sync_transmitter::init_me(int caller){
-	missive::init_me(caller);
-	//transmitter::init_me(caller);
-	wrk_side = side_invalid;
-	wrk_tier = BJ_INVALID_NUM_TIER;
-	cfl_src = mc_null;
-}*/
 
 synset::synset(){
 	PTD_CK(bj_nervenet != mc_null);
@@ -1119,8 +1049,6 @@ dbg_stats::init_me(int caller){
 	dbg_tot_new_synset = 0;
 	dbg_tot_new_tierset = 0;
 	dbg_tot_new_base_transmitter = 0;
-	//dbg_tot_new_stabi_transmitter = 0;
-	//dbg_tot_new_sync_transmitter = 0;
 	dbg_tot_new_synapse = 0;
 	dbg_tot_new_neurostate = 0;
 	dbg_tot_new_nervenode = 0;
@@ -1136,8 +1064,6 @@ dbg_stats::dbg_prt_all(){
 	PTD_LOG("dbg_tot_new_synset = %d \n", dbg_tot_new_synset);
 	PTD_LOG("dbg_tot_new_tierset = %d \n", dbg_tot_new_tierset);
 	PTD_LOG("dbg_tot_new_base_transmitter = %d \n", dbg_tot_new_base_transmitter);
-	//PTD_LOG("dbg_tot_new_stabi_transmitter = %d \n", dbg_tot_new_stabi_transmitter);
-	//PTD_LOG("dbg_tot_new_sync_transmitter = %d \n", dbg_tot_new_sync_transmitter);
 	PTD_LOG("dbg_tot_new_synapse = %d \n", dbg_tot_new_synapse);
 	PTD_LOG("dbg_tot_new_neurostate = %d \n", dbg_tot_new_neurostate);
 	PTD_LOG("dbg_tot_new_nervenode = %d \n", dbg_tot_new_nervenode);
@@ -1169,12 +1095,6 @@ void bj_print_class_szs(){
 		mck_slog2("base_transmitter__");
 		mck_ilog(sizeof(base_transmitter));
 		mck_slog2("__\n");
-		//mck_slog2("stabi_transmitter__");
-		//mck_ilog(sizeof(stabi_transmitter));
-		//mck_slog2("__\n");
-		//mck_slog2("sync_transmitter__");
-		//mck_ilog(sizeof(sync_transmitter));
-		//mck_slog2("__\n");
 		mck_slog2("synapse__");
 		mck_ilog(sizeof(synapse));
 		mck_slog2("__\n");
@@ -1477,12 +1397,6 @@ neurostate::neu_is_to_delay(netstate& nstt, nervenode* nd, tier_kind_t tiki,
 	SYNC_CODE(bj_nervenet->act_left_side.dbg_prt_all_tiers(tiki, mc_cstr("TO_DELAY_"), ti));
 
 	tda.inc_rcv();
-	/*
-	if(to_dly){
-		tda.stl_neus++;
-	} else {
-		tda.inc_rcv();
-	}*/
 
 	return false;
 }
@@ -1598,7 +1512,6 @@ tierdata::proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, bool star_
 			break;
 		}
 
-		//PTD_CK(false);
 		//PTD_CK_PRT((tdt_id == (the_ti - 1)), "FAILED (%d != %d)", tdt_id, (the_ti - 1));
 		nervenode* nd = mc_null;
 		if(sd == side_left){
@@ -1764,7 +1677,6 @@ nervenet::sync_handler(tier_kind_t tiki, missive* msv){
 		((tmt_ti < lti.tdt_id)?("OLDER_TIER"):(""))
 	);
 
-	//if(tmt_ti < lti.tdt_id){
 	if((tmt_ti < lti.tdt_id) && (msv_tok != bj_tok_sync_to_children)){
 		PTD_CK_PRT((msv_tok != bj_tok_sync_to_children), "(%d < %d) \n", tmt_ti, lti.tdt_id);
 		return;

@@ -140,17 +140,6 @@ int mch_prt_in_workeru_shd_dat(mck_glb_sys_st* sh_dat){
 
 	fprintf(stderr, "dbg_progress_flag=0x%08x \n", sh_dat->dbg_progress_flag);
 
-	fprintf(stderr, "binder_sz=%d \n", sh_dat->binder_sz);
-	fprintf(stderr, "kernel_sz=%d \n", sh_dat->kernel_sz);
-	/*
-	fprintf(stderr, "agent_sz=%d \n", sh_dat->agent_sz);
-	fprintf(stderr, "cell_sz=%d \n", sh_dat->cell_sz);
-	fprintf(stderr, "missive_sz=%d \n", sh_dat->missive_sz);
-	fprintf(stderr, "agent_grp_sz=%d \n", sh_dat->agent_grp_sz);
-	fprintf(stderr, "agent_ref_sz=%d \n", sh_dat->agent_ref_sz);
-	fprintf(stderr, "mck_glb_sys_st_sz=%d \n", sh_dat->mck_glb_sys_st_sz);
-	*/
-
 	if(sh_dat->exception_code != mck_invalid_exception){
 		for(int aa = 0; aa < 5; aa++){
 			if(sh_dat->exception_code == mck_software_exception){

@@ -44,13 +44,13 @@ $(eval $(SET_CROSS_COMPILE))
 
 # -fno-extern-tls-init
 
-BUILD_DIR := ./ct_tmp_build
-TARGET_DIR := ./ct_install
+BUILD_DIR := ../ct_tmp_build
+TARGET_DIR := ../ct_install
 
 MC_DBG_FLAG := -DFULL_DEBUG
 
-CT_MC_LIBS_PLLA := ../../mc_maker/mc_install/parallella/lib
-CT_MC_LIBS_PTD := ../../mc_maker/mc_install/pthreads/lib
+CT_MC_LIBS_PLLA := ../../../mc_maker/mc_install/parallella/lib
+CT_MC_LIBS_PTD := ../../../mc_maker/mc_install/pthreads/lib
 
 MC_LDF=mc-linker-script.ldf
 
@@ -84,7 +84,7 @@ MC_ZNQ_LIBS :=
 MC_PTD_LIBS := 
 MC_EPH_LIBS := 
 
-MC_STD_INCDIRS := ../../cells ../../cells/manageru ${MC_ETOOLS}/host/include
+MC_STD_INCDIRS := ../../../cells ../../../cells/manageru ${MC_ETOOLS}/host/include
 
 #	./tak_mak_test/test_tak_mak.mk \
 #	./logs_test/logs_test.mk \

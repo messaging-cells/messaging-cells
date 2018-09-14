@@ -36,7 +36,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #BASE_DIR=$SCRIPT_DIR/../..
 
 cd $SCRIPT_DIR
-rm -rf ./ct_tmp_build
-rm -rf ./ct_install
+rm -rf ../ct_tmp_build
+rm -rf ../ct_install
 cd $CURR_DIR
 

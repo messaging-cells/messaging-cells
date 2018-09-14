@@ -168,15 +168,6 @@ kernel::init_sys(bool is_the_manageru){
 
 	mck_glb_sys_st* in_shd = MC_WORKERU_INFO;
 
-	in_shd->binder_sz = sizeof(binder);
-	in_shd->kernel_sz = sizeof(kernel);
-	in_shd->agent_sz = sizeof(agent);
-	in_shd->cell_sz = sizeof(cell);
-	in_shd->missive_sz = sizeof(missive);
-	in_shd->agent_ref_sz = sizeof(agent_ref);
-	in_shd->agent_grp_sz = sizeof(agent_grp);
-	in_shd->mck_glb_sys_st_sz = sizeof(mck_glb_sys_st);
-
 	in_shd->pt_workeru_kernel = mc_null;
 
 	mck_enable_all_irq();

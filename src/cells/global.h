@@ -79,16 +79,6 @@ struct mc_aligned mck_glb_sys_def {
 	mc_workeru_id_t		inited_workeru;
 	mck_exception_t 	exception_code;
 	
-	uint16_t 	binder_sz;
-	uint16_t 	kernel_sz;
-	uint16_t 	agent_sz;
-	uint16_t 	cell_sz;
-	uint16_t 	missive_sz;
-	uint16_t 	agent_grp_sz;
-	uint16_t 	agent_ref_sz;
-
-	uint16_t 	mck_glb_sys_st_sz;
-
 	uint32_t 	magic_end;
 
 	mc_off_workeru_st* off_workeru_pt;
