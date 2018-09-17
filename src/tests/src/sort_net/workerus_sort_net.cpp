@@ -11,7 +11,7 @@
 #define STABI_IDX 3
 #define SORNET_IDX 4
 
-missive_handler_t bj_nil_handlers[1] = { mc_null };
+//missive_handler_t bj_nil_handlers[1] = { mc_null };
 
 char* all_mod_nams[TOT_MODS] mc_external_data_ram;
 mc_addr_t* all_mod_addr;
@@ -86,7 +86,7 @@ sorting_net::sorting_net(){
 
 	handler_idx = idx_sorting_net;
 
-	mc_init_arr_vals(idx_total, all_handlers, mc_null);
+	mc_init_arr_vals(idx_total, srt_handlers, mc_null);
 
 	shd_cnf = mc_null;
 
@@ -121,13 +121,17 @@ sorting_net_sornet_handler(missive* msv){
 	MCK_CALL_HANDLER(sorting_net, sornet_handler, msv);
 }
 
+void sort_net_wrk_init_handlers() mc_external_code_ram;
 
-void bj_sornet_init_handlers(){
+void sort_net_wrk_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
 	hndlrs[idx_sorcell] = sorcell_sornet_handler;
 	hndlrs[idx_sorting_net] = sorting_net_sornet_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
 	kernel::set_handlers(idx_total, hndlrs);
 }
 
@@ -561,8 +565,7 @@ void mc_workerus_main() {
 
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
-	kernel::set_handlers(1, bj_nil_handlers);
-	bj_sornet_init_handlers();
+	sort_net_wrk_init_handlers();
 
 	PTD_LOG("SORNET___ %d \n", nn);
 

@@ -78,21 +78,21 @@ typedef void (*mc_kenel_func_t)(void);
 #define mck_cell_id(cls) MC_CELL_ID_##cls
 
 enum mck_cell_id_t : uint8_t {
-	mck_invalid_cell = 0,
-
+	mck_cell_id(kernel) = 0,
 	mck_cell_id(agent),
 	mck_cell_id(cell),
 	mck_cell_id(missive),
 	mck_cell_id(agent_ref),
 	mck_cell_id(agent_grp),
 
-	mck_tot_cell_ids
+	mck_tot_base_cell_classes
 };
 
 //-------------------------------------------------------------------------
 // dyn mem
 
 typedef void (*mc_dbg_alloc_func_t)(void* obj, mc_alloc_size_t sz);
+typedef void* (*mc_alloc_kernel_func_t)(mc_alloc_size_t sz);
 
 #define mck_all_available(nam) MCK_KERNEL->cls_available_##nam
 
@@ -139,9 +139,9 @@ nam::get_curr_separate_sz(){ \
 // end_macro
 
 #define MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
-void \
+nam* \
 nam::separate(mc_alloc_size_t sz){ \
-	if(sz == 0){ return; } \
+	if(sz == 0){ return mc_null; } \
 	if(sz == BJ_INVALID_ALLOC_SZ){ sz = nam::get_curr_separate_sz(); } \
 	grip& ava = all_ava; \
 	nam* obj = nam::acquire_alloc(sz); \
@@ -156,6 +156,7 @@ nam::separate(mc_alloc_size_t sz){ \
 			} \
 		); \
 	} \
+	return obj; \
 } \
 
 // end_macro
@@ -189,7 +190,7 @@ nam::acquire(mc_alloc_size_t sz){ \
 	static	mc_alloc_size_t	get_curr_separate_sz() mc_external_code_ram; \
 	static	nam*			acquire_alloc(mc_alloc_size_t sz = 1) mc_external_code_ram; \
 	static	nam*			acquire(mc_alloc_size_t sz = 1) module; \
-	static	void			separate(mc_alloc_size_t sz) mc_external_code_ram; \
+	static	nam*			separate(mc_alloc_size_t sz) mc_external_code_ram; \
 
 // end_macro
 
@@ -298,7 +299,7 @@ Every workeru must have one and only one kernel inited with kernel::init_sys.
 #define kernel_pw4_routed_arr_sz mck_tot_routes
 #define kernel_pw6_routed_arr_sz mck_tot_routes
 
-#define kernel_class_names_arr_sz mck_tot_cell_ids
+#define kernel_class_names_arr_sz mck_tot_base_cell_classes
 
 //if defined(XXX) && !defined(YYY) 
 
@@ -347,9 +348,12 @@ public:
 	uint32_t 	magic_id;
 	bool		is_manageru_kernel;
 
-	mck_handler_idx_t 	tot_handlers; //!< \ref kernel::all_handlers size.
-	missive_handler_t* 	all_handlers; //!< Current array of \ref missive handlers of \ref cell s for this workeru.
-
+	mck_handler_idx_t		tot_cell_subclasses; //!< Must be eq to \ref kernel::all_cell_handlers size.
+	missive_handler_t* 		all_cell_handlers; //!< Current array of \ref missive handlers
+	grip** 					all_cell_available; 
+	mc_alloc_kernel_func_t*	all_cell_acquire_alloc_funcs; 
+	mc_alloc_kernel_func_t*	all_cell_separate_funcs; 
+	
 	mc_bool_t signals_arr[kernel_signals_arr_sz];
 
 	missive_grp_t* pw0_routed_arr[kernel_pw0_routed_arr_sz];
@@ -497,7 +501,27 @@ public:
 	static cell*
 	get_manageru_cell() mc_external_code_ram;
 
-	//! \brief This methods sets \ref kernel::all_handlers to 'hdlrs' and it must have size 'tot_hdlrs'.
+	//! \brief This methods sets \ref kernel::tot_cell_subclasses ('tot_subcells' MUST be > 'mck_tot_base_cell_classes').*/
+	static void
+	set_tot_cell_subclasses(mck_handler_idx_t tot_subcells) mc_external_code_ram;
+
+	static void
+	init_kernel_cell_handlers(missive_handler_t* hdlrs) mc_external_code_ram;
+	
+	//! \brief This methods sets \ref kernel::all_cell_handlers to 'hdlrs', it must have size 'tot_cell_subclasses' and the last handler ('tot_cell_subclasses' - 1) must be '&kernel::invalid_handler_func'. The first 'mck_tot_base_cell_classes' are reserved for system use, so the user must not use those positions in the array.
+	static void
+	set_cell_handlers(missive_handler_t* hdlrs) mc_external_code_ram;
+
+	//! \brief This methods resets \ref kernel::all_cell_handlers in 'hdlrs' to mc_null with the last handler ('tot_cell_subclasses' - 1) pointing to '&kernel::invalid_handler_func'. It must have size 'tot_cell_subclasses'.
+	static void
+	reset_cell_handlers(missive_handler_t* hdlrs) mc_external_code_ram;
+
+	static	void
+	invalid_handler_func(missive* msg) mc_external_code_ram;
+	
+	static	void*
+	invalid_alloc_func(mc_alloc_size_t sz) mc_external_code_ram;
+	
 	static void
 	set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) mc_external_code_ram;
 
@@ -562,10 +586,11 @@ public:
 	kernel_first_cell_msv_handler(missive* msv) mc_external_code_ram;
 };
 
-#define mck_is_valid_handler_idx(idx) ((idx >= 0) && (idx < tot_handlers))
+#define mck_is_valid_handler_idx(idx) ((idx >= 0) && (idx < tot_cell_subclasses))
 
 #define mck_is_valid_handler_index(idx) \
-	((all_handlers != mc_null) && mck_is_valid_handler_idx(idx) && (all_handlers[idx] != mc_null))
+	((all_cell_handlers != mc_null) && mck_is_valid_handler_idx(idx) && \
+	(all_cell_handlers[idx] != mc_null))
 
 /*
 	PTD_CK_PRT(mck_is_valid_handler_idx(hdlr_idx), "WARNING !. Invalid handler_idx %d with %s dst=%p \n\n", \
@@ -574,9 +599,9 @@ public:
 */
 
 #define mck_handle_missive_base(msv, hdlr_idx) \
-	PTD_CK(mck_is_valid_handler_idx(hdlr_idx)); \
+	PTD_CK(mck_is_valid_handler_index(hdlr_idx)); \
 	if(mck_is_valid_handler_idx(hdlr_idx)){ \
-		(*(all_handlers[hdlr_idx]))(msv); \
+		(*(all_cell_handlers[hdlr_idx]))(msv); \
 	} \
 	PTD_DBG_CODE(msv->dbg_msv |= 0x2); \
 
@@ -725,7 +750,7 @@ bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
 #define	mc_usr_flag6 mc_flag6
 #define	mc_usr_flag7 mc_flag7
 
-enum mc_idx_t : uint8_t {
+/*enum mc_idx_t : uint8_t {
 	mc_idx_kernel,
 	mc_idx_agent,
 	mc_idx_cell,
@@ -733,13 +758,13 @@ enum mc_idx_t : uint8_t {
 	mc_idx_agent_ref,
 	mc_idx_agent_grp,
 	mc_idx_last
-};
+};*/
 
 class mc_aligned cell: public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(cell, mc_mod0_cod);
 
-	mck_handler_idx_t 	handler_idx; //!< The index of my handler function in \ref kernel::all_handlers.
+	mck_handler_idx_t 	handler_idx; //!< Index of my handler func in \ref kernel::all_cell_handlers.
 	mc_flags_t 		filaments;
 
 	mc_opt_sz_fn 

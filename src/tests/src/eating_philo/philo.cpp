@@ -82,8 +82,18 @@ class philosopher;
 
 #define PH_DBG PTD_PRT
 
-enum philo_tok_t : uint8_t {
-	tok_invalid,
+enum ph_hdlr_idx_t : mck_handler_idx_t {
+	idx_invalid = mck_tot_base_cell_classes,
+	idx_chopstick,
+	idx_philosopher,
+	idx_last_invalid,
+	idx_total
+};
+
+missive_handler_t philo_handlers[idx_total];
+
+enum philo_tok_t : mck_token_t {
+	tok_invalid = mck_tok_last + 1,
 	tok_eat,
 	tok_take,
 	tok_taken,
@@ -157,7 +167,8 @@ public:
 	~chopstick(){}
 
 	void init_chopstick(){
-		handler_idx = 1;
+		//handler_idx = 1;
+		handler_idx = idx_chopstick;
 		owner = mc_null;
 
 		last_src = mc_null;
@@ -209,7 +220,8 @@ public:
 	~philosopher(){}
 
 	void init_philosopher(){
-		handler_idx = 2;
+		//handler_idx = 2;
+		handler_idx = idx_philosopher;
 
 		left = mc_null;
 		right = mc_null;
@@ -350,11 +362,17 @@ chopstick_handler(missive* msv){
 	MCK_CALL_HANDLER(chopstick, handler, msv);
 }
 
-missive_handler_t the_handlers[] = {
-	mc_null,
-	chopstick_handler,
-	philosopher_handler
-};
+void philo_init_handlers(){
+	missive_handler_t* hndlrs = philo_handlers;
+	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_chopstick] = chopstick_handler;
+	hndlrs[idx_philosopher] = philosopher_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
+	kernel::set_handlers(idx_total, hndlrs);
+}
 
 void
 chopstick::handler(missive* msv){
@@ -734,8 +752,7 @@ void mc_workerus_main() {
 	glb_philo->lft_philo = get_philo(glb_philo->lft_phi_id);
 	glb_philo->rgt_philo = get_philo(glb_philo->rgt_phi_id);
 
-	PTD_PRT("the_handlers[0] = %p \n", (void*)(the_handlers[0]));
-	kernel::set_handlers(3, the_handlers);
+	philo_init_handlers();
 
 	missive::separate(mc_out_num_workerus);
 	agent_ref::separate(mc_out_num_workerus);

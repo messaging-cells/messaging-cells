@@ -37,6 +37,18 @@ Our Resurrected and Living, both in Body and Spirit,
 
 char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
+missive_handler_t nil_mgr_handlers[mck_tot_base_cell_classes];
+
+void sort_net_mgr_init_handlers(){
+	missive_handler_t* hndlrs = nil_mgr_handlers;
+	mc_init_arr_vals(mck_tot_base_cell_classes, hndlrs, mc_null);
+	hndlrs[mck_tot_base_cell_classes - 1] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(mck_tot_base_cell_classes);
+	kernel::set_cell_handlers(hndlrs);
+	kernel::set_handlers(mck_tot_base_cell_classes, hndlrs);
+}
+
 int mc_manageru_main(int argc, char *argv[])
 {
 	if(argc > 1){
@@ -46,8 +58,7 @@ int mc_manageru_main(int argc, char *argv[])
 
 	kernel::init_manageru_sys();
 
-	missive_handler_t the_handlers[] = { mc_null };
-	kernel::set_handlers(0, the_handlers);
+	sort_net_mgr_init_handlers();
 
 	kernel::run_manageru_sys();
 	kernel::finish_manageru_sys();

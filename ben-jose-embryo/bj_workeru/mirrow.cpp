@@ -7,12 +7,14 @@ nervenet_mirrow_handler(missive* msv){
 	MCK_CALL_HANDLER(nervenet, mirrow_handler, msv);
 }
 
-
 void bj_mirrow_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
 	hndlrs[idx_nervenet] = nervenet_mirrow_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
 	kernel::set_handlers(idx_total, hndlrs);
 }
 
@@ -201,7 +203,6 @@ void bj_mirrow_main() {
 
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
-	kernel::set_handlers(1, bj_nil_handlers);
 	bj_mirrow_init_handlers();
 
 	PTD_LOG("MIRROW___ %d \n", nn);

@@ -68,7 +68,10 @@ void bj_sornet_init_handlers(){
 	hndlrs[idx_sorcell] = sorcell_sornet_handler;
 	hndlrs[idx_endcell] = endcell_sornet_handler;
 	hndlrs[idx_nervenet] = nervenet_sornet_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
 	kernel::set_handlers(idx_total, hndlrs);
 }
 
@@ -291,7 +294,6 @@ void bj_sornet_main() {
 	
 	MCK_CK(sizeof(void*) >= sizeof(num_nod_t));
 
-	kernel::set_handlers(1, bj_nil_handlers);
 	bj_sornet_init_handlers();
 
 	PTD_LOG("SORNET___ %d \n", nn);

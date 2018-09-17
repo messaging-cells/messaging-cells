@@ -50,9 +50,9 @@ LD_EXTERNAL_MANAGERU_DATA_SIZE = 8M;	/* shared data (a big struct) */
 LD_EXTERNAL_MANAGERU_ALLOC_SIZE = 8M;	/* alloc (dynamic heap) shared data */ 
 
 LD_WORKERU_IVT_SIZE = 0x100;
-LD_WORKERU_CODE_SIZE = 16k - LD_WORKERU_IVT_SIZE;
-LD_WORKERU_STACK_SIZE = 18k - LD_WORKERU_CODE_SIZE - LD_WORKERU_IVT_SIZE;
-LD_WORKERU_MODULE_SIZE = 2k;
+LD_WORKERU_CODE_SIZE = 17k - LD_WORKERU_IVT_SIZE;
+LD_WORKERU_STACK_SIZE = 19k - LD_WORKERU_CODE_SIZE - LD_WORKERU_IVT_SIZE;
+LD_WORKERU_MODULE_SIZE = 1k;
 LD_WORKERU_ALLOC_SIZE = 12k;
 
 /* =============================================================================================== */

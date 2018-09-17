@@ -27,7 +27,10 @@ bj_propag_init_handlers(){
 	hndlrs[idx_neuron] = neuron_propag_handler;
 	hndlrs[idx_synapse] = synapse_propag_handler;
 	hndlrs[idx_nervenet] = nervenet_propag_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
 	kernel::set_handlers(idx_total, bj_handlers);
 }
 
@@ -631,7 +634,6 @@ neuron::propag_start_nxt_tier(signal_data* dat){
 void bj_propag_main() {
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
-	kernel::set_handlers(1, bj_nil_handlers);
 	bj_propag_init_handlers();
 
 	PTD_LOG("PROPAG___ %d \n", nn);

@@ -171,7 +171,7 @@ nervenet::nervenet(){
 
 	handler_idx = idx_nervenet;
 
-	mc_init_arr_vals(idx_total, all_handlers, mc_null);
+	mc_init_arr_vals(idx_total, all_net_handlers, mc_null);
 
 	shd_cnf = mc_null;
 

@@ -25,7 +25,10 @@ bj_dbg_only_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
 	hndlrs[idx_nervenet] = nervenet_dbg_only_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
 	kernel::set_handlers(idx_total, hndlrs);
 }
 
@@ -68,10 +71,14 @@ void bj_dbg_separate(){
 	msv->send();
 }
 
+typedef void* (*alloc_obj_fn_t)(mc_alloc_size_t sz);
+
 void bj_dbg_only_main() {
 	kernel* ker = mck_get_kernel();
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
+	alloc_obj_fn_t ff1 = (alloc_obj_fn_t)(&neuron::acquire_alloc);
+	
 	if(ker->magic_id != MC_MAGIC_ID){
 		mck_slog2("BAD_MAGIC\n");
 	}
@@ -88,11 +95,22 @@ void bj_dbg_only_main() {
 	bj_nervenet->shd_cnf = nn_cnf;
 	
 	bj_dbg_only_init_handlers();
+	
+	neuron* pt_neu = (neuron*)(*ff1)(1);
+	MC_MARK_USED(pt_neu);
+	PTD_CK(pt_neu != mc_null);
+	PTD_CK(pt_neu->ki == nd_invalid);
+	PTD_CK(pt_neu->handler_idx == idx_neuron);
+	PTD_CK(pt_neu->id == 0);
+	PTD_CK(pt_neu->sz == 0);
+	PTD_CK(pt_neu->creat_tier == 0);
 
+	PTD_LOG("idx_neuron = %d \n", idx_neuron);
+	
 	bj_dbg_separate();
 
 	kernel::run_sys();
 
-	PTD_LOG("\n=========================================================================\n");
+	PTD_LOG("\nEND_OF_DBG_ONLY===============================================================\n");
 }
 

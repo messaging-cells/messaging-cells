@@ -40,11 +40,20 @@ Our Resurrected and Living, both in Body and Spirit,
 
 class sequence;
 
-#define MAX_MSVS 5000
+#define MAX_MSVS 50
 
-#define PH_DBG PTD_PRT
+#define SQ_DBG PTD_PRT
 
 typedef uint32_t seq_tok_t;
+
+enum sq_hdlr_idx_t : mck_handler_idx_t {
+	idx_invalid = mck_tot_base_cell_classes,
+	idx_sequence,
+	idx_last_invalid,
+	idx_total
+};
+
+missive_handler_t sequence_handlers[idx_total];
 
 class sequence : public cell {
 public:
@@ -60,7 +69,7 @@ public:
 	~sequence(){}
 
 	void init_sequence(){
-		handler_idx = 1;
+		handler_idx = idx_sequence;
 
 		last_sent = 0;
 		last_recv = 0;
@@ -101,10 +110,16 @@ sequence_handler(missive* msv){
 	MCK_CALL_HANDLER(sequence, handler, msv);
 }
 
-missive_handler_t the_handlers[] = {
-	mc_null,
-	sequence_handler
-};
+void sequence_init_handlers(){
+	missive_handler_t* hndlrs = sequence_handlers;
+	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_sequence] = sequence_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
+	kernel::set_handlers(idx_total, hndlrs);
+}
 
 void
 sequence::handler(missive* msv){
@@ -118,7 +133,7 @@ sequence::handler(missive* msv){
 
 	bool is_sender = (nn == 1);
 
-	PH_DBG("is_sender=%d tok=%d last_recv=%d\n", is_sender, tok, last_recv);
+	SQ_DBG("is_sender=%d tok=%d last_recv=%d last_sent=%d\n", is_sender, tok, last_recv, last_sent);
 	PTD_CK(tok == (last_recv + 1));
 	last_recv = tok;
 
@@ -127,7 +142,7 @@ sequence::handler(missive* msv){
 	}
 
 	int num_rep = 1;
-	if(is_sender){
+	if(is_sender && (last_sent < (MAX_MSVS - 3))){
 		num_rep = glb_gg.gen_rand_int32_ie(1, 10);
 	}
 
@@ -188,7 +203,7 @@ void mc_workerus_main() {
 	mc_workeru_nn_t nn = ker->get_workeru_nn();
 	
 	if((nn != 0) && (nn != 1)){
-		PH_DBG("SKIP\n");
+		SQ_DBG("SKIP\n");
 		kernel::finish_sys();
 		return;
 	}
@@ -197,13 +212,13 @@ void mc_workerus_main() {
 	ker->user_data = workeru_dat;
 	ker->user_func = ker_func;
 
-	kernel::set_handlers(2, the_handlers);
+	sequence_init_handlers();
 
 	missive::separate(mc_out_num_workerus);
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
 
-	PH_DBG("started\n");
+	SQ_DBG("started\n");
 	if(nn == 1){
 		glb_gg.init_with_long(123);
 		glb_sender->send(glb_receiver, 1);
@@ -211,7 +226,7 @@ void mc_workerus_main() {
 
 	kernel::run_sys();
 
-	PH_DBG("SEQ_3 finished\n");
+	SQ_DBG("SEQ_3 finished\n");
 	mck_slog2("SEQUENCE 3 FINISHED !!\n");	
 
 	kernel::finish_sys();

@@ -56,8 +56,10 @@ recv_manageru_handler(missive* msg){
 	MC_MARK_USED(konn);
 
 
-	PTD_LOG("recv_manageru_handler. workeru_id=%lx workeru_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
-	PTD_PRT("RCV_MSV. workeru_id=%lx workeru_nn=%d src=%p dst=%p \n", koid, konn, msg->get_source(), msg->dst);
+	PTD_LOG("recv_manageru_handler. workeru_id=%lx workeru_nn=%d src=%p dst=%p \n", 
+			koid, konn, msg->get_source(), msg->dst);
+	PTD_PRT("RCV_MSV. workeru_id=%lx workeru_nn=%d src=%p dst=%p \n", 
+			koid, konn, msg->get_source(), msg->dst);
 
 	#ifdef WITH_RESPONSE
 		msg->dst->respond(msg, (msg->tok + 10)); 
@@ -65,27 +67,43 @@ recv_manageru_handler(missive* msg){
 	#endif 
 
 
+	// JUST for this test. NEVER call this func directly.
 	mck_get_kernel()->set_idle_exit();
 }
 
-missive_handler_t manageru_handlers[] = {
-	mc_null,
-	recv_manageru_handler
+enum sm_hdlr_idx_t : mck_handler_idx_t {
+	idx_invalid = mck_tot_base_cell_classes,
+	idx_recv_msg,
+	idx_last_invalid,
+	idx_total
 };
+
+missive_handler_t send_msg_mgr_handlers[idx_total];
+
+void send_msg_mgr_init_handlers(){
+	missive_handler_t* hndlrs = send_msg_mgr_handlers;
+	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_recv_msg] = recv_manageru_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
+	kernel::set_handlers(idx_total, hndlrs);
+}
 
 void
 send_manageru_main(){
 	kernel::init_manageru_sys();
 
-	kernel::set_handlers(2, manageru_handlers);
+	// JUST for this test. NEVER overwrite the first cell handler.
+	kernel::get_first_cell()->handler_idx = idx_recv_msg;
+	
+	send_msg_mgr_init_handlers();
 
 	cell::separate(mc_out_num_workerus);
 	missive::separate(mc_out_num_workerus);
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
-
-	//mck_slog2("MANAGERU started\n");
-	kernel::get_first_cell()->handler_idx = 1;
 
 	mc_size_t off_all_agts = mc_offsetof(&missive_grp_t::all_agts);
 	MC_MARK_USED(off_all_agts);

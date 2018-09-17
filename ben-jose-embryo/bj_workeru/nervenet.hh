@@ -160,7 +160,7 @@ enum sornet_tok_t : mck_token_t {
 };
 
 enum bj_hdlr_idx_t : uint8_t {
-	idx_invalid = mc_idx_last + 1,
+	idx_invalid = mck_tot_base_cell_classes,
 	idx_synset,
 	idx_tierset,
 	idx_synapse,
@@ -170,6 +170,7 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_endcell,
 	idx_tierdata,
 	idx_nervenet,
+	idx_last_invalid,
 	idx_total
 };
 
@@ -948,7 +949,7 @@ public:
 	grip		ava_endcells;
 	grip		ava_tierdatas;
 
-	missive_handler_t all_handlers[idx_total];
+	missive_handler_t all_net_handlers[idx_total];
 
 	pre_cnf_net*	shd_cnf;
 
@@ -1084,7 +1085,7 @@ void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) bj_sornet_c
 #define bj_ava_endcells (bj_nervenet->ava_endcells)
 #define bj_ava_tierdatas (bj_nervenet->ava_tierdatas)
 
-#define bj_handlers (bj_nervenet->all_handlers)
+#define bj_handlers (bj_nervenet->all_net_handlers)
 
 extern missive_handler_t bj_nil_handlers[];
 

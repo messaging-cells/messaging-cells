@@ -26,7 +26,10 @@ void bj_stabi_init_handlers(){
 	hndlrs[idx_neuron] = neuron_stabi_handler;
 	hndlrs[idx_synapse] = synapse_stabi_handler;
 	hndlrs[idx_nervenet] = nervenet_stabi_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
 	kernel::set_handlers(idx_total, hndlrs);
 }
 
@@ -659,7 +662,6 @@ void bj_stabi_main() {
 
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
-	kernel::set_handlers(1, bj_nil_handlers);
 	bj_stabi_init_handlers();
 
 	PTD_LOG("STABI___ %d \n", nn);

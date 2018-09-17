@@ -42,10 +42,15 @@ Our Resurrected and Living, both in Body and Spirit,
 
 /*! 
 \brief This function will handle messages for a \ref cell when it has zero in 
-\ref cell::handler_idx and \ref kernel::all_handlers has been set to \ref the_handlers 
+\ref cell::handler_idx and \ref kernel::all_handlers has been set to \ref send_msg_handlers 
 with \ref kernel::set_handlers
 */
 void recv_cell_handler(missive* msg);
+
+enum send_msg_tok_t : mck_token_t {
+	tok_invalid = mck_tok_last + 1,
+	tok_ping
+};
 
 void 
 recv_cell_handler(missive* msg){
@@ -61,22 +66,42 @@ recv_cell_handler(missive* msg){
 				koid, konn, msg->get_source(), msg->dst);
 	)
 
-	mck_slog2("GOT MISSIVE\n");
+	mck_slog2("GOT_MISSIVE\n");
 	
+	// JUST for this test. NEVER call this func directly.
 	mck_get_kernel()->set_idle_exit();
 }
+
+enum sm_hdlr_idx_t : mck_handler_idx_t {
+	idx_invalid = mck_tot_base_cell_classes,
+	idx_recv_msg,
+	idx_last_invalid,
+	idx_total
+};
 
 /*! 
 \brief This will be \ref kernel::all_handlers when \ref kernel::set_handlers gets called.
 */
-missive_handler_t the_handlers[] = {
-	recv_cell_handler  // Index 0. Cells with zero in handler_idx will handle missives with this handler.
-};
+missive_handler_t send_msg_handlers[idx_total];
+
+void send_msg_init_handlers(){
+	missive_handler_t* hndlrs = send_msg_handlers;
+	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_recv_msg] = recv_cell_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
+	kernel::set_handlers(idx_total, hndlrs);
+}
 
 void mc_workerus_main() {
 	kernel::init_sys();
 
-	kernel::set_handlers(1, the_handlers);
+	// JUST for this test. NEVER overwrite the first cell handler.
+	kernel::get_first_cell()->handler_idx = idx_recv_msg; 
+	
+	send_msg_init_handlers();
 
 	cell::separate(mc_out_num_workerus);
 	missive::separate(mc_out_num_workerus);
@@ -89,26 +114,27 @@ void mc_workerus_main() {
 	if(mck_is_ro_co_workeru(0,0)){
 		mck_slog2("WORKERU (0,0) started\n");
 
-		// Next line is just to remaind that every single cell should have a valid handler_idx. It was already 0.
-		kernel::get_first_cell()->handler_idx = 0;	// This is recv_cell_handler's index in the_handlers.
-
 		kernel::run_sys();
 	}
 	if(mck_is_ro_co_workeru(0,1)){
 		mck_slog2("WORKERU (0,1) started\n");
 		mc_workeru_id_t dst = mc_ro_co_to_id(0, 0);
-		
+
 		cell* act1 = kernel::get_first_cell();
 		cell* act2 = kernel::get_first_cell(dst);
 
 		missive* msv = missive::acquire();
+		msv->tok = tok_ping;
 		msv->src = act1;
 		msv->dst = act2;
 		msv->send();
 		mck_slog2("SENT MISSIVE\n");
 
+		// JUST for this test. NEVER call this func directly.
 		ker->set_idle_exit();
-		kernel::run_sys();
+		
+		// JUST for this test. NEVER call this func directly.
+		ker->handle_missives(); 
 	}
 
 	mck_slog2("FINISHED !!\n");	

@@ -39,11 +39,20 @@ Our Resurrected and Living, both in Body and Spirit,
 
 class sequence;
 
-#define MAX_MSVS 5000
+#define MAX_MSVS 50
 
 #define PH_DBG PTD_PRT
 
 typedef uint32_t seq_tok_t;
+
+enum sq_hdlr_idx_t : mck_handler_idx_t {
+	idx_invalid = mck_tot_base_cell_classes,
+	idx_sequence,
+	idx_last_invalid,
+	idx_total
+};
+
+missive_handler_t sequence_handlers[idx_total];
 
 class sequence : public cell {
 public:
@@ -59,7 +68,7 @@ public:
 	~sequence(){}
 
 	void init_sequence(){
-		handler_idx = 1;
+		handler_idx = idx_sequence;
 
 		last_sent = 0;
 		last_recv = 0;
@@ -97,10 +106,16 @@ sequence_handler(missive* msv){
 	MCK_CALL_HANDLER(sequence, handler, msv);
 }
 
-missive_handler_t the_handlers[] = {
-	mc_null,
-	sequence_handler
-};
+void sequence_init_handlers(){
+	missive_handler_t* hndlrs = sequence_handlers;
+	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_sequence] = sequence_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
+	kernel::set_handlers(idx_total, hndlrs);
+}
 
 void
 sequence::handler(missive* msv){
@@ -181,7 +196,7 @@ void mc_workerus_main() {
 	ker->user_data = workeru_dat;
 	ker->user_func = ker_func;
 
-	kernel::set_handlers(2, the_handlers);
+	sequence_init_handlers();
 
 	missive::separate(mc_out_num_workerus);
 	agent_ref::separate(mc_out_num_workerus);

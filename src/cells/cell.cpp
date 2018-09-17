@@ -93,9 +93,12 @@ kernel::init_kernel(){
 	magic_id = MC_MAGIC_ID;
 	is_manageru_kernel = false;
 
-	tot_handlers = 0;
-	all_handlers = mc_null;
-
+	tot_cell_subclasses = 0;
+	all_cell_handlers = mc_null;
+	all_cell_available = mc_null; 
+	all_cell_acquire_alloc_funcs = mc_null; 
+	all_cell_separate_funcs = mc_null; 
+	
 	mc_init_arr_vals(kernel_signals_arr_sz, signals_arr, mc_false);
 
 	mc_init_arr_vals(kernel_pw0_routed_arr_sz, pw0_routed_arr, mc_null);
@@ -340,6 +343,63 @@ kernel::get_manageru_cell(){
 	return ker->manageru_kernel->first_cell;
 }
 
+void	// static
+kernel::set_tot_cell_subclasses(mck_handler_idx_t tot_subcells){
+	if(tot_subcells < mck_tot_base_cell_classes){
+		mck_abort(__LINE__, 
+		MC_ABORT_MSG("kernel::set_tot_cell_subclasses. Minimal value is mck_tot_base_cell_classes.\n"));
+		return;
+	}
+	kernel* ker = MCK_KERNEL;
+	ker->tot_cell_subclasses = tot_subcells;
+}
+
+void	// static
+kernel::init_kernel_cell_handlers(missive_handler_t* hdlrs){
+	kernel* ker = MCK_KERNEL;
+	if(ker->tot_cell_subclasses < mck_tot_base_cell_classes){
+		mck_abort(__LINE__, 
+		MC_ABORT_MSG("kernel::init_kernel_cell_handlers. Use 'set_tot_cell_subclasses' first.\n"));
+		return;
+	}
+	PTD_CK(mck_cell_id(kernel) == 0);
+	mc_init_arr_vals(mck_tot_base_cell_classes, hdlrs, mc_null);
+	hdlrs[mck_cell_id(kernel)] = mc_kernel_handler;
+}
+	
+void	// static
+kernel::set_cell_handlers(missive_handler_t* hdlrs){
+	kernel* ker = MCK_KERNEL;
+	mck_handler_idx_t tot = ker->tot_cell_subclasses;
+	if(hdlrs[tot - 1] != (&kernel::invalid_handler_func)){
+		mck_abort(__LINE__, 
+		MC_ABORT_MSG("kernel::set_cell_handlers. Last pt must be to &kernel::invalid_handler_func.\n"));
+		return;
+	}
+	init_kernel_cell_handlers(hdlrs);
+	ker->all_cell_handlers = hdlrs;
+	hdlrs[tot - 1] = &kernel::invalid_handler_func;
+}
+
+void	// static
+kernel::reset_cell_handlers(missive_handler_t* hdlrs){
+	set_cell_handlers(hdlrs);
+	kernel* ker = MCK_KERNEL;
+	mck_handler_idx_t tot = ker->tot_cell_subclasses;
+	mc_init_arr_vals(tot, hdlrs, mc_null);
+	init_kernel_cell_handlers(hdlrs);
+	hdlrs[tot - 1] = &kernel::invalid_handler_func;
+}
+
+void	// static
+kernel::invalid_handler_func(missive* msg){
+}
+
+void*	// static
+kernel::invalid_alloc_func(mc_alloc_size_t sz){ 
+	return mc_null; 
+}
+
 void // static
 kernel::fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 	if(tot_hdlrs > 0){
@@ -358,10 +418,7 @@ kernel::fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
 
 void // static 
 kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
-	kernel* ker = MCK_KERNEL;
-	kernel::fix_handlers(tot_hdlrs, hdlrs);
-	ker->tot_handlers = tot_hdlrs;
-	ker->all_handlers = hdlrs;
+	// deprecated
 }
 
 void 
@@ -469,7 +526,7 @@ kernel::handle_missives(){
 	kernel* ker = this;
 	binder * fst, * lst, * wrk, * nxt;
 
-	if(all_handlers == mc_null){
+	if(all_cell_handlers == mc_null){
 		//mck_slog2(MC_ERR_CELL_01);
 		//PTD_PRT(MC_ERR_CELL_01);
 		mck_abort(__LINE__, MC_ABORT_MSG(MC_ERR_CELL_01));
@@ -974,7 +1031,7 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 			}
 			if(rcvd_stop_key != rem_key){
 				mck_abort(__LINE__, 
-					MC_ABORT_MSG("kernel::kernel_first_cell_msv_handler. Inconsistent received sotp key.\n"));
+				MC_ABORT_MSG("kernel::kernel_first_cell_msv_handler. Inconsistent received stop key.\n"));
 			}
 
 			num_childs_stopping++;

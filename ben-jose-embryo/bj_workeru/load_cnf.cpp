@@ -33,7 +33,10 @@ bj_load_init_handlers(){
 	hndlrs[idx_nervenet] = nervenet_load_handler;
 	hndlrs[idx_polaron] = polaron_load_handler;
 	hndlrs[idx_synapse] = synapse_load_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
 	kernel::set_handlers(idx_total, hndlrs);
 }
 

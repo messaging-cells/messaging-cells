@@ -17,6 +17,19 @@ char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
 
 void bj_test(int argc, char *argv[]) mc_external_code_ram;
 int bj_manageru_main(int argc, char *argv[]) mc_external_code_ram;
+void bj_mgr_init_handlers() mc_external_code_ram;
+
+missive_handler_t bj_mgr_handlers[mck_tot_base_cell_classes];
+
+void bj_mgr_init_handlers(){
+	missive_handler_t* hndlrs = bj_mgr_handlers;
+	mc_init_arr_vals(mck_tot_base_cell_classes, hndlrs, mc_null);
+	hndlrs[mck_tot_base_cell_classes - 1] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(mck_tot_base_cell_classes);
+	kernel::set_cell_handlers(hndlrs);
+	kernel::set_handlers(mck_tot_base_cell_classes, hndlrs);
+}
 
 int bj_manageru_main(int argc, char *argv[])
 {
@@ -85,8 +98,7 @@ int bj_manageru_main(int argc, char *argv[])
 	//print_cnf();
 	//print_workeru_cnfs();
 
-	missive_handler_t the_handlers[] = { mc_null };
-	kernel::set_handlers(0, the_handlers);
+	bj_mgr_init_handlers();
 
 	kernel::run_manageru_sys();
 	kernel::finish_manageru_sys();
@@ -245,12 +257,12 @@ void bj_mc_test_2(int argc, char *argv[])
 		printf("%s <min> <max> \n", argv[0]);
 		return; 
 	}
-	num_nod_t min_idx = atol(argv[1]);
+	/*num_nod_t min_idx = atol(argv[1]);
 	num_nod_t max_idx = atol(argv[2]);
 
 	num_nod_t grp_sz = 0;
 	//grp_sz = bj_sornet_calc_grp_sz(min_idx, max_idx);
-	printf("grp_sz = %ld \n", grp_sz);
+	printf("grp_sz = %ld \n", grp_sz);*/
 }
 
 #endif

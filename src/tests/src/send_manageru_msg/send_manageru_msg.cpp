@@ -42,14 +42,31 @@ recv_workeru_handler(missive* msg){
 
 	mck_sprt2("WORKERU_GOT_RESPONSE\n");
 	PTD_PRT("RCV_RESPONSE. src=%p dst=%p \n", msg->get_source(), msg->dst);
+	PTD_LOG("RCV_RESPONSE. src=%p dst=%p \n", msg->get_source(), msg->dst);
 	
+	// JUST for this test. NEVER call this func directly.
 	mck_get_kernel()->set_idle_exit();
 }
 
-missive_handler_t workeru_handlers[] = {
-	mc_null,
-	recv_workeru_handler
+enum sm_hdlr_idx_t : mck_handler_idx_t {
+	idx_invalid = mck_tot_base_cell_classes,
+	idx_recv_msg,
+	idx_last_invalid,
+	idx_total
 };
+
+missive_handler_t send_msg_handlers[idx_total];
+
+void send_msg_init_handlers(){
+	missive_handler_t* hndlrs = send_msg_handlers;
+	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_recv_msg] = recv_workeru_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
+	kernel::set_handlers(idx_total, hndlrs);
+}
 
 void mc_workerus_main() {
 	kernel::init_sys();
@@ -59,15 +76,16 @@ void mc_workerus_main() {
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
 
-	kernel::get_first_cell()->handler_idx = 1;
-
+	// JUST for this test. NEVER overwrite the first cell handler.
+	kernel::get_first_cell()->handler_idx = idx_recv_msg; 
+	
 	kernel* ker = mck_get_kernel();
 	MC_MARK_USED(ker);
 
 	if(mck_is_ro_co_workeru(0,0)){
 		mck_slog2("WORKERU (0,0) started\n");
 
-		kernel::set_handlers(2, workeru_handlers);
+		send_msg_init_handlers();
 
 		cell* act1 = kernel::get_first_cell();
 		cell* act2 = kernel::get_manageru_cell();
@@ -88,8 +106,10 @@ void mc_workerus_main() {
 		msv->send_to_manageru();
 
 		PTD_PRT("SND_SENT H MISSIVE\n");
+		PTD_LOG("SND_SENT H MISSIVE\n");
 
 		#ifndef WITH_RESPONSE
+			// JUST for this test. NEVER call this func directly.
 			ker->set_idle_exit();
 		#endif
 

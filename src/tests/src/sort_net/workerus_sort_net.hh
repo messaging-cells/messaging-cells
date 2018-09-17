@@ -82,10 +82,11 @@ enum sornet_tok_t : mck_token_t {
 	bj_tok_sornet_end
 };
 
-enum bj_hdlr_idx_t : uint8_t {
-	idx_invalid,
+enum bj_hdlr_idx_t : mck_handler_idx_t {
+	idx_invalid = mck_tot_base_cell_classes,
 	idx_sorcell,
 	idx_sorting_net,
+	idx_last_invalid,
 	idx_total
 };
 
@@ -204,7 +205,7 @@ public:
 	grip		ava_sornet_signals;
 	grip		ava_sorcells;
 
-	missive_handler_t all_handlers[idx_total];
+	missive_handler_t srt_handlers[idx_total];
 
 	pre_sort_net*	shd_cnf;
 
@@ -262,9 +263,9 @@ char* tok_to_str(sornet_tok_t the_tok);
 #define bj_ava_sornet_signals (bj_sorting_net->ava_sornet_signals)
 #define bj_ava_sorcells (bj_sorting_net->ava_sorcells)
 
-#define bj_handlers (bj_sorting_net->all_handlers)
+#define bj_handlers (bj_sorting_net->srt_handlers)
 
-extern missive_handler_t bj_nil_handlers[];
+//extern missive_handler_t bj_nil_handlers[];
 
 #define	bj_dbg_prt_nd_neu_flag mc_flag1
 #define	bj_dbg_prt_nd_pol_flag mc_flag2
@@ -285,7 +286,7 @@ void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, nu
 void bj_load_shd_sornet();
 
 void bj_sornet_kernel_func() bj_sornet_cod;
-void bj_sornet_init_handlers() mc_external_code_ram;
+//void bj_sornet_init_handlers() mc_external_code_ram;
 void bj_sornet_main() bj_sornet_cod;
 
 #endif		// WORKERUS_SORT_NET_H
