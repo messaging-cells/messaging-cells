@@ -134,7 +134,7 @@ void mc_workerus_main() {
 			mck_abort(1, mc_cstr("mck_load_module failed for CNF_LOADER_IDX. \n"));
 		}
 		bj_load_main();
-
+		
 		PTD_CK(PROPAG_IDX < TOT_MODS);
 		ok = mck_load_module(all_mod_addr[PROPAG_IDX]);
 		if(! ok){
@@ -151,7 +151,7 @@ void mc_workerus_main() {
 		bj_stabi_main();
 
 		PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
-
+		
 	#endif
 
 	//PTD_PRT("SOLVER_ENDED\n");

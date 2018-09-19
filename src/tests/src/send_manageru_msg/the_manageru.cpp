@@ -88,7 +88,6 @@ void send_msg_mgr_init_handlers(){
 
 	kernel::set_tot_cell_subclasses(idx_total);
 	kernel::set_cell_handlers(hndlrs);
-	kernel::set_handlers(idx_total, hndlrs);
 }
 
 void

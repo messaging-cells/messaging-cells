@@ -65,7 +65,6 @@ void send_msg_init_handlers(){
 
 	kernel::set_tot_cell_subclasses(idx_total);
 	kernel::set_cell_handlers(hndlrs);
-	kernel::set_handlers(idx_total, hndlrs);
 }
 
 void mc_workerus_main() {
@@ -92,7 +91,8 @@ void mc_workerus_main() {
 
 		PTD_CK_PRT((mc_addr_get_id((mc_addr_t)act2) != 0), "act2 = %p\n", act2);
 
-		missive* msv = missive::acquire();
+		missive* msv = mc_missive_acquire();
+		
 		msv->src = act1;
 		msv->dst = act2;
 		msv->tok = 432;

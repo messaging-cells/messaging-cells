@@ -43,7 +43,7 @@ Our Resurrected and Living, both in Body and Spirit,
 /*! 
 \brief This function will handle messages for a \ref cell when it has zero in 
 \ref cell::handler_idx and \ref kernel::all_handlers has been set to \ref send_msg_handlers 
-with \ref kernel::set_handlers
+with \ref kernel::set_cell_handlers
 */
 void recv_cell_handler(missive* msg);
 
@@ -66,6 +66,7 @@ recv_cell_handler(missive* msg){
 				koid, konn, msg->get_source(), msg->dst);
 	)
 
+	PTD_PRT("GOT_MISSIVE\n");
 	mck_slog2("GOT_MISSIVE\n");
 	
 	// JUST for this test. NEVER call this func directly.
@@ -80,7 +81,7 @@ enum sm_hdlr_idx_t : mck_handler_idx_t {
 };
 
 /*! 
-\brief This will be \ref kernel::all_handlers when \ref kernel::set_handlers gets called.
+\brief This will be \ref kernel::all_handlers when \ref kernel::set_cell_handlers gets called.
 */
 missive_handler_t send_msg_handlers[idx_total];
 
@@ -92,7 +93,6 @@ void send_msg_init_handlers(){
 
 	kernel::set_tot_cell_subclasses(idx_total);
 	kernel::set_cell_handlers(hndlrs);
-	kernel::set_handlers(idx_total, hndlrs);
 }
 
 void mc_workerus_main() {
@@ -123,7 +123,8 @@ void mc_workerus_main() {
 		cell* act1 = kernel::get_first_cell();
 		cell* act2 = kernel::get_first_cell(dst);
 
-		missive* msv = missive::acquire();
+		missive* msv = mc_missive_acquire();
+		
 		msv->tok = tok_ping;
 		msv->src = act1;
 		msv->dst = act2;
@@ -133,8 +134,7 @@ void mc_workerus_main() {
 		// JUST for this test. NEVER call this func directly.
 		ker->set_idle_exit();
 		
-		// JUST for this test. NEVER call this func directly.
-		ker->handle_missives(); 
+		kernel::run_sys(false);
 	}
 
 	mck_slog2("FINISHED !!\n");	

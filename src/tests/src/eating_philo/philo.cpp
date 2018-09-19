@@ -167,7 +167,6 @@ public:
 	~chopstick(){}
 
 	void init_chopstick(){
-		//handler_idx = 1;
 		handler_idx = idx_chopstick;
 		owner = mc_null;
 
@@ -220,7 +219,6 @@ public:
 	~philosopher(){}
 
 	void init_philosopher(){
-		//handler_idx = 2;
 		handler_idx = idx_philosopher;
 
 		left = mc_null;
@@ -277,7 +275,7 @@ public:
 	philosopher philo;
 	grip ava_chopstick;
 	grip ava_philosopher;
-
+	
 	mc_size_t from_manageru_work_sz;
 	mc_size_t to_manageru_work_sz;
 	mc_size_t in_work_sz;
@@ -288,6 +286,10 @@ public:
 	mc_size_t cls_available_missive_sz;
 	mc_size_t cls_available_agent_ref_sz;
 	mc_size_t cls_available_agent_grp_sz;
+
+	grip* all_ava[idx_total];
+	mc_alloc_kernel_func_t all_acq[idx_total];
+	mc_alloc_kernel_func_t all_sep[idx_total];
 
 	void init_philo_workeru(){
 		from_manageru_work_sz = 0;
@@ -300,6 +302,25 @@ public:
 		cls_available_missive_sz = 0;
 		cls_available_agent_ref_sz = 0;
 		cls_available_agent_grp_sz = 0;
+
+		mc_init_arr_vals(idx_total, all_ava, mc_null);
+		mc_init_arr_vals(idx_total, all_acq, mc_null);
+		mc_init_arr_vals(idx_total, all_sep, mc_null);
+		
+		all_ava[idx_chopstick] = &ava_chopstick;
+		all_ava[idx_philosopher] = &ava_philosopher;
+		all_ava[idx_last_invalid] = mc_pt_invalid_available;
+		
+		all_acq[idx_chopstick] = (mc_alloc_kernel_func_t)chopstick::acquire_alloc;
+		all_acq[idx_philosopher] = (mc_alloc_kernel_func_t)philosopher::acquire_alloc;
+		all_acq[idx_last_invalid] = kernel::invalid_alloc_func;
+
+		all_sep[idx_chopstick] = (mc_alloc_kernel_func_t)chopstick::separate;
+		all_sep[idx_philosopher] = (mc_alloc_kernel_func_t)philosopher::separate;
+		all_sep[idx_last_invalid] = kernel::invalid_alloc_func;
+		
+		kernel::set_tot_cell_subclasses(idx_total);
+		kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
 	}
 };
 
@@ -333,11 +354,13 @@ MCK_DEFINE_MEM_METHODS(philosopher, 32, glb_ava_philos, 0)
 
 grip&
 chopstick::get_available(){
+	PTD_LOG("MEM___chopstick::get_available\n");
 	return glb_ava_sticks;
 }
 
 grip&
 philosopher::get_available(){
+	PTD_LOG("MEM___philosopher::get_available\n");
 	return glb_ava_philos;
 }
 
@@ -369,9 +392,7 @@ void philo_init_handlers(){
 	hndlrs[idx_philosopher] = philosopher_handler;
 	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
-	kernel::set_tot_cell_subclasses(idx_total);
 	kernel::set_cell_handlers(hndlrs);
-	kernel::set_handlers(idx_total, hndlrs);
 }
 
 void
@@ -454,7 +475,8 @@ philosopher::send(cell* dst, philo_tok_t tok){
 	if(dst == lft_stick){ last_sent_lft = tok; }
 	if(dst == rgt_stick){ last_sent_rgt = tok; }
 
-	missive* msv = missive::acquire();
+	missive* msv = mc_missive_acquire();
+	
 	msv->src = this;
 	msv->dst = dst;
 	msv->tok = tok;
@@ -758,8 +780,8 @@ void mc_workerus_main() {
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
 
-	chopstick::separate(1);
-	philosopher::separate(1);
+	//chopstick::separate(1);
+	//philosopher::separate(1);
 
 	PH_DBG("started\n");
 

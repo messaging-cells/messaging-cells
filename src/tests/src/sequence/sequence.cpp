@@ -114,7 +114,6 @@ void sequence_init_handlers(){
 
 	kernel::set_tot_cell_subclasses(idx_total);
 	kernel::set_cell_handlers(hndlrs);
-	kernel::set_handlers(idx_total, hndlrs);
 }
 
 void
@@ -146,7 +145,9 @@ sequence::handler(missive* msv){
 void
 sequence::send(cell* dst, seq_tok_t tok){
 	last_sent = tok;
-	missive* msv = missive::acquire();
+	
+	missive* msv = mc_missive_acquire();
+	
 	msv->src = this;
 	msv->dst = dst;
 	msv->tok = tok;

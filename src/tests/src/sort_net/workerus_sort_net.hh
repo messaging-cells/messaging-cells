@@ -86,6 +86,7 @@ enum bj_hdlr_idx_t : mck_handler_idx_t {
 	idx_invalid = mck_tot_base_cell_classes,
 	idx_sorcell,
 	idx_sorting_net,
+	idx_sornet_signal,
 	idx_last_invalid,
 	idx_total
 };
@@ -129,6 +130,9 @@ bool bj_ck_is_##cnam(agent* obj){ \
 
 #define	bj_ss_ranked_snps_flag mc_flag1
 
+#define bj_sornet_signal_acquire_arr(num) ((sornet_signal*)(kernel::do_acquire(idx_sornet_signal, num)))
+#define bj_sornet_signal_acquire() bj_sornet_signal_acquire_arr(1)
+
 class mc_aligned sornet_signal : public missive {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_signal, bj_sornet_cod)
@@ -155,6 +159,9 @@ typedef int (*bj_cmp_func_t)(binder* obj1, binder* obj2);
 
 bool bj_is_sorted(grip& grp, bj_cmp_func_t fn, int ord) mc_external_code_ram;
 
+
+#define bj_sorcell_acquire_arr(num) ((sorcell*)(kernel::do_acquire(idx_sorcell, num)))
+#define bj_sorcell_acquire() bj_sorcell_acquire_arr(1)
 
 class mc_aligned sorcell : public cell {
 public:
@@ -205,6 +212,10 @@ public:
 	grip		ava_sornet_signals;
 	grip		ava_sorcells;
 
+	grip* all_ava[idx_total];
+	mc_alloc_kernel_func_t all_acq[idx_total];
+	mc_alloc_kernel_func_t all_sep[idx_total];
+	
 	missive_handler_t srt_handlers[idx_total];
 
 	pre_sort_net*	shd_cnf;

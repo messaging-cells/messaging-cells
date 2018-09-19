@@ -45,8 +45,8 @@ class pre_sornode;
 class pre_sort_net;
 class pre_load_snet;
 
-extern grip ava_pre_sornode;
-extern grip ava_pre_sort_net;
+mc_c_decl grip ava_pre_sornode;
+mc_c_decl grip ava_pre_sort_net;
 
 enum sornod_kind_t : uint8_t {
 	snod_invalid,
@@ -70,6 +70,9 @@ public:
 
 	num_nod_t curr_nod_id = 0;
 };
+
+#define bj_pre_sornode_acquire_arr(num) ((pre_sornode*)(kernel::do_acquire(mgr_idx_pre_sornode, num)))
+#define bj_pre_sornode_acquire() bj_pre_sornode_acquire_arr(1)
 
 /*! \class pre_sornode
 \brief Class for sornet nodes to load.
@@ -190,8 +193,9 @@ get_bigger_pow2(num_nod_t nn);
 num_nod_t
 get_tot_levels(num_nod_t nn);
 
-void
-create_sornet(num_nod_t num_to_sort);
+void create_sornet(num_nod_t num_to_sort);
+
+void sort_net_mgr_init_handlers();
 
 #endif		// PRELOAD_SORT_NET_H
 

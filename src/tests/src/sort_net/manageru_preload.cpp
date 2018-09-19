@@ -15,6 +15,45 @@ grip ava_pre_sort_net;
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_sornode, 32, ava_pre_sornode, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_sort_net, 32, ava_pre_sort_net, 0)
 
+enum mgr_srt_hdlr_idx_t : mck_handler_idx_t {
+	mgr_idx_invalid = mck_tot_base_cell_classes,
+	mgr_idx_pre_sornode,
+	mgr_idx_pre_sort_net,
+	mgr_idx_last_invalid,
+	mgr_idx_total
+};
+
+missive_handler_t sn_mgr_handlers[mgr_idx_total];
+grip* sn_mgr_all_ava[mgr_idx_total];
+mc_alloc_kernel_func_t sn_mgr_all_acq[mgr_idx_total];
+mc_alloc_kernel_func_t sn_mgr_all_sep[mgr_idx_total];
+
+void sort_net_mgr_init_handlers(){
+	missive_handler_t* hndlrs = sn_mgr_handlers;
+	mc_init_arr_vals(mgr_idx_total, hndlrs, mc_null);
+	hndlrs[mgr_idx_last_invalid] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(mgr_idx_total);
+	kernel::set_cell_handlers(hndlrs);
+
+	mc_init_arr_vals(mgr_idx_total, sn_mgr_all_ava, mc_null);
+	mc_init_arr_vals(mgr_idx_total, sn_mgr_all_acq, mc_null);
+	mc_init_arr_vals(mgr_idx_total, sn_mgr_all_sep, mc_null);
+	
+	sn_mgr_all_ava[mgr_idx_pre_sornode] = &(ava_pre_sornode);
+	sn_mgr_all_ava[mgr_idx_last_invalid] = mc_pt_invalid_available;
+	
+	sn_mgr_all_acq[mgr_idx_pre_sornode] = (mc_alloc_kernel_func_t)pre_sornode::acquire_alloc;
+	sn_mgr_all_acq[mgr_idx_last_invalid] = kernel::invalid_alloc_func;
+
+	sn_mgr_all_sep[mgr_idx_pre_sornode] = (mc_alloc_kernel_func_t)pre_sornode::separate;
+	sn_mgr_all_sep[mgr_idx_last_invalid] = kernel::invalid_alloc_func;
+	
+	kernel::set_cell_mem_funcs(sn_mgr_all_ava, sn_mgr_all_acq, sn_mgr_all_sep);
+
+	PTD_PRT("INITED_MEM_FUNCS \n");
+}
+
 num_nod_t
 get_tot_levels(num_nod_t nn){
 	double in = (double)nn;
@@ -33,7 +72,8 @@ get_bigger_pow2(num_nod_t nn){
 pre_sornode*
 create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms& prms){
 	printf("create_node_flg1 \n");
-	pre_sornode* nod = pre_sornode::acquire();
+	pre_sornode* nod = bj_pre_sornode_acquire();
+	
 	MCK_CK(nod != mc_null);
 	
 	mc_workeru_nn_t ptd_up_nid = 0;

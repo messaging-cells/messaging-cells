@@ -28,7 +28,6 @@ void bj_mgr_init_handlers(){
 
 	kernel::set_tot_cell_subclasses(mck_tot_base_cell_classes);
 	kernel::set_cell_handlers(hndlrs);
-	kernel::set_handlers(mck_tot_base_cell_classes, hndlrs);
 }
 
 int bj_manageru_main(int argc, char *argv[])

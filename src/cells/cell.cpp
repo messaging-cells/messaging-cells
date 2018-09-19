@@ -65,8 +65,6 @@ Our Resurrected and Living, both in Body and Spirit,
 
 //----------------------------------------------------------------------------
 
-missive_handler_t mc_nil_handlers[1] = { mc_null };
-
 MCK_DEFINE_MEM_METHODS(cell, 32, mck_all_available(cell), 0)
 MCK_DEFINE_MEM_METHODS(missive, 32, mck_all_available(missive), 0)
 MCK_DEFINE_MEM_METHODS(agent_ref, 32, mck_all_available(agent_ref), 0)
@@ -95,9 +93,15 @@ kernel::init_kernel(){
 
 	tot_cell_subclasses = 0;
 	all_cell_handlers = mc_null;
-	all_cell_available = mc_null; 
-	all_cell_acquire_alloc_funcs = mc_null; 
-	all_cell_separate_funcs = mc_null; 
+	all_cell_available = all_kernel_ava;
+	all_cell_acquire_alloc_funcs = all_kernel_acq;
+	all_cell_separate_funcs = all_kernel_sep;
+	
+	mc_init_arr_vals(mck_tot_base_cell_classes, all_kernel_ava, mc_null);
+	mc_init_arr_vals(mck_tot_base_cell_classes, all_kernel_acq, mc_null);
+	mc_init_arr_vals(mck_tot_base_cell_classes, all_kernel_sep, mc_null);
+	
+	init_kernel_cell_mem_funcs(all_kernel_ava, all_kernel_acq, all_kernel_sep);
 	
 	mc_init_arr_vals(kernel_signals_arr_sz, signals_arr, mc_false);
 
@@ -126,7 +130,7 @@ kernel::init_kernel(){
 
 	PTD_CK(cell::get_curr_separate_sz() == 1);
 	//PTD_PRT("CURR_SEP_SIZE=%u \n\n", cell::get_curr_separate_sz());
-	first_cell = cell::acquire();
+	first_cell = mc_cell_acquire();
 	//ZNQ_CODE(printf("INITED_first_cell = %p \n", first_cell));
 
 	manageru_load_data = mc_null;
@@ -167,6 +171,7 @@ kernel::init_sys(bool is_the_manageru){
 	if(ker->manageru_kernel != mc_null){
 		ker->manageru_load_data = ker->manageru_kernel->manageru_load_data;
 		//PTD_PRT("SETTING manageru_load_data = %p \n", ker->manageru_load_data);
+		//mck_slog2("SETTING manageru_load_data \n");
 	}
 
 	mck_glb_sys_st* in_shd = MC_WORKERU_INFO;
@@ -178,7 +183,7 @@ kernel::init_sys(bool is_the_manageru){
 }
 
 void // static
-kernel::run_sys(){
+kernel::run_sys(bool reset_idle){
 	kernel* ker = MCK_KERNEL;
 	
 	if(! ker->is_manageru_kernel){
@@ -195,7 +200,7 @@ kernel::run_sys(){
 		#endif
 		*/
 	}
-	ker->exit_when_idle = false;
+	if(reset_idle){ ker->exit_when_idle = false; }
 	while(true){
 		ker->did_work = 0x0000;
 		ker->handle_missives();
@@ -244,7 +249,7 @@ kernel::finish_manageru_sys(){
 char*
 agent::get_class_name(){
 	kernel* ker = MCK_KERNEL;
-	mck_cell_id_t id = get_cell_id();
+	mck_handler_idx_t id = get_cell_id();
 	if(mck_is_valid_class_name_idx(id)){
 		char* cnm = (ker->class_names_arr)[id];
 		if(cnm == mc_null){
@@ -278,7 +283,8 @@ kernel::add_out_missive(grip* out_wk, missive& msv1){
 		return;
 	}
 
-	missive_grp_t* mgrp2 = agent_grp::acquire();
+	missive_grp_t* mgrp2 = mc_agent_grp_acquire();
+	
 	PTD_CK(mgrp2 != mc_null);
 	PTD_CK(mgrp2->all_agts.is_alone());
 
@@ -362,9 +368,8 @@ kernel::init_kernel_cell_handlers(missive_handler_t* hdlrs){
 		MC_ABORT_MSG("kernel::init_kernel_cell_handlers. Use 'set_tot_cell_subclasses' first.\n"));
 		return;
 	}
-	PTD_CK(mck_cell_id(kernel) == 0);
 	mc_init_arr_vals(mck_tot_base_cell_classes, hdlrs, mc_null);
-	hdlrs[mck_cell_id(kernel)] = mc_kernel_handler;
+	hdlrs[mck_cell_id(cell)] = mc_kernel_handler;
 }
 	
 void	// static
@@ -373,7 +378,7 @@ kernel::set_cell_handlers(missive_handler_t* hdlrs){
 	mck_handler_idx_t tot = ker->tot_cell_subclasses;
 	if(hdlrs[tot - 1] != (&kernel::invalid_handler_func)){
 		mck_abort(__LINE__, 
-		MC_ABORT_MSG("kernel::set_cell_handlers. Last pt must be to &kernel::invalid_handler_func.\n"));
+		MC_ABORT_MSG("kernel::set_cell_handlers. Last pt must be to kernel::invalid_handler_func.\n"));
 		return;
 	}
 	init_kernel_cell_handlers(hdlrs);
@@ -382,13 +387,56 @@ kernel::set_cell_handlers(missive_handler_t* hdlrs){
 }
 
 void	// static
-kernel::reset_cell_handlers(missive_handler_t* hdlrs){
-	set_cell_handlers(hdlrs);
+kernel::init_kernel_cell_mem_funcs(grip** all_ava, mc_alloc_kernel_func_t* all_acq,
+							mc_alloc_kernel_func_t* all_sep)
+{
+	all_ava[mck_cell_id(cell)] = &(mck_all_available(cell));
+	all_ava[mck_cell_id(missive)] = &(mck_all_available(missive));
+	all_ava[mck_cell_id(agent_ref)] = &(mck_all_available(agent_ref));
+	all_ava[mck_cell_id(agent_grp)] = &(mck_all_available(agent_grp));
+	
+	all_acq[mck_cell_id(cell)] = (mc_alloc_kernel_func_t)cell::acquire_alloc;
+	all_acq[mck_cell_id(missive)] = (mc_alloc_kernel_func_t)missive::acquire_alloc;
+	all_acq[mck_cell_id(agent_ref)] = (mc_alloc_kernel_func_t)agent_ref::acquire_alloc;
+	all_acq[mck_cell_id(agent_grp)] = (mc_alloc_kernel_func_t)agent_grp::acquire_alloc;
+
+	all_sep[mck_cell_id(cell)] = (mc_alloc_kernel_func_t)cell::separate;
+	all_sep[mck_cell_id(missive)] = (mc_alloc_kernel_func_t)missive::separate;
+	all_sep[mck_cell_id(agent_ref)] = (mc_alloc_kernel_func_t)agent_ref::separate;
+	all_sep[mck_cell_id(agent_grp)] = (mc_alloc_kernel_func_t)agent_grp::separate;
+}
+
+void	// static
+kernel::set_cell_mem_funcs(grip** all_ava, mc_alloc_kernel_func_t* all_acq,
+							mc_alloc_kernel_func_t* all_sep)
+{
 	kernel* ker = MCK_KERNEL;
 	mck_handler_idx_t tot = ker->tot_cell_subclasses;
-	mc_init_arr_vals(tot, hdlrs, mc_null);
-	init_kernel_cell_handlers(hdlrs);
-	hdlrs[tot - 1] = &kernel::invalid_handler_func;
+	if(ker->tot_cell_subclasses < mck_tot_base_cell_classes){
+		mck_abort(__LINE__, MC_ABORT_MSG(
+			"kernel::init_kernel_cell_mem_funcs. Use 'set_tot_cell_subclasses' first.\n"));
+		return;
+	}
+	if(all_ava[tot - 1] != (&(ker->invalid_all_available))){
+		mck_abort(__LINE__, MC_ABORT_MSG(
+			"kernel::init_kernel_cell_mem_funcs. Last pt must be &(MCK_KERNEL->invalid_all_available).\n"));
+		return;
+	}
+	if(all_acq[tot - 1] != (&kernel::invalid_alloc_func)){
+		mck_abort(__LINE__, MC_ABORT_MSG(
+			"kernel::init_kernel_cell_mem_funcs. Last all_acq pt must be kernel::invalid_alloc_func.\n"));
+		return;
+	}
+	if(all_sep[tot - 1] != (&kernel::invalid_alloc_func)){
+		mck_abort(__LINE__, MC_ABORT_MSG(
+			"kernel::init_kernel_cell_mem_funcs. Last all_sep pt must be kernel::invalid_alloc_func.\n"));
+		return;
+	}
+	
+	init_kernel_cell_mem_funcs(all_ava, all_acq, all_sep);
+	ker->all_cell_available = all_ava;
+	ker->all_cell_acquire_alloc_funcs = all_acq;
+	ker->all_cell_separate_funcs = all_sep;
 }
 
 void	// static
@@ -398,27 +446,6 @@ kernel::invalid_handler_func(missive* msg){
 void*	// static
 kernel::invalid_alloc_func(mc_alloc_size_t sz){ 
 	return mc_null; 
-}
-
-void // static
-kernel::fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
-	if(tot_hdlrs > 0){
-		if(hdlrs == mc_null){
-			mck_abort(__LINE__, 
-				MC_ABORT_MSG("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs CAN NOT be mc_null. \n"));
-		}
-		if((hdlrs[0] != mc_null) && (hdlrs[0] != mc_kernel_handler)){
-			//PTD_PRT("hdlrs[0] = %p \n", (void*)(hdlrs[0]));
-			mck_abort(__LINE__, 
-				MC_ABORT_MSG("kernel::set_handlers. If (tot_hdlrs > 0) then hdlrs[0] MUST be mc_null. \n"));
-		}
-		hdlrs[0] = mc_kernel_handler;
-	}
-}
-
-void // static 
-kernel::set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs){
-	// deprecated
 }
 
 void 
@@ -431,7 +458,8 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 		if(glb_msv_grp != mc_null){
 			arr[aa] = mc_null;
 
-			missive_ref_t* nw_ref = agent_ref::acquire();
+			missive_ref_t* nw_ref = mc_agent_ref_acquire();
+			
 			PTD_CK(nw_ref->is_alone());
 			PTD_CK(nw_ref->glb_agent_ptr == mc_null);
 
@@ -519,7 +547,7 @@ mck_is_id_inited(mc_workeru_id_t dst_id){
 	return true;
 }
 
-#define MC_ERR_CELL_01 "ABORTING. MUST call 'kernel::set_handlers' BEFORE 'kernel::run_sys'. \n"
+#define MC_ERR_CELL_01 "ABORTING. MUST call 'kernel::set_cell_handlers' BEFORE 'kernel::run_sys'. \n"
 
 void 
 kernel::handle_missives(){
@@ -714,7 +742,8 @@ agent_grp::release_all_agts(){
 
 void
 cell::send(cell* des, mck_token_t tok){
-	missive* msv = missive::acquire();
+	missive* msv = mc_missive_acquire();
+	
 	msv->src = this;
 	msv->dst = des;
 	msv->tok = tok;
@@ -723,7 +752,8 @@ cell::send(cell* des, mck_token_t tok){
 
 void
 cell::respond(missive* msv_orig, mck_token_t tok){
-	missive* msv = missive::acquire();
+	missive* msv = mc_missive_acquire();
+	
 	msv->src = this;
 	msv->dst = msv_orig->src;
 	msv->tok = tok;
@@ -804,7 +834,8 @@ kernel::handle_work_to_manageru(){
 
 	routed_ack_from_manageru = mck_busy_ack;
 
-	missive_grp_t* mgrp2 = agent_grp::acquire();
+	missive_grp_t* mgrp2 = mc_agent_grp_acquire();
+	
 	PTD_CK(mgrp2 != mc_null);
 	PTD_CK(mgrp2->all_agts.is_alone());
 
@@ -970,7 +1001,8 @@ kernel::send_stop_to_children(){
 
 			//PTD_PRT_STACK(true, "mck_tok_stop_sys_to_children WORKERU=%d \n", get_workeru_nn());
 
-			missive* msv = missive::acquire();
+			missive* msv = mc_missive_acquire();
+			
 			msv->src = get_first_cell();
 			msv->dst = ch_cell;
 			msv->tok = mck_tok_stop_sys_to_children;
@@ -1000,7 +1032,8 @@ kernel::handle_stop(){
 		if(pnt_koid != 0){
 			cell* pcell = get_first_cell(pnt_koid);
 
-			missive* msv = missive::acquire();
+			missive* msv = mc_missive_acquire();
+			
 			msv->src = get_first_cell();
 			msv->dst = pcell;
 			msv->tok = mck_tok_stop_sys_to_parent;
@@ -1050,5 +1083,48 @@ kernel::kernel_first_cell_msv_handler(missive* msv){
 void
 kernel::dbg_set_idle(){
 	//PTD_PRT_STACK(true, "CALLING kernel::set_idle_exit");
+}
+
+agent*	// static
+kernel::do_acquire(mck_handler_idx_t idx, mc_alloc_size_t sz){
+	kernel* ker = MCK_KERNEL;
+	PTD_CK((idx < mck_tot_base_cell_classes) || (idx < ker->tot_cell_subclasses));
+	
+	PTD_CK(ker->all_cell_available != mc_null);	
+	grip* ava = ker->all_cell_available[idx];
+	PTD_CK(ava != mc_null);
+	
+	if(sz == 1){
+		if(ava->is_alone()){
+			PTD_CK(ker->all_cell_separate_funcs != mc_null);
+			mc_alloc_kernel_func_t sep_fn = ker->all_cell_separate_funcs[idx]; 
+			PTD_CK(sep_fn != mc_null);
+			(*sep_fn)(BJ_INVALID_ALLOC_SZ);
+		}
+		binder* fst = ava->bn_right;
+		fst->let_go();
+		return (agent*)fst;
+	}
+	
+	PTD_CK(ker->all_cell_acquire_alloc_funcs != mc_null);
+	mc_alloc_kernel_func_t acq_fn = ker->all_cell_acquire_alloc_funcs[idx]; 
+	PTD_CK(acq_fn != mc_null);
+	return (agent*)((*acq_fn)(sz));
+}
+
+void
+agent::do_release(int dbg_caller){
+	mck_handler_idx_t idx = get_cell_id();
+	kernel* ker = MCK_KERNEL;
+	PTD_CK((idx < mck_tot_base_cell_classes) || (idx < ker->tot_cell_subclasses));
+	
+	PTD_CK(ker->all_cell_available != mc_null);	
+	grip* ava = ker->all_cell_available[idx];
+	PTD_CK(ava != mc_null);
+	
+	let_go();
+	init_me(dbg_caller);
+	ava->bind_to_my_left(*this);
+	PTD_DBG_CODE(dbg_release(dbg_caller));
 }
 

@@ -73,23 +73,9 @@ typedef grip& (* mc_method_1_t)();
 typedef void (*mc_kenel_func_t)(void);
 
 //-------------------------------------------------------------------------
-// cell ids
-
-#define mck_cell_id(cls) MC_CELL_ID_##cls
-
-enum mck_cell_id_t : uint8_t {
-	mck_cell_id(kernel) = 0,
-	mck_cell_id(agent),
-	mck_cell_id(cell),
-	mck_cell_id(missive),
-	mck_cell_id(agent_ref),
-	mck_cell_id(agent_grp),
-
-	mck_tot_base_cell_classes
-};
-
-//-------------------------------------------------------------------------
 // dyn mem
+
+#define mc_pt_invalid_available (&(MCK_KERNEL->invalid_all_available))
 
 typedef void (*mc_dbg_alloc_func_t)(void* obj, mc_alloc_size_t sz);
 typedef void* (*mc_alloc_kernel_func_t)(mc_alloc_size_t sz);
@@ -148,13 +134,6 @@ nam::separate(mc_alloc_size_t sz){ \
 	for(int bb = 0; bb < sz; bb++){ \
 		obj[bb].let_go(); \
 		ava.bind_to_my_left(obj[bb]); \
-		PTD_CODE( \
-			if(bb == 0){ \
-				grip& ava2 = obj[bb].get_available(); \
-				PTD_CK_PRT(((&ava) == (&ava2)), "You MUST define %s::get_available() returning %s \n", \
-							#nam, #all_ava); \
-			} \
-		); \
 	} \
 	return obj; \
 } \
@@ -245,7 +224,22 @@ enum mck_workeru_state_t : uint8_t {
 //! Type for functions that handle \ref missive s (it is a pointer to the handler function).
 typedef void (*missive_handler_t)(missive* msg);
 
-extern missive_handler_t mc_nil_handlers[];
+//-------------------------------------------------------------------------
+// cell ids
+
+#define mck_cell_id(cls) MC_CELL_ID_##cls
+
+//	mck_cell_id(kernel) = 0,
+
+enum mck_cell_id_t : mck_handler_idx_t {
+	mck_cell_id(agent) = 0,
+	mck_cell_id(cell),
+	mck_cell_id(missive),
+	mck_cell_id(agent_ref),
+	mck_cell_id(agent_grp),
+
+	mck_tot_base_cell_classes
+};
 
 //-------------------------------------------------------------------------
 // kernel data
@@ -354,6 +348,12 @@ public:
 	mc_alloc_kernel_func_t*	all_cell_acquire_alloc_funcs; 
 	mc_alloc_kernel_func_t*	all_cell_separate_funcs; 
 	
+	grip					invalid_all_available;
+	
+	grip* all_kernel_ava[mck_tot_base_cell_classes];
+	mc_alloc_kernel_func_t all_kernel_acq[mck_tot_base_cell_classes];
+	mc_alloc_kernel_func_t all_kernel_sep[mck_tot_base_cell_classes];
+	
 	mc_bool_t signals_arr[kernel_signals_arr_sz];
 
 	missive_grp_t* pw0_routed_arr[kernel_pw0_routed_arr_sz];
@@ -421,7 +421,7 @@ public:
 	init_sys(bool is_the_manageru = false) mc_external_code_ram; //!< Static method that inits this workeru kernel.
 
 	static mc_opt_sz_fn void 
-	run_sys(); //!< Static method that starts handling \ref missive s. No \ref missive s are handled before.
+	run_sys(bool reset_idle = true); //!< Static method that starts handling \ref missive s. No \ref missive s are handled before.
 
 	static void
 	finish_sys() mc_external_code_ram; //!< Static method that finishes this workeru kernel.
@@ -512,25 +512,27 @@ public:
 	static void
 	set_cell_handlers(missive_handler_t* hdlrs) mc_external_code_ram;
 
-	//! \brief This methods resets \ref kernel::all_cell_handlers in 'hdlrs' to mc_null with the last handler ('tot_cell_subclasses' - 1) pointing to '&kernel::invalid_handler_func'. It must have size 'tot_cell_subclasses'.
 	static void
-	reset_cell_handlers(missive_handler_t* hdlrs) mc_external_code_ram;
-
+	init_kernel_cell_mem_funcs(grip** all_ava, mc_alloc_kernel_func_t* all_acq,
+							mc_alloc_kernel_func_t* all_sep) mc_external_code_ram;
+	
+	static void
+	set_cell_mem_funcs(grip** all_ava, mc_alloc_kernel_func_t* all_acq,
+							mc_alloc_kernel_func_t* all_sep) mc_external_code_ram;
+	
 	static	void
 	invalid_handler_func(missive* msg) mc_external_code_ram;
 	
 	static	void*
 	invalid_alloc_func(mc_alloc_size_t sz) mc_external_code_ram;
 	
-	static void
-	set_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) mc_external_code_ram;
+	static agent*
+	do_acquire(mck_handler_idx_t idx, mc_alloc_size_t sz = 1) mc_external_code_ram;
 
 	static kernel*
 	get_workeru_kernel(mc_workeru_id_t id) mc_external_code_ram;
 
 	void dbg_set_idle() mc_external_code_ram;
-
-	static void fix_handlers(uint8_t tot_hdlrs, missive_handler_t* hdlrs) mc_external_code_ram;
 
 	//! Tells the kernel to exit \ref kernel::run_sys when no more work is pending or done (idle).
 	mc_inline_fn void set_idle_exit(){
@@ -637,7 +639,7 @@ public:
 	~agent(){}
 
 	virtual mc_opt_sz_fn 
-	mck_cell_id_t	get_cell_id(){
+	mck_handler_idx_t	get_cell_id(){
 		return mck_cell_id(agent);
 	}
 
@@ -662,7 +664,10 @@ public:
 		ava.bind_to_my_left(*this);
 		PTD_DBG_CODE(dbg_release(dbg_caller));
 	}
-
+	
+	mc_opt_sz_fn 
+	void	do_release(int dbg_caller = 1);
+		
 	mc_inline_fn
 	agent*	get_glb_ptr(){
 		return (agent*)mck_as_glb_pt(this);
@@ -750,22 +755,15 @@ bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
 #define	mc_usr_flag6 mc_flag6
 #define	mc_usr_flag7 mc_flag7
 
-/*enum mc_idx_t : uint8_t {
-	mc_idx_kernel,
-	mc_idx_agent,
-	mc_idx_cell,
-	mc_idx_missive,
-	mc_idx_agent_ref,
-	mc_idx_agent_grp,
-	mc_idx_last
-};*/
+#define mc_cell_acquire_arr(num) ((cell*)(kernel::do_acquire(mck_cell_id(cell), num)))
+#define mc_cell_acquire() mc_cell_acquire_arr(1)
 
 class mc_aligned cell: public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(cell, mc_mod0_cod);
 
 	mck_handler_idx_t 	handler_idx; //!< Index of my handler func in \ref kernel::all_cell_handlers.
-	mc_flags_t 		filaments;
+	mc_flags_t 			filaments;
 
 	mc_opt_sz_fn 
 	cell(){
@@ -777,13 +775,13 @@ public:
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0){
-		handler_idx = 0;
+		handler_idx = mck_cell_id(cell);
 		filaments = 0;
 	}
 
-	virtual
-	mc_opt_sz_fn mck_cell_id_t	get_cell_id(){
-		return mck_cell_id(cell);
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return handler_idx;
 	}
 
 	virtual
@@ -806,6 +804,9 @@ public:
 \ingroup docgrp_messaging
 
 */
+
+#define mc_missive_acquire_arr(num) ((missive*)(kernel::do_acquire(mck_cell_id(missive), num)))
+#define mc_missive_acquire() mc_missive_acquire_arr(1)
 
 class mc_aligned missive : public agent {
 public:
@@ -866,8 +867,8 @@ public:
 		}
 	}
 
-	virtual
-	mc_opt_sz_fn mck_cell_id_t	get_cell_id(){
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
 		return mck_cell_id(missive);
 	}
 
@@ -894,6 +895,10 @@ public:
 \ingroup docgrp_inner_working
 
 */
+
+#define mc_agent_grp_acquire_arr(num) ((agent_grp*)(kernel::do_acquire(mck_cell_id(agent_grp), num)))
+#define mc_agent_grp_acquire() mc_agent_grp_acquire_arr(1)
+
 class mc_aligned agent_grp : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(agent_grp, mc_mod0_cod);
@@ -916,8 +921,8 @@ public:
 		handled = mc_false;
 	}
 
-	virtual
-	mc_opt_sz_fn mck_cell_id_t	get_cell_id(){
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
 		return mck_cell_id(agent_grp);
 	}
 
@@ -938,6 +943,10 @@ public:
 \ingroup docgrp_inner_working
 
 */
+
+#define mc_agent_ref_acquire_arr(num) ((agent_ref*)(kernel::do_acquire(mck_cell_id(agent_ref), num)))
+#define mc_agent_ref_acquire() mc_agent_ref_acquire_arr(1)
+
 class mc_aligned agent_ref : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(agent_ref, mc_mod0_cod);
@@ -957,8 +966,8 @@ public:
 		glb_agent_ptr = mc_null;
 	}
 
-	virtual
-	mc_opt_sz_fn mck_cell_id_t	get_cell_id(){
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
 		return mck_cell_id(agent_ref);
 	}
 

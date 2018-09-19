@@ -104,6 +104,29 @@ sorting_net::sorting_net(){
 	all_input_sorcells = mc_null;
 	tot_rcv_output_sorobjs = 0;
 	all_output_sorobjs = mc_null;
+	
+	// --------------- init mem funcs
+
+	kernel::set_tot_cell_subclasses(idx_total);
+	
+	mc_init_arr_vals(idx_total, all_ava, mc_null);
+	mc_init_arr_vals(idx_total, all_acq, mc_null);
+	mc_init_arr_vals(idx_total, all_sep, mc_null);
+	
+	all_ava[idx_sornet_signal] = &(ava_sornet_signals);
+	all_ava[idx_sorcell] = &(ava_sorcells);
+	all_ava[idx_last_invalid] = mc_pt_invalid_available;
+	
+	all_acq[idx_sornet_signal] = (mc_alloc_kernel_func_t)sornet_signal::acquire_alloc;
+	all_acq[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::acquire_alloc;
+	all_acq[idx_last_invalid] = kernel::invalid_alloc_func;
+
+	all_sep[idx_sornet_signal] = (mc_alloc_kernel_func_t)sornet_signal::separate;
+	all_sep[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::separate;
+	all_sep[idx_last_invalid] = kernel::invalid_alloc_func;
+	
+	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
+	
 }
 
 sorting_net::~sorting_net(){} 
@@ -130,9 +153,7 @@ void sort_net_wrk_init_handlers(){
 	hndlrs[idx_sorting_net] = sorting_net_sornet_handler;
 	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
-	kernel::set_tot_cell_subclasses(idx_total);
-	kernel::set_cell_handlers(hndlrs);
-	kernel::set_handlers(idx_total, hndlrs);
+	kernel::set_cell_handlers(hndlrs);	
 }
 
 
@@ -194,7 +215,7 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod
 	PTD_CK(src != mc_null);
 	PTD_CK(obj != mc_null);
 
-	sornet_signal* trm = sornet_signal::acquire();
+	sornet_signal* trm = bj_sornet_signal_acquire();
 
 	trm->src = src;
 	trm->dst = dst;
@@ -402,7 +423,8 @@ sorting_net::send_sync_to_children(sornet_tok_t the_tok)
 void
 sorting_net::send_sync_transmitter(sorting_net* the_dst, sornet_tok_t the_tok)
 {
-	sornet_signal* trm = sornet_signal::acquire();
+	sornet_signal* trm = bj_sornet_signal_acquire();
+	
 	trm->src = bj_sorting_net;
 	trm->dst = the_dst;
 	trm->tok = the_tok;
@@ -451,7 +473,7 @@ void bj_load_shd_sornet(){
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_sornode* nod = (pre_sornode*)wrk;
 
-		sorcell* scll = sorcell::acquire();
+		sorcell* scll = bj_sorcell_acquire();
 
 		scll->dbg_level = nod->level;
 
@@ -550,6 +572,7 @@ void bj_init_sorting_net(){
 	ker->user_data = my_net;
 
 	pre_load_snet* pre_cnf = (pre_load_snet*)(ker->manageru_load_data);
+	MCK_CK(pre_cnf->MAGIC == MAGIC_VAL);
 
 	pre_sort_net* nn_cnf = 
 		(pre_sort_net*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_cnf + nn));

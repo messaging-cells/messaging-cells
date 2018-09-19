@@ -35,17 +35,21 @@ bj_load_init_handlers(){
 	hndlrs[idx_synapse] = synapse_load_handler;
 	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	//mck_slog2("bj_load_init_handlers_0 \n");
 	kernel::set_tot_cell_subclasses(idx_total);
+	//mck_slog2("bj_load_init_handlers_1 \n");
 	kernel::set_cell_handlers(hndlrs);
-	kernel::set_handlers(idx_total, hndlrs);
+	//mck_slog2("bj_load_init_handlers_2 \n");
 }
 
 void
 nervenet::init_nervenet_with(pre_cnf_net* pre_net){
+	mck_slog2("init_nervenet_with_1 \n");
 	tot_neus = pre_net->tot_pre_neus;
 	tot_vars = pre_net->tot_pre_vars;
 	tot_lits = pre_net->tot_pre_lits;
 	tot_rels = pre_net->tot_pre_rels;
+	mck_slog2("init_nervenet_with_2 \n");
 }
 
 void
@@ -57,6 +61,9 @@ void bj_load_shd_cnf(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 
+	mck_slog2("bj_load_shd_cnf_1 \n");
+	MCK_CK(nn_cnf != mc_null);
+	
 	my_net->init_nervenet_with(nn_cnf);
 	nervenet& tots = *my_net;
 
@@ -83,6 +90,8 @@ void bj_load_shd_cnf(){
 	if(sep_tsts > my_net->num_sep_tiersets){
 		my_net->num_sep_tiersets = sep_tsts;
 	}
+	
+	mck_slog2("bj_load_shd_cnf_3 \n");
 
 	load_transmitter::separate(sep_msvs);
 	synset::separate(sep_ssts);
@@ -378,9 +387,10 @@ void bj_init_nervenet(){
 	ker->user_data = my_net;
 
 	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->manageru_load_data);
+	MCK_CK(pre_cnf->MAGIC == MAGIC_VAL);
 
 	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
-	bj_nervenet->shd_cnf = nn_cnf;
+	bj_nervenet->shd_cnf = nn_cnf;	
 }
 
 void bj_load_main() {
@@ -404,15 +414,17 @@ void bj_load_main() {
 	bj_load_init_handlers();
 
 	bj_load_shd_cnf();
-	mck_slog2("end_of_load_shd_cnf \n");	
+	mck_slog2("end_of_load_shd_cnf \n");
+	
 	bj_load_shd_ranknet();
-	mck_slog2("end_of_load_ranknet \n");	
+	//mck_slog2("end_of_load_ranknet \n");
 	bj_load_shd_sornet();
-	mck_slog2("end_of_load_sornet \n");	
+	//mck_slog2("end_of_load_sornet \n");
 	bj_init_ends_srt_sornet();
-	mck_slog2("end_of_init_srt_endcells\n");	
+	//mck_slog2("end_of_init_srt_endcells\n");
 	bj_init_ends_rnk_sornet();
-	mck_slog2("end_of_init_rnk_endcells\n");	
+	mck_slog2("end_of_init_rnk_endcells\n");
+	
 
 	//MC_DBG(if(kernel::get_workeru_nn() == 0){ bj_test_func_1(); });
 
