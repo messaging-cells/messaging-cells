@@ -416,6 +416,7 @@ void bj_load_main() {
 	bj_load_shd_cnf();
 	mck_slog2("end_of_load_shd_cnf \n");
 	
+	#ifdef BJ_DBG_SORNET
 	bj_load_shd_ranknet();
 	//mck_slog2("end_of_load_ranknet \n");
 	bj_load_shd_sornet();
@@ -424,7 +425,7 @@ void bj_load_main() {
 	//mck_slog2("end_of_init_srt_endcells\n");
 	bj_init_ends_rnk_sornet();
 	mck_slog2("end_of_init_rnk_endcells\n");
-	
+	#endif
 
 	//MC_DBG(if(kernel::get_workeru_nn() == 0){ bj_test_func_1(); });
 

@@ -42,7 +42,7 @@ BJ_DEFINE_GET_CLS_NAM(sorting_net)
 sornet_signal::sornet_signal(){
 	PTD_CK(bj_sorting_net != mc_null);
 	//PTD_DBG_CODE(bj_sorting_net->all_dbg_dat.dbg_tot_new_sornet_signal ++);
-	mck_slog2("alloc__sornet_signal\n");
+	//mck_slog2("alloc__sornet_signal\n");
 	//init_me();
 } 
 
@@ -58,7 +58,7 @@ sornet_signal::init_me(int caller){
 sorcell::sorcell(){ 
 	PTD_CK(bj_sorting_net != mc_null);
 	//PTD_DBG_CODE(bj_sorting_net->all_dbg_dat.dbg_tot_new_sorcell ++);
-	mck_slog2("alloc__sorcell\n");
+	//mck_slog2("alloc__sorcell\n");
 	init_me();
 } 
 
@@ -557,13 +557,17 @@ sorting_net::init_sync_cycle(){
 	//act_right_side.init_sync();
 }
 
+char* global_err_string mc_external_data_ram;
+
 void bj_init_sorting_net(){
 	kernel* ker = mck_get_kernel();
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
+	MC_MARK_USED(nn);
 
 	if(ker->magic_id != MC_MAGIC_ID){
 		mck_slog2("BAD_MAGIC\n");
 	}
+	MCK_CK(ker->magic_id == MC_MAGIC_ID);
 
 	sorting_net* my_net = sorting_net::acquire_alloc();
 	if(my_net == mc_null){
@@ -571,7 +575,20 @@ void bj_init_sorting_net(){
 	}
 	ker->user_data = my_net;
 
+	mck_slog2("manageru_load_data = ");
+	mck_xlog((mc_addr_t)ker->manageru_load_data);
+	mck_slog2("\n");
+
+	mck_slog2("mgrker_manageru_load_data = ");
+	mck_xlog((mc_addr_t)(ker->manageru_kernel->manageru_load_data));
+	mck_slog2("\n");
+
+	MCK_CK(ker->manageru_load_data != mc_null);
+	
 	pre_load_snet* pre_cnf = (pre_load_snet*)(ker->manageru_load_data);
+	if(pre_cnf->MAGIC != MAGIC_VAL){
+		mck_slog2("BAD_MAGIC_2\n");
+	}
 	MCK_CK(pre_cnf->MAGIC == MAGIC_VAL);
 
 	pre_sort_net* nn_cnf = 
@@ -582,12 +599,15 @@ void bj_init_sorting_net(){
 
 void mc_workerus_main() {
 	kernel::init_sys();
-
-	bj_init_sorting_net();
-	PTD_CK(bj_sorting_net != mc_null);
-
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
 
+	//PTD_PRT("STARTING_SORNET___ \n");
+	mck_slog2("STARTING_SORNET___ \n");
+	
+	bj_init_sorting_net();
+	
+	PTD_CK(bj_sorting_net != mc_null);
+	
 	sort_net_wrk_init_handlers();
 
 	PTD_LOG("SORNET___ %d \n", nn);
@@ -602,7 +622,7 @@ void mc_workerus_main() {
 
 	sornet_signal::separate(my_net->tot_sorcells * 2);
 
-	mck_slog2("__dbg2.sornet\n");
+	//mck_slog2("__dbg2.sornet\n");
 	
 	bj_load_shd_sornet();
 
@@ -614,16 +634,16 @@ void mc_workerus_main() {
 		PTD_PRT("dbg_sornet_max_cntr=%d\n", max_cntr);
 		PTD_LOG("dbg_sornet_max_cntr=%d\n", max_cntr);
 	}
-	kernel::run_sys(); 
-
+	kernel::run_sys();
+	
 	//bj_print_active_cnf(side_left, tiki_invalid, mc_cstr("snt_after"), 3, 0, 
 	//	bj_dbg_prt_nd_neu_flag | bj_dbg_prt_nd_pol_flag);
 
-	PTD_PRT("...............................END_SORNET\n");
+	//PTD_PRT("...............................END_SORNET\n");
 	mck_slog2("END_SORNET___");
 	mck_ilog(nn);
 	mck_slog2("_________________________\n");
-	mck_sprt2("dbg2.sornet.end\n");
+	//mck_sprt2("dbg2.sornet.end\n");
 
 	kernel::finish_sys();
 }

@@ -26,7 +26,7 @@ typedef uint16_t umm_idx_t;
 #define UMM_MAX_NUM_BLOCKS 0xFFFF
 #define UMM_BEST_SIZE 0x7FFF
 
-#define umm_align(aa) mc_align(aa) 
+//define umm_align(aa) mc_align(aa) 
 
 #define umm_inline_fn mc_inline_fn
 

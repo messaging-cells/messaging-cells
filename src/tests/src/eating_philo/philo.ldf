@@ -129,7 +129,7 @@ SECTIONS
 
 	.text : { *(.text*) } > CODE_RAM
 	.data : { *(.data*) } > CODE_RAM
-	.rodata : { *(.rodata*) } > CODE_RAM 
+	.rodata : { *(.rodata*) } > LD_EXTERNAL_CODE_RAM
 	.bss : { *(.bss*) } > CODE_RAM 
 
 	module1 : { *(module1*) } > MODULE_1

@@ -40,6 +40,14 @@ Declaration of main bj solver function.
 
 #include "cell.hh"
 
+//-----------------------------------------
+
+//define BJ_DBG_ONLY 
+//define BJ_DBG_SORNET 
+#define BJ_NORMAL 
+
+//-----------------------------------------
+
 #define BJ_DBG_TOT_NUM_TESTS 20
 #define BJ_DBG_TOT_RNK_TESTS 20
 #define BJ_DBG_TOT_SRT_RNK_TESTS 200

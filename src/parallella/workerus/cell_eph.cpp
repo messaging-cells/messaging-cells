@@ -41,7 +41,8 @@ kernel* mck_PT_THE_KERNEL = mc_null;
 
 kernel*
 mck_get_first_kernel(){
-	mck_PT_THE_KERNEL = mc_malloc32(kernel, 1);
+	//mck_PT_THE_KERNEL = mc_malloc32(kernel, 1);
+	mck_PT_THE_KERNEL = mc_malloc64(kernel, 1);
 	return mck_PT_THE_KERNEL;
 }
 

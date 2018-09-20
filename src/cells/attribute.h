@@ -80,7 +80,8 @@ mc_c_decl {
 	#define mc_inline_fn inline __attribute__((always_inline)) 
 	#define mc_asm(code) 
 	#define mc_section(sec)
-	#define mc_align(aa)
+	#define mc_attr_align(aa)
+	#define mc_attr_packed 
 	#define mc_naked_fn
 	#define mc_isr_fn 
 
@@ -132,7 +133,8 @@ mc_c_decl {
 	#define mc_no_opt_fn __attribute__((optimize("O0")))
 	#define mc_inline_fn inline __attribute__((always_inline)) 
 	#define mc_asm __asm__ __volatile__
-	#define mc_align(aa)	__attribute__ ((aligned (aa)))
+	#define mc_attr_align(aa)	__attribute__ ((aligned (aa)))
+	#define mc_attr_packed __attribute__((packed, aligned(8)))
 
 	#ifdef MC_IS_EPH_CODE
 		#define mc_naked_fn __attribute__((naked)) 
@@ -173,7 +175,12 @@ mc_c_decl {
 #define mc_lk_syms_section_nm "link_symbols_data"
 
 
-#define mc_aligned mc_align(8) 
+#define mc_aligned mc_attr_align(8) 
+	
+#define mc_alig_8 mc_attr_align(8)
+#define mc_alig_4 mc_attr_align(4) 
+#define mc_alig_1 mc_attr_align(1) 
+//define mc_aligned mc_attr_packed
 
 #define mc_external_code_ram mc_section("external_code_ram")
 #define mc_external_data_ram mc_section("external_data_ram")

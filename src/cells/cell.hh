@@ -238,6 +238,7 @@ enum mck_cell_id_t : mck_handler_idx_t {
 	mck_cell_id(agent_ref),
 	mck_cell_id(agent_grp),
 
+	mkc_last_kernel_invalid,
 	mck_tot_base_cell_classes
 };
 
@@ -339,23 +340,15 @@ extern char* err_cell_08 mc_external_data_ram;
 
 class mc_aligned kernel { 
 public:
+	// CHANGING THIS STRUCTURE MAY LEAD TO ALIGMENT PROBLEMS IN PARALLELA
+	
 	uint32_t 	magic_id;
 	bool		is_manageru_kernel;
 
-	mck_handler_idx_t		tot_cell_subclasses; //!< Must be eq to \ref kernel::all_cell_handlers size.
-	missive_handler_t* 		all_cell_handlers; //!< Current array of \ref missive handlers
-	grip** 					all_cell_available; 
-	mc_alloc_kernel_func_t*	all_cell_acquire_alloc_funcs; 
-	mc_alloc_kernel_func_t*	all_cell_separate_funcs; 
-	
-	grip					invalid_all_available;
-	
-	grip* all_kernel_ava[mck_tot_base_cell_classes];
-	mc_alloc_kernel_func_t all_kernel_acq[mck_tot_base_cell_classes];
-	mc_alloc_kernel_func_t all_kernel_sep[mck_tot_base_cell_classes];
-	
 	mc_bool_t signals_arr[kernel_signals_arr_sz];
 
+	uint32_t 	middle_magic_id;
+	
 	missive_grp_t* pw0_routed_arr[kernel_pw0_routed_arr_sz];
 	missive_grp_t* pw2_routed_arr[kernel_pw2_routed_arr_sz];
 	missive_grp_t* pw4_routed_arr[kernel_pw4_routed_arr_sz];
@@ -392,7 +385,7 @@ public:
 
 	cell* 	first_cell;
 
-	void*	manageru_load_data;
+	void*	manageru_load_data = mc_null;
 
 	mc_kenel_func_t	user_func;
 	void*	user_data;
@@ -407,6 +400,18 @@ public:
 	mck_token_t 	rcvd_stop_key;
 	uint32_t		num_childs_stopping;
 
+	mck_handler_idx_t		tot_cell_subclasses;
+	missive_handler_t* 		all_cell_handlers;
+	grip** 					all_cell_available; 
+	mc_alloc_kernel_func_t*	all_cell_acquire_alloc_funcs; 
+	mc_alloc_kernel_func_t*	all_cell_separate_funcs; 
+	
+	grip* all_kernel_ava[mck_tot_base_cell_classes];
+	mc_alloc_kernel_func_t all_kernel_acq[mck_tot_base_cell_classes];
+	mc_alloc_kernel_func_t all_kernel_sep[mck_tot_base_cell_classes];
+
+	grip					invalid_all_available;
+	
 	uint32_t 	end_magic_id;
 
 	kernel() mc_external_code_ram;

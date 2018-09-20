@@ -89,6 +89,8 @@ kernel::init_router_ack_arrays(){
 void
 kernel::init_kernel(){
 	magic_id = MC_MAGIC_ID;
+	middle_magic_id = MC_MAGIC_ID;
+	
 	is_manageru_kernel = false;
 
 	tot_cell_subclasses = 0;
@@ -134,6 +136,8 @@ kernel::init_kernel(){
 	//ZNQ_CODE(printf("INITED_first_cell = %p \n", first_cell));
 
 	manageru_load_data = mc_null;
+	ZNQ_CODE(printf("INITING_manageru_load_data \n"));
+	//mck_slog2("INITING_manageru_load_data \n");
 
 	user_func = mc_null;
 	user_data = mc_null;
@@ -167,11 +171,22 @@ kernel::init_sys(bool is_the_manageru){
 
 	new (ker) kernel(); 
 
+	MCK_CK(MCK_PT_EXTERNAL_MANAGERU_DATA->magic_id == MC_MAGIC_ID);
+
 	ker->manageru_kernel = (kernel*)(MCK_PT_EXTERNAL_MANAGERU_DATA->pt_manageru_kernel);
 	if(ker->manageru_kernel != mc_null){
-		ker->manageru_load_data = ker->manageru_kernel->manageru_load_data;
+		MCK_CK(ker->manageru_kernel->magic_id == MC_MAGIC_ID);
+		MCK_CK(ker->manageru_kernel->middle_magic_id == MC_MAGIC_ID);
+		MCK_CK(ker->manageru_kernel->end_magic_id == MC_MAGIC_ID);
+		//mck_slog2("ker->manageru_kernel = ");
+		//mck_xlog((mc_addr_t)ker->manageru_kernel);
+		//mck_slog2("\n");
+
+		if(ker->manageru_kernel->manageru_load_data != mc_null){
+			ker->manageru_load_data = ker->manageru_kernel->manageru_load_data;
+			mck_slog2("SETTING_manageru_load_data \n");
+		}
 		//PTD_PRT("SETTING manageru_load_data = %p \n", ker->manageru_load_data);
-		//mck_slog2("SETTING manageru_load_data \n");
 	}
 
 	mck_glb_sys_st* in_shd = MC_WORKERU_INFO;
@@ -224,11 +239,13 @@ void // static
 kernel::init_manageru_sys(){
 	mc_manageru_init();
 	kernel::init_sys(true);
-	MCK_PT_EXTERNAL_MANAGERU_DATA->pt_manageru_kernel = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)MCK_KERNEL);
+	MCK_PT_EXTERNAL_MANAGERU_DATA->pt_manageru_kernel =
+								(void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)MCK_KERNEL);
 	MCK_KERNEL->is_manageru_kernel = true;
 
 	//ZNQ_CODE(printf("init_manageru_sys. MCK_KERNEL = %p \n", MCK_KERNEL));
-	//ZNQ_CODE(printf("init_manageru_sys. pt_manageru_kernel = %p \n", MCK_PT_EXTERNAL_MANAGERU_DATA->pt_manageru_kernel));
+	ZNQ_CODE(printf("init_manageru_sys. pt_manageru_kernel = %p \n", 
+					MCK_PT_EXTERNAL_MANAGERU_DATA->pt_manageru_kernel));
 	//ZNQ_CODE(printf("init_manageru_sys. mg=%x emg=%x \n", MCK_KERNEL->magic_id, MCK_KERNEL->end_magic_id));
 	//ZNQ_CODE(printf("init_manageru_sys. fst_act=%p \n", MCK_KERNEL->first_cell));
 }
