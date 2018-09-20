@@ -1266,7 +1266,7 @@ netstate::send_sync_transmitter(tier_kind_t tiki, nervenet* the_dst, sync_tok_t 
 {
 	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
 
-	sync_transmitter* trm = sync_transmitter::acquire();
+	sync_transmitter* trm = bj_sync_transmitter_acquire();
 	trm->d.syc.wrk_side = side_invalid;
 	trm->d.syc.wrk_tier = BJ_INVALID_NUM_TIER;
 	trm->d.syc.cfl_src = mc_null;
@@ -1409,7 +1409,7 @@ inc_tier(tier_kind_t tiki, grip& all_ti, net_side_t sd, int dbg_caller){
 
 	lti.update_tidat();
 
-	tierdata* ti_dat = tierdata::acquire();
+	tierdata* ti_dat = bj_tierdata_acquire();
 	ti_dat->tdt_id = lti.tdt_id + 1;
 
 	all_ti.bind_to_my_left(*ti_dat);

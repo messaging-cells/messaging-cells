@@ -93,7 +93,7 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	lst = (binder*)mck_as_loc_pt(src);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		tierset* src_tis = (tierset*)wrk;
-		tierset* dst_tis = tierset::acquire();
+		tierset* dst_tis = bj_tierset_acquire();
 		
 		dst_tis->ti_id = src_tis->ti_id;
 		dst_st.propag_tiers.bind_to_my_left(*dst_tis);
@@ -232,7 +232,7 @@ void bj_mirrow_main() {
 
 void
 netstate::init_stabi_tiers(nervenet& my_net){
-	tierdata* ti_dat = tierdata::acquire();
+	tierdata* ti_dat = bj_tierdata_acquire();
 	tierdata& lti_prop = get_last_tier(all_propag_tiers);
 
 	PTD_CK(lti_prop.got_all_neus());

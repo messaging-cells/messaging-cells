@@ -93,7 +93,7 @@ void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all
 	lst = nn_all_endnods;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_endnode* end_nd = (pre_endnode*)wrk;
-		endcell* ecll = endcell::acquire();
+		endcell* ecll = bj_endcell_acquire();
 		
 		PTD_CK(end_nd->loaded == mc_null);
 		ecll->end_snp.idx = end_nd->nxt.idx;
@@ -106,7 +106,7 @@ void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all
 	lst = nn_all_nods;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_sornode* nod = (pre_sornode*)wrk;
-		sorcell* scll = sorcell::acquire();
+		sorcell* scll = bj_sorcell_acquire();
 		
 		scll->load_from(nod);
 		nn_all_sclls->bind_to_my_left(*scll);

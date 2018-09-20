@@ -92,6 +92,10 @@ public:
 \brief Class for sornet nodes to load.
 
 */
+
+#define bj_pre_sornode_acquire_arr(num) ((pre_sornode*)(kernel::do_acquire(bj_cell_id(pre_sornode), num)))
+#define bj_pre_sornode_acquire() bj_pre_sornode_acquire_arr(1)
+
 class mc_aligned pre_sornode : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_sornode, bj_load_cod)
@@ -119,6 +123,11 @@ public:
 
 	~pre_sornode(){}
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return bj_cell_id(pre_sornode);
+	}
+	
 	void reset_up_end();
 	void set_up_end();
 	void reset_down_end();
@@ -131,6 +140,10 @@ public:
 \brief Class for output sornet nodes to load.
 
 */
+
+#define bj_pre_endnode_acquire_arr(num) ((pre_endnode*)(kernel::do_acquire(bj_cell_id(pre_endnode), num)))
+#define bj_pre_endnode_acquire() bj_pre_endnode_acquire_arr(1)
+
 class mc_aligned pre_endnode : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_endnode, bj_load_cod)
@@ -143,12 +156,21 @@ public:
 	}
 
 	~pre_endnode(){}
+
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return bj_cell_id(pre_endnode);
+	}
 };
 
 /*! \class pre_cnf_node
 \brief Class for neurons and polarons to load. All refs are in all_agts (inherited from agent_grp).
 
 */
+
+#define bj_pre_cnf_node_acquire_arr(num) ((pre_cnf_node*)(kernel::do_acquire(bj_cell_id(pre_cnf_node), num)))
+#define bj_pre_cnf_node_acquire() bj_pre_cnf_node_acquire_arr(1)
+
 class mc_aligned pre_cnf_node : public agent_grp {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_cnf_node, bj_load_cod)
@@ -168,6 +190,11 @@ public:
 	}
 
 	~pre_cnf_node(){}
+
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return bj_cell_id(pre_cnf_node);
+	}
 };
 
 /*! \class pre_cnf_net
@@ -297,17 +324,11 @@ void manageru_print_nods();
 void print_cnf();
 void print_pre_cnf_nets();
 
-num_nod_t
-get_bigger_pow2(num_nod_t nn);
-
-num_nod_t
-get_tot_levels(num_nod_t nn);
-
-void
-create_sornet(num_nod_t num_to_sort);
-
-void
-create_ranknet(num_nod_t num_to_sort);
+num_nod_t get_bigger_pow2(num_nod_t nn);
+num_nod_t get_tot_levels(num_nod_t nn);
+void create_sornet(num_nod_t num_to_sort);
+void create_ranknet(num_nod_t num_to_sort);
+void bj_mgr_init_mem_funcs();
 
 #endif		// PRELOAD_CNF_H
 

@@ -144,6 +144,11 @@ public:
 	~sornet_signal() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_sornet_signal;
+	}
+	
+	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) bj_sornet_cod;
 
 	virtual
@@ -182,6 +187,11 @@ public:
 	sorcell() mc_external_code_ram;
 	~sorcell() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_sorcell;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 
@@ -245,6 +255,7 @@ public:
 	~sorting_net() mc_external_code_ram;
 
 	void init_sorting_net_with(pre_sort_net* pre_net) mc_external_code_ram;
+	void init_mem_funcs() mc_external_code_ram;
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
 

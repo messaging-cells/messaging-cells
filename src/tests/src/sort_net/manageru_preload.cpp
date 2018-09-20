@@ -15,14 +15,6 @@ grip ava_pre_sort_net;
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_sornode, 32, ava_pre_sornode, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_sort_net, 32, ava_pre_sort_net, 0)
 
-enum mgr_srt_hdlr_idx_t : mck_handler_idx_t {
-	mgr_idx_invalid = mck_tot_base_cell_classes,
-	mgr_idx_pre_sornode,
-	mgr_idx_pre_sort_net,
-	mgr_idx_last_invalid,
-	mgr_idx_total
-};
-
 missive_handler_t sn_mgr_handlers[mgr_idx_total];
 grip* sn_mgr_all_ava[mgr_idx_total];
 mc_alloc_kernel_func_t sn_mgr_all_acq[mgr_idx_total];
@@ -51,6 +43,8 @@ void sort_net_mgr_init_handlers(){
 	
 	kernel::set_cell_mem_funcs(sn_mgr_all_ava, sn_mgr_all_acq, sn_mgr_all_sep);
 
+	PTD_CK(pre_sornode::ck_cell_id(mgr_idx_pre_sornode));
+	
 	PTD_PRT("INITED_MEM_FUNCS \n");
 }
 

@@ -104,29 +104,6 @@ sorting_net::sorting_net(){
 	all_input_sorcells = mc_null;
 	tot_rcv_output_sorobjs = 0;
 	all_output_sorobjs = mc_null;
-	
-	// --------------- init mem funcs
-
-	kernel::set_tot_cell_subclasses(idx_total);
-	
-	mc_init_arr_vals(idx_total, all_ava, mc_null);
-	mc_init_arr_vals(idx_total, all_acq, mc_null);
-	mc_init_arr_vals(idx_total, all_sep, mc_null);
-	
-	all_ava[idx_sornet_signal] = &(ava_sornet_signals);
-	all_ava[idx_sorcell] = &(ava_sorcells);
-	all_ava[idx_last_invalid] = mc_pt_invalid_available;
-	
-	all_acq[idx_sornet_signal] = (mc_alloc_kernel_func_t)sornet_signal::acquire_alloc;
-	all_acq[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::acquire_alloc;
-	all_acq[idx_last_invalid] = kernel::invalid_alloc_func;
-
-	all_sep[idx_sornet_signal] = (mc_alloc_kernel_func_t)sornet_signal::separate;
-	all_sep[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::separate;
-	all_sep[idx_last_invalid] = kernel::invalid_alloc_func;
-	
-	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
-	
 }
 
 sorting_net::~sorting_net(){} 
@@ -146,6 +123,30 @@ sorting_net_sornet_handler(missive* msv){
 
 void sort_net_wrk_init_handlers() mc_external_code_ram;
 
+void
+sorting_net::init_mem_funcs(){
+	mc_init_arr_vals(idx_total, all_ava, mc_null);
+	mc_init_arr_vals(idx_total, all_acq, mc_null);
+	mc_init_arr_vals(idx_total, all_sep, mc_null);
+	
+	all_ava[idx_sornet_signal] = &(ava_sornet_signals);
+	all_ava[idx_sorcell] = &(ava_sorcells);
+	all_ava[idx_last_invalid] = mc_pt_invalid_available;
+	
+	all_acq[idx_sornet_signal] = (mc_alloc_kernel_func_t)sornet_signal::acquire_alloc;
+	all_acq[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::acquire_alloc;
+	all_acq[idx_last_invalid] = kernel::invalid_alloc_func;
+
+	all_sep[idx_sornet_signal] = (mc_alloc_kernel_func_t)sornet_signal::separate;
+	all_sep[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::separate;
+	all_sep[idx_last_invalid] = kernel::invalid_alloc_func;
+	
+	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
+	
+	PTD_CK(sornet_signal::ck_cell_id(idx_sornet_signal));
+	PTD_CK(sorcell::ck_cell_id(idx_sorcell));	
+}
+
 void sort_net_wrk_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
@@ -153,7 +154,10 @@ void sort_net_wrk_init_handlers(){
 	hndlrs[idx_sorting_net] = sorting_net_sornet_handler;
 	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
 
+	kernel::set_tot_cell_subclasses(idx_total);
 	kernel::set_cell_handlers(hndlrs);	
+
+	bj_sorting_net->init_mem_funcs();
 }
 
 

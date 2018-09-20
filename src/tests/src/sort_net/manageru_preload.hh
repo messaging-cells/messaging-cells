@@ -48,6 +48,14 @@ class pre_load_snet;
 mc_c_decl grip ava_pre_sornode;
 mc_c_decl grip ava_pre_sort_net;
 
+enum mgr_srt_hdlr_idx_t : mck_handler_idx_t {
+	mgr_idx_invalid = mck_tot_base_cell_classes,
+	mgr_idx_pre_sornode,
+	mgr_idx_pre_sort_net,
+	mgr_idx_last_invalid,
+	mgr_idx_total
+};
+
 enum sornod_kind_t : uint8_t {
 	snod_invalid,
 	snod_half,
@@ -116,6 +124,11 @@ public:
 
 	~pre_sornode(){}
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return mgr_idx_pre_sornode;
+	}
+	
 	connect_kind_t	get_conn_kind(num_nod_t conn_idx){
 		if(conn_idx == up_idx){ return conn_up; }
 		if(conn_idx == down_idx){ return conn_down; }

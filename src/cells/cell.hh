@@ -124,6 +124,15 @@ nam::get_curr_separate_sz(){ \
 
 // end_macro
 
+#define MCK_DEFINE_CHECK_CELL_ID(nam) \
+bool \
+nam::ck_cell_id(mck_handler_idx_t idx){ \
+	nam obj; \
+	return (obj.get_cell_id() == idx); \
+} \
+
+// end_macro
+
 #define MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 nam* \
 nam::separate(mc_alloc_size_t sz){ \
@@ -166,6 +175,7 @@ nam::acquire(mc_alloc_size_t sz){ \
 
 //! Declares dynamic memory methods for class 'nam'
 #define MCK_DECLARE_MEM_METHODS(nam, module) \
+	static	bool 			ck_cell_id(mck_handler_idx_t idx) mc_external_code_ram; \
 	static	mc_alloc_size_t	get_curr_separate_sz() mc_external_code_ram; \
 	static	nam*			acquire_alloc(mc_alloc_size_t sz = 1) mc_external_code_ram; \
 	static	nam*			acquire(mc_alloc_size_t sz = 1) module; \
@@ -173,11 +183,13 @@ nam::acquire(mc_alloc_size_t sz){ \
 
 // end_macro
 
+//	MCK_DEFINE_ACQUIRE_AVA(nam, all_ava)
+
 //! Defines dynamic memory methods for class 'nam' with aligment 'align' (32 or 64) and available list 'all_ava'.
 #define MCK_DEFINE_MEM_METHODS(nam, align, all_ava, curr_sep_sz) \
+	MCK_DEFINE_CHECK_CELL_ID(nam) \
 	MCK_DEFINE_CURR_SEPARATE_SZ(nam, curr_sep_sz) \
 	MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
-	MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
 	MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
 
 // end_macro
@@ -188,24 +200,27 @@ nam::acquire(mc_alloc_size_t sz){ \
 
 #define MCK_DEFINE_GET_AVAILABLE(nam, all_ava) grip& nam::get_available(){ return all_ava; }
 
+//	MCK_DECLARE_GET_AVAILABLE() 
+
 //! Calls MCK_DECLARE_MEM_METHODS and MCK_DECLARE_GET_AVAILABLE
 #define MCK_DECLARE_MEM_METHODS_AND_GET_AVA(nam, module) \
 	MCK_DECLARE_MEM_METHODS(nam, module) \
-	MCK_DECLARE_GET_AVAILABLE() \
 
 // end_macro
+
+//	MCK_DECLARE_GET_AVAILABLE_2(module2) 
 
 //! Calls MCK_DECLARE_MEM_METHODS and MCK_DECLARE_GET_AVAILABLE
 #define MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(nam, module1, module2) \
 	MCK_DECLARE_MEM_METHODS(nam, module1) \
-	MCK_DECLARE_GET_AVAILABLE_2(module2) \
 
 // end_macro
+
+//	MCK_DEFINE_GET_AVAILABLE(nam, all_ava) 
 
 //! Calls MCK_DEFINE_MEM_METHODS and MCK_DEFINE_GET_AVAILABLE
 #define MCK_DEFINE_MEM_METHODS_AND_GET_AVA(nam, align, all_ava, curr_sep_sz) \
 	MCK_DEFINE_MEM_METHODS(nam, align, all_ava, curr_sep_sz) \
-	MCK_DEFINE_GET_AVAILABLE(nam, all_ava) \
 
 // end_macro
 
@@ -661,17 +676,17 @@ public:
 	);
 
 	//! Releases this \ref agent so that it can latter be acquired again.
-	mc_opt_sz_fn 
-	void	release(int dbg_caller = 1){
+	/*mc_opt_sz_fn 
+	void	release_old(int dbg_caller = 1){
 		let_go();
 		init_me(dbg_caller);
 		grip& ava = get_available();
 		ava.bind_to_my_left(*this);
 		PTD_DBG_CODE(dbg_release(dbg_caller));
-	}
+	}*/
 	
 	mc_opt_sz_fn 
-	void	do_release(int dbg_caller = 1);
+	void	release(int dbg_caller = 1);
 		
 	mc_inline_fn
 	agent*	get_glb_ptr(){

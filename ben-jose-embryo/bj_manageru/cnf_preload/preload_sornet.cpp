@@ -116,7 +116,7 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 		down_idx = BJ_INVALID_IDX;
 	}
 	
-	pre_sornode* nod = pre_sornode::acquire();
+	pre_sornode* nod = bj_pre_sornode_acquire();
 	MCK_CK(nod != mc_null);
 	
 	prms.curr_nod_id++;
@@ -275,7 +275,7 @@ create_sornet(num_nod_t num_to_sort){
 	mc_workeru_nn_t nxt_nn = 0;
 	num_nod_t aa = 0;
 	for(aa = 0; aa < num_to_sort; aa++){
-		pre_endnode* end_nd = pre_endnode::acquire();
+		pre_endnode* end_nd = bj_pre_endnode_acquire();
 		end_nd->nxt.idx = aa;
 		
 		if(all_rnk_in_nod != mc_null){
@@ -364,7 +364,7 @@ create_ranknet(num_nod_t num_to_rank){
 	mc_workeru_nn_t nxt_nn = 0;
 	num_nod_t aa = 0;
 	for(aa = 0; aa < tot_out_nod; aa++){
-		pre_endnode* end_nd = pre_endnode::acquire();
+		pre_endnode* end_nd = bj_pre_endnode_acquire();
 		end_nd->nxt.idx = aa;
 		arr_endnods[aa] = end_nd;
 		add_rnk_endnod_to_glb_cnf(end_nd, nxt_nn);
@@ -393,7 +393,7 @@ create_ranknet(num_nod_t num_to_rank){
 			}
 			added_jmp = true;
 			
-			pre_sornode* nod = pre_sornode::acquire();
+			pre_sornode* nod = bj_pre_sornode_acquire();
 			MCK_CK(nod != mc_null);
 			
 			nod_id++;

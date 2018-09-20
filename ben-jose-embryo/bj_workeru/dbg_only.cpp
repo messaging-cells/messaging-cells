@@ -62,7 +62,7 @@ void bj_dbg_separate(){
 
 	PTD_LOG("Separated transmitters %ld\n", sep_msvs);
 
-	dbg_transmitter* msv = dbg_transmitter::acquire();
+	dbg_transmitter* msv = bj_dbg_transmitter_acquire();
 	PTD_CK(msv->d.prp.wrk_side == side_invalid);
 	msv->src = my_net;
 	msv->dst = my_net;

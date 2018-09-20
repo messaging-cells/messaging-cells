@@ -421,6 +421,11 @@ kernel::init_kernel_cell_mem_funcs(grip** all_ava, mc_alloc_kernel_func_t* all_a
 	all_sep[mck_cell_id(missive)] = (mc_alloc_kernel_func_t)missive::separate;
 	all_sep[mck_cell_id(agent_ref)] = (mc_alloc_kernel_func_t)agent_ref::separate;
 	all_sep[mck_cell_id(agent_grp)] = (mc_alloc_kernel_func_t)agent_grp::separate;
+	
+	PTD_CK(cell::ck_cell_id(mck_cell_id(cell)));
+	PTD_CK(missive::ck_cell_id(mck_cell_id(missive)));
+	PTD_CK(agent_ref::ck_cell_id(mck_cell_id(agent_ref)));
+	PTD_CK(agent_grp::ck_cell_id(mck_cell_id(agent_grp)));
 }
 
 void	// static
@@ -1111,6 +1116,7 @@ kernel::do_acquire(mck_handler_idx_t idx, mc_alloc_size_t sz){
 	grip* ava = ker->all_cell_available[idx];
 	PTD_CK(ava != mc_null);
 	
+	agent* obj = mc_null;
 	if(sz == 1){
 		if(ava->is_alone()){
 			PTD_CK(ker->all_cell_separate_funcs != mc_null);
@@ -1120,17 +1126,19 @@ kernel::do_acquire(mck_handler_idx_t idx, mc_alloc_size_t sz){
 		}
 		binder* fst = ava->bn_right;
 		fst->let_go();
-		return (agent*)fst;
+		obj = (agent*)fst;
+		return obj;
 	}
 	
 	PTD_CK(ker->all_cell_acquire_alloc_funcs != mc_null);
 	mc_alloc_kernel_func_t acq_fn = ker->all_cell_acquire_alloc_funcs[idx]; 
 	PTD_CK(acq_fn != mc_null);
-	return (agent*)((*acq_fn)(sz));
+	obj = (agent*)((*acq_fn)(sz));
+	return obj;
 }
 
 void
-agent::do_release(int dbg_caller){
+agent::release(int dbg_caller){
 	mck_handler_idx_t idx = get_cell_id();
 	kernel* ker = MCK_KERNEL;
 	PTD_CK((idx < mck_tot_base_cell_classes) || (idx < ker->tot_cell_subclasses));

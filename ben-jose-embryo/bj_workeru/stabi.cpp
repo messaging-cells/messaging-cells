@@ -294,7 +294,7 @@ synapse::stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd, bool dbg_is
 		((dbg_is_forced)?("FORCED"):("")), node_kind_to_str(rem_nd->ki), rem_nd->id, 
 		mc_id_to_nn(mc_addr_get_id(mate)));
 
-	stabi_transmitter* trm = stabi_transmitter::acquire();
+	stabi_transmitter* trm = bj_stabi_transmitter_acquire();
 	trm->d.stb.wrk_tier = BJ_INVALID_NUM_TIER;
 	trm->d.stb.id_arr_sz = 0;
 	trm->d.stb.id_arr = mc_null;
@@ -425,7 +425,7 @@ synset::stabi_get_subset_of(synapse* add_snp, signal_data* dat){
 		}
 	}
 	if(sset == mc_null){
-		sset = synset::acquire();
+		sset = bj_synset_acquire();
 		lft->bind_to_my_right(*sset);
 	}
 

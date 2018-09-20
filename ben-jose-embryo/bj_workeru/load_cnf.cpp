@@ -27,22 +27,6 @@ synapse_load_handler(missive* msv){
 }
 
 void
-bj_load_init_handlers(){
-	missive_handler_t* hndlrs = bj_handlers;
-	mc_init_arr_vals(idx_total, hndlrs, mc_null);
-	hndlrs[idx_nervenet] = nervenet_load_handler;
-	hndlrs[idx_polaron] = polaron_load_handler;
-	hndlrs[idx_synapse] = synapse_load_handler;
-	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
-
-	//mck_slog2("bj_load_init_handlers_0 \n");
-	kernel::set_tot_cell_subclasses(idx_total);
-	//mck_slog2("bj_load_init_handlers_1 \n");
-	kernel::set_cell_handlers(hndlrs);
-	//mck_slog2("bj_load_init_handlers_2 \n");
-}
-
-void
 nervenet::init_nervenet_with(pre_cnf_net* pre_net){
 	mck_slog2("init_nervenet_with_1 \n");
 	tot_neus = pre_net->tot_pre_neus;
@@ -120,8 +104,8 @@ void bj_load_shd_cnf(){
 		PTD_CK(nod->id == -(opp->id));
 		//pre_cnf_node* opp = nod->opp_nod;
 
-		polaron* pos_nod = polaron::acquire();
-		polaron* neg_nod = polaron::acquire();
+		polaron* pos_nod = bj_polaron_acquire();
+		polaron* neg_nod = bj_polaron_acquire();
 
 		pos_nod->init_nervenode_with(nod);
 		neg_nod->init_nervenode_with(opp);
@@ -149,7 +133,7 @@ void bj_load_shd_cnf(){
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_cnf_node* sh_neu = (pre_cnf_node*)wrk;
 
-		neuron* my_neu = neuron::acquire();
+		neuron* my_neu = bj_neuron_acquire();
 		my_net->all_neu.bind_to_my_left(*my_neu);
 
 		neuron* my_glb_neu = (neuron*)mck_as_glb_pt(my_neu);
@@ -178,7 +162,7 @@ void bj_load_shd_cnf(){
 			
 			MCK_CK(my_pol->id == pol->id);
 
-			synapse* my_snp = synapse::acquire();
+			synapse* my_snp = bj_synapse_acquire();
 
 			my_snp->owner = my_glb_neu;
 
@@ -186,7 +170,7 @@ void bj_load_shd_cnf(){
 			my_neu->left_side.step_active_set.add_left_synapse(my_snp, false);
 			my_neu->left_side.update_prv_tot_active();
 
-			load_transmitter* msv = load_transmitter::acquire();
+			load_transmitter* msv = bj_load_transmitter_acquire();
 			PTD_CK(msv->d.prp.wrk_side == side_invalid);
 			msv->src = my_snp;
 			msv->dst = my_pol;
@@ -210,7 +194,7 @@ void bj_load_shd_cnf(){
 	}
 
 	if(tots.tot_lits == 0){
-		load_transmitter* msv = load_transmitter::acquire();
+		load_transmitter* msv = bj_load_transmitter_acquire();
 		PTD_CK(msv->d.prp.wrk_side == side_invalid);
 		msv->src = my_net;
 		msv->dst = my_net;
@@ -240,7 +224,7 @@ polaron::load_handler(missive* msv){
 	MCK_CK(tok == bj_tok_load_nw_syn);
 
 	synapse* mt_snp = (synapse*)syn_src;
-	synapse* my_snp = synapse::acquire();
+	synapse* my_snp = bj_synapse_acquire();
 
 	//PTD_PRT("RCV msv pole %d from neu %d \n", id, mt_snp->owner->id);
 	//PTD_PRT("polaron::load_handler got snp=%p %s \n", (void*)mt_snp, mt_snp->get_class_name());
@@ -257,7 +241,7 @@ polaron::load_handler(missive* msv){
 	left_side.step_active_set.add_left_synapse(my_snp, false);
 	left_side.update_prv_tot_active();
 
-	load_transmitter* msv2 = load_transmitter::acquire();
+	load_transmitter* msv2 = bj_load_transmitter_acquire();
 	PTD_CK(msv2->d.prp.wrk_side == side_invalid);
 	msv2->src = my_snp;
 	msv2->dst = mt_snp;
@@ -354,7 +338,7 @@ tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 
 void
 netstate::init_propag_tiers(nervenet& my_net){
-	tierdata* ti_dat = tierdata::acquire();
+	tierdata* ti_dat = bj_tierdata_acquire();
 
 	ti_dat->tdt_id = 0;
 	ti_dat->inp_neus = 0;
@@ -393,24 +377,75 @@ void bj_init_nervenet(){
 	bj_nervenet->shd_cnf = nn_cnf;	
 }
 
+void
+nervenet::init_mem_funcs(){
+	mc_init_arr_vals(idx_total, all_ava, mc_null);
+	mc_init_arr_vals(idx_total, all_acq, mc_null);
+	mc_init_arr_vals(idx_total, all_sep, mc_null);
+	
+	all_ava[idx_base_transmitter] = &(ava_base_transmitters);
+	all_ava[idx_synset] = &(ava_synsets);
+	all_ava[idx_tierset] = &(ava_tiersets);
+	all_ava[idx_synapse] = &(ava_synapses);
+	all_ava[idx_neuron] = &(ava_neurons);
+	all_ava[idx_polaron] = &(ava_polarons);
+	all_ava[idx_sorcell] = &(ava_sorcells);
+	all_ava[idx_endcell] = &(ava_endcells);
+	all_ava[idx_tierdata] = &(ava_tierdatas);
+	all_ava[idx_last_invalid] = mc_pt_invalid_available;
+	
+	all_acq[idx_base_transmitter] = (mc_alloc_kernel_func_t)base_transmitter::acquire_alloc;
+	all_acq[idx_synset] = (mc_alloc_kernel_func_t)synset::acquire_alloc;
+	all_acq[idx_tierset] = (mc_alloc_kernel_func_t)tierset::acquire_alloc;
+	all_acq[idx_synapse] = (mc_alloc_kernel_func_t)synapse::acquire_alloc;
+	all_acq[idx_neuron] = (mc_alloc_kernel_func_t)neuron::acquire_alloc;
+	all_acq[idx_polaron] = (mc_alloc_kernel_func_t)polaron::acquire_alloc;
+	all_acq[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::acquire_alloc;
+	all_acq[idx_endcell] = (mc_alloc_kernel_func_t)endcell::acquire_alloc;
+	all_acq[idx_tierdata] = (mc_alloc_kernel_func_t)tierdata::acquire_alloc;
+	all_acq[idx_last_invalid] = kernel::invalid_alloc_func;
+
+	all_sep[idx_base_transmitter] = (mc_alloc_kernel_func_t)base_transmitter::separate;
+	all_sep[idx_synset] = (mc_alloc_kernel_func_t)synset::separate;
+	all_sep[idx_tierset] = (mc_alloc_kernel_func_t)tierset::separate;
+	all_sep[idx_synapse] = (mc_alloc_kernel_func_t)synapse::separate;
+	all_sep[idx_neuron] = (mc_alloc_kernel_func_t)neuron::separate;
+	all_sep[idx_polaron] = (mc_alloc_kernel_func_t)polaron::separate;
+	all_sep[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::separate;
+	all_sep[idx_endcell] = (mc_alloc_kernel_func_t)endcell::separate;
+	all_sep[idx_tierdata] = (mc_alloc_kernel_func_t)tierdata::separate;
+	all_sep[idx_last_invalid] = kernel::invalid_alloc_func;
+	
+	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
+
+	PTD_CK(base_transmitter::ck_cell_id(idx_base_transmitter));
+	PTD_CK(synset::ck_cell_id(idx_synset));
+	PTD_CK(tierset::ck_cell_id(idx_tierset));
+	PTD_CK(synapse::ck_cell_id(idx_synapse));
+	PTD_CK(neuron::ck_cell_id(idx_neuron));
+	PTD_CK(polaron::ck_cell_id(idx_polaron));
+	PTD_CK(sorcell::ck_cell_id(idx_sorcell));
+	PTD_CK(endcell::ck_cell_id(idx_endcell));
+	PTD_CK(tierdata::ck_cell_id(idx_tierdata));
+}
+
+void
+bj_load_init_handlers(){
+	missive_handler_t* hndlrs = bj_handlers;
+	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_nervenet] = nervenet_load_handler;
+	hndlrs[idx_polaron] = polaron_load_handler;
+	hndlrs[idx_synapse] = synapse_load_handler;
+	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
+
+	kernel::set_tot_cell_subclasses(idx_total);
+	kernel::set_cell_handlers(hndlrs);
+	
+	bj_nervenet->init_mem_funcs();
+}
+
 void bj_load_main() {
-	
 	bj_init_nervenet();
-
-	nervenet* my_net = bj_nervenet;
-	/*
-	nervenet* my_net = nervenet::acquire_alloc();
-	if(my_net == mc_null){
-		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERU DATA"));
-	}
-	ker->user_data = my_net;
-
-	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->manageru_load_data);
-
-	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
-	bj_nervenet->shd_cnf = nn_cnf;
-	*/
-	
 	bj_load_init_handlers();
 
 	bj_load_shd_cnf();
@@ -418,19 +453,17 @@ void bj_load_main() {
 	
 	#ifdef BJ_DBG_SORNET
 	bj_load_shd_ranknet();
-	//mck_slog2("end_of_load_ranknet \n");
 	bj_load_shd_sornet();
-	//mck_slog2("end_of_load_sornet \n");
 	bj_init_ends_srt_sornet();
-	//mck_slog2("end_of_init_srt_endcells\n");
 	bj_init_ends_rnk_sornet();
-	mck_slog2("end_of_init_rnk_endcells\n");
+	mck_slog2("end_of_init_all_sort_cells\n");
 	#endif
 
 	//MC_DBG(if(kernel::get_workeru_nn() == 0){ bj_test_func_1(); });
 
 	kernel::run_sys();
 
+	nervenet* my_net = bj_nervenet;
 	my_net->act_left_side.init_propag_tiers(*my_net);
 	my_net->act_right_side.init_propag_tiers(*my_net);
 
@@ -440,7 +473,7 @@ void bj_load_main() {
 }
 
 void bj_test_func_1(){
-	neuron* neu2 = neuron::acquire();
+	neuron* neu2 = bj_neuron_acquire();
 	binder* sy1_n2 = (&(neu2->left_side.step_active_set.all_syn));
 	MCK_CK(! mc_addr_has_id(sy1_n2));
 	bj_test_func_2(sy1_n2);

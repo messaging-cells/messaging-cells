@@ -109,6 +109,16 @@ enum node_kind_t : uint8_t {
 
 #define bj_is_pol(ki) ((ki == nd_pos) || (ki == nd_neg))
 
+#define bj_cell_id(cls) BJ_CELL_ID_##cls
+
+enum bj_cell_id_t : mck_handler_idx_t {
+	bj_cell_id(pre_sornode) = mck_tot_base_cell_classes,
+	bj_cell_id(pre_endnode),
+	bj_cell_id(pre_cnf_node),
+
+	bj_mgr_last_invalid,
+	bj_mgr_idx_total
+};
 
 #endif		// SOLVER_H
 

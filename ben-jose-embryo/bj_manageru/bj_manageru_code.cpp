@@ -13,21 +13,26 @@
 #include "tak_mak.hh"
 #endif
 
-char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
-
 void bj_test(int argc, char *argv[]) mc_external_code_ram;
 int bj_manageru_main(int argc, char *argv[]) mc_external_code_ram;
 void bj_mgr_init_handlers() mc_external_code_ram;
 
-missive_handler_t bj_mgr_handlers[mck_tot_base_cell_classes];
+//------------------------------------------------------------
+// Global vars
+
+char* mch_epiphany_elf_path = (mc_cstr("the_epiphany_executable.elf"));
+
+missive_handler_t bj_mgr_handlers[bj_mgr_idx_total];
 
 void bj_mgr_init_handlers(){
 	missive_handler_t* hndlrs = bj_mgr_handlers;
-	mc_init_arr_vals(mck_tot_base_cell_classes, hndlrs, mc_null);
-	hndlrs[mck_tot_base_cell_classes - 1] = kernel::invalid_handler_func;
+	mc_init_arr_vals(bj_mgr_idx_total, hndlrs, mc_null);
+	hndlrs[bj_mgr_last_invalid] = kernel::invalid_handler_func;
 
-	kernel::set_tot_cell_subclasses(mck_tot_base_cell_classes);
+	kernel::set_tot_cell_subclasses(bj_mgr_idx_total);
 	kernel::set_cell_handlers(hndlrs);
+
+	bj_mgr_init_mem_funcs();
 }
 
 int bj_manageru_main(int argc, char *argv[])
@@ -76,6 +81,8 @@ int bj_manageru_main(int argc, char *argv[])
 	THE_CNF = mc_malloc32(pre_load_cnf, 1);
 	new (THE_CNF) pre_load_cnf(); 
 
+	bj_mgr_init_handlers();
+	
 	THE_CNF->tot_ccls = the_loader.ld_num_ccls;
 	THE_CNF->tot_vars = the_loader.ld_num_vars;
 	THE_CNF->tot_lits = the_loader.ld_tot_lits;
@@ -96,8 +103,6 @@ int bj_manageru_main(int argc, char *argv[])
 
 	//print_cnf();
 	//print_workeru_cnfs();
-
-	bj_mgr_init_handlers();
 
 	kernel::run_manageru_sys();
 	kernel::finish_manageru_sys();

@@ -17,9 +17,41 @@ MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_endnode, 32, ava_pre_endnode, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_cnf_node, 32, ava_pre_cnf_node, 0)
 MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_cnf_net, 32, ava_pre_cnf_net, 0)
 
+grip* bj_mgr_all_ava[bj_mgr_idx_total];
+mc_alloc_kernel_func_t bj_mgr_all_acq[bj_mgr_idx_total];
+mc_alloc_kernel_func_t bj_mgr_all_sep[bj_mgr_idx_total];
+
+void bj_mgr_init_mem_funcs(){
+	
+	mc_init_arr_vals(bj_mgr_idx_total, bj_mgr_all_ava, mc_null);
+	mc_init_arr_vals(bj_mgr_idx_total, bj_mgr_all_acq, mc_null);
+	mc_init_arr_vals(bj_mgr_idx_total, bj_mgr_all_sep, mc_null);
+	
+	bj_mgr_all_ava[bj_cell_id(pre_sornode)] = &(ava_pre_sornode);
+	bj_mgr_all_ava[bj_cell_id(pre_endnode)] = &(ava_pre_endnode);
+	bj_mgr_all_ava[bj_cell_id(pre_cnf_node)] = &(ava_pre_cnf_node);
+	bj_mgr_all_ava[bj_mgr_last_invalid] = mc_pt_invalid_available;
+	
+	bj_mgr_all_acq[bj_cell_id(pre_sornode)] = (mc_alloc_kernel_func_t)pre_sornode::acquire_alloc;
+	bj_mgr_all_acq[bj_cell_id(pre_endnode)] = (mc_alloc_kernel_func_t)pre_endnode::acquire_alloc;
+	bj_mgr_all_acq[bj_cell_id(pre_cnf_node)] = (mc_alloc_kernel_func_t)pre_cnf_node::acquire_alloc;
+	bj_mgr_all_acq[bj_mgr_last_invalid] = kernel::invalid_alloc_func;
+
+	bj_mgr_all_sep[bj_cell_id(pre_sornode)] = (mc_alloc_kernel_func_t)pre_sornode::separate;
+	bj_mgr_all_sep[bj_cell_id(pre_endnode)] = (mc_alloc_kernel_func_t)pre_endnode::separate;
+	bj_mgr_all_sep[bj_cell_id(pre_cnf_node)] = (mc_alloc_kernel_func_t)pre_cnf_node::separate;
+	bj_mgr_all_sep[bj_mgr_last_invalid] = kernel::invalid_alloc_func;
+	
+	kernel::set_cell_mem_funcs(bj_mgr_all_ava, bj_mgr_all_acq, bj_mgr_all_sep);
+	
+	PTD_CK(pre_sornode::ck_cell_id(bj_cell_id(pre_sornode)));
+	PTD_CK(pre_endnode::ck_cell_id(bj_cell_id(pre_endnode)));
+	PTD_CK(pre_cnf_node::ck_cell_id(bj_cell_id(pre_cnf_node)));
+}
+
 void init_node_arr(long sz, pre_cnf_node** arr, node_kind_t kk){
 	for(long aa = 0; aa < sz; aa++){
-		arr[aa] = pre_cnf_node::acquire();
+		arr[aa] = bj_pre_cnf_node_acquire();
 		arr[aa]->ki = kk;
 		if(kk == nd_pos){
 			arr[aa]->id = aa + 1;
@@ -186,13 +218,13 @@ preload_cnf(long sz, const long* arr){
 			pre_cnf_node* lit = get_lit(nio_id);
 			PTD_CK(lit != NULL);
 
-			agent_ref* rli = agent_ref::acquire();
+			agent_ref* rli = mc_agent_ref_acquire();
 			rli->glb_agent_ptr = lit;
 			ccl->all_agts.bind_to_my_left(*rli);
 			ccl->pre_sz++;
 			check_node_sz(ccl->pre_sz);
 
-			agent_ref* rcl = agent_ref::acquire();
+			agent_ref* rcl = mc_agent_ref_acquire();
 			rcl->glb_agent_ptr = ccl;
 			lit->all_agts.bind_to_my_left(*rcl);
 			lit->pre_sz++;

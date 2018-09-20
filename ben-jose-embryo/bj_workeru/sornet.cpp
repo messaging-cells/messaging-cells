@@ -191,7 +191,7 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col
 			   "KIND=%d \n", knd);
 	PTD_CK(knd != sorkind_invalid);
 
-	sornet_transmitter* sn_tmt = sornet_transmitter::acquire();
+	sornet_transmitter* sn_tmt = bj_sornet_transmitter_acquire();
 	sn_tmt->init_sornet_transmitter();
 	//sn_tmt->wrk_side = side_left;
 
@@ -239,7 +239,7 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col
 		MC_DBG(
 			if(send_root_dbg_out){
 				nervenet* root_net = bj_nervenet->get_nervenet(mc_nn_to_id(0));
-				sornet_transmitter* dbg_sn_tmt = sornet_transmitter::acquire();
+				sornet_transmitter* dbg_sn_tmt = bj_sornet_transmitter_acquire();
 				dbg_sn_tmt->init_sornet_transmitter();
 				
 				dbg_sn_tmt->copy_sornet_transmitter(*sn_tmt);

@@ -160,7 +160,8 @@ enum sornet_tok_t : mck_token_t {
 };
 
 enum bj_hdlr_idx_t : uint8_t {
-	idx_invalid = mck_tot_base_cell_classes,
+	idx_invalid = bj_mgr_idx_total,
+	idx_base_transmitter,
 	idx_synset,
 	idx_tierset,
 	idx_synapse,
@@ -270,6 +271,9 @@ BJ_DECLARE_CLS_NAM(nervenet)
 int
 bj_cmp_num_syn(num_syn_t const & n1, num_syn_t const & n2) mc_external_code_ram;
 
+#define bj_synset_acquire_arr(num) ((synset*)(kernel::do_acquire(idx_synset, num)))
+#define bj_synset_acquire() bj_synset_acquire_arr(1)
+
 class mc_aligned synset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synset, bj_nervenet_mem)
@@ -286,6 +290,11 @@ public:
 	synset() mc_external_code_ram;
 	~synset() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_synset;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
@@ -317,6 +326,9 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+#define bj_tierset_acquire_arr(num) ((tierset*)(kernel::do_acquire(idx_tierset, num)))
+#define bj_tierset_acquire() bj_tierset_acquire_arr(1)
+
 class mc_aligned tierset : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(tierset, bj_nervenet_mem)
@@ -327,6 +339,11 @@ public:
 	tierset() mc_external_code_ram;
 	~tierset() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_tierset;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
@@ -382,6 +399,16 @@ typedef base_transmitter sync_transmitter;
 typedef base_transmitter stabi_transmitter;
 typedef base_transmitter sornet_transmitter;
 
+#define bj_base_transmitter_acquire_arr(num) \
+	((base_transmitter*)(kernel::do_acquire(idx_base_transmitter, num)))
+	
+#define bj_dbg_transmitter_acquire() bj_base_transmitter_acquire_arr(1)
+#define bj_load_transmitter_acquire() bj_base_transmitter_acquire_arr(1)
+#define bj_propag_transmitter_acquire() bj_base_transmitter_acquire_arr(1)
+#define bj_sync_transmitter_acquire() bj_base_transmitter_acquire_arr(1)
+#define bj_stabi_transmitter_acquire() bj_base_transmitter_acquire_arr(1)
+#define bj_sornet_transmitter_acquire() bj_base_transmitter_acquire_arr(1)
+
 class mc_aligned base_transmitter : public missive {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(base_transmitter, bj_nervenet_mem)
@@ -391,6 +418,11 @@ public:
 	base_transmitter() mc_external_code_ram;
 	~base_transmitter() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_base_transmitter;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 	
@@ -402,6 +434,9 @@ public:
 };
 
 #define bj_id_arr_copy(dst, sz, src) for(num_syn_t idx = 0; idx < sz; idx++){ dst[idx] = src[idx]; }
+
+#define bj_synapse_acquire_arr(num) ((synapse*)(kernel::do_acquire(idx_synapse, num)))
+#define bj_synapse_acquire() bj_synapse_acquire_arr(1)
 
 class mc_aligned synapse : public cell {
 public:
@@ -419,6 +454,11 @@ public:
 	synapse() mc_external_code_ram;
 	~synapse() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_synapse;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
@@ -601,6 +641,9 @@ public:
 #define bj_get_nod_of_pt_lft_st(bdr) ((nervenode*)(((uint8_t*)bdr) - mc_offsetof(&nervenode::left_side)))
 #define bj_get_nod_of_pt_rgt_st(bdr) ((nervenode*)(((uint8_t*)bdr) - mc_offsetof(&nervenode::right_side)))
 
+#define bj_neuron_acquire_arr(num) ((neuron*)(kernel::do_acquire(idx_neuron, num)))
+#define bj_neuron_acquire() bj_neuron_acquire_arr(1)
+
 class mc_aligned neuron : public nervenode {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(neuron, mc_external_code_ram)
@@ -610,6 +653,11 @@ public:
 	neuron() mc_external_code_ram;
 	~neuron() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_neuron;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
@@ -634,6 +682,9 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+#define bj_polaron_acquire_arr(num) ((polaron*)(kernel::do_acquire(idx_polaron, num)))
+#define bj_polaron_acquire() bj_polaron_acquire_arr(1)
+
 class mc_aligned polaron : public nervenode {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(polaron, mc_external_code_ram)
@@ -643,6 +694,11 @@ public:
 	polaron() mc_external_code_ram;
 	~polaron() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_polaron;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 
@@ -697,6 +753,9 @@ public:
 	bool jump_to_rnk_end(num_nod_t srt_sz, bool is_end) bj_sornet_cod;
 };
 
+#define bj_sorcell_acquire_arr(num) ((sorcell*)(kernel::do_acquire(idx_sorcell, num)))
+#define bj_sorcell_acquire() bj_sorcell_acquire_arr(1)
+
 class mc_aligned sorcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(sorcell, mc_external_code_ram, mc_external_code_ram)
@@ -710,6 +769,11 @@ public:
 	sorcell() mc_external_code_ram;
 	~sorcell() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_sorcell;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 
@@ -734,6 +798,9 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+#define bj_endcell_acquire_arr(num) ((endcell*)(kernel::do_acquire(idx_endcell, num)))
+#define bj_endcell_acquire() bj_endcell_acquire_arr(1)
+
 class mc_aligned endcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(endcell, mc_external_code_ram, mc_external_code_ram)
@@ -743,6 +810,11 @@ public:
 	endcell() mc_external_code_ram;
 	~endcell() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_endcell;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
 
@@ -764,6 +836,9 @@ num_nod_t bj_sornet_calc_grp_sz(num_nod_t min_grp, num_nod_t max_grp) bj_sornet_
 
 #define	bj_sent_inert_flag mc_flag0
 
+#define bj_tierdata_acquire_arr(num) ((tierdata*)(kernel::do_acquire(idx_tierdata, num)))
+#define bj_tierdata_acquire() bj_tierdata_acquire_arr(1)
+
 class mc_aligned tierdata : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(tierdata, bj_nervenet_mem)
@@ -784,6 +859,11 @@ public:
 	tierdata() mc_external_code_ram;
 	~tierdata() mc_external_code_ram;
 
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_tierdata;
+	}
+	
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
@@ -949,6 +1029,10 @@ public:
 	grip		ava_endcells;
 	grip		ava_tierdatas;
 
+	grip* all_ava[idx_total];
+	mc_alloc_kernel_func_t all_acq[idx_total];
+	mc_alloc_kernel_func_t all_sep[idx_total];
+	
 	missive_handler_t all_net_handlers[idx_total];
 
 	pre_cnf_net*	shd_cnf;
@@ -1017,6 +1101,7 @@ public:
 	~nervenet() mc_external_code_ram;
 
 	void init_nervenet_with(pre_cnf_net* pre_net) mc_external_code_ram;
+	void init_mem_funcs() mc_external_code_ram;
 
 	void sync_handler(tier_kind_t tiki, missive* msv);
 

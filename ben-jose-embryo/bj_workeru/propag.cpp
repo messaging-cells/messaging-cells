@@ -81,7 +81,7 @@ synapse::propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_fo
 		((dbg_is_forced)?("FORCED"):("")), node_kind_to_str(rem_nd->ki), rem_nd->id, 
 		mc_id_to_nn(mc_addr_get_id(mate)));
 
-	propag_transmitter* trm = propag_transmitter::acquire();
+	propag_transmitter* trm = bj_propag_transmitter_acquire();
 	trm->src = this;
 	trm->dst = mate;
 	trm->tok = tok;
@@ -435,7 +435,7 @@ neurostate::add_tiset(num_tier_t nti){
 
 	tierset* tis = get_tiset(nti);
 	if(tis == mc_null){
-		tis = tierset::acquire();
+		tis = bj_tierset_acquire();
 		PTD_CK(tis->ti_all.is_alone());
 
 		tis->ti_id = nti;
