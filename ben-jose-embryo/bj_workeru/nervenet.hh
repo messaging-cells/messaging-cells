@@ -62,7 +62,7 @@ class pre_cnf_net;
 class base_transmitter;
 class synapse;
 class nervenode;
-class neurostate;
+class side_state;
 class neuron;
 class polaron;
 class sorcell;
@@ -467,7 +467,7 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced = false) bj_propag_cod;
-	void stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd = mc_null, 
+	void stabi_send_transmitter(stabi_tok_t tok, side_state* src_nd = mc_null, 
 				bool dbg_is_forced = false) bj_stabi_cod;
 
 	void stabi_set_rcv_arr(signal_data* dat) bj_stabi_cod;
@@ -485,8 +485,7 @@ synapse* get_synapse_from_binder(net_side_t sd, binder* bdr);
 #define	bj_stt_charge_all_flag mc_flag1
 #define	bj_stt_stabi_intact_id_flag mc_flag2
 
-//class neurostate {
-class mc_aligned neurostate : public binder {
+class mc_aligned side_state : public binder {
 public:
 	mc_flags_t		step_flags;
 	synset			step_active_set;
@@ -505,13 +504,12 @@ public:
 
 	PTD_DBG_CODE(bool was_all_pg);
 
-	neurostate() mc_external_code_ram;
-	~neurostate() mc_external_code_ram;
+	side_state() mc_external_code_ram;
+	~side_state() mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	void calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) bj_stabi_cod;
 	bool charge_all_active(signal_data* dat, node_kind_t ki) bj_propag_cod;
 	void step_reset_complete();
 
@@ -539,13 +537,14 @@ public:
 	}
 
 	void propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dat_ti) bj_propag_cod;
+	
+	// stabi
+	
+	void calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) bj_stabi_cod;
 	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) bj_stabi_cod;
-
-	bool neu_is_to_delay(netstate& nstt, nervenode* nd, tier_kind_t tiki, num_tier_t the_ti, 
-			grip& all_ti, int dbg_caller);
-
 };
 
+bool bj_can_delay_tier(num_tier_t the_ti, grip& all_ti);
 
 void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
 int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_t* arr2) bj_stabi_cod;
@@ -567,8 +566,8 @@ public:
 	num_syn_t		sz;
 	num_tier_t		creat_tier;
 
-	neurostate		left_side;
-	neurostate		right_side;
+	side_state		left_side;
+	side_state		right_side;
 
 	nervenode() mc_external_code_ram;
 	~nervenode() mc_external_code_ram;
@@ -578,7 +577,7 @@ public:
 
 	void init_nervenode_with(pre_cnf_node* nod) bj_load_cod;
 
-	neurostate& get_neurostate(net_side_t sd);	// Used in loading. It has to common code.
+	side_state& get_side_state(net_side_t sd);	// Used in loading. It has to common code.
 
 	char* get_ki_str() mc_external_code_ram;
 
@@ -638,6 +637,8 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+neuron* bj_get_neu(binder* dlyd, tier_kind_t tiki, net_side_t sd);
+
 #define bj_get_nod_of_pt_lft_st(bdr) ((nervenode*)(((uint8_t*)bdr) - mc_offsetof(&nervenode::left_side)))
 #define bj_get_nod_of_pt_rgt_st(bdr) ((nervenode*)(((uint8_t*)bdr) - mc_offsetof(&nervenode::right_side)))
 
@@ -661,6 +662,10 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
+	void get_delayed_data(tier_kind_t tiki, net_side_t sd, num_tier_t& the_ti, mck_token_t& tok);
+	bool can_delay(tier_kind_t tiki, net_side_t sd);
+	bool is_to_delay(tier_kind_t tiki, net_side_t sd, num_tier_t the_ti, grip& all_ti);
+	
 	void propag_handler(missive* msv) bj_propag_cod;
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
@@ -894,6 +899,8 @@ public:
 		return (bn_left == &all_tiers);
 	}
 
+	void delay_binder(binder& bdr, int dbg_caller);
+	
 	void proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, bool star_nxt_ti);
 
 	virtual
@@ -943,12 +950,18 @@ public:
 	grip& get_all_tiers(tier_kind_t tiki);
 
 	tierdata& get_tier(tier_kind_t tiki, grip& all_ti, num_tier_t nti, int dbg_caller);
-
+	
 	void dbg_prt_all_tiers(tier_kind_t tiki, char* prefix, num_tier_t num_ti) mc_external_code_ram;
 
+	void inc_tier_rcv(nervenode* nd, tier_kind_t tiki, num_tier_t the_ti, grip& all_ti);
 };
 
 void inc_tier(tier_kind_t tiki, grip& all_ti, net_side_t sd, int dbg_caller);
+
+mc_inline_fn num_tier_t prv_num_tier(num_tier_t the_ti){
+	PTD_CK(the_ti != BJ_INVALID_NUM_TIER);
+	return (the_ti - 1);
+}
 
 mc_inline_fn tierdata& get_last_tier(grip& all_ti){
 	PTD_CK(! all_ti.is_alone());
@@ -967,7 +980,7 @@ public:
 	mc_alloc_size_t dbg_tot_new_tierset;
 	mc_alloc_size_t dbg_tot_new_base_transmitter;
 	mc_alloc_size_t dbg_tot_new_synapse;
-	mc_alloc_size_t dbg_tot_new_neurostate;
+	mc_alloc_size_t dbg_tot_new_side_state;
 	mc_alloc_size_t dbg_tot_new_nervenode;
 	mc_alloc_size_t dbg_tot_new_neuron;
 	mc_alloc_size_t dbg_tot_new_polaron;

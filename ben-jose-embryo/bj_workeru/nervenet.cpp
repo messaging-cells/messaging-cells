@@ -9,7 +9,7 @@ synset__40__
 tierset__32__
 base_transmitter__32__
 synapse__48__
-neurostate__104__
+side_state__104__
 nervenode__240__
 neuron__240__
 polaron__248__
@@ -147,7 +147,7 @@ synset::dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out){
 void
 nervenode::dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, num_tier_t num_ti){
 	char* ts = bj_dbg_tier_kind_to_str(tiki);
-	neurostate& nst = get_neurostate(sd);
+	side_state& nst = get_side_state(sd);
 
 	bj_dbg_str_stream out;
 	nst.step_active_set.dbg_rec_prt_synset(sd, out);
@@ -323,17 +323,17 @@ synapse::init_me(int caller){
 	mate = mc_null;
 }
 
-neurostate::neurostate(){ 
+side_state::side_state(){ 
 	PTD_CK(bj_nervenet != mc_null);
-	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_neurostate ++);
-	mck_slog2("alloc__neurostate\n");
+	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_side_state ++);
+	mck_slog2("alloc__side_state\n");
 	init_me();
 } 
 
-neurostate::~neurostate(){} 
+side_state::~side_state(){} 
 
 void
-neurostate::init_me(int caller){
+side_state::init_me(int caller){
 	//side_kind = side_invalid;
 	propag_num_tier = 0;
 
@@ -740,7 +740,7 @@ ptd_prt_tok_codes(){
 }
 
 tierset*
-neurostate::dbg_get_tiset(grip& all_ti, num_tier_t nti){
+side_state::dbg_get_tiset(grip& all_ti, num_tier_t nti){
 	if(all_ti.is_alone()){
 		return mc_null;
 	}
@@ -885,7 +885,7 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 
 	bj_callee_t mth = &nervenode::dbg_prt_syn;
 
-	neurostate& ne_stt = get_neurostate(sd);
+	side_state& ne_stt = get_side_state(sd);
 	tierset* all_ti = ne_stt.dbg_get_tiset(ne_stt.propag_tiers, num_ti);
 	
 	bool is_mpty = ((all_ti == mc_null) && ne_stt.step_active_set.is_synset_empty());
@@ -941,9 +941,7 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 		mck_slog2("}");
 	}
 
-	if((tiki != tiki_invalid) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){
-		mck_slog2("*");
-	}
+	if((tiki != tiki_invalid) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){ mck_slog2("*"); }
 
 	if(left_side.stabi_arr != mc_null){
 		PTD_DBG_CODE(
@@ -1050,7 +1048,7 @@ dbg_stats::init_me(int caller){
 	dbg_tot_new_tierset = 0;
 	dbg_tot_new_base_transmitter = 0;
 	dbg_tot_new_synapse = 0;
-	dbg_tot_new_neurostate = 0;
+	dbg_tot_new_side_state = 0;
 	dbg_tot_new_nervenode = 0;
 	dbg_tot_new_neuron = 0;
 	dbg_tot_new_polaron = 0;
@@ -1065,7 +1063,7 @@ dbg_stats::dbg_prt_all(){
 	PTD_LOG("dbg_tot_new_tierset = %d \n", dbg_tot_new_tierset);
 	PTD_LOG("dbg_tot_new_base_transmitter = %d \n", dbg_tot_new_base_transmitter);
 	PTD_LOG("dbg_tot_new_synapse = %d \n", dbg_tot_new_synapse);
-	PTD_LOG("dbg_tot_new_neurostate = %d \n", dbg_tot_new_neurostate);
+	PTD_LOG("dbg_tot_new_side_state = %d \n", dbg_tot_new_side_state);
 	PTD_LOG("dbg_tot_new_nervenode = %d \n", dbg_tot_new_nervenode);
 	PTD_LOG("dbg_tot_new_neuron = %d \n", dbg_tot_new_neuron);
 	PTD_LOG("dbg_tot_new_polaron = %d \n", dbg_tot_new_polaron);
@@ -1098,8 +1096,8 @@ void bj_print_class_szs(){
 		mck_slog2("synapse__");
 		mck_ilog(sizeof(synapse));
 		mck_slog2("__\n");
-		mck_slog2("neurostate__");
-		mck_ilog(sizeof(neurostate));
+		mck_slog2("side_state__");
+		mck_ilog(sizeof(side_state));
 		mck_slog2("__\n");
 		mck_slog2("nervenode__");
 		mck_ilog(sizeof(nervenode));
@@ -1184,11 +1182,11 @@ nervenet::get_active_netstate(net_side_t sd){
 	return *out_stt;
 }
 
-neurostate& 
-nervenode::get_neurostate(net_side_t sd){
+side_state& 
+nervenode::get_side_state(net_side_t sd){
 	PTD_CK(sd != side_invalid);
 
-	neurostate* out_stt = &left_side;
+	side_state* out_stt = &left_side;
 	if(sd == side_right){
 		out_stt = &right_side;
 	}
@@ -1295,21 +1293,21 @@ nervenet::get_nervenet(mc_workeru_id_t id){
 
 bool
 nervenode::is_tier_complete(signal_data* dat){
-	neurostate& stt = get_neurostate(dat->sd);
+	side_state& stt = get_side_state(dat->sd);
 	return stt.is_full();
 }
 
 bool
 polaron::is_tier_complete(signal_data* dat){
-	neurostate& pol_stt = get_neurostate(dat->sd);
-	neurostate& opp_stt = opp->get_neurostate(dat->sd);
+	side_state& pol_stt = get_side_state(dat->sd);
+	side_state& opp_stt = opp->get_side_state(dat->sd);
 
 	bool both_full = pol_stt.is_full() && opp_stt.is_full();
 	return both_full;
 }
 
 void
-neurostate::step_reset_complete(){
+side_state::step_reset_complete(){
 	PTD_LOG("::step_reset_complete flags=%p flgs_pt=%p \n", (void*)(uintptr_t)step_flags, 
 			(void*)(&step_flags));
 
@@ -1361,33 +1359,12 @@ netstate::broadcast_tier(tier_kind_t tiki, tierdata& lti, int dbg_caller){
 	send_sync_to_children(bj_tok_sync_add_tier, lti.tdt_id, tiki, mc_null);
 }
 
-bool
-neurostate::neu_is_to_delay(netstate& nstt, nervenode* nd, tier_kind_t tiki, 
-		num_tier_t the_ti, grip& all_ti, int dbg_caller)
-{ 
+void
+netstate::inc_tier_rcv(nervenode* nd, tier_kind_t tiki, num_tier_t the_ti, grip& all_ti){
 	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
 
-	PTD_CK(the_ti != BJ_INVALID_NUM_TIER);
-	
-	num_tier_t ti = the_ti - 1;
-	tierdata& lti = get_last_tier(all_ti);
-
-	lti.update_tidat();
-
-	bool to_dly = neu_all_ping(tiki);
-	if(tiki == tiki_stabi){
-		bool is_itct = mc_get_flag(step_flags, bj_stt_stabi_intact_id_flag);
-		to_dly = (to_dly && is_itct);
-	}
-
-	if(to_dly && (lti.tdt_id < ti)){
-		PTD_CK_PRT(is_alone(), "cllr=%d", dbg_caller);
-		lti.dly_neus++;
-		lti.all_delayed.bind_to_my_left(*this);
-		return true;
-	}
-
-	tierdata& tda = nstt.get_tier(tiki, all_ti, ti, 14);
+	num_tier_t ti = prv_num_tier(the_ti);
+	tierdata& tda = get_tier(tiki, all_ti, ti, 14);
 
 	SYNC_LOG(" %s_TO_DELAY_t%d_%s_%ld %s_%s ((%d > 0) && (%d == %d) && (t%d >= t%d)) %s \n", 
 		ts, ti, node_kind_to_str(nd->ki), nd->id, ts, ((to_dly)?("INC_STILL"):("")), 
@@ -1397,7 +1374,32 @@ neurostate::neu_is_to_delay(netstate& nstt, nervenode* nd, tier_kind_t tiki,
 	SYNC_CODE(bj_nervenet->act_left_side.dbg_prt_all_tiers(tiki, mc_cstr("TO_DELAY_"), ti));
 
 	tda.inc_rcv();
+}
 
+void
+tierdata::delay_binder(binder& bdr, int dbg_caller){
+	PTD_CK_PRT(bdr.is_alone(), "cllr=%d", dbg_caller);
+	dly_neus++;
+	all_delayed.bind_to_my_left(bdr);
+}
+
+bool
+neuron::is_to_delay(tier_kind_t tiki, net_side_t sd, num_tier_t the_ti, grip& all_ti){
+	return (can_delay(tiki, sd) && bj_can_delay_tier(the_ti, all_ti));
+}
+
+bool
+bj_can_delay_tier(num_tier_t the_ti, grip& all_ti)
+{ 
+	num_tier_t ti = prv_num_tier(the_ti);
+
+	tierdata& lti = get_last_tier(all_ti);
+	lti.update_tidat();
+
+	if(lti.tdt_id < ti){
+		return true;
+	}
+	
 	return false;
 }
 
@@ -1478,6 +1480,50 @@ netstate::get_tier(tier_kind_t tiki, grip& all_ti, num_tier_t nti, int dbg_calle
 	return *dat;
 }
 
+neuron*
+bj_get_neu(binder* wrk, tier_kind_t tiki, net_side_t sd){
+	side_state* stt = (side_state*)wrk;
+	nervenode* nd = mc_null;
+	if(sd == side_left){
+		nd = bj_get_nod_of_pt_lft_st(stt);
+	} else {
+		PTD_CK(sd == side_right);
+		nd = bj_get_nod_of_pt_rgt_st(stt);
+	}
+	PTD_CK(nd->ki == nd_neu);
+	return ((neuron*)nd);
+}
+
+void
+neuron::get_delayed_data(tier_kind_t tiki, net_side_t sd, 
+					num_tier_t& the_ti, mck_token_t& tok)
+{
+	side_state& stt = get_side_state(sd);
+	switch(tiki){
+		case tiki_propag: 
+			the_ti = stt.propag_num_tier;
+			tok = bj_tok_propag_tier_done;
+		break;
+		case tiki_stabi: 
+			the_ti = stt.stabi_num_tier;
+			tok = bj_tok_stabi_tier_done;
+		break;
+		default: 
+		break;
+	}
+}
+
+bool
+neuron::can_delay(tier_kind_t tiki, net_side_t sd){
+	side_state& sd_stt = get_side_state(sd);
+	bool to_dly = sd_stt.neu_all_ping(tiki);
+	if(tiki == tiki_stabi){
+		bool is_itct = mc_get_flag(sd_stt.step_flags, bj_stt_stabi_intact_id_flag);
+		to_dly = (to_dly && is_itct);
+	}
+	return to_dly;
+}
+
 void
 tierdata::proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, bool star_nxt_ti){
 	binder * fst, * lst, * wrk, * nxt;
@@ -1488,45 +1534,27 @@ tierdata::proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, bool star_
 	fst = (binder*)(dlyd->bn_right);
 	lst = (binder*)mck_as_loc_pt(dlyd);
 	for(wrk = fst; wrk != lst; wrk = nxt){
-		neurostate* stt = (neurostate*)wrk;
 		nxt = (binder*)(wrk->bn_right);
 
 		if(! star_nxt_ti){
 			dly_neus--;
-			stt->let_go();
+			wrk->let_go();
 			continue;
 		}
 
+		neuron* nd = bj_get_neu(wrk, tiki, sd);
+		
 		num_tier_t the_ti = BJ_INVALID_NUM_TIER;
 		mck_token_t tok = BJ_INVALID_TOKEN;
-		switch(tiki){
-			case tiki_propag: 
-				the_ti = stt->propag_num_tier;
-				tok = bj_tok_propag_tier_done;
-			break;
-			case tiki_stabi: 
-				the_ti = stt->stabi_num_tier;
-				tok = bj_tok_stabi_tier_done;
-			break;
-			default: 
-			break;
-		}
-
-		//PTD_CK_PRT((tdt_id == (the_ti - 1)), "FAILED (%d != %d)", tdt_id, (the_ti - 1));
-		nervenode* nd = mc_null;
-		if(sd == side_left){
-			nd = bj_get_nod_of_pt_lft_st(stt);
-		} else {
-			PTD_CK(sd == side_right);
-			nd = bj_get_nod_of_pt_lft_st(stt);
-		}
-		PTD_CK(nd->ki == nd_neu);
-
-		bool to_dly = stt->neu_is_to_delay(nstt, nd, tiki, the_ti, all_ti, 1);
+		nd->get_delayed_data(tiki, sd, the_ti, tok);
+		
+		bool to_dly = nd->is_to_delay(tiki, sd, the_ti, all_ti);
 		PTD_CK(! to_dly);
 		if(! to_dly){
+			nstt.inc_tier_rcv(nd, tiki, the_ti, all_ti);
+
 			dly_neus--;
-			stt->let_go();
+			wrk->let_go();
 
 			signal_data dat;
 			dat.tok = tok;

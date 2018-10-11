@@ -70,7 +70,7 @@ void
 synapse::propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced){
 	if(bj_nervenet->get_active_netstate(sd).sync_is_ending){ return; }
 
-	num_tier_t ti = owner->get_neurostate(sd).propag_num_tier;
+	num_tier_t ti = owner->get_side_state(sd).propag_num_tier;
 
 	PTD_CK(stabi_vessel == mc_null);
 	MC_DBG(node_kind_t the_ki = owner->ki);
@@ -126,14 +126,14 @@ neuron::propag_neuron_start(){
 
 void 
 neuron::propag_send_snp_propag(callee_prms& pms){
-	neurostate& stt = get_neurostate(pms.sd);
+	side_state& stt = get_side_state(pms.sd);
 
 	PTD_CK(pms.snp != mc_null);
 	PTD_CK(pms.snp->owner == this);
 	PTD_CK(! stt.step_active_set.is_synset_empty());
 	if(stt.step_active_set.tot_syn == 1){
 		PTD_LOG("FORCING %s %ld %s  TI=%d flags=%p flgs_pt=%p \n", node_kind_to_str(ki), id, 
-			net_side_to_str(pms.sd), get_neurostate(pms.sd).propag_num_tier, (void*)(uintptr_t)stt.step_flags,
+			net_side_to_str(pms.sd), get_side_state(pms.sd).propag_num_tier, (void*)(uintptr_t)stt.step_flags,
 			(void*)(&stt.step_flags));
 
 		pms.snp->propag_send_transmitter(bj_tok_propag_charge_all, pms.sd, pms.rec /*IS_FORCED*/);
@@ -149,7 +149,7 @@ nervenode::propag_send_snp_tier_done(callee_prms& pms){
 }
 
 void
-neurostate::propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dat_ti){
+side_state::propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dat_ti){
 	if(dat_ti != BJ_INVALID_NUM_TIER){ 
 		PTD_CK((nd->ki != nd_neu) || ((dat_ti + 1) == propag_num_tier));
 		PTD_CK((nd->ki == nd_neu) || (dat_ti == propag_num_tier));
@@ -176,7 +176,7 @@ void
 nervenode::propag_recv_transmitter(signal_data* dat){
 
 	PTD_CODE(
-		neurostate& stt = get_neurostate(dat->sd);
+		side_state& stt = get_side_state(dat->sd);
 		PTD_CK(dat->ti != BJ_INVALID_NUM_TIER);
 		PTD_CK(stt.propag_num_tier != BJ_INVALID_NUM_TIER);
 
@@ -225,7 +225,7 @@ nervenode::propag_recv_transmitter(signal_data* dat){
 }
 
 bool
-neurostate::charge_all_active(signal_data* dat, node_kind_t ki){
+side_state::charge_all_active(signal_data* dat, node_kind_t ki){
 	PTD_CK(step_active_set.all_grp.is_alone());
 	//step_active_set.reset_tree(dat->sd);
 
@@ -257,7 +257,7 @@ nervenode::propag_recv_charge_all(signal_data* dat){
 	netstate& nst = bj_nervenet->get_active_netstate(dat->sd);
 	nst.get_tier(tiki_propag, nst.all_propag_tiers, dat->ti, 5);
 
-	neurostate& stt = get_neurostate(dat->sd);
+	side_state& stt = get_side_state(dat->sd);
 
 	PTD_LOG("nervenode::propag_recv_charge_all %s %ld %s stb_src=%p \n", 
 			node_kind_to_str(ki), id, net_side_to_str(dat->sd), stt.propag_source);
@@ -267,7 +267,7 @@ nervenode::propag_recv_charge_all(signal_data* dat){
 	}
 
 	if(bj_is_pol(ki) && stt.step_active_set.is_synset_empty()){
-		PTD_CODE(neurostate& ott = ((polaron*)this)->opp->get_neurostate(dat->sd));
+		PTD_CODE(side_state& ott = ((polaron*)this)->opp->get_side_state(dat->sd));
 		PTD_CK((ott.propag_source != mc_null) && ott.step_active_set.is_synset_empty());
 		return;
 	}
@@ -304,7 +304,7 @@ nervenode::propag_recv_charge_src(signal_data* dat){
 	netstate& nst = bj_nervenet->get_active_netstate(dat->sd);
 	nst.get_tier(tiki_propag, nst.all_propag_tiers, dat->ti, ((ki == nd_neu)?(6):(7)));
 
-	neurostate& stt = get_neurostate(dat->sd);
+	side_state& stt = get_side_state(dat->sd);
 
 	PTD_CK(stt.step_active_set.all_grp.is_alone());
 	//stt.step_active_set.reset_tree(dat->sd);
@@ -333,7 +333,7 @@ nervenode::propag_recv_charge_src(signal_data* dat){
 
 void
 nervenode::propag_recv_ping(signal_data* dat){
-	neurostate& stt = get_neurostate(dat->sd);
+	side_state& stt = get_side_state(dat->sd);
 	stt.step_num_ping++;
 
 	PTD_LOG("INC_PINGS %s %ld %s #pings=%d TI=%d \n", node_kind_to_str(ki), id, net_side_to_str(dat->sd), 
@@ -344,7 +344,7 @@ void
 nervenode::propag_recv_tier_done(signal_data* dat){
 
 	nervenode* nd = this;
-	neurostate& stt = get_neurostate(dat->sd);
+	side_state& stt = get_side_state(dat->sd);
 
 	stt.step_num_complete++;
 
@@ -355,9 +355,18 @@ nervenode::propag_recv_tier_done(signal_data* dat){
 	if(is_tier_complete(dat)){
 		bool to_dly = false;
 		netstate& nstt = bj_nervenet->get_active_netstate(dat->sd);
-		if((ki == nd_neu)){
-			PTD_CK(dat->ti == (stt.propag_num_tier - 1));
-			to_dly = stt.neu_is_to_delay(nstt, nd, tiki_propag, stt.propag_num_tier, nstt.all_propag_tiers, 2);
+		grip& all_ti = nstt.all_propag_tiers;
+		num_tier_t the_ti = stt.propag_num_tier;
+		
+		if((ki == nd_neu)){			
+			PTD_CK(dat->ti == (the_ti - 1));
+			to_dly = ((neuron*)nd)->is_to_delay(tiki_propag, dat->sd, the_ti, all_ti);
+			if(! to_dly){
+				nstt.inc_tier_rcv(nd, tiki_propag, the_ti, all_ti);
+			} else {
+				tierdata& lti = get_last_tier(all_ti);
+				lti.delay_binder(stt, 2);
+			}
 		}
 
 		char* ts = bj_dbg_tier_kind_to_str(tiki_propag);
@@ -365,7 +374,7 @@ nervenode::propag_recv_tier_done(signal_data* dat){
 		PTD_LOG("PROPAG_TIER_COMPLETE_%s_t%d_%s_%ld %s_%s ((%d > 1) && (%d == %d) && (%d < %d)) \n", 
 			net_side_to_str(dat->sd), dat->ti, node_kind_to_str(ki), id, ts, ((to_dly)?("TO_DELAY"):("")), 
 			stt.step_prev_tot_active, stt.step_num_ping, stt.step_prev_tot_active, 
-			get_last_tier(nstt.all_propag_tiers).tdt_id, (stt.propag_num_tier - 1)
+			get_last_tier(all_ti).tdt_id, (the_ti - 1)
 		);
 
 		if(! to_dly){
@@ -411,7 +420,7 @@ nervenode::propag_start_nxt_tier(signal_data* dat){
 }
 
 tierset*
-neurostate::get_tiset(num_tier_t nti){
+side_state::get_tiset(num_tier_t nti){
 	if(nti == BJ_INVALID_NUM_TIER){ return mc_null; }
 	PTD_CK(nti != BJ_INVALID_NUM_TIER);
 	if(propag_tiers.is_alone()){
@@ -430,7 +439,7 @@ neurostate::get_tiset(num_tier_t nti){
 }
 
 tierset&
-neurostate::add_tiset(num_tier_t nti){
+side_state::add_tiset(num_tier_t nti){
 	PTD_CK(nti != BJ_INVALID_NUM_TIER);
 
 	tierset* tis = get_tiset(nti);
@@ -445,7 +454,7 @@ neurostate::add_tiset(num_tier_t nti){
 }
 
 bool
-neurostate::is_mono(num_tier_t nti){
+side_state::is_mono(num_tier_t nti){
 	//PTD_LOG("MO_VALS_t%d_ %d %d %d \n", nti, step_active_set.is_synset_empty(), 
 	//		(propag_source == mc_null), (get_tiset(nti) != mc_null));
 	//bool mo = (step_active_set.is_synset_empty() && (propag_source == mc_null) && (get_tiset(nti) != mc_null));
@@ -455,7 +464,7 @@ neurostate::is_mono(num_tier_t nti){
 }
 
 void
-neurostate::send_all_propag(nervenode* nd, signal_data* dat){
+side_state::send_all_propag(nervenode* nd, signal_data* dat){
 	tierset* c_ti = get_tiset(dat->ti);
 	if(c_ti != mc_null){
 		with_all_synapses(&(c_ti->ti_all), &nervenode::propag_send_snp_propag, dat->sd);
@@ -469,8 +478,8 @@ neurostate::send_all_propag(nervenode* nd, signal_data* dat){
 void
 polaron::propag_start_nxt_tier(signal_data* dat){
 	polaron* pol = this;
-	neurostate& pol_stt = get_neurostate(dat->sd);
-	neurostate& opp_stt = opp->get_neurostate(dat->sd);
+	side_state& pol_stt = get_side_state(dat->sd);
+	side_state& opp_stt = opp->get_side_state(dat->sd);
 
 	PTD_CK(pol_stt.is_full());
 	PTD_CK(opp_stt.is_full());
@@ -557,8 +566,8 @@ nervenode::send_confl_tok(signal_data* dat, sync_tok_t the_tok){
 
 void
 polaron::charge_all_confl_and_start_nxt_ti(signal_data* dat){
-	neurostate& pol_stt = get_neurostate(dat->sd);
-	neurostate& opp_stt = opp->get_neurostate(dat->sd);
+	side_state& pol_stt = get_side_state(dat->sd);
+	side_state& opp_stt = opp->get_side_state(dat->sd);
 
 	pol_stt.charge_all_active(dat, ki); 
 	tierset* ti_grp = pol_stt.get_tiset(dat->ti);
@@ -575,8 +584,8 @@ polaron::charge_all_confl_and_start_nxt_ti(signal_data* dat){
 
 void
 polaron::charge_all_and_start_nxt_ti(signal_data* dat){
-	neurostate& pol_stt = get_neurostate(dat->sd);
-	neurostate& opp_stt = opp->get_neurostate(dat->sd);
+	side_state& pol_stt = get_side_state(dat->sd);
+	side_state& opp_stt = opp->get_side_state(dat->sd);
 
 	pol_stt.charge_all_active(dat, ki); 
 	tierset* ti_grp = pol_stt.get_tiset(dat->ti);
@@ -593,7 +602,7 @@ polaron::charge_all_and_start_nxt_ti(signal_data* dat){
 
 void
 neuron::propag_start_nxt_tier(signal_data* dat){
-	neurostate& stt = get_neurostate(dat->sd);
+	side_state& stt = get_side_state(dat->sd);
 
 	bool chgd_all = mc_get_flag(stt.step_flags, bj_stt_charge_all_flag);
 	if(chgd_all){

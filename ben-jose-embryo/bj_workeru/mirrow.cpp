@@ -46,8 +46,8 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	net_side_t dst_sd = side_left;
 	if(dst_sd == src_sd){ dst_sd = side_right; }
 
-	neurostate& src_st = get_neurostate(src_sd);
-	neurostate& dst_st = get_neurostate(dst_sd);
+	side_state& src_st = get_side_state(src_sd);
+	side_state& dst_st = get_side_state(dst_sd);
 
 	// mirrow active_sets
 
@@ -118,7 +118,7 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	// set all vessels
 	//PTD_LOG("mirrow_nod_set_vessels \n");
 
-	neurostate& lft_st = left_side;
+	side_state& lft_st = left_side;
 	lft_st.step_active_set.reset_vessels(true);
 
 	//PTD_LOG("mirrow_nod_calc_arr \n");

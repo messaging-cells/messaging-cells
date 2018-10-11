@@ -40,12 +40,12 @@ synapse::stabi_handler(missive* msv){
 	dat.msv = msv;
 	dat.snp = this;
 	dat.tok = (stabi_tok_t)(sb_tmt->tok);
-	//dat.sd = sb_tmt->wrk_side;
+	dat.sd = side_left;
 	dat.ti = sb_tmt->d.stb.wrk_tier;
 	dat.id_arr_sz = sb_tmt->d.stb.id_arr_sz;
 	dat.id_arr = sb_tmt->d.stb.id_arr;
 
-	//PTD_CK(dat.sd == side_left);
+	PTD_CK(dat.sd == side_left);
 	PTD_CK(dat.ti != BJ_INVALID_NUM_TIER);
 	PTD_CK(stabi_vessel != mc_null);
 
@@ -82,7 +82,7 @@ synset::stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) {
 // mc_addr_is_local(addr)
 
 void 
-neurostate::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
+side_state::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 	//mck_slog2("mirrow_nod_calc_arr_start \n");
 	
 	bool was_nul = (stabi_arr == mc_null);
@@ -198,7 +198,7 @@ void
 nervenode::stabi_recv_transmitter(signal_data* dat){
 	//PTD_CK(dat->sd == side_left);
 	PTD_CODE(
-		neurostate& stt = left_side;
+		side_state& stt = left_side;
 		PTD_CK(stt.stabi_num_tier != BJ_INVALID_NUM_TIER);
 
 		bool ok_3 =  false;
@@ -249,7 +249,7 @@ nervenode::stabi_send_snp_tier_done(callee_prms& pms){
 }
 
 void
-neurostate::stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti){
+side_state::stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti){
 	net_side_t sd = side_left;
 	PTD_CK(stabi_num_tier != BJ_INVALID_NUM_TIER);
 
@@ -267,7 +267,7 @@ neurostate::stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti){
 
 void
 nervenode::stabi_recv_ping(signal_data* dat){
-	neurostate& stt = left_side;
+	side_state& stt = left_side;
 	stt.step_num_ping++;
 
 	synset* vssl = dat->snp->stabi_vessel;
@@ -278,7 +278,7 @@ nervenode::stabi_recv_ping(signal_data* dat){
 }
 
 void
-synapse::stabi_send_transmitter(stabi_tok_t tok, neurostate* src_nd, bool dbg_is_forced){
+synapse::stabi_send_transmitter(stabi_tok_t tok, side_state* src_nd, bool dbg_is_forced){
 	//net_side_t sd = side_left;
 
 	if(bj_nervenet->act_left_side.sync_is_ending){ return; }
@@ -483,7 +483,7 @@ void
 nervenode::stabi_recv_tier_done(signal_data* dat){
 	net_side_t sd = side_left;
 	nervenode* nd = this;
-	neurostate& stt = left_side;
+	side_state& stt = left_side;
 
 	stt.step_num_complete++;
 
@@ -498,9 +498,18 @@ nervenode::stabi_recv_tier_done(signal_data* dat){
 
 		bool to_dly = false;
 		netstate& nstt = bj_nervenet->get_active_netstate(sd);
+		grip& all_ti = nstt.all_stabi_tiers;
+		num_tier_t the_ti = stt.stabi_num_tier;
+		
 		if((ki == nd_neu)){
-			PTD_CK(dat->ti == (stt.stabi_num_tier - 1));
-			to_dly = stt.neu_is_to_delay(nstt, nd, tiki_stabi, stt.stabi_num_tier, nstt.all_stabi_tiers, 3);
+			PTD_CK(dat->ti == (the_ti - 1));
+			to_dly = ((neuron*)nd)->is_to_delay(tiki_propag, dat->sd, the_ti, all_ti);
+			if(! to_dly){
+				nstt.inc_tier_rcv(nd, tiki_stabi, the_ti, all_ti);
+			} else {
+				tierdata& lti = get_last_tier(all_ti);
+				lti.delay_binder(stt, 3);
+			}
 		}
 
 		char* ts = bj_dbg_tier_kind_to_str(tiki_stabi);
@@ -508,7 +517,7 @@ nervenode::stabi_recv_tier_done(signal_data* dat){
 		PTD_LOG("STABI_TIER_COMPLETE_t%d_%s_%ld %s_%s ((%d > 0) && (%d == %d) && (%d < %d)) %s \n", dat->ti, 
 					node_kind_to_str(ki), id, ts, ((to_dly)?("TO_DELAY"):("")), 
 			stt.step_prev_tot_active, stt.step_num_ping, stt.step_prev_tot_active, 
-			get_last_tier(nstt.all_stabi_tiers).tdt_id, (stt.stabi_num_tier - 1),
+			get_last_tier(all_ti).tdt_id, (the_ti - 1),
 			(mc_get_flag(stt.step_flags, bj_stt_stabi_intact_id_flag))?("intact"):("")
 		);
 
@@ -526,7 +535,7 @@ nervenode::stabi_start_nxt_tier(signal_data* dat){
 void
 nervenode::recalc_stabi(signal_data* dat){
 	nervenode* nd = this;
-	neurostate& stt = nd->get_neurostate(dat->sd);
+	side_state& stt = nd->get_side_state(dat->sd);
 	stt.calc_stabi_arr(nd, dat);
 }
 
@@ -534,10 +543,10 @@ void
 polaron::recalc_stabi(signal_data* dat){
 	polaron* pol = this;
 
-	neurostate& pol_stt = pol->get_neurostate(dat->sd);
+	side_state& pol_stt = pol->get_side_state(dat->sd);
 	pol_stt.calc_stabi_arr(pol, dat);
 
-	neurostate& opp_stt = opp->get_neurostate(dat->sd);
+	side_state& opp_stt = opp->get_side_state(dat->sd);
 	opp_stt.calc_stabi_arr(opp, dat);
 }
 
@@ -545,8 +554,8 @@ void
 polaron::stabi_start_nxt_tier(signal_data* dat){
 	net_side_t sd = side_left;
 	polaron* pol = this;
-	neurostate& pol_stt = get_neurostate(sd);
-	neurostate& opp_stt = opp->get_neurostate(sd);
+	side_state& pol_stt = get_side_state(sd);
+	side_state& opp_stt = opp->get_side_state(sd);
 
 	PTD_CK(pol_stt.is_full());
 	PTD_CK(opp_stt.is_full());
@@ -588,7 +597,7 @@ void
 neuron::stabi_start_nxt_tier(signal_data* dat){
 	neuron* neu = this;
 	net_side_t sd = side_left;
-	neurostate& stt = get_neurostate(sd);
+	side_state& stt = get_side_state(sd);
 	netstate& nst = bj_nervenet->get_active_netstate(sd);
 
 	//MC_DBG(dbg_prt_nod(sd, tiki_stabi, mc_cstr("stb_TIER"), 8, dat->ti));

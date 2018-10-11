@@ -37,7 +37,7 @@ nervenet::init_nervenet_with(pre_cnf_net* pre_net){
 }
 
 void
-neurostate::update_prv_tot_active(){
+side_state::update_prv_tot_active(){
 	step_prev_tot_active = step_active_set.tot_syn;
 }
 
@@ -321,7 +321,7 @@ tierdata::add_all_inp_from(grip& grp, net_side_t sd){
 
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		nervenode* my_nod = (nervenode*)wrk;
-		neurostate& stt = my_nod->get_neurostate(sd);
+		side_state& stt = my_nod->get_side_state(sd);
 		num_syn_t tsn = stt.step_active_set.tot_syn;
 		//PTD_LOG("ADD_NOD %s %ld tot_syn=%ld\n", node_kind_to_str(my_nod->ki), my_nod->id, tsn);
 		if(tsn > 0){
