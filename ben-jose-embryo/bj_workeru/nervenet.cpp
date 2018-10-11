@@ -120,7 +120,7 @@ synset::dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out){
 					BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
 			out << bj_nervenet->dbg_str1;
 		} else {
-			bj_dbg_stabi_id_arr_to_str(nd->left_side.stabi_arr_sz, nd->left_side.stabi_arr, 
+			bj_dbg_stabi_id_arr_to_str(nd->stabi_arr_sz, nd->stabi_arr, 
 					BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
 			out << "." << bj_nervenet->dbg_str1;
 		}
@@ -345,11 +345,6 @@ side_state::init_me(int caller){
 
 	step_num_complete = 0;
 	step_num_ping = 0;
-
-	stabi_num_tier = 0;
-	stabi_arr_cap = 0;
-	stabi_arr_sz = 0;
-	stabi_arr = mc_null;
 }
 
 nervenode::nervenode(){ 
@@ -370,6 +365,11 @@ nervenode::init_me(int caller){
 
 	//left_side.side_kind = side_left;
 	//right_side.side_kind = side_right;
+
+	stabi_num_tier = 0;
+	stabi_arr_cap = 0;
+	stabi_arr_sz = 0;
+	stabi_arr = mc_null;
 }
 
 neuron::neuron(){
@@ -943,10 +943,10 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 
 	if((tiki != tiki_invalid) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){ mck_slog2("*"); }
 
-	if(left_side.stabi_arr != mc_null){
+	if(stabi_arr != mc_null){
 		PTD_DBG_CODE(
 			mck_slog2(" id=");
-			bj_dbg_stabi_id_arr_to_str(left_side.stabi_arr_sz, left_side.stabi_arr, 
+			bj_dbg_stabi_id_arr_to_str(stabi_arr_sz, stabi_arr, 
 				BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
 			mck_slog(bj_nervenet->dbg_str1);
 		);
@@ -1505,7 +1505,7 @@ neuron::get_delayed_data(tier_kind_t tiki, net_side_t sd,
 			tok = bj_tok_propag_tier_done;
 		break;
 		case tiki_stabi: 
-			the_ti = stt.stabi_num_tier;
+			the_ti = stabi_num_tier;
 			tok = bj_tok_stabi_tier_done;
 		break;
 		default: 

@@ -467,7 +467,7 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced = false) bj_propag_cod;
-	void stabi_send_transmitter(stabi_tok_t tok, side_state* src_nd = mc_null, 
+	void stabi_send_transmitter(stabi_tok_t tok, nervenode* src_nd = mc_null, 
 				bool dbg_is_forced = false) bj_stabi_cod;
 
 	void stabi_set_rcv_arr(signal_data* dat) bj_stabi_cod;
@@ -496,11 +496,6 @@ public:
 	num_tier_t		propag_num_tier;
 	synapse*		propag_source;
 	grip			propag_tiers;
-
-	num_tier_t		stabi_num_tier;
-	num_syn_t		stabi_arr_cap;
-	num_syn_t		stabi_arr_sz;
-	num_syn_t*  	stabi_arr;
 
 	PTD_DBG_CODE(bool was_all_pg);
 
@@ -538,10 +533,6 @@ public:
 
 	void propag_send_all_ti_done(nervenode* nd, net_side_t sd, num_tier_t dat_ti) bj_propag_cod;
 	
-	// stabi
-	
-	void calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) bj_stabi_cod;
-	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) bj_stabi_cod;
 };
 
 bool bj_can_delay_tier(num_tier_t the_ti, grip& all_ti);
@@ -569,6 +560,11 @@ public:
 	side_state		left_side;
 	side_state		right_side;
 
+	num_tier_t		stabi_num_tier;
+	num_syn_t		stabi_arr_cap;
+	num_syn_t		stabi_arr_sz;
+	num_syn_t*  	stabi_arr;
+	
 	nervenode() mc_external_code_ram;
 	~nervenode() mc_external_code_ram;
 
@@ -635,6 +631,12 @@ public:
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
+
+	// stabi
+	
+	void calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) bj_stabi_cod;
+	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) bj_stabi_cod;
+	
 };
 
 neuron* bj_get_neu(binder* dlyd, tier_kind_t tiki, net_side_t sd);

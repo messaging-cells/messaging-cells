@@ -82,8 +82,9 @@ synset::stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) {
 // mc_addr_is_local(addr)
 
 void 
-side_state::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
+nervenode::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 	//mck_slog2("mirrow_nod_calc_arr_start \n");
+	side_state& sst = left_side;
 	
 	bool was_nul = (stabi_arr == mc_null);
 	PTD_DBG_CODE(
@@ -91,7 +92,7 @@ side_state::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 		if(dbg_dat != mc_null){ dbg_ti = dbg_dat->ti; }
 	);
 
-	mc_reset_flag(step_flags, bj_stt_stabi_intact_id_flag);
+	mc_reset_flag(sst.step_flags, bj_stt_stabi_intact_id_flag);
 
 	num_syn_t	old_arr_sz = 0;
 	num_syn_t*  old_arr = mc_null;
@@ -111,10 +112,10 @@ side_state::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 	PTD_CK(stabi_arr_sz == 0);
 	PTD_CK(stabi_arr == mc_null);
 
-	if(step_active_set.is_synset_empty()){
+	if(sst.step_active_set.is_synset_empty()){
 		if(old_arr == mc_null){
 			PTD_LOG(" CMP_IDS_both_empty_t%d_%s_%d_ \n", dbg_ti, dbg_nd->get_ki_str(), dbg_nd->id);
-			mc_set_flag(step_flags, bj_stt_stabi_intact_id_flag);
+			mc_set_flag(sst.step_flags, bj_stt_stabi_intact_id_flag);
 		} else {
 			mc_free32(old_arr);
 		}
@@ -123,7 +124,7 @@ side_state::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 	}
 	//mck_slog2("mirrow_nod_calc_arr_cap \n");
 	
-	stabi_arr_cap = calc_cap_stabi_arr(step_active_set.tot_syn);
+	stabi_arr_cap = calc_cap_stabi_arr(sst.step_active_set.tot_syn);
 	stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
 
 	PTD_LOG(" calc_stabi_arr new_cap=%d \n", stabi_arr_cap);
@@ -131,7 +132,7 @@ side_state::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 
 	//mck_slog2("mirrow_nod_calc_arr_rec \n");
 	
-	step_active_set.stabi_calc_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
+	sst.step_active_set.stabi_calc_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
 
 	if(old_arr != mc_null){
 		int cmp_arr = bj_cmp_stabi_id_arrs(old_arr_sz, old_arr, stabi_arr_sz, stabi_arr);
@@ -145,7 +146,7 @@ side_state::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
 		//PTD_DBG_CODE(mck_getchar());
 
 		if(cmp_arr == 0){ 
-			mc_set_flag(step_flags, bj_stt_stabi_intact_id_flag); 
+			mc_set_flag(sst.step_flags, bj_stt_stabi_intact_id_flag); 
 		}
 		mc_free32(old_arr);
 	}
@@ -198,18 +199,18 @@ void
 nervenode::stabi_recv_transmitter(signal_data* dat){
 	//PTD_CK(dat->sd == side_left);
 	PTD_CODE(
-		side_state& stt = left_side;
-		PTD_CK(stt.stabi_num_tier != BJ_INVALID_NUM_TIER);
+		//side_state& stt = left_side;
+		PTD_CK(stabi_num_tier != BJ_INVALID_NUM_TIER);
 
 		bool ok_3 =  false;
 		if(ki == nd_neu){
-			ok_3 = ((dat->ti + 1) == stt.stabi_num_tier);
+			ok_3 = ((dat->ti + 1) == stabi_num_tier);
 		} else {
-			ok_3 = (dat->ti == stt.stabi_num_tier);
+			ok_3 = (dat->ti == stabi_num_tier);
 		}
 		
 		PTD_CK_PRT(ok_3, "%s %s %ld %s (%d > %d)", stabi_tok_to_str((stabi_tok_t)dat->tok),
-			node_kind_to_str(ki), id, net_side_to_str(side_left), (dat->ti + 1), stt.stabi_num_tier);
+			node_kind_to_str(ki), id, net_side_to_str(side_left), (dat->ti + 1), stabi_num_tier);
 
 		//PTD_CK(dat->ti < BJ_DBG_STABI_MAX_TIER); // debug_purposes_only
 		PTD_CK(	(bj_nervenet->sync_parent_id != 0) ||
@@ -222,7 +223,7 @@ nervenode::stabi_recv_transmitter(signal_data* dat){
 		PTD_LOG(" ::RECV_stabi_transmitter_%s_t%d_%s [%s %ld <<- %s %ld] #ti%d \n", 
 			net_side_to_str(side_left), dat->ti, stabi_tok_to_str((stabi_tok_t)dat->tok), 
 			node_kind_to_str(ki), id, node_kind_to_str(rem_nd->ki), rem_nd->id, 
-			stt.stabi_num_tier
+			stabi_num_tier
 		);
 	);
 
@@ -249,11 +250,14 @@ nervenode::stabi_send_snp_tier_done(callee_prms& pms){
 }
 
 void
-side_state::stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti){
+nervenode::stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti){
+	side_state& sst = left_side;
 	net_side_t sd = side_left;
+	
 	PTD_CK(stabi_num_tier != BJ_INVALID_NUM_TIER);
+	//PTD_CK(&(nd->left_side) == this);
 
-	step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_tier_done, sd);
+	sst.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_tier_done, sd);
 
 	PTD_CK((dbg_ti == BJ_INVALID_NUM_TIER) || (nd->ki != nd_neu) || ((dbg_ti + 1) == stabi_num_tier));
 	PTD_CK((dbg_ti == BJ_INVALID_NUM_TIER) || (nd->ki == nd_neu) || (dbg_ti == stabi_num_tier));
@@ -278,12 +282,12 @@ nervenode::stabi_recv_ping(signal_data* dat){
 }
 
 void
-synapse::stabi_send_transmitter(stabi_tok_t tok, side_state* src_nd, bool dbg_is_forced){
+synapse::stabi_send_transmitter(stabi_tok_t tok, nervenode* src_nd, bool dbg_is_forced){
 	//net_side_t sd = side_left;
 
 	if(bj_nervenet->act_left_side.sync_is_ending){ return; }
 
-	num_tier_t ti = owner->left_side.stabi_num_tier;
+	num_tier_t ti = owner->stabi_num_tier;
 
 	PTD_CK(stabi_vessel != mc_null);
 	MC_DBG(node_kind_t the_ki = owner->ki);
@@ -344,7 +348,7 @@ neuron::stabi_neuron_start(){
 
 	left_side.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_id_arr, side_left);
 
-	left_side.stabi_send_all_ti_done(this, BJ_INVALID_NUM_TIER);
+	stabi_send_all_ti_done(this, BJ_INVALID_NUM_TIER);
 	left_side.step_reset_complete();
 }
 
@@ -499,7 +503,7 @@ nervenode::stabi_recv_tier_done(signal_data* dat){
 		bool to_dly = false;
 		netstate& nstt = bj_nervenet->get_active_netstate(sd);
 		grip& all_ti = nstt.all_stabi_tiers;
-		num_tier_t the_ti = stt.stabi_num_tier;
+		num_tier_t the_ti = stabi_num_tier;
 		
 		if((ki == nd_neu)){
 			PTD_CK(dat->ti == (the_ti - 1));
@@ -535,19 +539,19 @@ nervenode::stabi_start_nxt_tier(signal_data* dat){
 void
 nervenode::recalc_stabi(signal_data* dat){
 	nervenode* nd = this;
-	side_state& stt = nd->get_side_state(dat->sd);
-	stt.calc_stabi_arr(nd, dat);
+	//side_state& stt = nd->get_side_state(dat->sd);
+	calc_stabi_arr(nd, dat);
 }
 
 void
 polaron::recalc_stabi(signal_data* dat){
 	polaron* pol = this;
 
-	side_state& pol_stt = pol->get_side_state(dat->sd);
-	pol_stt.calc_stabi_arr(pol, dat);
+	//side_state& pol_stt = pol->get_side_state(dat->sd);
+	pol->calc_stabi_arr(pol, dat);
 
-	side_state& opp_stt = opp->get_side_state(dat->sd);
-	opp_stt.calc_stabi_arr(opp, dat);
+	//side_state& opp_stt = opp->get_side_state(dat->sd);
+	opp->calc_stabi_arr(opp, dat);
 }
 
 void
@@ -563,14 +567,11 @@ polaron::stabi_start_nxt_tier(signal_data* dat){
 	//MC_DBG(pol->dbg_prt_nod(sd, tiki_stabi, mc_cstr("stb_TIER"), 8, dat->ti));
 	//MC_DBG(opp->dbg_prt_nod(sd, tiki_stabi, mc_cstr("stb_TIER"), 8, dat->ti));
 
-	//pol_stt.calc_stabi_arr(pol);
-	//opp_stt.calc_stabi_arr(opp);
-
 	pol_stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_id_arr, side_left);
 	opp_stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_id_arr, side_left);
 
-	pol_stt.stabi_send_all_ti_done(pol, dat->ti);
-	opp_stt.stabi_send_all_ti_done(opp, dat->ti);
+	pol->stabi_send_all_ti_done(pol, dat->ti);
+	opp->stabi_send_all_ti_done(opp, dat->ti);
 
 	pol_stt.step_reset_complete();
 	opp_stt.step_reset_complete();
@@ -602,11 +603,9 @@ neuron::stabi_start_nxt_tier(signal_data* dat){
 
 	//MC_DBG(dbg_prt_nod(sd, tiki_stabi, mc_cstr("stb_TIER"), 8, dat->ti));
 
-	//stt.calc_stabi_arr(neu);
-
 	stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_id_arr, side_left);
 
-	stt.stabi_send_all_ti_done(neu, dat->ti);
+	stabi_send_all_ti_done(neu, dat->ti);
 	stt.step_reset_complete();
 
 	//mck_slog2("dbg2.reset\n");
@@ -618,6 +617,7 @@ void
 nervenode::stabi_send_snp_id_arr(callee_prms& pms){
 	PTD_CK(pms.snp != mc_null);
 	PTD_CK(pms.snp->owner == this);
+	nervenode* nd = this;
 
 	bool snd_png = false;
 	if(ki == nd_neu){
@@ -630,9 +630,9 @@ nervenode::stabi_send_snp_id_arr(callee_prms& pms){
 	}
 	if(snd_png){
 		//PTD_CK(! bj_is_pol(ki));
-		pms.snp->stabi_send_transmitter(bj_tok_stabi_ping, &left_side);
+		pms.snp->stabi_send_transmitter(bj_tok_stabi_ping, nd);
 	} else {
-		pms.snp->stabi_send_transmitter(bj_tok_stabi_rank, &left_side);
+		pms.snp->stabi_send_transmitter(bj_tok_stabi_rank, nd);
 	}
 }
 

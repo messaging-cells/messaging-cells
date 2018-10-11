@@ -112,8 +112,10 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	dst_st.step_flags = src_st.step_flags;
 	dst_st.step_num_complete = src_st.step_num_complete;
 	dst_st.step_num_ping = src_st.step_num_ping;
+	
+	// init stabi
 
-	dst_st.stabi_arr_sz = 0;
+	stabi_arr_sz = 0;
 
 	// set all vessels
 	//PTD_LOG("mirrow_nod_set_vessels \n");
@@ -123,11 +125,11 @@ nervenode::mirrow_sides(net_side_t src_sd){
 
 	//PTD_LOG("mirrow_nod_calc_arr \n");
 
-	lft_st.calc_stabi_arr(nd, mc_null);
-	lft_st.stabi_num_tier = 0;
+	calc_stabi_arr(nd, mc_null);
+	stabi_num_tier = 0;
 
 	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
-		bj_dbg_stabi_id_arr_to_str(lft_st.stabi_arr_sz, lft_st.stabi_arr, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));
+		bj_dbg_stabi_id_arr_to_str(stabi_arr_sz, stabi_arr, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));
 
 	//PTD_LOG("mirrow_nod_end \n");
 }
