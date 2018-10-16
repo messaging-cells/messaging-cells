@@ -370,6 +370,11 @@ nervenode::init_me(int caller){
 	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
 	stabi_arr = mc_null;
+	
+	stabi_min_col = BJ_INVALID_SRT_GRP;
+	stabi_max_col = BJ_INVALID_SRT_GRP;
+	stabi_idx = 0;
+	stabi_out = mc_null;
 }
 
 neuron::neuron(){

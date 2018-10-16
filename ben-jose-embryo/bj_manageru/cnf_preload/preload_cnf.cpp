@@ -164,7 +164,8 @@ check_node_sz(pre_node_sz_t sz){
 }
 
 void
-preload_cnf(long sz, const long* arr){
+preload_cnf_init(){
+	PTD_CK(THE_CNF != mc_null);
 
 	THE_CNF->max_nod_sz = BJ_MAX_NODE_SZ;
 
@@ -176,7 +177,7 @@ preload_cnf(long sz, const long* arr){
 	if(num_ccls == 0){
 		return;
 	}
-
+	
 	THE_CNF->tot_tmp_pre_load_nods = num_ccls + num_vars;
 	long num_tmp_pre_load_nods = THE_CNF->tot_tmp_pre_load_nods;
 
@@ -203,6 +204,20 @@ preload_cnf(long sz, const long* arr){
 
 	memcpy(THE_CNF->all_tmp_pre_load_nods, THE_CNF->all_ccl, num_ccls * sizeof(pre_cnf_node*));
 	memcpy(THE_CNF->all_tmp_pre_load_nods + num_ccls, THE_CNF->all_pos, num_vars * sizeof(pre_cnf_node*));
+}
+
+void
+preload_cnf(long sz, const long* arr){
+	PTD_CK(THE_CNF != mc_null);
+
+	long num_ccls = THE_CNF->tot_ccls;
+	long num_workerus = THE_CNF->tot_workerus;
+
+	if(num_ccls == 0){
+		return;
+	}
+	
+	long num_tmp_pre_load_nods = THE_CNF->tot_tmp_pre_load_nods;
 
 	long nn = 0;
 
@@ -247,6 +262,13 @@ preload_cnf(long sz, const long* arr){
 
 	qsort(THE_CNF->all_tmp_pre_load_nods, num_tmp_pre_load_nods, sizeof(pre_cnf_node*), cmp_nodes);
 
+	pre_sornode** all_sorinput = THE_CNF->all_pre_sorinput_nod;
+	num_nod_t tod_nd = THE_CNF->tot_pre_sorinput_nod;
+	MC_MARK_USED(tod_nd);
+	
+	num_nod_t pol_idx = 0;
+	num_nod_t neu_idx = 0;
+	
 	long kk = 0;
 	for(long aa = 0; aa < num_tmp_pre_load_nods; aa++){
 		if(kk == num_workerus){ kk = 0; }
@@ -257,6 +279,7 @@ preload_cnf(long sz, const long* arr){
 		switch(nod->ki){
 			case nd_pos:
 			{
+				PTD_CK(nod->id > 0);
 				pre_cnf_node* opp = get_lit(-(nod->id));
 
 				nod->opp_nod = opp;
@@ -269,12 +292,31 @@ preload_cnf(long sz, const long* arr){
 				cnf.all_pre_neg.bind_to_my_left(*opp);
 
 				cnf.tot_pre_vars++;
+			
+				if(all_sorinput != mc_null){
+					PTD_CK(pol_idx < tod_nd);
+					nod->srt_nd.idx = pol_idx;
+					nod->srt_nd.out = all_sorinput[pol_idx];
+					pol_idx++;
+
+					PTD_CK(pol_idx < tod_nd);
+					opp->srt_nd.idx = pol_idx;
+					opp->srt_nd.out = all_sorinput[pol_idx];
+					pol_idx++;
+				}
 			}
 			break;
 			case nd_neu:
 				cnf.all_pre_neu.bind_to_my_left(*nod);
 				cnf.tot_pre_neus++;
 				cnf.tot_pre_lits += nod->pre_sz;
+
+				if(all_sorinput != mc_null){
+					PTD_CK(neu_idx < tod_nd);
+					nod->srt_nd.idx = neu_idx;
+					nod->srt_nd.out = all_sorinput[neu_idx];
+					neu_idx++;
+				}
 			break;
 			default:
 				mck_abort(9, mc_cstr("Bad node cnf kind"));
@@ -282,10 +324,24 @@ preload_cnf(long sz, const long* arr){
 		}
 		kk++;
 	}
+}
 
-	//num_nod_t num_to_sort = mc_max((num_vars * 2), num_ccls);
-	create_ranknet(BJ_DBG_TOT_INPUT_RNKNODES);
-	create_sornet(BJ_DBG_TOT_INPUT_SORNODES);
+void 
+preload_sornet(){
+	PTD_CK(THE_CNF != mc_null);
+
+	long num_ccls = THE_CNF->tot_ccls;
+	long num_vars = THE_CNF->tot_vars;
+	
+	num_nod_t num_rnks = mc_max((num_vars * 2), num_ccls);
+	num_nod_t num_srts = num_rnks;
+	BJ_DBG_SORNET_CODE(
+		num_rnks = BJ_DBG_TOT_INPUT_RNKNODES;
+		num_srts = BJ_DBG_TOT_INPUT_SORNODES;
+	);
+	
+	create_ranknet(num_rnks);
+	create_sornet(num_srts);
 }
 
 

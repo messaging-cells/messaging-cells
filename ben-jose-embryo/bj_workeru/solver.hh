@@ -46,6 +46,12 @@ Declaration of main bj solver function.
 //define BJ_DBG_SORNET 
 #define BJ_NORMAL 
 
+#ifdef BJ_DBG_SORNET
+#define BJ_DBG_SORNET_CODE(prm) prm
+#else
+#define BJ_DBG_SORNET_CODE(prm) 
+#endif
+
 //-----------------------------------------
 
 #define BJ_DBG_TOT_NUM_TESTS 20

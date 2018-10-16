@@ -360,7 +360,7 @@ create_ranknet(num_nod_t num_to_rank){
 	
 	pre_endnode** arr_endnods = mc_malloc32(pre_endnode*, tot_out_nod);
 	mc_init_arr_vals(tot_out_nod, arr_endnods, mc_null);
-	
+
 	mc_workeru_nn_t nxt_nn = 0;
 	num_nod_t aa = 0;
 	for(aa = 0; aa < tot_out_nod; aa++){

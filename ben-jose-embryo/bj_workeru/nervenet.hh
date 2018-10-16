@@ -58,6 +58,7 @@ Declaration of nervenet class.
 class pre_sornode;
 class pre_cnf_node;
 class pre_cnf_net;
+class pre_load_cnf;
 
 class base_transmitter;
 class synapse;
@@ -433,6 +434,115 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
+
+#define BJ_INVALID_SRT_GRP BJ_INVALID_IDX
+
+#define BJ_INVALID_SRT_OBJ mc_null
+#define BJ_INVALID_RNK_OBJ ((void*)BJ_INVALID_IDX)
+
+struct mc_aligned sornapse {
+public:
+	num_nod_t 	min_col = BJ_INVALID_SRT_GRP;
+	num_nod_t 	max_col = BJ_INVALID_SRT_GRP;
+	num_nod_t 	min_grp = BJ_INVALID_SRT_GRP;
+	num_nod_t 	max_grp = BJ_INVALID_SRT_GRP;
+	num_nod_t 	idx = 0;
+	void*		inp = mc_null;
+	sorcell*	out = mc_null;
+	endcell*	axon = mc_null;
+
+	void reset(void* invalid_val) bj_sornet_cod;
+	
+	void set_snp_fields(sornet_transmitter* sn_tmt, bool set_inp = true) bj_sornet_cod;
+	
+	bool jump_to_end(sorkind_t tmt_knd, num_nod_t srt_sz, bool is_end) bj_sornet_cod;
+	bool jump_to_srt_end(num_nod_t srt_sz) bj_sornet_cod;
+	bool jump_to_rnk_end(num_nod_t srt_sz, bool is_end) bj_sornet_cod;
+};
+
+#define bj_sorcell_acquire_arr(num) ((sorcell*)(kernel::do_acquire(idx_sorcell, num)))
+#define bj_sorcell_acquire() bj_sorcell_acquire_arr(1)
+
+class mc_aligned sorcell : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(sorcell, mc_external_code_ram, mc_external_code_ram)
+
+	num_nod_t 	srt_sz;
+	mc_flags_t  edge_flags;
+	
+	sornapse	up_snp;
+	sornapse	down_snp;
+	
+	sorcell() mc_external_code_ram;
+	~sorcell() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_sorcell;
+	}
+	
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
+	void calc_color() bj_sornet_cod;
+	void sornet_reset(void* invalid_val) bj_sornet_cod;
+	void sornet_set_fields(sornet_transmitter* sn_tmt, void* invalid_val) bj_sornet_cod;
+	bool is_up_direct(void* invalid_val) bj_sornet_cod;
+	bool is_down_direct(void* invalid_val) bj_sornet_cod;
+
+	void sornet_handler(missive* msv) bj_sornet_cod;
+
+	void sornet_handle_direct(sornet_transmitter* sn_tmt, void* invalid_val) bj_sornet_cod;
+	
+	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+
+	void sornet_dbg_prt() mc_external_code_ram;
+
+	void load_from(pre_sornode* nod) bj_load_cod;
+	
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
+#define bj_endcell_acquire_arr(num) ((endcell*)(kernel::do_acquire(idx_endcell, num)))
+#define bj_endcell_acquire() bj_endcell_acquire_arr(1)
+
+class mc_aligned endcell : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(endcell, mc_external_code_ram, mc_external_code_ram)
+
+	sornapse	end_snp;
+	
+	endcell() mc_external_code_ram;
+	~endcell() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_endcell;
+	}
+	
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
+	void sornet_handler(missive* msv) bj_sornet_cod;
+
+	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
+	
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
+bj_cmp_obj_func_t sornet_get_cmp_func(sorkind_t knd) bj_sornet_cod;
+void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col, num_nod_t max_col, 
+						num_nod_t min_grp, num_nod_t max_grp,
+						void* obj, cell* dst, num_nod_t idx, endcell* ecll = mc_null) bj_sornet_cod;
+
+num_nod_t bj_sornet_calc_grp_sz(num_nod_t min_grp, num_nod_t max_grp) bj_sornet_cod;
+
+
+
 #define bj_id_arr_copy(dst, sz, src) for(num_syn_t idx = 0; idx < sz; idx++){ dst[idx] = src[idx]; }
 
 #define bj_synapse_acquire_arr(num) ((synapse*)(kernel::do_acquire(idx_synapse, num)))
@@ -564,6 +674,11 @@ public:
 	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
 	num_syn_t*  	stabi_arr;
+
+	num_nod_t 	stabi_min_col;
+	num_nod_t 	stabi_max_col;
+	num_nod_t 	stabi_idx;
+	sorcell*	stabi_out;
 	
 	nervenode() mc_external_code_ram;
 	~nervenode() mc_external_code_ram;
@@ -734,112 +849,6 @@ public:
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
-
-#define BJ_INVALID_SRT_GRP BJ_INVALID_IDX
-
-#define BJ_INVALID_SRT_OBJ mc_null
-#define BJ_INVALID_RNK_OBJ ((void*)BJ_INVALID_IDX)
-
-struct mc_aligned sornapse {
-public:
-	num_nod_t 	min_col = BJ_INVALID_SRT_GRP;
-	num_nod_t 	max_col = BJ_INVALID_SRT_GRP;
-	num_nod_t 	min_grp = BJ_INVALID_SRT_GRP;
-	num_nod_t 	max_grp = BJ_INVALID_SRT_GRP;
-	num_nod_t 	idx = 0;
-	void*		inp = mc_null;
-	sorcell*	out = mc_null;
-	endcell*	axon = mc_null;
-
-	void reset(void* invalid_val) bj_sornet_cod;
-	
-	void set_snp_fields(sornet_transmitter* sn_tmt, bool set_inp = true) bj_sornet_cod;
-	
-	bool jump_to_end(sorkind_t tmt_knd, num_nod_t srt_sz, bool is_end) bj_sornet_cod;
-	bool jump_to_srt_end(num_nod_t srt_sz) bj_sornet_cod;
-	bool jump_to_rnk_end(num_nod_t srt_sz, bool is_end) bj_sornet_cod;
-};
-
-#define bj_sorcell_acquire_arr(num) ((sorcell*)(kernel::do_acquire(idx_sorcell, num)))
-#define bj_sorcell_acquire() bj_sorcell_acquire_arr(1)
-
-class mc_aligned sorcell : public cell {
-public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(sorcell, mc_external_code_ram, mc_external_code_ram)
-
-	num_nod_t 	srt_sz;
-	mc_flags_t  edge_flags;
-	
-	sornapse	up_snp;
-	sornapse	down_snp;
-	
-	sorcell() mc_external_code_ram;
-	~sorcell() mc_external_code_ram;
-
-	virtual mc_opt_sz_fn 
-	mck_handler_idx_t	get_cell_id(){
-		return idx_sorcell;
-	}
-	
-	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0) mc_external_code_ram;
-
-	void calc_color() bj_sornet_cod;
-	void sornet_reset(void* invalid_val) bj_sornet_cod;
-	void sornet_set_fields(sornet_transmitter* sn_tmt, void* invalid_val) bj_sornet_cod;
-	bool is_up_direct(void* invalid_val) bj_sornet_cod;
-	bool is_down_direct(void* invalid_val) bj_sornet_cod;
-
-	void sornet_handler(missive* msv) bj_sornet_cod;
-
-	void sornet_handle_direct(sornet_transmitter* sn_tmt, void* invalid_val) bj_sornet_cod;
-	
-	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
-	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
-
-	void sornet_dbg_prt() mc_external_code_ram;
-
-	void load_from(pre_sornode* nod) bj_load_cod;
-	
-	virtual
-	char* 	get_class_name() mc_external_code_ram;
-};
-
-#define bj_endcell_acquire_arr(num) ((endcell*)(kernel::do_acquire(idx_endcell, num)))
-#define bj_endcell_acquire() bj_endcell_acquire_arr(1)
-
-class mc_aligned endcell : public cell {
-public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(endcell, mc_external_code_ram, mc_external_code_ram)
-
-	sornapse	end_snp;
-	
-	endcell() mc_external_code_ram;
-	~endcell() mc_external_code_ram;
-
-	virtual mc_opt_sz_fn 
-	mck_handler_idx_t	get_cell_id(){
-		return idx_endcell;
-	}
-	
-	virtual mc_opt_sz_fn 
-	void init_me(int caller = 0) mc_external_code_ram;
-
-	void sornet_handler(missive* msv) bj_sornet_cod;
-
-	void sornet_srt_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
-	void sornet_rnk_handler(sornet_transmitter* sn_tmt) bj_sornet_cod;
-	
-	virtual
-	char* 	get_class_name() mc_external_code_ram;
-};
-
-bj_cmp_obj_func_t sornet_get_cmp_func(sorkind_t knd) bj_sornet_cod;
-void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col, num_nod_t max_col, 
-						num_nod_t min_grp, num_nod_t max_grp,
-						void* obj, cell* dst, num_nod_t idx, endcell* ecll = mc_null) bj_sornet_cod;
-
-num_nod_t bj_sornet_calc_grp_sz(num_nod_t min_grp, num_nod_t max_grp) bj_sornet_cod;
 
 #define	bj_sent_inert_flag mc_flag0
 
@@ -1050,6 +1059,7 @@ public:
 	
 	missive_handler_t all_net_handlers[idx_total];
 
+	pre_load_cnf*	shd_full_cnf;
 	pre_cnf_net*	shd_cnf;
 
 	num_nod_t tot_loading;

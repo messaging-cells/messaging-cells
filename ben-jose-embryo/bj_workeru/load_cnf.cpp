@@ -6,9 +6,29 @@
 
 void 
 nervenode::init_nervenode_with(pre_cnf_node* nod) { 
+	pre_load_cnf* pre_cnf = bj_nervenet->shd_full_cnf;
+	
 	ki = nod->ki; 
 	id = nod->id; 
 	sz = nod->pre_sz; 
+	
+	stabi_min_col = 0;
+	if(ki == nd_neu){
+		stabi_max_col = pre_cnf->tot_ccls;
+	} else {
+		long num_vars = pre_cnf->tot_vars;
+		stabi_max_col = (num_vars * 2);
+	}
+
+	stabi_idx = nod->srt_nd.idx;
+
+	pre_sornode* pre_out = nod->srt_nd.out;
+	while(pre_out->loaded == mc_null){
+		// SPIN UNTIL SET (may be set by an other workeru)
+		PTD_CODE(sched_yield());
+	}
+	PTD_CK(pre_out->loaded != mc_null);
+	stabi_out = (sorcell*)(pre_out->loaded);
 } 
 
 void 
@@ -41,25 +61,20 @@ side_state::update_prv_tot_active(){
 	step_prev_tot_active = step_active_set.tot_syn;
 }
 
-void bj_load_shd_cnf(){
+void bj_load_init_cnf(){
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 
-	mck_slog2("bj_load_shd_cnf_1 \n");
+	PTD_LOG("bj_load_init_cnf_1 \n");
 	MCK_CK(nn_cnf != mc_null);
 	
 	my_net->init_nervenet_with(nn_cnf);
-	nervenet& tots = *my_net;
 
-	//PTD_PRT("%ld local tot_vars\n", my_net->tot_vars);
+	PTD_LOG("%ld local tot_vars\n", my_net->tot_vars);
 
-	long num_neus = tots.tot_neus;
-	long num_vars = tots.tot_vars;
-	long num_rels = tots.tot_rels;
-
-	/*if(num_neus == 0){
-		return;
-	}*/
+	long num_neus = my_net->tot_neus;
+	long num_vars = my_net->tot_vars;
+	long num_rels = my_net->tot_rels;
 
 	//PTD_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld TOT_RELS=%ld \n", 
 	//		tots.tot_lits, tots.tot_vars, tots.tot_neus, tots.tot_rels);
@@ -75,7 +90,7 @@ void bj_load_shd_cnf(){
 		my_net->num_sep_tiersets = sep_tsts;
 	}
 	
-	mck_slog2("bj_load_shd_cnf_3 \n");
+	PTD_LOG("bj_load_init_cnf_3 \n");
 
 	load_transmitter::separate(sep_msvs);
 	synset::separate(sep_ssts);
@@ -84,10 +99,15 @@ void bj_load_shd_cnf(){
 	polaron::separate(sep_pols);
 	neuron::separate(sep_neus);
 
-	//PTD_PRT("Separated polarons %ld\n", sep_pols);
-	//PTD_LOG("Separated_all_transmitters %ld\n", sep_msvs);
-	mck_slog2("Separated_all_init_objects\n");	
+	PTD_LOG("bj_load_init_cnf_4\n");	
 
+}
+
+void bj_load_shd_cnf(){
+	nervenet* my_net = bj_nervenet;
+	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
+	MCK_CK(nn_cnf != mc_null);
+	
 	binder * fst, * lst, * wrk;
 
 	binder* nn_all_pos = &(nn_cnf->all_pre_pos); // nn_cnf is already workeru_pt so nn_all_pos is workeru_pt
@@ -132,6 +152,7 @@ void bj_load_shd_cnf(){
 	lst = nn_all_neu;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_cnf_node* sh_neu = (pre_cnf_node*)wrk;
+		PTD_CK(sh_neu->ki == nd_neu);
 
 		neuron* my_neu = bj_neuron_acquire();
 		my_net->all_neu.bind_to_my_left(*my_neu);
@@ -193,7 +214,7 @@ void bj_load_shd_cnf(){
 		//mck_slog2("]\n");
 	}
 
-	if(tots.tot_lits == 0){
+	if(my_net->tot_lits == 0){
 		load_transmitter* msv = bj_load_transmitter_acquire();
 		PTD_CK(msv->d.prp.wrk_side == side_invalid);
 		msv->src = my_net;
@@ -372,6 +393,7 @@ void bj_init_nervenet(){
 
 	pre_load_cnf* pre_cnf = (pre_load_cnf*)(ker->manageru_load_data);
 	MCK_CK(pre_cnf->MAGIC == MAGIC_VAL);
+	bj_nervenet->shd_full_cnf = pre_cnf;
 
 	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
 	bj_nervenet->shd_cnf = nn_cnf;	
@@ -448,17 +470,18 @@ void bj_load_main() {
 	bj_init_nervenet();
 	bj_load_init_handlers();
 
-	bj_load_shd_cnf();
-	mck_slog2("end_of_load_shd_cnf \n");
+	bj_load_init_cnf();
 	
-	#ifdef BJ_DBG_SORNET
+	//ifdef BJ_DBG_SORNET
 	bj_load_shd_ranknet();
 	bj_load_shd_sornet();
 	bj_init_ends_srt_sornet();
 	bj_init_ends_rnk_sornet();
 	mck_slog2("end_of_init_all_sort_cells\n");
-	#endif
+	//endif
 
+	bj_load_shd_cnf();
+	
 	//MC_DBG(if(kernel::get_workeru_nn() == 0){ bj_test_func_1(); });
 
 	kernel::run_sys();

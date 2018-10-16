@@ -179,6 +179,9 @@ public:
 	long			id;
 	pre_node_sz_t	pre_sz;
 	pre_cnf_node* 	opp_nod;
+	
+	pre_sornapse	srt_nd;
+
 	void* 			loaded;
 
 	pre_cnf_node(){
@@ -317,6 +320,8 @@ public:
 
 extern pre_load_cnf* THE_CNF;
 
+void preload_cnf_init();
+void preload_sornet();
 void preload_cnf(long sz, const long* arr);
 
 void manageru_print_nods();

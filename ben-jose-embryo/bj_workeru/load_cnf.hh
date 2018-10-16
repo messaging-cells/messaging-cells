@@ -48,6 +48,7 @@ void print_childs() bj_load_cod;
 
 void bj_load_main() bj_load_cod;
 void bj_load_init_handlers() bj_load_cod;
+void bj_load_init_cnf() bj_load_cod;
 void bj_load_shd_cnf() bj_load_cod;
 
 void bj_init_end_cells(binder* nn_all_endnods) bj_load_cod;
