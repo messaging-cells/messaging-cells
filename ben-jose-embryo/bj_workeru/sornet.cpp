@@ -5,9 +5,9 @@
 #define BJ_SORNET_TIER 0
 
 //define BJ_SORNET_BIN_TEST
-//define BJ_SORNET_NUM_TEST
+#define BJ_SORNET_NUM_TEST
 //define BJ_SORNET_RANK_TEST
-#define BJ_SORNET_SRT_RNK_TEST
+//define BJ_SORNET_SRT_RNK_TEST
 
 #ifdef BJ_SORNET_BIN_TEST
 #define BJ_DBG_SORBINS(prm) prm
@@ -77,22 +77,23 @@ void bj_sornet_init_handlers(){
 
 bj_cmp_obj_func_t
 sornet_get_cmp_func(sorkind_t knd){
-	BJ_DBG_SORBINS(return &bj_cmp_bin_objs);
-	BJ_DBG_SORNUMS(return &bj_cmp_num_objs);
+	BJ_DBG_SORBINS(return &bj_dbg_cmp_bin_objs);
+	BJ_DBG_SORNUMS(return &bj_dbg_cmp_num_objs);
 	BJ_DBG_RANK_OUTS(return &bj_cmp_rnk_objs);
 	
 	bj_cmp_obj_func_t fn = mc_null;
 	switch(knd){
 		case sorkind_bin:
+			mck_abort(1, mc_cstr("Invalid sornet_tok_t 1 (sornet_get_cmp_func)"));
 		break;
 		case sorkind_num:
-			BJ_DBG_SRT_RNK(fn = &bj_cmp_num_objs);
+			BJ_DBG_SRT_RNK(fn = &bj_dbg_cmp_num_objs);
 		break;
 		case sorkind_rnk:
 			BJ_DBG_SRT_RNK(fn = &bj_cmp_rnk_objs);
 		break;
 		default:
-			mck_abort(1, mc_cstr("Invalid sornet_tok_t (sornet_get_cmp_func)"));
+			mck_abort(1, mc_cstr("Invalid sornet_tok_t 2 (sornet_get_cmp_func)"));
 		break;
 	}
 	PTD_CK(fn != mc_null);
@@ -418,7 +419,7 @@ nervenet::sornet_dbg_send_nxt_step(sorkind_t knd){
 }
 
 bool
-nervenet::sornet_check_order(sorkind_t knd){
+nervenet::sornet_dbg_check_order(sorkind_t knd){
 	//PTD_LOG("sornet_check_order_beg\n");
 	
 	bj_cmp_obj_func_t fn = sornet_get_cmp_func(knd);
@@ -476,7 +477,7 @@ nervenet::sornet_dbg_end_step(sorkind_t knd){
 	PTD_CK(kernel::get_workeru_nn() == 0);
 	
 	if(knd != sorkind_rnk){
-		bool srt_ok = sornet_check_order(knd);
+		bool srt_ok = sornet_dbg_check_order(knd);
 		if(! srt_ok){
 			mck_abort(__LINE__, MC_ABORT_MSG("SORNET_ERROR\n"));
 		}
@@ -664,7 +665,7 @@ bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones){
 #define bj_pt_obj_as_bin(pt_oo) (*((binval_t*)(pt_oo)))
 
 int
-bj_cmp_bin_objs(void* obj1, void* obj2){
+bj_dbg_cmp_bin_objs(void* obj1, void* obj2){
 	binval_t v1 = bj_pt_obj_as_bin(obj1);
 	binval_t v2 = bj_pt_obj_as_bin(obj2);
 	if(v1 < v2){ return -1; }
@@ -917,7 +918,7 @@ nervenet::sornet_dbg_rnk_print_input(){
 #if (defined(BJ_SORNET_NUM_TEST) || defined(BJ_SORNET_SRT_RNK_TEST))
 
 int
-bj_cmp_num_objs(void* obj1, void* obj2){
+bj_dbg_cmp_num_objs(void* obj1, void* obj2){
 	num_nod_t v1 = bj_pt_obj_as_num(obj1);
 	num_nod_t v2 = bj_pt_obj_as_num(obj2);
 	if(v1 < v2){ return -1; }
@@ -1081,10 +1082,8 @@ nervenet::sornet_dbg_num_end_step(){
 
 int
 bj_cmp_rnk_objs(void* obj1, void* obj2){
-	//num_nod_t v1 = bj_pt_obj_as_num(obj1);
-	//num_nod_t v2 = bj_pt_obj_as_num(obj2);
-	num_nod_t v1 = bj_pt_to_num(obj1); // RNK_OBJ_NUM
-	num_nod_t v2 = bj_pt_to_num(obj2); // RNK_OBJ_NUM
+	num_nod_t v1 = bj_pt_to_num(obj1);
+	num_nod_t v2 = bj_pt_to_num(obj2);
 	if(v1 < v2){ return -1; }
 	if(v1 > v2){ return 1;}
 	return 0;

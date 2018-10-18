@@ -329,11 +329,11 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 	rem_mgrp->handled = mc_true;
 }
 
-grip&	
+/*grip&	
 agent::get_available(){
 	mck_abort(__LINE__, MC_ABORT_MSG("Invalid agent::get_available func call\n"));
 	return *((grip*)mc_null);
-}
+}*/
 
 void
 agent::init_me(int caller){

@@ -56,7 +56,7 @@ missive_handler_t sequence_handlers[idx_total];
 
 class sequence : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(sequence, mc_mod0_cod)
+	MCK_DECLARE_MEM_METHODS(sequence)
 
 	bool is_sender;
 
@@ -87,7 +87,7 @@ public:
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (workerus as threads) TO WORK.
 class seq_workeru {
 public:
-	MCK_DECLARE_MEM_METHODS(seq_workeru, mc_mod0_cod)
+	MCK_DECLARE_MEM_METHODS(seq_workeru)
 
 	sequence sender;
 	sequence receiver;

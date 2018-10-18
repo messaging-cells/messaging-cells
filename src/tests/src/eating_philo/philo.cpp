@@ -152,7 +152,7 @@ enum philo_tok_t : mck_token_t {
 */
 class chopstick : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(chopstick, mc_mod0_cod)
+	MCK_DECLARE_MEM_METHODS(chopstick)
 
 	cell* owner;
 
@@ -187,7 +187,7 @@ public:
 */
 class philosopher : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(philosopher, mc_mod0_cod)
+	MCK_DECLARE_MEM_METHODS(philosopher)
 
 	chopstick* left;
 	chopstick* right;
@@ -264,7 +264,7 @@ public:
 // For global data. DO NOT USE GLOBAL VARIABLES IF YOU WANT THE PTD (workerus as threads) TO WORK.
 class philo_workeru {
 public:
-	MCK_DECLARE_MEM_METHODS(philo_workeru, mc_mod0_cod)
+	MCK_DECLARE_MEM_METHODS(philo_workeru)
 
 	philo_workeru(){		// NEED THIS SO THAT no memset func call
 		init_philo_workeru();

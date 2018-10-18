@@ -32,8 +32,8 @@ init_module_nams(){
 
 MCK_DEFINE_ACQUIRE_ALLOC(sorting_net, 32);	// defines nervenet::acquire_alloc
 
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sornet_signal, 32, bj_ava_sornet_signals, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sorcell, 32, bj_ava_sorcells, 0)
+MCK_DEFINE_MEM_METHODS(sornet_signal, 32, bj_ava_sornet_signals, 0)
+MCK_DEFINE_MEM_METHODS(sorcell, 32, bj_ava_sorcells, 0)
 
 BJ_DEFINE_GET_CLS_NAM(sornet_signal)
 BJ_DEFINE_GET_CLS_NAM(sorcell)

@@ -39,15 +39,15 @@ missive_handler_t bj_nil_handlers[1] = { mc_null };
 
 MCK_DEFINE_ACQUIRE_ALLOC(nervenet, 32);	// defines nervenet::acquire_alloc
 
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(base_transmitter, 32, bj_ava_base_transmitters, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synset, 32, bj_ava_synsets, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierset, 32, bj_ava_tiersets, bj_num_sep_tiersets)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(synapse, 32, bj_ava_synapses, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(neuron, 32, bj_ava_neurons, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(polaron, 32, bj_ava_polarons, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(sorcell, 32, bj_ava_sorcells, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(endcell, 32, bj_ava_endcells, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
+MCK_DEFINE_MEM_METHODS(base_transmitter, 32, bj_ava_base_transmitters, 0)
+MCK_DEFINE_MEM_METHODS(synset, 32, bj_ava_synsets, 0)
+MCK_DEFINE_MEM_METHODS(tierset, 32, bj_ava_tiersets, bj_num_sep_tiersets)
+MCK_DEFINE_MEM_METHODS(synapse, 32, bj_ava_synapses, 0)
+MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons, 0)
+MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons, 0)
+MCK_DEFINE_MEM_METHODS(sorcell, 32, bj_ava_sorcells, 0)
+MCK_DEFINE_MEM_METHODS(endcell, 32, bj_ava_endcells, 0)
+MCK_DEFINE_MEM_METHODS(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
 
 BJ_DEFINE_GET_CLS_NAM(synset)
 BJ_DEFINE_GET_CLS_NAM(tierset)

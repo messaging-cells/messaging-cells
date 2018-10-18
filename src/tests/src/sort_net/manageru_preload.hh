@@ -88,7 +88,7 @@ public:
 */
 class mc_aligned pre_sornode : public agent_grp {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_sornode, bj_sornet_cod)
+	MCK_DECLARE_MEM_METHODS(pre_sornode)
 
 	num_nod_t	 	nod_id;
 	num_nod_t 		level;
@@ -143,7 +143,7 @@ public:
 */
 class mc_aligned pre_sort_net : public agent_grp {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_sort_net, bj_sornet_cod)
+	MCK_DECLARE_MEM_METHODS(pre_sort_net)
 
 	// sornet info
 

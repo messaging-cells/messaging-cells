@@ -149,41 +149,14 @@ nam::separate(mc_alloc_size_t sz){ \
 
 // end_macro
 
-//define MCK_DEFINE_SEPARATE(nam) MCK_DEFINE_SEPARATE_AVA(nam, mck_all_available(nam))
-
-#define MCK_DEFINE_ACQUIRE_AVA(nam, all_ava) \
-PTD_DBG_CODE(mc_dbg_alloc_func_t nam##_acquire_hook = mc_null); \
-nam* \
-nam::acquire(mc_alloc_size_t sz){ \
-	grip& ava = all_ava; \
-	if(sz == 1){ \
-		PTD_DBG_CODE(bool was_alone = ava.is_alone()); \
-		if(ava.is_alone()){ \
-			separate(BJ_INVALID_ALLOC_SZ); \
-		} \
-		binder* fst = ava.bn_right; \
-		fst->let_go(); \
-		PTD_DBG_CODE(if(! was_alone && (nam##_acquire_hook != mc_null)){ (*nam##_acquire_hook)(fst, sz); }); \
-		return (nam *)fst; \
-	} \
-	return nam::acquire_alloc(sz); \
-} \
-
-// end_macro
-
-//define MCK_DEFINE_ACQUIRE(nam) MCK_DEFINE_ACQUIRE_AVA(nam, mck_all_available(nam))
-
 //! Declares dynamic memory methods for class 'nam'
-#define MCK_DECLARE_MEM_METHODS(nam, module) \
+#define MCK_DECLARE_MEM_METHODS(nam) \
 	static	bool 			ck_cell_id(mck_handler_idx_t idx) mc_external_code_ram; \
 	static	mc_alloc_size_t	get_curr_separate_sz() mc_external_code_ram; \
 	static	nam*			acquire_alloc(mc_alloc_size_t sz = 1) mc_external_code_ram; \
-	static	nam*			acquire(mc_alloc_size_t sz = 1) module; \
 	static	nam*			separate(mc_alloc_size_t sz) mc_external_code_ram; \
 
 // end_macro
-
-//	MCK_DEFINE_ACQUIRE_AVA(nam, all_ava)
 
 //! Defines dynamic memory methods for class 'nam' with aligment 'align' (32 or 64) and available list 'all_ava'.
 #define MCK_DEFINE_MEM_METHODS(nam, align, all_ava, curr_sep_sz) \
@@ -191,36 +164,6 @@ nam::acquire(mc_alloc_size_t sz){ \
 	MCK_DEFINE_CURR_SEPARATE_SZ(nam, curr_sep_sz) \
 	MCK_DEFINE_ACQUIRE_ALLOC(nam, align) \
 	MCK_DEFINE_SEPARATE_AVA(nam, all_ava) \
-
-// end_macro
-
-#define MCK_DECLARE_GET_AVAILABLE() virtual grip& get_available();
-
-#define MCK_DECLARE_GET_AVAILABLE_2(module) virtual grip& get_available() module;
-
-#define MCK_DEFINE_GET_AVAILABLE(nam, all_ava) grip& nam::get_available(){ return all_ava; }
-
-//	MCK_DECLARE_GET_AVAILABLE() 
-
-//! Calls MCK_DECLARE_MEM_METHODS and MCK_DECLARE_GET_AVAILABLE
-#define MCK_DECLARE_MEM_METHODS_AND_GET_AVA(nam, module) \
-	MCK_DECLARE_MEM_METHODS(nam, module) \
-
-// end_macro
-
-//	MCK_DECLARE_GET_AVAILABLE_2(module2) 
-
-//! Calls MCK_DECLARE_MEM_METHODS and MCK_DECLARE_GET_AVAILABLE
-#define MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(nam, module1, module2) \
-	MCK_DECLARE_MEM_METHODS(nam, module1) \
-
-// end_macro
-
-//	MCK_DEFINE_GET_AVAILABLE(nam, all_ava) 
-
-//! Calls MCK_DEFINE_MEM_METHODS and MCK_DEFINE_GET_AVAILABLE
-#define MCK_DEFINE_MEM_METHODS_AND_GET_AVA(nam, align, all_ava, curr_sep_sz) \
-	MCK_DEFINE_MEM_METHODS(nam, align, all_ava, curr_sep_sz) \
 
 // end_macro
 
@@ -663,10 +606,6 @@ public:
 		return mck_cell_id(agent);
 	}
 
-	//! Method that must return the available \ref grip for each \ref agent derived class.
-	virtual mc_opt_sz_fn 
-	grip&	get_available() mc_external_code_ram;
-
 	virtual mc_opt_sz_fn 
 	void	init_me(int caller = 0) mc_external_code_ram;
 
@@ -676,15 +615,6 @@ public:
 	);
 
 	//! Releases this \ref agent so that it can latter be acquired again.
-	/*mc_opt_sz_fn 
-	void	release_old(int dbg_caller = 1){
-		let_go();
-		init_me(dbg_caller);
-		grip& ava = get_available();
-		ava.bind_to_my_left(*this);
-		PTD_DBG_CODE(dbg_release(dbg_caller));
-	}*/
-	
 	mc_opt_sz_fn 
 	void	release(int dbg_caller = 1);
 		
@@ -780,7 +710,7 @@ bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
 
 class mc_aligned cell: public agent {
 public:
-	MCK_DECLARE_MEM_METHODS(cell, mc_mod0_cod);
+	MCK_DECLARE_MEM_METHODS(cell);
 
 	mck_handler_idx_t 	handler_idx; //!< Index of my handler func in \ref kernel::all_cell_handlers.
 	mc_flags_t 			filaments;
@@ -804,11 +734,6 @@ public:
 		return handler_idx;
 	}
 
-	virtual
-	mc_opt_sz_fn grip&	get_available(){
-		return mck_all_available(cell);
-	}
-
 	mc_opt_sz_fn
 	void
 	send(cell* des, mck_token_t tok);
@@ -830,7 +755,7 @@ public:
 
 class mc_aligned missive : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS(missive, mc_mod0_cod);
+	MCK_DECLARE_MEM_METHODS(missive);
 
 	cell* 				dst;
 	cell*				src;
@@ -892,11 +817,6 @@ public:
 		return mck_cell_id(missive);
 	}
 
-	virtual
-	mc_opt_sz_fn grip&	get_available(){
-		return mck_all_available(missive);
-	}
-
 	mc_inline_fn cell*
 	get_source(){
 		return src;
@@ -921,7 +841,7 @@ public:
 
 class mc_aligned agent_grp : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS(agent_grp, mc_mod0_cod);
+	MCK_DECLARE_MEM_METHODS(agent_grp);
 
 	grip		all_agts;
 	uint8_t 	tot_agts;	// optional use
@@ -946,11 +866,6 @@ public:
 		return mck_cell_id(agent_grp);
 	}
 
-	virtual
-	mc_opt_sz_fn grip&	get_available(){
-		return mck_all_available(agent_grp);
-	}
-
 	void
 	release_all_agts();
 };
@@ -969,7 +884,7 @@ public:
 
 class mc_aligned agent_ref : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS(agent_ref, mc_mod0_cod);
+	MCK_DECLARE_MEM_METHODS(agent_ref);
 
 	agent* 		glb_agent_ptr;
 
@@ -991,10 +906,6 @@ public:
 		return mck_cell_id(agent_ref);
 	}
 
-	virtual
-	mc_opt_sz_fn grip&	get_available(){
-		return mck_all_available(agent_ref);
-	}
 };
 
 enum kernel_tok_t : mck_token_t {

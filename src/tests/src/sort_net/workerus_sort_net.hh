@@ -135,7 +135,7 @@ bool bj_ck_is_##cnam(agent* obj){ \
 
 class mc_aligned sornet_signal : public missive {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sornet_signal, bj_sornet_cod)
+	MCK_DECLARE_MEM_METHODS(sornet_signal)
 
 	num_nod_t	idx;
 	void*		obj;
@@ -170,7 +170,7 @@ bool bj_is_sorted(grip& grp, bj_cmp_func_t fn, int ord) mc_external_code_ram;
 
 class mc_aligned sorcell : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(sorcell, mc_external_code_ram)
+	MCK_DECLARE_MEM_METHODS(sorcell)
 
 	num_nod_t 	color;
 
@@ -213,7 +213,7 @@ typedef unsigned long mini_bit_arr_t;
 
 class mc_aligned sorting_net : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(sorting_net, mc_external_code_ram)
+	MCK_DECLARE_MEM_METHODS(sorting_net)
 
 	long MAGIC;
 

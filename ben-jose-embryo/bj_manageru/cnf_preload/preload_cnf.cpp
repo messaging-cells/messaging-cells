@@ -12,10 +12,10 @@ grip ava_pre_endnode;
 grip ava_pre_cnf_node;
 grip ava_pre_cnf_net;
 
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_sornode, 32, ava_pre_sornode, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_endnode, 32, ava_pre_endnode, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_cnf_node, 32, ava_pre_cnf_node, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_cnf_net, 32, ava_pre_cnf_net, 0)
+MCK_DEFINE_MEM_METHODS(pre_sornode, 32, ava_pre_sornode, 0)
+MCK_DEFINE_MEM_METHODS(pre_endnode, 32, ava_pre_endnode, 0)
+MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node, 0)
+MCK_DEFINE_MEM_METHODS(pre_cnf_net, 32, ava_pre_cnf_net, 0)
 
 grip* bj_mgr_all_ava[bj_mgr_idx_total];
 mc_alloc_kernel_func_t bj_mgr_all_acq[bj_mgr_idx_total];

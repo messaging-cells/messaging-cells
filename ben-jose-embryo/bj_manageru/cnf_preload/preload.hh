@@ -98,7 +98,7 @@ public:
 
 class mc_aligned pre_sornode : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_sornode, bj_load_cod)
+	MCK_DECLARE_MEM_METHODS(pre_sornode)
 
 	num_nod_t	 	nod_id;
 	num_nod_t 		level;
@@ -146,7 +146,7 @@ public:
 
 class mc_aligned pre_endnode : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_endnode, bj_load_cod)
+	MCK_DECLARE_MEM_METHODS(pre_endnode)
 
 	pre_sornapse	nxt;
 	void* 			loaded;
@@ -173,7 +173,7 @@ public:
 
 class mc_aligned pre_cnf_node : public agent_grp {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_cnf_node, bj_load_cod)
+	MCK_DECLARE_MEM_METHODS(pre_cnf_node)
 	
 	node_kind_t 	ki;
 	long			id;
@@ -206,7 +206,7 @@ public:
 */
 class mc_aligned pre_cnf_net : public agent_grp {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(pre_cnf_net, bj_load_cod)
+	MCK_DECLARE_MEM_METHODS(pre_cnf_net)
 
 	num_nod_t tot_pre_neus;
 	num_nod_t tot_pre_vars;

@@ -277,7 +277,7 @@ bj_cmp_num_syn(num_syn_t const & n1, num_syn_t const & n2) mc_external_code_ram;
 
 class mc_aligned synset : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synset, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS(synset)
 
 	PTD_DBG_CODE(mc_flags_t		ss_flags);
 
@@ -332,7 +332,7 @@ public:
 
 class mc_aligned tierset : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(tierset, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS(tierset)
 
 	num_tier_t 	ti_id;
 	grip		ti_all;	//!< \ref synapse s in this tier
@@ -412,7 +412,7 @@ typedef base_transmitter sornet_transmitter;
 
 class mc_aligned base_transmitter : public missive {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(base_transmitter, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS(base_transmitter)
 
 	all_transmitter_data d;
 
@@ -428,7 +428,7 @@ public:
 	void init_me(int caller = 0);
 	
 	void init_sornet_transmitter() bj_sornet_cod;
-	void copy_sornet_transmitter(sornet_transmitter& orig) bj_sornet_cod;
+	void copy_sornet_transmitter(sornet_transmitter& orig) mc_external_code_ram;
 	
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -465,7 +465,7 @@ public:
 
 class mc_aligned sorcell : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(sorcell, mc_external_code_ram, mc_external_code_ram)
+	MCK_DECLARE_MEM_METHODS(sorcell)
 
 	num_nod_t 	srt_sz;
 	mc_flags_t  edge_flags;
@@ -510,7 +510,7 @@ public:
 
 class mc_aligned endcell : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA_2(endcell, mc_external_code_ram, mc_external_code_ram)
+	MCK_DECLARE_MEM_METHODS(endcell)
 
 	sornapse	end_snp;
 	
@@ -550,7 +550,7 @@ num_nod_t bj_sornet_calc_grp_sz(num_nod_t min_grp, num_nod_t max_grp) bj_sornet_
 
 class mc_aligned synapse : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(synapse, mc_external_code_ram)
+	MCK_DECLARE_MEM_METHODS(synapse)
 
 	synset*		stabi_vessel;
 	num_syn_t	stabi_rcv_arr_sz;
@@ -764,7 +764,7 @@ neuron* bj_get_neu(binder* dlyd, tier_kind_t tiki, net_side_t sd);
 
 class mc_aligned neuron : public nervenode {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(neuron, mc_external_code_ram)
+	MCK_DECLARE_MEM_METHODS(neuron)
 
 	//PTD_CODE(int pru_attr);
 	
@@ -809,7 +809,7 @@ public:
 
 class mc_aligned polaron : public nervenode {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(polaron, mc_external_code_ram)
+	MCK_DECLARE_MEM_METHODS(polaron)
 	
 	polaron*		opp;
 
@@ -857,7 +857,7 @@ public:
 
 class mc_aligned tierdata : public agent {
 public:
-	MCK_DECLARE_MEM_METHODS_AND_GET_AVA(tierdata, bj_nervenet_mem)
+	MCK_DECLARE_MEM_METHODS(tierdata)
 
 	num_tier_t	tdt_id;
 	mc_flags_t	tdt_flags;
@@ -1029,7 +1029,7 @@ typedef unsigned long mini_bit_arr_t;
 
 class mc_aligned nervenet : public cell {
 public:
-	MCK_DECLARE_MEM_METHODS(nervenet, mc_external_code_ram)
+	MCK_DECLARE_MEM_METHODS(nervenet)
 
 	long MAGIC;
 
@@ -1150,7 +1150,7 @@ public:
 
 	void send_all_neus(mck_token_t tok);
 
-	bool sornet_check_order(sorkind_t knd) bj_sornet_cod;
+	bool sornet_dbg_check_order(sorkind_t knd) mc_external_code_ram;
 
 	void sornet_dbg_tests_handler(missive* msv) mc_external_code_ram;
 	bool sornet_dbg_send_nxt_step(sorkind_t knd) mc_external_code_ram;
@@ -1177,9 +1177,10 @@ public:
 	char* 	get_class_name() mc_external_code_ram;
 };
 
-num_nod_t bj_dbg_sornet_get_nw_grp(ini_grps_prms& prms) bj_sornet_cod;
-num_nod_t bj_dbg_rnk_get_grp_max(num_nod_t min_idx, num_nod_t grp_sz, ini_grps_prms& prms) bj_sornet_cod;
-void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) bj_sornet_cod;
+num_nod_t bj_dbg_sornet_get_nw_grp(ini_grps_prms& prms) mc_external_code_ram;
+num_nod_t bj_dbg_rnk_get_grp_max(num_nod_t min_idx, num_nod_t grp_sz, 
+								 ini_grps_prms& prms) mc_external_code_ram;
+void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) mc_external_code_ram;
 
 #define bj_num_sep_tiersets (bj_nervenet->num_sep_tiersets)
 #define bj_num_sep_tierdatas (bj_nervenet->num_sep_tierdatas)

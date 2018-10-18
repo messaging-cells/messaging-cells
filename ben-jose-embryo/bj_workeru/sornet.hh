@@ -44,15 +44,15 @@ void sorcell_sornet_handler(missive* msv) bj_sornet_cod;
 void endcell_sornet_handler(missive* msv) bj_sornet_cod;
 void nervenet_sornet_handler(missive* msv) bj_sornet_cod;
 
-int bj_cmp_bin_objs(void* obj1, void* obj2) bj_sornet_cod;
-int bj_cmp_num_objs(void* obj1, void* obj2) bj_sornet_cod;
+int bj_dbg_cmp_bin_objs(void* obj1, void* obj2) mc_external_code_ram;
+int bj_dbg_cmp_num_objs(void* obj1, void* obj2) mc_external_code_ram;
 int bj_cmp_rnk_objs(void* obj1, void* obj2) bj_sornet_cod;
 
 void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, void* obj, sorcell* dst, num_nod_t idx) bj_sornet_cod;
 
 void bj_sornet_kernel_func() bj_sornet_cod;
 void bj_sornet_init_handlers() mc_external_code_ram;
-void bj_sornet_main() bj_sornet_cod;
+void bj_sornet_main() mc_external_code_ram;
 
 #endif		// SORNET_H
 

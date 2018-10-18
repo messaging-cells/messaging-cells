@@ -12,8 +12,8 @@ pre_load_snet* THE_SORT_NET = mc_null;
 grip ava_pre_sornode;
 grip ava_pre_sort_net;
 
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_sornode, 32, ava_pre_sornode, 0)
-MCK_DEFINE_MEM_METHODS_AND_GET_AVA(pre_sort_net, 32, ava_pre_sort_net, 0)
+MCK_DEFINE_MEM_METHODS(pre_sornode, 32, ava_pre_sornode, 0)
+MCK_DEFINE_MEM_METHODS(pre_sort_net, 32, ava_pre_sort_net, 0)
 
 missive_handler_t sn_mgr_handlers[mgr_idx_total];
 grip* sn_mgr_all_ava[mgr_idx_total];
