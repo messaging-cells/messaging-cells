@@ -52,8 +52,10 @@ sorcell::load_from(pre_sornode* nod){
 	void* pt_down_axon = (void*)mc_manageru_pt_to_workeru_pt(nod->down_pns.axon);
 	bj_wait_set_pt(pre_endnode, pt_down_axon, endcell, down_snp.axon);
 
-	PTD_CK(nod->loaded == mc_null);
-	nod->loaded = mck_as_glb_pt(scll);
+	MCK_CK(nod->loaded == mc_null);
+	MCK_CK(scll != mc_null);
+	//nod->loaded = mck_as_glb_pt(scll);
+	mc_loop_set_var(nod->loaded, mck_as_glb_pt(scll));
 }
 
 void bj_init_end_cells(binder* nn_all_endnods)
@@ -64,18 +66,35 @@ void bj_init_end_cells(binder* nn_all_endnods)
 	lst = nn_all_endnods;
 	for(wrk = fst; wrk != lst; wrk = (binder*)mc_manageru_pt_to_workeru_pt(wrk->bn_right)){
 		pre_endnode* end_nd = (pre_endnode*)wrk;
-		PTD_CK(end_nd->loaded != mc_null);
+		MCK_CK(end_nd->loaded != mc_null);
 		endcell* ecll = (endcell*)(end_nd->loaded);
+		MCK_CK(ecll != mc_null);
 		
-		PTD_CK(end_nd->nxt.idx == ecll->end_snp.idx);
+		mck_slog2("ecll=");
+		mck_ilog(ecll->end_snp.idx);
+		
+		MCK_CK(end_nd->nxt.idx == ecll->end_snp.idx);
 		if(end_nd->nxt.out != mc_null){
-			PTD_CK(ecll->end_snp.axon == mc_null);
-			bj_wait_set_pt(pre_sornode, end_nd->nxt.out, sorcell, ecll->end_snp.out);
+			MCK_CK(ecll->end_snp.axon == mc_null);
+			pre_sornode* the_out = (pre_sornode*)mc_manageru_pt_to_workeru_pt(end_nd->nxt.out);
+			
+			mck_slog2("__out=");
+			mck_ilog(the_out->nod_id);
+			
+			bj_wait_set_pt(pre_sornode, the_out, sorcell, ecll->end_snp.out);
 		}
+		mck_slog2(",");
 		if(end_nd->nxt.axon != mc_null){
-			PTD_CK(ecll->end_snp.axon == mc_null);
-			bj_wait_set_pt(pre_endnode, end_nd->nxt.axon, endcell, ecll->end_snp.axon);
+			MCK_CK(ecll->end_snp.axon == mc_null);
+			pre_endnode* the_axon = (pre_endnode*)mc_manageru_pt_to_workeru_pt(end_nd->nxt.axon);
+			
+			mck_slog2("__axon=");
+			mck_ilog(the_axon->nxt.idx);
+			
+			bj_wait_set_pt(pre_endnode, the_axon, endcell, ecll->end_snp.axon);
 		}
+		
+		mck_slog2(".\n");
 	}
 }
 
@@ -95,9 +114,12 @@ void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all
 		pre_endnode* end_nd = (pre_endnode*)wrk;
 		endcell* ecll = bj_endcell_acquire();
 		
-		PTD_CK(end_nd->loaded == mc_null);
+		MCK_CK(end_nd->loaded == mc_null);
 		ecll->end_snp.idx = end_nd->nxt.idx;
-		end_nd->loaded = mck_as_glb_pt(ecll);
+
+		MCK_CK(ecll != mc_null);
+		//end_nd->loaded = mck_as_glb_pt(ecll);
+		mc_loop_set_var(end_nd->loaded, mck_as_glb_pt(ecll));
 		
 		nn_all_ecells->bind_to_my_left(*ecll);
 	}
@@ -129,18 +151,28 @@ void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all
 }
 
 void bj_init_ends_srt_sornet(){
+	mck_slog2("bj_init_ends_srt_sornet_started\n");
+	
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 	binder* nn_all_endnods = &(nn_cnf->all_pre_srt_endnods); // nn_cnf is already workeru_pt 
 	bj_init_end_cells(nn_all_endnods);
+	
+	mck_slog2("end_of_ENDS_SRT\n");
 }
 
 void bj_init_ends_rnk_sornet(){
+	mck_slog2("bj_init_ends_rnk_sornet_started\n");
+	
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 	binder* nn_all_endnods = &(nn_cnf->all_pre_rnk_endnods); // nn_cnf is already workeru_pt 
 	bj_init_end_cells(nn_all_endnods);
+
+	mck_slog2("end_of_ENDS_RNK\n");
 }
 
 void bj_load_shd_sornet(){
+	mck_slog2("bj_load_shd_sornet_started\n");
+	
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 	void* invalid_val = BJ_INVALID_SRT_OBJ;
@@ -151,6 +183,7 @@ void bj_load_shd_sornet(){
 	binder* nn_all_sclls = &(my_net->all_sorcells); // nn_cnf is already workeru_pt 
 	bj_load_shd_nods(nn_cnf->tot_pre_sornods, nn_all_endnods, nn_all_eclls, 
 					 nn_all_nods, nn_all_sclls, invalid_val);
+	mck_slog2("end_of_SRT_bj_load_shd_nods \n");
 	
 	kernel* ker = mck_get_kernel();
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
@@ -196,10 +229,12 @@ void bj_load_shd_sornet(){
 		}
 	}
 
-	//mck_slog2("end_of_bj_load_shd_sornet  \n");	
+	mck_slog2("end_of_bj_load_shd_sornet \n");	
 }
 
 void bj_load_shd_ranknet(){
+	mck_slog2("bj_load_shd_ranknet_started\n");
+	
 	nervenet* my_net = bj_nervenet;
 	pre_cnf_net* nn_cnf = bj_nervenet->shd_cnf;
 	void* invalid_val = BJ_INVALID_RNK_OBJ;
@@ -210,6 +245,7 @@ void bj_load_shd_ranknet(){
 	binder* nn_all_sclls = &(my_net->all_rnkcells); // nn_cnf is already workeru_pt
 	bj_load_shd_nods(nn_cnf->tot_pre_rnknods, nn_all_endnods, nn_all_eclls, 
 					 nn_all_nods, nn_all_sclls, invalid_val);
+	mck_slog2("end_of_RNK_bj_load_shd_nods \n");
 
 	kernel* ker = mck_get_kernel();
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
@@ -252,6 +288,6 @@ void bj_load_shd_ranknet(){
 		}
 	}
 
-	//mck_slog2("end_of_bj_load_shd_sornet  \n");	
+	mck_slog2("end_of_bj_load_shd_ranknet  \n");	
 }
 

@@ -370,6 +370,9 @@ public:
 
 	grip					invalid_all_available;
 	
+	mck_token_t 	min_module_bridge_token;
+	mck_token_t 	max_module_bridge_token;
+	
 	uint32_t 	end_magic_id;
 
 	kernel() mc_external_code_ram;
@@ -385,6 +388,9 @@ public:
 
 	static mc_opt_sz_fn void 
 	run_sys(bool reset_idle = true); //!< Static method that starts handling \ref missive s. No \ref missive s are handled before.
+
+	static void
+	finish_run() mc_external_code_ram;
 
 	static void
 	finish_sys() mc_external_code_ram; //!< Static method that finishes this workeru kernel.
@@ -696,14 +702,15 @@ bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
 	return (resp != 0);
 }
 
-#define	mc_usr_flag0 mc_flag0
-#define	mc_usr_flag1 mc_flag1
-#define	mc_usr_flag2 mc_flag2
-#define	mc_usr_flag3 mc_flag3
-#define	mc_usr_flag4 mc_flag4
-#define	mc_usr_flag5 mc_flag5
-#define	mc_usr_flag6 mc_flag6
-#define	mc_usr_flag7 mc_flag7
+#define	mc_module_bridge_flag mc_flag0
+
+#define	mc_usr_flag0 mc_flag1
+#define	mc_usr_flag1 mc_flag2
+#define	mc_usr_flag2 mc_flag3
+#define	mc_usr_flag3 mc_flag4
+#define	mc_usr_flag4 mc_flag5
+#define	mc_usr_flag5 mc_flag6
+#define	mc_usr_flag6 mc_flag7
 
 #define mc_cell_acquire_arr(num) ((cell*)(kernel::do_acquire(mck_cell_id(cell), num)))
 #define mc_cell_acquire() mc_cell_acquire_arr(1)

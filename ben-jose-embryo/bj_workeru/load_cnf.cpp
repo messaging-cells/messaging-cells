@@ -22,7 +22,7 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 
 	stabi_idx = nod->srt_nd.idx;
 
-	pre_sornode* pre_out = nod->srt_nd.out;
+	pre_sornode* pre_out = (pre_sornode*)mc_manageru_pt_to_workeru_pt(nod->srt_nd.out);
 	while(pre_out->loaded == mc_null){
 		// SPIN UNTIL SET (may be set by an other workeru)
 		PTD_CODE(sched_yield());
@@ -99,7 +99,7 @@ void bj_load_init_cnf(){
 	polaron::separate(sep_pols);
 	neuron::separate(sep_neus);
 
-	PTD_LOG("bj_load_init_cnf_4\n");	
+	mck_slog2("bj_load_init_cnf_finished \n");	
 
 }
 
@@ -147,6 +147,8 @@ void bj_load_shd_cnf(){
 		opp->loaded = mck_as_glb_pt(neg_nod);
 	}
 
+	mck_slog2("LOADED_polarons\n");
+	
 	binder* nn_all_neu = &(nn_cnf->all_pre_neu); // nn_cnf is already workeru_pt so nn_all_neu is workeru_pt
 	fst = (binder*)mc_manageru_pt_to_workeru_pt(nn_all_neu->bn_right);
 	lst = nn_all_neu;
@@ -162,7 +164,7 @@ void bj_load_shd_cnf(){
 		my_neu->init_nervenode_with(sh_neu);
 		sh_neu->loaded = my_glb_neu;
 
-		//mck_slog2("[");
+		mck_slog2("[");
 
 		binder* nn_all_snp = &(sh_neu->all_agts);
 
@@ -207,11 +209,11 @@ void bj_load_shd_cnf(){
 			PTD_PRT("SND to pole %d msv from neu %d \n", my_pol->id, my_neu->id);
 			*/
 
-			//mck_ilog(my_pol->id);
-			//mck_slog2(" ");
+			mck_ilog(my_pol->id);
+			mck_slog2(" ");
 		}
 		
-		//mck_slog2("]\n");
+		mck_slog2("]__loaded__\n");
 	}
 
 	if(my_net->tot_lits == 0){
@@ -481,6 +483,7 @@ void bj_load_main() {
 	//endif
 
 	bj_load_shd_cnf();
+	mck_slog2("end_of_bj_load_shd_cnf\n");
 	
 	//MC_DBG(if(kernel::get_workeru_nn() == 0){ bj_test_func_1(); });
 

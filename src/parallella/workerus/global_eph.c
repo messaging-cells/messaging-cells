@@ -166,9 +166,9 @@ mck_fill_module_external_addresses(int user_sz, char** user_order, mc_addr_t* us
 	}
 }
 
-char dbg_glb_LOADING_module_[] mc_external_data_ram = "LOADING module idx____";
-char dbg_glb_addr_[] mc_external_data_ram = "addr____";
-char dbg_glb_addr_end[] mc_external_data_ram = "____\n";
+char dbg_glb_LOADING_module_[] mc_external_data_ram = "LOADING_module_idx__";
+char dbg_glb_addr_[] mc_external_data_ram = "__addr__";
+char dbg_glb_addr_end[] mc_external_data_ram = "__starting.\n";
 
 bool
 mck_load_module(mc_addr_t ext_addr){
@@ -176,10 +176,20 @@ mck_load_module(mc_addr_t ext_addr){
 	if(pt_mod == mc_null){
 		return false;
 	}
+	mc_workeru_id_t koid = mck_get_workeru_id();
+	mc_workeru_nn_t num_workeru = mc_id_to_nn(koid);
+
 	mck_sprt(dbg_glb_LOADING_module_);
+	mck_iprt(num_workeru);
 	mck_sprt(dbg_glb_addr_);
 	mck_xprt((mc_addr_t)pt_mod);
 	mck_sprt(dbg_glb_addr_end);
+	
+	mck_slog(dbg_glb_LOADING_module_);
+	mck_ilog(num_workeru);
+	mck_slog(dbg_glb_addr_);
+	mck_xlog((mc_addr_t)pt_mod);
+	mck_slog(dbg_glb_addr_end);
 
 	mc_addr_t mod_sz = MC_VAL_WORKERU_MODULE_SIZE;
 	uint8_t* pt_mem_mod = (uint8_t*)MC_VAL_WORKERU_MODULE_ORIG;

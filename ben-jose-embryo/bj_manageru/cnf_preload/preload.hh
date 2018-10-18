@@ -88,6 +88,13 @@ public:
 	pre_endnode* 	axon = mc_null;
 };
 
+mc_inline_fn void
+bj_init_pre_sornapse(pre_sornapse& psnp){
+	psnp.idx = BJ_INVALID_IDX;
+	psnp.out = mc_null;
+	psnp.axon = mc_null;
+}
+
 /*! \class pre_sornode
 \brief Class for sornet nodes to load.
 
@@ -117,6 +124,9 @@ public:
 
 		srt_sz = 0;
 		edge_flags = 0;
+		
+		bj_init_pre_sornapse(up_pns);	// for parallella to work
+		bj_init_pre_sornapse(down_pns);	// for parallella to work
 
 		loaded = mc_null;
 	}
@@ -152,6 +162,8 @@ public:
 	void* 			loaded;
 
 	pre_endnode(){
+		bj_init_pre_sornapse(nxt);	// for parallella to work
+		
 		loaded = mc_null;
 	}
 
@@ -189,6 +201,9 @@ public:
 		id = 0;
 		pre_sz = 0;
 		opp_nod = mc_null;
+
+		bj_init_pre_sornapse(srt_nd);	// for parallella to work
+
 		loaded = mc_null;
 	}
 

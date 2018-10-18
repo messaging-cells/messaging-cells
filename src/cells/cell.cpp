@@ -225,9 +225,20 @@ kernel::run_sys(bool reset_idle){
 		PTD_CODE(sched_yield());
 	}
 
+	finish_run();
+}
+
+void	// static
+kernel::finish_run(){
+	kernel* ker = MCK_KERNEL;
+	
 	MC_WORKERU_INFO->inited_workeru = 0;
 
 	ker->init_router_ack_arrays();
+
+	ker->min_module_bridge_token = mck_tok_invalid;
+	ker->max_module_bridge_token = mck_tok_invalid;
+	
 }
 
 void	// static

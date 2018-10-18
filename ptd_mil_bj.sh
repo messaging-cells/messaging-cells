@@ -15,7 +15,7 @@ do
 	else
 		echo "FINISHED_"$number
 		echo "FINISHED_"$number
-		echo "FINISHED_"$number
+		echo "FINISHED_"$number > current_iter_mil.txt
 	fi
 done
 
