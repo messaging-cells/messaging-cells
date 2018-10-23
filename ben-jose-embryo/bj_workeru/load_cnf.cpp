@@ -22,13 +22,15 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 
 	stabi_idx = nod->srt_nd.idx;
 
-	pre_sornode* pre_out = (pre_sornode*)mc_manageru_pt_to_workeru_pt(nod->srt_nd.out);
-	while(pre_out->loaded == mc_null){
-		// SPIN UNTIL SET (may be set by an other workeru)
-		PTD_CODE(sched_yield());
-	}
-	PTD_CK(pre_out->loaded != mc_null);
-	stabi_out = (sorcell*)(pre_out->loaded);
+	PTD_CODE(
+		pre_sornode* pre_out = (pre_sornode*)mc_manageru_pt_to_workeru_pt(nod->srt_nd.out);
+		while(pre_out->loaded == mc_null){
+			// SPIN UNTIL SET (may be set by an other workeru)
+			PTD_CODE(sched_yield());
+		}
+		PTD_CK(pre_out->loaded != mc_null);
+		stabi_out = (sorcell*)(pre_out->loaded);
+	);
 } 
 
 void 
@@ -474,13 +476,13 @@ void bj_load_main() {
 
 	bj_load_init_cnf();
 	
-	//ifdef BJ_DBG_SORNET
+	PTD_CODE(
 	bj_load_shd_ranknet();
 	bj_load_shd_sornet();
 	bj_init_ends_srt_sornet();
 	bj_init_ends_rnk_sornet();
 	mck_slog2("end_of_init_all_sort_cells\n");
-	//endif
+	);
 
 	bj_load_shd_cnf();
 	mck_slog2("end_of_bj_load_shd_cnf\n");

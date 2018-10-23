@@ -89,7 +89,7 @@ int bj_manageru_main(int argc, char *argv[])
 	THE_CNF->tot_workerus = mc_tot_nn_sys;
 
 	preload_cnf_init();
-	preload_sornet();
+	PTD_CODE(preload_sornet());
 	preload_cnf(sz, arr);
 
 	void* workeru_cnf_pt = (void*)mc_manageru_addr_to_workeru_addr((mc_addr_t)THE_CNF);
