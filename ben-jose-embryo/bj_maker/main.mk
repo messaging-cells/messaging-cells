@@ -34,10 +34,10 @@ BJ_MANAGERU_INCLUDES := \
 	${SRC_BJ_MANAGERU_DIR}/cnf_preload \
 	${SRC_BJ_MANAGERU_DIR}/dimacs \
 	${SRC_BJ_MANAGERU_DIR}/utils 
+	
+# ./bj_parallella/bj_parallella.mk 
 
-SUBMAKEFILES := \
-	./bj_parallella/bj_parallella.mk \
-	./bj_pthreads/bj_pthreads.mk \
+SUBMAKEFILES := ./bj_pthreads/bj_pthreads.mk \
 
 
 default: all
