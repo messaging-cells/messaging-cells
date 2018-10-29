@@ -39,6 +39,7 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	PTD_LOG("mirrow_nod_start \n");
 
 	nervenode* nd = this;
+	MC_MARK_USED(nd);
 	EPH_CODE(MCK_CK(! mc_addr_has_id(nd)));
 
 	binder * fst, * lst, * wrk, * src;
@@ -117,15 +118,6 @@ nervenode::mirrow_sides(net_side_t src_sd){
 
 	stabi_arr_sz = 0;
 
-	// set all vessels
-	//PTD_LOG("mirrow_nod_set_vessels \n");
-
-	side_state& lft_st = left_side;
-	lft_st.step_active_set.reset_vessels(true);
-
-	//PTD_LOG("mirrow_nod_calc_arr \n");
-
-	calc_stabi_arr(nd, mc_null);
 	stabi_num_tier = 0;
 
 	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
@@ -169,7 +161,6 @@ nervenet::mirrow_start_all_nods(grip& all_nod, net_side_t sd){
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		nervenode* my_nod = (nervenode*)wrk;
 		my_nod->mirrow_sides(sd);
-		PTD_DBG_CODE(my_nod->dbg_prt_active_synset(side_left, tiki_stabi, mc_cstr("START"), 0));
 	}
 }
 

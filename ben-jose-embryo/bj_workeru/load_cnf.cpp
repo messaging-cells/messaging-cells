@@ -12,12 +12,12 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 	id = nod->id; 
 	sz = nod->pre_sz; 
 	
-	stabi_min_col = 0;
+	stabi_col_idx = 0;
 	if(ki == nd_neu){
-		stabi_max_col = pre_cnf->tot_ccls;
+		stabi_col_end_idx = pre_cnf->tot_ccls;
 	} else {
 		long num_vars = pre_cnf->tot_vars;
-		stabi_max_col = (num_vars * 2);
+		stabi_col_end_idx = (num_vars * 2);
 	}
 
 	stabi_idx = nod->srt_nd.idx;
@@ -192,7 +192,7 @@ void bj_load_shd_cnf(){
 			my_snp->owner = my_glb_neu;
 
 			//MCK_CK(my_neu->left_side.step_active_set.parent == mc_null);
-			my_neu->left_side.step_active_set.add_left_synapse(my_snp, false);
+			my_neu->left_side.step_active_set.add_left_synapse(my_snp);
 			my_neu->left_side.update_prv_tot_active();
 
 			load_transmitter* msv = bj_load_transmitter_acquire();
@@ -263,7 +263,7 @@ polaron::load_handler(missive* msv){
 	MCK_CK(my_snp->mate != mc_null);
 
 	//MCK_CK(left_side.step_active_set.parent == mc_null);
-	left_side.step_active_set.add_left_synapse(my_snp, false);
+	left_side.step_active_set.add_left_synapse(my_snp);
 	left_side.update_prv_tot_active();
 
 	load_transmitter* msv2 = bj_load_transmitter_acquire();

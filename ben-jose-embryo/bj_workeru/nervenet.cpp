@@ -107,51 +107,11 @@ nervenode::dbg_prt_snp_id(callee_prms& pms){
 	*out << get_ki_str() << id;
 }
 
-void 
-synset::dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out){
-	out << '(';
-	out << (int)tot_syn;
-
-	synapse* snp = get_first_snp(sd);
-	if(snp != mc_null){
-		nervenode* nd = snp->mate->owner;
-		if(snp->stabi_rcv_arr != mc_null){
-			bj_dbg_stabi_id_arr_to_str(snp->stabi_rcv_arr_sz, snp->stabi_rcv_arr, 
-					BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
-			out << bj_nervenet->dbg_str1;
-		} else {
-			bj_dbg_stabi_id_arr_to_str(nd->stabi_arr_sz, nd->stabi_arr, 
-					BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
-			out << "." << bj_nervenet->dbg_str1;
-		}
-	}
-	bj_dbg_str_stream* pt_out = &out;
-	with_all_synapses(&(all_syn), &nervenode::dbg_prt_snp_id, sd, true, true, pt_out);
-
-	//out << ' ';
-
-
-	binder * fst, * lst, * wrk;
-
-	binder* grps = &(all_grp);
-	fst = (binder*)(grps->bn_right);
-	lst = (binder*)mck_as_loc_pt(grps);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		synset* sub_grp = (synset*)wrk;
-		//PTD_CK(sub_grp->parent == this);
-		sub_grp->dbg_rec_prt_synset(sd, out);
-	}
-	out << ')';
-}
-
 void
 nervenode::dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, num_tier_t num_ti){
 	char* ts = bj_dbg_tier_kind_to_str(tiki);
-	side_state& nst = get_side_state(sd);
 
-	bj_dbg_str_stream out;
-	nst.step_active_set.dbg_rec_prt_synset(sd, out);
-	PTD_LOG(" %s_%s_t%d_%s_%d_%s \n", ts, prefix, num_ti, get_ki_str(), id, out.str().c_str());
+	PTD_LOG(" %s_%s_t%d_%s_%d_%s \n", ts, prefix, num_ti, get_ki_str(), id, "GET_RID_OF_PRT_SYNSET");
 }
 
 
@@ -270,19 +230,14 @@ synset::init_me(int caller){
 }
 
 void 
-synset::add_left_synapse(synapse* snp, bool set_vessel){
+synset::add_left_synapse(synapse* snp){
 	PTD_CK(snp != mc_null);
 	tot_syn++;
 	all_syn.bind_to_my_left(*snp);
-	if(set_vessel){
-		snp->stabi_vessel = this;
-	} else {
-		snp->stabi_vessel = mc_null;
-	}
 }
 
 void 
-synset::add_right_synapse(synapse* snp, bool set_vessel){
+synset::add_right_synapse(synapse* snp){
 	PTD_CK(snp != mc_null);
 	tot_syn++;
 	all_syn.bind_to_my_left(snp->right_handle);
@@ -314,10 +269,6 @@ synapse::~synapse(){}
 void
 synapse::init_me(int caller){
 	handler_idx = idx_synapse;
-
-	stabi_vessel = mc_null;
-	stabi_rcv_arr_sz = 0;
-	stabi_rcv_arr = mc_null;
 
 	owner = mc_null;
 	mate = mc_null;
@@ -371,8 +322,8 @@ nervenode::init_me(int caller){
 	stabi_arr_sz = 0;
 	stabi_arr = mc_null;
 	
-	stabi_min_col = BJ_INVALID_SRT_GRP;
-	stabi_max_col = BJ_INVALID_SRT_GRP;
+	stabi_col_idx = BJ_INVALID_SRT_GRP;
+	stabi_col_end_idx = BJ_INVALID_SRT_GRP;
 	stabi_idx = 0;
 	stabi_out = mc_null;
 }
@@ -1833,23 +1784,6 @@ synset::get_first_snp(net_side_t sd){
 	binder* fst = (binder*)(all_syn.bn_right);
 	synapse* snp = get_synapse_from_binder(sd, fst);
 	return snp;
-}
-
-void
-synset::reset_vessels(bool set_vessel){
-	PTD_CK(all_grp.is_alone());
-
-	binder* nn_all_snp = &all_syn;
-	binder * fst, * lst, * wrk;
-
-	fst = (binder*)(nn_all_snp->bn_right);
-	lst = (binder*)mck_as_loc_pt(nn_all_snp);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		synapse* my_snp = get_synapse_from_binder(side_left, wrk);
-		synset* val = mc_null;
-		if(set_vessel){ val = this; }
-		my_snp->stabi_vessel = val;
-	}
 }
 
 int

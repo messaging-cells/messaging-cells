@@ -299,29 +299,20 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	void add_left_synapse(synapse* snp, bool set_vessel = true);
-	void add_right_synapse(synapse* snp, bool set_vessel = true);
+	void add_left_synapse(synapse* snp);
+	void add_right_synapse(synapse* snp);
 
 	void propag_handler(missive* msv) bj_propag_cod;
-
-	void stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) bj_stabi_cod;
-	void stabi_rank_all_snp(signal_data* dat, nervenode* dbg_nd) bj_stabi_cod;
-	synset* stabi_get_subset_of(synapse* my_snp, signal_data* dat) bj_stabi_cod;
 
 	void dbg_rec_call_all(bj_callee_t mth, net_side_t sd) mc_external_code_ram;
 
 	void transmitter_send_all_rec(bj_callee_t mth, net_side_t sd);
 
-	void reset_vessels(bool set_vessel);
 	void reset_rec_tree();
-
-	void stabi_insert_sort() bj_stabi_cod;
 
 	bool is_synset_empty();
 
 	synapse* get_first_snp(net_side_t sd);
-
-	PTD_DBG_CODE(void dbg_rec_prt_synset(net_side_t sd, bj_dbg_str_stream& out) mc_external_code_ram);
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -552,10 +543,6 @@ class mc_aligned synapse : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS(synapse)
 
-	synset*		stabi_vessel;
-	num_syn_t	stabi_rcv_arr_sz;
-	num_syn_t*  stabi_rcv_arr;
-
 	binder		right_handle;
 
 	nervenode*	owner;
@@ -579,8 +566,6 @@ public:
 	void propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced = false) bj_propag_cod;
 	void stabi_send_transmitter(stabi_tok_t tok, nervenode* src_nd = mc_null, 
 				bool dbg_is_forced = false) bj_stabi_cod;
-
-	void stabi_set_rcv_arr(signal_data* dat) bj_stabi_cod;
 
 	mc_inline_fn binder& get_side_binder(net_side_t sd) bj_propag_cod;
 
@@ -649,7 +634,6 @@ bool bj_can_delay_tier(num_tier_t the_ti, grip& all_ti);
 
 void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
 int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_t* arr2) bj_stabi_cod;
-int bj_cmp_synapses(synapse* snp1, synapse* snp2, signal_data* dat) bj_stabi_cod;
 
 typedef int (*bj_cmp_func_t)(binder* obj1, binder* obj2);
 
@@ -675,8 +659,8 @@ public:
 	num_syn_t		stabi_arr_sz;
 	num_syn_t*  	stabi_arr;
 
-	num_nod_t 	stabi_min_col;
-	num_nod_t 	stabi_max_col;
+	num_nod_t 	stabi_col_idx;
+	num_nod_t 	stabi_col_end_idx;
 	num_nod_t 	stabi_idx;
 	sorcell*	stabi_out;
 	
@@ -749,7 +733,6 @@ public:
 
 	// stabi
 	
-	void calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) bj_stabi_cod;
 	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) bj_stabi_cod;
 	
 };

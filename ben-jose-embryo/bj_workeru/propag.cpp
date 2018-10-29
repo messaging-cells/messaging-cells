@@ -72,7 +72,6 @@ synapse::propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_fo
 
 	num_tier_t ti = owner->get_side_state(sd).propag_num_tier;
 
-	PTD_CK(stabi_vessel == mc_null);
 	MC_DBG(node_kind_t the_ki = owner->ki);
 	MCK_CK((the_ki == nd_pos) || (the_ki == nd_neg) || (the_ki == nd_neu));
 	PTD_CODE(nervenode* rem_nd = mate->owner);

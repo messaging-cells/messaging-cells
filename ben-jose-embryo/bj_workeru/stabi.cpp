@@ -47,110 +47,11 @@ synapse::stabi_handler(missive* msv){
 
 	PTD_CK(dat.sd == side_left);
 	PTD_CK(dat.ti != BJ_INVALID_NUM_TIER);
-	PTD_CK(stabi_vessel != mc_null);
 
 	//if(bj_nervenet->act_left_side.sync_is_ending){ return; }
 
 	nervenode* owr = (nervenode*)(mck_as_loc_pt(owner));
 	owr->stabi_recv_transmitter(&dat);
-}
-
-void 
-synset::stabi_calc_arr_rec(num_syn_t cap, num_syn_t* arr, num_syn_t& ii) {
-	MCK_CHECK_SP();
-
-	PTD_CK_PRT((ii < cap), "DBG_INFO. ii=%d cap=%d\n", ii, cap);
-	arr[ii] = tot_syn;
-	ii++;
-
-	binder * fst, * lst, * wrk;
-
-	binder* grps = &(all_grp);
-	fst = (binder*)(grps->bn_right);
-	lst = (binder*)mck_as_loc_pt(grps);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		synset* sub_grp = (synset*)wrk;
-		//PTD_CK(sub_grp->parent == this);
-		sub_grp->stabi_calc_arr_rec(cap, arr, ii);
-	}
-
-	//PTD_CK(ii < cap);
-	//arr[ii] = tot_grp;
-	//ii++;
-}
-
-// mc_addr_is_local(addr)
-
-void 
-nervenode::calc_stabi_arr(nervenode* dbg_nd, signal_data* dbg_dat) {
-	//mck_slog2("mirrow_nod_calc_arr_start \n");
-	side_state& sst = left_side;
-	
-	bool was_nul = (stabi_arr == mc_null);
-	PTD_DBG_CODE(
-		num_tier_t dbg_ti = 0;
-		if(dbg_dat != mc_null){ dbg_ti = dbg_dat->ti; }
-	);
-
-	mc_reset_flag(sst.step_flags, bj_stt_stabi_intact_id_flag);
-
-	num_syn_t	old_arr_sz = 0;
-	num_syn_t*  old_arr = mc_null;
-	if(! was_nul){
-		PTD_CK(stabi_arr_sz < BJ_MAX_ID_ARR_SZ);
-
-		old_arr_sz = stabi_arr_sz;
-		old_arr = stabi_arr;
-
-		stabi_arr_sz = 0;
-		stabi_arr_cap = 0;
-		stabi_arr = mc_null;
-	}
-
-	//mck_slog2("mirrow_nod_calc_arr_s2 \n");
-	
-	PTD_CK(stabi_arr_sz == 0);
-	PTD_CK(stabi_arr == mc_null);
-
-	if(sst.step_active_set.is_synset_empty()){
-		if(old_arr == mc_null){
-			PTD_LOG(" CMP_IDS_both_empty_t%d_%s_%d_ \n", dbg_ti, dbg_nd->get_ki_str(), dbg_nd->id);
-			mc_set_flag(sst.step_flags, bj_stt_stabi_intact_id_flag);
-		} else {
-			mc_free32(old_arr);
-		}
-		//mck_slog2("mirrow_nod_calc_arr_retu \n");
-		return;
-	}
-	//mck_slog2("mirrow_nod_calc_arr_cap \n");
-	
-	stabi_arr_cap = calc_cap_stabi_arr(sst.step_active_set.tot_syn);
-	stabi_arr = mc_malloc32(num_syn_t, stabi_arr_cap);
-
-	PTD_LOG(" calc_stabi_arr new_cap=%d \n", stabi_arr_cap);
-	PTD_CK(stabi_arr != mc_null);
-
-	//mck_slog2("mirrow_nod_calc_arr_rec \n");
-	
-	sst.step_active_set.stabi_calc_arr_rec(stabi_arr_cap, stabi_arr, stabi_arr_sz);
-
-	if(old_arr != mc_null){
-		int cmp_arr = bj_cmp_stabi_id_arrs(old_arr_sz, old_arr, stabi_arr_sz, stabi_arr);
-
-		PTD_LOG(" CMP_IDS_t%d_%s_%d_ \t (old=%s %s new=%s) \n", 
-			dbg_ti, dbg_nd->get_ki_str(), dbg_nd->id,
-			bj_dbg_stabi_id_arr_to_str(old_arr_sz, old_arr, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1),
-			((cmp_arr < 0)?("<"):((cmp_arr > 0)?(">"):("=="))),
-			bj_dbg_stabi_id_arr_to_str(stabi_arr_sz, stabi_arr, BJ_DBG_STR_CAP, bj_nervenet->dbg_str2)
-		);
-		//PTD_DBG_CODE(mck_getchar());
-
-		if(cmp_arr == 0){ 
-			mc_set_flag(sst.step_flags, bj_stt_stabi_intact_id_flag); 
-		}
-		mc_free32(old_arr);
-	}
-	//mck_slog2("mirrow_calc_arr_end \n");
 }
 
 int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_t* arr2){
@@ -164,35 +65,6 @@ int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_
 	if(sz1 < sz2){ return -1; }
 	if(sz1 > sz2){ return 1; }
 	return 0;
-}
-
-int bj_cmp_synapses(synapse* snp1, synapse* snp2, signal_data* dat){
-	PTD_CK(snp1 != mc_null);
-	PTD_CK(snp2 != mc_null);
-	PTD_CK(snp1 != snp2);
-	PTD_CK(snp1->owner == snp2->owner);
-
-	num_syn_t sz1 = snp1->stabi_rcv_arr_sz;
-	num_syn_t* arr1 = snp1->stabi_rcv_arr;
-
-	num_syn_t sz2 = snp2->stabi_rcv_arr_sz;
-	num_syn_t* arr2 = snp2->stabi_rcv_arr;
-
-	int cmp_arr = bj_cmp_stabi_id_arrs(sz1, arr1, sz2, arr2);
-
-	PTD_DBG_CODE(
-		nervenode* ndw = snp1->owner;
-		nervenode* nd1 = snp1->mate->owner;
-		nervenode* nd2 = snp2->mate->owner;
-	);
-	PTD_LOG(" CMP_SNPS_t%d_%s_%d_ (%s_%d_%s %s %s_%d_%s) (%d %d %d) \n", 
-		dat->ti, ndw->get_ki_str(), ndw->id, 
-		nd1->get_ki_str(), nd1->id, bj_dbg_stabi_id_arr_to_str(sz1, arr1, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1),
-		((cmp_arr < 0)?("<"):((cmp_arr > 0)?(">"):("=="))),
-		nd2->get_ki_str(), nd2->id, bj_dbg_stabi_id_arr_to_str(sz2, arr2, BJ_DBG_STR_CAP, bj_nervenet->dbg_str2),
-		cmp_arr, sz1, sz2
-	);
-	return cmp_arr;
 }
 
 void
@@ -274,11 +146,8 @@ nervenode::stabi_recv_ping(signal_data* dat){
 	side_state& stt = left_side;
 	stt.step_num_ping++;
 
-	synset* vssl = dat->snp->stabi_vessel;
-	vssl->num_ss_ping++;
-
-	PTD_LOG("STABI_INC_PINGS %s %ld %s #pings=%d TI=%d \n", node_kind_to_str(ki), id, net_side_to_str(side_left), 
-			stt.step_num_ping, dat->ti);
+	PTD_LOG("STABI_INC_PINGS %s %ld %s #pings=%d TI=%d \n", node_kind_to_str(ki), id,
+			net_side_to_str(side_left), stt.step_num_ping, dat->ti);
 }
 
 void
@@ -289,7 +158,6 @@ synapse::stabi_send_transmitter(stabi_tok_t tok, nervenode* src_nd, bool dbg_is_
 
 	num_tier_t ti = owner->stabi_num_tier;
 
-	PTD_CK(stabi_vessel != mc_null);
 	MC_DBG(node_kind_t the_ki = owner->ki);
 	MCK_CK((the_ki == nd_pos) || (the_ki == nd_neg) || (the_ki == nd_neu));
 	PTD_CODE(nervenode* rem_nd = mate->owner);
@@ -354,133 +222,6 @@ neuron::stabi_neuron_start(){
 
 void
 nervenode::stabi_recv_rank(signal_data* dat){
-	PTD_CK(dat->sd == side_left);
-	nervenode* nd = this;
-	netstate& nst = bj_nervenet->act_left_side;
-	nst.get_tier(tiki_stabi, nst.all_stabi_tiers, dat->ti, ((ki == nd_neu)?(9):(10)));
-
-	dat->snp->stabi_set_rcv_arr(dat);
-
-	// left_side.stabi_num_tier
-	PTD_DBG_CODE(dat->snp->mate->owner->dbg_prt_nod(side_left, tiki_stabi, mc_cstr("stb_RANK"), 8, dat->ti));
-	PTD_LOG("stb_RANK_lft_t%d_%s_%d_ stabi_rcv_arr=%s \n", 
-		dat->ti, nd->get_ki_str(), nd->id,
-		bj_dbg_stabi_id_arr_to_str(dat->snp->stabi_rcv_arr_sz, dat->snp->stabi_rcv_arr, 
-			BJ_DBG_STR_CAP, bj_nervenet->dbg_str1)
-	);
-
-	synset* vssl = dat->snp->stabi_vessel;
-	vssl->num_ss_recv++;
-	if((vssl->num_ss_recv + vssl->num_ss_ping) == vssl->tot_syn){
-		PTD_DBG_CODE(! mc_get_flag(vssl->ss_flags, bj_ss_ranked_snps_flag));
-		vssl->stabi_rank_all_snp(dat, nd);
-		PTD_DBG_CODE(mc_set_flag(vssl->ss_flags, bj_ss_ranked_snps_flag));
-	}
-
-	//PTD_LOG("STABI_INC_RCV %s %ld %s #pings=%d TI=%d \n", node_kind_to_str(ki), id, net_side_to_str(side_left), 
-	//		stt.step_num_ping, dat->ti);
-}
-
-void
-synapse::stabi_set_rcv_arr(signal_data* dat){
-	long sz = dat->id_arr_sz;
-	if(sz >= BJ_MAX_ID_ARR_SZ){
-		mck_abort(1, mc_cstr("FAILED bj_set_id_data."));
-	}
-
-	stabi_rcv_arr_sz = dat->id_arr_sz;
-	stabi_rcv_arr = dat->id_arr;
-	EPH_CODE(
-		if(mc_addr_has_id(stabi_rcv_arr)){
-			//bj_id_arr_copy(stabi_rcv_arr, stabi_rcv_arr_sz, dat->id_arr);
-		}
-	);
-}
-
-synset*
-synset::stabi_get_subset_of(synapse* add_snp, signal_data* dat){
-	net_side_t sd = side_left;
-	binder * fst, * lst, * wrk, * nxt;
-	binder * nn_grp = &all_grp;
-
-	synset* sset = mc_null;
-	binder* lft = &all_grp;
-
-	fst = (binder*)(nn_grp->bn_right);
-	lst = (binder*)mck_as_loc_pt(nn_grp);
-	for(wrk = fst; wrk != lst; wrk = nxt){
-		nxt = (binder*)(wrk->bn_right);
-		synset* ss = (synset*)wrk;
-	
-		synapse* snp = ss->get_first_snp(sd);
-		PTD_CK(snp != mc_null);
-
-		int vc = bj_cmp_synapses(add_snp, snp, dat);
-		if(vc == 0){
-			sset = ss;
-			break;
-		}
-		if(vc < 0){
-			break;
-		}
-		if(vc > 0){
-			lft = (binder*)ss;
-			continue;
-		}
-	}
-	if(sset == mc_null){
-		sset = bj_synset_acquire();
-		lft->bind_to_my_right(*sset);
-	}
-
-	PTD_CK(sset != mc_null);
-	return sset;
-}
-
-void
-synset::stabi_rank_all_snp(signal_data* dat, nervenode* dbg_nd){
-	PTD_CK(! all_syn.is_alone());
-	PTD_CK(all_grp.is_alone());
-
-	if(all_syn.is_single()){
-		PTD_DBG_CODE(dbg_nd->dbg_prt_nod(dat->sd, tiki_stabi, mc_cstr("stb_skip_rnk_single"), 8, dat->ti));
-		return;
-	}
-
-	net_side_t sd = side_left;
-	binder * fst, * lst, * wrk, * nxt;
-	binder* nn_all_snp = &all_syn;
-
-	fst = (binder*)(nn_all_snp->bn_right);
-	lst = (binder*)mck_as_loc_pt(nn_all_snp);
-	for(wrk = fst; wrk != lst; wrk = nxt){
-		nxt = (binder*)(wrk->bn_right);
-
-		synapse* my_snp = get_synapse_from_binder(sd, wrk);
-		my_snp->let_go();
-
-		synset* sset = stabi_get_subset_of(my_snp, dat);
-		sset->add_left_synapse(my_snp, true);
-		PTD_CK(my_snp->stabi_vessel == sset);
-	}
-	PTD_CK(all_syn.is_alone());
-
-	if(all_grp.is_single()){
-		fst = (binder*)(all_grp.bn_right);
-		fst->let_go();
-		PTD_CK(all_grp.is_alone());
-
-		PTD_CODE(synset* sub_grp = (synset*)fst);
-		PTD_CK(sub_grp->num_ss_recv == 0);
-		PTD_CK(sub_grp->num_ss_ping == 0);
-		PTD_CK(sub_grp->tot_syn == tot_syn);
-		PTD_CK(sub_grp->all_grp.is_alone());
-
-		bind_to_my_right(*fst);
-		release();
-	}
-
-	stabi_insert_sort();
 }
 
 void
@@ -538,20 +279,12 @@ nervenode::stabi_start_nxt_tier(signal_data* dat){
 
 void
 nervenode::recalc_stabi(signal_data* dat){
-	nervenode* nd = this;
-	//side_state& stt = nd->get_side_state(dat->sd);
-	calc_stabi_arr(nd, dat);
+	//nervenode* nd = this;
 }
 
 void
 polaron::recalc_stabi(signal_data* dat){
-	polaron* pol = this;
-
-	//side_state& pol_stt = pol->get_side_state(dat->sd);
-	pol->calc_stabi_arr(pol, dat);
-
-	//side_state& opp_stt = opp->get_side_state(dat->sd);
-	opp->calc_stabi_arr(opp, dat);
+	//polaron* pol = this;
 }
 
 void
@@ -686,7 +419,7 @@ void bj_stabi_main() {
 		bj_dbg_prt_nd_neu_flag | bj_dbg_prt_nd_pol_flag);
 
 	my_net->send(my_net, bj_tok_stabi_start);
-	kernel::run_sys();
+	//kernel::run_sys();
 
 	bj_print_active_cnf(side_left, tiki_stabi, mc_cstr("stb_after"), 3, 0, 
 		bj_dbg_prt_nd_neu_flag | bj_dbg_prt_nd_pol_flag);
@@ -699,28 +432,3 @@ void bj_stabi_main() {
 
 }
 
-void
-synset::stabi_insert_sort(){
-	binder * fst, * lst, * wrk;
-	grip sorted;
-	while(! all_grp.is_alone()){
-		synset* add_ss = (synset*)(all_grp.bn_right);
-		add_ss->let_go();
-
-		binder* left = &sorted;
-
-		binder* grps = &(sorted);
-		fst = (binder*)(grps->bn_right);
-		lst = (binder*)mck_as_loc_pt(grps);
-		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-			synset* sub_grp = (synset*)wrk;
-			int vc = bj_cmp_num_syn(add_ss->tot_syn, sub_grp->tot_syn);
-			if(vc <= 0){ 
-				break; 
-			} 
-			left = (binder*)sub_grp;
-		}
-		left->bind_to_my_right(*add_ss);
-	}
-	all_grp.move_all_to_my_right(sorted);
-}
