@@ -141,7 +141,7 @@ enum stabi_tok_t : mck_token_t {
 	bj_tok_stabi_invalid = bj_tok_mirrow_end + 1,
 	bj_tok_stabi_start,
 	bj_tok_stabi_ping,
-	bj_tok_stabi_rank,
+	bj_tok_stabi_color,
 	bj_tok_stabi_tier_done,
 	bj_tok_stabi_end
 };
@@ -250,8 +250,9 @@ public:
 	mck_token_t tok = mck_tok_invalid;
 	net_side_t sd = side_invalid;
 	num_tier_t ti = BJ_INVALID_NUM_TIER;
-	num_syn_t	id_arr_sz = 0;
-	num_syn_t*  id_arr = mc_null;
+	//num_syn_t	id_arr_sz = 0;
+	//num_syn_t*  id_arr_dat = mc_null;
+	num_nod_t 	col_idx;
 };
 
 
@@ -365,8 +366,7 @@ public:
 struct mc_aligned stabi_transmitter_data {
 public:
 	num_tier_t wrk_tier;
-	num_syn_t	id_arr_sz;
-	num_syn_t*  id_arr;
+	num_nod_t 	col_idx;
 };
 
 struct mc_aligned sync_transmitter_data {
@@ -578,7 +578,7 @@ synapse* get_synapse_from_binder(net_side_t sd, binder* bdr);
 #define bj_get_syn_of_rgt_handle(bdr) ((synapse*)(((uint8_t*)bdr) - mc_offsetof(&synapse::right_handle)))
 
 #define	bj_stt_charge_all_flag mc_flag1
-#define	bj_stt_stabi_intact_id_flag mc_flag2
+#define	bj_stt_stabi_intact_col_idx_flag mc_flag2
 
 class mc_aligned side_state : public binder {
 public:
@@ -633,7 +633,7 @@ public:
 bool bj_can_delay_tier(num_tier_t the_ti, grip& all_ti);
 
 void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
-int bj_cmp_stabi_id_arrs(num_syn_t sz1, num_syn_t* arr1, num_syn_t sz2, num_syn_t* arr2) bj_stabi_cod;
+int bj_cmp_stabi_color_arrs(num_syn_t sz1, num_nod_t* arr1, num_syn_t sz2, num_nod_t* arr2) bj_stabi_cod;
 
 typedef int (*bj_cmp_func_t)(binder* obj1, binder* obj2);
 
@@ -642,7 +642,8 @@ bool bj_is_sorted(grip& grp, bj_cmp_func_t fn, int ord) mc_external_code_ram;
 int bj_dbg_cmp_synset_by_arr_id(binder* obj1, binder* obj2) mc_external_code_ram;
 int bj_dbg_cmp_synset_by_tot_syn(binder* obj1, binder* obj2) mc_external_code_ram;
 
-char* bj_dbg_stabi_id_arr_to_str(num_syn_t sz1, num_syn_t* arr1, int sz_str, char* str) mc_external_code_ram;
+char* bj_dbg_stabi_col_arr_to_str(num_syn_t sz1, num_nod_t* arr1, 
+								 int sz_str, char* str) mc_external_code_ram;
 
 class mc_aligned nervenode : public cell {
 public:
@@ -655,9 +656,10 @@ public:
 	side_state		right_side;
 
 	num_tier_t		stabi_num_tier;
-	num_syn_t		stabi_arr_cap;
 	num_syn_t		stabi_arr_sz;
-	num_syn_t*  	stabi_arr;
+	num_nod_t*  	stabi_arr_dat;
+	num_syn_t		stabi_prv_arr_sz;
+	num_nod_t*  	stabi_prv_arr_dat;
 
 	num_nod_t 	stabi_col_idx;
 	num_nod_t 	stabi_col_end_idx;
@@ -695,8 +697,7 @@ public:
 	virtual 
 	bool is_tier_complete(signal_data* dat);
 
-	virtual 
-	void recalc_stabi(signal_data* dat) bj_stabi_cod;
+	void stabi_recalc_intact() bj_stabi_cod;
 
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
@@ -710,19 +711,25 @@ public:
 
 	void mirrow_sides(net_side_t sd) bj_stabi_cod;
 	void stabi_recv_transmitter(signal_data* dat) bj_stabi_cod;
-	void stabi_recv_rank(signal_data* dat) bj_stabi_cod;
+	void stabi_recv_color(signal_data* dat) bj_stabi_cod;
 	void stabi_recv_ping(signal_data* dat) bj_stabi_cod;
 	void stabi_recv_tier_done(signal_data* dat) bj_stabi_cod;
 
-	void stabi_send_snp_id_arr(callee_prms& pms) bj_stabi_cod;
+	void stabi_send_snp_color(callee_prms& pms) bj_stabi_cod;
 	void stabi_send_snp_tier_done(callee_prms& pms) bj_stabi_cod;
 
 	virtual 
 	void dbg_prt_tier_done(signal_data* dat) mc_external_code_ram;
 
 	virtual 
+	void stabi_send_nxt_tier_colors(signal_data* dat) bj_stabi_cod;
+	
+	virtual 
 	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
 
+	void stabi_reset_complete() bj_stabi_cod;
+	void stabi_insert_color(num_nod_t col_idx) bj_stabi_cod;
+	
 	void dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
 				num_tier_t num_ti) mc_external_code_ram;
 
@@ -781,6 +788,9 @@ public:
 	void pru_callee(callee_prms& pms) mc_external_code_ram;
 
 	virtual 
+	void stabi_send_nxt_tier_colors(signal_data* dat) bj_stabi_cod;
+	
+	virtual 
 	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
 
 	virtual
@@ -818,14 +828,14 @@ public:
 	bool is_tier_complete(signal_data* dat);
 
 	virtual 
-	void recalc_stabi(signal_data* dat) bj_stabi_cod;
-
-	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
 
 	virtual 
 	void dbg_prt_tier_done(signal_data* dat) mc_external_code_ram;
 
+	virtual 
+	void stabi_send_nxt_tier_colors(signal_data* dat) bj_stabi_cod;
+	
 	virtual 
 	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
 

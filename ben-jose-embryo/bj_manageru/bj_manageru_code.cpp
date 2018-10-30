@@ -271,6 +271,45 @@ void bj_mc_test_2(int argc, char *argv[])
 	printf("grp_sz = %ld \n", grp_sz);*/
 }
 
+#define BJ_DBG_MAX_NOD_SZ 20
+
+void bj_mc_test_3(int argc, char *argv[])
+{
+	printf("bj_mc_test_3 \n");
+	kernel::init_manageru_sys();
+	
+	kernel* ker = mck_get_kernel();
+	nervenet my_net;
+	ker->user_data = &my_net;
+
+	nervenode nn1;
+	tak_mak gg;
+	char *line = NULL;
+	size_t len = 0;
+	char dbg_str1[BJ_DBG_STR_CAP];
+
+	nn1.id = 1234;
+	nn1.sz = (num_syn_t)(gg.gen_rand_int32_ie(1, BJ_DBG_MAX_NOD_SZ));
+	printf("SZ=%d \n", nn1.sz);
+
+	nn1.stabi_arr_dat = mc_malloc32(num_nod_t, nn1.sz);
+
+	for(num_tier_t aa = 0; aa < nn1.sz; aa++){
+		printf("Type a number \n");
+		ssize_t read = getline(&line, &len, stdin);
+		if(read == -1){ break; }
+		num_nod_t num = atol(line);
+		
+		//printf("num=%ld \n", num);
+		nn1.stabi_insert_color(num);
+		char* str_dat = bj_dbg_stabi_col_arr_to_str(nn1.stabi_arr_sz, nn1.stabi_arr_dat, 
+													(BJ_DBG_STR_CAP - 2), dbg_str1);
+		printf("dat=%s \n", str_dat);
+	}
+	
+	kernel::finish_manageru_sys();
+}
+
 #endif
 
 int mc_manageru_main(int argc, char *argv[])
@@ -286,6 +325,7 @@ int mc_manageru_main(int argc, char *argv[])
 	//PTD_CODE(bj_test_7(argc, argv));
 	//bj_mc_test_1(argc, argv);
 	//bj_mc_test_2(argc, argv);
+	//bj_mc_test_3(argc, argv);
 	
 	rr = bj_manageru_main(argc, argv);
 

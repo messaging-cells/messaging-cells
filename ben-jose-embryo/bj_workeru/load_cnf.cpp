@@ -12,6 +12,17 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 	id = nod->id; 
 	sz = nod->pre_sz; 
 	
+	// stabi init
+	
+	stabi_num_tier = 0;
+	stabi_arr_sz = 0;
+	stabi_arr_dat = mc_malloc32(num_nod_t, sz);
+	
+	if(ki == nd_neu){
+		stabi_prv_arr_sz = 0;
+		stabi_prv_arr_dat = mc_malloc32(num_nod_t, sz);
+	}
+	
 	stabi_col_idx = 0;
 	if(ki == nd_neu){
 		stabi_col_end_idx = pre_cnf->tot_ccls;
@@ -19,7 +30,7 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 		long num_vars = pre_cnf->tot_vars;
 		stabi_col_end_idx = (num_vars * 2);
 	}
-
+	
 	stabi_idx = nod->srt_nd.idx;
 
 	PTD_CODE(

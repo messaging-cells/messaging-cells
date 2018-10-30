@@ -688,9 +688,11 @@ nervenet::propag_handle_sync(){
 		//mck_get_kernel()->set_idle_exit();
 		tierdata& lti_lft = get_last_tier(act_left_side.all_propag_tiers);
 		lti_lft.proc_delayed(tiki_propag, act_left_side.all_propag_tiers, side_left, false);
+		PTD_CK(lti_lft.all_delayed.is_alone());
 
 		tierdata& lti_rgt = get_last_tier(act_right_side.all_propag_tiers);
 		lti_rgt.proc_delayed(tiki_propag, act_right_side.all_propag_tiers, side_left, false);
+		PTD_CK(lti_rgt.all_delayed.is_alone());
 
 		kernel::stop_sys(bj_tok_propag_end);
 	}

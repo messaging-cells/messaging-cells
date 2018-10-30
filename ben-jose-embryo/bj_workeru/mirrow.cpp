@@ -121,7 +121,7 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	stabi_num_tier = 0;
 
 	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
-		bj_dbg_stabi_id_arr_to_str(stabi_arr_sz, stabi_arr, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));
+		bj_dbg_stabi_col_arr_to_str(stabi_arr_sz, stabi_arr_dat, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));
 
 	//PTD_LOG("mirrow_nod_end \n");
 }

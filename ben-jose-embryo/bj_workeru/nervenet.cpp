@@ -77,7 +77,7 @@ BJ_DEFINE_GET_CLS_NAM(nervenet)
 
 // end_of_macro
 
-char* bj_dbg_stabi_id_arr_to_str(num_syn_t sz1, num_syn_t* arr1, int sz_str, char* str){
+char* bj_dbg_stabi_col_arr_to_str(num_syn_t sz1, num_nod_t* arr1, int sz_str, char* str){
 	PTD_CK(str != mc_null);
 	PTD_CK(sz_str > BJ_AUX_STR_MIN_SZ);
 
@@ -92,7 +92,7 @@ char* bj_dbg_stabi_id_arr_to_str(num_syn_t sz1, num_syn_t* arr1, int sz_str, cha
 
 	if(arr1 != mc_null){
 		for(num_syn_t aa = 0; (aa < sz1); aa++){
-			bj_aux_stabi_append_str(str, num_prt, pt_str, nxt_sz, "%d ", arr1[aa]);
+			bj_aux_stabi_append_str(str, num_prt, pt_str, nxt_sz, "%ld ", arr1[aa]);
 		}
 	}
 
@@ -318,9 +318,10 @@ nervenode::init_me(int caller){
 	//right_side.side_kind = side_right;
 
 	stabi_num_tier = 0;
-	stabi_arr_cap = 0;
 	stabi_arr_sz = 0;
-	stabi_arr = mc_null;
+	stabi_arr_dat = mc_null;
+	stabi_prv_arr_sz = 0;
+	stabi_prv_arr_dat = mc_null;
 	
 	stabi_col_idx = BJ_INVALID_SRT_GRP;
 	stabi_col_end_idx = BJ_INVALID_SRT_GRP;
@@ -605,8 +606,8 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_ping:
 		resp = mc_cstr("bj_tok_stabi_ping");
 	break;
-	case bj_tok_stabi_rank:
-		resp = mc_cstr("bj_tok_stabi_rank");
+	case bj_tok_stabi_color:
+		resp = mc_cstr("bj_tok_stabi_color");
 	break;
 	case bj_tok_stabi_tier_done:
 		resp = mc_cstr("bj_tok_stabi_tier_done");
@@ -899,10 +900,10 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 
 	if((tiki != tiki_invalid) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){ mck_slog2("*"); }
 
-	if(stabi_arr != mc_null){
+	if(stabi_arr_dat != mc_null){
 		PTD_DBG_CODE(
 			mck_slog2(" id=");
-			bj_dbg_stabi_id_arr_to_str(stabi_arr_sz, stabi_arr, 
+			bj_dbg_stabi_col_arr_to_str(stabi_arr_sz, stabi_arr_dat, 
 				BJ_DBG_STR_CAP, bj_nervenet->dbg_str1);
 			mck_slog(bj_nervenet->dbg_str1);
 		);
@@ -1325,7 +1326,7 @@ netstate::inc_tier_rcv(nervenode* nd, tier_kind_t tiki, num_tier_t the_ti, grip&
 	SYNC_LOG(" %s_TO_DELAY_t%d_%s_%ld %s_%s ((%d > 0) && (%d == %d) && (t%d >= t%d)) %s \n", 
 		ts, ti, node_kind_to_str(nd->ki), nd->id, ts, ((to_dly)?("INC_STILL"):("")), 
 		step_prev_tot_active, step_num_ping, step_prev_tot_active, lti.tdt_id, ti,
-		(mc_get_flag(step_flags, bj_stt_stabi_intact_id_flag))?("intact"):("")
+		(mc_get_flag(step_flags, bj_stt_stabi_intact_col_idx_flag))?("intact"):("")
 	);
 	SYNC_CODE(bj_nervenet->act_left_side.dbg_prt_all_tiers(tiki, mc_cstr("TO_DELAY_"), ti));
 
@@ -1474,7 +1475,7 @@ neuron::can_delay(tier_kind_t tiki, net_side_t sd){
 	side_state& sd_stt = get_side_state(sd);
 	bool to_dly = sd_stt.neu_all_ping(tiki);
 	if(tiki == tiki_stabi){
-		bool is_itct = mc_get_flag(sd_stt.step_flags, bj_stt_stabi_intact_id_flag);
+		bool is_itct = mc_get_flag(sd_stt.step_flags, bj_stt_stabi_intact_col_idx_flag);
 		to_dly = (to_dly && is_itct);
 	}
 	return to_dly;
@@ -1532,6 +1533,8 @@ tierdata::proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, bool star_
 				net_side_to_str(dat.sd), dat.ti, node_kind_to_str(nd->ki), nd->id);
 		}
 	}
+
+	PTD_CK(all_delayed.is_alone());
 }
 
 grip&
