@@ -35,6 +35,124 @@ bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp){
 }
 
 void
+tierset::mirrow_tiset(tierset& src_tis, net_side_t src_sd){
+	binder * fst, * lst, * wrk;
+
+	binder* snps = &(src_tis.ti_all);
+
+	fst = (binder*)(snps->bn_right);
+	lst = (binder*)mck_as_loc_pt(snps);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		synapse* snp = get_synapse_from_binder(src_sd, wrk);
+		MC_MARK_USED(snp);
+
+		if(src_sd == side_left){
+			snp->right_handle.let_go();
+			ti_all.bind_to_my_left(snp->right_handle);
+		} else {
+			PTD_CK(src_sd == side_right);
+			snp->let_go();
+			ti_all.bind_to_my_left(*snp);
+		}
+	}
+
+	ti_id = src_tis.ti_id;
+}
+
+void
+nervenet::mirrow_start_all_nods(grip& all_nod, net_side_t sd){
+	binder * fst, * lst, * wrk;
+
+	binder* pt_all_nod = &(all_nod);
+	fst = (binder*)(pt_all_nod->bn_right);
+	lst = (binder*)mck_as_loc_pt(pt_all_nod);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		nervenode* my_nod = (nervenode*)wrk;
+		my_nod->mirrow_sides(sd);
+	}
+}
+
+void 
+nervenet::mirrow_nervenet(){
+	PTD_LOG("mirrow_nervenet_start \n");
+
+	net_side_t sd = side_left;
+
+	netstate& lst_nst = get_active_netstate(side_left);
+	netstate& rgt_nst = get_active_netstate(side_right);
+	
+	tierdata& lft = get_last_tier(lst_nst.all_propag_tiers);
+	tierdata& rgt = get_last_tier(rgt_nst.all_propag_tiers);
+
+	if(rgt.tdt_id > lft.tdt_id){
+		sd = side_right;
+	}
+
+	//PTD_LOG("mirrow_nervenet_nods %s \n", net_side_to_str(sd));
+	PTD_LOG("mirrow_nervenet_nods \n");
+
+	mirrow_start_all_nods(all_active_neu, sd);
+	mirrow_start_all_nods(all_active_pos, sd);
+	mirrow_start_all_nods(all_active_neg, sd);
+
+	//mck_slog2("end_mirrow_nervenet \n");
+}
+
+void bj_mirrow_main() {
+	mck_set_sub_module_id(BJ_STABI_SUB_MODULE_MIRROW);
+
+	mc_workeru_nn_t nn = kernel::get_workeru_nn();
+
+	bj_mirrow_init_handlers();
+
+	PTD_LOG("MIRROW___ %d \n", nn);
+
+	kernel* ker = mck_get_kernel();
+	ker->user_func = mc_null;
+
+	nervenet* my_net = bj_nervenet;
+	my_net->init_sync_cycle();
+
+	//mck_slog2("__dbg1.mirrow\n");
+
+	my_net->send(my_net, bj_tok_mirrow_start);
+	kernel::run_sys();
+
+	my_net->act_left_side.init_stabi_tiers(*my_net);
+
+	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
+	bj_print_active_cnf(side_right, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
+
+	PTD_PRT("...............................END_MIRROW\n");
+	mck_slog2("END_MIRROW___");
+	mck_ilog(nn);
+	//mck_slog2("_________________________\n");
+	mck_sprt2("dbg1.mirrow.end\n");
+
+}
+
+void
+netstate::init_stabi_tiers(nervenet& my_net){
+	tierdata* ti_dat = bj_tierdata_acquire();
+	tierdata& lti_prop = get_last_tier(all_propag_tiers);
+
+	PTD_CK(lti_prop.got_all_neus());
+	PTD_CK(lti_prop.all_delayed.is_alone());
+
+	ti_dat->tdt_id = 0;
+
+	PTD_CK(ti_dat->tdt_flags == 0);
+	PTD_CK(ti_dat->all_delayed.is_alone());
+	PTD_CK(ti_dat->num_inert_chdn == 0);
+
+	ti_dat->inp_neus = lti_prop.inp_neus - lti_prop.off_neus;
+	PTD_CK(ti_dat->inp_neus != BJ_INVALID_NUM_NODE);
+
+	PTD_CK(all_stabi_tiers.is_alone());
+	all_stabi_tiers.bind_to_my_left(*ti_dat);
+}
+
+void
 nervenode::mirrow_sides(net_side_t src_sd){
 	PTD_LOG("mirrow_nod_start \n");
 
@@ -115,132 +233,18 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	dst_st.step_num_ping = src_st.step_num_ping;
 	
 	// init stabi
+	
+	if(bj_is_pol(ki)){
+		PTD_CK(stabi_flags == 0);
+		mc_set_flag(stabi_flags, bj_stabi_srt_rdy_flag);
+	}
 
 	stabi_arr_sz = 0;
-
 	stabi_num_tier = 0;
 
 	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
 		bj_dbg_stabi_col_arr_to_str(stabi_arr_sz, stabi_arr_dat, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));
 
 	//PTD_LOG("mirrow_nod_end \n");
-}
-
-void
-tierset::mirrow_tiset(tierset& src_tis, net_side_t src_sd){
-	binder * fst, * lst, * wrk;
-
-	binder* snps = &(src_tis.ti_all);
-
-	fst = (binder*)(snps->bn_right);
-	lst = (binder*)mck_as_loc_pt(snps);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		synapse* snp = get_synapse_from_binder(src_sd, wrk);
-		MC_MARK_USED(snp);
-
-		if(src_sd == side_left){
-			snp->right_handle.let_go();
-			ti_all.bind_to_my_left(snp->right_handle);
-		} else {
-			PTD_CK(src_sd == side_right);
-			snp->let_go();
-			ti_all.bind_to_my_left(*snp);
-		}
-	}
-
-	ti_id = src_tis.ti_id;
-}
-
-void
-nervenet::mirrow_start_all_nods(grip& all_nod, net_side_t sd){
-	binder * fst, * lst, * wrk;
-
-	binder* pt_all_nod = &(all_nod);
-	fst = (binder*)(pt_all_nod->bn_right);
-	lst = (binder*)mck_as_loc_pt(pt_all_nod);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		nervenode* my_nod = (nervenode*)wrk;
-		my_nod->mirrow_sides(sd);
-	}
-}
-
-void 
-nervenet::mirrow_nervenet(){
-	PTD_LOG("mirrow_nervenet_start \n");
-
-	net_side_t sd = side_left;
-
-	netstate& lst_nst = get_active_netstate(side_left);
-	netstate& rgt_nst = get_active_netstate(side_right);
-	
-	tierdata& lft = get_last_tier(lst_nst.all_propag_tiers);
-	tierdata& rgt = get_last_tier(rgt_nst.all_propag_tiers);
-
-	if(rgt.tdt_id > lft.tdt_id){
-		sd = side_right;
-	}
-
-	//PTD_LOG("mirrow_nervenet_nods %s \n", net_side_to_str(sd));
-	PTD_LOG("mirrow_nervenet_nods \n");
-
-	mirrow_start_all_nods(all_neu, sd);
-	mirrow_start_all_nods(all_pos, sd);
-	mirrow_start_all_nods(all_neg, sd);
-
-	//mck_slog2("end_mirrow_nervenet \n");
-}
-
-void bj_mirrow_main() {
-	mck_set_sub_module_id(BJ_STABI_SUB_MODULE_MIRROW);
-
-	mc_workeru_nn_t nn = kernel::get_workeru_nn();
-
-	bj_mirrow_init_handlers();
-
-	PTD_LOG("MIRROW___ %d \n", nn);
-
-	kernel* ker = mck_get_kernel();
-	ker->user_func = mc_null;
-
-	nervenet* my_net = bj_nervenet;
-	my_net->init_sync_cycle();
-
-	//mck_slog2("__dbg1.mirrow\n");
-
-	my_net->send(my_net, bj_tok_mirrow_start);
-	kernel::run_sys();
-
-	my_net->act_left_side.init_stabi_tiers(*my_net);
-
-	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
-	bj_print_active_cnf(side_right, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
-
-	PTD_PRT("...............................END_MIRROW\n");
-	mck_slog2("END_MIRROW___");
-	mck_ilog(nn);
-	//mck_slog2("_________________________\n");
-	mck_sprt2("dbg1.mirrow.end\n");
-
-}
-
-void
-netstate::init_stabi_tiers(nervenet& my_net){
-	tierdata* ti_dat = bj_tierdata_acquire();
-	tierdata& lti_prop = get_last_tier(all_propag_tiers);
-
-	PTD_CK(lti_prop.got_all_neus());
-	PTD_CK(lti_prop.all_delayed.is_alone());
-
-	ti_dat->tdt_id = 0;
-
-	PTD_CK(ti_dat->tdt_flags == 0);
-	PTD_CK(ti_dat->all_delayed.is_alone());
-	PTD_CK(ti_dat->num_inert_chdn == 0);
-
-	ti_dat->inp_neus = lti_prop.inp_neus - lti_prop.off_neus;
-	PTD_CK(ti_dat->inp_neus != BJ_INVALID_NUM_NODE);
-
-	PTD_CK(all_stabi_tiers.is_alone());
-	all_stabi_tiers.bind_to_my_left(*ti_dat);
 }
 

@@ -43,8 +43,8 @@ Declaration of main bj solver function.
 //-----------------------------------------
 
 //define BJ_DBG_ONLY 
-//define BJ_DBG_SORNET 
-#define BJ_NORMAL 
+#define BJ_DBG_SORNET 
+//define BJ_NORMAL 
 
 #ifdef BJ_DBG_SORNET
 #define BJ_DBG_SORNET_CODE(prm) prm
@@ -54,13 +54,16 @@ Declaration of main bj solver function.
 
 //-----------------------------------------
 
-#define BJ_DBG_TOT_NUM_TESTS 20
-#define BJ_DBG_TOT_RNK_TESTS 20
+#define BJ_DBG_TOT_NUM_TESTS 200
+#define BJ_DBG_TOT_RNK_TESTS 200
 #define BJ_DBG_TOT_SRT_RNK_TESTS 200
 
-#define BJ_DBG_TOT_INPUT_SORNODES 80
+#define BJ_DBG_TOT_INPUT_SORNODES 50
 #define BJ_DBG_TOT_INPUT_RNKNODES BJ_DBG_TOT_INPUT_SORNODES
-#define BJ_DBG_MAX_GRP_SZ 5
+#define BJ_DBG_MAX_GRP_SZ 10
+#define BJ_DBG_MIN_NUM_REP_VAL 0
+#define BJ_DBG_MAX_NUM_REP_VAL 3
+#define BJ_DBG_MAX_REP_DIST 3
 
 #define BJ_INVALID_IDX -1
 

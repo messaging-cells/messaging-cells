@@ -31,6 +31,12 @@ sorcell::sornet_dbg_prt(){
 void
 sorcell::load_from(pre_sornode* nod){
 	sorcell* scll = this;
+
+	MC_DBG(
+		nod_id = nod->nod_id;
+		level = nod->level;
+	);
+
 	srt_sz = nod->srt_sz;
 	
 	edge_flags = nod->edge_flags;
@@ -70,18 +76,21 @@ void bj_init_end_cells(binder* nn_all_endnods)
 		endcell* ecll = (endcell*)(end_nd->loaded);
 		MCK_CK(ecll != mc_null);
 		
-		mck_slog2("ecll=");
+		mck_slog2("ecll_");
 		mck_ilog(ecll->end_snp.idx);
 		
 		MCK_CK(end_nd->nxt.idx == ecll->end_snp.idx);
 		if(end_nd->nxt.out != mc_null){
-			MCK_CK(ecll->end_snp.axon == mc_null);
+			MCK_CK(ecll->end_snp.out == mc_null);
 			pre_sornode* the_out = (pre_sornode*)mc_manageru_pt_to_workeru_pt(end_nd->nxt.out);
 			
 			mck_slog2("__out=");
-			mck_ilog(the_out->nod_id);
+			mck_ilog(the_out->up_pns.idx);
+			mck_slog2("_");
+			mck_ilog(the_out->down_pns.idx);
 			
 			bj_wait_set_pt(pre_sornode, the_out, sorcell, ecll->end_snp.out);
+			MCK_CK(ecll->end_snp.out != mc_null);
 		}
 		mck_slog2(",");
 		if(end_nd->nxt.axon != mc_null){
@@ -92,6 +101,7 @@ void bj_init_end_cells(binder* nn_all_endnods)
 			mck_ilog(the_axon->nxt.idx);
 			
 			bj_wait_set_pt(pre_endnode, the_axon, endcell, ecll->end_snp.axon);
+			MCK_CK(ecll->end_snp.axon != mc_null);
 		}
 		
 		mck_slog2(".\n");
@@ -118,6 +128,7 @@ void bj_load_shd_nods(num_nod_t tot_nods, binder* nn_all_endnods, binder* nn_all
 		ecll->end_snp.idx = end_nd->nxt.idx;
 
 		MCK_CK(ecll != mc_null);
+		
 		//end_nd->loaded = mck_as_glb_pt(ecll);
 		mc_loop_set_var(end_nd->loaded, mck_as_glb_pt(ecll));
 		

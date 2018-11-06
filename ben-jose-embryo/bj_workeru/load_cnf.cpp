@@ -7,6 +7,7 @@
 void 
 nervenode::init_nervenode_with(pre_cnf_node* nod) { 
 	pre_load_cnf* pre_cnf = bj_nervenet->shd_full_cnf;
+	nervenode* nd = this;
 	
 	ki = nod->ki; 
 	id = nod->id; 
@@ -41,6 +42,22 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 		}
 		PTD_CK(pre_out->loaded != mc_null);
 		stabi_out = (sorcell*)(pre_out->loaded);
+		
+		pre_endnode* e_nd = pre_cnf->all_pre_rank_end_nod[stabi_idx];
+		while(e_nd->loaded == mc_null){
+			// SPIN UNTIL SET (may be set by an other workeru)
+			PTD_CODE(sched_yield());
+		}
+		PTD_CK(e_nd->loaded != mc_null);
+		
+		endcell* the_end = (endcell*)(e_nd->loaded);
+		PTD_CK(the_end->end_snp.idx == stabi_idx);
+		if(ki == nd_neu){
+			the_end->nxt_neu = (neuron*)nd;
+		} else {
+			PTD_CK(bj_is_pol(ki));
+			the_end->nxt_pol = (polaron*)nd;
+		}
 	);
 } 
 
@@ -146,8 +163,8 @@ void bj_load_shd_cnf(){
 		pos_nod->opp = neg_nod;
 		neg_nod->opp = pos_nod;
 
-		my_net->all_pos.bind_to_my_left(*pos_nod);
-		my_net->all_neg.bind_to_my_left(*neg_nod);
+		my_net->all_active_pos.bind_to_my_left(*pos_nod);
+		my_net->all_active_neg.bind_to_my_left(*neg_nod);
 
 		//PTD_PRT("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
 		//PTD_PRT("[k%d id%ld sz%ld] \n", opp->ki, opp->id, opp->sz);
@@ -170,7 +187,7 @@ void bj_load_shd_cnf(){
 		PTD_CK(sh_neu->ki == nd_neu);
 
 		neuron* my_neu = bj_neuron_acquire();
-		my_net->all_neu.bind_to_my_left(*my_neu);
+		my_net->all_active_neu.bind_to_my_left(*my_neu);
 
 		neuron* my_glb_neu = (neuron*)mck_as_glb_pt(my_neu);
 
@@ -380,9 +397,9 @@ netstate::init_propag_tiers(nervenet& my_net){
 	ti_dat->inp_neus = 0;
 	//ti_dat->inp_pols = 0;		// OLD
 
-	ti_dat->add_all_inp_from(my_net.all_neu, my_side);
-	ti_dat->add_all_inp_from(my_net.all_pos, my_side);
-	ti_dat->add_all_inp_from(my_net.all_neg, my_side);
+	ti_dat->add_all_inp_from(my_net.all_active_neu, my_side);
+	ti_dat->add_all_inp_from(my_net.all_active_pos, my_side);
+	ti_dat->add_all_inp_from(my_net.all_active_neg, my_side);
 
 	//PTD_CK((my_side != side_right) || (ti_dat->inp_neus == 0));	// OLD
 

@@ -159,6 +159,9 @@ nervenet::nervenet(){
 	all_input_srt_min_grps = mc_null;
 	all_input_srt_max_grps = mc_null;
 	
+	dbg_tot_grp_items = 0;
+	dbg_idx_grp_test = 0;
+	
 	dbg_tot_rcv_output_sorobjs = 0;
 	
 	all_srt_endcells = mc_null;
@@ -318,6 +321,9 @@ nervenode::init_me(int caller){
 	//right_side.side_kind = side_right;
 
 	stabi_num_tier = 0;
+	
+	stabi_flags = 0;
+	stabi_tmp_tier = BJ_INVALID_NUM_TIER;
 	stabi_arr_sz = 0;
 	stabi_arr_dat = mc_null;
 	stabi_prv_arr_sz = 0;
@@ -371,6 +377,11 @@ void
 sorcell::init_me(int caller){
 	handler_idx = idx_sorcell;
 
+	MC_DBG(
+		nod_id = 0;
+		level = 0;
+	);
+	
 	srt_sz = 0;
 	edge_flags = 0;
 }
@@ -387,6 +398,10 @@ endcell::~endcell(){}
 void
 endcell::init_me(int caller){
 	handler_idx = idx_endcell;
+
+	end_ki = nd_invalid;
+	nxt_neu = mc_null;
+	nxt_pol = mc_null;
 }
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
@@ -434,7 +449,7 @@ bj_print_loaded_cnf() {
 
 	binder * fst, * lst, * wrk;
 
-	binder* pt_all_neu = &(my_net->all_neu);
+	binder* pt_all_neu = &(my_net->all_active_neu);
 	fst = (binder*)(pt_all_neu->bn_right);
 	lst = (binder*)mck_as_loc_pt(pt_all_neu);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -468,8 +483,8 @@ bj_print_loaded_cnf() {
 
 	mck_lock_log();
 	mck_slog2("LD_POLARONS={\n");
-	bj_print_loaded_poles(my_net->all_pos, nd_pos);
-	bj_print_loaded_poles(my_net->all_neg, nd_neg);
+	bj_print_loaded_poles(my_net->all_active_pos, nd_pos);
+	bj_print_loaded_poles(my_net->all_active_neg, nd_neg);
 	mck_slog2("\n}\n");
 	mck_unlock_log();
 }
@@ -924,7 +939,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 
 	bool with_neus = mc_get_flag(prt_flgs, bj_dbg_prt_nd_neu_flag);
 	if(with_neus){ 
-		binder* pt_all_neu = &(my_net->all_neu);
+		binder* pt_all_neu = &(my_net->all_active_neu);
 		fst = (binder*)(pt_all_neu->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_neu);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -937,7 +952,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 
 	bool with_pols = mc_get_flag(prt_flgs, bj_dbg_prt_nd_pol_flag);
 	if(with_pols){ 
-		binder* pt_all_pos = &(my_net->all_pos);
+		binder* pt_all_pos = &(my_net->all_active_pos);
 		fst = (binder*)(pt_all_pos->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_pos);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -947,7 +962,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 			my_nd->dbg_prt_nod(sd, tiki, prefix, num_pul, num_ti);
 		}
 
-		binder* pt_all_neg = &(my_net->all_neg);
+		binder* pt_all_neg = &(my_net->all_active_neg);
 		fst = (binder*)(pt_all_neg->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_neg);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -966,7 +981,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 		}
 		mck_slog2("_ALL_POL={");
 
-		binder* pt_all_pol = &(my_net->all_pos);
+		binder* pt_all_pol = &(my_net->all_active_pos);
 		fst = (binder*)(pt_all_pol->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_pol);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -977,7 +992,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 			mck_slog2(" ");
 		}
 
-		pt_all_pol = &(my_net->all_neg);
+		pt_all_pol = &(my_net->all_active_neg);
 		fst = (binder*)(pt_all_pol->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_pol);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -1296,7 +1311,7 @@ nervenet::send_all_neus(mck_token_t tok){
 
 	binder * fst, * lst, * wrk;
 
-	binder* pt_all_neu = &(all_neu);
+	binder* pt_all_neu = &(all_active_neu);
 	fst = (binder*)(pt_all_neu->bn_right);
 	lst = (binder*)mck_as_loc_pt(pt_all_neu);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){

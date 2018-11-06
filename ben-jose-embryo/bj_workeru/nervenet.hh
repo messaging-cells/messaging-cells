@@ -87,7 +87,8 @@ enum sorkind_t : uint8_t {
 	sorkind_invalid,
 	sorkind_bin,
 	sorkind_num,
-	sorkind_rnk
+	sorkind_rnk,
+	sorkind_cll
 };
 
 enum net_side_t : uint8_t {
@@ -149,14 +150,17 @@ enum stabi_tok_t : mck_token_t {
 enum sornet_tok_t : mck_token_t {
 	bj_tok_sornet_invalid = bj_tok_stabi_end + 1,
 	bj_tok_sornet_start,
+	bj_tok_sornet_cll_out,
 	bj_tok_sornet_out,
 	bj_tok_sornet_bin,
 	bj_tok_sornet_num,
 	bj_tok_sornet_rank_start,
 	bj_tok_sornet_rank_jump,
 	bj_tok_sornet_rank_step,
+	bj_tok_sornet_rank_cll,
 	bj_tok_sornet_rank_obj,
 	bj_tok_sornet_rank_out,
+	bj_tok_sornet_rank_rdy,
 	bj_tok_sornet_end
 };
 
@@ -457,6 +461,11 @@ public:
 class mc_aligned sorcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS(sorcell)
+	
+	MC_DBG(
+		num_nod_t	 	nod_id;
+		num_nod_t 		level;
+	);
 
 	num_nod_t 	srt_sz;
 	mc_flags_t  edge_flags;
@@ -480,6 +489,14 @@ public:
 	void sornet_set_fields(sornet_transmitter* sn_tmt, void* invalid_val) bj_sornet_cod;
 	bool is_up_direct(void* invalid_val) bj_sornet_cod;
 	bool is_down_direct(void* invalid_val) bj_sornet_cod;
+	
+	sornapse& get_snp(num_nod_t snp_idx){
+		if(snp_idx == up_snp.idx){
+			return up_snp;
+		} 
+		PTD_CK(snp_idx == down_snp.idx);
+		return down_snp;
+	}
 
 	void sornet_handler(missive* msv) bj_sornet_cod;
 
@@ -504,6 +521,9 @@ public:
 	MCK_DECLARE_MEM_METHODS(endcell)
 
 	sornapse	end_snp;
+	node_kind_t	end_ki;
+	neuron*		nxt_neu;
+	polaron*	nxt_pol;
 	
 	endcell() mc_external_code_ram;
 	~endcell() mc_external_code_ram;
@@ -633,6 +653,7 @@ public:
 bool bj_can_delay_tier(num_tier_t the_ti, grip& all_ti);
 
 void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
+int bj_cmp_cell_objs(void* obj1, void* obj2) bj_stabi_cod;
 int bj_cmp_stabi_color_arrs(num_syn_t sz1, num_nod_t* arr1, num_syn_t sz2, num_nod_t* arr2) bj_stabi_cod;
 
 typedef int (*bj_cmp_func_t)(binder* obj1, binder* obj2);
@@ -645,6 +666,9 @@ int bj_dbg_cmp_synset_by_tot_syn(binder* obj1, binder* obj2) mc_external_code_ra
 char* bj_dbg_stabi_col_arr_to_str(num_syn_t sz1, num_nod_t* arr1, 
 								 int sz_str, char* str) mc_external_code_ram;
 
+#define	bj_stabi_srt_rdy_flag mc_flag0
+#define	bj_stabi_ti_done_flag mc_flag1
+
 class mc_aligned nervenode : public cell {
 public:
 	node_kind_t 	ki;
@@ -656,6 +680,9 @@ public:
 	side_state		right_side;
 
 	num_tier_t		stabi_num_tier;
+	
+	mc_flags_t		stabi_flags;
+	num_tier_t		stabi_tmp_tier;
 	num_syn_t		stabi_arr_sz;
 	num_nod_t*  	stabi_arr_dat;
 	num_syn_t		stabi_prv_arr_sz;
@@ -677,7 +704,7 @@ public:
 	side_state& get_side_state(net_side_t sd);	// Used in loading. It has to common code.
 
 	char* get_ki_str() mc_external_code_ram;
-
+	
 	// PROPAG
 
 	void propag_recv_transmitter(signal_data* dat) bj_propag_cod;
@@ -720,11 +747,12 @@ public:
 
 	virtual 
 	void dbg_prt_tier_done(signal_data* dat) mc_external_code_ram;
+	
+	void stabi_send_start_srt();
 
 	virtual 
-	void stabi_send_nxt_tier_colors(signal_data* dat) bj_stabi_cod;
+	void stabi_send_nxt_tier_color() bj_stabi_cod;
 	
-	virtual 
 	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
 
 	void stabi_reset_complete() bj_stabi_cod;
@@ -788,11 +816,8 @@ public:
 	void pru_callee(callee_prms& pms) mc_external_code_ram;
 
 	virtual 
-	void stabi_send_nxt_tier_colors(signal_data* dat) bj_stabi_cod;
+	void stabi_send_nxt_tier_color() bj_stabi_cod;
 	
-	virtual 
-	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
-
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
@@ -818,6 +843,7 @@ public:
 	void init_me(int caller = 0) mc_external_code_ram;
 
 	void load_handler(missive* msv) bj_load_cod;
+	void stabi_handler(missive* msv) bj_stabi_cod;
 
 	void propag_send_snp_charge_all(callee_prms& pms) bj_propag_cod;
 
@@ -834,11 +860,8 @@ public:
 	void dbg_prt_tier_done(signal_data* dat) mc_external_code_ram;
 
 	virtual 
-	void stabi_send_nxt_tier_colors(signal_data* dat) bj_stabi_cod;
+	void stabi_send_nxt_tier_color() bj_stabi_cod;
 	
-	virtual 
-	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
-
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
 };
@@ -1011,6 +1034,7 @@ public:
 	num_nod_t* all_max_grps = mc_null;
 	num_nod_t* all_rnk_grps = mc_null;
 	bool* is_input_grp = mc_null;
+	num_nod_t tot_grps = 0;
 };
 
 
@@ -1058,9 +1082,9 @@ public:
 	num_nod_t tot_loading;
 	num_nod_t tot_loaded;
 
-	grip	all_neu;
-	grip	all_pos;
-	grip	all_neg;
+	grip	all_active_neu;
+	grip	all_active_pos;
+	grip	all_active_neg;
 
 	mc_workeru_nn_t sync_tot_children;
 	mc_workeru_id_t sync_parent_id;
@@ -1097,6 +1121,9 @@ public:
 	sorcell**	all_input_sorcells;
 	num_nod_t*	all_input_srt_min_grps;
 	num_nod_t*	all_input_srt_max_grps;
+	
+	num_nod_t 	dbg_tot_grp_items;
+	num_nod_t 	dbg_idx_grp_test;
 	
 	num_nod_t 	dbg_tot_rcv_output_sorobjs;
 

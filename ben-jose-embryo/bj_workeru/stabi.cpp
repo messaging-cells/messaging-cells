@@ -5,8 +5,23 @@
 #define BJ_DBG_STABI_MAX_TIER 10
 
 void 
+sorcell_stabi_handler(missive* msv){
+	MCK_CALL_HANDLER(sorcell, sornet_handler, msv);
+}
+
+void 
+endcell_stabi_handler(missive* msv){
+	MCK_CALL_HANDLER(endcell, sornet_handler, msv);
+}
+
+void 
 neuron_stabi_handler(missive* msv){
 	MCK_CALL_HANDLER(neuron, stabi_handler, msv);
+}
+
+void 
+polaron_stabi_handler(missive* msv){
+	MCK_CALL_HANDLER(polaron, stabi_handler, msv);
 }
 
 void 
@@ -23,7 +38,10 @@ nervenet_stabi_handler(missive* msv){
 void bj_stabi_init_handlers(){
 	missive_handler_t* hndlrs = bj_handlers;
 	mc_init_arr_vals(idx_total, hndlrs, mc_null);
+	hndlrs[idx_sorcell] = sorcell_stabi_handler;
+	hndlrs[idx_endcell] = endcell_stabi_handler;
 	hndlrs[idx_neuron] = neuron_stabi_handler;
+	hndlrs[idx_polaron] = polaron_stabi_handler;
 	hndlrs[idx_synapse] = synapse_stabi_handler;
 	hndlrs[idx_nervenet] = nervenet_stabi_handler;
 	hndlrs[idx_last_invalid] = kernel::invalid_handler_func;
@@ -189,20 +207,6 @@ nervenet::stabi_nervenet_start(){
 }
 
 void
-neuron::stabi_handler(missive* msv){
-	stabi_tok_t tok = (stabi_tok_t)msv->tok;
-
-	switch(tok){
-		case bj_tok_stabi_start:
-			stabi_neuron_start();
-		break;
-		default:
-			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
-		break;
-	}
-}
-
-void
 neuron::stabi_neuron_start(){
 	PTD_CK(left_side.step_active_set.all_grp.is_alone());
 	PTD_CK(right_side.step_active_set.all_grp.is_alone());
@@ -264,12 +268,37 @@ nervenode::stabi_recv_tier_done(signal_data* dat){
 
 void
 nervenode::stabi_start_nxt_tier(signal_data* dat){
-	mck_abort(1, mc_cstr("nervenode::stabi_start_nxt_tier"));
+	PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_ti_done_flag));
+	PTD_CK(stabi_tmp_tier == BJ_INVALID_NUM_TIER);
+	
+	mc_set_flag(stabi_flags, bj_stabi_ti_done_flag);
+	stabi_tmp_tier = dat->ti;
+	
+	PTD_CK(stabi_tmp_tier != BJ_INVALID_NUM_TIER);
+	
+	stabi_send_start_srt();
 }
 
 void
-nervenode::stabi_send_nxt_tier_colors(signal_data* dat){
-	mck_abort(1, mc_cstr("nervenode::stabi_send_nxt_tier_colors"));
+nervenode::stabi_send_start_srt(){
+	bool f1 = mc_get_flag(stabi_flags, bj_stabi_ti_done_flag);
+	bool f2 = mc_get_flag(stabi_flags, bj_stabi_srt_rdy_flag);
+	
+	if(f1 && f2){
+		nervenode* src = this;
+		cell* srcll = stabi_out;
+	
+		mc_reset_flag(stabi_flags, bj_stabi_ti_done_flag);
+		mc_reset_flag(stabi_flags, bj_stabi_srt_rdy_flag);
+
+		bj_send_sornet_tmt(src, bj_tok_sornet_num, sorkind_cll, 
+				stabi_idx, stabi_idx, stabi_col_idx, stabi_col_end_idx, src, srcll, stabi_idx);
+	}
+}
+
+void
+nervenode::stabi_send_nxt_tier_color(){
+	mck_abort(1, mc_cstr("nervenode::stabi_send_nxt_tier_color"));
 }
 
 void
@@ -288,11 +317,7 @@ nervenode::stabi_recalc_intact(){
 }
 
 void
-polaron::stabi_start_nxt_tier(signal_data* dat){
-}
-
-void
-polaron::stabi_send_nxt_tier_colors(signal_data* dat){
+polaron::stabi_send_nxt_tier_color(){
 	net_side_t sd = side_left;
 	polaron* pol = this;
 	side_state& pol_stt = get_side_state(sd);
@@ -304,8 +329,10 @@ polaron::stabi_send_nxt_tier_colors(signal_data* dat){
 	pol_stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_color, side_left);
 	opp_stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_color, side_left);
 
-	pol->stabi_send_all_ti_done(pol, dat->ti);
-	opp->stabi_send_all_ti_done(opp, dat->ti);
+	PTD_CK(stabi_tmp_tier != BJ_INVALID_NUM_TIER);
+	
+	pol->stabi_send_all_ti_done(pol, stabi_tmp_tier);
+	opp->stabi_send_all_ti_done(opp, stabi_tmp_tier);
 
 	pol_stt.step_reset_complete();
 	opp_stt.step_reset_complete();
@@ -316,6 +343,9 @@ polaron::stabi_send_nxt_tier_colors(signal_data* dat){
 
 void
 nervenode::stabi_reset_complete(){
+	PTD_CK(stabi_flags == 0);
+	stabi_tmp_tier = BJ_INVALID_NUM_TIER;
+	
 	if(bj_is_pol(ki)){
 		PTD_CK(stabi_prv_arr_dat == mc_null);
 		stabi_arr_sz = 0;
@@ -349,21 +379,19 @@ polaron::dbg_prt_tier_done(signal_data* dat){
 }
 
 void
-neuron::stabi_start_nxt_tier(signal_data* dat){
-}
-
-void
-neuron::stabi_send_nxt_tier_colors(signal_data* dat){
+neuron::stabi_send_nxt_tier_color(){
 	neuron* neu = this;
 	net_side_t sd = side_left;
 	side_state& stt = get_side_state(sd);
 	netstate& nst = bj_nervenet->get_active_netstate(sd);
 
-	//MC_DBG(dbg_prt_nod(sd, tiki_stabi, mc_cstr("stb_TIER"), 8, dat->ti));
+	//MC_DBG(dbg_prt_nod(sd, tiki_stabi, mc_cstr("stb_TIER"), 8, stabi_tmp_tier));
 
 	stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_color, side_left);
 
-	stabi_send_all_ti_done(neu, dat->ti);
+	PTD_CK(stabi_tmp_tier != BJ_INVALID_NUM_TIER);
+	
+	stabi_send_all_ti_done(neu, stabi_tmp_tier);
 	stt.step_reset_complete();
 	stabi_reset_complete();
 
@@ -415,11 +443,20 @@ netstate::stabi_handle_my_sync(){
 void
 nervenet::stabi_handler(missive* msv){
 	mck_token_t msv_tok = msv->tok;
+	
+	PTD_CK(msv_tok != bj_tok_sornet_cll_out);
+	PTD_CK(msv_tok != bj_tok_sornet_out);
+	PTD_CK(msv_tok != bj_tok_sornet_rank_out);
+	
 	if(msv_tok == bj_tok_stabi_start){
 		stabi_nervenet_start();
 		//kernel::stop_sys(bj_tok_stabi_end); // DEBUG purposes only
 		return;
 	}
+	/*if(bj_tok_sync_to_children == tmt_tok){
+		act_left_side.send_sync_to_children(bj_tok_sync_to_children, BJ_SORNET_TIER, tiki_invalid, mc_null);
+		return;
+	}*/ // sornet_handler
 
 	sync_handler(tiki_stabi, msv);
 }
@@ -477,5 +514,56 @@ nervenode::stabi_insert_color(num_nod_t col_idx){
 void
 nervenode::stabi_recv_color(signal_data* dat){
 	stabi_insert_color(dat->col_idx);
+}
+
+int bj_cmp_cell_objs(void* obj1, void* obj2){
+	nervenode* n1 = (nervenode*)obj1;
+	nervenode* n2 = (nervenode*)obj2;
+	int c_val = bj_cmp_stabi_color_arrs(n1->stabi_arr_sz, n1->stabi_arr_dat, 
+										n2->stabi_arr_sz, n2->stabi_arr_dat);
+	return c_val;
+}
+
+void
+neuron::stabi_handler(missive* msv){
+	mck_token_t tok = msv->tok;
+
+	switch(tok){
+		case bj_tok_stabi_start:
+			stabi_neuron_start();
+		break;
+		case bj_tok_sornet_rank_rdy:
+		{
+			PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_srt_rdy_flag));
+			mc_set_flag(stabi_flags, bj_stabi_srt_rdy_flag);
+			stabi_send_start_srt();
+		}
+		break;
+		case bj_tok_sornet_rank_out:
+		break;
+		default:
+			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
+		break;
+	}
+}
+
+void
+polaron::stabi_handler(missive* msv){
+	mck_token_t tok = msv->tok;
+
+	switch(tok){
+		case bj_tok_sornet_rank_rdy:
+		{
+			PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_srt_rdy_flag));
+			mc_set_flag(stabi_flags, bj_stabi_srt_rdy_flag);
+			stabi_send_start_srt();
+		}
+		break;
+		case bj_tok_sornet_rank_out:
+		break;
+		default:
+			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
+		break;
+	}
 }
 
