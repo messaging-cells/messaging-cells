@@ -141,43 +141,42 @@ nervenet::nervenet(){
 	act_left_side.my_side = side_left;
 	act_right_side.my_side = side_right;
 
-	tot_sorcells = 0;
-	
-	tot_rnkcells = 0;
-
-	tot_endcells = 0;
+	tot_wu_sorcells = 0;
+	tot_wu_rnkcells = 0;
+	tot_wu_srt_endcells = 0;
+	tot_wu_rnk_endcells = 0;
 	
 	dbg_sornet_curr_cntr = 0;
 	dbg_sornet_max_cntr = 0;
 	dbg_all_input_vals = mc_null;
 
-	net_top = binval_top;
-	net_bottom = binval_bottom;
+	dbg_net_top = binval_top;
+	dbg_net_bottom = binval_bottom;
 
-	tot_input_sorcells = 0;
-	all_input_sorcells = mc_null;
-	all_input_srt_min_grps = mc_null;
-	all_input_srt_max_grps = mc_null;
+	dbg_tot_input_sorcells = 0;
+	dbg_all_input_sorcells = mc_null;
+	dbg_all_input_srt_min_grps = mc_null;
+	dbg_all_input_srt_max_grps = mc_null;
 	
 	dbg_tot_grp_items = 0;
 	dbg_idx_grp_test = 0;
 	
 	dbg_tot_rcv_output_sorobjs = 0;
 	
-	all_srt_endcells = mc_null;
+	dbg_all_srt_endcells = mc_null;
 	
-	all_output_sorobjs = mc_null;
-	all_output_sorcols = mc_null;
+	dbg_all_output_sorobjs = mc_null;
+	dbg_all_output_sorcols = mc_null;
 
-	tot_input_rnkcells = 0;
-	all_input_rnkcells = mc_null;
+	dbg_tot_input_rnkcells = 0;
+	dbg_all_input_rnkcells = mc_null;
 	
-	all_input_rnkgrps = mc_null;
-	all_input_rnk_min_grps = mc_null;
-	all_input_rnk_max_grps = mc_null;
+	dbg_all_input_rnkgrps = mc_null;
+	dbg_all_input_rnk_min_grps = mc_null;
+	dbg_all_input_rnk_max_grps = mc_null;
 	
-	all_output_rnk_min_cols = mc_null;
-	all_output_rnk_max_cols = mc_null;
+	dbg_all_output_rnk_min_cols = mc_null;
+	dbg_all_output_rnk_max_cols = mc_null;
 	dbg_is_input_rnkgrps = mc_null;
 }
 

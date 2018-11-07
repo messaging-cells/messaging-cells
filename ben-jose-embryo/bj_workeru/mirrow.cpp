@@ -234,11 +234,6 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	
 	// init stabi
 	
-	if(bj_is_pol(ki)){
-		PTD_CK(stabi_flags == 0);
-		mc_set_flag(stabi_flags, bj_stabi_srt_rdy_flag);
-	}
-
 	stabi_arr_sz = 0;
 	stabi_num_tier = 0;
 

@@ -40,6 +40,51 @@ Declaration of functions to use the sornet.
 
 #include "nervenet.hh"
 
+#define BJ_SORNET_TIER 0
+
+#define bj_pt_obj_as_num(pt_oo) (*((num_nod_t*)(pt_oo)))
+
+#define bj_idx_inside(idx, min, max) ((min <= idx) && (idx <= max))
+
+#define bj_pt_to_num(pt) ((num_nod_t)pt)
+#define bj_num_to_pt(num) ((void*)num)
+
+//define BJ_SORNET_BIN_TEST
+//define BJ_SORNET_NUM_TEST
+//define BJ_SORNET_RANK_TEST
+#define BJ_SORNET_SRT_RNK_TEST
+
+#ifdef BJ_SORNET_BIN_TEST
+#define BJ_DBG_SORBINS(prm) prm
+#else
+#define BJ_DBG_SORBINS(prm) 
+#endif
+
+#ifdef BJ_SORNET_NUM_TEST
+#define BJ_DBG_SORNUMS(prm) prm
+#else
+#define BJ_DBG_SORNUMS(prm) 
+#endif
+
+#define BJ_DBG_GRPS_SORNUMS(prm) prm
+
+#ifdef BJ_SORNET_RANK_TEST
+#define BJ_DBG_RANK_OUTS(prm) prm
+#else
+#define BJ_DBG_RANK_OUTS(prm) 
+#endif
+
+#define BJ_DBG_GRPS_RANK(prm) 
+
+#ifdef BJ_SORNET_SRT_RNK_TEST
+#define BJ_DBG_SRT_RNK(prm) prm
+#else
+#define BJ_DBG_SRT_RNK(prm) 
+#endif
+
+#define BJ_DBG_ONE_GRP_ONLY(prm) 
+
+
 void sorcell_sornet_handler(missive* msv) bj_sornet_cod;
 void endcell_sornet_handler(missive* msv) bj_sornet_cod;
 void nervenet_sornet_handler(missive* msv) bj_sornet_cod;

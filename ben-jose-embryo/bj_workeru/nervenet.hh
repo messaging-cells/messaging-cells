@@ -1099,14 +1099,17 @@ public:
 		char 	dbg_str2[BJ_DBG_STR_CAP];
 	);
 
-	num_nod_t tot_sorcells;
-	grip	all_sorcells;
+	num_nod_t tot_wu_sorcells;
+	grip	all_wu_sorcells;
 
-	num_nod_t tot_rnkcells;
-	grip	all_rnkcells;
+	num_nod_t tot_wu_rnkcells;
+	grip	all_wu_rnkcells;
 	
-	num_nod_t tot_endcells;
-	grip	all_endcells;
+	num_nod_t tot_wu_srt_endcells;
+	grip	all_wu_srt_endcells;
+
+	num_nod_t tot_wu_rnk_endcells;
+	grip	all_wu_rnk_endcells;
 
 	mini_bit_arr_t 	dbg_sornet_curr_cntr;
 	mini_bit_arr_t 	dbg_sornet_max_cntr;
@@ -1114,32 +1117,32 @@ public:
 	PTD_DBG_CODE(tak_mak dbg_random_gen);
 	num_nod_t*	dbg_all_input_vals;
 
-	binval_t	net_top;
-	binval_t	net_bottom;
+	binval_t	dbg_net_top;
+	binval_t	dbg_net_bottom;
 
-	num_nod_t 	tot_input_sorcells;
-	sorcell**	all_input_sorcells;
-	num_nod_t*	all_input_srt_min_grps;
-	num_nod_t*	all_input_srt_max_grps;
+	num_nod_t 	dbg_tot_input_sorcells;
+	sorcell**	dbg_all_input_sorcells;
+	num_nod_t*	dbg_all_input_srt_min_grps;
+	num_nod_t*	dbg_all_input_srt_max_grps;
 	
 	num_nod_t 	dbg_tot_grp_items;
 	num_nod_t 	dbg_idx_grp_test;
 	
 	num_nod_t 	dbg_tot_rcv_output_sorobjs;
 
-	endcell**	all_srt_endcells;
+	endcell**	dbg_all_srt_endcells;
 	
-	void**		all_output_sorobjs;
-	num_nod_t*	all_output_sorcols;
+	void**		dbg_all_output_sorobjs;
+	num_nod_t*	dbg_all_output_sorcols;
 
-	num_nod_t 	tot_input_rnkcells;
-	sorcell**	all_input_rnkcells;
+	num_nod_t 	dbg_tot_input_rnkcells;
+	sorcell**	dbg_all_input_rnkcells;
 	
-	num_nod_t*	all_input_rnkgrps;
-	num_nod_t*	all_input_rnk_min_grps;
-	num_nod_t*	all_input_rnk_max_grps;
-	num_nod_t*	all_output_rnk_min_cols;
-	num_nod_t*	all_output_rnk_max_cols;
+	num_nod_t*	dbg_all_input_rnkgrps;
+	num_nod_t*	dbg_all_input_rnk_min_grps;
+	num_nod_t*	dbg_all_input_rnk_max_grps;
+	num_nod_t*	dbg_all_output_rnk_min_cols;
+	num_nod_t*	dbg_all_output_rnk_max_cols;
 	bool*		dbg_is_input_rnkgrps;
 	
 	nervenet() mc_external_code_ram;

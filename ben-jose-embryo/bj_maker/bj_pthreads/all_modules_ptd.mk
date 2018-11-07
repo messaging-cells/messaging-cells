@@ -14,6 +14,7 @@ SOURCES := \
 	${SRC_BJ_WORKERU_DIR}/dbg_only.cpp \
 	${SRC_BJ_WORKERU_DIR}/nervenet.cpp \
 	${SRC_BJ_WORKERU_DIR}/sornet.cpp \
+	${SRC_BJ_WORKERU_DIR}/sornet_dbg.cpp \
 	${SRC_BJ_WORKERU_DIR}/load_cnf.cpp \
 	${SRC_BJ_WORKERU_DIR}/load_sornet.cpp \
 	${SRC_BJ_WORKERU_DIR}/propag.cpp \
