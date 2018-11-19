@@ -8,11 +8,7 @@
 
 #define bj_wait_set_pt(nod_cls, nod, out_cls, out) \
 	if(nod != mc_null){ \
-		while(bj_get_loaded_of_pt(nod_cls, nod) == mc_null){ \
-			/* SPIN UNTIL SET (may be set by an other workeru) */ \
-			PTD_CODE(sched_yield()); \
-		} \
-		PTD_CK(bj_get_loaded_of_pt(nod_cls, nod) != mc_null); \
+		mc_spin_cond(bj_get_loaded_of_pt(nod_cls, nod) == mc_null) \
 		out = (out_cls*)bj_get_loaded_of_pt(nod_cls, nod); \
 	} \
 

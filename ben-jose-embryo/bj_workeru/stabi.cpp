@@ -194,16 +194,9 @@ synapse::stabi_send_transmitter(stabi_tok_t tok, nervenode* src_nd, bool dbg_is_
 	
 	trm->d.stb.wrk_tier = ti;
 	if(src_nd != mc_null){
-		trm->d.stb.col_idx = src_nd->stabi_col_idx;
+		trm->d.stb.col_idx = src_nd->stabi_col.min_idx;
 	}
 	trm->send();
-}
-
-void
-nervenet::stabi_nervenet_start(){
-	PTD_LOG("stabi_nervenet_start \n");
-	send_all_neus(bj_tok_stabi_start);
-	PTD_LOG("end_stabi_nervenet_start \n");
 }
 
 void
@@ -283,8 +276,9 @@ void
 nervenode::stabi_send_start_srt(){
 	bool f1 = mc_get_flag(stabi_flags, bj_stabi_ti_done_flag);
 	bool f2 = mc_get_flag(stabi_flags, bj_stabi_srt_rdy_flag);
+	bool f3 = mc_get_flag(stabi_flags, bj_stabi_srt_always_rdy_flag);
 	
-	if(f1 && f2){
+	if(f1 && (f2 || f3)){
 		nervenode* src = this;
 		cell* srcll = stabi_out;
 	
@@ -292,7 +286,7 @@ nervenode::stabi_send_start_srt(){
 		mc_reset_flag(stabi_flags, bj_stabi_srt_rdy_flag);
 
 		bj_send_sornet_tmt(src, bj_tok_sornet_num, sorkind_cll, 
-				stabi_idx, stabi_idx, stabi_col_idx, stabi_col_end_idx, src, srcll, stabi_idx);
+				stabi_idx, stabi_idx, stabi_col.min_idx, stabi_col.max_idx, src, srcll, stabi_idx);
 	}
 }
 
@@ -444,8 +438,9 @@ void
 nervenet::stabi_handler(missive* msv){
 	mck_token_t msv_tok = msv->tok;
 	
+	PTD_CK(msv_tok != bj_tok_sornet_sep_out);
 	PTD_CK(msv_tok != bj_tok_sornet_cll_out);
-	PTD_CK(msv_tok != bj_tok_sornet_out);
+	PTD_CK(msv_tok != bj_tok_sornet_num_out);
 	PTD_CK(msv_tok != bj_tok_sornet_rank_out);
 	
 	if(msv_tok == bj_tok_stabi_start){
@@ -453,6 +448,11 @@ nervenet::stabi_handler(missive* msv){
 		//kernel::stop_sys(bj_tok_stabi_end); // DEBUG purposes only
 		return;
 	}
+	if(msv_tok == bj_tok_stabi_range_bcast){
+		stabi_set_ranges(msv);
+		return;
+	}
+	
 	/*if(bj_tok_sync_to_children == tmt_tok){
 		act_left_side.send_sync_to_children(bj_tok_sync_to_children, BJ_SORNET_TIER, tiki_invalid, mc_null);
 		return;
@@ -539,7 +539,11 @@ neuron::stabi_handler(missive* msv){
 			stabi_send_start_srt();
 		}
 		break;
-		case bj_tok_sornet_rank_out:
+		case bj_tok_sornet_rank_sep:
+			stabi_recv_rnk_sep(msv);
+		break;
+		case bj_tok_sornet_rank_cll:
+			stabi_recv_rnk_cll(msv);
 		break;
 		default:
 			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
@@ -559,11 +563,302 @@ polaron::stabi_handler(missive* msv){
 			stabi_send_start_srt();
 		}
 		break;
-		case bj_tok_sornet_rank_out:
+		case bj_tok_sornet_rank_sep:
+			stabi_recv_rnk_sep(msv);
+		break;
+		case bj_tok_sornet_rank_cll:
+			stabi_recv_rnk_cll(msv);
 		break;
 		default:
 			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
 		break;
+	}
+}
+
+int bj_cmp_sep_objs(void* obj1, void* obj2){
+	nervenode* n1 = (nervenode*)obj1;
+	nervenode* n2 = (nervenode*)obj2;
+	
+	bool a1 = n1->stabi_is_active();
+	bool a2 = n2->stabi_is_active();
+	
+	if(a1 && ! a2){ return -1; }
+	if(! a1 && a2){ return 1; }
+	
+	return 0;
+}
+
+void
+nervenet::stabi_nervenet_start(){
+	PTD_LOG("stabi_nervenet_start \n");
+	stabi_wu_num_rcv_sep = 0;
+	stabi_wu_tot_nod_sep = 0;
+	with_all_nervenodes(&all_wu_active_neu, &nervenode::stabi_send_sep, mc_null);
+	PTD_LOG("end_stabi_nervenet_start \n");
+}
+
+void
+nervenode::stabi_send_sep(void* pms){
+	nervenode* src = this;
+	cell* srcll = stabi_out;
+
+	bj_send_sornet_tmt(src, bj_tok_sornet_num, sorkind_sep, 
+			stabi_idx, stabi_idx, stabi_col.min_idx, stabi_col.max_idx, src, srcll, stabi_idx);
+	
+	bj_nervenet->stabi_wu_tot_nod_sep++;
+}
+
+void
+nervenode::stabi_set_color(sornet_transmitter* sn_tmt){
+	num_nod_t mn_idx = sn_tmt->d.srt.min_col;
+	num_nod_t mx_idx = sn_tmt->d.srt.max_col;
+	
+	PTD_CK(bj_sornet_idx_inside(mn_idx, stabi_col.min_idx, stabi_col.max_idx));
+	PTD_CK(bj_sornet_idx_inside(mx_idx, stabi_col.min_idx, stabi_col.max_idx));
+	PTD_CK(bj_sornet_idx_inside(stabi_idx, stabi_col.min_idx, stabi_col.max_idx));
+	
+	stabi_col.min_idx = mn_idx;
+	stabi_col.max_idx = mx_idx;
+	stabi_idx = sn_tmt->d.srt.idx;
+	stabi_out = (sorcell*)(sn_tmt->d.srt.inp);
+	
+	PTD_CK(bj_sornet_idx_inside(stabi_idx, mn_idx, mx_idx));
+	
+	PTD_CK(stabi_out != mc_null);
+	PTD_CK((stabi_out->up_snp.idx == stabi_idx) || (stabi_out->down_snp.idx == stabi_idx));
+}
+
+void
+nervenode::stabi_set_inactive(grip& all_inac){
+	nervenode* nod = this;
+	let_go();
+	all_inac.bind_to_my_left(*nod);	
+}
+
+void
+nervenode::stabi_set_nxt_rng(bool is_act){
+	if(is_act){
+		if(! bj_nervenet->stabi_nxt_active_rng.has_value()){
+			bj_nervenet->stabi_nxt_active_rng = stabi_col;
+		}
+	} else {
+		if(! bj_nervenet->stabi_nxt_inactive_rng.has_value()){
+			bj_nervenet->stabi_nxt_inactive_rng = stabi_col;
+		}
+	}
+}
+
+void
+neuron::stabi_recv_rnk_sep(missive* msv){
+	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
+	stabi_set_color(sn_tmt);
+
+	bool is_act = stabi_is_active();
+	if(! is_act){
+		layerdata& ly_dat = bj_nervenet->get_last_layer();
+		stabi_set_inactive(ly_dat.all_inactive_neu);
+	}
+	stabi_set_nxt_rng(is_act);
+	bj_nervenet->stabi_inc_rcv_sep(ki);
+}
+
+void
+polaron::stabi_recv_rnk_sep(missive* msv){
+	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
+	stabi_set_color(sn_tmt);
+
+	mc_set_flag(stabi_flags, bj_stabi_srt_rdy_flag);
+	
+	bool is_act = stabi_is_active();
+	if(! is_act){
+		layerdata& ly_dat = bj_nervenet->get_last_layer();
+		stabi_set_inactive(ly_dat.all_inactive_pol);
+	}
+	stabi_set_nxt_rng(is_act);
+	bj_nervenet->stabi_inc_rcv_sep(ki);
+}
+
+void
+nervenet::stabi_inc_rcv_sep(node_kind_t nod_ki){
+	stabi_wu_num_rcv_sep++;
+	if(stabi_wu_num_rcv_sep == stabi_wu_tot_nod_sep){
+		layerdata& ly_dat = get_last_layer();
+		
+		if(nod_ki == nd_neu){
+			active_neus_col = stabi_nxt_active_rng;
+			ly_dat.inactive_neus_col = stabi_nxt_inactive_rng;
+			
+			stabi_nxt_active_rng.init_me();
+			stabi_nxt_inactive_rng.init_me();
+			
+			stabi_wu_num_rcv_sep = 0;
+			stabi_wu_tot_nod_sep = 0;
+			with_all_nervenodes(&all_wu_active_pos, &nervenode::stabi_send_sep, mc_null);
+			with_all_nervenodes(&all_wu_active_neg, &nervenode::stabi_send_sep, mc_null);
+		} else {
+			active_pols_col = stabi_nxt_active_rng;
+			ly_dat.inactive_pols_col = stabi_nxt_inactive_rng;
+			
+			stabi_nxt_active_rng.init_me();
+			stabi_nxt_inactive_rng.init_me();
+			
+			PTD_CK(bj_is_pol(nod_ki));
+			
+			stabi_begin_subgrouping();
+		}
+	}
+}
+
+void
+nervenode::stabi_recv_rnk_cll(missive* msv){
+	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
+	stabi_set_color(sn_tmt);
+	stabi_send_nxt_tier_color();
+}
+
+void
+nervenet::stabi_broadcast_range(rangekind_t knd, sornet_range active, sornet_range inactive){
+	sornet_transmitter sn_tmt;
+	sn_tmt.tok = bj_tok_stabi_range_bcast;
+	sn_tmt.d.srt.knd = (sorkind_t)knd;
+	sn_tmt.d.srt.min_col = active.min_idx;
+	sn_tmt.d.srt.max_col = active.max_idx;
+	sn_tmt.d.srt.min_grp = inactive.min_idx;
+	sn_tmt.d.srt.max_grp = inactive.max_idx;
+	
+	mc_workeru_id_t pnt_id = bj_nervenet->sync_parent_id;
+	if(pnt_id != 0){
+		nervenet* src = this;
+		nervenet* pnt_net = bj_nervenet->get_nervenet(pnt_id);
+		
+		base_transmitter* tmt = sn_tmt.clone_transmitter();
+		tmt->src = src;
+		tmt->dst = pnt_net;
+		
+		tmt->send();
+	} 
+	send_all_children(sn_tmt);
+}
+
+void
+nervenet::stabi_broadcast_all_ranges(){
+	layerdata& ly_dat = get_last_layer();
+	bool n1 = active_neus_col.has_value();
+	bool n2 = ly_dat.inactive_neus_col.has_value();
+	PTD_CK(n1 == n2);
+	if(n1){
+		stabi_broadcast_range(rangekind_neus, active_neus_col, ly_dat.inactive_neus_col);
+	}
+	
+	bool p1 = active_pols_col.has_value();
+	bool p2 = ly_dat.inactive_pols_col.has_value();
+	PTD_CK(p1 == p2);
+	if(p1){
+		stabi_broadcast_range(rangekind_pols, active_pols_col, ly_dat.inactive_pols_col);
+	}
+}
+
+bool
+nervenet::stabi_has_all_ranges(){
+	layerdata& ly_dat = get_last_layer();
+	bool n1 = active_neus_col.has_value();
+	bool n2 = ly_dat.inactive_neus_col.has_value();
+	PTD_CK(n1 == n2);
+	bool p1 = active_pols_col.has_value();
+	bool p2 = ly_dat.inactive_pols_col.has_value();
+	PTD_CK(p1 == p2);
+	
+	bool all_ok = (n1 && p1);
+	return all_ok;
+}
+
+void
+nervenet::stabi_set_ranges(missive* msv){
+	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
+	rangekind_t knd = (rangekind_t)(sn_tmt->d.srt.knd);
+
+	sornet_range active;
+	sornet_range inactive;
+	active.min_idx = sn_tmt->d.srt.min_col;
+	active.max_idx = sn_tmt->d.srt.max_col;
+	inactive.min_idx = sn_tmt->d.srt.min_grp;
+	inactive.max_idx = sn_tmt->d.srt.max_grp;
+	
+	bool added_some = false;
+	
+	layerdata& ly_dat = get_last_layer();
+	if(knd == rangekind_neus){
+		bool n1 = active_neus_col.has_value();
+		bool n2 = ly_dat.inactive_neus_col.has_value();
+		PTD_CK(n1 == n2);
+		if(! n1){
+			active_neus_col = active;
+			ly_dat.inactive_neus_col = inactive;
+			added_some = true;
+		}
+	} else {
+		PTD_CK(knd == rangekind_pols);
+		bool p1 = active_pols_col.has_value();
+		bool p2 = ly_dat.inactive_pols_col.has_value();
+		PTD_CK(p1 == p2);
+		if(! p1){
+			active_pols_col = active;
+			ly_dat.inactive_pols_col = inactive;
+			added_some = true;
+		}
+	}
+
+	if(added_some){
+		stabi_begin_subgrouping();
+	}
+}
+
+void
+nervenet::stabi_begin_subgrouping(){
+	stabi_broadcast_all_ranges();
+	if(stabi_has_all_ranges()){
+		if(stabi_has_single_quas()){
+			stabi_mark_all_single(active_neus_col, all_wu_active_pos);
+			stabi_mark_all_single(active_neus_col, all_wu_active_neg);
+		}
+		if(stabi_has_single_neus()){
+			stabi_mark_all_single(active_pols_col, all_wu_active_neu);
+		}
+		
+		send_all_neus(bj_tok_stabi_start);
+	}
+}
+
+bool
+nervenet::stabi_has_single_quas(){
+	PTD_CK(active_neus_col.min_idx == 0);
+	PTD_CK(active_pols_col.min_idx == 0);
+	num_nod_t num_act = active_pols_col.max_idx;
+	bool has_sgl = ((num_act > 0) && (num_act > active_neus_col.max_idx));
+	return has_sgl;
+}
+
+bool
+nervenet::stabi_has_single_neus(){
+	PTD_CK(active_neus_col.min_idx == 0);
+	PTD_CK(active_pols_col.min_idx == 0);
+	num_nod_t num_act = active_neus_col.max_idx;
+	bool has_sgl = ((num_act > 0) && (num_act > active_pols_col.max_idx));
+	return has_sgl;
+}
+
+void
+nervenet::stabi_mark_all_single(sornet_range mates_rng, grip all_act){
+	binder * fst, * lst, * wrk;
+
+	binder* pt_all_nod = &(all_act);
+	fst = (binder*)(pt_all_nod->bn_right);
+	lst = (binder*)mck_as_loc_pt(pt_all_nod);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		nervenode* my_nod = (nervenode*)wrk;
+		if(my_nod->stabi_idx > mates_rng.max_idx){
+			mc_set_flag(my_nod->stabi_flags, bj_stabi_srt_always_rdy_flag);
+		}
 	}
 }
 

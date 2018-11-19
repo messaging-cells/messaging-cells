@@ -273,9 +273,9 @@ preload_cnf(long sz, const long* arr){
 	for(long aa = 0; aa < num_tmp_pre_load_nods; aa++){
 		if(kk == num_workerus){ kk = 0; }
 		pre_cnf_node* nod = THE_CNF->all_tmp_pre_load_nods[aa];
-		pre_cnf_net& cnf = THE_CNF->all_cnf[kk];
+		pre_cnf_net& wu_cnf = THE_CNF->all_cnf[kk];
 		PTD_CK(nod->is_alone());
-		cnf.tot_pre_rels += nod->pre_sz;
+		wu_cnf.tot_pre_rels += nod->pre_sz;
 		switch(nod->ki){
 			case nd_pos:
 			{
@@ -288,10 +288,10 @@ preload_cnf(long sz, const long* arr){
 				PTD_CK(nod->loaded == mc_null);
 				PTD_CK(opp->loaded == mc_null);
 
-				cnf.all_pre_pos.bind_to_my_left(*nod);
-				cnf.all_pre_neg.bind_to_my_left(*opp);
+				wu_cnf.all_pre_pos.bind_to_my_left(*nod);
+				wu_cnf.all_pre_neg.bind_to_my_left(*opp);
 
-				cnf.tot_pre_vars++;
+				wu_cnf.tot_pre_vars++;
 			
 				if(all_sorinput != mc_null){
 					PTD_CK(pol_idx < tod_nd);
@@ -307,9 +307,9 @@ preload_cnf(long sz, const long* arr){
 			}
 			break;
 			case nd_neu:
-				cnf.all_pre_neu.bind_to_my_left(*nod);
-				cnf.tot_pre_neus++;
-				cnf.tot_pre_lits += nod->pre_sz;
+				wu_cnf.all_pre_neu.bind_to_my_left(*nod);
+				wu_cnf.tot_pre_neus++;
+				wu_cnf.tot_pre_lits += nod->pre_sz;
 
 				if(all_sorinput != mc_null){
 					PTD_CK(neu_idx < tod_nd);

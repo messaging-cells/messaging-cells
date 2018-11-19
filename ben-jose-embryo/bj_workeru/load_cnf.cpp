@@ -24,31 +24,23 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 		stabi_prv_arr_dat = mc_malloc32(num_nod_t, sz);
 	}
 	
-	stabi_col_idx = 0;
+	stabi_col.min_idx = 0;
 	if(ki == nd_neu){
-		stabi_col_end_idx = pre_cnf->tot_ccls;
+		stabi_col.max_idx = pre_cnf->tot_ccls;
 	} else {
 		long num_vars = pre_cnf->tot_vars;
-		stabi_col_end_idx = (num_vars * 2);
+		stabi_col.max_idx = (num_vars * 2);
 	}
 	
 	stabi_idx = nod->srt_nd.idx;
 
 	PTD_CODE(
 		pre_sornode* pre_out = (pre_sornode*)mc_manageru_pt_to_workeru_pt(nod->srt_nd.out);
-		while(pre_out->loaded == mc_null){
-			// SPIN UNTIL SET (may be set by an other workeru)
-			PTD_CODE(sched_yield());
-		}
-		PTD_CK(pre_out->loaded != mc_null);
+		mc_spin_cond(pre_out->loaded == mc_null);
 		stabi_out = (sorcell*)(pre_out->loaded);
 		
 		pre_endnode* e_nd = pre_cnf->all_pre_rank_end_nod[stabi_idx];
-		while(e_nd->loaded == mc_null){
-			// SPIN UNTIL SET (may be set by an other workeru)
-			PTD_CODE(sched_yield());
-		}
-		PTD_CK(e_nd->loaded != mc_null);
+		mc_spin_cond(e_nd->loaded == mc_null);
 		
 		endcell* the_end = (endcell*)(e_nd->loaded);
 		PTD_CK(the_end->end_snp.idx == stabi_idx);
@@ -79,10 +71,20 @@ synapse_load_handler(missive* msv){
 void
 nervenet::init_nervenet_with(pre_cnf_net* pre_net){
 	mck_slog2("init_nervenet_with_1 \n");
-	tot_neus = pre_net->tot_pre_neus;
-	tot_vars = pre_net->tot_pre_vars;
-	tot_lits = pre_net->tot_pre_lits;
-	tot_rels = pre_net->tot_pre_rels;
+	tot_wu_neus = pre_net->tot_pre_neus;
+	tot_wu_vars = pre_net->tot_pre_vars;
+	tot_wu_lits = pre_net->tot_pre_lits;
+	tot_wu_rels = pre_net->tot_pre_rels;
+	
+	pre_load_cnf* pre_cnf = bj_nervenet->shd_full_cnf;
+	long num_vars = pre_cnf->tot_vars;
+	
+	active_neus_col.min_idx = 0;
+	active_neus_col.max_idx = pre_cnf->tot_ccls;
+	
+	active_pols_col.min_idx = 0;
+	active_neus_col.max_idx = (num_vars * 2);
+	
 	mck_slog2("init_nervenet_with_2 \n");
 }
 
@@ -100,11 +102,11 @@ void bj_load_init_cnf(){
 	
 	my_net->init_nervenet_with(nn_cnf);
 
-	PTD_LOG("%ld local tot_vars\n", my_net->tot_vars);
+	PTD_LOG("%ld local tot_vars\n", my_net->tot_wu_vars);
 
-	long num_neus = my_net->tot_neus;
-	long num_vars = my_net->tot_vars;
-	long num_rels = my_net->tot_rels;
+	long num_neus = my_net->tot_wu_neus;
+	long num_vars = my_net->tot_wu_vars;
+	long num_rels = my_net->tot_wu_rels;
 
 	//PTD_PRT("tot_lits=%ld tot_vars=%ld tot_neus=%ld TOT_RELS=%ld \n", 
 	//		tots.tot_lits, tots.tot_vars, tots.tot_neus, tots.tot_rels);
@@ -163,8 +165,8 @@ void bj_load_shd_cnf(){
 		pos_nod->opp = neg_nod;
 		neg_nod->opp = pos_nod;
 
-		my_net->all_active_pos.bind_to_my_left(*pos_nod);
-		my_net->all_active_neg.bind_to_my_left(*neg_nod);
+		my_net->all_wu_active_pos.bind_to_my_left(*pos_nod);
+		my_net->all_wu_active_neg.bind_to_my_left(*neg_nod);
 
 		//PTD_PRT("[k%d id%ld sz%ld] \n", nod->ki, nod->id, nod->sz);
 		//PTD_PRT("[k%d id%ld sz%ld] \n", opp->ki, opp->id, opp->sz);
@@ -187,7 +189,7 @@ void bj_load_shd_cnf(){
 		PTD_CK(sh_neu->ki == nd_neu);
 
 		neuron* my_neu = bj_neuron_acquire();
-		my_net->all_active_neu.bind_to_my_left(*my_neu);
+		my_net->all_wu_active_neu.bind_to_my_left(*my_neu);
 
 		neuron* my_glb_neu = (neuron*)mck_as_glb_pt(my_neu);
 
@@ -205,12 +207,7 @@ void bj_load_shd_cnf(){
 			agent_ref* sh_snp = (agent_ref*)wrk2;
 			pre_cnf_node* pol = (pre_cnf_node*)mc_manageru_pt_to_workeru_pt(sh_snp->glb_agent_ptr);
 
-			//PTD_CK(pol->loaded != mc_null);
-			while(pol->loaded == mc_null){
-				// SPIN UNTIL SET (may be set by an other workeru)
-				PTD_CODE(sched_yield());
-			}
-			PTD_CK(pol->loaded != mc_null);
+			mc_spin_cond(pol->loaded == mc_null);
 			polaron* my_pol = (polaron*)(pol->loaded);
 			
 			MCK_CK(my_pol->id == pol->id);
@@ -246,7 +243,9 @@ void bj_load_shd_cnf(){
 		mck_slog2("]__loaded__\n");
 	}
 
-	if(my_net->tot_lits == 0){
+	mck_slog2("LOADED_neurons\n");
+	
+	if(my_net->tot_wu_lits == 0){
 		load_transmitter* msv = bj_load_transmitter_acquire();
 		PTD_CK(msv->d.prp.wrk_side == side_invalid);
 		msv->src = my_net;
@@ -352,7 +351,7 @@ synapse::load_handler(missive* msv){
 	nervenet* my_net = bj_nervenet;
 	long& tot_ld = my_net->tot_loaded;
 	tot_ld++;
-	if(tot_ld == my_net->tot_lits){
+	if(tot_ld == my_net->tot_wu_lits){
 		PTD_CODE(mc_workeru_nn_t nn = mck_get_kernel()->get_workeru_nn());
 		//print_childs();
 		//mck_get_kernel()->set_idle_exit();
@@ -397,9 +396,9 @@ netstate::init_propag_tiers(nervenet& my_net){
 	ti_dat->inp_neus = 0;
 	//ti_dat->inp_pols = 0;		// OLD
 
-	ti_dat->add_all_inp_from(my_net.all_active_neu, my_side);
-	ti_dat->add_all_inp_from(my_net.all_active_pos, my_side);
-	ti_dat->add_all_inp_from(my_net.all_active_neg, my_side);
+	ti_dat->add_all_inp_from(my_net.all_wu_active_neu, my_side);
+	ti_dat->add_all_inp_from(my_net.all_wu_active_pos, my_side);
+	ti_dat->add_all_inp_from(my_net.all_wu_active_neg, my_side);
 
 	//PTD_CK((my_side != side_right) || (ti_dat->inp_neus == 0));	// OLD
 
@@ -446,6 +445,7 @@ nervenet::init_mem_funcs(){
 	all_ava[idx_sorcell] = &(ava_sorcells);
 	all_ava[idx_endcell] = &(ava_endcells);
 	all_ava[idx_tierdata] = &(ava_tierdatas);
+	all_ava[idx_layerdata] = &(ava_layerdatas);
 	all_ava[idx_last_invalid] = mc_pt_invalid_available;
 	
 	all_acq[idx_base_transmitter] = (mc_alloc_kernel_func_t)base_transmitter::acquire_alloc;
@@ -457,6 +457,7 @@ nervenet::init_mem_funcs(){
 	all_acq[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::acquire_alloc;
 	all_acq[idx_endcell] = (mc_alloc_kernel_func_t)endcell::acquire_alloc;
 	all_acq[idx_tierdata] = (mc_alloc_kernel_func_t)tierdata::acquire_alloc;
+	all_acq[idx_layerdata] = (mc_alloc_kernel_func_t)layerdata::acquire_alloc;
 	all_acq[idx_last_invalid] = kernel::invalid_alloc_func;
 
 	all_sep[idx_base_transmitter] = (mc_alloc_kernel_func_t)base_transmitter::separate;
@@ -468,6 +469,7 @@ nervenet::init_mem_funcs(){
 	all_sep[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::separate;
 	all_sep[idx_endcell] = (mc_alloc_kernel_func_t)endcell::separate;
 	all_sep[idx_tierdata] = (mc_alloc_kernel_func_t)tierdata::separate;
+	all_sep[idx_layerdata] = (mc_alloc_kernel_func_t)layerdata::separate;
 	all_sep[idx_last_invalid] = kernel::invalid_alloc_func;
 	
 	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
@@ -481,6 +483,7 @@ nervenet::init_mem_funcs(){
 	PTD_CK(sorcell::ck_cell_id(idx_sorcell));
 	PTD_CK(endcell::ck_cell_id(idx_endcell));
 	PTD_CK(tierdata::ck_cell_id(idx_tierdata));
+	PTD_CK(layerdata::ck_cell_id(idx_layerdata));
 }
 
 void

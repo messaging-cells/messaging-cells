@@ -90,10 +90,13 @@ nervenet::mirrow_nervenet(){
 
 	//PTD_LOG("mirrow_nervenet_nods %s \n", net_side_to_str(sd));
 	PTD_LOG("mirrow_nervenet_nods \n");
-
-	mirrow_start_all_nods(all_active_neu, sd);
-	mirrow_start_all_nods(all_active_pos, sd);
-	mirrow_start_all_nods(all_active_neg, sd);
+	
+	PTD_CK(! stabi_nxt_active_rng.has_value());
+	PTD_CK(! stabi_nxt_inactive_rng.has_value());
+	
+	mirrow_start_all_nods(all_wu_active_neu, sd);
+	mirrow_start_all_nods(all_wu_active_pos, sd);
+	mirrow_start_all_nods(all_wu_active_neg, sd);
 
 	//mck_slog2("end_mirrow_nervenet \n");
 }
@@ -118,7 +121,9 @@ void bj_mirrow_main() {
 	my_net->send(my_net, bj_tok_mirrow_start);
 	kernel::run_sys();
 
-	my_net->act_left_side.init_stabi_tiers(*my_net);
+	my_net->act_left_side.init_stabi_tiers();
+	
+	my_net->inc_layers();
 
 	bj_print_active_cnf(side_left, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
 	bj_print_active_cnf(side_right, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
@@ -132,7 +137,7 @@ void bj_mirrow_main() {
 }
 
 void
-netstate::init_stabi_tiers(nervenet& my_net){
+netstate::init_stabi_tiers(){
 	tierdata* ti_dat = bj_tierdata_acquire();
 	tierdata& lti_prop = get_last_tier(all_propag_tiers);
 
@@ -150,6 +155,12 @@ netstate::init_stabi_tiers(nervenet& my_net){
 
 	PTD_CK(all_stabi_tiers.is_alone());
 	all_stabi_tiers.bind_to_my_left(*ti_dat);
+}
+
+void
+nervenet::inc_layers(){
+	layerdata* ly_dat = bj_layerdata_acquire();
+	all_layers.bind_to_my_left(*ly_dat);
 }
 
 void
@@ -236,6 +247,9 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	
 	stabi_arr_sz = 0;
 	stabi_num_tier = 0;
+	stabi_flags = 0;
+	
+	mc_set_flag(stabi_flags, bj_stabi_init_flag);
 
 	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
 		bj_dbg_stabi_col_arr_to_str(stabi_arr_sz, stabi_arr_dat, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));

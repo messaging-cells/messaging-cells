@@ -43,8 +43,8 @@ Declaration of main bj solver function.
 //-----------------------------------------
 
 //define BJ_DBG_ONLY 
-#define BJ_DBG_SORNET 
-//define BJ_NORMAL 
+//define BJ_DBG_SORNET 
+#define BJ_NORMAL 
 
 #ifdef BJ_DBG_SORNET
 #define BJ_DBG_SORNET_CODE(prm) prm
@@ -97,6 +97,7 @@ typedef uint8_t num_syn_t;
 typedef uint32_t num_tier_t;
 typedef uint32_t num_pulse_t;
 typedef uint32_t dbg_consec_t;
+typedef uint32_t num_layer_t;
 
 #define BJ_INVALID_NUM_NODE ((num_nod_t)(-1))
 #define BJ_INVALID_NUM_SYNAPSE ((num_syn_t)(~((num_syn_t)0x0)))

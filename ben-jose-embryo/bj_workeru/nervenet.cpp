@@ -48,6 +48,7 @@ MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons, 0)
 MCK_DEFINE_MEM_METHODS(sorcell, 32, bj_ava_sorcells, 0)
 MCK_DEFINE_MEM_METHODS(endcell, 32, bj_ava_endcells, 0)
 MCK_DEFINE_MEM_METHODS(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
+MCK_DEFINE_MEM_METHODS(layerdata, 32, bj_ava_layerdatas, bj_num_sep_layerdatas)
 
 BJ_DEFINE_GET_CLS_NAM(synset)
 BJ_DEFINE_GET_CLS_NAM(tierset)
@@ -59,6 +60,7 @@ BJ_DEFINE_GET_CLS_NAM(polaron)
 BJ_DEFINE_GET_CLS_NAM(sorcell)
 BJ_DEFINE_GET_CLS_NAM(endcell)
 BJ_DEFINE_GET_CLS_NAM(tierdata)
+BJ_DEFINE_GET_CLS_NAM(layerdata)
 BJ_DEFINE_GET_CLS_NAM(nervenet)
 
 
@@ -121,13 +123,14 @@ nervenode::dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
 nervenet::nervenet(){
 	MAGIC = MAGIC_VAL;
 
-	tot_neus = 0;
-	tot_vars = 0;
-	tot_lits = 0;
-	tot_rels = 0;
+	tot_wu_neus = 0;
+	tot_wu_vars = 0;
+	tot_wu_lits = 0;
+	tot_wu_rels = 0;
 
 	num_sep_tiersets = 10;
 	num_sep_tierdatas = 10;
+	num_sep_layerdatas = 10;
 
 	handler_idx = idx_nervenet;
 
@@ -140,6 +143,9 @@ nervenet::nervenet(){
 
 	act_left_side.my_side = side_left;
 	act_right_side.my_side = side_right;
+	
+	stabi_wu_tot_nod_sep = 0;
+	stabi_wu_num_rcv_sep = 0;
 
 	tot_wu_sorcells = 0;
 	tot_wu_rnkcells = 0;
@@ -328,8 +334,6 @@ nervenode::init_me(int caller){
 	stabi_prv_arr_sz = 0;
 	stabi_prv_arr_dat = mc_null;
 	
-	stabi_col_idx = BJ_INVALID_SRT_GRP;
-	stabi_col_end_idx = BJ_INVALID_SRT_GRP;
 	stabi_idx = 0;
 	stabi_out = mc_null;
 }
@@ -448,7 +452,7 @@ bj_print_loaded_cnf() {
 
 	binder * fst, * lst, * wrk;
 
-	binder* pt_all_neu = &(my_net->all_active_neu);
+	binder* pt_all_neu = &(my_net->all_wu_active_neu);
 	fst = (binder*)(pt_all_neu->bn_right);
 	lst = (binder*)mck_as_loc_pt(pt_all_neu);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -482,8 +486,8 @@ bj_print_loaded_cnf() {
 
 	mck_lock_log();
 	mck_slog2("LD_POLARONS={\n");
-	bj_print_loaded_poles(my_net->all_active_pos, nd_pos);
-	bj_print_loaded_poles(my_net->all_active_neg, nd_neg);
+	bj_print_loaded_poles(my_net->all_wu_active_pos, nd_pos);
+	bj_print_loaded_poles(my_net->all_wu_active_neg, nd_neg);
 	mck_slog2("\n}\n");
 	mck_unlock_log();
 }
@@ -617,6 +621,15 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_start:
 		resp = mc_cstr("bj_tok_stabi_start");
 	break;
+	case bj_tok_stabi_range_bcast:
+		resp = mc_cstr("bj_tok_stabi_range_bcast");
+	break;
+	case bj_tok_stabi_sep_neu:
+		resp = mc_cstr("bj_tok_stabi_sep_neu");
+	break;
+	case bj_tok_stabi_sep_pol:
+		resp = mc_cstr("bj_tok_stabi_sep_pol");
+	break;
 	case bj_tok_stabi_ping:
 		resp = mc_cstr("bj_tok_stabi_ping");
 	break;
@@ -680,6 +693,19 @@ tierdata::init_me(int caller){
 	rcv_neus = 0;
 	stl_neus = 0;
 	dly_neus = 0;
+}
+
+layerdata::layerdata(){
+	PTD_CK(bj_nervenet != mc_null);
+	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_layerdata ++);
+	mck_slog2("alloc__layerdata\n");
+	init_me();
+} 
+
+layerdata::~layerdata(){} 
+
+void
+layerdata::init_me(int caller){
 }
 
 void
@@ -803,7 +829,6 @@ nervenode::dbg_prt_syn(callee_prms& pms){
 
 void
 netstate::dbg_prt_all_tiers(tier_kind_t tiki, char* prefix, num_tier_t num_ti){
-	//tierdata* dat = mc_null;
 	char* ts = bj_dbg_tier_kind_to_str(tiki);
 	binder * fst, * lst, * wrk;
 
@@ -938,7 +963,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 
 	bool with_neus = mc_get_flag(prt_flgs, bj_dbg_prt_nd_neu_flag);
 	if(with_neus){ 
-		binder* pt_all_neu = &(my_net->all_active_neu);
+		binder* pt_all_neu = &(my_net->all_wu_active_neu);
 		fst = (binder*)(pt_all_neu->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_neu);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -951,7 +976,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 
 	bool with_pols = mc_get_flag(prt_flgs, bj_dbg_prt_nd_pol_flag);
 	if(with_pols){ 
-		binder* pt_all_pos = &(my_net->all_active_pos);
+		binder* pt_all_pos = &(my_net->all_wu_active_pos);
 		fst = (binder*)(pt_all_pos->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_pos);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -961,7 +986,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 			my_nd->dbg_prt_nod(sd, tiki, prefix, num_pul, num_ti);
 		}
 
-		binder* pt_all_neg = &(my_net->all_active_neg);
+		binder* pt_all_neg = &(my_net->all_wu_active_neg);
 		fst = (binder*)(pt_all_neg->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_neg);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -980,7 +1005,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 		}
 		mck_slog2("_ALL_POL={");
 
-		binder* pt_all_pol = &(my_net->all_active_pos);
+		binder* pt_all_pol = &(my_net->all_wu_active_pos);
 		fst = (binder*)(pt_all_pol->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_pol);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -991,7 +1016,7 @@ bj_print_active_cnf(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t n
 			mck_slog2(" ");
 		}
 
-		pt_all_pol = &(my_net->all_active_neg);
+		pt_all_pol = &(my_net->all_wu_active_neg);
 		fst = (binder*)(pt_all_pol->bn_right);
 		lst = (binder*)mck_as_loc_pt(pt_all_pol);
 		for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -1026,6 +1051,7 @@ dbg_stats::init_me(int caller){
 	dbg_tot_new_sorcell = 0;
 	dbg_tot_new_endcell = 0;
 	dbg_tot_new_tierdata = 0;
+	dbg_tot_new_layerdata = 0;
 }
 
 void
@@ -1041,6 +1067,7 @@ dbg_stats::dbg_prt_all(){
 	PTD_LOG("dbg_tot_new_sorcell = %d \n", dbg_tot_new_sorcell);
 	PTD_LOG("dbg_tot_new_endcell = %d \n", dbg_tot_new_endcell);
 	PTD_LOG("dbg_tot_new_tierdata = %d \n", dbg_tot_new_tierdata);
+	PTD_LOG("dbg_tot_new_layerdata = %d \n", dbg_tot_new_tierdata);
 }
 
 class mc_aligned test_cls {
@@ -1087,6 +1114,9 @@ void bj_print_class_szs(){
 		mck_slog2("__\n");
 		mck_slog2("tierdata__");
 		mck_ilog(sizeof(tierdata));
+		mck_slog2("__\n");
+		mck_slog2("layerdata__");
+		mck_ilog(sizeof(layerdata));
 		mck_slog2("__\n");
 		mck_slog2("netstate__");
 		mck_ilog(sizeof(netstate));
@@ -1230,23 +1260,40 @@ synset::transmitter_send_all_rec(bj_callee_t mth, net_side_t sd){
 }
 
 void
+netstate::init_sync_transmitter(sync_transmitter& trm, num_tier_t the_ti, nervenode* the_cfl_src)
+{
+	trm.d.syc.wrk_side = side_invalid;
+	trm.d.syc.wrk_tier = BJ_INVALID_NUM_TIER;
+	trm.d.syc.cfl_src = mc_null;
+	
+	trm.d.syc.wrk_side = my_side;
+	trm.d.syc.wrk_tier = the_ti;
+	trm.d.syc.cfl_src = the_cfl_src;
+}
+
+void
 netstate::send_sync_transmitter(tier_kind_t tiki, nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti, 
 			nervenode* the_cfl_src)
 {
 	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
+	
+	sync_transmitter* trm = bj_sync_transmitter_acquire();
+	init_sync_transmitter(*trm, the_ti, the_cfl_src);
 
+	/*
 	sync_transmitter* trm = bj_sync_transmitter_acquire();
 	trm->d.syc.wrk_side = side_invalid;
 	trm->d.syc.wrk_tier = BJ_INVALID_NUM_TIER;
 	trm->d.syc.cfl_src = mc_null;
 	
-	trm->src = bj_nervenet;
-	trm->dst = the_dst;
-	trm->tok = the_tok;
-	
 	trm->d.syc.wrk_side = my_side;
 	trm->d.syc.wrk_tier = the_ti;
 	trm->d.syc.cfl_src = the_cfl_src;
+	*/
+
+	trm->src = bj_nervenet;
+	trm->dst = the_dst;
+	trm->tok = the_tok;
 	
 	trm->send();
 
@@ -1310,7 +1357,7 @@ nervenet::send_all_neus(mck_token_t tok){
 
 	binder * fst, * lst, * wrk;
 
-	binder* pt_all_neu = &(all_active_neu);
+	binder* pt_all_neu = &(all_wu_active_neu);
 	fst = (binder*)(pt_all_neu->bn_right);
 	lst = (binder*)mck_as_loc_pt(pt_all_neu);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
@@ -1569,48 +1616,6 @@ netstate::get_all_tiers(tier_kind_t tiki){
 }
 
 void 
-netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, nervenode* the_cfl)
-{
-	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
-	SYNC_LOG(" %s_SYNCR_STOP_CHILDREN_%s_t%d_ WORKERU=%d \n", ts, net_side_to_str(my_side), 
-			the_ti, kernel::get_workeru_nn());
-
-	PTD_CK(the_ti != BJ_INVALID_NUM_TIER);
-
-	if(the_cfl != mc_null){
-		PTD_CK((the_tok == bj_tok_sync_confl_down_neu) || (the_tok == bj_tok_sync_confl_down_pol));
-		tok_confl = the_tok;
-		nod_confl = the_cfl;
-		ti_confl = the_ti;
-
-		PTD_LOG(" %s_SYNCR_CONFLICT_%s_t%d_%s confl_pt=%p \n", ts, 
-				net_side_to_str(my_side), the_ti, 
-				sync_tok_to_str(bj_tok_sync_confl_down_pol), (void*)nod_confl);
-	}
-
-	mc_load_map_st** my_children = bj_nervenet->sync_map->childs;
-	if(my_children != mc_null){ 
-		int aa = 0;
-		mc_load_map_st* ch_map = (my_children)[aa];
-		while(ch_map != mc_null){
-			mc_workeru_nn_t chd_nn = ch_map->num_workeru;
-			nervenet* ch_net = bj_nervenet->get_nervenet(mc_nn_to_id(chd_nn));
-			send_sync_transmitter(tiki, ch_net, the_tok, the_ti, the_cfl);
-
-			aa++;
-			ch_map = (my_children)[aa];
-		}
-	}
-
-	if(the_tok == bj_tok_sync_to_children){
-		PTD_LOG(" %s_SYNCR_END_%s_t%d \n", ts, net_side_to_str(my_side), the_ti);
-
-		sync_is_ending = true;
-		sync_is_inactive = true;
-	}
-}
-
-void 
 tierdata::update_tidat(){
 	if(tdt_id == 0){
 		return;
@@ -1849,5 +1854,115 @@ bj_dbg_cmp_synset_by_arr_id(binder* obj1, binder* obj2){
 int 
 bj_dbg_cmp_synset_by_tot_syn(binder* obj1, binder* obj2){
 	return 0;
+}
+
+void
+with_all_nervenodes(binder* nn_all_nod, bj_callee_prm_t mth, void* prm){
+	PTD_CK(mth != mc_null);
+
+	binder * fst, * lst, * wrk, * nxt;
+
+	fst = (binder*)(nn_all_nod->bn_right);
+	lst = (binder*)mck_as_loc_pt(nn_all_nod);
+	for(wrk = fst; wrk != lst; wrk = nxt){
+		nxt = (binder*)(wrk->bn_right);
+		nervenode* my_nod = (nervenode*)wrk;
+
+		(my_nod->*mth)(prm);
+	}
+}
+
+base_transmitter* 
+base_transmitter::clone_transmitter(){
+	base_transmitter* orig = this;
+	base_transmitter* tmt = bj_base_transmitter_acquire();
+	binder bdr;
+	
+	bdr = *((binder*)tmt);	// keep mem management ok
+	*tmt = *orig;
+	*((binder*)tmt) = bdr;	// keep mem management ok
+	
+	return tmt;
+}
+
+void 
+nervenet::send_all_children(base_transmitter& tmt_orig, char* dbg_str){
+	nervenet* src = this;
+	
+	mc_load_map_st** my_children = sync_map->childs;
+	if(my_children != mc_null){ 
+		int aa = 0;
+		mc_load_map_st* ch_map = (my_children)[aa];
+		while(ch_map != mc_null){
+			mc_workeru_nn_t chd_nn = ch_map->num_workeru;
+			nervenet* ch_net = get_nervenet(mc_nn_to_id(chd_nn));
+			
+			base_transmitter* tmt = tmt_orig.clone_transmitter();
+			
+			tmt->src = src;
+			tmt->dst = ch_net;
+			
+			tmt->send();
+
+			if(dbg_str != mc_null){
+				mc_workeru_nn_t dbg_dst_nn = mc_id_to_nn(mc_addr_get_id(ch_net)); 
+				MC_MARK_USED(dbg_dst_nn);
+				PTD_LOG(" %s_CHDN_MSV [%ld ->> %ld] \n", dbg_str, kernel::get_workeru_nn(), dbg_dst_nn);
+			}
+			
+			aa++;
+			ch_map = (my_children)[aa];
+		}
+	}
+}
+
+void 
+netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, nervenode* the_cfl)
+{
+	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
+	SYNC_LOG(" %s_SYNCR_STOP_CHILDREN_%s_t%d_ WORKERU=%d \n", ts, net_side_to_str(my_side), 
+			the_ti, kernel::get_workeru_nn());
+
+	PTD_CK(the_ti != BJ_INVALID_NUM_TIER);
+
+	if(the_cfl != mc_null){
+		PTD_CK((the_tok == bj_tok_sync_confl_down_neu) || (the_tok == bj_tok_sync_confl_down_pol));
+		tok_confl = the_tok;
+		nod_confl = the_cfl;
+		ti_confl = the_ti;
+
+		PTD_LOG(" %s_SYNCR_CONFLICT_%s_t%d_%s confl_pt=%p \n", ts, 
+				net_side_to_str(my_side), the_ti, 
+				sync_tok_to_str(bj_tok_sync_confl_down_pol), (void*)nod_confl);
+	}
+
+	// NEW CODE
+	sync_transmitter base_tmt;
+	init_sync_transmitter(base_tmt, the_ti, the_cfl);
+	base_tmt.tok = the_tok;
+	bj_nervenet->send_all_children(base_tmt);
+	
+	/* OLD CODE
+	mc_load_map_st** my_children = bj_nervenet->sync_map->childs;
+	if(my_children != mc_null){ 
+		int aa = 0;
+		mc_load_map_st* ch_map = (my_children)[aa];
+		while(ch_map != mc_null){
+			mc_workeru_nn_t chd_nn = ch_map->num_workeru;
+			nervenet* ch_net = bj_nervenet->get_nervenet(mc_nn_to_id(chd_nn));
+			send_sync_transmitter(tiki, ch_net, the_tok, the_ti, the_cfl);
+
+			aa++;
+			ch_map = (my_children)[aa];
+		}
+	}
+	*/
+
+	if(the_tok == bj_tok_sync_to_children){
+		PTD_LOG(" %s_SYNCR_END_%s_t%d \n", ts, net_side_to_str(my_side), the_ti);
+
+		sync_is_ending = true;
+		sync_is_inactive = true;
+	}
 }
 

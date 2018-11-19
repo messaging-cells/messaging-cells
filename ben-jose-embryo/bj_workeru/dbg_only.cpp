@@ -38,9 +38,9 @@ void bj_dbg_separate(){
 	my_net->init_nervenet_with(nn_cnf);
 	nervenet& tots = *my_net;
 
-	long num_neus = tots.tot_neus;
-	long num_vars = tots.tot_vars;
-	long num_rels = tots.tot_rels;
+	long num_neus = tots.tot_wu_neus;
+	long num_vars = tots.tot_wu_vars;
+	long num_rels = tots.tot_wu_rels;
 
 	long sep_msvs = 3 * num_rels;	// almost (lft + rgt)
 	long sep_ssts = 2 * num_rels;	// lft + rgt

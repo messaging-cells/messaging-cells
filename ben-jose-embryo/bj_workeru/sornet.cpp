@@ -42,6 +42,9 @@ sornet_get_cmp_func(sorkind_t knd){
 		case sorkind_bin:
 			mck_abort(1, mc_cstr("Invalid sornet_tok_t 1 (sornet_get_cmp_func)"));
 		break;
+		case sorkind_sep:
+			fn = &bj_cmp_sep_objs;
+		break;
 		case sorkind_cll:
 			fn = &bj_cmp_cell_objs;
 		break;
@@ -65,6 +68,7 @@ sorcell::sornet_handler(missive* msv){
 	sorkind_t tmt_knd = sn_tmt->d.srt.knd;
 	switch(tmt_knd){
 		case sorkind_bin:
+		case sorkind_sep:
 		case sorkind_cll:
 		case sorkind_num:
 			sornet_srt_handler(sn_tmt);
@@ -131,7 +135,7 @@ sorcell::sornet_set_fields(sornet_transmitter* sn_tmt, void* invalid_val){
 	sornapse& the_snp = get_snp(tmt_idx);
 	PTD_CK(the_snp.inp == invalid_val);
 	the_snp.set_snp_fields(sn_tmt);
-	PTD_CK(bj_idx_inside(the_snp.idx, the_snp.min_grp, the_snp.max_grp));
+	PTD_CK(bj_sornet_idx_inside(the_snp.idx, the_snp.min_grp, the_snp.max_grp));
 	PTD_CK(the_snp.inp != invalid_val);
 }
 
@@ -163,12 +167,15 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col
 
 	if(sn_tmt->dst == mc_null){
 		switch(knd){
-			case sorkind_bin:
+			case sorkind_sep:
+				tok = bj_tok_sornet_sep_out;
+				break;
 			case sorkind_cll:
 				tok = bj_tok_sornet_cll_out;
 				break;
+			case sorkind_bin:
 			case sorkind_num:
-				tok = bj_tok_sornet_out;
+				tok = bj_tok_sornet_num_out;
 				break;
 			case sorkind_rnk:
 				tok = bj_tok_sornet_rank_out;
@@ -315,7 +322,9 @@ bj_cmp_rnk_objs(void* obj1, void* obj2){
 
 bool
 sorcell::is_up_direct(void* invalid_val){
-	if((up_snp.inp != invalid_val) && ! bj_idx_inside(down_snp.idx, up_snp.min_grp, up_snp.max_grp)){
+	if((up_snp.inp != invalid_val) && 
+		! bj_sornet_idx_inside(down_snp.idx, up_snp.min_grp, up_snp.max_grp))
+	{
 		PTD_CK(down_snp.inp == invalid_val);
 		return true;
 	}
@@ -324,7 +333,9 @@ sorcell::is_up_direct(void* invalid_val){
 
 bool
 sorcell::is_down_direct(void* invalid_val){
-	if((down_snp.inp != invalid_val) && ! bj_idx_inside(up_snp.idx, down_snp.min_grp, down_snp.max_grp)){
+	if((down_snp.inp != invalid_val) && 
+		! bj_sornet_idx_inside(up_snp.idx, down_snp.min_grp, down_snp.max_grp))
+	{
 		PTD_CK(up_snp.inp == invalid_val);
 		return true;
 	}
@@ -476,6 +487,7 @@ sornapse::jump_to_end(sorkind_t knd, num_nod_t srt_sz, bool is_end){
 	bool rsp = false;
 	switch(knd){
 		case sorkind_bin:
+		case sorkind_sep:
 		case sorkind_cll:
 		case sorkind_num:
 			rsp = jump_to_srt_end(srt_sz);
@@ -528,8 +540,8 @@ sornapse::jump_to_rnk_end(num_nod_t srt_sz, bool is_end){
 		PTD_CK(max_grp >= 0);
 		PTD_CK(min_grp <= max_grp);
 		
-		bool up_in = bj_idx_inside(idx + nxt_jmp_sz, min_grp, max_grp);
-		bool down_in = bj_idx_inside(idx - nxt_jmp_sz, min_grp, max_grp);
+		bool up_in = bj_sornet_idx_inside(idx + nxt_jmp_sz, min_grp, max_grp);
+		bool down_in = bj_sornet_idx_inside(idx - nxt_jmp_sz, min_grp, max_grp);
 		if(! up_in && ! down_in){
 			return true;
 		}
@@ -547,6 +559,7 @@ endcell::sornet_handler(missive* msv){
 	sorkind_t tmt_knd = sn_tmt->d.srt.knd;
 	switch(tmt_knd){
 		case sorkind_bin:
+		case sorkind_sep:
 		case sorkind_cll:
 		case sorkind_num:
 			sornet_srt_handler(sn_tmt);
@@ -565,7 +578,8 @@ void
 endcell::sornet_srt_handler(sornet_transmitter* sn_tmt){
 	sornet_tok_t tok = (sornet_tok_t)(sn_tmt->tok);
 	
-	PTD_CK((tok == bj_tok_sornet_out) || (tok == bj_tok_sornet_cll_out));
+	PTD_CK((tok == bj_tok_sornet_num_out) || (tok == bj_tok_sornet_cll_out) || 
+		(tok == bj_tok_sornet_sep_out));
 	PTD_CK(sn_tmt->d.srt.idx == end_snp.idx);
 
 	PTD_CK(end_snp.min_col == BJ_INVALID_SRT_GRP);
@@ -578,6 +592,9 @@ endcell::sornet_srt_handler(sornet_transmitter* sn_tmt){
 	sornet_tok_t etok = bj_tok_sornet_rank_obj;
 	if(tok == bj_tok_sornet_cll_out){
 		etok = bj_tok_sornet_rank_cll;
+	} else 
+	if(tok == bj_tok_sornet_sep_out){
+		etok = bj_tok_sornet_rank_sep;
 	}
 
 	bj_send_sornet_tmt(src, etok, sorkind_rnk, BJ_INVALID_SRT_GRP, BJ_INVALID_SRT_GRP, 
@@ -603,6 +620,23 @@ endcell::sornet_srt_handler(sornet_transmitter* sn_tmt){
 }
 
 void
+endcell::sornet_rnk_set_inp(void* tmt_inp){
+	PTD_CK(tmt_inp != mc_null);
+	PTD_CK(end_snp.inp == mc_null);
+	end_snp.inp = tmt_inp;
+	
+	nervenode* nd = (nervenode*)tmt_inp;
+	PTD_CK(end_ki == nd_invalid);
+	end_ki = nd->ki;
+	if(end_ki == nd_neu){
+		nxt_neu = (neuron*)nd;
+	} else {
+		PTD_CK(bj_is_pol(end_ki));
+		nxt_pol = (polaron*)nd;
+	}
+}
+
+void
 endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 	BJ_DBG_SRT_RNK(return);
 
@@ -616,22 +650,13 @@ endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 			PTD_CK(sn_tmt->d.srt.inp == mc_null);
 			end_snp.set_snp_fields(sn_tmt, false);
 		break;
+		case bj_tok_sornet_rank_sep:
+			out_tok = bj_tok_sornet_rank_sep;
+			sornet_rnk_set_inp(tmt_inp);
+		break;
 		case bj_tok_sornet_rank_cll:
-		{
-			PTD_CK(tmt_inp != mc_null);
-			PTD_CK(end_snp.inp == mc_null);
-			end_snp.inp = tmt_inp;
-			
-			nervenode* nd = (nervenode*)tmt_inp;
-			PTD_CK(end_ki == nd_invalid);
-			end_ki = nd->ki;
-			if(end_ki == nd_neu){
-				nxt_neu = (neuron*)nd;
-			} else {
-				PTD_CK(bj_is_pol(end_ki));
-				nxt_pol = (polaron*)nd;
-			}
-		}
+			out_tok = bj_tok_sornet_rank_cll;
+			sornet_rnk_set_inp(tmt_inp);
 		break;
 		case bj_tok_sornet_rank_obj:
 		{
@@ -649,7 +674,8 @@ endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 		cell* src = this;
 		
 		PTD_CK(end_ki != nd_invalid);
-		if(end_ki != nd_invalid){
+		if(out_tok == bj_tok_sornet_rank_cll){
+			PTD_CK(end_ki != nd_invalid);
 			cell* dst2 = mc_null;
 			if(end_ki == nd_neu){
 				dst2 = nxt_pol;
@@ -666,7 +692,7 @@ endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 		
 		cell* dst = (cell*)(end_snp.inp);
 		// send end_snp out, idx, col and grp fields to inp.
-		bj_send_sornet_tmt(src, bj_tok_sornet_rank_out, sorkind_rnk, end_snp.min_col, end_snp.max_col, 
+		bj_send_sornet_tmt(src, out_tok, sorkind_rnk, end_snp.min_col, end_snp.max_col, 
 						end_snp.min_grp, end_snp.max_grp, 
 						end_snp.out, dst, end_snp.idx);
 		end_snp.reset(mc_null);
