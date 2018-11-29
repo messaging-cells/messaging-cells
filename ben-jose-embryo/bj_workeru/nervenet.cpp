@@ -403,6 +403,8 @@ endcell::init_me(int caller){
 	handler_idx = idx_endcell;
 
 	end_ki = nd_invalid;
+	out_tok = bj_tok_sornet_invalid;
+	
 	nxt_neu = mc_null;
 	nxt_pol = mc_null;
 }
@@ -527,10 +529,11 @@ char* node_kind_to_str(node_kind_t ki){
 	return resp;
 }
 
-char* sync_tok_to_str(sync_tok_t tok){
+char* bj_tok_to_str(mck_token_t tok){
 	char* resp = mc_cstr("UNKNOWN_SYNC_TOK");
 	
 	switch(tok){
+	// SYNC TOKENS
 	case bj_tok_sync_invalid:
 		resp = mc_cstr("bj_tok_sync_invalid");
 	break;
@@ -558,14 +561,7 @@ char* sync_tok_to_str(sync_tok_t tok){
 	case bj_tok_sync_end:
 		resp = mc_cstr("bj_tok_sync_end");
 	break;
-	}
-	return resp;
-}
-
-char* load_tok_to_str(load_tok_t tok){
-	char* resp = mc_cstr("UNKNOWN_LOAD_TOK");
-	
-	switch(tok){
+	// LOAD TOKENS
 	case bj_tok_load_invalid:
 		resp = mc_cstr("bj_tok_load_invalid");
 	break;
@@ -578,14 +574,7 @@ char* load_tok_to_str(load_tok_t tok){
 	case bj_tok_load_end:
 		resp = mc_cstr("bj_tok_load_end");
 	break;
-	}
-	return resp;
-}
-
-char* propag_tok_to_str(propag_tok_t tok){
-	char* resp = mc_cstr("UNKNOWN_PROPAG_TOK");
-
-	switch(tok){
+	// PROPAG TOKENS
 	case bj_tok_propag_invalid:
 		resp = mc_cstr("bj_tok_propag_invalid");
 	break;
@@ -607,19 +596,15 @@ char* propag_tok_to_str(propag_tok_t tok){
 	case bj_tok_propag_end:
 		resp = mc_cstr("bj_tok_propag_end");
 	break;
-	}
-	return resp;
-}
-
-char* stabi_tok_to_str(stabi_tok_t tok){
-	char* resp = mc_cstr("UNKNOWN_STABI_TOK");
-
-	switch(tok){
+	// STABI TOKENS
 	case bj_tok_stabi_invalid:
 		resp = mc_cstr("bj_tok_stabi_invalid");
 	break;
 	case bj_tok_stabi_start:
 		resp = mc_cstr("bj_tok_stabi_start");
+	break;
+	case bj_tok_stabi_sep_bcast:
+		resp = mc_cstr("bj_tok_stabi_sep_bcast");
 	break;
 	case bj_tok_stabi_range_bcast:
 		resp = mc_cstr("bj_tok_stabi_range_bcast");
@@ -642,8 +627,81 @@ char* stabi_tok_to_str(stabi_tok_t tok){
 	case bj_tok_stabi_end:
 		resp = mc_cstr("bj_tok_stabi_end");
 	break;
+	// SORNET TOKENS
+	case bj_tok_sornet_invalid:
+		resp = mc_cstr("bj_tok_sornet_invalid");
+	break;
+	case bj_tok_sornet_start:
+		resp = mc_cstr("bj_tok_sornet_start");
+	break;
+	case bj_tok_sornet_sep_out:
+		resp = mc_cstr("bj_tok_sornet_sep_out");
+	break;
+	case bj_tok_sornet_cll_out:
+		resp = mc_cstr("bj_tok_sornet_cll_out");
+	break;
+	case bj_tok_sornet_num_out:
+		resp = mc_cstr("bj_tok_sornet_num_out");
+	break;
+	case bj_tok_sornet_bin:
+		resp = mc_cstr("bj_tok_sornet_bin");
+	break;
+	case bj_tok_sornet_num:
+		resp = mc_cstr("bj_tok_sornet_num");
+	break;
+	case bj_tok_sornet_rank_start:
+		resp = mc_cstr("bj_tok_sornet_rank_start");
+	break;
+	case bj_tok_sornet_rank_jump:
+		resp = mc_cstr("bj_tok_sornet_rank_jump");
+	break;
+	case bj_tok_sornet_rank_step:
+		resp = mc_cstr("bj_tok_sornet_rank_step");
+	break;
+	case bj_tok_sornet_rank_cll:
+		resp = mc_cstr("bj_tok_sornet_rank_cll");
+	break;
+	case bj_tok_sornet_rank_cll_rdy:
+		resp = mc_cstr("bj_tok_sornet_rank_cll_rdy");
+	break;
+	case bj_tok_sornet_rank_sep:
+		resp = mc_cstr("bj_tok_sornet_rank_sep");
+	break;
+	case bj_tok_sornet_rank_sep_rdy:
+		resp = mc_cstr("bj_tok_sornet_rank_sep_rdy");
+	break;
+	case bj_tok_sornet_rank_obj:
+		resp = mc_cstr("bj_tok_sornet_rank_obj");
+	break;
+	case bj_tok_sornet_rank_out:
+		resp = mc_cstr("bj_tok_sornet_rank_out");
+	break;
+	case bj_tok_sornet_end:
+		resp = mc_cstr("bj_tok_sornet_end");
+	break;
 	}
+	
 	return resp;
+}
+
+char* sync_tok_to_str(sync_tok_t tok){
+	return bj_tok_to_str(tok);
+}
+
+char* load_tok_to_str(load_tok_t tok){
+	return bj_tok_to_str(tok);
+}
+
+char* propag_tok_to_str(propag_tok_t tok){
+	return bj_tok_to_str(tok);
+}
+
+char* stabi_tok_to_str(stabi_tok_t tok){
+	return bj_tok_to_str(tok);
+}
+
+char* sornet_tok_to_str(sornet_tok_t tok){
+	return bj_tok_to_str(tok);
 }
 
 netstate::netstate(){ 
@@ -874,7 +932,9 @@ netstate::dbg_prt_all_tiers(tier_kind_t tiki, char* prefix, num_tier_t num_ti){
 }
 
 void
-nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t num_pul, num_tier_t num_ti){
+nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_t num_pul, 
+					   num_tier_t num_ti)
+{
 	if(num_ti == BJ_INVALID_NUM_TIER){
 		return;
 	}
@@ -894,10 +954,12 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 
 	if(prefix != mc_null){
 		mck_slog2(prefix);
+	}
+	if(tiki != tiki_stabi){
 		mck_slog2("_");
+		mck_slog2(net_side_to_str(sd));
 	}
 
-	mck_slog2(net_side_to_str(sd));
 	mck_slog2("_t");
 	mck_ilog(num_ti);
 	mck_slog2("_p");
@@ -937,7 +999,9 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 		mck_slog2("}");
 	}
 
-	if((tiki != tiki_invalid) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){ mck_slog2("*"); }
+	if((tiki == tiki_propag) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){ mck_slog2("*"); }
+	if((tiki == tiki_stabi) && mc_get_flag(stabi_flags, bj_stabi_send_pings_flag)){ mck_slog2("#"); }
+	if((tiki == tiki_stabi) && stabi_is_rdy_to_srt()){ mck_slog2("!"); }
 
 	if(stabi_arr_dat != mc_null){
 		PTD_DBG_CODE(
@@ -1387,7 +1451,7 @@ netstate::inc_tier_rcv(nervenode* nd, tier_kind_t tiki, num_tier_t the_ti, grip&
 	SYNC_LOG(" %s_TO_DELAY_t%d_%s_%ld %s_%s ((%d > 0) && (%d == %d) && (t%d >= t%d)) %s \n", 
 		ts, ti, node_kind_to_str(nd->ki), nd->id, ts, ((to_dly)?("INC_STILL"):("")), 
 		step_prev_tot_active, step_num_ping, step_prev_tot_active, lti.tdt_id, ti,
-		(mc_get_flag(step_flags, bj_stt_stabi_intact_col_idx_flag))?("intact"):("")
+		((nd == mc_null)?(""):(mc_get_flag(nd->stabi_flags, bj_stabi_send_pings_flag))?("SEND_PINGS"):(""))
 	);
 	SYNC_CODE(bj_nervenet->act_left_side.dbg_prt_all_tiers(tiki, mc_cstr("TO_DELAY_"), ti));
 
@@ -1536,7 +1600,7 @@ neuron::can_delay(tier_kind_t tiki, net_side_t sd){
 	side_state& sd_stt = get_side_state(sd);
 	bool to_dly = sd_stt.neu_all_ping(tiki);
 	if(tiki == tiki_stabi){
-		bool is_itct = mc_get_flag(sd_stt.step_flags, bj_stt_stabi_intact_col_idx_flag);
+		bool is_itct = mc_get_flag(stabi_flags, bj_stabi_send_pings_flag);
 		to_dly = (to_dly && is_itct);
 	}
 	return to_dly;

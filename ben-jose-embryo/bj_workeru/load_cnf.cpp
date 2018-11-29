@@ -26,10 +26,10 @@ nervenode::init_nervenode_with(pre_cnf_node* nod) {
 	
 	stabi_col.min_idx = 0;
 	if(ki == nd_neu){
-		stabi_col.max_idx = pre_cnf->tot_ccls;
+		stabi_col.max_idx = pre_cnf->tot_ccls - 1;
 	} else {
 		long num_vars = pre_cnf->tot_vars;
-		stabi_col.max_idx = (num_vars * 2);
+		stabi_col.max_idx = ((num_vars * 2) - 1);
 	}
 	
 	stabi_idx = nod->srt_nd.idx;
@@ -80,10 +80,10 @@ nervenet::init_nervenet_with(pre_cnf_net* pre_net){
 	long num_vars = pre_cnf->tot_vars;
 	
 	active_neus_col.min_idx = 0;
-	active_neus_col.max_idx = pre_cnf->tot_ccls;
+	active_neus_col.max_idx = pre_cnf->tot_ccls - 1;
 	
 	active_pols_col.min_idx = 0;
-	active_neus_col.max_idx = (num_vars * 2);
+	active_pols_col.max_idx = ((num_vars * 2) - 1);
 	
 	mck_slog2("init_nervenet_with_2 \n");
 }

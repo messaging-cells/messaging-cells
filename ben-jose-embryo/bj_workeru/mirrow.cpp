@@ -60,7 +60,7 @@ tierset::mirrow_tiset(tierset& src_tis, net_side_t src_sd){
 }
 
 void
-nervenet::mirrow_start_all_nods(grip& all_nod, net_side_t sd){
+nervenet::mirrow_start_all_nods(grip& all_nod, net_side_t sd, sornet_range& mates_rng){
 	binder * fst, * lst, * wrk;
 
 	binder* pt_all_nod = &(all_nod);
@@ -68,7 +68,7 @@ nervenet::mirrow_start_all_nods(grip& all_nod, net_side_t sd){
 	lst = (binder*)mck_as_loc_pt(pt_all_nod);
 	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
 		nervenode* my_nod = (nervenode*)wrk;
-		my_nod->mirrow_sides(sd);
+		my_nod->mirrow_sides(sd, mates_rng);
 	}
 }
 
@@ -91,12 +91,19 @@ nervenet::mirrow_nervenet(){
 	//PTD_LOG("mirrow_nervenet_nods %s \n", net_side_to_str(sd));
 	PTD_LOG("mirrow_nervenet_nods \n");
 	
-	PTD_CK(! stabi_nxt_active_rng.has_value());
-	PTD_CK(! stabi_nxt_inactive_rng.has_value());
+	stabi_wu_flags = 0;
 	
-	mirrow_start_all_nods(all_wu_active_neu, sd);
-	mirrow_start_all_nods(all_wu_active_pos, sd);
-	mirrow_start_all_nods(all_wu_active_neg, sd);
+	PTD_CK(active_neus_col.has_value());
+	PTD_CK(active_pols_col.has_value());
+	
+	PTD_CK(! stabi_nxt_active_neus_rng.has_value());
+	PTD_CK(! stabi_nxt_inactive_neus_rng.has_value());
+	PTD_CK(! stabi_nxt_active_pols_rng.has_value());
+	PTD_CK(! stabi_nxt_inactive_pols_rng.has_value());
+
+	mirrow_start_all_nods(all_wu_active_neu, sd, active_pols_col);
+	mirrow_start_all_nods(all_wu_active_pos, sd, active_neus_col);
+	mirrow_start_all_nods(all_wu_active_neg, sd, active_neus_col);
 
 	//mck_slog2("end_mirrow_nervenet \n");
 }
@@ -129,9 +136,7 @@ void bj_mirrow_main() {
 	bj_print_active_cnf(side_right, tiki_propag, mc_cstr("MIRROWED_"), 5, 0);
 
 	PTD_PRT("...............................END_MIRROW\n");
-	mck_slog2("END_MIRROW___");
-	mck_ilog(nn);
-	//mck_slog2("_________________________\n");
+	PTD_LOG("END_MIRROW___%d___\n", nn);
 	mck_sprt2("dbg1.mirrow.end\n");
 
 }
@@ -164,7 +169,7 @@ nervenet::inc_layers(){
 }
 
 void
-nervenode::mirrow_sides(net_side_t src_sd){
+nervenode::mirrow_sides(net_side_t src_sd, sornet_range& mates_rng){
 	PTD_LOG("mirrow_nod_start \n");
 
 	nervenode* nd = this;
@@ -249,7 +254,11 @@ nervenode::mirrow_sides(net_side_t src_sd){
 	stabi_num_tier = 0;
 	stabi_flags = 0;
 	
-	mc_set_flag(stabi_flags, bj_stabi_init_flag);
+	PTD_CK(stabi_col.has_value());
+	
+	if(stabi_idx > mates_rng.max_idx){
+		mc_set_flag(stabi_flags, bj_stabi_srt_always_sep_rdy_flag);
+	}
 
 	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
 		bj_dbg_stabi_col_arr_to_str(stabi_arr_sz, stabi_arr_dat, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));

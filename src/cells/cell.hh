@@ -509,7 +509,7 @@ public:
 		exit_when_idle = true;
 	}
 
-	mc_opt_sz_fn void 
+	mc_opt_sz_fn bool 
 	process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* acks);
 
 	mc_opt_sz_fn void 
@@ -519,7 +519,7 @@ public:
 	add_out_missive(grip* out_wk, missive& msv);
 
 	mc_opt_sz_fn void 
-	call_handlers_of_group(missive_grp_t* mgrp);
+	call_handlers_of_group(missive_grp_t* mgrp, bool has_dbg);
 
 	void 
 	handle_work_to_manageru() mc_external_code_ram;
@@ -573,8 +573,13 @@ public:
 	PTD_CK(mck_is_valid_handler_index(hdlr_idx)); \
 	if(mck_is_valid_handler_idx(hdlr_idx)){ \
 		(*(all_cell_handlers[hdlr_idx]))(msv); \
+		PTD_DBG_CODE(msv->dbg_msv |= mc_dbg_msv_received_flag); \
+		PTD_DBG_CODE( \
+			if(msv->dbg_msv & mc_dbg_msv_log_received_flag){ \
+				PTD_LOG("DBG_MSV_received (%p) %d \n", msv, hdlr_idx); \
+			} \
+		); \
 	} \
-	PTD_DBG_CODE(msv->dbg_msv |= 0x2); \
 
 // end_macro
 
@@ -760,6 +765,10 @@ public:
 #define mc_missive_acquire_arr(num) ((missive*)(kernel::do_acquire(mck_cell_id(missive), num)))
 #define mc_missive_acquire() mc_missive_acquire_arr(1)
 
+#define mc_dbg_msv_sent_flag 			mc_flag0
+#define mc_dbg_msv_received_flag 		mc_flag1
+#define mc_dbg_msv_log_received_flag 	mc_flag2
+
 class mc_aligned missive : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(missive);
@@ -768,7 +777,7 @@ public:
 	cell*				src;
 	mck_token_t 		tok;
 
-	PTD_DBG_CODE(uint8_t	dbg_msv);
+	PTD_DBG_CODE(mc_flags_t	dbg_msv);
 
 	mc_opt_sz_fn 
 	missive(){
@@ -780,7 +789,8 @@ public:
 
 	virtual mc_opt_sz_fn 
 	void init_me(int dbg_caller = 0){
-		PTD_CK_PRT((dbg_caller == 0) || (! (dbg_msv & 0x1)) || (dbg_msv & 0x2), 
+		PTD_CK_PRT((dbg_caller == 0) || 
+			(! (dbg_msv & mc_dbg_msv_sent_flag)) || (dbg_msv & mc_dbg_msv_received_flag), 
 			"cll=%d dbg=%p tok=%d src=%p dst=%p\n", 
 			dbg_caller, (void*)(uintptr_t)dbg_msv, tok, (void*)src, (void*)dst);
 		dst = mc_null;
@@ -792,8 +802,9 @@ public:
 	//! Sends this \ref missive . It calls \ref mck_as_glb_pt with src before sending.
 	mc_inline_fn 
 	void send(){
-		PTD_CK(dbg_msv == 0);
-		PTD_DBG_CODE(dbg_msv |= 0x1);
+		//PTD_CK(dbg_msv == 0);
+		PTD_CK((! (dbg_msv & mc_dbg_msv_sent_flag)) && (! (dbg_msv & mc_dbg_msv_received_flag)));
+		PTD_DBG_CODE(dbg_msv |= mc_dbg_msv_sent_flag);
 
 		PTD_CK(dst != mc_null);
 		PTD_CK(mc_addr_in_sys((mc_addr_t)dst));
@@ -805,7 +816,7 @@ public:
 	mc_inline_fn 
 	void send_to_manageru(){
 		PTD_CK(dbg_msv == 0);
-		PTD_DBG_CODE(dbg_msv |= 0x1);
+		PTD_DBG_CODE(dbg_msv |= mc_dbg_msv_sent_flag);
 
 		PTD_CK(dst != mc_null);
 		if(! MCK_KERNEL->is_manageru_kernel){
@@ -833,6 +844,13 @@ public:
 	set_source(cell* act){
 		src = act;
 	}
+
+	virtual 
+	char*	get_dbg_string(){
+		return mc_cstr("UNKNOW_MISSIVE_DESCRIPTION");
+	}
+
+	
 };
 
 //-------------------------------------------------------------------------
@@ -846,6 +864,8 @@ public:
 #define mc_agent_grp_acquire_arr(num) ((agent_grp*)(kernel::do_acquire(mck_cell_id(agent_grp), num)))
 #define mc_agent_grp_acquire() mc_agent_grp_acquire_arr(1)
 
+#define mc_dbg_grp_log_steps_flag 		mc_flag0
+
 class mc_aligned agent_grp : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(agent_grp);
@@ -854,6 +874,8 @@ public:
 	uint8_t 	tot_agts;	// optional use
 	mc_bool_t 	handled;
 
+	PTD_DBG_CODE(mc_flags_t	dbg_grp);
+	
 	mc_opt_sz_fn 
 	agent_grp(){
 		init_me();
@@ -866,6 +888,7 @@ public:
 	void init_me(int caller = 0){
 		tot_agts = 0;
 		handled = mc_false;
+		PTD_DBG_CODE(dbg_grp = 0);
 	}
 
 	virtual mc_opt_sz_fn 
@@ -895,6 +918,8 @@ public:
 
 	agent* 		glb_agent_ptr;
 
+	PTD_DBG_CODE(mc_flags_t	dbg_ref);
+	
 	mc_opt_sz_fn 
 	agent_ref(){
 		init_me();
@@ -906,6 +931,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0){
 		glb_agent_ptr = mc_null;
+		PTD_DBG_CODE(dbg_ref = 0);
 	}
 
 	virtual mc_opt_sz_fn 

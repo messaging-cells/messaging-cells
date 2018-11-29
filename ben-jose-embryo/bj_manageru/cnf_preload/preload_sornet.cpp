@@ -283,6 +283,8 @@ create_sornet(num_nod_t num_to_sort){
 			PTD_CK(arr_rnk_endnods[aa] != mc_null);
 			PTD_CK(arr_rnk_endnods[aa]->nxt.idx == aa);
 			
+			mc_set_flag(all_rnk_in_nod[aa]->edge_flags, bj_rnk_input_flag);
+			
 			end_nd->nxt.out = all_rnk_in_nod[aa];
 			end_nd->nxt.axon = arr_rnk_endnods[aa];
 		}
@@ -299,6 +301,10 @@ create_sornet(num_nod_t num_to_sort){
 	for(aa = 0; aa < num_to_sort; aa++){
 		if(all_rnk_in_nod != mc_null){
 			PTD_CK(prms.arr_nods[aa] != mc_null);
+			PTD_CK(THE_CNF->all_pre_sorinput_nod[aa] == prms.arr_nods[aa]);
+
+			mc_set_flag(prms.arr_nods[aa]->edge_flags, bj_srt_input_flag);
+			
 			arr_rnk_endnods[aa]->nxt.out = prms.arr_nods[aa];
 		}
 	}

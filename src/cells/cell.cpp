@@ -293,7 +293,7 @@ kernel::add_out_missive(grip* out_wk, missive& msv1){
 	binder * fst, * lst, * wrk;
 	//kernel* ker = this;
 
-	bool found_grp = false;
+	missive_grp_t* grp_found = mc_null;
 
 	fst = out_wk->bn_right;
 	lst = out_wk;
@@ -303,11 +303,17 @@ kernel::add_out_missive(grip* out_wk, missive& msv1){
 		if(mc_addr_same_id(msv1.dst, msv2->dst)){
 			msv1.let_go();
 			mgrp->all_agts.bind_to_my_left(msv1);
-			found_grp = true;
+			grp_found = mgrp;
 			break;
 		}
 	}
-	if(found_grp){
+	if(grp_found != mc_null){
+		PTD_DBG_CODE(
+			if(msv1.dbg_msv & mc_dbg_msv_log_received_flag){
+				grp_found->dbg_grp |= mc_dbg_grp_log_steps_flag;
+				PTD_LOG("DBG_GRP_found %p \n", grp_found);
+			}
+		);
 		return;
 	}
 
@@ -319,12 +325,24 @@ kernel::add_out_missive(grip* out_wk, missive& msv1){
 	msv1.let_go();
 	mgrp2->all_agts.bind_to_my_left(msv1);
 	out_wk->bind_to_my_left(*mgrp2);
+
+	PTD_DBG_CODE(
+		if(msv1.dbg_msv & mc_dbg_msv_log_received_flag){
+			mgrp2->dbg_grp |= mc_dbg_grp_log_steps_flag;
+			PTD_LOG("DBG_GRP_created %p \n", mgrp2);
+		}
+	);
 }
 
 void 
-kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
+kernel::call_handlers_of_group(missive_grp_t* rem_mgrp, bool has_dbg){
 	binder * fst, * lst, * wrk;
 	//kernel* ker = this;
+	PTD_DBG_CODE(
+		if(has_dbg){
+			PTD_LOG("HAS_DBG_before_handling %p \n", rem_mgrp);
+		}
+	);
 
 	binder* all_msvs = &(rem_mgrp->all_agts);
 	mc_workeru_id_t msvs_id = mc_addr_get_id(all_msvs);
@@ -334,10 +352,19 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp){
 	for(wrk = fst; wrk != lst; wrk = mc_glb_binder_get_rgt(wrk, msvs_id)){
 		missive* remote_msv = (missive*)wrk;
 
+		PTD_DBG_CODE(if(has_dbg){PTD_PRT("BEFORE_HANDLING_MISSIVE_%s \n", remote_msv->get_dbg_string());});
 		mck_handle_missive(remote_msv);
+		PTD_DBG_CODE(if(has_dbg){PTD_PRT("AFTER_HANDLING_MISSIVE_%s \n", remote_msv->get_dbg_string());});
 	}
 
+	PTD_CK(! rem_mgrp->handled);
 	rem_mgrp->handled = mc_true;
+	
+	PTD_DBG_CODE(
+		if(has_dbg){
+			PTD_LOG("HAS_DBG_handled %p \n", rem_mgrp);
+		}
+	);
 }
 
 /*grip&	
@@ -481,10 +508,11 @@ kernel::invalid_alloc_func(mc_alloc_size_t sz){
 	return mc_null; 
 }
 
-void 
+bool
 kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* acks){
 	mc_workeru_nn_t dst_idx = get_workeru_nn();
 	bool is_from_manageru = (arr == &routed_from_manageru);
+	bool has_dbg = false;
 
 	for(int aa = 0; aa < sz; aa++){
 		missive_grp_t* glb_msv_grp = arr[aa];
@@ -496,6 +524,14 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 			PTD_CK(nw_ref->is_alone());
 			PTD_CK(nw_ref->glb_agent_ptr == mc_null);
 
+			PTD_DBG_CODE(
+				if(glb_msv_grp->dbg_grp & mc_dbg_grp_log_steps_flag){
+					PTD_LOG("DBG_GRP_received %p ref=%p was_alone=%d \n", 
+							glb_msv_grp, nw_ref, in_wrk.is_alone());
+					has_dbg = true;
+				}
+			);
+			
 			nw_ref->glb_agent_ptr = glb_msv_grp;
 			in_wrk.bind_to_my_left(*nw_ref);
 
@@ -532,6 +568,7 @@ kernel::process_signal(binder& in_wrk, int sz, missive_grp_t** arr, mck_ack_t* a
 
 	//ZNQ_CODE(printf("process_signal FLAG2\n"));
 	//PTD_COND_PRT(is_from_manageru, "FLAG3_is_from_manageru = %d \n", is_from_manageru);
+	return has_dbg;
 }
 
 bool
@@ -593,21 +630,27 @@ kernel::handle_missives(){
 		mck_abort(__LINE__, MC_ABORT_MSG(MC_ERR_CELL_01));
 		return;
 	}
+	
+	bool has_dbg = false;
 
 	for(int aa = 0; aa < kernel_signals_arr_sz; aa++){
 		if(signals_arr[aa] == mc_true){
 			signals_arr[aa] = mc_false;
 			switch(aa){
 				case mck_do_pw0_routes_sgnl:
+					has_dbg = has_dbg ||
 					process_signal(in_work, kernel_pw0_routed_arr_sz, pw0_routed_arr, pw0_routed_ack_arr);
 					break;
 				case mck_do_pw2_routes_sgnl:
+					has_dbg = has_dbg ||
 					process_signal(in_work, kernel_pw2_routed_arr_sz, pw2_routed_arr, pw2_routed_ack_arr);
 					break;
 				case mck_do_pw4_routes_sgnl:
+					has_dbg = has_dbg ||
 					process_signal(in_work, kernel_pw4_routed_arr_sz, pw4_routed_arr, pw4_routed_ack_arr);
 					break;
 				case mck_do_pw6_routes_sgnl:
+					has_dbg = has_dbg ||
 					process_signal(in_work, kernel_pw6_routed_arr_sz, pw6_routed_arr, pw6_routed_ack_arr);
 					break;
 				default:
@@ -619,6 +662,22 @@ kernel::handle_missives(){
 	if(has_from_manageru_work){
 		handle_work_from_manageru();
 	}
+	
+	PTD_CK(! has_dbg || ! in_work.is_alone());
+	PTD_DBG_CODE(
+		if(has_dbg){
+			binder* dbg_in_grp = &(ker->in_work);
+			fst = dbg_in_grp->bn_right;
+			lst = dbg_in_grp;
+			for(wrk = fst; wrk != lst; wrk = nxt){
+				missive_ref_t* fst_ref = (missive_ref_t*)wrk;
+				nxt = wrk->bn_right;
+				missive_grp_t* remote_grp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
+				PTD_LOG("HAS_DBG_preview_in_work %p ref=%p nxt_ref=%p nxt=%p lst=%p \n", 
+						remote_grp, fst_ref, (missive_ref_t*)nxt, nxt, lst);
+			}
+		}
+	);
 
 	binder* in_grp = &(ker->in_work);
 	fst = in_grp->bn_right;
@@ -629,18 +688,33 @@ kernel::handle_missives(){
 
 		missive_grp_t* remote_grp = (missive_grp_t*)(fst_ref->glb_agent_ptr);
 
+		PTD_DBG_CODE(
+			if(has_dbg){
+				PTD_LOG("HAS_DBG_in_work %p ref=%p nxt_ref=%p nxt=%p lst=%p \n", 
+						remote_grp, fst_ref, (missive_ref_t*)nxt, nxt, lst);
+			}
+			if(remote_grp->dbg_grp & mc_dbg_grp_log_steps_flag){
+				PTD_LOG("DBG_GRP_in_work %p ref=%p nxt_ref=%p nxt=%p lst=%p \n", 
+						remote_grp, fst_ref, (missive_ref_t*)nxt, nxt, lst);
+			}
+		);
 		//mck_slog2("RECEIVING MISSIVE\n");
 		//PTD_PRT("RECEIVING pt_msv_grp= %p\n", remote_grp);
 		if(! is_manageru_kernel){ 
-			call_handlers_of_group(remote_grp);
+			call_handlers_of_group(remote_grp, has_dbg);
 		} else {
 			call_manageru_handlers_of_group(remote_grp);
 		}
+		PTD_DBG_CODE(if(has_dbg){ PTD_PRT("HAS_DBG_flag1\n");} );
 
 		fst_ref->release(2);
 		PTD_CK(fst_ref->glb_agent_ptr == mc_null);
 		did_work |= mc_bit2;
+
+		PTD_DBG_CODE(if(has_dbg){ PTD_PRT("HAS_DBG_flag2\n");} );
 	}
+	
+	PTD_DBG_CODE(if(has_dbg){ PTD_LOG("HAS_DBG_finished_in_work\n");} );
 
 	grip* out_msvs = &(ker->out_work);
 	if(is_manageru_kernel){
@@ -939,6 +1013,7 @@ kernel::call_manageru_handlers_of_group(missive_grp_t* workeru_mgrp){
 		mck_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
 	}
 
+	PTD_CK(! rem_mgrp->handled);
 	rem_mgrp->handled = mc_true;
 	//ZNQ_CODE(printf("call_manageru_handlers_of_group. END. \n"));
 }
@@ -976,6 +1051,7 @@ kernel::handle_work_from_manageru(){
 		mck_handle_missive_base(remote_msv, hdlr_dst->handler_idx);
 	}
 
+	PTD_CK(! manageru_mgrp->handled);
 	manageru_mgrp->handled = mc_true;
 
 	fst_ref->release(6);
