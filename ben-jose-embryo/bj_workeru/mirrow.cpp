@@ -257,7 +257,8 @@ nervenode::mirrow_sides(net_side_t src_sd, sornet_range& mates_rng){
 	PTD_CK(stabi_col.has_value());
 	
 	if(stabi_idx > mates_rng.max_idx){
-		mc_set_flag(stabi_flags, bj_stabi_srt_always_sep_rdy_flag);
+		//mc_set_flag(stabi_flags, bj_stabi_srt_always_sep_rdy_flag);
+		mc_set_flag(stabi_flags, bj_stabi_srt_sep_rdy_flag);
 	}
 
 	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,

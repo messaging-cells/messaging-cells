@@ -1002,6 +1002,7 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 	if((tiki == tiki_propag) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){ mck_slog2("*"); }
 	if((tiki == tiki_stabi) && mc_get_flag(stabi_flags, bj_stabi_send_pings_flag)){ mck_slog2("#"); }
 	if((tiki == tiki_stabi) && stabi_is_rdy_to_srt()){ mck_slog2("!"); }
+	if(tiki == tiki_stabi){ mck_slog2("_st"); mck_ilog(stabi_num_tier); }
 
 	if(stabi_arr_dat != mc_null){
 		PTD_DBG_CODE(

@@ -401,6 +401,13 @@ public:
 		PTD_CK(! d1 || (max_idx >= min_idx));
 		return d1;
 	}
+
+	bool equal_to(sornet_range& rr){
+		bool e1 = (rr.min_idx == min_idx);
+		bool e2 = (rr.max_idx == max_idx);
+		return (e1 && e2);
+	}
+	
 };
 
 struct mc_aligned propag_transmitter_data {
@@ -735,9 +742,9 @@ char* bj_dbg_stabi_col_arr_to_str(num_syn_t sz1, num_nod_t* arr1,
 #define	bj_stabi_send_pings_flag 			mc_flag0
 #define	bj_stabi_srt_start_sep_flag 		mc_flag1
 #define	bj_stabi_srt_sep_rdy_flag 			mc_flag2
-#define	bj_stabi_srt_always_sep_rdy_flag 	mc_flag3
+//define	bj_stabi_srt_always_sep_rdy_flag 	mc_flag3
 #define	bj_stabi_srt_cll_rdy_flag 			mc_flag4
-#define	bj_stabi_srt_always_cll_rdy_flag 	mc_flag5
+//define	bj_stabi_srt_always_cll_rdy_flag 	mc_flag5
 #define	bj_stabi_ti_done_flag 				mc_flag6
 
 class mc_aligned nervenode : public cell {
@@ -844,6 +851,7 @@ public:
 	void stabi_set_inactive(grip& all_inac);
 
 	void stabi_recv_rnk_cll(missive* msv);
+	void stabi_fix_pre_rdy(sornet_range& mates_rng);
 	
 	void dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
 				num_tier_t num_ti) mc_external_code_ram;
@@ -1337,9 +1345,9 @@ public:
 	bool stabi_has_all_ranges();
 	void stabi_set_ranges(missive* msv);
 	void stabi_begin_subgrouping();
-	bool stabi_has_single_quas();
-	bool stabi_has_single_neus();
-	void stabi_mark_all_single(sornet_range mates_rng, grip& all_act);
+	//bool stabi_has_pre_rdy_quas();
+	bool stabi_has_pre_rdy_neus();
+	void stabi_mark_all_pre_rdy(sornet_range& mates_rng, grip& all_act);
 	
 	bool sornet_dbg_check_order(sorkind_t knd) mc_external_code_ram;
 

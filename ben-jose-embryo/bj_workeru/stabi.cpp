@@ -161,6 +161,8 @@ nervenode::stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti){
 
 void
 nervenode::stabi_recv_ping(signal_data* dat){
+	stabi_insert_color(dat->col_idx);
+	
 	side_state& stt = left_side;
 	stt.step_num_ping++;
 
@@ -254,9 +256,9 @@ nervenode::stabi_recv_tier_done(signal_data* dat){
 bool
 nervenode::stabi_is_rdy_to_srt(){
 	bool f2 = mc_get_flag(stabi_flags, bj_stabi_srt_cll_rdy_flag);
-	bool f3 = mc_get_flag(stabi_flags, bj_stabi_srt_always_cll_rdy_flag);
-	bool rdy = (f2 || f3);
-	return rdy;
+	//bool f3 = mc_get_flag(stabi_flags, bj_stabi_srt_always_cll_rdy_flag);
+	//bool rdy = (f2 || f3);
+	return f2;
 }
 
 void
@@ -301,7 +303,13 @@ nervenode::stabi_recalc_send_pings(){
 	PTD_CK(stabi_prv_arr_dat != mc_null);	
 	int rr = bj_cmp_stabi_color_arrs(stabi_arr_sz, stabi_arr_dat, stabi_prv_arr_sz, stabi_prv_arr_dat);
 	bool is_intact = (rr == 0);
-	PTD_CK(! all_png || is_intact);
+	PTD_CK_PRT((! all_png || is_intact), "t%d_%s_%ld prv=%s arr=%s \n", stabi_tmp_tier, 
+		node_kind_to_str(ki), id,
+		bj_dbg_stabi_col_arr_to_str(stabi_prv_arr_sz, stabi_prv_arr_dat, BJ_DBG_STR_CAP, 
+									bj_nervenet->dbg_str1),
+		bj_dbg_stabi_col_arr_to_str(stabi_arr_sz, stabi_arr_dat, BJ_DBG_STR_CAP, 
+									bj_nervenet->dbg_str2)
+	);
 	
 	if(is_intact){
 		mc_set_flag(stabi_flags, bj_stabi_send_pings_flag);
@@ -314,9 +322,7 @@ void
 nervenode::stabi_reset_complete(){
 	PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_srt_start_sep_flag));
 	PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_srt_sep_rdy_flag));
-	//PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_srt_always_sep_rdy_flag));
 	PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_srt_cll_rdy_flag));
-	//PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_srt_always_cll_rdy_flag));
 	PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_ti_done_flag));
 	//PTD_CK(stabi_flags == 0);
 	
@@ -492,7 +498,7 @@ neuron::stabi_handler(missive* msv){
 					   "t%ld_%s_%ld", stabi_num_tier, node_kind_to_str(ki), id);
 			if(stabi_is_active()){
 				PTD_LOG("stb_set_cll_rdy_t%d_%s_%ld (%ld,%ld,%ld) \n", 
-						get_last_stb_ti(), node_kind_to_str(ki), id,
+						stabi_tmp_tier, node_kind_to_str(ki), id,
 						stabi_idx, stabi_col.min_idx, stabi_col.max_idx
 				);
 				mc_set_flag(stabi_flags, bj_stabi_srt_cll_rdy_flag);
@@ -508,6 +514,7 @@ neuron::stabi_handler(missive* msv){
 		break;
 		case bj_tok_sornet_rank_cll:
 			stabi_recv_rnk_cll(msv);
+			stabi_fix_pre_rdy(bj_nervenet->active_pols_col);
 		break;
 		default:
 			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
@@ -532,7 +539,7 @@ polaron::stabi_handler(missive* msv){
 			PTD_CK(! mc_get_flag(stabi_flags, bj_stabi_srt_cll_rdy_flag));
 			if(pol->stabi_is_active() || opp->stabi_is_active()){
 				PTD_LOG("stb_set_cll_rdy_t%d_%s_%ld (%ld,%ld,%ld) \n", 
-						get_last_stb_ti(), node_kind_to_str(ki), id,
+						stabi_tmp_tier, node_kind_to_str(ki), id,
 						stabi_idx, stabi_col.min_idx, stabi_col.max_idx
 				);
 				mc_set_flag(stabi_flags, bj_stabi_srt_cll_rdy_flag);
@@ -554,6 +561,7 @@ polaron::stabi_handler(missive* msv){
 		break;
 		case bj_tok_sornet_rank_cll:
 			stabi_recv_rnk_cll(msv);
+			stabi_fix_pre_rdy(bj_nervenet->active_neus_col);
 		break;
 		default:
 			mck_abort(1, mc_cstr("BAD_STABI_TOK"));
@@ -772,17 +780,6 @@ nervenet::stabi_broadcast_all_ranges(){
 	}
 }
 
-bool
-nervenet::stabi_has_all_ranges(){
-	bool r1 = stabi_nxt_active_neus_rng.has_value();
-	bool r2 = stabi_nxt_inactive_neus_rng.has_value();
-	bool r3 = stabi_nxt_active_pols_rng.has_value();
-	bool r4 = stabi_nxt_inactive_pols_rng.has_value();
-	
-	bool all_ok = (r1 && r2 && r3 && r4);
-	return all_ok;
-}
-
 void
 nervenet::stabi_set_ranges(missive* msv){
 	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
@@ -829,24 +826,6 @@ nervenet::stabi_set_ranges(missive* msv){
 	}
 }
 
-bool
-nervenet::stabi_has_single_quas(){
-	PTD_CK_PRT((active_neus_col.min_idx == 0), "min_idx=%ld", active_neus_col.min_idx);
-	PTD_CK(active_pols_col.min_idx == 0);
-	num_nod_t num_act = active_pols_col.max_idx;
-	bool has_sgl = ((num_act > 0) && (num_act > active_neus_col.max_idx));
-	return has_sgl;
-}
-
-bool
-nervenet::stabi_has_single_neus(){
-	PTD_CK(active_neus_col.min_idx == 0);
-	PTD_CK(active_pols_col.min_idx == 0);
-	num_nod_t num_act = active_neus_col.max_idx;
-	bool has_sgl = ((num_act > 0) && (num_act > active_pols_col.max_idx));
-	return has_sgl;
-}
-
 void
 nervenode::stabi_set_start_sep(void* pm){
 	mc_set_flag(stabi_flags, bj_stabi_srt_start_sep_flag);
@@ -856,9 +835,10 @@ void
 nervenode::stabi_send_start_pol_sep(void* pm){
 	bool f1 = mc_get_flag(stabi_flags, bj_stabi_srt_start_sep_flag);
 	bool f2 = mc_get_flag(stabi_flags, bj_stabi_srt_sep_rdy_flag);
-	bool f3 = mc_get_flag(stabi_flags, bj_stabi_srt_always_sep_rdy_flag);
+	//bool f3 = mc_get_flag(stabi_flags, bj_stabi_srt_always_sep_rdy_flag);
 	
-	if(f1 && (f2 || f3)){
+	//if(f1 && (f2 || f3)){
+	if(f1 && f2){
 		mc_reset_flag(stabi_flags, bj_stabi_srt_start_sep_flag);
 		mc_reset_flag(stabi_flags, bj_stabi_srt_sep_rdy_flag);
 		stabi_send_sep(mc_null);
@@ -923,12 +903,12 @@ nervenet::stabi_begin_subgrouping(){
 		active_pols_col = stabi_nxt_active_pols_rng;
 		ly_dat.inactive_pols_col = stabi_nxt_inactive_pols_rng;
 		
-		if(stabi_has_single_quas()){
-			stabi_mark_all_single(active_neus_col, all_wu_active_pos);
-			stabi_mark_all_single(active_neus_col, all_wu_active_neg);
-		}
-		if(stabi_has_single_neus()){
-			stabi_mark_all_single(active_pols_col, all_wu_active_neu);
+		/*if(stabi_has_pre_rdy_quas()){
+			stabi_mark_all_pre_rdy(active_neus_col, all_wu_active_pos);
+			stabi_mark_all_pre_rdy(active_neus_col, all_wu_active_neg);
+		}*/
+		if(stabi_has_pre_rdy_neus()){
+			stabi_mark_all_pre_rdy(active_pols_col, all_wu_active_neu);
 		}
 		
 		send_all_neus(bj_tok_stabi_start);
@@ -939,23 +919,6 @@ nervenet::stabi_begin_subgrouping(){
 			stabi_nxt_active_pols_rng.min_idx, stabi_nxt_active_pols_rng.max_idx,
 			stabi_nxt_inactive_pols_rng.min_idx, stabi_nxt_inactive_pols_rng.max_idx
 		);
-	}
-}
-
-void
-nervenet::stabi_mark_all_single(sornet_range mates_rng, grip& all_act){
-	binder * fst, * lst, * wrk;
-
-	binder* pt_all_nod = &(all_act);
-	fst = (binder*)(pt_all_nod->bn_right);
-	lst = (binder*)mck_as_loc_pt(pt_all_nod);
-	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
-		nervenode* my_nod = (nervenode*)wrk;
-		
-		if(my_nod->stabi_idx > mates_rng.max_idx){
-			PTD_LOG("ALWAYS_RDY_%s_%ld \n", node_kind_to_str(my_nod->ki), my_nod->id);
-			mc_set_flag(my_nod->stabi_flags, bj_stabi_srt_always_cll_rdy_flag);
-		}
 	}
 }
 
@@ -973,7 +936,7 @@ nervenode::stabi_set_tier_done(num_tier_t num_ti){
 	PTD_CK(stabi_tmp_tier != BJ_INVALID_NUM_TIER);
 	
 	PTD_LOG("stb_set_tier_done_t%d_%s_%ld (%ld,%ld,%ld) \n", 
-			get_last_stb_ti(), node_kind_to_str(ki), id,
+			stabi_tmp_tier, node_kind_to_str(ki), id,
 			stabi_idx, stabi_col.min_idx, stabi_col.max_idx
 	);
 }
@@ -1034,56 +997,56 @@ nervenode::stabi_recv_rnk_cll(missive* msv){
 	}
 }
 
-/*
-void
-nervenode::stabi_send_nxt_tier_color(){
-	mck_abort(1, mc_cstr("nervenode::stabi_send_nxt_tier_color"));
+bool
+nervenet::stabi_has_all_ranges(){
+	PTD_CK(! stabi_nxt_inactive_neus_rng.equal_to(active_neus_col));
+	PTD_CK(! stabi_nxt_inactive_pols_rng.equal_to(active_pols_col));
+	
+	bool an = stabi_nxt_active_neus_rng.has_value();
+	bool in = stabi_nxt_inactive_neus_rng.has_value();
+	bool ap = stabi_nxt_active_pols_rng.has_value();
+	bool ip = stabi_nxt_inactive_pols_rng.has_value();
+	
+	bool aan = stabi_nxt_active_neus_rng.equal_to(active_neus_col);
+	bool aap = stabi_nxt_active_pols_rng.equal_to(active_pols_col);
+	
+	bool all_ok = (an && (in || aan) && ap && (ip || aap));
+	return all_ok;
+}
+
+/*bool
+nervenet::stabi_has_pre_rdy_quas(){
+	PTD_CK_PRT((active_neus_col.min_idx == 0), "min_idx=%ld", active_neus_col.min_idx);
+	PTD_CK(active_pols_col.min_idx == 0);
+	bool has_prdy = (active_pols_col.max_idx > active_neus_col.max_idx);
+	return has_prdy;
+}*/
+
+bool
+nervenet::stabi_has_pre_rdy_neus(){
+	PTD_CK(active_neus_col.min_idx == 0);
+	PTD_CK(active_pols_col.min_idx == 0);
+	bool has_prdy = (active_neus_col.max_idx > active_pols_col.max_idx);
+	return has_prdy;
 }
 
 void
-polaron::stabi_send_nxt_tier_color(){
-	net_side_t sd = side_left;
-	polaron* pol = this;
-	side_state& pol_stt = get_side_state(sd);
-	side_state& opp_stt = opp->get_side_state(sd);
+nervenet::stabi_mark_all_pre_rdy(sornet_range& mates_rng, grip& all_act){
+	binder * fst, * lst, * wrk;
 
-	PTD_CK(pol_stt.is_full());
-	PTD_CK(opp_stt.is_full());
-
-	pol_stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_color, side_left);
-	opp_stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_color, side_left);
-
-	PTD_CK(stabi_tmp_tier != BJ_INVALID_NUM_TIER);
-	
-	pol->stabi_send_all_ti_done(pol, stabi_tmp_tier);
-	opp->stabi_send_all_ti_done(opp, stabi_tmp_tier);
-
-	pol_stt.step_reset_complete();
-	opp_stt.step_reset_complete();
-	
-	pol->stabi_reset_complete();
-	opp->stabi_reset_complete();
+	binder* pt_all_nod = &(all_act);
+	fst = (binder*)(pt_all_nod->bn_right);
+	lst = (binder*)mck_as_loc_pt(pt_all_nod);
+	for(wrk = fst; wrk != lst; wrk = (binder*)(wrk->bn_right)){
+		nervenode* my_nod = (nervenode*)wrk;
+		my_nod->stabi_fix_pre_rdy(mates_rng);
+	}
 }
 
 void
-neuron::stabi_send_nxt_tier_color(){
-	neuron* neu = this;
-	net_side_t sd = side_left;
-	side_state& stt = get_side_state(sd);
-	netstate& nst = bj_nervenet->get_active_netstate(sd);
-
-	//MC_DBG(dbg_prt_nod(sd, tiki_stabi, mc_cstr("stb_TIER"), 8, stabi_tmp_tier));
-
-	stt.step_active_set.transmitter_send_all_rec(&nervenode::stabi_send_snp_color, side_left);
-
-	PTD_CK(stabi_tmp_tier != BJ_INVALID_NUM_TIER);
-	
-	stabi_send_all_ti_done(neu, stabi_tmp_tier);
-	stt.step_reset_complete();
-	stabi_reset_complete();
-
-	//mck_slog2("dbg2.reset\n");
-
-	nst.update_sync_inert(tiki_stabi, true);
+nervenode::stabi_fix_pre_rdy(sornet_range& mates_rng){
+	if(stabi_idx > mates_rng.max_idx){
+		PTD_LOG("PRE_RDY_%s_%ld \n", node_kind_to_str(ki), id);
+		mc_set_flag(stabi_flags, bj_stabi_srt_cll_rdy_flag);
+	}
 }
-*/
