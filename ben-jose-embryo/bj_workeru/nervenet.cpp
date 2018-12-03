@@ -1000,9 +1000,15 @@ nervenode::dbg_prt_nod(net_side_t sd, tier_kind_t tiki, char* prefix, num_pulse_
 	}
 
 	if((tiki == tiki_propag) && (ki == nd_neu) && ne_stt.neu_all_ping(tiki)){ mck_slog2("*"); }
-	if((tiki == tiki_stabi) && mc_get_flag(stabi_flags, bj_stabi_send_pings_flag)){ mck_slog2("#"); }
-	if((tiki == tiki_stabi) && stabi_is_rdy_to_srt()){ mck_slog2("!"); }
-	if(tiki == tiki_stabi){ mck_slog2("_st"); mck_ilog(stabi_num_tier); }
+	if(tiki == tiki_stabi){
+		if(mc_get_flag(stabi_flags, bj_stabi_send_pings_flag)){ mck_slog2("#"); }
+		mck_ilog(left_side.step_prev_tot_active);
+		if(stabi_is_rdy_to_srt()){ mck_slog2("!"); }
+		mck_slog2("_st"); mck_ilog(stabi_num_tier); 
+		mck_slog2("_"); mck_ilog(stabi_idx); 
+		mck_slog2("_"); mck_ilog(stabi_col.min_idx); 
+		mck_slog2("_"); mck_ilog(stabi_col.max_idx); 
+	}
 
 	if(stabi_arr_dat != mc_null){
 		PTD_DBG_CODE(
@@ -1601,8 +1607,7 @@ neuron::can_delay(tier_kind_t tiki, net_side_t sd){
 	side_state& sd_stt = get_side_state(sd);
 	bool to_dly = sd_stt.neu_all_ping(tiki);
 	if(tiki == tiki_stabi){
-		bool is_itct = mc_get_flag(stabi_flags, bj_stabi_send_pings_flag);
-		to_dly = (to_dly && is_itct);
+		to_dly = mc_get_flag(stabi_flags, bj_stabi_send_pings_flag);
 	}
 	return to_dly;
 }

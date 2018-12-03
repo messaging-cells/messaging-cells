@@ -742,10 +742,8 @@ char* bj_dbg_stabi_col_arr_to_str(num_syn_t sz1, num_nod_t* arr1,
 #define	bj_stabi_send_pings_flag 			mc_flag0
 #define	bj_stabi_srt_start_sep_flag 		mc_flag1
 #define	bj_stabi_srt_sep_rdy_flag 			mc_flag2
-//define	bj_stabi_srt_always_sep_rdy_flag 	mc_flag3
-#define	bj_stabi_srt_cll_rdy_flag 			mc_flag4
-//define	bj_stabi_srt_always_cll_rdy_flag 	mc_flag5
-#define	bj_stabi_ti_done_flag 				mc_flag6
+#define	bj_stabi_srt_cll_rdy_flag 			mc_flag3
+#define	bj_stabi_ti_done_flag 				mc_flag4
 
 class mc_aligned nervenode : public cell {
 public:
@@ -801,7 +799,10 @@ public:
 	virtual 
 	bool is_tier_complete(signal_data* dat);
 
-	bool stabi_recalc_send_pings() bj_stabi_cod;
+	bool stabi_recalc_snd_pings_flg(signal_data* dat) bj_stabi_cod;
+
+	virtual 
+	bool stabi_recalc_send_pings(signal_data* dat) bj_stabi_cod;
 
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
@@ -903,6 +904,9 @@ public:
 	void stabi_neuron_start() bj_stabi_cod;
 
 	virtual 
+	bool stabi_recalc_send_pings(signal_data* dat) bj_stabi_cod;
+
+	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
 
 	virtual 
@@ -953,6 +957,9 @@ public:
 	virtual 
 	bool is_tier_complete(signal_data* dat);
 
+	virtual 
+	bool stabi_recalc_send_pings(signal_data* dat) bj_stabi_cod;
+	
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
 
