@@ -137,14 +137,18 @@ void mc_workerus_main() {
 			mck_abort(1, mc_cstr("mck_load_module_failed_for_PROPAG_IDX. \n"));
 		}
 		bj_propag_main();
-
-		PTD_CK(STABI_IDX < TOT_MODS);
-		ok = mck_load_module(all_mod_addr[STABI_IDX]);
-		if(! ok){
-			mck_abort(1, mc_cstr("mck_load_module_failed_for_STABI_IDX. \n"));
+		
+		bool ach = bj_nervenet->act_left_side.sync_all_zero_act_neus;
+		
+		if(! ach){
+			PTD_CK(STABI_IDX < TOT_MODS);
+			ok = mck_load_module(all_mod_addr[STABI_IDX]);
+			if(! ok){
+				mck_abort(1, mc_cstr("mck_load_module_failed_for_STABI_IDX. \n"));
+			}
+			bj_mirrow_main();
+			bj_stabi_main();
 		}
-		bj_mirrow_main();
-		bj_stabi_main();
 
 		PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_prt_all());
 		

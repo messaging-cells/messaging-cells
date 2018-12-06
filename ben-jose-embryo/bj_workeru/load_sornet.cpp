@@ -125,10 +125,11 @@ void bj_load_shd_nods(num_nod_t tot_wu_endnods, binder* nn_all_endnods, binder* 
 		endcell* ecll = bj_endcell_acquire();
 		ck_wu_endnods++;
 		
+		MCK_CK(ecll != mc_null);
 		MCK_CK(end_nd->loaded == mc_null);
 		ecll->end_snp.idx = end_nd->nxt.idx;
 
-		MCK_CK(ecll != mc_null);
+		PTD_LOG("AQUIRED_ENDCELL %p idx=%ld \n", ecll, ecll->end_snp.idx);
 		
 		//end_nd->loaded = mck_as_glb_pt(ecll);
 		mc_loop_set_var(end_nd->loaded, mck_as_glb_pt(ecll));

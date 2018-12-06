@@ -725,6 +725,7 @@ netstate::init_me(int caller){
 
 void
 netstate::init_sync(){
+	sync_all_zero_act_neus = false;
 	sync_is_inactive = false;
 	sync_wait_tier = 0;
 	sync_is_ending = false;
@@ -745,6 +746,7 @@ tierdata::init_me(int caller){
 	tdt_flags = 0;
 
 	num_inert_chdn = 0;
+	num_zero_act_neus_chdn = 0;
 
 	inp_neus = BJ_INVALID_NUM_NODE;
 	off_neus = 0;
@@ -1331,11 +1333,13 @@ synset::transmitter_send_all_rec(bj_callee_t mth, net_side_t sd){
 }
 
 void
-netstate::init_sync_transmitter(sync_transmitter& trm, num_tier_t the_ti, nervenode* the_cfl_src)
+netstate::init_sync_transmitter(sync_transmitter& trm, num_tier_t the_ti, 
+								nervenode* the_cfl_src, bool has_zan)
 {
 	trm.d.syc.wrk_side = side_invalid;
 	trm.d.syc.wrk_tier = BJ_INVALID_NUM_TIER;
 	trm.d.syc.cfl_src = mc_null;
+	trm.d.syc.has_zero_act_neus = has_zan;
 	
 	trm.d.syc.wrk_side = my_side;
 	trm.d.syc.wrk_tier = the_ti;
@@ -1344,23 +1348,12 @@ netstate::init_sync_transmitter(sync_transmitter& trm, num_tier_t the_ti, nerven
 
 void
 netstate::send_sync_transmitter(tier_kind_t tiki, nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti, 
-			nervenode* the_cfl_src)
+			nervenode* the_cfl_src, bool has_zan)
 {
 	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
 	
 	sync_transmitter* trm = bj_sync_transmitter_acquire();
-	init_sync_transmitter(*trm, the_ti, the_cfl_src);
-
-	/*
-	sync_transmitter* trm = bj_sync_transmitter_acquire();
-	trm->d.syc.wrk_side = side_invalid;
-	trm->d.syc.wrk_tier = BJ_INVALID_NUM_TIER;
-	trm->d.syc.cfl_src = mc_null;
-	
-	trm->d.syc.wrk_side = my_side;
-	trm->d.syc.wrk_tier = the_ti;
-	trm->d.syc.cfl_src = the_cfl_src;
-	*/
+	init_sync_transmitter(*trm, the_ti, the_cfl_src, has_zan);
 
 	trm->src = bj_nervenet;
 	trm->dst = the_dst;
@@ -1734,6 +1727,7 @@ nervenet::sync_handler(tier_kind_t tiki, missive* msv){
 	net_side_t tmt_sd = sy_tmt->d.syc.wrk_side;
 	num_tier_t tmt_ti = sy_tmt->d.syc.wrk_tier;
 	nervenode* tmt_cfl = sy_tmt->d.syc.cfl_src;
+	bool has_zan = sy_tmt->d.syc.has_zero_act_neus;
 
 	PTD_CK(tmt_ti != BJ_INVALID_NUM_TIER);
 	PTD_CK(tmt_sd != side_invalid);
@@ -1746,10 +1740,11 @@ nervenet::sync_handler(tier_kind_t tiki, missive* msv){
 
 	lti.update_tidat();
 
-	SYNC_LOG(" %s_SYNCR_RECV_%s_t%d_%s_ [%d <<- %d] lti=%d cf=%p chdn=(%d of %d) %s\n", ts, 
-		net_side_to_str(tmt_sd), tmt_ti, sync_tok_to_str((sync_tok_t)(msv_tok)), 
+	SYNC_LOG(" %s_SYNCR_RECV_%s_t%d_%s_ [%d <<- %d] lti=%d cf=%p i_chdn=(%d of %d) z_chdn=(%d of %d) %s\n", 
+		ts, net_side_to_str(tmt_sd), tmt_ti, sync_tok_to_str((sync_tok_t)(msv_tok)), 
 		kernel::get_workeru_nn(), mc_id_to_nn(mc_addr_get_id(msv->src)), 
 		lti.tdt_id, tmt_cfl, lti.num_inert_chdn, bj_nervenet->sync_tot_children,
+		lti.num_zero_act_neus_chdn, bj_nervenet->sync_tot_children,
 		((tmt_ti < lti.tdt_id)?("OLDER_TIER"):(""))
 	);
 
@@ -1767,6 +1762,9 @@ nervenet::sync_handler(tier_kind_t tiki, missive* msv){
 		break;
 		case bj_tok_sync_inert_child:
 			tdt.num_inert_chdn++;
+			if(has_zan){
+				tdt.num_zero_act_neus_chdn++;
+			}
 			SYNC_LOG(" %s_SYNCR_RCV_INERT_%s_t%d_dt%d_nt%d_ chdn=(%d of %d)\n", ts, 
 				net_side_to_str(tmt_sd), tmt_ti, tdt.tdt_id, nst.sync_wait_tier,
 				tdt.num_inert_chdn, bj_nervenet->sync_tot_children);
@@ -1785,7 +1783,7 @@ nervenet::sync_handler(tier_kind_t tiki, missive* msv){
 			nst.send_sync_to_children(bj_tok_sync_confl_down_pol, tmt_ti, tiki, tmt_cfl);
 		break;
 		case bj_tok_sync_to_children:
-			nst.send_sync_to_children(bj_tok_sync_to_children, tmt_ti, tiki, mc_null);
+			nst.send_sync_to_children(bj_tok_sync_to_children, tmt_ti, tiki, mc_null, has_zan);
 		break;
 		default:
 			mck_abort(1, mc_cstr("BAD_SYNC_TOK"));
@@ -1858,13 +1856,15 @@ netstate::update_sync_inert(tier_kind_t tiki, bool remove_full){
 	SYNC_LOG(" %s_SYNCR_GOT_is_inert_%s_t%d [%d,%d,%d,%d,%d] \n", ts, net_side_to_str(my_side), wt_tdt.tdt_id,
 		wt_tdt.inp_neus, wt_tdt.off_neus, wt_tdt.rcv_neus, wt_tdt.stl_neus, wt_tdt.dly_neus
 	);
+	
+	bool has_zan = ((wt_tdt.num_zero_act_neus_chdn == tot_chdn) && (wt_tdt.num_active_neus() == 0));
 
 	mc_workeru_id_t pnt_id = the_net->sync_parent_id;
 	if(pnt_id != 0){
 		nervenet* pnt_net = the_net->get_nervenet(pnt_id);
-		send_sync_transmitter(tiki, pnt_net, bj_tok_sync_inert_child, wt_tdt.tdt_id);
+		send_sync_transmitter(tiki, pnt_net, bj_tok_sync_inert_child, wt_tdt.tdt_id, mc_null, has_zan);
 	} else {
-		send_sync_to_children(bj_tok_sync_to_children, wt_tdt.tdt_id, tiki, mc_null);
+		send_sync_to_children(bj_tok_sync_to_children, wt_tdt.tdt_id, tiki, mc_null, has_zan);
 	}
 }
 
@@ -1987,7 +1987,8 @@ nervenet::send_all_children(base_transmitter& tmt_orig, char* dbg_str){
 }
 
 void 
-netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, nervenode* the_cfl)
+netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, 
+								nervenode* the_cfl, bool has_zan)
 {
 	PTD_CODE(char* ts = bj_dbg_tier_kind_to_str(tiki); MC_MARK_USED(ts););
 	SYNC_LOG(" %s_SYNCR_STOP_CHILDREN_%s_t%d_ WORKERU=%d \n", ts, net_side_to_str(my_side), 
@@ -2006,33 +2007,17 @@ netstate::send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind
 				sync_tok_to_str(bj_tok_sync_confl_down_pol), (void*)nod_confl);
 	}
 
-	// NEW CODE
 	sync_transmitter base_tmt;
-	init_sync_transmitter(base_tmt, the_ti, the_cfl);
+	init_sync_transmitter(base_tmt, the_ti, the_cfl, has_zan);
 	base_tmt.tok = the_tok;
 	bj_nervenet->send_all_children(base_tmt);
 	
-	/* OLD CODE
-	mc_load_map_st** my_children = bj_nervenet->sync_map->childs;
-	if(my_children != mc_null){ 
-		int aa = 0;
-		mc_load_map_st* ch_map = (my_children)[aa];
-		while(ch_map != mc_null){
-			mc_workeru_nn_t chd_nn = ch_map->num_workeru;
-			nervenet* ch_net = bj_nervenet->get_nervenet(mc_nn_to_id(chd_nn));
-			send_sync_transmitter(tiki, ch_net, the_tok, the_ti, the_cfl);
-
-			aa++;
-			ch_map = (my_children)[aa];
-		}
-	}
-	*/
-
 	if(the_tok == bj_tok_sync_to_children){
 		PTD_LOG(" %s_SYNCR_END_%s_t%d \n", ts, net_side_to_str(my_side), the_ti);
 
 		sync_is_ending = true;
 		sync_is_inactive = true;
+		if(has_zan){ sync_all_zero_act_neus = true; }
 	}
 }
 

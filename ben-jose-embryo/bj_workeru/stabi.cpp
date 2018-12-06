@@ -246,7 +246,7 @@ nervenode::stabi_recv_tier_done(signal_data* dat){
 			((mc_get_flag(stabi_flags, bj_stabi_send_pings_flag))?("SEND_PINGS"):(""))
 		);
 		
-		//PTD_CK(get_last_stb_ti() < 15); // DEBUG_PURPOSES_ONLY
+		PTD_CK(get_last_stb_ti() < 15); // DEBUG_PURPOSES_ONLY
 
 		if(! to_dly){
 			stabi_start_nxt_tier(dat);
@@ -803,6 +803,7 @@ nervenode::stabi_set_start_sep(void* pm){
 
 void
 nervenode::stabi_send_start_pol_sep(void* pm){
+	PTD_CK(bj_is_pol(ki));
 	bool f1 = mc_get_flag(stabi_flags, bj_stabi_srt_start_sep_flag);
 	bool f2 = mc_get_flag(stabi_flags, bj_stabi_srt_sep_rdy_flag);
 	//bool f3 = mc_get_flag(stabi_flags, bj_stabi_srt_always_sep_rdy_flag);

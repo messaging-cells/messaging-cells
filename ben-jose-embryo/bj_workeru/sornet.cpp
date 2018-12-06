@@ -402,14 +402,15 @@ sorcell::sornet_srt_handler(sornet_transmitter* sn_tmt){
 	sornet_handle_direct(sn_tmt, invalid_val);
 	
 	PTD_DBG_CODE(
-		bool is_input = ((tmt_knd == sorkind_cll) && mc_get_flag(edge_flags, bj_srt_input_flag));
+		bool is_input = mc_get_flag(edge_flags, bj_srt_input_flag);
 		if(is_input){
 			nervenode* nd = (nervenode*)(sn_tmt->src);
 			node_kind_t nd_ki = nd->ki;
 			long nd_id = nd->id;
 			num_tier_t nd_ti = nd->stabi_num_tier;
 			sornapse& the_snp = get_snp(sn_tmt->d.srt.idx);
-			PTD_LOG("INPUT_SORCELL_RCV_t%ld_%s_%ld (%p) (%ld,%ld,%ld,%ld,%ld) \n", nd_ti,
+			PTD_LOG("INPUT_SORCELL_%sRCV_t%ld_%s_%ld (%p) (%ld,%ld,%ld,%ld,%ld) \n", 
+				((tmt_knd == sorkind_sep)?("SEP_"):("")), nd_ti,
 				node_kind_to_str(nd_ki), nd_id, (void*)nd, 
 				the_snp.idx, the_snp.min_col, the_snp.max_col, the_snp.min_grp, the_snp.max_grp
 			);
@@ -747,7 +748,8 @@ endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 			}
 			
 			if(dst2 != mc_null){
-				PTD_LOG("ENDCELL_RDY_FOR_t%ld_%ld (%p) -> %s_%ld  (%p) tok=%s (%ld,%ld,%ld,%ld,%ld) \n", 
+				PTD_LOG("ENDCELL_%sRDY_FOR_t%ld_%ld (%p) -> %s_%ld  (%p) tok=%s (%ld,%ld,%ld,%ld,%ld) \n", 
+					(is_rnk_sep)?("SEP_"):(""),
 					dst2->stabi_num_tier, end_snp.idx, (void*)ecll, 
 					node_kind_to_str(dst2->ki), dst2->id, (void*)dst2, bj_tok_to_str(rdy_tok),
 					end_snp.idx, end_snp.min_col, end_snp.max_col, end_snp.min_grp, end_snp.max_grp
@@ -768,8 +770,8 @@ endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 						end_snp.out, dst, end_snp.idx, mc_null, dbg_log_msv);
 		
 		PTD_LOG(
-			"ENDCELL_FIRED_t%ld_%ld (%p) -> %s_%ld (%p) tok=%s (%ld,%ld,%ld,%ld,%ld) \n", 
-			nd_ti, end_snp.idx, (void*)ecll, 
+			"ENDCELL_%sFIRED_t%ld_%ld (%p) -> %s_%ld (%p) tok=%s (%ld,%ld,%ld,%ld,%ld) \n", 
+			(is_rnk_sep)?("SEP_"):(""), nd_ti, end_snp.idx, (void*)ecll, 
 			node_kind_to_str(nd_ki), nd_id, (void*)nd, bj_tok_to_str(out_tok), 
 			end_snp.idx, end_snp.min_col, end_snp.max_col, end_snp.min_grp, end_snp.max_grp
 		);

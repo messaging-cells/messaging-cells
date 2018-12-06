@@ -714,3 +714,9 @@ nervenet::propag_handler(missive* msv){
 	sync_handler(tiki_propag, msv);
 }
 
+bool
+nervenet::propag_has_all_charged(){
+	bool ach = (act_left_side.sync_all_zero_act_neus || act_right_side.sync_all_zero_act_neus);
+	return ach;
+}
+

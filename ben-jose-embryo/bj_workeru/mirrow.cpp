@@ -261,8 +261,10 @@ nervenode::mirrow_sides(net_side_t src_sd, sornet_range& mates_rng){
 		mc_set_flag(stabi_flags, bj_stabi_srt_sep_rdy_flag);
 	}
 
-	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s \n", get_ki_str(), id,
-		bj_dbg_stabi_col_arr_to_str(stabi_arr_sz, stabi_arr_dat, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1));
+	PTD_LOG("MIRROW_ID_ARR_%s_%d_%s %s \n", get_ki_str(), id,
+		bj_dbg_stabi_col_arr_to_str(stabi_arr_sz, stabi_arr_dat, BJ_DBG_STR_CAP, bj_nervenet->dbg_str1),
+		((stabi_idx > mates_rng.max_idx)?("PRE_RDY"):(""))
+	);
 
 	//PTD_LOG("mirrow_nod_end \n");
 }

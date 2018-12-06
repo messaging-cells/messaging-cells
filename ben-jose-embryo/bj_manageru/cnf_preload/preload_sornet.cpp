@@ -89,12 +89,14 @@ add_rnk_endnod_to_glb_cnf(pre_endnode* nod, mc_workeru_nn_t& nxt_nn){
 	}
 }
 
-void
+mc_workeru_nn_t
 add_sornod_to_glb_cnf(pre_sornode* nod, mc_workeru_nn_t& nxt_nn){
+	mc_workeru_nn_t rr = MC_INVALID_WORKERU_NN;
 	if(THE_CNF != mc_null){
 		long num_workerus = THE_CNF->tot_workerus;
 		PTD_CK(nxt_nn < num_workerus);
 
+		rr = nxt_nn;
 		pre_cnf_net& cnf = THE_CNF->all_cnf[nxt_nn];
 		cnf.tot_pre_sornods++;
 		cnf.all_pre_sornods.bind_to_my_left(*nod);
@@ -103,6 +105,7 @@ add_sornod_to_glb_cnf(pre_sornode* nod, mc_workeru_nn_t& nxt_nn){
 		if(nxt_nn == num_workerus){ nxt_nn = 0; }
 		PTD_CK(nxt_nn < num_workerus);
 	}
+	return rr;
 }
 
 void
@@ -168,11 +171,13 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 	}
 
 	mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
-	add_sornod_to_glb_cnf(nod, nxt_nn);
+	mc_workeru_nn_t ld_nn = add_sornod_to_glb_cnf(nod, nxt_nn);
 
 	PTD_CK(knd != snod_invalid);
-	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld]%ld \t(%ld %ld) \n", ((knd == snod_alte)?("ALT"):("HLF")), 
-			nod->nod_id, nod->level, up_idx, down_idx, nod->srt_sz, ptd_dbg_up_nid, ptd_dbg_down_nid);
+	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld]%ld \t(%ld %ld) wu=%d \n", ((knd == snod_alte)?("ALT"):("HLF")), 
+		nod->nod_id, nod->level, up_idx, down_idx, nod->srt_sz, ptd_dbg_up_nid, ptd_dbg_down_nid,
+		ld_nn
+	);
 	ZNQ_CODE(printf("%s_NOD (%ld)  %ld[%ld %ld] \n", ((knd == snod_alte)?("ALT"):("HLF")), 
 				nod->nod_id, nod->level, up_idx, down_idx));
 }

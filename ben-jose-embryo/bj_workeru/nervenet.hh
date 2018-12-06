@@ -438,6 +438,7 @@ public:
 	net_side_t wrk_side;
 	num_tier_t wrk_tier;
 	nervenode* 	 cfl_src;
+	bool 	has_zero_act_neus;
 };
 
 union mc_aligned all_transmitter_data {
@@ -993,6 +994,7 @@ public:
 	binder	all_delayed;
 
 	mc_workeru_nn_t num_inert_chdn;
+	mc_workeru_nn_t num_zero_act_neus_chdn;
 
 	num_nod_t inp_neus;
 	num_nod_t off_neus;
@@ -1028,6 +1030,11 @@ public:
 
 	mc_inline_fn bool is_inert(){
 		return ((inp_neus != BJ_INVALID_NUM_NODE) && ((inp_neus - off_neus) == dly_neus));
+	}
+	
+	mc_inline_fn num_nod_t num_active_neus(){
+		PTD_CK(inp_neus != BJ_INVALID_NUM_NODE);
+		return (inp_neus - off_neus);
 	}
 
 	mc_inline_fn tierdata& prv_tier(){
@@ -1080,6 +1087,7 @@ class mc_aligned netstate {
 public:
 	net_side_t my_side;
 
+	bool		sync_all_zero_act_neus;
 	bool		sync_is_inactive;
 	num_tier_t	sync_wait_tier;
 	bool 		sync_is_ending;
@@ -1104,12 +1112,13 @@ public:
 	void init_propag_tiers(nervenet& nnt) mc_external_code_ram;
 	void init_stabi_tiers() mc_external_code_ram;
 
-	void init_sync_transmitter(sync_transmitter& tmt, num_tier_t the_ti,nervenode* cfl_src);
+	void init_sync_transmitter(sync_transmitter& tmt, num_tier_t the_ti, nervenode* cfl_src, bool has_zan);
 
 	void send_sync_transmitter(tier_kind_t tiki, nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
-			nervenode* cfl_src = mc_null);
+			nervenode* cfl_src = mc_null, bool has_zan = false);
 
-	void send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, nervenode* cfl_src); 
+	void send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, 
+			nervenode* cfl_src, bool has_zan = false); 
 
 	void send_up_confl_tok(sync_tok_t the_tok, num_tier_t the_ti, nervenode* the_cfl) mc_external_code_ram;
 
@@ -1332,6 +1341,8 @@ public:
 	void propag_handle_sync() bj_propag_cod;
 	void send_parent_tok_empty_child(net_side_t sd) bj_propag_cod;
 
+	bool propag_has_all_charged() bj_propag_cod;
+	
 	void mirrow_handler(missive* msv) bj_stabi_cod;
 	void mirrow_nervenet() bj_stabi_cod;
 	void mirrow_start_all_nods(grip& all_nod, net_side_t sd, sornet_range& mates_rng) bj_stabi_cod;
