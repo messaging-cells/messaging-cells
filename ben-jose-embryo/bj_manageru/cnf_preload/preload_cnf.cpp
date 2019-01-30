@@ -9,11 +9,15 @@ pre_load_cnf* THE_CNF = mc_null;
 
 grip ava_pre_sornode;
 grip ava_pre_endnode;
+grip ava_pre_item_pgroup;
+grip ava_pre_pgroup;
 grip ava_pre_cnf_node;
 grip ava_pre_cnf_net;
 
 MCK_DEFINE_MEM_METHODS(pre_sornode, 32, ava_pre_sornode, 0)
 MCK_DEFINE_MEM_METHODS(pre_endnode, 32, ava_pre_endnode, 0)
+MCK_DEFINE_MEM_METHODS(pre_item_pgroup, 32, ava_pre_item_pgroup, 0)
+MCK_DEFINE_MEM_METHODS(pre_pgroup, 32, ava_pre_pgroup, 0)
 MCK_DEFINE_MEM_METHODS(pre_cnf_node, 32, ava_pre_cnf_node, 0)
 MCK_DEFINE_MEM_METHODS(pre_cnf_net, 32, ava_pre_cnf_net, 0)
 
@@ -29,16 +33,22 @@ void bj_mgr_init_mem_funcs(){
 	
 	bj_mgr_all_ava[bj_cell_id(pre_sornode)] = &(ava_pre_sornode);
 	bj_mgr_all_ava[bj_cell_id(pre_endnode)] = &(ava_pre_endnode);
+	bj_mgr_all_ava[bj_cell_id(pre_item_pgroup)] = &(ava_pre_item_pgroup);
+	bj_mgr_all_ava[bj_cell_id(pre_pgroup)] = &(ava_pre_pgroup);
 	bj_mgr_all_ava[bj_cell_id(pre_cnf_node)] = &(ava_pre_cnf_node);
 	bj_mgr_all_ava[bj_mgr_last_invalid] = mc_pt_invalid_available;
 	
 	bj_mgr_all_acq[bj_cell_id(pre_sornode)] = (mc_alloc_kernel_func_t)pre_sornode::acquire_alloc;
 	bj_mgr_all_acq[bj_cell_id(pre_endnode)] = (mc_alloc_kernel_func_t)pre_endnode::acquire_alloc;
+	bj_mgr_all_acq[bj_cell_id(pre_item_pgroup)] = (mc_alloc_kernel_func_t)pre_item_pgroup::acquire_alloc;
+	bj_mgr_all_acq[bj_cell_id(pre_pgroup)] = (mc_alloc_kernel_func_t)pre_pgroup::acquire_alloc;
 	bj_mgr_all_acq[bj_cell_id(pre_cnf_node)] = (mc_alloc_kernel_func_t)pre_cnf_node::acquire_alloc;
 	bj_mgr_all_acq[bj_mgr_last_invalid] = kernel::invalid_alloc_func;
 
 	bj_mgr_all_sep[bj_cell_id(pre_sornode)] = (mc_alloc_kernel_func_t)pre_sornode::separate;
 	bj_mgr_all_sep[bj_cell_id(pre_endnode)] = (mc_alloc_kernel_func_t)pre_endnode::separate;
+	bj_mgr_all_sep[bj_cell_id(pre_item_pgroup)] = (mc_alloc_kernel_func_t)pre_item_pgroup::separate;
+	bj_mgr_all_sep[bj_cell_id(pre_pgroup)] = (mc_alloc_kernel_func_t)pre_pgroup::separate;
 	bj_mgr_all_sep[bj_cell_id(pre_cnf_node)] = (mc_alloc_kernel_func_t)pre_cnf_node::separate;
 	bj_mgr_all_sep[bj_mgr_last_invalid] = kernel::invalid_alloc_func;
 	
@@ -46,6 +56,8 @@ void bj_mgr_init_mem_funcs(){
 	
 	PTD_CK(pre_sornode::ck_cell_id(bj_cell_id(pre_sornode)));
 	PTD_CK(pre_endnode::ck_cell_id(bj_cell_id(pre_endnode)));
+	PTD_CK(pre_item_pgroup::ck_cell_id(bj_cell_id(pre_item_pgroup)));
+	PTD_CK(pre_pgroup::ck_cell_id(bj_cell_id(pre_pgroup)));
 	PTD_CK(pre_cnf_node::ck_cell_id(bj_cell_id(pre_cnf_node)));
 }
 

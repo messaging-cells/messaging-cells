@@ -940,6 +940,28 @@ polaron::stabi_start_nxt_tier(signal_data* dat){
 }
 
 void
+nervenode::stabi_update_min_max(){
+	if(ki == nd_neu){
+		return;
+	}
+	PTD_CK(bj_is_pol(ki));
+	polaron* pol = (polaron*)this;
+	nervenet* nnt = bj_nervenet;
+	sornet_range& rng = nnt->active_pols_col;
+	
+	PTD_CK(bj_sornet_idx_inside(stabi_idx, rng.min_idx, rng.max_idx));
+	
+	PTD_CK(rng.min_idx == 0);
+	if(stabi_idx == 0){
+		nnt->stabi_min_pol = pol;
+	}
+	PTD_CK(rng.max_idx != BJ_INVALID_SRT_GRP);
+	if(stabi_idx == rng.max_idx){
+		nnt->stabi_max_pol = pol;
+	}
+}
+
+void
 nervenode::stabi_recv_rnk_cll(missive* msv){
 	sornet_transmitter* sn_tmt = (sornet_transmitter*)msv;
 	nervenode* nd = this;
@@ -948,6 +970,7 @@ nervenode::stabi_recv_rnk_cll(missive* msv){
 	netstate& nst = bj_nervenet->act_left_side;
 	
 	stabi_set_color(sn_tmt);
+	stabi_update_min_max();
 	
 	PTD_LOG("stb_TIDONE_t%d_%s_%ld (%ld,%ld,%ld) \n", stabi_tmp_tier, node_kind_to_str(ki), id,
 		stabi_idx, stabi_col.min_idx, stabi_col.max_idx

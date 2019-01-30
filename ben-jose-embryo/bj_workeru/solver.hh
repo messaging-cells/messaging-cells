@@ -126,6 +126,8 @@ enum node_kind_t : uint8_t {
 enum bj_cell_id_t : mck_handler_idx_t {
 	bj_cell_id(pre_sornode) = mck_tot_base_cell_classes,
 	bj_cell_id(pre_endnode),
+	bj_cell_id(pre_item_pgroup),
+	bj_cell_id(pre_pgroup),
 	bj_cell_id(pre_cnf_node),
 
 	bj_mgr_last_invalid,

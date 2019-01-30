@@ -66,6 +66,42 @@ typedef uint16_t mc_alloc_size_t;
 #define BJ_INVALID_ALLOC_SZ ((mc_alloc_size_t)(~((mc_alloc_size_t)0x0)))
 
 //-------------------------------------------------------------------------
+// flags
+
+typedef uint8_t mc_flags_t;
+
+#define	mc_flag0	((mc_flags_t)0x01)
+#define	mc_flag1	((mc_flags_t)0x02)
+#define	mc_flag2	((mc_flags_t)0x04)
+#define	mc_flag3	((mc_flags_t)0x08)
+#define	mc_flag4	((mc_flags_t)0x10)
+#define	mc_flag5	((mc_flags_t)0x20)
+#define	mc_flag6	((mc_flags_t)0x40)
+#define	mc_flag7	((mc_flags_t)0x80)
+
+#define mc_set_mask(flgs, mask) (flgs |= mask)
+#define mc_reset_mask(flgs, mask) (flgs &= ~mask)
+#define mc_has_mask(flgs, mask) (flgs & mask)
+
+static mc_inline_fn
+mc_flags_t	mc_set_flag(mc_flags_t& flgs, mc_flags_t bit_flag){
+	flgs = (mc_flags_t)(flgs | bit_flag);
+	return flgs;
+}
+
+static mc_inline_fn
+mc_flags_t 	mc_reset_flag(mc_flags_t& flgs, mc_flags_t bit_flag){
+	flgs = (mc_flags_t)(flgs & ~bit_flag);
+	return flgs;
+}
+
+static mc_inline_fn
+bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
+	mc_flags_t  resp  = (mc_flags_t)(flgs & bit_flag);
+	return (resp != 0);
+}
+
+//-------------------------------------------------------------------------
 // casts
 
 typedef grip& (* mc_method_1_t)();
@@ -331,6 +367,7 @@ public:
 	grip local_work;
 	grip out_work;
 	grip sent_work;
+	grip delayed_to_release;
 
 	char* class_names_arr[kernel_class_names_arr_sz];
 
@@ -521,6 +558,9 @@ public:
 	mc_opt_sz_fn void 
 	call_handlers_of_group(missive_grp_t* mgrp, bool has_dbg);
 
+	void
+	release_all_missives(grip& all_msv, grip* pending, bool has_dbg) mc_external_code_ram;
+
 	void 
 	handle_work_to_manageru() mc_external_code_ram;
 
@@ -534,7 +574,7 @@ public:
 	handle_manageru_missives() mc_external_code_ram;
 
 	void 
-	call_manageru_handlers_of_group(missive_grp_t* mgrp) mc_external_code_ram;
+	call_manageru_handlers_of_group(missive_grp_t* mgrp, bool has_dbg) mc_external_code_ram;
 
 	mc_inline_fn
 	void reset_stop_sys(){
@@ -570,16 +610,18 @@ public:
 */
 
 #define mck_handle_missive_base(msv, hdlr_idx) \
+	PTD_DBG_CODE(if(has_dbg){PTD_PRT("BEFORE_HANDLING_MISSIVE_%s \n", msv->get_dbg_string());}); \
 	PTD_CK(mck_is_valid_handler_index(hdlr_idx)); \
 	if(mck_is_valid_handler_idx(hdlr_idx)){ \
 		(*(all_cell_handlers[hdlr_idx]))(msv); \
-		PTD_DBG_CODE(msv->dbg_msv |= mc_dbg_msv_received_flag); \
+		PTD_DBG_CODE(mc_set_mask(msv->flg, mc_dbg_msv_received_flag)); \
 		PTD_DBG_CODE( \
-			if(msv->dbg_msv & mc_dbg_msv_log_received_flag){ \
+			if(mc_has_mask(msv->flg, mc_dbg_msv_log_received_flag)){ \
 				PTD_LOG("DBG_MSV_received (%p) %d \n", msv, hdlr_idx); \
 			} \
 		); \
 	} \
+	PTD_DBG_CODE(if(has_dbg){PTD_PRT("AFTER_HANDLING_MISSIVE_%s \n", msv->get_dbg_string());}); \
 
 // end_macro
 
@@ -657,18 +699,6 @@ Every cell has a \ref mck_handler_idx_t called \ref handler_idx .
 //======================================================================
 // flags
 
-typedef uint8_t mc_flags_t;
-
-#define	mc_flag0	((mc_flags_t)0x01)
-#define	mc_flag1	((mc_flags_t)0x02)
-#define	mc_flag2	((mc_flags_t)0x04)
-#define	mc_flag3	((mc_flags_t)0x08)
-#define	mc_flag4	((mc_flags_t)0x10)
-#define	mc_flag5	((mc_flags_t)0x20)
-#define	mc_flag6	((mc_flags_t)0x40)
-#define	mc_flag7	((mc_flags_t)0x80)
-
-
 // did_work bits
 
 #define	mc_bit0	((uint16_t)0x0001)
@@ -688,24 +718,6 @@ typedef uint8_t mc_flags_t;
 #define	mc_bit14	((uint16_t)0x4000)
 #define	mc_bit15	((uint16_t)0x8000)
 
-
-static mc_inline_fn
-mc_flags_t	mc_set_flag(mc_flags_t& flgs, mc_flags_t bit_flag){
-	flgs = (mc_flags_t)(flgs | bit_flag);
-	return flgs;
-}
-
-static mc_inline_fn
-mc_flags_t 	mc_reset_flag(mc_flags_t& flgs, mc_flags_t bit_flag){
-	flgs = (mc_flags_t)(flgs & ~bit_flag);
-	return flgs;
-}
-
-static mc_inline_fn
-bool	mc_get_flag(mc_flags_t flgs, mc_flags_t bit_flag){
-	mc_flags_t  resp  = (mc_flags_t)(flgs & bit_flag);
-	return (resp != 0);
-}
 
 #define	mc_module_bridge_flag mc_flag0
 
@@ -765,19 +777,20 @@ public:
 #define mc_missive_acquire_arr(num) ((missive*)(kernel::do_acquire(mck_cell_id(missive), num)))
 #define mc_missive_acquire() mc_missive_acquire_arr(1)
 
-#define mc_dbg_msv_sent_flag 			mc_flag0
-#define mc_dbg_msv_received_flag 		mc_flag1
-#define mc_dbg_msv_log_received_flag 	mc_flag2
+#define mc_msv_delayed_flag 			mc_flag0
+#define mc_msv_reply_flag 				mc_flag1
+#define mc_dbg_msv_sent_flag 			mc_flag2
+#define mc_dbg_msv_received_flag 		mc_flag3
+#define mc_dbg_msv_log_received_flag 	mc_flag4
 
 class mc_aligned missive : public agent {
 public:
 	MCK_DECLARE_MEM_METHODS(missive);
 
+	mc_flags_t			flg;
 	cell* 				dst;
 	cell*				src;
 	mck_token_t 		tok;
-
-	PTD_DBG_CODE(mc_flags_t	dbg_msv);
 
 	mc_opt_sz_fn 
 	missive(){
@@ -790,21 +803,22 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int dbg_caller = 0){
 		PTD_CK_PRT((dbg_caller == 0) || 
-			(! (dbg_msv & mc_dbg_msv_sent_flag)) || (dbg_msv & mc_dbg_msv_received_flag), 
+			(! mc_has_mask(flg, mc_dbg_msv_sent_flag)) || mc_has_mask(flg, mc_dbg_msv_received_flag), 
 			"cll=%d dbg=%p tok=%d src=%p dst=%p\n", 
-			dbg_caller, (void*)(uintptr_t)dbg_msv, tok, (void*)src, (void*)dst);
+			dbg_caller, (void*)(uintptr_t)flg, tok, (void*)src, (void*)dst);
 		dst = mc_null;
 		src = mc_null;
 		tok = 0;
-		PTD_DBG_CODE(dbg_msv = 0);
+		PTD_DBG_CODE(flg = 0);
 	}
 
 	//! Sends this \ref missive . It calls \ref mck_as_glb_pt with src before sending.
 	mc_inline_fn 
 	void send(){
-		//PTD_CK(dbg_msv == 0);
-		PTD_CK((! (dbg_msv & mc_dbg_msv_sent_flag)) && (! (dbg_msv & mc_dbg_msv_received_flag)));
-		PTD_DBG_CODE(dbg_msv |= mc_dbg_msv_sent_flag);
+		//PTD_CK(flg == 0);
+		PTD_CK(	(! mc_has_mask(flg, mc_dbg_msv_sent_flag)) && 
+				(! mc_has_mask(flg, mc_dbg_msv_received_flag))	);
+		PTD_DBG_CODE(mc_set_mask(flg, mc_dbg_msv_sent_flag));
 
 		PTD_CK(dst != mc_null);
 		PTD_CK(mc_addr_in_sys((mc_addr_t)dst));
@@ -815,8 +829,8 @@ public:
 
 	mc_inline_fn 
 	void send_to_manageru(){
-		PTD_CK(dbg_msv == 0);
-		PTD_DBG_CODE(dbg_msv |= mc_dbg_msv_sent_flag);
+		PTD_CK(flg == 0);
+		PTD_DBG_CODE(mc_set_mask(flg, mc_dbg_msv_sent_flag));
 
 		PTD_CK(dst != mc_null);
 		if(! MCK_KERNEL->is_manageru_kernel){
@@ -896,8 +910,6 @@ public:
 		return mck_cell_id(agent_grp);
 	}
 
-	void
-	release_all_agts();
 };
 
 //-------------------------------------------------------------------------

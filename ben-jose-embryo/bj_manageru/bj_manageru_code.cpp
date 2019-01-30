@@ -6,7 +6,7 @@
 #include "preload.hh"
 #include "file_funcs.h"
 
-//define BJ_WITH_MANAGERU_TESTS
+#define BJ_WITH_MANAGERU_TESTS
 
 #ifdef BJ_WITH_MANAGERU_TESTS
 #include "load_cnf.hh"
@@ -234,6 +234,7 @@ void bj_test_7(int argc, char *argv[])
 #endif
 
 #ifdef BJ_WITH_MANAGERU_TESTS
+
 void bj_mc_test_1(int argc, char *argv[])
 {
 	printf("bj_mc_test_1 \n");
@@ -263,12 +264,6 @@ void bj_mc_test_2(int argc, char *argv[])
 		printf("%s <min> <max> \n", argv[0]);
 		return; 
 	}
-	/*num_nod_t min_idx = atol(argv[1]);
-	num_nod_t max_idx = atol(argv[2]);
-
-	num_nod_t grp_sz = 0;
-	//grp_sz = bj_sornet_calc_grp_sz(min_idx, max_idx);
-	printf("grp_sz = %ld \n", grp_sz);*/
 }
 
 #define BJ_DBG_MAX_NOD_SZ 20
@@ -310,6 +305,29 @@ void bj_mc_test_3(int argc, char *argv[])
 	kernel::finish_manageru_sys();
 }
 
+void bj_mc_test_4(int argc, char *argv[])
+{
+	printf("bj_mc_test_4 \n");
+	if(argc > 1){
+		mch_epiphany_elf_path = argv[1];
+		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
+	}
+
+	if(argc < 3){
+		printf("Usage: %s <epiphany_elf> <num>\n", argv[0]);
+		return;
+	}
+	
+	num_nod_t num_item = atol(argv[2]);
+	
+	kernel::init_manageru_sys();
+	bj_mgr_init_handlers();
+	pre_pgroup* grp = bj_pre_pgroup_acquire();
+	create_pgroup(*grp, num_item);
+	grp->prt_nodes();
+	kernel::finish_manageru_sys();
+}
+
 #endif
 
 int mc_manageru_main(int argc, char *argv[])
@@ -326,8 +344,9 @@ int mc_manageru_main(int argc, char *argv[])
 	//bj_mc_test_1(argc, argv);
 	//bj_mc_test_2(argc, argv);
 	//bj_mc_test_3(argc, argv);
+	bj_mc_test_4(argc, argv);
 	
-	rr = bj_manageru_main(argc, argv);
+	//rr = bj_manageru_main(argc, argv);
 
 	printf("MANAGERU_CODE_FINISHED ==================================== \n");
 	return rr;

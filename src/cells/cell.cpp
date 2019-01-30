@@ -309,7 +309,7 @@ kernel::add_out_missive(grip* out_wk, missive& msv1){
 	}
 	if(grp_found != mc_null){
 		PTD_DBG_CODE(
-			if(msv1.dbg_msv & mc_dbg_msv_log_received_flag){
+			if(mc_has_mask(msv1.flg, mc_dbg_msv_log_received_flag)){
 				grp_found->dbg_grp |= mc_dbg_grp_log_steps_flag;
 				PTD_LOG("DBG_GRP_found %p \n", grp_found);
 			}
@@ -327,7 +327,7 @@ kernel::add_out_missive(grip* out_wk, missive& msv1){
 	out_wk->bind_to_my_left(*mgrp2);
 
 	PTD_DBG_CODE(
-		if(msv1.dbg_msv & mc_dbg_msv_log_received_flag){
+		if(mc_has_mask(msv1.flg, mc_dbg_msv_log_received_flag)){
 			mgrp2->dbg_grp |= mc_dbg_grp_log_steps_flag;
 			PTD_LOG("DBG_GRP_created %p \n", mgrp2);
 		}
@@ -352,9 +352,7 @@ kernel::call_handlers_of_group(missive_grp_t* rem_mgrp, bool has_dbg){
 	for(wrk = fst; wrk != lst; wrk = mc_glb_binder_get_rgt(wrk, msvs_id)){
 		missive* remote_msv = (missive*)wrk;
 
-		PTD_DBG_CODE(if(has_dbg){PTD_PRT("BEFORE_HANDLING_MISSIVE_%s \n", remote_msv->get_dbg_string());});
 		mck_handle_missive(remote_msv);
-		PTD_DBG_CODE(if(has_dbg){PTD_PRT("AFTER_HANDLING_MISSIVE_%s \n", remote_msv->get_dbg_string());});
 	}
 
 	PTD_CK(! rem_mgrp->handled);
@@ -662,6 +660,8 @@ kernel::handle_missives(){
 	if(has_from_manageru_work){
 		handle_work_from_manageru();
 	}
+
+	release_all_missives(ker->delayed_to_release, mc_null, has_dbg);
 	
 	PTD_CK(! has_dbg || ! in_work.is_alone());
 	PTD_DBG_CODE(
@@ -703,7 +703,7 @@ kernel::handle_missives(){
 		if(! is_manageru_kernel){ 
 			call_handlers_of_group(remote_grp, has_dbg);
 		} else {
-			call_manageru_handlers_of_group(remote_grp);
+			call_manageru_handlers_of_group(remote_grp, has_dbg);
 		}
 		PTD_DBG_CODE(if(has_dbg){ PTD_PRT("HAS_DBG_flag1\n");} );
 
@@ -817,7 +817,8 @@ kernel::handle_missives(){
 		nxt = wrk->bn_right;
 
 		if(mgrp->handled){
-			mgrp->release_all_agts();
+			release_all_missives(mgrp->all_agts, &(ker->delayed_to_release), has_dbg);
+			PTD_CK(mgrp->all_agts.is_alone());
 			mgrp->release(4);
 		}
 		did_work |= mc_bit9;
@@ -833,17 +834,35 @@ kernel::handle_missives(){
 }
 
 void
-agent_grp::release_all_agts(){
+kernel::release_all_missives(grip& all_msv, grip* pending, bool has_dbg){
 	binder * fst, * lst, * wrk, * nxt;
-	binder* all_agts = &(this->all_agts);
+	binder* all_agts = &all_msv;
 
 	fst = all_agts->bn_right;
 	lst = all_agts;
 	for(wrk = fst; wrk != lst; wrk = nxt){
-		agent* agt = (agent*)wrk;
+		missive* msv = (missive*)wrk;
 		nxt = wrk->bn_right;
 
-		agt->release(5);
+		bool dlyed = mc_has_mask(msv->flg, mc_msv_delayed_flag);
+		if(dlyed){
+			if(pending != mc_null){
+				msv->let_go();
+				pending->bind_to_my_left(*msv);
+			}
+		} else {
+			bool rply = mc_has_mask(msv->flg, mc_msv_reply_flag);
+			if(rply){
+				msv->let_go();
+				
+				cell* hdlr_src = (msv)->src;
+				PTD_CK(hdlr_src != mc_null);
+				PTD_CK(mc_addr_is_local(hdlr_src));
+				mck_handle_missive_base(msv, hdlr_src->handler_idx);
+			} else {
+				msv->release(5);
+			}
+		}
 	}
 }
 
@@ -991,7 +1010,7 @@ kernel::handle_manageru_missives(){
 }
 
 void 
-kernel::call_manageru_handlers_of_group(missive_grp_t* workeru_mgrp){
+kernel::call_manageru_handlers_of_group(missive_grp_t* workeru_mgrp, bool has_dbg){
 	PTD_CK(is_manageru_kernel);
 	
 	binder * fst, * lst, * wrk;
@@ -1024,8 +1043,11 @@ kernel::handle_work_from_manageru(){
 	MCK_CK(manageru_kernel != mc_null);
 	MCK_CK(has_from_manageru_work);
 
+	bool has_dbg = false;
+	
 	PTD_CK(from_manageru_work.is_alone());
-	process_signal(from_manageru_work, 1, &routed_from_manageru, manageru_kernel->pw0_routed_ack_arr);
+	has_dbg = has_dbg ||
+		process_signal(from_manageru_work, 1, &routed_from_manageru, manageru_kernel->pw0_routed_ack_arr);
 	PTD_CK(! from_manageru_work.is_alone());
 
 	missive_ref_t* fst_ref = (missive_ref_t*)from_manageru_work.bn_right;

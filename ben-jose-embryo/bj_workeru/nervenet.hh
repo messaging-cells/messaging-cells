@@ -851,6 +851,7 @@ public:
 	
 	void stabi_set_color(sornet_transmitter* sn_tmt);
 	void stabi_set_inactive(grip& all_inac);
+	void stabi_update_min_max();
 
 	void stabi_recv_rnk_cll(missive* msv);
 	void stabi_fix_pre_rdy(sornet_range& mates_rng);
@@ -1262,6 +1263,9 @@ public:
 	sornet_range	stabi_nxt_inactive_neus_rng;
 	sornet_range	stabi_nxt_active_pols_rng;
 	sornet_range	stabi_nxt_inactive_pols_rng;
+	
+	polaron*		stabi_min_pol;
+	polaron*		stabi_max_pol;
 	
 	mc_flags_t		stabi_wu_flags;
 	

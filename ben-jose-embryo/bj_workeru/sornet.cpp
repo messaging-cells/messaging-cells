@@ -225,7 +225,7 @@ bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t min_col
 			sn_tmt->d.srt.min_grp, sn_tmt->d.srt.max_grp
 		);
 	}
-	PTD_DBG_CODE(if(dbg_msv){ sn_tmt->dbg_msv |= mc_dbg_msv_log_received_flag; });
+	PTD_DBG_CODE(if(dbg_msv){ sn_tmt->flg |= mc_dbg_msv_log_received_flag; });
 
 	sn_tmt->send();
 }

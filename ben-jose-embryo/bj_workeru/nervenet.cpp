@@ -144,6 +144,11 @@ nervenet::nervenet(){
 	act_left_side.my_side = side_left;
 	act_right_side.my_side = side_right;
 	
+	stabi_min_pol = mc_null;
+	stabi_max_pol = mc_null;
+	
+	stabi_wu_flags = 0;
+	
 	stabi_wu_tot_nod_sep = 0;
 	stabi_wu_num_rcv_sep = 0;
 

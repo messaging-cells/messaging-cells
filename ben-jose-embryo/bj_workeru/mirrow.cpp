@@ -101,6 +101,9 @@ nervenet::mirrow_nervenet(){
 	PTD_CK(! stabi_nxt_active_pols_rng.has_value());
 	PTD_CK(! stabi_nxt_inactive_pols_rng.has_value());
 
+	stabi_min_pol = mc_null;
+	stabi_max_pol = mc_null;
+	
 	mirrow_start_all_nods(all_wu_active_neu, sd, active_pols_col);
 	mirrow_start_all_nods(all_wu_active_pos, sd, active_neus_col);
 	mirrow_start_all_nods(all_wu_active_neg, sd, active_neus_col);
@@ -253,7 +256,7 @@ nervenode::mirrow_sides(net_side_t src_sd, sornet_range& mates_rng){
 	stabi_arr_sz = 0;
 	stabi_num_tier = 0;
 	stabi_flags = 0;
-	
+
 	PTD_CK(stabi_col.has_value());
 	
 	if(stabi_idx > mates_rng.max_idx){

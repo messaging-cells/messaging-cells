@@ -43,12 +43,16 @@ Declaration of functions to preload cnfs in dimacs files.
 
 class pre_sornode;
 class pre_endnode;
+class pre_item_pgroup;
+class pre_pgroup;
 class pre_cnf_node;
 class pre_cnf_net;
 class pre_load_cnf;
 
 extern grip ava_pre_sornode;
 extern grip ava_pre_endnode;
+extern grip ava_pre_item_pgroup;
+extern grip ava_pre_pgroup;
 extern grip ava_pre_cnf_node;
 extern grip ava_pre_cnf_net;
 
@@ -175,6 +179,99 @@ public:
 	}
 };
 
+/*
+struct mc_aligned pgrp_prms {
+public:
+	num_nod_t tot_items = 0;
+	pre_item_pgroup** arr_items = mc_null;
+};
+*/
+
+/*! \class pre_item_pgroup
+\brief Class for elementes of parallel groups.
+
+*/
+
+#define bj_pre_item_pgroup_acquire_arr(num) \
+	((pre_item_pgroup*)(kernel::do_acquire(bj_cell_id(pre_item_pgroup), num)))
+	
+#define bj_pre_item_pgroup_acquire() bj_pre_item_pgroup_acquire_arr(1)
+
+class mc_aligned pre_item_pgroup : public agent {
+public:
+	MCK_DECLARE_MEM_METHODS(pre_item_pgroup)
+
+	void*				pnt;
+	pre_item_pgroup*	lft;
+	pre_item_pgroup*	rgt;
+	
+	void* 			loaded;
+
+	pre_item_pgroup(){
+		pnt = mc_null;
+		lft = mc_null;
+		rgt = mc_null;
+		
+		loaded = mc_null;
+	}
+
+	~pre_item_pgroup(){}
+	
+	pre_item_pgroup* get_pnt(){ 
+		PTD_CK(pnt != mc_null);
+		return (pre_item_pgroup*)pnt; 
+	}
+
+	pre_item_pgroup* get_pnt_of_nxt_add(pre_pgroup* grp);
+
+	void prt_nodes(long dd);
+	
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return bj_cell_id(pre_item_pgroup);
+	}
+};
+
+/*! \class pre_pgroup
+\brief Class for parallel groups.
+
+*/
+
+#define bj_pre_pgroup_acquire_arr(num) \
+	((pre_pgroup*)(kernel::do_acquire(bj_cell_id(pre_pgroup), num)))
+	
+#define bj_pre_pgroup_acquire() bj_pre_pgroup_acquire_arr(1)
+
+class mc_aligned pre_pgroup : public agent {
+public:
+	MCK_DECLARE_MEM_METHODS(pre_pgroup)
+
+	pre_item_pgroup*	up;
+	pre_item_pgroup*	fst;
+	pre_item_pgroup*	lst;
+	
+	void* 			loaded;
+
+	pre_pgroup(){
+		up = mc_null;
+		fst = mc_null;
+		lst = mc_null;
+		
+		loaded = mc_null;
+	}
+
+	~pre_pgroup(){}
+
+	void add_item(pre_item_pgroup* itm);
+	
+	void prt_nodes();
+	
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return bj_cell_id(pre_pgroup);
+	}
+};
+
 /*! \class pre_cnf_node
 \brief Class for neurons and polarons to load. All refs are in all_agts (inherited from agent_grp).
 
@@ -231,6 +328,9 @@ public:
 	grip	all_pre_neu;
 	grip	all_pre_pos;
 	grip	all_pre_neg;
+	
+	pre_pgroup	test_grp_1;
+	pre_pgroup	test_grp_2;
 
 	// sornet info
 
@@ -348,6 +448,7 @@ num_nod_t get_bigger_pow2(num_nod_t nn);
 num_nod_t get_tot_levels(num_nod_t nn);
 void create_sornet(num_nod_t num_to_sort);
 void create_ranknet(num_nod_t num_to_sort);
+void create_pgroup(pre_pgroup& grp, num_nod_t num_items);
 void bj_mgr_init_mem_funcs();
 
 #endif		// PRELOAD_CNF_H
