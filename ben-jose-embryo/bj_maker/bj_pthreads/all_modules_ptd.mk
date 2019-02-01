@@ -18,6 +18,7 @@ SOURCES := \
 	${SRC_BJ_WORKERU_DIR}/sornet_dbg.cpp \
 	${SRC_BJ_WORKERU_DIR}/load_cnf.cpp \
 	${SRC_BJ_WORKERU_DIR}/load_sornet.cpp \
+	${SRC_BJ_WORKERU_DIR}/pgroup.cpp \
 	${SRC_BJ_WORKERU_DIR}/propag.cpp \
 	${SRC_BJ_WORKERU_DIR}/mirrow.cpp \
 	${SRC_BJ_WORKERU_DIR}/stabi.cpp \

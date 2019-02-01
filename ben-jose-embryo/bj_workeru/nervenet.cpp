@@ -15,6 +15,8 @@ neuron__240__
 polaron__248__
 sorcell__56__
 endcell__??__
+pgrp_item__??__
+pgroup__??__
 tierdata__56__
 netstate__48__
 dbg_stats__32__
@@ -47,6 +49,8 @@ MCK_DEFINE_MEM_METHODS(neuron, 32, bj_ava_neurons, 0)
 MCK_DEFINE_MEM_METHODS(polaron, 32, bj_ava_polarons, 0)
 MCK_DEFINE_MEM_METHODS(sorcell, 32, bj_ava_sorcells, 0)
 MCK_DEFINE_MEM_METHODS(endcell, 32, bj_ava_endcells, 0)
+MCK_DEFINE_MEM_METHODS(pgrp_item, 32, bj_ava_pgrp_items, 0)
+MCK_DEFINE_MEM_METHODS(pgroup, 32, bj_ava_pgroups, 0)
 MCK_DEFINE_MEM_METHODS(tierdata, 32, bj_ava_tierdatas, bj_num_sep_tierdatas)
 MCK_DEFINE_MEM_METHODS(layerdata, 32, bj_ava_layerdatas, bj_num_sep_layerdatas)
 
@@ -59,10 +63,72 @@ BJ_DEFINE_GET_CLS_NAM(neuron)
 BJ_DEFINE_GET_CLS_NAM(polaron)
 BJ_DEFINE_GET_CLS_NAM(sorcell)
 BJ_DEFINE_GET_CLS_NAM(endcell)
+BJ_DEFINE_GET_CLS_NAM(pgrp_item)
+BJ_DEFINE_GET_CLS_NAM(pgroup)
 BJ_DEFINE_GET_CLS_NAM(tierdata)
 BJ_DEFINE_GET_CLS_NAM(layerdata)
 BJ_DEFINE_GET_CLS_NAM(nervenet)
 
+void
+nervenet::init_mem_funcs(){
+	mc_init_arr_vals(idx_total, all_ava, mc_null);
+	mc_init_arr_vals(idx_total, all_acq, mc_null);
+	mc_init_arr_vals(idx_total, all_sep, mc_null);
+	
+	all_ava[idx_base_transmitter] = &(ava_base_transmitters);
+	all_ava[idx_synset] = &(ava_synsets);
+	all_ava[idx_tierset] = &(ava_tiersets);
+	all_ava[idx_synapse] = &(ava_synapses);
+	all_ava[idx_neuron] = &(ava_neurons);
+	all_ava[idx_polaron] = &(ava_polarons);
+	all_ava[idx_sorcell] = &(ava_sorcells);
+	all_ava[idx_endcell] = &(ava_endcells);
+	all_ava[idx_pgrp_item] = &(ava_pgrp_items);
+	all_ava[idx_pgroup] = &(ava_pgroups);
+	all_ava[idx_tierdata] = &(ava_tierdatas);
+	all_ava[idx_layerdata] = &(ava_layerdatas);
+	all_ava[idx_last_invalid] = mc_pt_invalid_available;
+	
+	all_acq[idx_base_transmitter] = (mc_alloc_kernel_func_t)base_transmitter::acquire_alloc;
+	all_acq[idx_synset] = (mc_alloc_kernel_func_t)synset::acquire_alloc;
+	all_acq[idx_tierset] = (mc_alloc_kernel_func_t)tierset::acquire_alloc;
+	all_acq[idx_synapse] = (mc_alloc_kernel_func_t)synapse::acquire_alloc;
+	all_acq[idx_neuron] = (mc_alloc_kernel_func_t)neuron::acquire_alloc;
+	all_acq[idx_polaron] = (mc_alloc_kernel_func_t)polaron::acquire_alloc;
+	all_acq[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::acquire_alloc;
+	all_acq[idx_pgrp_item] = (mc_alloc_kernel_func_t)pgrp_item::acquire_alloc;
+	all_acq[idx_pgroup] = (mc_alloc_kernel_func_t)pgroup::acquire_alloc;
+	all_acq[idx_tierdata] = (mc_alloc_kernel_func_t)tierdata::acquire_alloc;
+	all_acq[idx_layerdata] = (mc_alloc_kernel_func_t)layerdata::acquire_alloc;
+	all_acq[idx_last_invalid] = kernel::invalid_alloc_func;
+
+	all_sep[idx_base_transmitter] = (mc_alloc_kernel_func_t)base_transmitter::separate;
+	all_sep[idx_synset] = (mc_alloc_kernel_func_t)synset::separate;
+	all_sep[idx_tierset] = (mc_alloc_kernel_func_t)tierset::separate;
+	all_sep[idx_synapse] = (mc_alloc_kernel_func_t)synapse::separate;
+	all_sep[idx_neuron] = (mc_alloc_kernel_func_t)neuron::separate;
+	all_sep[idx_polaron] = (mc_alloc_kernel_func_t)polaron::separate;
+	all_sep[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::separate;
+	all_sep[idx_pgrp_item] = (mc_alloc_kernel_func_t)pgrp_item::separate;
+	all_sep[idx_pgroup] = (mc_alloc_kernel_func_t)pgroup::separate;
+	all_sep[idx_tierdata] = (mc_alloc_kernel_func_t)tierdata::separate;
+	all_sep[idx_layerdata] = (mc_alloc_kernel_func_t)layerdata::separate;
+	all_sep[idx_last_invalid] = kernel::invalid_alloc_func;
+	
+	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
+
+	PTD_CK(base_transmitter::ck_cell_id(idx_base_transmitter));
+	PTD_CK(synset::ck_cell_id(idx_synset));
+	PTD_CK(tierset::ck_cell_id(idx_tierset));
+	PTD_CK(synapse::ck_cell_id(idx_synapse));
+	PTD_CK(neuron::ck_cell_id(idx_neuron));
+	PTD_CK(polaron::ck_cell_id(idx_polaron));
+	PTD_CK(sorcell::ck_cell_id(idx_sorcell));
+	PTD_CK(pgrp_item::ck_cell_id(idx_pgrp_item));
+	PTD_CK(pgroup::ck_cell_id(idx_pgroup));
+	PTD_CK(tierdata::ck_cell_id(idx_tierdata));
+	PTD_CK(layerdata::ck_cell_id(idx_layerdata));
+}
 
 //===================================================================================================
 #ifdef MC_IS_PTD_CODE
@@ -412,6 +478,44 @@ endcell::init_me(int caller){
 	
 	nxt_neu = mc_null;
 	nxt_pol = mc_null;
+}
+
+pgrp_item::pgrp_item(){ 
+	PTD_CK(bj_nervenet != mc_null);
+	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_pgrp_item ++);
+	mck_slog2("alloc__pgrp_item\n");
+	init_me();
+} 
+
+pgrp_item::~pgrp_item(){} 
+
+void
+pgrp_item::init_me(int caller){
+	handler_idx = idx_pgrp_item;
+
+	pnt = mc_null;
+	lft = mc_null;
+	rgt = mc_null;
+
+	dat = mc_null;
+}
+
+pgroup::pgroup(){ 
+	PTD_CK(bj_nervenet != mc_null);
+	PTD_DBG_CODE(bj_nervenet->all_dbg_dat.dbg_tot_new_pgroup ++);
+	mck_slog2("alloc__pgroup\n");
+	init_me();
+} 
+
+pgroup::~pgroup(){} 
+
+void
+pgroup::init_me(int caller){
+	handler_idx = idx_pgroup;
+
+	up = mc_null;
+	fst = mc_null;
+	lst = mc_null;
 }
 
 void bj_print_loaded_poles(grip& all_pol, node_kind_t ki) {
@@ -1128,6 +1232,8 @@ dbg_stats::init_me(int caller){
 	dbg_tot_new_polaron = 0;
 	dbg_tot_new_sorcell = 0;
 	dbg_tot_new_endcell = 0;
+	dbg_tot_new_pgrp_item = 0;
+	dbg_tot_new_pgroup = 0;
 	dbg_tot_new_tierdata = 0;
 	dbg_tot_new_layerdata = 0;
 }
@@ -1144,6 +1250,8 @@ dbg_stats::dbg_prt_all(){
 	PTD_LOG("dbg_tot_new_polaron = %d \n", dbg_tot_new_polaron);
 	PTD_LOG("dbg_tot_new_sorcell = %d \n", dbg_tot_new_sorcell);
 	PTD_LOG("dbg_tot_new_endcell = %d \n", dbg_tot_new_endcell);
+	PTD_LOG("dbg_tot_new_pgrp_item = %d \n", dbg_tot_new_pgrp_item);
+	PTD_LOG("dbg_tot_new_pgroup = %d \n", dbg_tot_new_pgroup);
 	PTD_LOG("dbg_tot_new_tierdata = %d \n", dbg_tot_new_tierdata);
 	PTD_LOG("dbg_tot_new_layerdata = %d \n", dbg_tot_new_tierdata);
 }
@@ -1189,6 +1297,12 @@ void bj_print_class_szs(){
 		mck_slog2("__\n");
 		mck_slog2("endcell__");
 		mck_ilog(sizeof(endcell));
+		mck_slog2("__\n");
+		mck_slog2("pgrp_item__");
+		mck_ilog(sizeof(pgrp_item));
+		mck_slog2("__\n");
+		mck_slog2("pgroup__");
+		mck_ilog(sizeof(pgroup));
 		mck_slog2("__\n");
 		mck_slog2("tierdata__");
 		mck_ilog(sizeof(tierdata));

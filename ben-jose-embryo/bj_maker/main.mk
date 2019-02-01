@@ -38,6 +38,7 @@ BJ_MANAGERU_INCLUDES := \
 # ./bj_parallella/bj_parallella.mk 
 
 SUBMAKEFILES := ./bj_pthreads/bj_pthreads.mk \
+	./bj_parallella/bj_parallella.mk 
 
 
 default: all

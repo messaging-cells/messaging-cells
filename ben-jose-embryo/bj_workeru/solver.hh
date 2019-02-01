@@ -82,6 +82,9 @@ Declaration of main bj solver function.
 #define bj_sornet_cod mc_mod5_cod
 #define bj_sornet_dat mc_mod5_dat
 
+#define bj_pgroup_cod mc_mod6_cod
+#define bj_pgroup_dat mc_mod6_dat
+
 #define bj_nervenet_cod 
 #define bj_nervenet_dat 
 #define bj_nervenet_mem mc_mod0_cod

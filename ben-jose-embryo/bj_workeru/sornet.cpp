@@ -263,7 +263,7 @@ nervenet::sornet_handler(missive* msv){
 		return;
 	}
 
-	MC_DBG(sornet_dbg_tests_handler(msv));
+	PTD_DBG_CODE(sornet_dbg_tests_handler(msv));
 }
 
 void bj_sornet_main() {
@@ -681,6 +681,8 @@ endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 	BJ_DBG_SRT_RNK(return);
 
 	endcell* ecll = this;
+	MC_MARK_USED(ecll);
+	
 	sornet_tok_t tmt_tok = (sornet_tok_t)(sn_tmt->tok);
 	
 	PTD_CK(sn_tmt->d.srt.idx == end_snp.idx);
@@ -711,8 +713,8 @@ endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 	}
 	
 	if((end_snp.inp != mc_null) && (end_snp.min_col != BJ_INVALID_SRT_GRP)){
+		nervenode* nd = mc_null;
 		PTD_DBG_CODE(
-			nervenode* nd = mc_null;
 			node_kind_t nd_ki = nd_invalid;
 			long nd_id = 0;
 			num_tier_t nd_ti = BJ_INVALID_NUM_TIER;
@@ -761,8 +763,8 @@ endcell::sornet_rnk_handler(sornet_transmitter* sn_tmt){
 			}
 		}
 		
+		bool dbg_log_msv = false;
 		//PTD_DBG_CODE(bool dbg_log_msv = ((nd_ki == nd_neg) && (nd_id == -1)););
-		PTD_DBG_CODE(bool dbg_log_msv = false);
 		MC_MARK_USED(dbg_log_msv);
 
 		bj_send_sornet_tmt(src, out_tok, sorkind_rnk, end_snp.min_col, end_snp.max_col, 

@@ -43,6 +43,7 @@ SUBMAKEFILES := \
 	./bj_workeru/dbg_only.mk \
 	./bj_workeru/nervenet.mk \
 	./bj_workeru/load_cnf.mk \
+	./bj_workeru/pgroup.mk \
 	./bj_workeru/sornet.mk \
 	./bj_workeru/propag.mk \
 	./bj_workeru/stabi.mk \

@@ -397,6 +397,7 @@ void bj_stabi_main() {
 	mck_set_sub_module_id(BJ_STABI_SUB_MODULE_STABI);
 
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
+	MC_MARK_USED(nn);
 
 	bj_stabi_init_handlers();
 

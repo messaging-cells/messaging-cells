@@ -91,6 +91,7 @@ void
 pre_pgroup::prt_nodes(){
 	if(fst == mc_null){
 		printf("EMPTY\n");
+		return;
 	}
 	
 	fst->prt_nodes(1);

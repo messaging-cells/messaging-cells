@@ -779,9 +779,10 @@ public:
 
 #define mc_msv_delayed_flag 			mc_flag0
 #define mc_msv_reply_flag 				mc_flag1
-#define mc_dbg_msv_sent_flag 			mc_flag2
-#define mc_dbg_msv_received_flag 		mc_flag3
-#define mc_dbg_msv_log_received_flag 	mc_flag4
+#define mc_msv_replying_flag 			mc_flag2
+#define mc_dbg_msv_sent_flag 			mc_flag3
+#define mc_dbg_msv_received_flag 		mc_flag4
+#define mc_dbg_msv_log_received_flag 	mc_flag5
 
 class mc_aligned missive : public agent {
 public:
@@ -827,6 +828,60 @@ public:
 		MCK_KERNEL->local_work.bind_to_my_left(*this);
 	}
 
+	//! Sets the delayed flag in this \ref missive .
+	mc_inline_fn 
+	void set_delayed(){
+		mc_set_mask(flg, mc_msv_delayed_flag);
+	}
+	
+	//! Checks if the delayed flag in this \ref missive is set.
+	mc_inline_fn 
+	bool is_delayed(){
+		return mc_has_mask(flg, mc_msv_delayed_flag);
+	}
+	
+	//! Resets the delayed flag in this \ref missive .
+	mc_inline_fn 
+	void reset_delayed(){
+		mc_reset_mask(flg, mc_msv_delayed_flag);
+	}
+	
+	//! Sets the reply flag in this \ref missive .
+	mc_inline_fn 
+	void set_reply(){
+		mc_set_mask(flg, mc_msv_reply_flag);
+	}
+	
+	//! Checks if the reply flag in this \ref missive is set.
+	mc_inline_fn 
+	bool is_reply(){
+		return mc_has_mask(flg, mc_msv_reply_flag);
+	}
+	
+	//! Resets the reply flag in this \ref missive .
+	mc_inline_fn 
+	void reset_reply(){
+		mc_reset_mask(flg, mc_msv_reply_flag);
+	}
+	
+	//! Sets the replying flag in this \ref missive .
+	mc_inline_fn 
+	void set_replying(){
+		mc_set_mask(flg, mc_msv_replying_flag);
+	}
+	
+	//! Checks if the replying flag in this \ref missive is set.
+	mc_inline_fn 
+	bool is_replying(){
+		return mc_has_mask(flg, mc_msv_replying_flag);
+	}
+	
+	//! Resets the replying flag in this \ref missive .
+	mc_inline_fn 
+	void reset_replying(){
+		mc_reset_mask(flg, mc_msv_replying_flag);
+	}
+	
 	mc_inline_fn 
 	void send_to_manageru(){
 		PTD_CK(flg == 0);
@@ -970,6 +1025,8 @@ mc_kernel_handler(missive* msv) mc_external_code_ram;
 #define mch_glb_binder_get_lft(bdr, id) (binder*)mc_glb_binder_get_lft((binder*)mc_workeru_pt_to_manageru_pt(bdr), id)
 
 #define MCK_CALL_HANDLER(cls, nam, msv) (((cls*)(mck_as_loc_pt(msv->dst)))->nam(msv))
+
+#define MCK_CALL_REPLY_HANDLER(cls, nam, msv) (((cls*)(mck_as_loc_pt(msv->src)))->nam(msv))
 
 //template<typename T, typename U> constexpr mc_size_t mc_offsetof(U T::*member) mc_external_code_ram;
 

@@ -8,6 +8,7 @@ void
 nervenode::init_nervenode_with(pre_cnf_node* nod) { 
 	pre_load_cnf* pre_cnf = bj_nervenet->shd_full_cnf;
 	nervenode* nd = this;
+	MC_MARK_USED(nd);
 	
 	ki = nod->ki; 
 	id = nod->id; 
@@ -428,62 +429,6 @@ void bj_init_nervenet(){
 
 	pre_cnf_net* nn_cnf = (pre_cnf_net*)mc_manageru_addr_to_workeru_addr((mc_addr_t)(pre_cnf->all_cnf + nn));
 	bj_nervenet->shd_cnf = nn_cnf;	
-}
-
-void
-nervenet::init_mem_funcs(){
-	mc_init_arr_vals(idx_total, all_ava, mc_null);
-	mc_init_arr_vals(idx_total, all_acq, mc_null);
-	mc_init_arr_vals(idx_total, all_sep, mc_null);
-	
-	all_ava[idx_base_transmitter] = &(ava_base_transmitters);
-	all_ava[idx_synset] = &(ava_synsets);
-	all_ava[idx_tierset] = &(ava_tiersets);
-	all_ava[idx_synapse] = &(ava_synapses);
-	all_ava[idx_neuron] = &(ava_neurons);
-	all_ava[idx_polaron] = &(ava_polarons);
-	all_ava[idx_sorcell] = &(ava_sorcells);
-	all_ava[idx_endcell] = &(ava_endcells);
-	all_ava[idx_tierdata] = &(ava_tierdatas);
-	all_ava[idx_layerdata] = &(ava_layerdatas);
-	all_ava[idx_last_invalid] = mc_pt_invalid_available;
-	
-	all_acq[idx_base_transmitter] = (mc_alloc_kernel_func_t)base_transmitter::acquire_alloc;
-	all_acq[idx_synset] = (mc_alloc_kernel_func_t)synset::acquire_alloc;
-	all_acq[idx_tierset] = (mc_alloc_kernel_func_t)tierset::acquire_alloc;
-	all_acq[idx_synapse] = (mc_alloc_kernel_func_t)synapse::acquire_alloc;
-	all_acq[idx_neuron] = (mc_alloc_kernel_func_t)neuron::acquire_alloc;
-	all_acq[idx_polaron] = (mc_alloc_kernel_func_t)polaron::acquire_alloc;
-	all_acq[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::acquire_alloc;
-	all_acq[idx_endcell] = (mc_alloc_kernel_func_t)endcell::acquire_alloc;
-	all_acq[idx_tierdata] = (mc_alloc_kernel_func_t)tierdata::acquire_alloc;
-	all_acq[idx_layerdata] = (mc_alloc_kernel_func_t)layerdata::acquire_alloc;
-	all_acq[idx_last_invalid] = kernel::invalid_alloc_func;
-
-	all_sep[idx_base_transmitter] = (mc_alloc_kernel_func_t)base_transmitter::separate;
-	all_sep[idx_synset] = (mc_alloc_kernel_func_t)synset::separate;
-	all_sep[idx_tierset] = (mc_alloc_kernel_func_t)tierset::separate;
-	all_sep[idx_synapse] = (mc_alloc_kernel_func_t)synapse::separate;
-	all_sep[idx_neuron] = (mc_alloc_kernel_func_t)neuron::separate;
-	all_sep[idx_polaron] = (mc_alloc_kernel_func_t)polaron::separate;
-	all_sep[idx_sorcell] = (mc_alloc_kernel_func_t)sorcell::separate;
-	all_sep[idx_endcell] = (mc_alloc_kernel_func_t)endcell::separate;
-	all_sep[idx_tierdata] = (mc_alloc_kernel_func_t)tierdata::separate;
-	all_sep[idx_layerdata] = (mc_alloc_kernel_func_t)layerdata::separate;
-	all_sep[idx_last_invalid] = kernel::invalid_alloc_func;
-	
-	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
-
-	PTD_CK(base_transmitter::ck_cell_id(idx_base_transmitter));
-	PTD_CK(synset::ck_cell_id(idx_synset));
-	PTD_CK(tierset::ck_cell_id(idx_tierset));
-	PTD_CK(synapse::ck_cell_id(idx_synapse));
-	PTD_CK(neuron::ck_cell_id(idx_neuron));
-	PTD_CK(polaron::ck_cell_id(idx_polaron));
-	PTD_CK(sorcell::ck_cell_id(idx_sorcell));
-	PTD_CK(endcell::ck_cell_id(idx_endcell));
-	PTD_CK(tierdata::ck_cell_id(idx_tierdata));
-	PTD_CK(layerdata::ck_cell_id(idx_layerdata));
 }
 
 void

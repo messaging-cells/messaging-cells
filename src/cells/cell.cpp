@@ -844,16 +844,19 @@ kernel::release_all_missives(grip& all_msv, grip* pending, bool has_dbg){
 		missive* msv = (missive*)wrk;
 		nxt = wrk->bn_right;
 
-		bool dlyed = mc_has_mask(msv->flg, mc_msv_delayed_flag);
+		//bool dlyed = mc_has_mask(msv->flg, mc_msv_delayed_flag);
+		bool dlyed = msv->is_delayed();
 		if(dlyed){
 			if(pending != mc_null){
 				msv->let_go();
 				pending->bind_to_my_left(*msv);
 			}
 		} else {
-			bool rply = mc_has_mask(msv->flg, mc_msv_reply_flag);
+			//bool rply = mc_has_mask(msv->flg, mc_msv_reply_flag);
+			bool rply = msv->is_reply();
 			if(rply){
 				msv->let_go();
+				msv->set_replying();
 				
 				cell* hdlr_src = (msv)->src;
 				PTD_CK(hdlr_src != mc_null);

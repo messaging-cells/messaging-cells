@@ -115,6 +115,7 @@ void bj_mirrow_main() {
 	mck_set_sub_module_id(BJ_STABI_SUB_MODULE_MIRROW);
 
 	mc_workeru_nn_t nn = kernel::get_workeru_nn();
+	MC_MARK_USED(nn);
 
 	bj_mirrow_init_handlers();
 

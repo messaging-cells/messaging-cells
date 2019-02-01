@@ -172,6 +172,7 @@ create_node(sornod_kind_t knd, num_nod_t up_idx, num_nod_t down_idx, sornet_prms
 
 	mc_workeru_nn_t& nxt_nn = prms.arr_lvs[nod->level];
 	mc_workeru_nn_t ld_nn = add_sornod_to_glb_cnf(nod, nxt_nn);
+	MC_MARK_USED(ld_nn);
 
 	PTD_CK(knd != snod_invalid);
 	PTD_PRT("%s_NOD (%ld)  %ld[%ld %ld]%ld \t(%ld %ld) wu=%d \n", ((knd == snod_alte)?("ALT"):("HLF")), 

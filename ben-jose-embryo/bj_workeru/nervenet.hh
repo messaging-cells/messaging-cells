@@ -56,6 +56,8 @@ Declaration of nervenet class.
 #include "solver.hh"
 
 class pre_sornode;
+class pre_item_pgroup;
+class pre_pgroup;
 class pre_cnf_node;
 class pre_cnf_net;
 class pre_load_cnf;
@@ -68,6 +70,8 @@ class neuron;
 class polaron;
 class sorcell;
 class endcell;
+class pgrp_item;
+class pgroup;
 class netstate;
 class nervenet;
 
@@ -178,6 +182,15 @@ enum sornet_tok_t : mck_token_t {
 	bj_tok_sornet_end
 };
 
+enum pgroup_tok_t : mck_token_t {
+	bj_tok_pgroup_invalid = bj_tok_sornet_end + 1,
+	bj_tok_pgroup_start,
+	bj_tok_pgroup_add_item,
+	bj_tok_pgroup_remove_item,
+	bj_tok_pgroup_broadcast,
+	bj_tok_pgroup_end
+};
+
 enum bj_hdlr_idx_t : uint8_t {
 	idx_invalid = bj_mgr_idx_total,
 	idx_base_transmitter,
@@ -188,6 +201,8 @@ enum bj_hdlr_idx_t : uint8_t {
 	idx_polaron,
 	idx_sorcell,
 	idx_endcell,
+	idx_pgrp_item,
+	idx_pgroup,
 	idx_tierdata,
 	idx_layerdata,
 	idx_nervenet,
@@ -365,7 +380,7 @@ public:
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0);
 
-	void mirrow_tiset(tierset& tis, net_side_t src_sd) bj_stabi_cod;
+	void mirrow_tiset(tierset& tis, net_side_t src_sd) mc_external_code_ram;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -396,6 +411,7 @@ public:
 	bool has_value(){
 		bool d1 = (min_idx != BJ_INVALID_SRT_GRP);
 		bool d2 = (max_idx != BJ_INVALID_SRT_GRP);
+		MC_MARK_USED(d2);
 		PTD_CK(d1 == d2);
 		PTD_CK(! d1 || (min_idx >= 0));
 		PTD_CK(! d1 || (max_idx >= min_idx));
@@ -441,6 +457,12 @@ public:
 	bool 	has_zero_act_neus;
 };
 
+struct mc_aligned pgroup_transmitter_data {
+public:
+	pgrp_item* 			itm;
+	base_transmitter*	nxt;
+};
+
 union mc_aligned all_transmitter_data {
 public:
 	propag_transmitter_data prp;
@@ -455,6 +477,7 @@ typedef base_transmitter propag_transmitter;
 typedef base_transmitter sync_transmitter;
 typedef base_transmitter stabi_transmitter;
 typedef base_transmitter sornet_transmitter;
+typedef base_transmitter pgroup_transmitter;
 
 #define bj_base_transmitter_acquire_arr(num) \
 	((base_transmitter*)(kernel::do_acquire(idx_base_transmitter, num)))
@@ -467,6 +490,7 @@ typedef base_transmitter sornet_transmitter;
 #define bj_sync_transmitter_acquire() bj_base_transmitter_acquire()
 #define bj_stabi_transmitter_acquire() bj_base_transmitter_acquire()
 #define bj_sornet_transmitter_acquire() bj_base_transmitter_acquire()
+#define bj_pgroup_transmitter_acquire() bj_base_transmitter_acquire()
 
 class mc_aligned base_transmitter : public missive {
 public:
@@ -627,6 +651,78 @@ void bj_send_sornet_tmt(cell* src, sornet_tok_t tok, sorkind_t knd, num_nod_t mi
 num_nod_t bj_sornet_calc_grp_sz(num_nod_t min_grp, num_nod_t max_grp) bj_sornet_cod;
 
 
+#define bj_pgrp_item_acquire_arr(num) ((pgrp_item*)(kernel::do_acquire(idx_pgrp_item, num)))
+#define bj_pgrp_item_acquire() bj_pgrp_item_acquire_arr(1)
+
+class mc_aligned pgrp_item : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS(pgrp_item)
+	
+	void*		pnt;
+	pgrp_item*	lft;
+	pgrp_item*	rgt;
+
+	void*		dat;
+	
+	pgrp_item() mc_external_code_ram;
+	~pgrp_item() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_pgrp_item;
+	}
+	
+	mc_inline_fn 
+	pgrp_item* create_get_pnt(){ 
+		PTD_CK(pnt != mc_null);
+		return (pgrp_item*)pnt; 
+	}
+
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+
+	pgrp_item*	create_get_pnt_of_nxt_add(pgroup* grp) mc_external_code_ram;
+
+	void pgrp_op_handler(missive* msv) bj_pgroup_cod;
+	
+	void dbg_prt_nodes(long dd) mc_external_code_ram;
+	
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
+#define bj_pgroup_acquire_arr(num) ((pgroup*)(kernel::do_acquire(idx_pgroup, num)))
+#define bj_pgroup_acquire() bj_pgroup_acquire_arr(1)
+
+class mc_aligned pgroup : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS(pgroup)
+	
+	pgrp_item*	up;
+	pgrp_item*	fst;
+	pgrp_item*	lst;
+
+	pgroup() mc_external_code_ram;
+	~pgroup() mc_external_code_ram;
+
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_pgroup;
+	}
+	
+	virtual mc_opt_sz_fn 
+	void init_me(int caller = 0) mc_external_code_ram;
+	
+	void create_add_item(pgrp_item* itm) mc_external_code_ram;
+
+	void pgrp_op_handler(missive* msv) bj_pgroup_cod;
+	
+	void dbg_prt_nodes() mc_external_code_ram;
+	
+	virtual
+	char* 	get_class_name() mc_external_code_ram;
+};
+
 
 #define bj_id_arr_copy(dst, sz, src) for(num_syn_t idx = 0; idx < sz; idx++){ dst[idx] = src[idx]; }
 
@@ -659,7 +755,7 @@ public:
 
 	void propag_send_transmitter(propag_tok_t tok, net_side_t sd, bool dbg_is_forced = false) bj_propag_cod;
 	void stabi_send_transmitter(stabi_tok_t tok, nervenode* src_nd = mc_null, 
-				bool dbg_is_forced = false) bj_stabi_cod;
+				bool dbg_is_forced = false) mc_external_code_ram;
 
 	mc_inline_fn binder& get_side_binder(net_side_t sd) bj_propag_cod;
 
@@ -725,9 +821,9 @@ public:
 
 bool bj_can_delay_tier(num_tier_t the_ti, grip& all_ti);
 
-void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) bj_stabi_cod;
-int bj_cmp_sep_objs(void* obj1, void* obj2) bj_stabi_cod;
-int bj_cmp_cell_objs(void* obj1, void* obj2) bj_stabi_cod;
+void bj_stabi_reset_all_tiers(grip& dst_grp, grip& src_grp) mc_external_code_ram;
+int bj_cmp_sep_objs(void* obj1, void* obj2) mc_external_code_ram;
+int bj_cmp_cell_objs(void* obj1, void* obj2) mc_external_code_ram;
 int bj_cmp_stabi_color_arrs(num_syn_t sz1, num_nod_t* arr1, num_syn_t sz2, num_nod_t* arr2) bj_stabi_cod;
 
 typedef int (*bj_cmp_func_t)(binder* obj1, binder* obj2);
@@ -800,10 +896,10 @@ public:
 	virtual 
 	bool is_tier_complete(signal_data* dat);
 
-	bool stabi_recalc_snd_pings_flg(signal_data* dat) bj_stabi_cod;
+	bool stabi_recalc_snd_pings_flg(signal_data* dat) mc_external_code_ram;
 
 	virtual 
-	bool stabi_recalc_send_pings(signal_data* dat) bj_stabi_cod;
+	bool stabi_recalc_send_pings(signal_data* dat) mc_external_code_ram;
 
 	virtual 
 	void propag_start_nxt_tier(signal_data* dat) bj_propag_cod;
@@ -815,46 +911,46 @@ public:
 
 	// STABI
 
-	void mirrow_sides(net_side_t sd, sornet_range& mates_rng) bj_stabi_cod;
-	void stabi_recv_transmitter(signal_data* dat) bj_stabi_cod;
-	void stabi_recv_color(signal_data* dat) bj_stabi_cod;
-	void stabi_recv_ping(signal_data* dat) bj_stabi_cod;
-	void stabi_recv_tier_done(signal_data* dat) bj_stabi_cod;
+	void mirrow_sides(net_side_t sd, sornet_range& mates_rng) mc_external_code_ram;
+	void stabi_recv_transmitter(signal_data* dat) mc_external_code_ram;
+	void stabi_recv_color(signal_data* dat) mc_external_code_ram;
+	void stabi_recv_ping(signal_data* dat) mc_external_code_ram;
+	void stabi_recv_tier_done(signal_data* dat) mc_external_code_ram;
 
-	void stabi_send_snp_color(callee_prms& pms) bj_stabi_cod;
-	void stabi_send_snp_tier_done(callee_prms& pms) bj_stabi_cod;
+	void stabi_send_snp_color(callee_prms& pms) mc_external_code_ram;
+	void stabi_send_snp_tier_done(callee_prms& pms) mc_external_code_ram;
 
 	virtual 
 	void dbg_prt_tier_done(signal_data* dat) mc_external_code_ram;
 	
-	void stabi_send_sep(void* pm);
-	void stabi_set_start_sep(void*);
-	void stabi_send_start_pol_sep(void* pm);
-	void stabi_send_start_neu_sep(void* pm);
-	bool stabi_is_rdy_to_srt();
-	void stabi_send_start_srt(int caller = 0);
+	void stabi_send_sep(void* pm) mc_external_code_ram;
+	void stabi_set_start_sep(void*) mc_external_code_ram;
+	void stabi_send_start_pol_sep(void* pm) mc_external_code_ram;
+	void stabi_send_start_neu_sep(void* pm) mc_external_code_ram;
+	bool stabi_is_rdy_to_srt() mc_external_code_ram;
+	void stabi_send_start_srt(int caller = 0) mc_external_code_ram;
 
-	void stabi_set_tier_done(num_tier_t num_ti) bj_stabi_cod;
+	void stabi_set_tier_done(num_tier_t num_ti) mc_external_code_ram;
 	
 	//virtual 
 	//void stabi_send_nxt_tier_color() bj_stabi_cod;
 	
 	virtual 
-	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
+	void stabi_start_nxt_tier(signal_data* dat) mc_external_code_ram;
 
-	void stabi_reset_complete() bj_stabi_cod;
-	void stabi_insert_color(num_nod_t col_idx) bj_stabi_cod;
+	void stabi_reset_complete() mc_external_code_ram;
+	void stabi_insert_color(num_nod_t col_idx) mc_external_code_ram;
 	
 	bool stabi_is_active(){
 		return (! left_side.step_active_set.is_synset_empty());
 	}
 	
-	void stabi_set_color(sornet_transmitter* sn_tmt);
-	void stabi_set_inactive(grip& all_inac);
-	void stabi_update_min_max();
+	void stabi_set_color(sornet_transmitter* sn_tmt) mc_external_code_ram;
+	void stabi_set_inactive(grip& all_inac) mc_external_code_ram;
+	void stabi_update_min_max() mc_external_code_ram;
 
-	void stabi_recv_rnk_cll(missive* msv);
-	void stabi_fix_pre_rdy(sornet_range& mates_rng);
+	void stabi_recv_rnk_cll(missive* msv) mc_external_code_ram;
+	void stabi_fix_pre_rdy(sornet_range& mates_rng) mc_external_code_ram;
 	
 	void dbg_prt_active_synset(net_side_t sd, tier_kind_t tiki, char* prefix, 
 				num_tier_t num_ti) mc_external_code_ram;
@@ -866,7 +962,7 @@ public:
 
 	// stabi
 	
-	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) bj_stabi_cod;
+	void stabi_send_all_ti_done(nervenode* nd, num_tier_t dbg_ti) mc_external_code_ram;
 	
 };
 
@@ -974,7 +1070,7 @@ public:
 	virtual 
 	void stabi_start_nxt_tier(signal_data* dat) bj_stabi_cod;
 	
-	void stabi_recv_rnk_sep(missive* msv);
+	void stabi_recv_rnk_sep(missive* msv) mc_external_code_ram;
 	
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -1048,7 +1144,8 @@ public:
 
 	void delay_binder(binder& bdr, int dbg_caller);
 	
-	void proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, bool star_nxt_ti);
+	void proc_delayed(tier_kind_t tiki, grip& all_ti, net_side_t sd, 
+					  bool star_nxt_ti) mc_external_code_ram;
 
 	virtual
 	char* 	get_class_name() mc_external_code_ram;
@@ -1103,7 +1200,7 @@ public:
 	netstate() mc_external_code_ram;
 	~netstate() mc_external_code_ram;
 
-	void broadcast_tier(tier_kind_t tiki, tierdata& lti, int dbg_caller);
+	void broadcast_tier(tier_kind_t tiki, tierdata& lti, int dbg_caller) mc_external_code_ram;
 
 	virtual mc_opt_sz_fn 
 	void init_me(int caller = 0) mc_external_code_ram;
@@ -1116,10 +1213,10 @@ public:
 	void init_sync_transmitter(sync_transmitter& tmt, num_tier_t the_ti, nervenode* cfl_src, bool has_zan);
 
 	void send_sync_transmitter(tier_kind_t tiki, nervenet* the_dst, sync_tok_t the_tok, num_tier_t the_ti,
-			nervenode* cfl_src = mc_null, bool has_zan = false);
+			nervenode* cfl_src = mc_null, bool has_zan = false) mc_external_code_ram;
 
 	void send_sync_to_children(sync_tok_t the_tok, num_tier_t the_ti, tier_kind_t tiki, 
-			nervenode* cfl_src, bool has_zan = false); 
+			nervenode* cfl_src, bool has_zan = false) mc_external_code_ram; 
 
 	void send_up_confl_tok(sync_tok_t the_tok, num_tier_t the_ti, nervenode* the_cfl) mc_external_code_ram;
 
@@ -1128,13 +1225,14 @@ public:
 
 	void update_sync_inert(tier_kind_t tiki, bool remove_full = false);
 
-	grip& get_all_tiers(tier_kind_t tiki);
+	grip& get_all_tiers(tier_kind_t tiki) mc_external_code_ram;
 
-	tierdata& get_tier(tier_kind_t tiki, grip& all_ti, num_tier_t nti, int dbg_caller);
+	tierdata& get_tier(tier_kind_t tiki, grip& all_ti, num_tier_t nti, int dbg_caller) mc_external_code_ram;
 	
 	void dbg_prt_all_tiers(tier_kind_t tiki, char* prefix, num_tier_t num_ti) mc_external_code_ram;
 
-	void inc_tier_rcv(nervenode* nd, tier_kind_t tiki, num_tier_t the_ti, grip& all_ti);
+	void inc_tier_rcv(nervenode* nd, tier_kind_t tiki, num_tier_t the_ti, 
+					  grip& all_ti) mc_external_code_ram;
 	
 };
 
@@ -1167,6 +1265,8 @@ public:
 	mc_alloc_size_t dbg_tot_new_polaron;
 	mc_alloc_size_t dbg_tot_new_sorcell;
 	mc_alloc_size_t dbg_tot_new_endcell;
+	mc_alloc_size_t dbg_tot_new_pgrp_item;
+	mc_alloc_size_t dbg_tot_new_pgroup;
 	mc_alloc_size_t dbg_tot_new_tierdata;
 	mc_alloc_size_t dbg_tot_new_layerdata;
 
@@ -1230,6 +1330,8 @@ public:
 	grip		ava_polarons;
 	grip		ava_sorcells;
 	grip		ava_endcells;
+	grip		ava_pgrp_items;
+	grip		ava_pgroups;
 	grip		ava_tierdatas;
 	grip		ava_layerdatas;
 
@@ -1354,22 +1456,22 @@ public:
 	void stabi_handler(missive* msv) bj_stabi_cod;
 	void stabi_nervenet_start() bj_stabi_cod;
 	
-	void stabi_inc_rcv_sep(node_kind_t nod_ki);
+	void stabi_inc_rcv_sep(node_kind_t nod_ki) mc_external_code_ram;
 
-	void send_all_neus(mck_token_t tok);
+	void send_all_neus(mck_token_t tok) mc_external_code_ram;
 
-	void send_all_children(base_transmitter& tmt, char* dbg_str = mc_null); 
+	void send_all_children(base_transmitter& tmt, char* dbg_str = mc_null) mc_external_code_ram; 
 	
 	void stabi_broadcast_range(rangekind_t knd, sornet_range active, sornet_range inactive);
-	void stabi_broadcast_sep();
-	void stabi_broadcast_all_ranges();
-	void stabi_start_pol_sep();
-	bool stabi_has_all_ranges();
-	void stabi_set_ranges(missive* msv);
-	void stabi_begin_subgrouping();
+	void stabi_broadcast_sep() mc_external_code_ram;
+	void stabi_broadcast_all_ranges() mc_external_code_ram;
+	void stabi_start_pol_sep() mc_external_code_ram;
+	bool stabi_has_all_ranges() mc_external_code_ram;
+	void stabi_set_ranges(missive* msv) mc_external_code_ram;
+	void stabi_begin_subgrouping() mc_external_code_ram;
 	//bool stabi_has_pre_rdy_quas();
-	bool stabi_has_pre_rdy_neus();
-	void stabi_mark_all_pre_rdy(sornet_range& mates_rng, grip& all_act);
+	bool stabi_has_pre_rdy_neus() mc_external_code_ram;
+	void stabi_mark_all_pre_rdy(sornet_range& mates_rng, grip& all_act) mc_external_code_ram;
 	
 	bool sornet_dbg_check_order(sorkind_t knd) mc_external_code_ram;
 
@@ -1390,9 +1492,9 @@ public:
 	void sornet_dbg_rnk_end_step() mc_external_code_ram;
 	void sornet_dbg_rnk_print_input() mc_external_code_ram;
 
-	nervenet* get_nervenet(mc_workeru_id_t workeru_id);
+	nervenet* get_nervenet(mc_workeru_id_t workeru_id) mc_external_code_ram;
 
-	netstate& get_active_netstate(net_side_t sd);
+	netstate& get_active_netstate(net_side_t sd) mc_external_code_ram;
 
 	void inc_layers() mc_external_code_ram;
 	
@@ -1423,6 +1525,8 @@ void bj_dbg_sornet_init_grp_arr(ini_grps_prms& prms, bool just_ones) mc_external
 #define bj_ava_polarons (bj_nervenet->ava_polarons)
 #define bj_ava_sorcells (bj_nervenet->ava_sorcells)
 #define bj_ava_endcells (bj_nervenet->ava_endcells)
+#define bj_ava_pgrp_items (bj_nervenet->ava_pgrp_items)
+#define bj_ava_pgroups (bj_nervenet->ava_pgroups)
 #define bj_ava_tierdatas (bj_nervenet->ava_tierdatas)
 #define bj_ava_layerdatas (bj_nervenet->ava_layerdatas)
 

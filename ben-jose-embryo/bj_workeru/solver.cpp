@@ -9,13 +9,14 @@
 
 //mc_c_decl int main();
 
-#define TOT_MODS 5
+#define TOT_MODS 6
 
 #define DBG_ONLY_IDX 0
 #define CNF_LOADER_IDX 1
 #define PROPAG_IDX 2
 #define STABI_IDX 3
 #define SORNET_IDX 4
+#define PGROUP_IDX 5
 
 char* all_mod_nams[TOT_MODS] mc_external_data_ram;
 mc_addr_t* all_mod_addr;
@@ -30,6 +31,7 @@ init_module_nams(){
 	all_mod_nams[PROPAG_IDX] = mc_cstr("module3");
 	all_mod_nams[STABI_IDX] = mc_cstr("module4");
 	all_mod_nams[SORNET_IDX] = mc_cstr("module5");
+	all_mod_nams[PGROUP_IDX] = mc_cstr("module6");
 }
 
 void
