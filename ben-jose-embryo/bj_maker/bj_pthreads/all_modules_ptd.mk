@@ -12,6 +12,7 @@ SOURCES := \
 	${SRC_BJ_MANAGERU_DIR}/cnf_preload/preload_cnf.cpp \
 	${SRC_BJ_MANAGERU_DIR}/cnf_preload/preload_sornet.cpp \
 	${SRC_BJ_MANAGERU_DIR}/cnf_preload/preload_pgroup.cpp \
+	${SRC_BJ_MANAGERU_DIR}/hlang.cpp \
 	${SRC_BJ_WORKERU_DIR}/dbg_only.cpp \
 	${SRC_BJ_WORKERU_DIR}/nervenet.cpp \
 	${SRC_BJ_WORKERU_DIR}/sornet.cpp \

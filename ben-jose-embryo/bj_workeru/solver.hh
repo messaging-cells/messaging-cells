@@ -133,6 +133,8 @@ enum bj_cell_id_t : mck_handler_idx_t {
 	bj_cell_id(pre_pgroup),
 	bj_cell_id(pre_cnf_node),
 
+	bj_cell_id(pru_hcell),
+	
 	bj_mgr_last_invalid,
 	bj_mgr_idx_total
 };

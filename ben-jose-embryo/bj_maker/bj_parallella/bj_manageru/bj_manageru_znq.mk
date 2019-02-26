@@ -13,7 +13,7 @@ TGT_LINKER := $(CROSS_COMPILE)g++
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
 SRC_CFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=gnu11 ${MC_DBG_FLAG}
-SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${MC_DBG_FLAG}
+SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++17 ${MC_DBG_FLAG}
 
 SRC_INCDIRS := ${BJ_MANAGERU_INCLUDES}
 

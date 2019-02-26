@@ -435,6 +435,10 @@ public:
 
 extern pre_load_cnf* THE_CNF;
 
+extern grip* bj_mgr_all_ava[];
+extern mc_alloc_kernel_func_t bj_mgr_all_acq[];
+extern mc_alloc_kernel_func_t bj_mgr_all_sep[];
+
 void preload_cnf_init();
 void preload_sornet();
 void preload_cnf(long sz, const long* arr);

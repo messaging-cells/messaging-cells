@@ -3,7 +3,7 @@
 # =======================================
 
 SRC_CFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=gnu11 ${DBG_FLAG}
-SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${DBG_FLAG}
+SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++17 ${DBG_FLAG}
 
 SRC_INCDIRS := $(SRC_MANAGER_DIR) $(SRC_PLLA_MANAGER_DIR) $(SRC_CELLS_DIR) $(H_INC_1) 
 

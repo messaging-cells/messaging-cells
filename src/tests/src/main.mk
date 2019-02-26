@@ -59,7 +59,8 @@ MC_ETOOLS=${MC_ESDK}/tools
 
 MC_STD_EPH_CFLAGS := -Wall -std=gnu11 -ffreestanding -nostdlib -nostartfiles -fno-default-inline 
 
-CXXFLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables -fno-extern-tls-init
+CXXFLAGS_1 := -Wall -std=c++17 -nostdlib -fno-exceptions -fno-unwind-tables -fno-extern-tls-init
+#CXXFLAGS_1 := -Wall -std=c++17 -nostdlib -fno-unwind-tables -fno-extern-tls-init
 CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
 MC_STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 

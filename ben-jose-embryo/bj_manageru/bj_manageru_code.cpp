@@ -1,14 +1,17 @@
 
 #include <stdio.h>
+#include <typeindex>
 
 #include "cell.hh"
 #include "dimacs.h"
 #include "preload.hh"
 #include "file_funcs.h"
+#include "hlang.hh"
 
-//define BJ_WITH_MANAGERU_TESTS
+#define BJ_WITH_MANAGERU_TESTS
 
 #ifdef BJ_WITH_MANAGERU_TESTS
+#include "nervenet.hh"
 #include "load_cnf.hh"
 #include "tak_mak.hh"
 #endif
@@ -270,14 +273,22 @@ void bj_mc_test_2(int argc, char *argv[])
 
 void bj_mc_test_3(int argc, char *argv[])
 {
+	/*
 	printf("bj_mc_test_3 \n");
 	kernel::init_manageru_sys();
+	bj_mgr_init_handlers();
 	
 	kernel* ker = mck_get_kernel();
+	
+	//nervenet* my_net_pt = bj_nervenet_acquire();
+	
 	nervenet my_net;
 	ker->user_data = &my_net;
 
+	//nervenode* nn1_pt = bj_nervenode_acquire();
+	//nervenode& nn1 = *nn1_pt;
 	nervenode nn1;
+	
 	tak_mak gg;
 	char *line = NULL;
 	size_t len = 0;
@@ -303,6 +314,7 @@ void bj_mc_test_3(int argc, char *argv[])
 	}
 	
 	kernel::finish_manageru_sys();
+	*/
 }
 
 void bj_mc_test_4(int argc, char *argv[])
@@ -328,6 +340,11 @@ void bj_mc_test_4(int argc, char *argv[])
 	kernel::finish_manageru_sys();
 }
 
+void pru_lambda()
+{
+	std::function<int(int aa, int bb)> ff = [&] (int aa, int bb) -> int { return aa + bb; }; 
+}
+
 #endif
 
 int mc_manageru_main(int argc, char *argv[])
@@ -345,8 +362,9 @@ int mc_manageru_main(int argc, char *argv[])
 	//bj_mc_test_2(argc, argv);
 	//bj_mc_test_3(argc, argv);
 	//bj_mc_test_4(argc, argv);
+	bj_mc_test_5(argc, argv);
 	
-	rr = bj_manageru_main(argc, argv);
+	//rr = bj_manageru_main(argc, argv);
 
 	printf("MANAGERU_CODE_FINISHED ==================================== \n");
 	return rr;

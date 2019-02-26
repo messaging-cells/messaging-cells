@@ -40,6 +40,20 @@ Our Resurrected and Living, both in Body and Spirit,
 
 #include "cell.hh"
 
+class end_of_func {};
+class end_of_handler {};
+
+
+/*void pru_throw(bool aa)
+{
+	try {
+		if(aa){
+			throw end_of_func();
+		}
+	} catch (end_of_func& ff) {
+	}
+}*/
+
 void mc_workerus_main() {
 	kernel::init_sys();
 

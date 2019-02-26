@@ -13,7 +13,8 @@ TARGET_DIR := ./mc_install
 
 STD_EPH_CFLAGS := -Wall -std=gnu11 -ffreestanding -nostdlib -nostartfiles -fno-default-inline 
 
-CXXFLAGS_1 := -Wall -std=c++14 -nostdlib -fno-exceptions -fno-unwind-tables 
+CXXFLAGS_1 := -Wall -std=c++17 -nostdlib -fno-exceptions -fno-unwind-tables 
+#CXXFLAGS_1 := -Wall -std=c++17 -nostdlib -fno-unwind-tables 
 CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
 STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 

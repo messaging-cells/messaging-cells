@@ -40,6 +40,8 @@ Our Resurrected and Living, both in Body and Spirit,
 #define CELL_HH
 
 #include <new>
+#include <functional>
+
 #include "dyn_mem.h"
 #include "binder.hh"
 #include "global.h"

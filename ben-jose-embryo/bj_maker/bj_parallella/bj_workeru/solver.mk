@@ -1,9 +1,12 @@
 
+#LD_IN_SECTIONS := --gc-sections
+LD_IN_SECTIONS := 
+
 BJ_LDF := bj_parallella/bj-lk-script.ldf
 
 TARGET := ${BJ_PLLA_BIN_DIR}/ben-jose-embryo.elf
 
-TGT_LDFLAGS := -T ${BJ_LDF} ${MC_EPH_LDFLAGS_2} --no-check-sections -L${TARGET_DIR}
+TGT_LDFLAGS := -T ${BJ_LDF} ${MC_EPH_LDFLAGS_2} ${LD_IN_SECTIONS} --no-check-sections -L${TARGET_DIR}
 TGT_LDLIBS  := -ldbg_only -lload_cnf -lnervenet -lpropag -lstabi -lsornet -lpgroup ${MC_STD_EPH_LDLIBS}
 
 TGT_PREREQS := \

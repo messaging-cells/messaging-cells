@@ -47,7 +47,7 @@ TGT_LINKER := $(CROSS_COMPILE)gcc
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
 SRC_CFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=gnu11 ${MC_DBG_FLAG} -g -fno-omit-frame-pointer
-SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++14 ${MC_DBG_FLAG} -g 
+SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE -Wall -std=c++17 ${MC_DBG_FLAG} -g 
 
 SRC_INCDIRS := $(MC_STD_INCDIRS)
 

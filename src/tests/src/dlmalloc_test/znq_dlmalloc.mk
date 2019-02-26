@@ -53,7 +53,7 @@ TGT_LINKER := $(CROSS_COMPILE)gcc
 C_FLAGS_1 := -Wall -std=gnu11 -pthread
 SRC_CFLAGS := -DMC_IS_ZNQ_CODE ${DBG_FLAG} ${C_FLAGS_1}
 
-CXX_FLAGS_1 := -Wall -std=c++14 -pthread
+CXX_FLAGS_1 := -Wall -std=c++17 -pthread
 SRC_CXXFLAGS := -DMC_IS_ZNQ_CODE ${DBG_FLAG} ${CXX_FLAGS_1}
 
 SRC_INCDIRS := $(SRC_MANAGERU_DIR) ${SRC_CELLS_DIR}

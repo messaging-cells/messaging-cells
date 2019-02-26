@@ -1,7 +1,14 @@
 
+#include <setjmp.h>
 #include "cell.hh"
 
 #include "nervenet.hh"
+#include "pgroup.hh"
+
+void pru_lambda2()
+{
+	std::function<int(int aa, int bb)> ff = [&] (int aa, int bb) -> int { return aa + bb; }; 
+}
 
 void 
 pgrp_item_pgrp_op_handler(missive* msv){
@@ -140,6 +147,8 @@ pgrp_item::dbg_prt_nodes(long dd){
 	
 void
 pgroup::dbg_prt_nodes(){
+	//function<void(int aa, int bb)> ff = [&] (int aa, int bb) -> void { aa + bb; }; 
+
 	
 	if(fst == mc_null){
 		mck_slog2("EMPTY\n");
@@ -152,4 +161,21 @@ pgroup::dbg_prt_nodes(){
 	mck_unlock_log();
 }
 
+/*
+jmp_buf env;
+void LabelTest();
+
+void test_ljmp()
+{
+	if(setjmp(env)){
+		LabelTest();
+		mck_slog2("This MUST NOT be printed.\n");
+	}
+	mck_slog2("This MUST be printed.\n");
+}
+
+void LabelTest(){
+	longjmp(env,1);
+}
+*/
 

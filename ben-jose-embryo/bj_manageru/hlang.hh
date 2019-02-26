@@ -1,0 +1,466 @@
+
+
+/*************************************************************
+
+This file is part of ben-jose.
+
+ben-jose is free software: you can redistribute it and/or modify
+it under the terms of the version 3 of the GNU General Public 
+License as published by the Free Software Foundation.
+
+ben-jose is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with ben-jose.  If not, see <http://www.gnu.org/licenses/>.
+
+------------------------------------------------------------
+
+Copyright (C) 2007-2012, 2014-2016. QUIROGA BELTRAN, Jose Luis.
+Id (cedula): 79523732 de Bogota - Colombia.
+See https://github.com/joseluisquiroga/ben-jose
+
+ben-jose is free software thanks to The Glory of Our Lord 
+	Yashua Melej Hamashiaj.
+Our Resurrected and Living, both in Body and Spirit, 
+	Prince of Peace.
+
+------------------------------------------------------------
+
+hlang.hh
+
+hlang declarations.
+
+--------------------------------------------------------------*/
+
+#ifndef HLANG_H
+#define HLANG_H
+
+#include <iostream>
+#include <stdio.h>
+#include <map>
+#include <string>
+
+#include "stack_trace.h"
+#include "nervenet.hh"
+
+struct hdecl_method {
+	std::string mth_name;
+};
+
+struct hdecl_attribute {
+	std::string att_name;
+	std::string type;
+};
+
+struct hdecl_class {
+	std::string cls_name;
+	std::map<std::string, hdecl_attribute*> attributes;
+	std::map<std::string, hdecl_method*> methods;
+};
+
+extern std::map<std::string, hdecl_class*> HC_ALL_CLASSES;
+
+template <bool> struct HC_ILLEGAL_USE_OF_OBJECT;
+template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
+#define HC_OBJECT_COPY_ERROR HC_ILLEGAL_USE_OF_OBJECT<false>()
+
+#define hc_xstr(a) hc_str(a)
+#define hc_str(a) #a
+
+// ~,|,&,^,==, >>, <<, >, <,?,
+
+enum	hc_syntax_op_t {
+	hc_invalid_op,
+	
+	hc_member_op,	// ->
+	
+	hc_comma_op,	// ,
+	hc_switch_then_op,	// >>=
+	hc_then_op,	// >>
+	
+	hc_hme_op,	// hme
+	hc_hif_op,	// hif
+	hc_helse_op,	// helse
+	hc_helif_op,	// helif
+	hc_hfor_op,	// hfor
+	hc_hwhile_op,	// hwhile
+	hc_hswitch_op,	// hswitch
+	hc_hcase_op,	// hcase
+	hc_hbreak_op,	// hbreak
+	hc_hcontinue_op,	// hcontinue
+	hc_hreturn_op,	// hreturn
+	
+	hc_assig_op,	// =
+	
+	hc_less_than_op,	// <
+	hc_more_than_op,	// >
+	hc_less_equal_than_op,	// <=
+	hc_more_equal_than_op,	// >=
+	hc_equal_op,	// ==
+	hc_not_equal_op,	// !=
+	hc_and_op,	// &&
+	hc_or_op,	// ||
+	hc_bit_and_op,	// &
+	hc_bit_or_op,	// |
+	
+	hc_not_op,	// !
+	hc_bit_not_op,	// ~
+
+	hc_plus_op,	// +
+	hc_minus_op,	// -
+	
+	hc_pre_inc_op,	// ++
+	hc_pre_dec_op,	// --
+	hc_post_inc_op,	// ++
+	hc_post_dec_op,	// --
+	
+	hc_total_num_op
+};
+
+const char*
+hc_get_token(hc_syntax_op_t op);
+
+enum	hc_term_kind_t {
+	hc_invalid_kind,
+	hc_value_kind,
+	hc_unary_kind,
+	hc_binary_kind
+};
+
+class hc_term;
+
+#define HC_DEFINE_BINARY_OP_BASE(the_code) \
+	PTD_CK(is_top() || o1.is_top()); \
+	hc_term* tm = new hc_binary_term(the_code, this, &o1); \
+	hc_term::HC_TOP_TERM = tm; \
+	return *tm; \
+
+// end_define
+
+#define HC_DEFINE_BINARY_OP(the_op, the_code) \
+hc_term& hc_term::operator the_op (hc_term& o1) { \
+	HC_DEFINE_BINARY_OP_BASE(the_code) \
+} \
+
+// end_define
+
+#define HC_DEFINE_UNARY_OP(the_op, the_code) \
+hc_term& hc_term::operator the_op (){ \
+	hc_term* tm = new hc_unary_term(the_code, this); \
+	hc_term::HC_TOP_TERM = tm; \
+	return *tm; \
+} \
+
+// end_define
+
+#define HC_DEFINE_FUNC_OP(the_op, the_code) \
+hc_term& \
+the_op(hc_term& o1){ \
+	hc_term* tm = new hc_unary_term(the_code, &o1); \
+	hc_term::HC_TOP_TERM = tm; \
+	return *tm; \
+} \
+
+// end_define
+
+
+class hc_term {
+public:
+	static hc_term	HC_NULL_TERM;
+	static hc_term* HC_TOP_TERM;
+	
+	// constructors
+	hc_term(){}
+
+	virtual	~hc_term(){
+		//printf("%s \n", STACK_STR.c_str());
+		//bj_abort_func(0, "func: 'hc_term::~hc_term'"); 
+	}
+
+	// Don't allow copying (error prone):
+	// force use of referenced rows
+	
+	hc_term(hc_term& other){ 
+		mck_abort(0, mc_cstr("func: 'hc_term(hc_term&)'"));
+	}
+
+	hc_term&  operator , (hc_term& o1);
+	hc_term&	operator >>= (hc_term& o1);
+	hc_term&	operator >> (hc_term& o1);
+	
+	hc_term&	operator = (hc_term& o1);
+	
+	hc_term&	operator < (hc_term& o1);
+	hc_term&	operator > (hc_term& o1);
+	hc_term&	operator <= (hc_term& o1);
+	hc_term&	operator >= (hc_term& o1);
+	hc_term&	operator == (hc_term& o1);
+	hc_term&	operator != (hc_term& o1);
+	hc_term&	operator && (hc_term& o1);
+	hc_term&	operator || (hc_term& o1);
+	hc_term&	operator & (hc_term& o1);
+	hc_term&	operator | (hc_term& o1);
+
+	hc_term&	operator + (hc_term& o1);
+	hc_term&	operator - (hc_term& o1);
+
+	hc_term&	operator ! ();
+	hc_term&	operator ~ ();
+	
+	hc_term&	operator ++ ();
+	hc_term&	operator ++ (int xx);
+	hc_term&	operator -- ();
+	hc_term&	operator -- (int xx);
+	
+	/*hc_term const *	operator -> () const;
+    hc_term*	operator -> () ;
+	
+    hc_term*	hme() { 
+		return this; 
+	}*/
+	
+	virtual 
+	hc_term_kind_t	get_term_kind(){
+		return hc_invalid_kind;
+	}
+	
+	bool is_null(){
+		return (this == &HC_NULL_TERM);
+	}
+	
+	friend
+	hc_term&	hif(hc_term& o1);
+
+	friend
+	hc_term&	helif(hc_term& o1);
+
+	friend
+	hc_term&	hfor(hc_term& o1);
+
+	friend
+	hc_term&	hwhile(hc_term& o1);
+
+	friend
+	hc_term&	hswitch(hc_term& o1);
+
+	friend
+	hc_term&	hcase(hc_term& o1);
+	
+	friend
+	void		hfunction(const char* nam, hc_term& o1);
+	
+	virtual 
+	void print_term();
+	
+	bool is_value(){
+		return (get_term_kind() == hc_value_kind);
+	}
+
+	bool is_top(){
+		return (is_value() || (this == HC_TOP_TERM));
+	}
+	
+	void dbg_func();
+};
+
+class hc_unary_term : public hc_term {
+public:
+	hc_syntax_op_t op;
+	hc_term* prm;
+	
+	virtual	~hc_unary_term(){
+		if(prm != mc_null){
+			delete prm;
+			prm = mc_null;
+		}
+	}
+
+	hc_unary_term(hc_syntax_op_t pm_op, hc_term* pm_val){
+		init_unary_term(pm_op, pm_val);
+	}
+
+	void init_unary_term(hc_syntax_op_t pm_op = hc_invalid_op, 
+						  hc_term* pm_val = mc_null)
+	{
+		op = pm_op;
+		prm = pm_val;
+	}
+	
+	virtual 
+	hc_term_kind_t	get_term_kind(){
+		return hc_unary_kind;
+	}
+	
+	virtual 
+	void print_term();
+};
+
+class hc_binary_term : public hc_term {
+public:
+	hc_syntax_op_t op;
+	hc_term* lft;
+	hc_term* rgt;
+	
+	virtual	~hc_binary_term(){
+		if(lft != mc_null){
+			delete lft;
+			lft = mc_null;
+		}
+		if(rgt != mc_null){
+			delete rgt;
+			rgt = mc_null;
+		}
+	}
+	
+	hc_binary_term (hc_syntax_op_t pm_op, hc_term* pm_lft, hc_term* pm_rgt){
+		init_binary_term(pm_op, pm_lft, pm_rgt);
+	}
+	
+	void init_binary_term(hc_syntax_op_t pm_op = hc_invalid_op, 
+						  hc_term* pm_lft = mc_null, hc_term* pm_rgt = mc_null)
+	{
+		op = pm_op;
+		lft = pm_lft;
+		rgt = pm_rgt;
+	}
+	
+	virtual 
+	hc_term_kind_t	get_term_kind(){
+		return hc_binary_kind;
+	}
+	
+	virtual 
+	void print_term();
+};
+
+template<class obj_t>
+class hc_value : public hc_term {
+public:
+	static hc_value<obj_t>	HC_NULL_VALUE;
+	
+	obj_t	val;
+	
+	virtual	~hc_value(){}
+	
+	
+	hc_value(){}
+	
+	hc_value(obj_t aa){ 
+		val = aa;
+	}
+	
+	hc_value(hc_value<obj_t>& other){ 
+		HC_OBJECT_COPY_ERROR; 
+	}
+
+	hc_value(hc_term& other){ 
+		HC_OBJECT_COPY_ERROR; 
+	}
+	
+	hc_term&	operator = (hc_term& o1){
+		HC_OBJECT_COPY_ERROR; 
+		return HC_NULL_TERM;
+	}
+
+	hc_term&  operator = (hc_value<obj_t>& o1) { 
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
+	}
+
+	void operator ()(obj_t aa) { val = aa; }
+	
+	void  operator = (obj_t aa) { 
+		val = aa;
+	}
+
+	bool is_null(){
+		return (this == &HC_NULL_VALUE);
+	}
+
+	//operator obj_t() { return val; }
+	
+	hc_value<obj_t>* operator ()() { return this; }
+	 
+	virtual 
+	hc_term_kind_t	get_term_kind(){
+		return hc_value_kind;
+	}
+	
+	virtual 
+	void print_term(){
+		std::cout << ' ' << val << ' ';
+		//printf(" VAL ");
+	}
+};
+
+template<class obj_t>
+hc_value<obj_t> hc_value<obj_t>::HC_NULL_VALUE{};
+
+typedef hc_value<const char*> hc_keyword;
+
+extern hc_keyword helse;
+extern hc_keyword hbreak;
+extern hc_keyword hcontinue;
+extern hc_keyword hreturn;
+
+void
+hc_init_keywords();
+
+//hcell(name);
+//hmissive(name);
+
+//hvalue(not_pt, name);
+//hreference(class, name);
+
+//hmethod(name);
+
+//HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)mc_null));
+
+int func_01(const char* nam, void*);
+		 
+class pru_hcell : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS(pru_hcell)
+	
+	static
+	const char* get_cls_nam(){
+		return "pru_hcell";
+	}
+	
+	//operator obj_t() { return val; }
+	
+	//hattribute(int, nam);
+
+	//hmethod(nam);
+	
+	pru_hcell(){
+		init_pru_hcell();
+	}
+
+	~pru_hcell(){}
+
+	void init_pru_hcell(){
+		handler_idx = bj_cell_id(pru_hcell);
+	}
+
+	void handler(missive* msv);
+	
+	int attr_03 = func_01(pru_hcell::get_cls_nam(), (void*)(&pru_hcell::handler));
+	int attr_01 = func_01("name_attr_01", mc_null);
+	int attr_02 = func_01("name_attr_02", mc_null);
+	
+};
+
+
+void bj_mc_test_5(int argc, char *argv[]);
+
+
+
+#endif		// HLANG_H
+
+
+
+// _Generic
+//static const char* get_str(){ return typeid(obj_t).name(); }

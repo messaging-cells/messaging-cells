@@ -188,6 +188,8 @@ enum pgroup_tok_t : mck_token_t {
 	bj_tok_pgroup_add_item,
 	bj_tok_pgroup_remove_item,
 	bj_tok_pgroup_broadcast,
+	bj_tok_pgroup_item_read_ref,
+	bj_tok_pgroup_item_write_ref,
 	bj_tok_pgroup_end
 };
 

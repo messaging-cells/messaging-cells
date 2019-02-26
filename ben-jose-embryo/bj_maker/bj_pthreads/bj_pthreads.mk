@@ -33,7 +33,7 @@ TGT_POSTMAKE := ${POST_OPERS}
 C_FLAGS_1 := -Wall -std=gnu11 -g3 -pthread 
 SRC_CFLAGS := -DMC_IS_PTD_CODE ${MC_DBG_FLAG} ${C_FLAGS_1} 
 
-CXX_FLAGS_1 := -Wall -std=c++14 -g3 -pthread 
+CXX_FLAGS_1 := -Wall -std=c++17 -g3 -pthread 
 SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_DBG_FLAG} ${CXX_FLAGS_1}
 
 SRC_INCDIRS := ${BJ_MANAGERU_INCLUDES}
