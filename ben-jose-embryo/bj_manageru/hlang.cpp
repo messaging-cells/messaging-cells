@@ -171,22 +171,17 @@ HC_DEFINE_FUNC_OP(hwhile, hc_hwhile_op)
 HC_DEFINE_FUNC_OP(hswitch, hc_hswitch_op)
 HC_DEFINE_FUNC_OP(hcase, hc_hcase_op)
 
-hc_keyword helse;
-hc_keyword hbreak;
-hc_keyword hcontinue;
-hc_keyword hreturn;
-
-/*hc_keyword helse("helse");
-hc_keyword hbreak("hbreak");
-hc_keyword hcontinue("hcontinue");
-hc_keyword hreturn("hreturn");*/
+hkeyword(helse);
+hkeyword(hbreak);
+hkeyword(hcontinue);
+hkeyword(hreturn);
 
 void
 hc_init_keywords(){
-	helse.val = "helse";
-	hbreak.val = "hbreak";
-	hcontinue.val = "hcontinue";
-	hreturn.val = "hreturn";
+	helse.val = hc_helse_op;
+	hbreak.val = hc_hbreak_op;
+	hcontinue.val = hc_hcontinue_op;
+	hreturn.val = hc_hreturn_op;
 }
 
 void 
@@ -223,14 +218,6 @@ hc_binary_term::print_term(){
 	}
 }
 
-/*hc_term const *	hc_term::operator -> () const {
-	return this; 
-}
-
-hc_term* hc_term::operator -> () { 
-	return this; 
-}*/
-
 void
 hfunction(const char* nam, hc_term& o1){
 }
@@ -252,6 +239,10 @@ hc_term::dbg_func(){
 std::map<std::string, hdecl_class*> HC_ALL_CLASSES;
 
 class CLS_A {};
+class CLS_B {};
+class CLS_C {};
+class CLS_D {};
+class CLS_E {};
 
 void bj_mc_test_5(int argc, char *argv[])
 {
@@ -263,15 +254,33 @@ void bj_mc_test_5(int argc, char *argv[])
 	
 	hc_init_keywords();
 
-	hc_value<long> o1, o2(2), o3(3), o4(4), o5(5);
-	o1(22);
+	hchar(v1);
+	hint(v2);
+	hlong(o1);
+	hlong(o2);
+	hlong(o3);
+	hlong(o4);
+	hlong(o5);
+	hint8_t(o6);
+	huint8_t(o7);
+	hreference(CLS_A, r1);
+	hreference(CLS_B, r2);
+	hreference(CLS_C, r3);
+	hreference(CLS_D, r4);
+	hreference(CLS_A, r5);
+	//o1(22);
 	o1 = 1;
 	o2 = 2;
 	o3 = 3;
 	o4 = 4;
 	o5 = 5;
 
+	//		(r1 + r2) - r3, 
+
 	hfunction(__FUNCTION__, (
+		(r1 = (o1 + o2)),
+		(o2 = (r2 + r1)),
+		(r1 = r2) = (r4 + r5),
 		(o1 = o2) = (o4 + o5),
 		o4, o5, 
 		hswitch(o1) >>= (
@@ -309,9 +318,9 @@ void bj_mc_test_5(int argc, char *argv[])
 	
 	std::map<std::string, std::string> m;
 	std::string s1 = "1";
-	std::string v1 = "A";
+	std::string s2 = "A";
 
-	m.insert(std::pair<std::string, std::string>(s1, v1)); //Error
+	m.insert(std::pair<std::string, std::string>(s1, s2)); //Error
 	
 	//HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)mc_null));
 	pru_hcell cc;

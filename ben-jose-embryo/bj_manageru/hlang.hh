@@ -126,6 +126,7 @@ hc_get_token(hc_syntax_op_t op);
 enum	hc_term_kind_t {
 	hc_invalid_kind,
 	hc_value_kind,
+	hc_reference_kind,
 	hc_unary_kind,
 	hc_binary_kind
 };
@@ -147,10 +148,16 @@ hc_term& hc_term::operator the_op (hc_term& o1) { \
 
 // end_define
 
-#define HC_DEFINE_UNARY_OP(the_op, the_code) \
-hc_term& hc_term::operator the_op (){ \
+#define HC_DEFINE_UNARY_OP_BASE(the_code) \
+	PTD_CK(is_top()); \
 	hc_term* tm = new hc_unary_term(the_code, this); \
 	hc_term::HC_TOP_TERM = tm; \
+
+// end_define
+
+#define HC_DEFINE_UNARY_OP(the_op, the_code) \
+hc_term& hc_term::operator the_op (){ \
+	HC_DEFINE_UNARY_OP_BASE(the_code) \
 	return *tm; \
 } \
 
@@ -215,13 +222,6 @@ public:
 	hc_term&	operator -- ();
 	hc_term&	operator -- (int xx);
 	
-	/*hc_term const *	operator -> () const;
-    hc_term*	operator -> () ;
-	
-    hc_term*	hme() { 
-		return this; 
-	}*/
-	
 	virtual 
 	hc_term_kind_t	get_term_kind(){
 		return hc_invalid_kind;
@@ -259,8 +259,17 @@ public:
 		return (get_term_kind() == hc_value_kind);
 	}
 
+	bool is_reference(){
+		return (get_term_kind() == hc_reference_kind);
+	}
+
 	bool is_top(){
-		return (is_value() || (this == HC_TOP_TERM));
+		return (is_value() || is_reference() || (this == HC_TOP_TERM));
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return "INVALID_NAME";
 	}
 	
 	void dbg_func();
@@ -292,6 +301,11 @@ public:
 	virtual 
 	hc_term_kind_t	get_term_kind(){
 		return hc_unary_kind;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return hc_get_token(op);
 	}
 	
 	virtual 
@@ -333,6 +347,11 @@ public:
 	}
 	
 	virtual 
+	const char*	get_name(){
+		return hc_get_token(op);
+	}
+	
+	virtual 
 	void print_term();
 };
 
@@ -340,16 +359,19 @@ template<class obj_t>
 class hc_value : public hc_term {
 public:
 	static hc_value<obj_t>	HC_NULL_VALUE;
-	
+
+	const char* typ;
+	const char* nam;
 	obj_t	val;
 	
 	virtual	~hc_value(){}
 	
-	
-	hc_value(){}
-	
-	hc_value(obj_t aa){ 
-		val = aa;
+	hc_value(const char* the_typ, const char* the_nam){
+		PTD_CK(! std::is_pointer<obj_t>::value);
+		PTD_CK(! std::is_class<obj_t>::value);
+		typ = the_typ;
+		nam = the_nam;
+		val = obj_t();
 	}
 	
 	hc_value(hc_value<obj_t>& other){ 
@@ -361,15 +383,15 @@ public:
 	}
 	
 	hc_term&	operator = (hc_term& o1){
-		HC_OBJECT_COPY_ERROR; 
-		return HC_NULL_TERM;
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
 	}
 
 	hc_term&  operator = (hc_value<obj_t>& o1) { 
 		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
 	}
 
-	void operator ()(obj_t aa) { val = aa; }
+	void operator ()(obj_t aa) { val = aa; }	// as unary func. used as init func
+	//hc_value<obj_t>* operator ()() { return this; }	// as empty func
 	
 	void  operator = (obj_t aa) { 
 		val = aa;
@@ -379,9 +401,7 @@ public:
 		return (this == &HC_NULL_VALUE);
 	}
 
-	//operator obj_t() { return val; }
-	
-	hc_value<obj_t>* operator ()() { return this; }
+	//operator obj_t() { return ref; }		// cast op
 	 
 	virtual 
 	hc_term_kind_t	get_term_kind(){
@@ -389,8 +409,13 @@ public:
 	}
 	
 	virtual 
+	const char*	get_name(){
+		return nam;
+	}
+	
+	virtual 
 	void print_term(){
-		std::cout << ' ' << val << ' ';
+		std::cout << ' ' << nam << ' ';
 		//printf(" VAL ");
 	}
 };
@@ -398,7 +423,122 @@ public:
 template<class obj_t>
 hc_value<obj_t> hc_value<obj_t>::HC_NULL_VALUE{};
 
-typedef hc_value<const char*> hc_keyword;
+class hc_keyword : public hc_value<hc_syntax_op_t> {
+public:
+	virtual	~hc_keyword(){}
+	
+	hc_keyword(const char* the_nam) : hc_value("hc_keyword", the_nam){
+	}
+		
+	virtual 
+	void print_term(){
+		std::cout << ' ' << nam << ' ';
+	}
+};
+
+template<class obj_t>
+class hc_reference : public hc_term {
+public:
+	static hc_reference<obj_t>	HC_NULL_REFERENCE;
+
+	const char* typ;
+	const char* nam;
+	obj_t*	ref;
+	
+	virtual	~hc_reference(){}
+	
+	hc_reference(const char* the_typ, const char* the_nam){
+		PTD_CK(! std::is_pointer<obj_t>::value);
+		PTD_CK(std::is_class<obj_t>::value);
+		typ = the_typ;
+		nam = the_nam;
+		ref = mc_null;
+	}
+	
+	hc_reference(hc_reference<obj_t>& other){ 
+		HC_OBJECT_COPY_ERROR; 
+	}
+
+	hc_reference(hc_term& other){ 
+		HC_OBJECT_COPY_ERROR; 
+	}
+	
+	hc_term&	operator = (hc_term& o1){
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
+	}
+
+	hc_term&  operator = (hc_reference<obj_t>& o1) { 
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
+	}
+
+	/*hc_term&	operator = (hc_term& o1){
+		HC_OBJECT_COPY_ERROR; 
+		return HC_NULL_TERM;
+	}
+
+	hc_term&  operator = (hc_reference<obj_t>& o1) { 
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
+	}*/
+
+	void operator ()(obj_t* aa) { ref = aa; }	// as unary func. used as init func
+	//hc_reference<obj_t>* operator ()() { return this; }	// as empty func
+	
+	void  operator = (obj_t* aa) { 
+		ref = aa;
+	}
+
+	hc_term const *	operator -> () const {
+		HC_DEFINE_UNARY_OP_BASE(hc_member_op);
+		return this;
+	}
+	
+    hc_term*	operator -> () {
+		HC_DEFINE_UNARY_OP_BASE(hc_member_op);
+		return this;
+	}
+	
+	bool is_null(){
+		return (this == &HC_NULL_REFERENCE);
+	}
+
+	//operator obj_t() { return ref; }		// cast op
+	
+	virtual 
+	hc_term_kind_t	get_term_kind(){
+		return hc_reference_kind;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return nam;
+	}
+	
+	virtual 
+	void print_term(){
+		std::cout << ' ' << nam << ' ';
+		//printf(" %p ", ref);
+	}
+};
+
+template<class obj_t>
+hc_reference<obj_t> hc_reference<obj_t>::HC_NULL_REFERENCE{};
+
+#define hkeyword(nn) hc_keyword nn(#nn)
+
+#define hvalue(tt, nn) hc_value<tt> nn(#tt, #nn)
+#define hchar(nn) hvalue(char, nn)
+#define hint(nn) hvalue(int, nn)
+#define hlong(nn) hvalue(long, nn)
+#define hint8_t(nn) hvalue(int8_t, nn)
+#define hint16_t(nn) hvalue(int16_t, nn)
+#define hint32_t(nn) hvalue(int32_t, nn)
+#define hint64_t(nn) hvalue(int64_t, nn)
+#define huint8_t(nn) hvalue(uint8_t, nn)
+#define huint16_t(nn) hvalue(uint16_t, nn)
+#define huint32_t(nn) hvalue(uint32_t, nn)
+#define huint64_t(nn) hvalue(uint64_t, nn)
+
+#define hreference(tt, nn) hc_reference<tt> nn(#tt, #nn)
 
 extern hc_keyword helse;
 extern hc_keyword hbreak;
@@ -408,10 +548,39 @@ extern hc_keyword hreturn;
 void
 hc_init_keywords();
 
+class hcell {
+public:
+	hcell(){
+		init_me();
+	}
+
+	virtual ~hcell(){}
+
+	virtual
+	void init_me(int caller = 0){}
+	
+    /*hc_term*	hme() { 
+		return this; 
+	}*/
+	
+};
+
+class hmissive {
+public:
+	hmissive(){
+		init_me();
+	}
+
+	virtual ~hmissive(){}
+
+	virtual
+	void init_me(int caller = 0){}
+	
+};
+
 //hcell(name);
 //hmissive(name);
 
-//hvalue(not_pt, name);
 //hreference(class, name);
 
 //hmethod(name);
