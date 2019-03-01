@@ -45,6 +45,8 @@ hlang declarations.
 
 #include "stack_trace.h"
 #include "nervenet.hh"
+//include "booter.h"
+#include "cell.hh"
 
 struct hdecl_method {
 	std::string mth_name;
@@ -127,6 +129,7 @@ enum	hc_term_kind_t {
 	hc_invalid_kind,
 	hc_value_kind,
 	hc_reference_kind,
+	hc_call_kind,
 	hc_unary_kind,
 	hc_binary_kind
 };
@@ -191,7 +194,9 @@ public:
 	// force use of referenced rows
 	
 	hc_term(hc_term& other){ 
-		mck_abort(0, mc_cstr("func: 'hc_term(hc_term&)'"));
+		//mch_abort_func(0, mc_cstr("func: 'hc_term(hc_term&)' \n"));
+		//mck_abort(0, mc_cstr("func: 'hc_term(hc_term&)' \n"));
+		//HC_OBJECT_COPY_ERROR;
 	}
 
 	hc_term&  operator , (hc_term& o1);
@@ -263,8 +268,12 @@ public:
 		return (get_term_kind() == hc_reference_kind);
 	}
 
+	bool is_call(){
+		return (get_term_kind() == hc_call_kind);
+	}
+
 	bool is_top(){
-		return (is_value() || is_reference() || (this == HC_TOP_TERM));
+		return (is_value() || is_reference() || is_call() || (this == HC_TOP_TERM));
 	}
 	
 	virtual 
@@ -525,7 +534,7 @@ hc_reference<obj_t> hc_reference<obj_t>::HC_NULL_REFERENCE{};
 
 #define hkeyword(nn) hc_keyword nn(#nn)
 
-#define hvalue(tt, nn) hc_value<tt> nn(#tt, #nn)
+#define hvalue(tt, nn) hc_value<tt> nn{#tt, #nn}
 #define hchar(nn) hvalue(char, nn)
 #define hint(nn) hvalue(int, nn)
 #define hlong(nn) hvalue(long, nn)
@@ -538,7 +547,7 @@ hc_reference<obj_t> hc_reference<obj_t>::HC_NULL_REFERENCE{};
 #define huint32_t(nn) hvalue(uint32_t, nn)
 #define huint64_t(nn) hvalue(uint64_t, nn)
 
-#define hreference(tt, nn) hc_reference<tt> nn(#tt, #nn)
+#define hreference(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
 extern hc_keyword helse;
 extern hc_keyword hbreak;
@@ -547,6 +556,77 @@ extern hc_keyword hreturn;
 
 void
 hc_init_keywords();
+
+typedef void (hc_term::*hc_method_t)();
+
+class hc_mth_call : public hc_term {
+public:
+	const char* nam = mc_null;
+	hc_term* cod = mc_null;
+	
+	virtual	~hc_mth_call(){}
+	
+	hc_mth_call(const char* the_nam){
+		nam = the_nam;
+	}
+
+	virtual 
+	hc_term_kind_t	get_term_kind(){
+		return hc_call_kind;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return nam;
+	}
+	
+	virtual 
+	void print_term(){
+		std::cout << ' ' << nam << "() ";
+	}
+};
+
+/*
+#define hmethod(nn) \
+	hc_mth_call nn ## _resp{#nn}; \
+	hc_mth_call nn(); \
+
+// end_define
+
+#define hmethod_def(mth_nam, code) \
+	hc_mth_call \
+	mth_nam(){ \
+		if(mth_nam ## _resp.cod == mc_null){ \
+			(code); \
+			PTD_CK(hc_term::HC_TOP_TERM != mc_null); \
+			mth_nam ## _resp.cod = hc_term::HC_TOP_TERM; \
+		} \
+		return mth_nam ## _resp; \
+	} \
+
+// end_define
+*/
+
+#define hmethod(mth) \
+	static hc_mth_call mth ## _resp; \
+	hc_mth_call mth(); \
+
+// end_define
+
+#define hmethod_def(cls, mth, code) \
+	hc_mth_call cls::mth ## _resp{#cls "_" #mth}; \
+	hc_mth_call \
+	cls::mth(){ \
+		if(cls::mth ## _resp.cod == mc_null){ \
+			(code); \
+			PTD_CK(hc_term::HC_TOP_TERM != mc_null); \
+			cls::mth ## _resp.cod = hc_term::HC_TOP_TERM; \
+		} \
+		return cls::mth ## _resp; \
+	} \
+
+// end_define
+
 
 class hcell {
 public:
@@ -578,12 +658,47 @@ public:
 	
 };
 
+
+// ==================================================================
+// TEST CODE
+// TEST CODE
+// TEST CODE
+// TEST CODE
+// TEST CODE
+// TEST CODE
+
+class CLS_A {};
+class CLS_B {};
+class CLS_C {};
+class CLS_D {};
+class CLS_E {};
+
+class cls_A1 : public hcell {
+public:
+	hchar(v1);
+	hint(v2);
+	hlong(o1);
+	hlong(o2);
+	hlong(o3);
+	hlong(o4);
+	hlong(o5);
+	hint8_t(o6);
+	huint8_t(o7);
+	hreference(CLS_A, r1);
+	hreference(CLS_B, r2);
+	hreference(CLS_C, r3);
+	hreference(CLS_D, r4);
+	hreference(CLS_A, r5);
+	
+	hmethod(mth01);
+};
+
+
 //hcell(name);
 //hmissive(name);
 
 //hreference(class, name);
 
-//hmethod(name);
 
 //HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)mc_null));
 

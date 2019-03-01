@@ -238,11 +238,34 @@ hc_term::dbg_func(){
 
 std::map<std::string, hdecl_class*> HC_ALL_CLASSES;
 
-class CLS_A {};
-class CLS_B {};
-class CLS_C {};
-class CLS_D {};
-class CLS_E {};
+//hmethod_def(cls_A1::mth01, hc_term::HC_NULL_TERM);
+
+//hmethod_def(cls_A1::mth01, (r1 + r2));
+
+hmethod_def(cls_A1, mth01, (r1 + r2));
+
+/*hmethod_def(cls_A1::mth01, (
+		(r1 = (o1 + o2)),
+		(o2 = (r2 + r1)),
+		(r1 = r2) = (r4 + r5),
+		(o1 = o2) = (o4 + o5),
+		o4, o5, 
+		hswitch(o1) >>= (
+			hcase(o2) >> o3++, 
+			hcase(o4) >> ++o5,
+			hcase(o1) >> o2
+		),
+		hif(o3) >> (~ o1 + ! o2),
+		helif(o4) >> (o5 && o3),
+		hfor(o4) >> (o2 || o3),
+		hwhile(o4) >> (o1 & o3),
+		hreturn,
+		hcontinue,
+		hbreak,
+		helse >> o2,
+		((o1 < o2) <= (o3 > o4)),
+		o4
+));*/
 
 void bj_mc_test_5(int argc, char *argv[])
 {
@@ -254,6 +277,8 @@ void bj_mc_test_5(int argc, char *argv[])
 	
 	hc_init_keywords();
 
+	cls_A1 aa;
+	
 	hchar(v1);
 	hint(v2);
 	hlong(o1);
@@ -268,15 +293,23 @@ void bj_mc_test_5(int argc, char *argv[])
 	hreference(CLS_C, r3);
 	hreference(CLS_D, r4);
 	hreference(CLS_A, r5);
-	//o1(22);
+	
 	o1 = 1;
 	o2 = 2;
 	o3 = 3;
 	o4 = 4;
 	o5 = 5;
 
-	//		(r1 + r2) - r3, 
+	aa.mth01();
+	if(aa.mth01_resp.cod == mc_null){
+		printf("EMPTY_COD for mth\n");
+	} else {
+		aa.mth01_resp.cod->print_term();
+	}
+	printf("IN_MAIN. %s %d\n", __PRETTY_FUNCTION__, __LINE__);
+	((r1 + r2) - r3);
 
+	/*
 	hfunction(__FUNCTION__, (
 		(r1 = (o1 + o2)),
 		(o2 = (r2 + r1)),
@@ -300,18 +333,24 @@ void bj_mc_test_5(int argc, char *argv[])
 		o4
 	)
 	);
+	*/
 
 	//o5, o2;
 	
 	printf("\n\nTOP_TERM:\n");
+	
 	if(hc_term::HC_TOP_TERM != mc_null){
 		hc_term::HC_TOP_TERM->print_term();
 		printf("\n");
 		hc_term::HC_TOP_TERM->dbg_func();
 		//delete hc_term::HC_TOP_TERM;
 	}
+	
 	printf("%s \n", __FUNCTION__); 
 	printf("%s \n", __PRETTY_FUNCTION__ ); 
+	
+	//printf("%s %s \n", aa.ch01.typ, aa.ch01.nam); 
+	
 	
 	//long xx = o1;
 	//printf("\n\n %ld \n", xx);
