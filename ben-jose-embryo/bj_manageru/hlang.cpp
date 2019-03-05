@@ -288,13 +288,26 @@ hmethod_def(cls_A2, mth01, (
 ));
 
 hmethod_def(cls_A3, mth01, (
-	v1 = r3->r1->o4(), 
-	rr2->rr2->o5(),
-	r3->r1->o4() = v1,
-	r3 = r3 -> r1 -> o4()
+	r3->r1->o4(), 
+	r3->r1->mth02(), 
+	r3->r1->o4(),
+	aa1 = aa2, 
+	aa2 = aa3, 
+	aa3 = aa1
 ));
 
 /*
+	v1 = r3->r1->mth02()
+	
+	r3->r1->mth02()
+	
+	r3->r1->o4(), 
+	r3->r1->mth02(), 
+	r3->r1->o4()
+	
+	r3->r1->o4(), 
+	r3->r1->o4()
+	
 	r3->r1->o4() = rr2->rr2->o5()
 	
 	(v1 = (r3->r1->o4)), 
@@ -328,7 +341,15 @@ void bj_mc_test_5(int argc, char *argv[])
 	cls_A2 bb;
 	cls_A3 cc;
 	
-	PTD_CK(aa.meme == (void*) &aa);
+	//CLS_AA AA1;
+	CLS_BB BB1;
+	
+	hc_reference<CLS_AA> ref1{"CLS_AA", "ref1"};
+	ref1 = &BB1;
+	hc_reference<CLS_BB> ref2{"CLS_BB", "ref2"};
+	ref2 = &BB1;
+	hc_reference<CLS_BB> ref3{"CLS_BB", "ref3"};
+	ref3 = hcast<CLS_AA, CLS_BB>(ref1);
 	
 	aa.mth01().print_code();
 	bb.r1 = &aa;

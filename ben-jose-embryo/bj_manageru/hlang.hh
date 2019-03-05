@@ -264,6 +264,12 @@ public:
 	
 	virtual 
 	void print_term();
+
+	virtual 
+	void print_code(){
+		mch_abort_func(0, mc_cstr("Invalid call to 'print_code()'. " 
+				"NOT_A_METHOD. It has no code to print.\n"));
+	}
 	
 	bool is_value(){
 		return (get_term_kind() == hc_value_kind);
@@ -376,39 +382,7 @@ public:
 	void print_term();
 };
 
-class hcell {
-public:
-	hc_term* src_term = mc_null;
-	void* meme = this;
-	
-	hcell(){
-		init_me();
-	}
-
-	virtual ~hcell(){}
-
-	virtual
-	void init_me(int caller = 0){
-		src_term = mc_null;
-	}
-	
-    /*hc_term*	hme() { 
-		return this; 
-	}*/
-	
-};
-
-#define HC_GET_SOURCE() \
-	hc_term* src = this; \
-	if((owner != mc_null) && (owner->src_term != mc_null)){ \
-		hc_term* tmp = owner->src_term; \
-		owner->src_term = mc_null; \
-		tmp = tmp->get_src(); \
-		src = new hc_binary_term(hc_member_op, tmp, this); \
-	} \
-	return src; \
-
-// end_define
+class hcell;
 
 template<class obj_t>
 class hc_value : public hc_term {
@@ -478,9 +452,7 @@ public:
 	}
 
 	virtual 
-	hc_term*	get_src(){
-		HC_GET_SOURCE();
-	}
+	hc_term*	get_src();
 };
 
 template<class obj_t>
@@ -538,18 +510,18 @@ public:
 	void operator ()(obj_t* aa) { // as unary func. used as init func
 		ref = aa; 
 	}	
-	hc_term& operator ()() { return *get_src(); }	// as empty func
+	hc_term& operator ()() { return *get_src(); }	// as empty func. top member calls with this.
 	
 	void  operator = (obj_t* aa) { 
 		ref = aa;
 	}
-
+	
 	obj_t const *	operator -> () const {
 		if(ref == mc_null){
 			PTD_PRT_STACK(true, "hreference: %s in mc_null. Init to a valid hreference\n", nam);
 			mch_abort_func(0, mc_cstr("Invalid hreference\n"));
 		}
-		ref->src_term = get_src();
+		ref->src_term = this;
 		return ref;
 	}
 	
@@ -558,7 +530,7 @@ public:
 			PTD_PRT_STACK(true, "hreference: %s in mc_null. Init to a valid hreference\n", nam);
 			mch_abort_func(0, mc_cstr("Invalid hreference\n"));
 		}
-		ref->src_term = get_src();
+		ref->src_term = this;
 		return ref;
 	}
 	
@@ -585,10 +557,60 @@ public:
 	}
 
 	virtual 
-	hc_term*	get_src(){
-		HC_GET_SOURCE();
+	hc_term*	get_src();
+};
+
+class hcell {
+public:
+	hc_term* src_term = mc_null;
+	
+	hcell(){
+		init_me();
+	}
+
+	virtual ~hcell(){}
+
+	virtual
+	void init_me(int caller = 0){
+		src_term = mc_null;
+	}
+	
+    hc_reference<hcell>&	hme(){
+		hc_reference<hcell>* pt_me = new hc_reference<hcell>("hcell", "hme", this);
+		pt_me->ref = this;
+		return *pt_me;
 	}
 };
+
+#define HC_GET_SOURCE() \
+	hc_term* src = this; \
+	if((owner != mc_null) && (owner->src_term != mc_null)){ \
+		hc_term* tmp = owner->src_term; \
+		owner->src_term = mc_null; \
+		tmp = tmp->get_src(); \
+		src = new hc_binary_term(hc_member_op, tmp, this); \
+	} \
+	return src; \
+
+// end_define
+
+template<class obj_t>
+hc_term*	
+hc_value<obj_t>::get_src(){
+	HC_GET_SOURCE();
+}
+
+template<class obj_t>
+hc_term*	
+hc_reference<obj_t>::get_src(){
+	HC_GET_SOURCE();
+}
+
+template<class cl1_t, class cl2_t>
+cl2_t*
+hcast(hc_reference<cl1_t>& o1){
+	return (cl2_t*)(o1.ref);
+}
 
 #define hkeyword(nn) hc_keyword nn(#nn)
 
@@ -644,6 +666,7 @@ public:
 		std::cout << ' ' << nam << "() ";
 	}
 
+	virtual 
 	void print_code(){
 		printf("\nCODE_FOR %s\n", nam);
 		if(cod == mc_null){
@@ -659,23 +682,31 @@ public:
 
 #define hmethod(mth) \
 	static hc_mth_call mth ## _resp; \
-	hc_mth_call& mth(); \
+	hc_term& mth(); \
 
 // end_define
 
 #define hmethod_def(cls, mth, code) \
 	hc_mth_call cls::mth ## _resp{#cls "_" #mth}; \
-	hc_mth_call& \
+	hc_term& \
 	cls::mth(){ \
+		hc_mth_call* mc = new hc_mth_call(cls::mth ## _resp.nam); \
+		hc_term* rr = mc; \
+		if(src_term != mc_null){ \
+			hc_term* tmp = src_term; \
+			src_term = mc_null; \
+			tmp = tmp->get_src(); \
+			rr = new hc_binary_term(hc_member_op, tmp, mc); \
+		} \
 		if(cls::mth ## _resp.cod == mc_null){ \
 			hc_term& tm = (code); \
 			cls::mth ## _resp.cod = tm.get_src(); \
 		} \
-		return cls::mth ## _resp; \
+		mc->cod = cls::mth ## _resp.cod; \
+		return *rr; \
 	} \
 
 // end_define
-
 
 class hmissive {
 public:
@@ -759,6 +790,10 @@ public:
 	hint(v2);
 	hreference(cls_A2, rr2);
 	hreference(cls_A2, r3);
+
+	hreference(cls_A1, aa1);
+	hreference(cls_A2, aa2);
+	hreference(cls_A3, aa3);
 	
 	hmethod(mth01);
 };
@@ -801,7 +836,7 @@ public:
 
 	void handler(missive* msv);
 	
-	int attr_03 = func_01(pru_hcell::get_cls_nam(), (void*)(&pru_hcell::handler));
+	//int attr_03 = func_01(pru_hcell::get_cls_nam(), (void*)(&pru_hcell::handler));
 	int attr_01 = func_01("name_attr_01", mc_null);
 	int attr_02 = func_01("name_attr_02", mc_null);
 	
