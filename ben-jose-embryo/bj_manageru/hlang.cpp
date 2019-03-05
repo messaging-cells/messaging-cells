@@ -1,5 +1,4 @@
 
-#include <type_traits>
 #include <stdio.h>
 
 #include "cell.hh"
@@ -8,7 +7,6 @@
 
 
 hc_term		hc_term::HC_NULL_TERM{};
-hc_term*	hc_term::HC_TOP_TERM = mc_null;
 
 const char*
 hc_get_token(hc_syntax_op_t op){
@@ -59,8 +57,20 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_member_op:
 			tok = "->";
 		break;
-		case hc_assig_op:
-			tok = "=";
+		case hc_assig_op1:
+			tok = "=1";
+		break;
+		case hc_assig_op2:
+			tok = "=2";
+		break;
+		case hc_assig_op3:
+			tok = "=3";
+		break;
+		case hc_assig_op4:
+			tok = "=4";
+		break;
+		case hc_assig_op5:
+			tok = "=5";
 		break;
 		case hc_less_than_op:
 			tok = "<";
@@ -130,7 +140,7 @@ hc_term& hc_term::operator , (hc_term& o1) {
 HC_DEFINE_BINARY_OP(>>, hc_then_op)
 HC_DEFINE_BINARY_OP(>>=, hc_switch_then_op)
 
-HC_DEFINE_BINARY_OP(=, hc_assig_op)
+HC_DEFINE_BINARY_OP(=, hc_assig_op1)
 
 HC_DEFINE_BINARY_OP(+, hc_plus_op)
 HC_DEFINE_BINARY_OP(-, hc_minus_op)
@@ -154,13 +164,11 @@ HC_DEFINE_UNARY_OP(--, hc_pre_dec_op)
 
 hc_term& hc_term::operator ++ (int){
 	hc_term* tm = new hc_unary_term(hc_post_inc_op, this);
-	hc_term::HC_TOP_TERM = tm;
 	return *tm;
 }
 
 hc_term& hc_term::operator -- (int){
 	hc_term* tm = new hc_unary_term(hc_post_dec_op, this);
-	hc_term::HC_TOP_TERM = tm;
 	return *tm;
 }
 
@@ -218,10 +226,6 @@ hc_binary_term::print_term(){
 	}
 }
 
-void
-hfunction(const char* nam, hc_term& o1){
-}
-
 int func_01(const char* nam, void*){ 
 	printf("declar attr = %s \n", nam);
 	return 567; 
@@ -240,32 +244,72 @@ std::map<std::string, hdecl_class*> HC_ALL_CLASSES;
 
 //hmethod_def(cls_A1::mth01, hc_term::HC_NULL_TERM);
 
-//hmethod_def(cls_A1::mth01, (r1 + r2));
+//hmethod_def(cls_A1, mth01, r1);
 
-hmethod_def(cls_A1, mth01, (r1 + r2));
+//hmethod_def(cls_A1, mth01, (r1 + r2));
 
-/*hmethod_def(cls_A1::mth01, (
-		(r1 = (o1 + o2)),
-		(o2 = (r2 + r1)),
-		(r1 = r2) = (r4 + r5),
-		(o1 = o2) = (o4 + o5),
-		o4, o5, 
-		hswitch(o1) >>= (
-			hcase(o2) >> o3++, 
-			hcase(o4) >> ++o5,
-			hcase(o1) >> o2
-		),
-		hif(o3) >> (~ o1 + ! o2),
-		helif(o4) >> (o5 && o3),
-		hfor(o4) >> (o2 || o3),
-		hwhile(o4) >> (o1 & o3),
-		hreturn,
-		hcontinue,
-		hbreak,
-		helse >> o2,
-		((o1 < o2) <= (o3 > o4)),
-		o4
-));*/
+hmethod_def(cls_A1, mth01, (
+	(r1 = (o1 + o2)),
+	(o2 = (r2 + r1)),
+	(r1 = r2) = (r4 + r5),
+	(o1 = o2) = (o4 + o5),
+	o4, o5, 
+	hswitch(o1) >>= (
+		hcase(o2) >> o3++, 
+		hcase(o4) >> ++o5,
+		hcase(o1) >> o2
+	),
+	hif(o3) >> (~ o1 + ! o2),
+	helif(o4) >> (o5 && o3),
+	hfor(o4) >> (o2 || o3),
+	hwhile(o4) >> (o1 & o3),
+	hreturn,
+	hcontinue,
+	hbreak,
+	helse >> o2,
+	((o1 < o2) <= (o3 > o4)),
+	o4
+));
+
+hmethod_def(cls_A1, mth02, (
+	(r1 = (o1 + o2)),
+	mth01(), 
+	hreturn
+));
+
+hmethod_def(cls_A1, mth03, (
+	hif(o3) >> (~ o1 + ! o2),
+	(o2 = (r2 + r1))
+));
+
+hmethod_def(cls_A2, mth01, (
+	hif(v1) >> (~ o1 + ! o2),
+	(r1->o4) + v2
+));
+
+hmethod_def(cls_A3, mth01, (
+	v1 = r3->r1->o4(), 
+	rr2->rr2->o5(),
+	r3->r1->o4() = v1,
+	r3 = r3 -> r1 -> o4()
+));
+
+/*
+	r3->r1->o4() = rr2->rr2->o5()
+	
+	(v1 = (r3->r1->o4)), 
+	hif(rr2->rr2->o5)
+	
+	
+	v1 = r3->r1->o4(), 
+	rr2->rr2->o5(),
+	r3->r1->o4() = v1,
+	r3 = r3 -> r1 -> o4()
+*/
+
+class CLS_AA {};
+class CLS_BB : public CLS_AA {};
+class CLS_CC : public CLS_BB {};
 
 void bj_mc_test_5(int argc, char *argv[])
 {
@@ -276,81 +320,25 @@ void bj_mc_test_5(int argc, char *argv[])
 	}
 	
 	hc_init_keywords();
+	
+	std::cout << "a2b: " << std::is_base_of<CLS_AA, CLS_BB>::value << '\n';
+	std::cout << "b2a: " << std::is_base_of<CLS_BB, CLS_AA>::value << '\n';
 
 	cls_A1 aa;
+	cls_A2 bb;
+	cls_A3 cc;
 	
-	hchar(v1);
-	hint(v2);
-	hlong(o1);
-	hlong(o2);
-	hlong(o3);
-	hlong(o4);
-	hlong(o5);
-	hint8_t(o6);
-	huint8_t(o7);
-	hreference(CLS_A, r1);
-	hreference(CLS_B, r2);
-	hreference(CLS_C, r3);
-	hreference(CLS_D, r4);
-	hreference(CLS_A, r5);
+	PTD_CK(aa.meme == (void*) &aa);
 	
-	o1 = 1;
-	o2 = 2;
-	o3 = 3;
-	o4 = 4;
-	o5 = 5;
-
-	aa.mth01();
-	if(aa.mth01_resp.cod == mc_null){
-		printf("EMPTY_COD for mth\n");
-	} else {
-		aa.mth01_resp.cod->print_term();
-	}
+	aa.mth01().print_code();
+	bb.r1 = &aa;
+	bb.rr2 = &aa;
+	cc.r3 = &bb;
+	cc.rr2 = &bb;
+	bb.mth01().print_code();
+	cc.mth01().print_code();
+	
 	printf("IN_MAIN. %s %d\n", __PRETTY_FUNCTION__, __LINE__);
-	((r1 + r2) - r3);
-
-	/*
-	hfunction(__FUNCTION__, (
-		(r1 = (o1 + o2)),
-		(o2 = (r2 + r1)),
-		(r1 = r2) = (r4 + r5),
-		(o1 = o2) = (o4 + o5),
-		o4, o5, 
-		hswitch(o1) >>= (
-			hcase(o2) >> o3++, 
-			hcase(o4) >> ++o5,
-			hcase(o1) >> o2
-		),
-		hif(o3) >> (~ o1 + ! o2),
-		helif(o4) >> (o5 && o3),
-		hfor(o4) >> (o2 || o3),
-		hwhile(o4) >> (o1 & o3),
-		hreturn,
-		hcontinue,
-		hbreak,
-		helse >> o2,
-		((o1 < o2) <= (o3 > o4)),
-		o4
-	)
-	);
-	*/
-
-	//o5, o2;
-	
-	printf("\n\nTOP_TERM:\n");
-	
-	if(hc_term::HC_TOP_TERM != mc_null){
-		hc_term::HC_TOP_TERM->print_term();
-		printf("\n");
-		hc_term::HC_TOP_TERM->dbg_func();
-		//delete hc_term::HC_TOP_TERM;
-	}
-	
-	printf("%s \n", __FUNCTION__); 
-	printf("%s \n", __PRETTY_FUNCTION__ ); 
-	
-	//printf("%s %s \n", aa.ch01.typ, aa.ch01.nam); 
-	
 	
 	//long xx = o1;
 	//printf("\n\n %ld \n", xx);
@@ -362,8 +350,6 @@ void bj_mc_test_5(int argc, char *argv[])
 	m.insert(std::pair<std::string, std::string>(s1, s2)); //Error
 	
 	//HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)mc_null));
-	pru_hcell cc;
-	printf("Attr = %d \n", cc.attr_01);
 
 	/*
 	std::cout << std::boolalpha;

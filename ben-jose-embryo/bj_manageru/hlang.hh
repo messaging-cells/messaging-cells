@@ -38,6 +38,7 @@ hlang declarations.
 #ifndef HLANG_H
 #define HLANG_H
 
+#include <type_traits>
 #include <iostream>
 #include <stdio.h>
 #include <map>
@@ -47,6 +48,7 @@ hlang declarations.
 #include "nervenet.hh"
 //include "booter.h"
 #include "cell.hh"
+
 
 struct hdecl_method {
 	std::string mth_name;
@@ -95,7 +97,11 @@ enum	hc_syntax_op_t {
 	hc_hcontinue_op,	// hcontinue
 	hc_hreturn_op,	// hreturn
 	
-	hc_assig_op,	// =
+	hc_assig_op1,	// =
+	hc_assig_op2,	// =
+	hc_assig_op3,	// =
+	hc_assig_op4,	// =
+	hc_assig_op5,	// =
 	
 	hc_less_than_op,	// <
 	hc_more_than_op,	// >
@@ -137,9 +143,7 @@ enum	hc_term_kind_t {
 class hc_term;
 
 #define HC_DEFINE_BINARY_OP_BASE(the_code) \
-	PTD_CK(is_top() || o1.is_top()); \
 	hc_term* tm = new hc_binary_term(the_code, this, &o1); \
-	hc_term::HC_TOP_TERM = tm; \
 	return *tm; \
 
 // end_define
@@ -152,9 +156,7 @@ hc_term& hc_term::operator the_op (hc_term& o1) { \
 // end_define
 
 #define HC_DEFINE_UNARY_OP_BASE(the_code) \
-	PTD_CK(is_top()); \
 	hc_term* tm = new hc_unary_term(the_code, this); \
-	hc_term::HC_TOP_TERM = tm; \
 
 // end_define
 
@@ -170,7 +172,6 @@ hc_term& hc_term::operator the_op (){ \
 hc_term& \
 the_op(hc_term& o1){ \
 	hc_term* tm = new hc_unary_term(the_code, &o1); \
-	hc_term::HC_TOP_TERM = tm; \
 	return *tm; \
 } \
 
@@ -180,7 +181,6 @@ the_op(hc_term& o1){ \
 class hc_term {
 public:
 	static hc_term	HC_NULL_TERM;
-	static hc_term* HC_TOP_TERM;
 	
 	// constructors
 	hc_term(){}
@@ -194,7 +194,7 @@ public:
 	// force use of referenced rows
 	
 	hc_term(hc_term& other){ 
-		//mch_abort_func(0, mc_cstr("func: 'hc_term(hc_term&)' \n"));
+		mch_abort_func(0, mc_cstr("func: 'hc_term(hc_term&)' \n"));
 		//mck_abort(0, mc_cstr("func: 'hc_term(hc_term&)' \n"));
 		//HC_OBJECT_COPY_ERROR;
 	}
@@ -258,6 +258,11 @@ public:
 	void		hfunction(const char* nam, hc_term& o1);
 	
 	virtual 
+	hc_term*	get_src(){
+		return this;
+	}
+	
+	virtual 
 	void print_term();
 	
 	bool is_value(){
@@ -272,10 +277,6 @@ public:
 		return (get_term_kind() == hc_call_kind);
 	}
 
-	bool is_top(){
-		return (is_value() || is_reference() || is_call() || (this == HC_TOP_TERM));
-	}
-	
 	virtual 
 	const char*	get_name(){
 		return "INVALID_NAME";
@@ -304,6 +305,9 @@ public:
 						  hc_term* pm_val = mc_null)
 	{
 		op = pm_op;
+		if(pm_val != mc_null){
+			pm_val = pm_val->get_src();
+		}
 		prm = pm_val;
 	}
 	
@@ -338,7 +342,7 @@ public:
 		}
 	}
 	
-	hc_binary_term (hc_syntax_op_t pm_op, hc_term* pm_lft, hc_term* pm_rgt){
+	hc_binary_term(hc_syntax_op_t pm_op, hc_term* pm_lft, hc_term* pm_rgt){
 		init_binary_term(pm_op, pm_lft, pm_rgt);
 	}
 	
@@ -346,6 +350,14 @@ public:
 						  hc_term* pm_lft = mc_null, hc_term* pm_rgt = mc_null)
 	{
 		op = pm_op;
+		if(op != hc_member_op){
+			if(pm_lft != mc_null){
+				pm_lft = pm_lft->get_src();
+			}
+			if(pm_rgt != mc_null){
+				pm_rgt = pm_rgt->get_src();
+			}
+		}
 		lft = pm_lft;
 		rgt = pm_rgt;
 	}
@@ -364,6 +376,40 @@ public:
 	void print_term();
 };
 
+class hcell {
+public:
+	hc_term* src_term = mc_null;
+	void* meme = this;
+	
+	hcell(){
+		init_me();
+	}
+
+	virtual ~hcell(){}
+
+	virtual
+	void init_me(int caller = 0){
+		src_term = mc_null;
+	}
+	
+    /*hc_term*	hme() { 
+		return this; 
+	}*/
+	
+};
+
+#define HC_GET_SOURCE() \
+	hc_term* src = this; \
+	if((owner != mc_null) && (owner->src_term != mc_null)){ \
+		hc_term* tmp = owner->src_term; \
+		owner->src_term = mc_null; \
+		tmp = tmp->get_src(); \
+		src = new hc_binary_term(hc_member_op, tmp, this); \
+	} \
+	return src; \
+
+// end_define
+
 template<class obj_t>
 class hc_value : public hc_term {
 public:
@@ -372,15 +418,18 @@ public:
 	const char* typ;
 	const char* nam;
 	obj_t	val;
+	hcell*	owner;
 	
 	virtual	~hc_value(){}
 	
-	hc_value(const char* the_typ, const char* the_nam){
+	hc_value(const char* the_typ, const char* the_nam, hcell* the_owner = mc_null){
 		PTD_CK(! std::is_pointer<obj_t>::value);
 		PTD_CK(! std::is_class<obj_t>::value);
 		typ = the_typ;
 		nam = the_nam;
 		val = obj_t();
+		owner = the_owner;
+		//printf("caller=%s \n", the_caller);
 	}
 	
 	hc_value(hc_value<obj_t>& other){ 
@@ -392,15 +441,15 @@ public:
 	}
 	
 	hc_term&	operator = (hc_term& o1){
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op2);
 	}
 
-	hc_term&  operator = (hc_value<obj_t>& o1) { 
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
+	hc_term&	operator = (hc_value<obj_t>& o1) { 
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op3);
 	}
 
 	void operator ()(obj_t aa) { val = aa; }	// as unary func. used as init func
-	//hc_value<obj_t>* operator ()() { return this; }	// as empty func
+	hc_term& operator ()() { return *get_src(); }	// as empty func
 	
 	void  operator = (obj_t aa) { 
 		val = aa;
@@ -427,6 +476,11 @@ public:
 		std::cout << ' ' << nam << ' ';
 		//printf(" VAL ");
 	}
+
+	virtual 
+	hc_term*	get_src(){
+		HC_GET_SOURCE();
+	}
 };
 
 template<class obj_t>
@@ -448,20 +502,21 @@ public:
 template<class obj_t>
 class hc_reference : public hc_term {
 public:
-	static hc_reference<obj_t>	HC_NULL_REFERENCE;
-
 	const char* typ;
 	const char* nam;
 	obj_t*	ref;
+	hcell*	owner;
 	
 	virtual	~hc_reference(){}
 	
-	hc_reference(const char* the_typ, const char* the_nam){
+	hc_reference(const char* the_typ, const char* the_nam, hcell* the_owner = mc_null){
 		PTD_CK(! std::is_pointer<obj_t>::value);
 		PTD_CK(std::is_class<obj_t>::value);
+		//PTD_CK((std::is_base_of<hcell, obj_t>::value));
 		typ = the_typ;
 		nam = the_nam;
 		ref = mc_null;
+		owner = the_owner;
 	}
 	
 	hc_reference(hc_reference<obj_t>& other){ 
@@ -473,41 +528,42 @@ public:
 	}
 	
 	hc_term&	operator = (hc_term& o1){
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op4);
 	}
 
 	hc_term&  operator = (hc_reference<obj_t>& o1) { 
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
+		HC_DEFINE_BINARY_OP_BASE(hc_assig_op5);
 	}
 
-	/*hc_term&	operator = (hc_term& o1){
-		HC_OBJECT_COPY_ERROR; 
-		return HC_NULL_TERM;
-	}
-
-	hc_term&  operator = (hc_reference<obj_t>& o1) { 
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op);
-	}*/
-
-	void operator ()(obj_t* aa) { ref = aa; }	// as unary func. used as init func
-	//hc_reference<obj_t>* operator ()() { return this; }	// as empty func
+	void operator ()(obj_t* aa) { // as unary func. used as init func
+		ref = aa; 
+	}	
+	hc_term& operator ()() { return *get_src(); }	// as empty func
 	
 	void  operator = (obj_t* aa) { 
 		ref = aa;
 	}
 
-	hc_term const *	operator -> () const {
-		HC_DEFINE_UNARY_OP_BASE(hc_member_op);
-		return this;
+	obj_t const *	operator -> () const {
+		if(ref == mc_null){
+			PTD_PRT_STACK(true, "hreference: %s in mc_null. Init to a valid hreference\n", nam);
+			mch_abort_func(0, mc_cstr("Invalid hreference\n"));
+		}
+		ref->src_term = get_src();
+		return ref;
 	}
 	
-    hc_term*	operator -> () {
-		HC_DEFINE_UNARY_OP_BASE(hc_member_op);
-		return this;
+    obj_t*	operator -> () {
+		if(ref == mc_null){
+			PTD_PRT_STACK(true, "hreference: %s in mc_null. Init to a valid hreference\n", nam);
+			mch_abort_func(0, mc_cstr("Invalid hreference\n"));
+		}
+		ref->src_term = get_src();
+		return ref;
 	}
 	
 	bool is_null(){
-		return (this == &HC_NULL_REFERENCE);
+		return (ref == mc_null);
 	}
 
 	//operator obj_t() { return ref; }		// cast op
@@ -527,14 +583,19 @@ public:
 		std::cout << ' ' << nam << ' ';
 		//printf(" %p ", ref);
 	}
-};
 
-template<class obj_t>
-hc_reference<obj_t> hc_reference<obj_t>::HC_NULL_REFERENCE{};
+	virtual 
+	hc_term*	get_src(){
+		HC_GET_SOURCE();
+	}
+};
 
 #define hkeyword(nn) hc_keyword nn(#nn)
 
-#define hvalue(tt, nn) hc_value<tt> nn{#tt, #nn}
+#define hvalue(tt, nn) hc_value<tt> nn{#tt, #nn, this}
+
+#define hreference(tt, nn) hc_reference<tt> nn{#tt, #nn, this}
+
 #define hchar(nn) hvalue(char, nn)
 #define hint(nn) hvalue(int, nn)
 #define hlong(nn) hvalue(long, nn)
@@ -546,8 +607,6 @@ hc_reference<obj_t> hc_reference<obj_t>::HC_NULL_REFERENCE{};
 #define huint16_t(nn) hvalue(uint16_t, nn)
 #define huint32_t(nn) hvalue(uint32_t, nn)
 #define huint64_t(nn) hvalue(uint64_t, nn)
-
-#define hreference(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
 extern hc_keyword helse;
 extern hc_keyword hbreak;
@@ -584,66 +643,39 @@ public:
 	void print_term(){
 		std::cout << ' ' << nam << "() ";
 	}
+
+	void print_code(){
+		printf("\nCODE_FOR %s\n", nam);
+		if(cod == mc_null){
+			printf("EMPTY_COD for mth\n");
+		} else {
+			cod->print_term();
+			printf("\n");
+		}
+	}
+	
 };
 
-/*
-#define hmethod(nn) \
-	hc_mth_call nn ## _resp{#nn}; \
-	hc_mth_call nn(); \
-
-// end_define
-
-#define hmethod_def(mth_nam, code) \
-	hc_mth_call \
-	mth_nam(){ \
-		if(mth_nam ## _resp.cod == mc_null){ \
-			(code); \
-			PTD_CK(hc_term::HC_TOP_TERM != mc_null); \
-			mth_nam ## _resp.cod = hc_term::HC_TOP_TERM; \
-		} \
-		return mth_nam ## _resp; \
-	} \
-
-// end_define
-*/
 
 #define hmethod(mth) \
 	static hc_mth_call mth ## _resp; \
-	hc_mth_call mth(); \
+	hc_mth_call& mth(); \
 
 // end_define
 
 #define hmethod_def(cls, mth, code) \
 	hc_mth_call cls::mth ## _resp{#cls "_" #mth}; \
-	hc_mth_call \
+	hc_mth_call& \
 	cls::mth(){ \
 		if(cls::mth ## _resp.cod == mc_null){ \
-			(code); \
-			PTD_CK(hc_term::HC_TOP_TERM != mc_null); \
-			cls::mth ## _resp.cod = hc_term::HC_TOP_TERM; \
+			hc_term& tm = (code); \
+			cls::mth ## _resp.cod = tm.get_src(); \
 		} \
 		return cls::mth ## _resp; \
 	} \
 
 // end_define
 
-
-class hcell {
-public:
-	hcell(){
-		init_me();
-	}
-
-	virtual ~hcell(){}
-
-	virtual
-	void init_me(int caller = 0){}
-	
-    /*hc_term*	hme() { 
-		return this; 
-	}*/
-	
-};
 
 class hmissive {
 public:
@@ -689,6 +721,44 @@ public:
 	hreference(CLS_C, r3);
 	hreference(CLS_D, r4);
 	hreference(CLS_A, r5);
+	
+	hmethod(mth01);
+	hmethod(mth02);
+	hmethod(mth03);
+	
+	cls_A1(){
+		o1 = 1;
+		o2 = 2;
+		o3 = 3;
+		o4 = 4;
+		o5 = 5;
+	}
+
+	~cls_A1(){}
+	
+};
+
+
+class cls_A2 : public hcell {
+public:
+	hchar(v1);
+	hint(v2);
+	hlong(o1);
+	hlong(o2);
+	
+	hreference(cls_A1, r1);
+	hreference(cls_A1, rr2);
+	
+	hmethod(mth01);
+};
+
+class cls_A3 : public hcell {
+public:
+	
+	hchar(v1);
+	hint(v2);
+	hreference(cls_A2, rr2);
+	hreference(cls_A2, r3);
 	
 	hmethod(mth01);
 };

@@ -171,6 +171,7 @@ mck_set_irq0_handler() mc_external_code_ram;
 #endif
 
 #ifdef MC_IS_PTD_CODE
+	#include "booter.h"
 	#define MCK_CK(cond) PTD_CK(cond)
 #endif
 
