@@ -5,8 +5,95 @@
 #include "preload.hh"
 #include "hlang.hh"
 
-
+hlang_sys 	HC_THE_HLANG_SYS;
 hc_term		hc_term::HC_NULL_TERM{};
+
+hclass_reg*
+hlang_sys::get_class_reg(const char* cls, hc_caller_t the_initer){
+	std::map<std::string, hclass_reg*>::iterator it;
+	it = all_classes.find(cls);
+	bool added = false;
+	if(it == all_classes.end()){
+		all_classes[cls] = new hclass_reg();
+		added = true;
+		printf("ADDING_CLASS %s\n", cls);
+	}
+	hclass_reg* cls_reg = all_classes[cls];
+	if(added){
+		cls_reg->nam = cls;
+	}
+	if((the_initer != mc_null) && (cls_reg->initer == mc_null)){
+		cls_reg->initer = the_initer;
+	}
+	return cls_reg;
+}
+
+void
+hlang_sys::register_method(const char* cls, hc_mth_def* mth){
+	PTD_CK(cls != mc_null);
+	PTD_CK(mth != mc_null);
+	hclass_reg* cls_reg = get_class_reg(cls);
+	cls_reg->methods.push_front(mth);
+	printf("ADDING_METHOD %s.%s\n", cls_reg->nam.c_str(), mth->nam);
+}
+
+bool
+hclass_reg::has_attribute(const char* attr){
+	std::map<std::string, hc_term*>::iterator it;
+	it = attributes.find(attr);
+	return (it != attributes.end());
+}
+
+void
+hlang_sys::register_attribute(hcell* obj, hc_term* attr){
+	PTD_CK(obj != mc_null);
+	PTD_CK(attr != mc_null);
+	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
+	if(! cls_reg->has_attribute(attr->get_name())){
+		(cls_reg->attributes)[attr->get_name()] = attr;
+		printf("ADDING_ATTRIBUTE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
+	}
+}
+
+void
+hclass_reg::call_all_methods(){
+	auto it = methods.begin();
+	for(; it != methods.end(); ++it){
+		hc_mth_def* mth_df = (*it);
+		std::cout << "\tCALLING METHOD " << mth_df->nam << '\n';
+		hc_caller_t cr = mth_df->caller;
+		(*cr)();
+		
+		std::cout << "\tCODE FOR " << mth_df->nam << '\n';
+		mth_df->print_code();
+
+		std::cout << "-------------------------------\n";
+	}
+}
+
+void
+hlang_sys::call_all_registered_methods(){
+	std::cout << "---------------------------------------------------------------\n";
+	auto it = all_classes.begin();
+	for(; it != all_classes.end(); ++it){
+		std::cout << "CALLING METHODS FOR CLASS " << it->first << '\n';
+		it->second->call_all_methods();
+		std::cout << "===========================================================\n";
+	}
+}
+
+void
+hlang_sys::init_all_attributes(){
+	std::cout << "---------------------------------------------------------------\n";
+	auto it = all_classes.begin();
+	for(; it != all_classes.end(); ++it){
+		std::cout << "ADDING ATTRIBUTES FOR CLASS " << it->first << '\n';
+		hc_caller_t cr = it->second->initer;
+		if(cr != mc_null){
+			(*cr)();
+		}
+	}
+}
 
 const char*
 hc_get_token(hc_syntax_op_t op){
@@ -184,13 +271,13 @@ hkeyword(hbreak);
 hkeyword(hcontinue);
 hkeyword(hreturn);
 
-void
+/*void
 hc_init_keywords(){
 	helse.val = hc_helse_op;
 	hbreak.val = hc_hbreak_op;
 	hcontinue.val = hc_hcontinue_op;
 	hreturn.val = hc_hreturn_op;
-}
+}*/
 
 void 
 hc_term::print_term(){
@@ -240,13 +327,18 @@ hc_term::dbg_func(){
 	printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
 }
 
-std::map<std::string, hdecl_class*> HC_ALL_CLASSES;
+//std::map<std::string, hdecl_class*> HC_ALL_CLASSES;
 
 //hmethod_def(cls_A1::mth01, hc_term::HC_NULL_TERM);
 
 //hmethod_def(cls_A1, mth01, r1);
 
 //hmethod_def(cls_A1, mth01, (r1 + r2));
+
+hcell_class_def(cls_A1);
+hcell_class_def(cls_A2);
+hcell_class_def(cls_A3);
+hcell_class_def(cls_A4);
 
 hmethod_def(cls_A1, mth01, (
 	(r1 = (o1 + o2)),
@@ -264,6 +356,7 @@ hmethod_def(cls_A1, mth01, (
 	hfor(o4) >> (o2 || o3),
 	hwhile(o4) >> (o1 & o3),
 	hreturn,
+	//mth02(), 
 	hcontinue,
 	hbreak,
 	helse >> o2,
@@ -332,7 +425,14 @@ void bj_mc_test_5(int argc, char *argv[])
 		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
 	}
 	
-	hc_init_keywords();
+	//hc_init_keywords();
+	printf("######################################################\n");
+	printf("######################################################\n");
+	
+	HC_THE_HLANG_SYS.init_all_attributes();
+	HC_THE_HLANG_SYS.call_all_registered_methods();
+	
+	/*
 	
 	std::cout << "a2b: " << std::is_base_of<CLS_AA, CLS_BB>::value << '\n';
 	std::cout << "b2a: " << std::is_base_of<CLS_BB, CLS_AA>::value << '\n';
@@ -340,6 +440,24 @@ void bj_mc_test_5(int argc, char *argv[])
 	cls_A1 aa;
 	cls_A2 bb;
 	cls_A3 cc;
+
+	std::cout << "get_nam_aa=" << aa.get_class_name() << '\n';
+	std::cout << "get_nam_bb=" << bb.get_class_name() << '\n';
+	std::cout << "get_nam_cc=" << cc.get_class_name() << '\n';
+	
+	hc_term& (cls_A1::*mth_pt)() = &cls_A1::mth01;
+	
+	(aa.*mth_pt)().print_code();
+
+	//aa.mth01().print_code();
+	
+	//bb.r1 = &aa;
+	//bb.rr2 = &aa;
+	//cc.r3 = &bb;
+	//cc.rr2 = &bb;
+	
+	bb.mth01().print_code();
+	cc.mth01().print_code();
 	
 	//CLS_AA AA1;
 	CLS_BB BB1;
@@ -351,15 +469,9 @@ void bj_mc_test_5(int argc, char *argv[])
 	hc_reference<CLS_BB> ref3{"CLS_BB", "ref3"};
 	ref3 = hcast<CLS_AA, CLS_BB>(ref1);
 	
-	aa.mth01().print_code();
-	bb.r1 = &aa;
-	bb.rr2 = &aa;
-	cc.r3 = &bb;
-	cc.rr2 = &bb;
-	bb.mth01().print_code();
-	cc.mth01().print_code();
-	
 	printf("IN_MAIN. %s %d\n", __PRETTY_FUNCTION__, __LINE__);
+	
+	//printf("cls_A3_mth01_called %d\n", cls_A3_mth01_called);
 	
 	//long xx = o1;
 	//printf("\n\n %ld \n", xx);
@@ -372,7 +484,6 @@ void bj_mc_test_5(int argc, char *argv[])
 	
 	//HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)mc_null));
 
-	/*
 	std::cout << std::boolalpha;
 	std::cout << "is_pt(CLS_A)" << std::is_pointer<CLS_A>::value << '\n';
 	std::cout << "is_pt(CLS_A*)" << std::is_pointer<CLS_A*>::value << '\n';

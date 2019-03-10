@@ -43,29 +43,57 @@ hlang declarations.
 #include <stdio.h>
 #include <map>
 #include <string>
+#include <list>
 
+//include "tools.h"
 #include "stack_trace.h"
 #include "nervenet.hh"
 //include "booter.h"
 #include "cell.hh"
 
+typedef int64_t hc_chip_idx;
 
-struct hdecl_method {
-	std::string mth_name;
+class hc_term;
+class hc_mth_def;
+class hcell;
+
+typedef void (*hc_caller_t)();
+
+struct hclass_reg {
+	std::string nam;
+	std::map<std::string, hc_term*> attributes;
+	std::list<hc_mth_def*> methods;
+	hc_caller_t initer = mc_null;
+
+	bool has_attribute(const char* attr);
+	
+	void call_all_methods();
 };
 
-struct hdecl_attribute {
-	std::string att_name;
-	std::string type;
+class hlang_sys {
+public:
+	std::map<std::string, hclass_reg*> all_classes;
+
+	hlang_sys(){
+		init_me();
+	}
+
+	virtual ~hlang_sys(){}
+	
+	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = mc_null);
+	void register_method(const char* cls, hc_mth_def* mth);
+	void register_attribute(hcell* obj, hc_term* attr);
+	
+	void init_all_attributes();
+	void call_all_registered_methods();
+
+	virtual
+	void init_me(int caller = 0){
+	}
+	
 };
 
-struct hdecl_class {
-	std::string cls_name;
-	std::map<std::string, hdecl_attribute*> attributes;
-	std::map<std::string, hdecl_method*> methods;
-};
-
-extern std::map<std::string, hdecl_class*> HC_ALL_CLASSES;
+extern hlang_sys HC_THE_HLANG_SYS;
 
 template <bool> struct HC_ILLEGAL_USE_OF_OBJECT;
 template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
@@ -140,7 +168,6 @@ enum	hc_term_kind_t {
 	hc_binary_kind
 };
 
-class hc_term;
 
 #define HC_DEFINE_BINARY_OP_BASE(the_code) \
 	hc_term* tm = new hc_binary_term(the_code, this, &o1); \
@@ -382,8 +409,6 @@ public:
 	void print_term();
 };
 
-class hcell;
-
 template<class obj_t>
 class hc_value : public hc_term {
 public:
@@ -403,6 +428,9 @@ public:
 		nam = the_nam;
 		val = obj_t();
 		owner = the_owner;
+		if(owner != mc_null){
+			HC_THE_HLANG_SYS.register_attribute(owner, this);
+		}
 		//printf("caller=%s \n", the_caller);
 	}
 	
@@ -474,6 +502,8 @@ public:
 template<class obj_t>
 class hc_reference : public hc_term {
 public:
+	static obj_t*	HC_GLB_REF;
+	
 	const char* typ;
 	const char* nam;
 	obj_t*	ref;
@@ -489,6 +519,9 @@ public:
 		nam = the_nam;
 		ref = mc_null;
 		owner = the_owner;
+		if(owner != mc_null){
+			HC_THE_HLANG_SYS.register_attribute(owner, this);
+		}
 	}
 	
 	hc_reference(hc_reference<obj_t>& other){ 
@@ -516,10 +549,21 @@ public:
 		ref = aa;
 	}
 	
+	static
+	obj_t* get_glb_ref(){
+		if(HC_GLB_REF == mc_null){
+			HC_GLB_REF = new obj_t();
+		}
+		return HC_GLB_REF;
+	}
+	
 	obj_t const *	operator -> () const {
 		if(ref == mc_null){
-			PTD_PRT_STACK(true, "hreference: %s in mc_null. Init to a valid hreference\n", nam);
-			mch_abort_func(0, mc_cstr("Invalid hreference\n"));
+			ref = get_glb_ref();
+			//ref = new obj_t();
+		}
+		if(ref->src_term != mc_null){ 
+			PTD_PRT("\nCannot have recursive referencing in hlang.\n"); 
 		}
 		ref->src_term = this;
 		return ref;
@@ -527,8 +571,11 @@ public:
 	
     obj_t*	operator -> () {
 		if(ref == mc_null){
-			PTD_PRT_STACK(true, "hreference: %s in mc_null. Init to a valid hreference\n", nam);
-			mch_abort_func(0, mc_cstr("Invalid hreference\n"));
+			ref = get_glb_ref();
+			//ref = new obj_t();
+		}
+		if(ref->src_term != mc_null){ 
+			PTD_PRT("\nCannot have recursive referencing in hlang.\n"); 
 		}
 		ref->src_term = this;
 		return ref;
@@ -560,14 +607,19 @@ public:
 	hc_term*	get_src();
 };
 
+template<class obj_t>
+obj_t* hc_reference<obj_t>::HC_GLB_REF = mc_null;
+
 class hcell {
 public:
+	hc_chip_idx		my_id = -1;
 	hc_term* src_term = mc_null;
 	
 	hcell(){
 		init_me();
 	}
 
+	
 	virtual ~hcell(){}
 
 	virtual
@@ -580,7 +632,33 @@ public:
 		pt_me->ref = this;
 		return *pt_me;
 	}
+
+	virtual
+	const char* get_class_name(){
+		return "hcell";
+	}
 };
+
+#define hcell_class(cls) \
+	static const char* hc_class_name; \
+	static hclass_reg* hc_register_ ## cls; \
+	virtual	const char* get_class_name();
+
+// end_define
+
+#define hcell_class_def(cls) \
+	void cls ## _ref_initer(); \
+	hclass_reg* cls::hc_register_ ## cls = HC_THE_HLANG_SYS.get_class_reg(#cls, cls ## _ref_initer); \
+	const char* cls::hc_class_name = #cls; \
+	const char* \
+	cls::get_class_name(){ \
+		return cls::hc_class_name; \
+	} \
+	void cls ## _ref_initer(){ \
+		hc_reference<cls>::get_glb_ref(); \
+	} \
+
+// end_define
 
 #define HC_GET_SOURCE() \
 	hc_term* src = this; \
@@ -612,6 +690,8 @@ hcast(hc_reference<cl1_t>& o1){
 	return (cl2_t*)(o1.ref);
 }
 
+//define hglb_pt_nam(nn) nn ## _global_pt
+
 #define hkeyword(nn) hc_keyword nn(#nn)
 
 #define hvalue(tt, nn) hc_value<tt> nn{#tt, #nn, this}
@@ -635,20 +715,24 @@ extern hc_keyword hbreak;
 extern hc_keyword hcontinue;
 extern hc_keyword hreturn;
 
-void
-hc_init_keywords();
+//void
+//hc_init_keywords();
 
-typedef void (hc_term::*hc_method_t)();
-
-class hc_mth_call : public hc_term {
+class hc_mth_def : public hc_term {
 public:
+	const char* cls = mc_null;
 	const char* nam = mc_null;
 	hc_term* cod = mc_null;
+	bool defining = false;
+	hc_caller_t caller = mc_null;
 	
-	virtual	~hc_mth_call(){}
+	virtual	~hc_mth_def(){}
 	
-	hc_mth_call(const char* the_nam){
+	hc_mth_def(const char* the_cls, const char* the_nam, hc_caller_t the_cllr = mc_null){
+		cls = the_cls;
 		nam = the_nam;
+		caller = the_cllr;
+		HC_THE_HLANG_SYS.register_method(the_cls, this);
 	}
 
 	virtual 
@@ -663,12 +747,12 @@ public:
 	
 	virtual 
 	void print_term(){
-		std::cout << ' ' << nam << "() ";
+		std::cout << ' ' << get_name() << "() ";
 	}
 
 	virtual 
 	void print_code(){
-		printf("\nCODE_FOR %s\n", nam);
+		printf("\nCODE_FOR %s\n", get_name());
 		if(cod == mc_null){
 			printf("EMPTY_COD for mth\n");
 		} else {
@@ -679,18 +763,65 @@ public:
 	
 };
 
+class hc_mth_call : public hc_term {
+public:
+	hc_mth_def* the_mth = mc_null;
+	
+	virtual	~hc_mth_call(){}
+	
+	hc_mth_call(hc_mth_def* mthdef){
+		PTD_CK(mthdef != mc_null);
+		the_mth = mthdef;
+	}
+
+	virtual 
+	hc_term_kind_t	get_term_kind(){
+		return hc_call_kind;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		PTD_CK(the_mth != mc_null);
+		return the_mth->get_name();
+	}
+	
+	virtual 
+	void print_term(){
+		std::cout << ' ' << get_name() << "() ";
+	}
+
+	virtual 
+	void print_code(){
+		PTD_CK(the_mth != mc_null);
+		the_mth->print_code();
+	}
+	
+};
+
+typedef hc_term& (hcell::*pt_mth_t)();
+
+template<class cl1_t>
+bool 
+hcall_mth(hc_term& (cl1_t::*mth_pt)() = mc_null){
+	cl1_t oo1;
+	if(mth_pt != mc_null){
+		//(oo1.*mth_pt)();
+	}
+	return true;
+}
 
 #define hmethod(mth) \
-	static hc_mth_call mth ## _resp; \
+	static hc_mth_def mth ## _def_reg; \
 	hc_term& mth(); \
 
 // end_define
 
 #define hmethod_def(cls, mth, code) \
-	hc_mth_call cls::mth ## _resp{#cls "_" #mth}; \
+	void cls ## _ ## mth ## _ ## caller(); \
+	hc_mth_def cls::mth ## _def_reg{#cls, #mth, cls ## _ ## mth ## _ ## caller}; \
 	hc_term& \
 	cls::mth(){ \
-		hc_mth_call* mc = new hc_mth_call(cls::mth ## _resp.nam); \
+		hc_term* mc = new hc_mth_call(&cls::mth ## _def_reg); \
 		hc_term* rr = mc; \
 		if(src_term != mc_null){ \
 			hc_term* tmp = src_term; \
@@ -698,12 +829,23 @@ public:
 			tmp = tmp->get_src(); \
 			rr = new hc_binary_term(hc_member_op, tmp, mc); \
 		} \
-		if(cls::mth ## _resp.cod == mc_null){ \
+		if(cls::mth ## _def_reg.cod == mc_null){ \
+			if(cls::mth ## _def_reg.defining){ \
+				PTD_PRT("\nCannot have recursive methods in hlang.\nBad definition of %s.\n", \
+					#cls "::" #mth \
+				); \
+				mch_abort_func(0, mc_cstr("BAD hlang METHOD DEFINITION \n")); \
+			} \
+			cls::mth ## _def_reg.defining = true; \
 			hc_term& tm = (code); \
-			cls::mth ## _resp.cod = tm.get_src(); \
+			cls::mth ## _def_reg.defining = false; \
+			cls::mth ## _def_reg.cod = tm.get_src(); \
 		} \
-		mc->cod = cls::mth ## _resp.cod; \
 		return *rr; \
+	} \
+	void cls ## _ ## mth ## _ ## caller(){ \
+		cls* obj = hc_reference<cls>::get_glb_ref(); \
+		obj->cls::mth(); \
 	} \
 
 // end_define
@@ -730,14 +872,22 @@ public:
 // TEST CODE
 // TEST CODE
 
+int func_01(const char* nam, void*);
+
 class CLS_A {};
 class CLS_B {};
 class CLS_C {};
 class CLS_D {};
 class CLS_E {};
 
+//hclass(
+class cls_A2;
+class cls_A3;
+
 class cls_A1 : public hcell {
 public:
+	hcell_class(cls_A1);
+	
 	hchar(v1);
 	hint(v2);
 	hlong(o1);
@@ -752,6 +902,9 @@ public:
 	hreference(CLS_C, r3);
 	hreference(CLS_D, r4);
 	hreference(CLS_A, r5);
+
+	hreference(cls_A2, rA2);
+	hreference(cls_A3, rA3);
 	
 	hmethod(mth01);
 	hmethod(mth02);
@@ -772,6 +925,8 @@ public:
 
 class cls_A2 : public hcell {
 public:
+	hcell_class(cls_A2);
+	
 	hchar(v1);
 	hint(v2);
 	hlong(o1);
@@ -785,6 +940,7 @@ public:
 
 class cls_A3 : public hcell {
 public:
+	hcell_class(cls_A3);
 	
 	hchar(v1);
 	hint(v2);
@@ -796,6 +952,17 @@ public:
 	hreference(cls_A3, aa3);
 	
 	hmethod(mth01);
+
+	int attr_01 = func_01("name_attr_01", mc_null);
+	int attr_02 = func_01(__PRETTY_FUNCTION__, mc_null);
+	
+};
+
+class cls_A4 : public hcell {
+public:
+	hcell_class(cls_A4);
+	
+	hchar(a1);
 };
 
 
@@ -807,7 +974,6 @@ public:
 
 //HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)mc_null));
 
-int func_01(const char* nam, void*);
 		 
 class pru_hcell : public cell {
 public:
