@@ -5,11 +5,12 @@
 #include "preload.hh"
 #include "hlang.hh"
 
-hlang_sys 	HC_THE_HLANG_SYS;
+hc_system 	HLANG_SYS;
 hc_term		hc_term::HC_NULL_TERM{};
+long	hc_term::HC_PRT_TERM_INDENT = 0;
 
 hclass_reg*
-hlang_sys::get_class_reg(const char* cls, hc_caller_t the_initer){
+hc_system::get_class_reg(const char* cls, hc_caller_t the_initer){
 	std::map<std::string, hclass_reg*>::iterator it;
 	it = all_classes.find(cls);
 	bool added = false;
@@ -29,7 +30,7 @@ hlang_sys::get_class_reg(const char* cls, hc_caller_t the_initer){
 }
 
 void
-hlang_sys::register_method(const char* cls, hc_mth_def* mth){
+hc_system::register_method(const char* cls, hc_mth_def* mth){
 	PTD_CK(cls != mc_null);
 	PTD_CK(mth != mc_null);
 	hclass_reg* cls_reg = get_class_reg(cls);
@@ -38,20 +39,70 @@ hlang_sys::register_method(const char* cls, hc_mth_def* mth){
 }
 
 bool
-hclass_reg::has_attribute(const char* attr){
+hclass_reg::has_value(const char* attr){
 	std::map<std::string, hc_term*>::iterator it;
-	it = attributes.find(attr);
-	return (it != attributes.end());
+	it = values.find(attr);
+	return (it != values.end());
 }
 
 void
-hlang_sys::register_attribute(hcell* obj, hc_term* attr){
+hc_system::register_value(hcell* obj, hc_term* attr){
 	PTD_CK(obj != mc_null);
 	PTD_CK(attr != mc_null);
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
-	if(! cls_reg->has_attribute(attr->get_name())){
-		(cls_reg->attributes)[attr->get_name()] = attr;
-		printf("ADDING_ATTRIBUTE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
+	if(! cls_reg->has_value(attr->get_name())){
+		(cls_reg->values)[attr->get_name()] = attr;
+		printf("ADDING_VALUE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
+	}
+}
+
+bool
+hclass_reg::has_reference(const char* attr){
+	std::map<std::string, hc_term*>::iterator it;
+	it = references.find(attr);
+	return (it != references.end());
+}
+
+void
+hc_system::register_reference(hcell* obj, hc_term* attr){
+	PTD_CK(obj != mc_null);
+	PTD_CK(attr != mc_null);
+	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
+	if(! cls_reg->has_reference(attr->get_name())){
+		(cls_reg->references)[attr->get_name()] = attr;
+		printf("ADDING_REFERENCE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
+	}
+}
+
+bool
+hc_system::has_const(const char* attr){
+	std::map<std::string, hc_term*>::iterator it;
+	it = all_const.find(attr);
+	return (it != all_const.end());
+}
+
+void
+hc_system::register_const(hc_term* attr){
+	PTD_CK(attr != mc_null);
+	if(! has_const(attr->get_name())){
+		all_const[attr->get_name()] = attr;
+		printf("ADDING_CONST %s\n", attr->get_name());
+	}
+}
+
+bool
+hc_system::has_external(const char* attr){
+	std::map<std::string, hc_term*>::iterator it;
+	it = all_external.find(attr);
+	return (it != all_external.end());
+}
+
+void
+hc_system::register_external(hc_term* attr){
+	PTD_CK(attr != mc_null);
+	if(! has_external(attr->get_name())){
+		all_external[attr->get_name()] = attr;
+		printf("ADDING_EXTERNAL %s\n", attr->get_name());
 	}
 }
 
@@ -64,7 +115,6 @@ hclass_reg::call_all_methods(){
 		hc_caller_t cr = mth_df->caller;
 		(*cr)();
 		
-		std::cout << "\tCODE FOR " << mth_df->nam << '\n';
 		mth_df->print_code();
 
 		std::cout << "-------------------------------\n";
@@ -72,7 +122,7 @@ hclass_reg::call_all_methods(){
 }
 
 void
-hlang_sys::call_all_registered_methods(){
+hc_system::call_all_registered_methods(){
 	std::cout << "---------------------------------------------------------------\n";
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
@@ -83,7 +133,7 @@ hlang_sys::call_all_registered_methods(){
 }
 
 void
-hlang_sys::init_all_attributes(){
+hc_system::init_all_attributes(){
 	std::cout << "---------------------------------------------------------------\n";
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
@@ -102,8 +152,8 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_comma_op:
 			tok = ",";
 		break;
-		case hc_switch_then_op:
-			tok = ">>=";
+		case hc_async_asig_op:
+			tok = "<<=";
 		break;
 		case hc_then_op:
 			tok = ">>";
@@ -225,7 +275,7 @@ hc_term& hc_term::operator , (hc_term& o1) {
 }
 
 HC_DEFINE_BINARY_OP(>>, hc_then_op)
-HC_DEFINE_BINARY_OP(>>=, hc_switch_then_op)
+HC_DEFINE_BINARY_OP(<<=, hc_async_asig_op)
 
 HC_DEFINE_BINARY_OP(=, hc_assig_op1)
 
@@ -271,18 +321,19 @@ hkeyword(hbreak);
 hkeyword(hcontinue);
 hkeyword(hreturn);
 
-/*void
-hc_init_keywords(){
-	helse.val = hc_helse_op;
-	hbreak.val = hc_hbreak_op;
-	hcontinue.val = hc_hcontinue_op;
-	hreturn.val = hc_hreturn_op;
-}*/
-
 void 
 hc_term::print_term(){
 	printf("%s \n", STACK_STR.c_str());
 	printf("INVALID_TERM!!!!\n");
+}
+
+
+void //static
+hc_term::print_indent(){
+	PTD_CK(HC_PRT_TERM_INDENT >= 0);
+	for(long aa = 0; aa < HC_PRT_TERM_INDENT; aa++){
+		printf("\t");
+	}
 }
 
 void 
@@ -300,27 +351,51 @@ hc_binary_term::print_term(){
 	switch(op){
 	case hc_comma_op:
 		if(lft != mc_null){ lft->print_term(); }
-		printf("%s ", tok);
+		printf("%s\n", tok); print_indent();
 		if(rgt != mc_null){ rgt->print_term(); }
 	break;
 	default:
-		printf("(");
+		hc_syntax_op_t lft_op = lft->get_oper();
+		hc_syntax_op_t rgt_op = rgt->get_oper();
+		printf("("); 
+		HC_PRT_TERM_INDENT++;
+		
+		if(lft_op == hc_comma_op){ printf("("); }
 		if(lft != mc_null){ lft->print_term(); }
+		if(lft_op == hc_comma_op){ printf(")"); }
+		
 		printf(" %s ", tok);
+		
+		if(rgt_op == hc_comma_op){ printf("("); }
 		if(rgt != mc_null){ rgt->print_term(); }
+		if(rgt_op == hc_comma_op){ printf(")"); }
+		
+		HC_PRT_TERM_INDENT--;
 		printf(")");
 	break;
 	}
 }
 
+hc_term&
+hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
+	mch_abort_func(0, mc_cstr("FIX_THIS_CODE' \n"));
+	return hme();
+}
+
+hc_term&
+hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
+	mch_abort_func(0, mc_cstr("FIX_THIS_CODE' \n"));
+	return hme();
+}
+
+//////////// EXAMPLE CODE
+//////////// EXAMPLE CODE
+//////////// EXAMPLE CODE
+
 int func_01(const char* nam, void*){ 
 	printf("declar attr = %s \n", nam);
 	return 567; 
 };
-
-void
-pru_hcell::handler(missive* msv){
-}
 
 void
 hc_term::dbg_func(){
@@ -341,12 +416,14 @@ hcell_class_def(cls_A3);
 hcell_class_def(cls_A4);
 
 hmethod_def(cls_A1, mth01, (
+	(t1 = bj_tok_pru_get),
 	(r1 = (o1 + o2)),
 	(o2 = (r2 + r1)),
 	(r1 = r2) = (r4 + r5),
-	(o1 = o2) = (o4 + o5),
+	(o1 = o2) <<= (o4 + o5),
+	(o1 <<= o2),
 	o4, o5, 
-	hswitch(o1) >>= (
+	hswitch(o1) >> (
 		hcase(o2) >> o3++, 
 		hcase(o4) >> ++o5,
 		hcase(o1) >> o2
@@ -372,7 +449,9 @@ hmethod_def(cls_A1, mth02, (
 
 hmethod_def(cls_A1, mth03, (
 	hif(o3) >> (~ o1 + ! o2),
-	(o2 = (r2 + r1))
+	(o2 = (r2 + r1)),
+	(o2 <<= (r2 + r1)),
+	r1 = hme()
 ));
 
 hmethod_def(cls_A2, mth01, (
@@ -385,7 +464,7 @@ hmethod_def(cls_A3, mth01, (
 	r3->r1->mth02(), 
 	r3->r1->o4(),
 	aa1 = aa2, 
-	aa2 = aa3, 
+	aa2 <<= aa3, 
 	aa3 = aa1
 ));
 
@@ -425,12 +504,15 @@ void bj_mc_test_5(int argc, char *argv[])
 		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
 	}
 	
+	hexternal(CLS_A, e1);
+	hconst(long, k1, 123);
+	
 	//hc_init_keywords();
 	printf("######################################################\n");
 	printf("######################################################\n");
 	
-	HC_THE_HLANG_SYS.init_all_attributes();
-	HC_THE_HLANG_SYS.call_all_registered_methods();
+	hc_system::get_sys().init_all_attributes();
+	HLANG_SYS.call_all_registered_methods();
 	
 	/*
 	
@@ -505,6 +587,11 @@ void bj_mc_test_5(int argc, char *argv[])
 	printf("\n End of Using bj_mcbj_mc_test_5\n");
 }
 
+/*
+void
+pru_hcell::handler(missive* msv){
+}
+
 grip ava_pru_hcell;
 
 MCK_DEFINE_MEM_METHODS(pru_hcell, 32, ava_pru_hcell, 0)
@@ -516,3 +603,4 @@ void pru_hcell_init_mem_funcs(){
 	
 	PTD_CK(pru_hcell::ck_cell_id(bj_cell_id(pru_hcell)));
 }
+*/

@@ -53,6 +53,7 @@ hlang declarations.
 
 typedef int64_t hc_chip_idx;
 
+class hc_system;
 class hc_term;
 class hc_mth_def;
 class hcell;
@@ -61,28 +62,46 @@ typedef void (*hc_caller_t)();
 
 struct hclass_reg {
 	std::string nam;
-	std::map<std::string, hc_term*> attributes;
+	std::map<std::string, hc_term*> values;
+	std::map<std::string, hc_term*> references;
 	std::list<hc_mth_def*> methods;
 	hc_caller_t initer = mc_null;
 
-	bool has_attribute(const char* attr);
+	bool has_value(const char* attr);
+	bool has_reference(const char* attr);
 	
 	void call_all_methods();
 };
 
-class hlang_sys {
+extern hc_system HLANG_SYS;
+
+class hc_system {
 public:
 	std::map<std::string, hclass_reg*> all_classes;
+	std::map<std::string, hc_term*> all_const;
+	std::map<std::string, hc_term*> all_external;
 
-	hlang_sys(){
+	hc_system(){
 		init_me();
 	}
 
-	virtual ~hlang_sys(){}
+	virtual ~hc_system(){}
+	
+	static
+	hc_system& get_sys(){
+		return HLANG_SYS;
+	}
 	
 	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = mc_null);
 	void register_method(const char* cls, hc_mth_def* mth);
-	void register_attribute(hcell* obj, hc_term* attr);
+	void register_value(hcell* obj, hc_term* attr);
+	void register_reference(hcell* obj, hc_term* attr);
+
+	bool has_const(const char* attr);
+	bool has_external(const char* attr);
+
+	void register_const(hc_term* attr);
+	void register_external(hc_term* attr);
 	
 	void init_all_attributes();
 	void call_all_registered_methods();
@@ -93,7 +112,6 @@ public:
 	
 };
 
-extern hlang_sys HC_THE_HLANG_SYS;
 
 template <bool> struct HC_ILLEGAL_USE_OF_OBJECT;
 template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
@@ -110,7 +128,6 @@ enum	hc_syntax_op_t {
 	hc_member_op,	// ->
 	
 	hc_comma_op,	// ,
-	hc_switch_then_op,	// >>=
 	hc_then_op,	// >>
 	
 	hc_hme_op,	// hme
@@ -130,6 +147,8 @@ enum	hc_syntax_op_t {
 	hc_assig_op3,	// =
 	hc_assig_op4,	// =
 	hc_assig_op5,	// =
+
+	hc_async_asig_op,	// <<=
 	
 	hc_less_than_op,	// <
 	hc_more_than_op,	// >
@@ -208,6 +227,7 @@ the_op(hc_term& o1){ \
 class hc_term {
 public:
 	static hc_term	HC_NULL_TERM;
+	static long	HC_PRT_TERM_INDENT;
 	
 	// constructors
 	hc_term(){}
@@ -227,10 +247,10 @@ public:
 	}
 
 	hc_term&  operator , (hc_term& o1);
-	hc_term&	operator >>= (hc_term& o1);
 	hc_term&	operator >> (hc_term& o1);
 	
 	hc_term&	operator = (hc_term& o1);
+	hc_term&	operator <<= (hc_term& o1);
 	
 	hc_term&	operator < (hc_term& o1);
 	hc_term&	operator > (hc_term& o1);
@@ -297,6 +317,9 @@ public:
 		mch_abort_func(0, mc_cstr("Invalid call to 'print_code()'. " 
 				"NOT_A_METHOD. It has no code to print.\n"));
 	}
+
+	static
+	void print_indent();
 	
 	bool is_value(){
 		return (get_term_kind() == hc_value_kind);
@@ -310,6 +333,11 @@ public:
 		return (get_term_kind() == hc_call_kind);
 	}
 
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_invalid_op;
+	}
+	
 	virtual 
 	const char*	get_name(){
 		return "INVALID_NAME";
@@ -347,6 +375,11 @@ public:
 	virtual 
 	hc_term_kind_t	get_term_kind(){
 		return hc_unary_kind;
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return op;
 	}
 	
 	virtual 
@@ -396,6 +429,11 @@ public:
 	}
 	
 	virtual 
+	hc_syntax_op_t	get_oper(){
+		return op;
+	}
+	
+	virtual 
 	hc_term_kind_t	get_term_kind(){
 		return hc_binary_kind;
 	}
@@ -421,15 +459,19 @@ public:
 	
 	virtual	~hc_value(){}
 	
-	hc_value(const char* the_typ, const char* the_nam, hcell* the_owner = mc_null){
+	hc_value(const char* the_typ, const char* the_nam, 
+			 hcell* the_owner = mc_null, obj_t the_val = obj_t())
+	{
 		PTD_CK(! std::is_pointer<obj_t>::value);
 		PTD_CK(! std::is_class<obj_t>::value);
 		typ = the_typ;
 		nam = the_nam;
-		val = obj_t();
+		val = the_val;
 		owner = the_owner;
 		if(owner != mc_null){
-			HC_THE_HLANG_SYS.register_attribute(owner, this);
+			HLANG_SYS.register_value(owner, this);
+		} else {
+			HLANG_SYS.register_const(this);
 		}
 		//printf("caller=%s \n", the_caller);
 	}
@@ -520,7 +562,9 @@ public:
 		ref = mc_null;
 		owner = the_owner;
 		if(owner != mc_null){
-			HC_THE_HLANG_SYS.register_attribute(owner, this);
+			HLANG_SYS.register_reference(owner, this);
+		} else {
+			HLANG_SYS.register_external(this);
 		}
 	}
 	
@@ -610,8 +654,22 @@ public:
 template<class obj_t>
 obj_t* hc_reference<obj_t>::HC_GLB_REF = mc_null;
 
+#define hme_def(cls) \
+    virtual	hc_term&	hme(){ \
+		if(hc_pt_me == mc_null){ \
+			hc_reference<cls>* tmp = new hc_reference<cls>(#cls, "hme_" #cls, this); \
+			tmp->ref = this; \
+			hc_pt_me = tmp; \
+		} \
+		return *hc_pt_me; \
+	} \
+
+// end_define
+
+	
 class hcell {
 public:
+	hc_term* hc_pt_me = mc_null;
 	hc_chip_idx		my_id = -1;
 	hc_term* src_term = mc_null;
 	
@@ -626,29 +684,29 @@ public:
 	void init_me(int caller = 0){
 		src_term = mc_null;
 	}
-	
-    hc_reference<hcell>&	hme(){
-		hc_reference<hcell>* pt_me = new hc_reference<hcell>("hcell", "hme", this);
-		pt_me->ref = this;
-		return *pt_me;
-	}
 
 	virtual
 	const char* get_class_name(){
 		return "hcell";
 	}
+	
+	hme_def(hcell);
+	
+	hc_term& hsend(hc_term& dst, hc_term& tok, hc_term& att);
+	hc_term& htell(hc_term& dst, hc_term& tok, hc_term& att);
 };
 
 #define hcell_class(cls) \
 	static const char* hc_class_name; \
 	static hclass_reg* hc_register_ ## cls; \
-	virtual	const char* get_class_name();
+	virtual	const char* get_class_name(); \
+	hme_def(cls); \
 
 // end_define
 
 #define hcell_class_def(cls) \
 	void cls ## _ref_initer(); \
-	hclass_reg* cls::hc_register_ ## cls = HC_THE_HLANG_SYS.get_class_reg(#cls, cls ## _ref_initer); \
+	hclass_reg* cls::hc_register_ ## cls = HLANG_SYS.get_class_reg(#cls, cls ## _ref_initer); \
 	const char* cls::hc_class_name = #cls; \
 	const char* \
 	cls::get_class_name(){ \
@@ -696,8 +754,15 @@ hcast(hc_reference<cl1_t>& o1){
 
 #define hvalue(tt, nn) hc_value<tt> nn{#tt, #nn, this}
 
+#define hconst(tt, nn, vv) hc_value<tt> nn{#tt, #nn, mc_null, vv}
+
+#define htoken(nn, vv) hconst(mck_token_t, nn, vv)
+
 #define hreference(tt, nn) hc_reference<tt> nn{#tt, #nn, this}
 
+#define hexternal(tt, nn) hc_reference<tt> nn{#tt, #nn}
+
+#define htok(nn) hvalue(mck_token_t, nn)
 #define hchar(nn) hvalue(char, nn)
 #define hint(nn) hvalue(int, nn)
 #define hlong(nn) hvalue(long, nn)
@@ -732,7 +797,7 @@ public:
 		cls = the_cls;
 		nam = the_nam;
 		caller = the_cllr;
-		HC_THE_HLANG_SYS.register_method(the_cls, this);
+		HLANG_SYS.register_method(the_cls, this);
 	}
 
 	virtual 
@@ -752,7 +817,7 @@ public:
 
 	virtual 
 	void print_code(){
-		printf("\nCODE_FOR %s\n", get_name());
+		printf("\tCODE_FOR %s\n", get_name());
 		if(cod == mc_null){
 			printf("EMPTY_COD for mth\n");
 		} else {
@@ -872,6 +937,13 @@ public:
 // TEST CODE
 // TEST CODE
 
+enum pru_tok_t : mck_token_t {
+	bj_tok_pru_invalid = mck_tok_last + 1,
+	bj_tok_pru_get,
+	bj_tok_pru_set,
+	bj_tok_pru_end
+};
+
 int func_01(const char* nam, void*);
 
 class CLS_A {};
@@ -888,6 +960,7 @@ class cls_A1 : public hcell {
 public:
 	hcell_class(cls_A1);
 	
+	htok(t1);
 	hchar(v1);
 	hint(v2);
 	hlong(o1);
@@ -974,7 +1047,7 @@ public:
 
 //HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)mc_null));
 
-		 
+/*
 class pru_hcell : public cell {
 public:
 	MCK_DECLARE_MEM_METHODS(pru_hcell)
@@ -1007,7 +1080,7 @@ public:
 	int attr_02 = func_01("name_attr_02", mc_null);
 	
 };
-
+*/
 
 void bj_mc_test_5(int argc, char *argv[]);
 
