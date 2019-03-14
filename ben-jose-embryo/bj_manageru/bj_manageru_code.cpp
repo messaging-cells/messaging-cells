@@ -6,9 +6,8 @@
 #include "dimacs.h"
 #include "preload.hh"
 #include "file_funcs.h"
-#include "hlang.hh"
 
-#define BJ_WITH_MANAGERU_TESTS
+//define BJ_WITH_MANAGERU_TESTS
 
 #ifdef BJ_WITH_MANAGERU_TESTS
 #include "nervenet.hh"
@@ -362,9 +361,9 @@ int mc_manageru_main(int argc, char *argv[])
 	//bj_mc_test_2(argc, argv);
 	//bj_mc_test_3(argc, argv);
 	//bj_mc_test_4(argc, argv);
-	bj_mc_test_5(argc, argv);
+	//bj_mc_test_5(argc, argv);
 	
-	//rr = bj_manageru_main(argc, argv);
+	rr = bj_manageru_main(argc, argv);
 
 	printf("MANAGERU_CODE_FINISHED ==================================== \n");
 	return rr;

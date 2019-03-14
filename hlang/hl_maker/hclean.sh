@@ -1,14 +1,13 @@
 #!/bin/bash
 
-echo "FULL_CLEAN" 
+echo "hlang clean" 
 
 CURR_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# BASE_DIR=$SCRIPT_DIR/../..
 
 cd $SCRIPT_DIR
-mc_maker/clean.sh
-src/tests/src/clean.sh
-ben-jose-embryo/bj_maker/clean.sh
-hlang/hl_maker/hclean.sh
+rm -rf ./hl_tmp_build
+rm -rf ./hl_install
 cd $CURR_DIR
 

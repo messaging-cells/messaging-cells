@@ -16,4 +16,7 @@ cd ben-jose-embryo/bj_maker
 make
 cd $CURR_DIR
 
+cd hlang/hl_maker
+make
+cd $CURR_DIR
 

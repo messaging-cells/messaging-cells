@@ -13,7 +13,6 @@ MC_DBG_FLAG := -DFULL_DEBUG
 MC_STD_EPH_CFLAGS := -Wall -std=gnu11 -ffreestanding -nostdlib -nostartfiles -fno-default-inline 
 
 CXXFLAGS_1 := -Wall -std=c++17 -nostdlib -fno-exceptions -fno-unwind-tables -fno-extern-tls-init
-#CXXFLAGS_1 := -Wall -std=c++17 -nostdlib -fno-unwind-tables -fno-extern-tls-init
 CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
 MC_STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
@@ -35,15 +34,20 @@ BJ_MANAGERU_INCLUDES := \
 	${SRC_BJ_MANAGERU_DIR}/cnf_preload \
 	${SRC_BJ_MANAGERU_DIR}/dimacs \
 	${SRC_BJ_MANAGERU_DIR}/utils 
+
+	
 	
 # ./bj_parallella/bj_parallella.mk 
+#	./hlang/hlang.mk \
 
 #SUBMAKEFILES := 
 
 SUBMAKEFILES := ./bj_pthreads/bj_pthreads.mk \
-	./bj_parallella/bj_parallella.mk 
+	./bj_parallella/bj_parallella.mk \
+	./hlang/hlang.mk \
 
 
+	
 default: all
 	@echo "Finished building Lev-Ben-Jose"
 

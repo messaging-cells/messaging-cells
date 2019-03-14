@@ -7,6 +7,5 @@ SRC_INCDIRS := ${BJ_MANAGERU_INCLUDES}
 SOURCES := ${SRC_BJ_MANAGERU_DIR}/cnf_preload/preload_sornet.cpp \
 	${SRC_BJ_MANAGERU_DIR}/cnf_preload/preload_pgroup.cpp \
 	${SRC_BJ_MANAGERU_DIR}/cnf_preload/preload_cnf.cpp \
-	${SRC_BJ_MANAGERU_DIR}/hlang.cpp \
 
 

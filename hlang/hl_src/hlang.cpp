@@ -1,13 +1,22 @@
 
 #include <stdio.h>
-
-#include "cell.hh"
-#include "preload.hh"
 #include "hlang.hh"
 
-hc_system 	HLANG_SYS;
 hc_term		hc_term::HC_NULL_TERM{};
 long	hc_term::HC_PRT_TERM_INDENT = 0;
+
+void 
+hl_the_abort_func(long val, const char* msg){
+	fprintf(stderr, "\nABORTING_WITH_ERR=%ld %s\n", val, msg);
+	//PTD_CODE(mch_ptr_call_stack_trace(mc_null););
+	
+	exit(EXIT_FAILURE);
+}
+
+hc_system& HLANG_SYS(){
+	static hc_system the_sys;
+	return the_sys;
+}
 
 hclass_reg*
 hc_system::get_class_reg(const char* cls, hc_caller_t the_initer){
@@ -15,7 +24,8 @@ hc_system::get_class_reg(const char* cls, hc_caller_t the_initer){
 	it = all_classes.find(cls);
 	bool added = false;
 	if(it == all_classes.end()){
-		all_classes[cls] = new hclass_reg();
+		hclass_reg* nr = new hclass_reg();
+		all_classes[cls] = nr;
 		added = true;
 		printf("ADDING_CLASS %s\n", cls);
 	}
@@ -23,7 +33,7 @@ hc_system::get_class_reg(const char* cls, hc_caller_t the_initer){
 	if(added){
 		cls_reg->nam = cls;
 	}
-	if((the_initer != mc_null) && (cls_reg->initer == mc_null)){
+	if((the_initer != hl_null) && (cls_reg->initer == hl_null)){
 		cls_reg->initer = the_initer;
 	}
 	return cls_reg;
@@ -31,8 +41,8 @@ hc_system::get_class_reg(const char* cls, hc_caller_t the_initer){
 
 void
 hc_system::register_method(const char* cls, hc_mth_def* mth){
-	PTD_CK(cls != mc_null);
-	PTD_CK(mth != mc_null);
+	HL_CK(cls != hl_null);
+	HL_CK(mth != hl_null);
 	hclass_reg* cls_reg = get_class_reg(cls);
 	cls_reg->methods.push_front(mth);
 	printf("ADDING_METHOD %s.%s\n", cls_reg->nam.c_str(), mth->nam);
@@ -47,8 +57,8 @@ hclass_reg::has_value(const char* attr){
 
 void
 hc_system::register_value(hcell* obj, hc_term* attr){
-	PTD_CK(obj != mc_null);
-	PTD_CK(attr != mc_null);
+	HL_CK(obj != hl_null);
+	HL_CK(attr != hl_null);
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
 	if(! cls_reg->has_value(attr->get_name())){
 		(cls_reg->values)[attr->get_name()] = attr;
@@ -65,8 +75,8 @@ hclass_reg::has_reference(const char* attr){
 
 void
 hc_system::register_reference(hcell* obj, hc_term* attr){
-	PTD_CK(obj != mc_null);
-	PTD_CK(attr != mc_null);
+	HL_CK(obj != hl_null);
+	HL_CK(attr != hl_null);
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
 	if(! cls_reg->has_reference(attr->get_name())){
 		(cls_reg->references)[attr->get_name()] = attr;
@@ -83,7 +93,7 @@ hc_system::has_const(const char* attr){
 
 void
 hc_system::register_const(hc_term* attr){
-	PTD_CK(attr != mc_null);
+	HL_CK(attr != hl_null);
 	if(! has_const(attr->get_name())){
 		all_const[attr->get_name()] = attr;
 		printf("ADDING_CONST %s\n", attr->get_name());
@@ -99,7 +109,7 @@ hc_system::has_external(const char* attr){
 
 void
 hc_system::register_external(hc_term* attr){
-	PTD_CK(attr != mc_null);
+	HL_CK(attr != hl_null);
 	if(! has_external(attr->get_name())){
 		all_external[attr->get_name()] = attr;
 		printf("ADDING_EXTERNAL %s\n", attr->get_name());
@@ -139,7 +149,7 @@ hc_system::init_all_attributes(){
 	for(; it != all_classes.end(); ++it){
 		std::cout << "ADDING ATTRIBUTES FOR CLASS " << it->first << '\n';
 		hc_caller_t cr = it->second->initer;
-		if(cr != mc_null){
+		if(cr != hl_null){
 			(*cr)();
 		}
 	}
@@ -323,14 +333,14 @@ hkeyword(hreturn);
 
 void 
 hc_term::print_term(){
-	printf("%s \n", STACK_STR.c_str());
+	//printf("%s \n", STACK_STR.c_str());
 	printf("INVALID_TERM!!!!\n");
 }
 
 
 void //static
 hc_term::print_indent(){
-	PTD_CK(HC_PRT_TERM_INDENT >= 0);
+	HL_CK(HC_PRT_TERM_INDENT >= 0);
 	for(long aa = 0; aa < HC_PRT_TERM_INDENT; aa++){
 		printf("\t");
 	}
@@ -341,7 +351,7 @@ hc_unary_term::print_term(){
 	const char* tok = hc_get_token(op);
 	printf("%s", tok);
 	printf("(");
-	if(prm != mc_null){ prm->print_term(); }
+	if(prm != hl_null){ prm->print_term(); }
 	printf(")");
 }
 
@@ -350,9 +360,9 @@ hc_binary_term::print_term(){
 	const char* tok = hc_get_token(op);
 	switch(op){
 	case hc_comma_op:
-		if(lft != mc_null){ lft->print_term(); }
+		if(lft != hl_null){ lft->print_term(); }
 		printf("%s\n", tok); print_indent();
-		if(rgt != mc_null){ rgt->print_term(); }
+		if(rgt != hl_null){ rgt->print_term(); }
 	break;
 	default:
 		hc_syntax_op_t lft_op = lft->get_oper();
@@ -361,13 +371,13 @@ hc_binary_term::print_term(){
 		HC_PRT_TERM_INDENT++;
 		
 		if(lft_op == hc_comma_op){ printf("("); }
-		if(lft != mc_null){ lft->print_term(); }
+		if(lft != hl_null){ lft->print_term(); }
 		if(lft_op == hc_comma_op){ printf(")"); }
 		
 		printf(" %s ", tok);
 		
 		if(rgt_op == hc_comma_op){ printf("("); }
-		if(rgt != mc_null){ rgt->print_term(); }
+		if(rgt != hl_null){ rgt->print_term(); }
 		if(rgt_op == hc_comma_op){ printf(")"); }
 		
 		HC_PRT_TERM_INDENT--;
@@ -378,229 +388,13 @@ hc_binary_term::print_term(){
 
 hc_term&
 hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
-	mch_abort_func(0, mc_cstr("FIX_THIS_CODE' \n"));
+	hl_abort_func(0, hl_cstr("FIX_THIS_CODE' \n"));
 	return hme();
 }
 
 hc_term&
 hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
-	mch_abort_func(0, mc_cstr("FIX_THIS_CODE' \n"));
+	hl_abort_func(0, hl_cstr("FIX_THIS_CODE' \n"));
 	return hme();
 }
 
-//////////// EXAMPLE CODE
-//////////// EXAMPLE CODE
-//////////// EXAMPLE CODE
-
-int func_01(const char* nam, void*){ 
-	printf("declar attr = %s \n", nam);
-	return 567; 
-};
-
-void
-hc_term::dbg_func(){
-	printf("%s %d\n", __PRETTY_FUNCTION__, __LINE__);
-}
-
-//std::map<std::string, hdecl_class*> HC_ALL_CLASSES;
-
-//hmethod_def(cls_A1::mth01, hc_term::HC_NULL_TERM);
-
-//hmethod_def(cls_A1, mth01, r1);
-
-//hmethod_def(cls_A1, mth01, (r1 + r2));
-
-hcell_class_def(cls_A1);
-hcell_class_def(cls_A2);
-hcell_class_def(cls_A3);
-hcell_class_def(cls_A4);
-
-hmethod_def(cls_A1, mth01, (
-	(t1 = bj_tok_pru_get),
-	(r1 = (o1 + o2)),
-	(o2 = (r2 + r1)),
-	(r1 = r2) = (r4 + r5),
-	(o1 = o2) <<= (o4 + o5),
-	(o1 <<= o2),
-	o4, o5, 
-	hswitch(o1) >> (
-		hcase(o2) >> o3++, 
-		hcase(o4) >> ++o5,
-		hcase(o1) >> o2
-	),
-	hif(o3) >> (~ o1 + ! o2),
-	helif(o4) >> (o5 && o3),
-	hfor(o4) >> (o2 || o3),
-	hwhile(o4) >> (o1 & o3),
-	hreturn,
-	//mth02(), 
-	hcontinue,
-	hbreak,
-	helse >> o2,
-	((o1 < o2) <= (o3 > o4)),
-	o4
-));
-
-hmethod_def(cls_A1, mth02, (
-	(r1 = (o1 + o2)),
-	mth01(), 
-	hreturn
-));
-
-hmethod_def(cls_A1, mth03, (
-	hif(o3) >> (~ o1 + ! o2),
-	(o2 = (r2 + r1)),
-	(o2 <<= (r2 + r1)),
-	r1 = hme()
-));
-
-hmethod_def(cls_A2, mth01, (
-	hif(v1) >> (~ o1 + ! o2),
-	(r1->o4) + v2
-));
-
-hmethod_def(cls_A3, mth01, (
-	r3->r1->o4(), 
-	r3->r1->mth02(), 
-	r3->r1->o4(),
-	aa1 = aa2, 
-	aa2 <<= aa3, 
-	aa3 = aa1
-));
-
-/*
-	v1 = r3->r1->mth02()
-	
-	r3->r1->mth02()
-	
-	r3->r1->o4(), 
-	r3->r1->mth02(), 
-	r3->r1->o4()
-	
-	r3->r1->o4(), 
-	r3->r1->o4()
-	
-	r3->r1->o4() = rr2->rr2->o5()
-	
-	(v1 = (r3->r1->o4)), 
-	hif(rr2->rr2->o5)
-	
-	
-	v1 = r3->r1->o4(), 
-	rr2->rr2->o5(),
-	r3->r1->o4() = v1,
-	r3 = r3 -> r1 -> o4()
-*/
-
-class CLS_AA {};
-class CLS_BB : public CLS_AA {};
-class CLS_CC : public CLS_BB {};
-
-void bj_mc_test_5(int argc, char *argv[])
-{
-	printf("bj_mcbj_mc_test_5 \n");
-	if(argc > 1){
-		mch_epiphany_elf_path = argv[1];
-		printf("Using workeru executable: %s \n", mch_epiphany_elf_path);
-	}
-	
-	hexternal(CLS_A, e1);
-	hconst(long, k1, 123);
-	
-	//hc_init_keywords();
-	printf("######################################################\n");
-	printf("######################################################\n");
-	
-	hc_system::get_sys().init_all_attributes();
-	HLANG_SYS.call_all_registered_methods();
-	
-	/*
-	
-	std::cout << "a2b: " << std::is_base_of<CLS_AA, CLS_BB>::value << '\n';
-	std::cout << "b2a: " << std::is_base_of<CLS_BB, CLS_AA>::value << '\n';
-
-	cls_A1 aa;
-	cls_A2 bb;
-	cls_A3 cc;
-
-	std::cout << "get_nam_aa=" << aa.get_class_name() << '\n';
-	std::cout << "get_nam_bb=" << bb.get_class_name() << '\n';
-	std::cout << "get_nam_cc=" << cc.get_class_name() << '\n';
-	
-	hc_term& (cls_A1::*mth_pt)() = &cls_A1::mth01;
-	
-	(aa.*mth_pt)().print_code();
-
-	//aa.mth01().print_code();
-	
-	//bb.r1 = &aa;
-	//bb.rr2 = &aa;
-	//cc.r3 = &bb;
-	//cc.rr2 = &bb;
-	
-	bb.mth01().print_code();
-	cc.mth01().print_code();
-	
-	//CLS_AA AA1;
-	CLS_BB BB1;
-	
-	hc_reference<CLS_AA> ref1{"CLS_AA", "ref1"};
-	ref1 = &BB1;
-	hc_reference<CLS_BB> ref2{"CLS_BB", "ref2"};
-	ref2 = &BB1;
-	hc_reference<CLS_BB> ref3{"CLS_BB", "ref3"};
-	ref3 = hcast<CLS_AA, CLS_BB>(ref1);
-	
-	printf("IN_MAIN. %s %d\n", __PRETTY_FUNCTION__, __LINE__);
-	
-	//printf("cls_A3_mth01_called %d\n", cls_A3_mth01_called);
-	
-	//long xx = o1;
-	//printf("\n\n %ld \n", xx);
-	
-	std::map<std::string, std::string> m;
-	std::string s1 = "1";
-	std::string s2 = "A";
-
-	m.insert(std::pair<std::string, std::string>(s1, s2)); //Error
-	
-	//HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)mc_null));
-
-	std::cout << std::boolalpha;
-	std::cout << "is_pt(CLS_A)" << std::is_pointer<CLS_A>::value << '\n';
-	std::cout << "is_pt(CLS_A*)" << std::is_pointer<CLS_A*>::value << '\n';
-	std::cout << "is_pt(float)" << std::is_pointer<float>::value << '\n';
-	std::cout << "is_pt(int)" << std::is_pointer<int>::value << '\n';
-	std::cout << "is_pt(int*)" << std::is_pointer<int*>::value << '\n';
-	std::cout << "is_pt(int**)" << std::is_pointer<int**>::value << '\n' << "\n";
-	
-	std::cout << "is_cls(CLS_A)" << std::is_class<CLS_A>::value << '\n';
-	std::cout << "is_cls(CLS_A*)" << std::is_class<CLS_A*>::value << '\n';
-	std::cout << "is_cls(float)" << std::is_class<float>::value << '\n';
-	std::cout << "is_cls(int)" << std::is_class<int>::value << '\n';
-	std::cout << "is_cls(int*)" << std::is_class<int*>::value << '\n';
-	std::cout << "is_cls(int**)" << std::is_class<int**>::value << '\n' << "\n";
-	std::cout << "is_cls(cell)" << std::is_class<cell>::value << '\n';
-	std::cout << "is_cls(hc_term)" << std::is_class<hc_term>::value << '\n';
-	*/
-	
-	printf("\n End of Using bj_mcbj_mc_test_5\n");
-}
-
-/*
-void
-pru_hcell::handler(missive* msv){
-}
-
-grip ava_pru_hcell;
-
-MCK_DEFINE_MEM_METHODS(pru_hcell, 32, ava_pru_hcell, 0)
-
-void pru_hcell_init_mem_funcs(){
-	bj_mgr_all_ava[bj_cell_id(pru_hcell)] = &(ava_pru_hcell);
-	bj_mgr_all_acq[bj_cell_id(pru_hcell)] = (mc_alloc_kernel_func_t)pru_hcell::acquire_alloc;
-	bj_mgr_all_sep[bj_cell_id(pru_hcell)] = (mc_alloc_kernel_func_t)pru_hcell::separate;
-	
-	PTD_CK(pru_hcell::ck_cell_id(bj_cell_id(pru_hcell)));
-}
-*/
