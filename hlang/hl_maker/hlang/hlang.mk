@@ -18,6 +18,7 @@ HLANG_BIN_DIR := hlang/bin/
 
 HLANG_LIB_INCLUDES := \
 	${HLANG_BASE_DIR}/ \
+	${HLANG_BASE_DIR}/hl_util \
 	${HLANG_BASE_DIR}/hl_test \
 
 

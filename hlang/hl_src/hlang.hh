@@ -45,27 +45,11 @@ hlang declarations.
 #include <string>
 #include <list>
 
-void hl_the_abort_func(long val, const char* msg);
-
-//define hl_null mc_null
-//define HL_CK(vv) PTD_CK(vv)
-//define HL_PRT(...) PTD_PRT(__VA_ARGS__)
-//typedef mck_token_t hl_token_t;
-//define hl_tok_last mck_tok_last
-//define hl_abort_func(vv, msg) mch_abort_func(long val, const char* msg)
-
-
-#define hl_null NULL
-#define HL_CK(vv) 
-#define HL_PRT(...) 
+#include "dbg_util.h"
 
 typedef uint32_t hl_token_t;
 typedef int64_t hc_chip_idx;
 #define hl_tok_last 0
-
-#define hl_abort_func(val, msg) hl_the_abort_func(val, msg)
-#define hl_cstr(the_str) (const_cast<char *>(the_str))
-
 
 class hc_system;
 class hc_term;
@@ -257,8 +241,7 @@ public:
 	// force use of referenced rows
 	
 	hc_term(hc_term& other){ 
-		hl_abort_func(0, hl_cstr("func: 'hc_term(hc_term&)' \n"));
-		//mck_abort(0, hl_cstr("func: 'hc_term(hc_term&)' \n"));
+		hl_abort_func(0, "func: 'hc_term(hc_term&)' \n");
 		//HC_OBJECT_COPY_ERROR;
 	}
 
@@ -330,8 +313,8 @@ public:
 
 	virtual 
 	void print_code(){
-		hl_abort_func(0, hl_cstr("Invalid call to 'print_code()'. " 
-				"NOT_A_METHOD. It has no code to print.\n"));
+		hl_abort_func(0, "Invalid call to 'print_code()'. " 
+				"NOT_A_METHOD. It has no code to print.\n");
 	}
 
 	static
@@ -910,7 +893,7 @@ hcall_mth(hc_term& (cl1_t::*mth_pt)() = hl_null){
 				HL_PRT("\nCannot have recursive methods in hlang.\nBad definition of %s.\n", \
 					#cls "::" #mth \
 				); \
-				hl_abort_func(0, hl_cstr("BAD hlang METHOD DEFINITION \n")); \
+				hl_abort_func(0, "BAD hlang METHOD DEFINITION \n"); \
 			} \
 			cls::mth ## _def_reg.defining = true; \
 			hc_term& tm = (code); \

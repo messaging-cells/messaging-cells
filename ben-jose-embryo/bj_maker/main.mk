@@ -44,7 +44,6 @@ BJ_MANAGERU_INCLUDES := \
 
 SUBMAKEFILES := ./bj_pthreads/bj_pthreads.mk \
 	./bj_parallella/bj_parallella.mk \
-	./hlang/hlang.mk \
 
 
 	

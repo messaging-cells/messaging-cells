@@ -5,14 +5,6 @@
 hc_term		hc_term::HC_NULL_TERM{};
 long	hc_term::HC_PRT_TERM_INDENT = 0;
 
-void 
-hl_the_abort_func(long val, const char* msg){
-	fprintf(stderr, "\nABORTING_WITH_ERR=%ld %s\n", val, msg);
-	//PTD_CODE(mch_ptr_call_stack_trace(mc_null););
-	
-	exit(EXIT_FAILURE);
-}
-
 hc_system& HLANG_SYS(){
 	static hc_system the_sys;
 	return the_sys;
@@ -388,13 +380,13 @@ hc_binary_term::print_term(){
 
 hc_term&
 hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
-	hl_abort_func(0, hl_cstr("FIX_THIS_CODE' \n"));
+	hl_abort_func(0, "FIX_THIS_CODE' \n");
 	return hme();
 }
 
 hc_term&
 hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
-	hl_abort_func(0, hl_cstr("FIX_THIS_CODE' \n"));
+	hl_abort_func(0, "FIX_THIS_CODE' \n");
 	return hme();
 }
 
