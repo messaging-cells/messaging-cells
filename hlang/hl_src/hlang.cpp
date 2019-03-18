@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "hlang.hh"
 
-hc_term		hc_term::HC_NULL_TERM{};
 long	hc_term::HC_PRT_TERM_INDENT = 0;
 
 hc_system& HLANG_SYS(){
@@ -32,11 +31,19 @@ hc_system::get_class_reg(const char* cls, hc_caller_t the_initer){
 }
 
 void
-hc_system::register_method(const char* cls, hc_mth_def* mth){
+hc_system::register_method(const char* cls, hc_mth_def* mth, bool is_nucl){
 	HL_CK(cls != hl_null);
 	HL_CK(mth != hl_null);
 	hclass_reg* cls_reg = get_class_reg(cls);
-	cls_reg->methods.push_front(mth);
+	if(is_nucl){
+		if(cls_reg->nucleus != hl_null){
+			printf("Nucleus for class %s alredy defined as %s \n", cls_reg->nam.c_str(), mth->get_name()); 
+			hl_abort_func(0, "Aborting. Nucleus alredy defined. \n");
+		}
+		cls_reg->nucleus = mth;
+	} else {
+		cls_reg->methods.push_front(mth);
+	}
 	printf("ADDING_METHOD %s.%s\n", cls_reg->nam.c_str(), mth->nam);
 }
 
@@ -121,6 +128,15 @@ hclass_reg::call_all_methods(){
 
 		std::cout << "-------------------------------\n";
 	}
+	if(nucleus != hl_null){
+		std::cout << "\tCALLING NUCLEUS " << nucleus->nam << '\n';
+		hc_caller_t cr = nucleus->caller;
+		(*cr)();
+		
+		nucleus->print_code();
+
+		std::cout << "-------------------------------\n";
+	}
 }
 
 void
@@ -151,11 +167,17 @@ const char*
 hc_get_token(hc_syntax_op_t op){
 	const char* tok = "INVALID_TOKEN";
 	switch(op){
+		case hc_send_op:
+			tok = "hsend";
+		break;
+		case hc_tell_op:
+			tok = "htell";
+		break;
+		case hc_member_op:
+			tok = "->";
+		break;
 		case hc_comma_op:
 			tok = ",";
-		break;
-		case hc_async_asig_op:
-			tok = "<<=";
 		break;
 		case hc_then_op:
 			tok = ">>";
@@ -193,9 +215,6 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_hreturn_op:
 			tok = "hreturn";
 		break;
-		case hc_member_op:
-			tok = "->";
-		break;
 		case hc_assig_op1:
 			tok = "=1";
 		break;
@@ -210,6 +229,9 @@ hc_get_token(hc_syntax_op_t op){
 		break;
 		case hc_assig_op5:
 			tok = "=5";
+		break;
+		case hc_async_asig_op:
+			tok = "<<=";
 		break;
 		case hc_less_than_op:
 			tok = "<";
@@ -343,7 +365,9 @@ hc_unary_term::print_term(){
 	const char* tok = hc_get_token(op);
 	printf("%s", tok);
 	printf("(");
+	HC_PRT_TERM_INDENT++;
 	if(prm != hl_null){ prm->print_term(); }
+	HC_PRT_TERM_INDENT--;
 	printf(")");
 }
 
@@ -378,15 +402,49 @@ hc_binary_term::print_term(){
 	}
 }
 
+void 
+hc_send_term::print_term(){
+	HL_CK((op == hc_send_op) || (op == hc_tell_op));
+	
+	const char* tok_str = hc_get_token(op);
+	hc_syntax_op_t dst_op = snd_dst->get_oper();
+	hc_syntax_op_t tok_op = snd_tok->get_oper();
+	hc_syntax_op_t att_op = snd_att->get_oper();
+	
+	printf(" %s", tok_str);
+	
+	printf("("); 
+	HC_PRT_TERM_INDENT++;
+	
+	if(dst_op == hc_comma_op){ printf("("); }
+	if(snd_dst != hl_null){ snd_dst->print_term(); }
+	if(dst_op == hc_comma_op){ printf(")"); }
+	
+	printf(", ");
+	
+	if(tok_op == hc_comma_op){ printf("("); }
+	if(snd_tok != hl_null){ snd_tok->print_term(); }
+	if(tok_op == hc_comma_op){ printf(")"); }
+
+	printf(", ");
+	
+	if(att_op == hc_comma_op){ printf("("); }
+	if(snd_att != hl_null){ snd_att->print_term(); }
+	if(att_op == hc_comma_op){ printf(")"); }
+
+	HC_PRT_TERM_INDENT--;
+	printf(")");
+}
+
 hc_term&
 hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
-	hl_abort_func(0, "FIX_THIS_CODE' \n");
-	return hme();
+	hc_term* tm = new hc_send_term(hc_send_op, &dst, &tok, &att);
+	return *tm;
 }
 
 hc_term&
 hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
-	hl_abort_func(0, "FIX_THIS_CODE' \n");
-	return hme();
+	hc_term* tm = new hc_send_term(hc_tell_op, &dst, &tok, &att);
+	return *tm;
 }
 

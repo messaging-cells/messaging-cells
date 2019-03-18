@@ -7,6 +7,7 @@ SRC_INCDIRS := ${HLANG_LIB_INCLUDES}
 
 SOURCES := \
 	${HLANG_BASE_DIR}/hl_test/hl_pru1.cpp \
+	${HLANG_BASE_DIR}/hl_test/hl_send_test.cpp \
 
 
 

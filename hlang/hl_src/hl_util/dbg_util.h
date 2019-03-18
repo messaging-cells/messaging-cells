@@ -74,7 +74,7 @@ hl_c_decl {
 typedef std::string hl_string;
 
 hl_string	hl_get_stack_trace( const hl_string & file, int line );
-void hl_abort_func(long val, const char* msg);
+void hl_abort_func(long val, const char* msg, bool prt_stk = false);
 
 #define HL_STACK_STR hl_get_stack_trace(__FILE__, __LINE__)
 #define DO_GETCHAR()			getchar()

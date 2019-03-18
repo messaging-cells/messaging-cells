@@ -90,9 +90,11 @@ hl_ptr_call_stack_trace(FILE* out_fp) {
 }
 
 void 
-hl_abort_func(long val, const char* msg){
+hl_abort_func(long val, const char* msg, bool prt_stk){
 	fprintf(stderr, "\nABORTING_WITH_ERR=%ld %s\n", val, msg);
-	hl_ptr_call_stack_trace(hl_null);
+	if(prt_stk){
+		hl_ptr_call_stack_trace(hl_null);
+	}
 	
 	exit(EXIT_FAILURE);
 }

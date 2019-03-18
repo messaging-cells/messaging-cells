@@ -33,6 +33,7 @@ class cls_A3;
 class cls_A1 : public hcell {
 public:
 	hcell_class(cls_A1);
+
 	
 	htok(t1);
 	hchar(v1);
@@ -52,6 +53,8 @@ public:
 
 	hreference(cls_A2, rA2);
 	hreference(cls_A3, rA3);
+
+	hnucleus(central);
 	
 	hmethod(mth01);
 	hmethod(mth02);

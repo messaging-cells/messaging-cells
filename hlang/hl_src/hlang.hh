@@ -47,7 +47,10 @@ hlang declarations.
 
 #include "dbg_util.h"
 
-typedef uint32_t hl_token_t;
+typedef uint64_t hl_token_t;
+typedef uint64_t hl_value_t;
+typedef uint64_t hl_reference_t;
+
 typedef int64_t hc_chip_idx;
 #define hl_tok_last 0
 
@@ -64,9 +67,11 @@ public:
 	std::map<std::string, hc_term*> values;
 	std::map<std::string, hc_term*> references;
 	std::list<hc_mth_def*> methods;
+	hc_mth_def* nucleus = hl_null;
 	hc_caller_t initer = hl_null;
 	
 	hclass_reg(){
+		nucleus = hl_null;
 		initer = hl_null;
 	}
 
@@ -93,7 +98,7 @@ public:
 	virtual ~hc_system(){}
 	
 	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = hl_null);
-	void register_method(const char* cls, hc_mth_def* mth);
+	void register_method(const char* cls, hc_mth_def* mth, bool is_nucl);
 	void register_value(hcell* obj, hc_term* attr);
 	void register_reference(hcell* obj, hc_term* attr);
 
@@ -124,6 +129,9 @@ template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
 
 enum	hc_syntax_op_t {
 	hc_invalid_op,
+
+	hc_send_op,	// hsend
+	hc_tell_op,	// htell
 	
 	hc_member_op,	// ->
 	
@@ -182,9 +190,11 @@ enum	hc_term_kind_t {
 	hc_invalid_kind,
 	hc_value_kind,
 	hc_reference_kind,
+	hc_def_kind,
 	hc_call_kind,
 	hc_unary_kind,
-	hc_binary_kind
+	hc_binary_kind,
+	hc_send_kind
 };
 
 
@@ -226,7 +236,6 @@ the_op(hc_term& o1){ \
 
 class hc_term {
 public:
-	static hc_term	HC_NULL_TERM;
 	static long	HC_PRT_TERM_INDENT;
 	
 	// constructors
@@ -278,10 +287,6 @@ public:
 		return hc_invalid_kind;
 	}
 	
-	bool is_null(){
-		return (this == &HC_NULL_TERM);
-	}
-	
 	friend
 	hc_term&	hif(hc_term& o1);
 
@@ -320,18 +325,6 @@ public:
 	static
 	void print_indent();
 	
-	bool is_value(){
-		return (get_term_kind() == hc_value_kind);
-	}
-
-	bool is_reference(){
-		return (get_term_kind() == hc_reference_kind);
-	}
-
-	bool is_call(){
-		return (get_term_kind() == hc_call_kind);
-	}
-
 	virtual 
 	hc_syntax_op_t	get_oper(){
 		return hc_invalid_op;
@@ -341,6 +334,11 @@ public:
 	const char*	get_name(){
 		return "INVALID_NAME";
 	}	
+
+	virtual 
+	bool	is_compound(){
+		return false;
+	}
 };
 
 class hc_unary_term : public hc_term {
@@ -349,7 +347,7 @@ public:
 	hc_term* prm;
 	
 	virtual	~hc_unary_term(){
-		if(prm != hl_null){
+		if((prm != hl_null) && prm->is_compound()){
 			delete prm;
 			prm = hl_null;
 		}
@@ -386,6 +384,11 @@ public:
 	
 	virtual 
 	void print_term();
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
 };
 
 class hc_binary_term : public hc_term {
@@ -395,11 +398,11 @@ public:
 	hc_term* rgt;
 	
 	virtual	~hc_binary_term(){
-		if(lft != hl_null){
+		if((lft != hl_null) && lft->is_compound()){
 			delete lft;
 			lft = hl_null;
 		}
-		if(rgt != hl_null){
+		if((rgt != hl_null) && rgt->is_compound()){
 			delete rgt;
 			rgt = hl_null;
 		}
@@ -442,12 +445,87 @@ public:
 	
 	virtual 
 	void print_term();
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+};
+
+class hc_send_term : public hc_term {
+public:
+	hc_syntax_op_t op;
+	hc_term* snd_dst;
+	hc_term* snd_tok;
+	hc_term* snd_att;
+	
+	virtual	~hc_send_term(){
+		if((snd_dst != hl_null) && snd_dst->is_compound()){
+			delete snd_dst;
+			snd_dst = hl_null;
+		}
+		if((snd_tok != hl_null) && snd_tok->is_compound()){
+			delete snd_tok;
+			snd_tok = hl_null;
+		}
+		if((snd_att != hl_null) && snd_att->is_compound()){
+			delete snd_att;
+			snd_att = hl_null;
+		}
+	}
+	
+	hc_send_term(hc_syntax_op_t pm_op, hc_term* pm_dst, hc_term* pm_tok, hc_term* pm_att){
+		init_send_term(pm_op, pm_dst, pm_tok, pm_att);
+	}
+	
+	void init_send_term(hc_syntax_op_t pm_op = hc_invalid_op, 
+						hc_term* pm_dst = hl_null, hc_term* pm_tok = hl_null,
+						hc_term* pm_att = hl_null)
+	{
+		op = pm_op;
+		if(pm_dst != hl_null){
+			pm_dst = pm_dst->get_src();
+		}
+		if(pm_tok != hl_null){
+			pm_tok = pm_tok->get_src();
+		}
+		if(pm_att != hl_null){
+			pm_att = pm_att->get_src();
+		}
+		snd_dst = pm_dst;
+		snd_tok = pm_tok;
+		snd_att = pm_att;
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return op;
+	}
+	
+	virtual 
+	hc_term_kind_t	get_term_kind(){
+		return hc_send_kind;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return hc_get_token(op);
+	}
+	
+	virtual 
+	void print_term();
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
 };
 
 template<class obj_t>
 class hc_value : public hc_term {
 public:
-	static hc_value<obj_t>	HC_NULL_VALUE;
+	static hc_value<obj_t>	HC_MSV_VAL;
+	static hc_value<obj_t>	HC_MSV_TOK;
 
 	const char* typ;
 	const char* nam;
@@ -459,17 +537,30 @@ public:
 	hc_value(const char* the_typ, const char* the_nam, 
 			 hcell* the_owner = hl_null, obj_t the_val = obj_t())
 	{
-		HL_CK(! std::is_pointer<obj_t>::value);
-		HL_CK(! std::is_class<obj_t>::value);
-		typ = the_typ;
-		nam = the_nam;
-		val = the_val;
-		owner = the_owner;
-		if(owner != hl_null){
-			HLANG_SYS().register_value(owner, this);
-		} else {
-			HLANG_SYS().register_const(this);
-		}
+		typ = hl_null;
+		nam = hl_null;
+		owner = hl_null;
+		init_val(the_typ, the_nam, true, the_owner, the_val);
+	}
+	
+	hc_value& 
+	init_val(const char* the_typ, const char* the_nam, bool is_first = false, 
+			 hcell* the_owner = hl_null, obj_t the_val = obj_t())
+	{
+		if((typ == hl_null) && (the_typ != hl_null)){
+			HL_CK(! std::is_pointer<obj_t>::value);
+			HL_CK(! std::is_class<obj_t>::value);
+			typ = the_typ;
+			nam = the_nam;
+			val = the_val;
+			owner = the_owner;
+			if(owner != hl_null){
+				HLANG_SYS().register_value(owner, this);
+			} else {
+				HLANG_SYS().register_const(this);
+			}
+		} 
+		return *this;
 		//printf("caller=%s \n", the_caller);
 	}
 	
@@ -496,10 +587,6 @@ public:
 		val = aa;
 	}
 
-	bool is_null(){
-		return (this == &HC_NULL_VALUE);
-	}
-
 	//operator obj_t() { return ref; }		// cast op
 	 
 	virtual 
@@ -523,7 +610,10 @@ public:
 };
 
 template<class obj_t>
-hc_value<obj_t> hc_value<obj_t>::HC_NULL_VALUE{};
+hc_value<obj_t> hc_value<obj_t>::HC_MSV_VAL{hl_null, hl_null};
+
+template<class obj_t>
+hc_value<obj_t> hc_value<obj_t>::HC_MSV_TOK{hl_null, hl_null};
 
 class hc_keyword : public hc_value<hc_syntax_op_t> {
 public:
@@ -541,6 +631,7 @@ public:
 template<class obj_t>
 class hc_reference : public hc_term {
 public:
+	static hc_reference<obj_t>	HC_MSV_REF;
 	static obj_t*	HC_GLB_REF;
 	
 	const char* typ;
@@ -603,10 +694,10 @@ public:
 			ref = get_glb_ref();
 			//ref = new obj_t();
 		}
-		if(ref->src_term != hl_null){ 
+		if(ref->rf_src_tm != hl_null){ 
 			HL_PRT("\nCannot have recursive referencing in hlang.\n"); 
 		}
-		ref->src_term = this;
+		ref->rf_src_tm = this;
 		return ref;
 	}
 	
@@ -615,10 +706,10 @@ public:
 			ref = get_glb_ref();
 			//ref = new obj_t();
 		}
-		if(ref->src_term != hl_null){ 
+		if(ref->rf_src_tm != hl_null){ 
 			HL_PRT("\nCannot have recursive referencing in hlang.\n"); 
 		}
-		ref->src_term = this;
+		ref->rf_src_tm = this;
 		return ref;
 	}
 	
@@ -651,92 +742,8 @@ public:
 template<class obj_t>
 obj_t* hc_reference<obj_t>::HC_GLB_REF = hl_null;
 
-#define hme_def(cls) \
-    virtual	hc_term&	hme(){ \
-		if(hc_pt_me == hl_null){ \
-			hc_reference<cls>* tmp = new hc_reference<cls>(#cls, "hme_" #cls, this); \
-			tmp->ref = this; \
-			hc_pt_me = tmp; \
-		} \
-		return *hc_pt_me; \
-	} \
-
-// end_define
-
-class hcell {
-public:
-	hc_term* hc_pt_me = hl_null;
-	hc_chip_idx		my_id = -1;
-	hc_term* src_term = hl_null;
-	
-	hcell(){
-		init_me();
-	}
-
-	
-	virtual ~hcell(){}
-
-	virtual
-	void init_me(int caller = 0){
-		src_term = hl_null;
-	}
-
-	virtual
-	const char* get_class_name(){
-		return "hcell";
-	}
-	
-	hme_def(hcell);
-	
-	hc_term& hsend(hc_term& dst, hc_term& tok, hc_term& att);
-	hc_term& htell(hc_term& dst, hc_term& tok, hc_term& att);
-};
-
-#define hcell_class(cls) \
-	static const char* hc_class_name; \
-	static hclass_reg* hc_register_ ## cls; \
-	virtual	const char* get_class_name(); \
-	hme_def(cls); \
-
-// end_define
-
-#define hcell_class_def(cls) \
-	void cls ## _ref_initer(); \
-	hclass_reg* cls::hc_register_ ## cls = HLANG_SYS().get_class_reg(#cls, cls ## _ref_initer); \
-	const char* cls::hc_class_name = #cls; \
-	const char* \
-	cls::get_class_name(){ \
-		return cls::hc_class_name; \
-	} \
-	void cls ## _ref_initer(){ \
-		hc_reference<cls>::get_glb_ref(); \
-	} \
-
-// end_define
-
-#define HC_GET_SOURCE() \
-	hc_term* src = this; \
-	if((owner != hl_null) && (owner->src_term != hl_null)){ \
-		hc_term* tmp = owner->src_term; \
-		owner->src_term = hl_null; \
-		tmp = tmp->get_src(); \
-		src = new hc_binary_term(hc_member_op, tmp, this); \
-	} \
-	return src; \
-
-// end_define
-
 template<class obj_t>
-hc_term*	
-hc_value<obj_t>::get_src(){
-	HC_GET_SOURCE();
-}
-
-template<class obj_t>
-hc_term*	
-hc_reference<obj_t>::get_src(){
-	HC_GET_SOURCE();
-}
+hc_reference<obj_t> hc_reference<obj_t>::HC_MSV_REF{"hc_reference", "msv_ref"};
 
 template<class cl1_t, class cl2_t>
 cl2_t*
@@ -774,8 +781,6 @@ extern hc_keyword hbreak;
 extern hc_keyword hcontinue;
 extern hc_keyword hreturn;
 
-//void
-//hc_init_keywords();
 
 class hc_mth_def : public hc_term {
 public:
@@ -787,16 +792,18 @@ public:
 	
 	virtual	~hc_mth_def(){}
 	
-	hc_mth_def(const char* the_cls, const char* the_nam, hc_caller_t the_cllr = hl_null){
+	hc_mth_def(const char* the_cls, const char* the_nam, 
+			   hc_caller_t the_cllr, bool is_nucl = false)
+	{
 		cls = the_cls;
 		nam = the_nam;
 		caller = the_cllr;
-		HLANG_SYS().register_method(the_cls, this);
+		HLANG_SYS().register_method(the_cls, this, is_nucl);
 	}
 
 	virtual 
 	hc_term_kind_t	get_term_kind(){
-		return hc_call_kind;
+		return hc_def_kind;
 	}
 	
 	virtual 
@@ -875,16 +882,19 @@ hcall_mth(hc_term& (cl1_t::*mth_pt)() = hl_null){
 
 // end_define
 
-#define hmethod_def(cls, mth, code) \
+#define hnucleus(mth) hmethod(mth)
+
+
+#define hmethod_def_base(cls, mth, code, is_nucl) \
 	void cls ## _ ## mth ## _ ## caller(); \
-	hc_mth_def cls::mth ## _def_reg{#cls, #mth, cls ## _ ## mth ## _ ## caller}; \
+	hc_mth_def cls::mth ## _def_reg{#cls, #mth, cls ## _ ## mth ## _ ## caller, is_nucl}; \
 	hc_term& \
 	cls::mth(){ \
 		hc_term* mc = new hc_mth_call(&cls::mth ## _def_reg); \
 		hc_term* rr = mc; \
-		if(src_term != hl_null){ \
-			hc_term* tmp = src_term; \
-			src_term = hl_null; \
+		if(rf_src_tm != hl_null){ \
+			hc_term* tmp = rf_src_tm; \
+			rf_src_tm = hl_null; \
 			tmp = tmp->get_src(); \
 			rr = new hc_binary_term(hc_member_op, tmp, mc); \
 		} \
@@ -909,6 +919,10 @@ hcall_mth(hc_term& (cl1_t::*mth_pt)() = hl_null){
 
 // end_define
 
+#define hmethod_def(cls, mth, code) hmethod_def_base(cls, mth, code, false)
+
+#define hnucleus_def(cls, mth, code) hmethod_def_base(cls, mth, code, true)
+
 /*
 class hmissive {
 public:
@@ -924,6 +938,112 @@ public:
 };
 */
 
+#define hme_def(cls) \
+    virtual	hc_term&	hme(){ \
+		if(hc_pt_me == hl_null){ \
+			hc_reference<cls>* tmp = new hc_reference<cls>(#cls, "hme_" #cls, this); \
+			tmp->ref = this; \
+			hc_pt_me = tmp; \
+		} \
+		return *hc_pt_me; \
+	} \
+
+// end_define
+
+
+class hcell {
+public:
+	hc_chip_idx		hc_my_id = -1;
+	hc_term* 		hc_pt_me = hl_null;
+	hc_term* 		rf_src_tm = hl_null;
+
+	hl_reference_t 	msv_src;
+	hl_token_t 		msv_tok;
+	hl_value_t 		msv_val;
+	
+	hcell(){
+		init_me();
+	}
+	
+	virtual ~hcell(){}
+
+	virtual
+	void init_me(int caller = 0){
+		rf_src_tm = hl_null;
+	}
+
+	virtual
+	const char* get_class_name(){
+		return "hcell";
+	}
+	
+	hme_def(hcell);
+	
+	hc_term& hsend(hc_term& dst, hc_term& tok, hc_term& att);
+	hc_term& htell(hc_term& dst, hc_term& tok, hc_term& att);
+};
+
+#define hcell_class(cls) \
+	static const char* hc_class_name; \
+	static hclass_reg* hc_register_ ## cls; \
+	static hc_reference<cls>& get_msg_ref(); \
+	static hc_reference<cls>& get_msg_src(); \
+	virtual	const char* get_class_name(); \
+	hme_def(cls); \
+
+// end_define
+
+#define hcell_class_def(cls) \
+	void cls ## _ref_initer(); \
+	hclass_reg* cls::hc_register_ ## cls = HLANG_SYS().get_class_reg(#cls, cls ## _ref_initer); \
+	const char* cls::hc_class_name = #cls; \
+	const char* \
+	cls::get_class_name(){ \
+		return cls::hc_class_name; \
+	} \
+	void cls ## _ref_initer(){ \
+		hc_reference<cls>::get_glb_ref(); \
+	} \
+	hc_reference<cls>& cls::get_msg_ref(){ \
+		static hc_reference<cls> gref{#cls, "hmsg_ref_" #cls}; \
+		return gref; \
+	} \
+	hc_reference<cls>& cls::get_msg_src(){ \
+		static hc_reference<cls> gref{#cls, "hmsg_src_" #cls}; \
+		return gref; \
+	} \
+
+// end_define
+
+
+#define HC_GET_SOURCE() \
+	hc_term* src = this; \
+	if((owner != hl_null) && (owner->rf_src_tm != hl_null)){ \
+		hc_term* tmp = owner->rf_src_tm; \
+		owner->rf_src_tm = hl_null; \
+		tmp = tmp->get_src(); \
+		src = new hc_binary_term(hc_member_op, tmp, this); \
+	} \
+	return src; \
+
+// end_define
+
+template<class obj_t>
+hc_term*	
+hc_value<obj_t>::get_src(){
+	HC_GET_SOURCE();
+}
+
+template<class obj_t>
+hc_term*	
+hc_reference<obj_t>::get_src(){
+	HC_GET_SOURCE();
+}
+
+#define hmsg_src(cls) (cls::get_msg_src())
+#define hmsg_ref(cls) (cls::get_msg_ref())
+#define hmsg_val(typ) (hc_value<typ>::HC_MSV_VAL.init_val(#typ, "hmsg_val_" #typ))
+#define hmsg_tok(typ) (hc_value<typ>::HC_MSV_TOK.init_val(#typ, "hmsg_tok_" #typ))
 
 #endif		// HLANG_H
 

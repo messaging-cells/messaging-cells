@@ -10,6 +10,12 @@ hcell_class_def(cls_A2);
 hcell_class_def(cls_A3);
 hcell_class_def(cls_A4);
 
+hnucleus_def(cls_A1, central, (
+	(r1 = (o1 + o2)),
+	mth01(), 
+	hreturn
+));
+
 hmethod_def(cls_A1, mth01, (
 	(t1 = bj_tok_pru_get),
 	(r1 = (o1 + o2)),
@@ -60,7 +66,11 @@ hmethod_def(cls_A3, mth01, (
 	r3->r1->o4(),
 	aa1 = aa2, 
 	aa2 <<= aa3, 
-	aa3 = aa1
+	aa3 = aa1,
+	hmsg_src(cls_A1)->o4(),
+	hmsg_ref(cls_A1)->o4(),
+	hmsg_val(long),
+	hmsg_tok(char)
 ));
 
 class CLS_AA {};
