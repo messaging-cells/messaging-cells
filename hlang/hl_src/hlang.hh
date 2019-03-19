@@ -38,6 +38,7 @@ hlang declarations.
 #ifndef HLANG_H
 #define HLANG_H
 
+#include <algorithm>
 #include <type_traits>
 #include <iostream>
 #include <stdio.h>
@@ -46,6 +47,21 @@ hlang declarations.
 #include <list>
 
 #include "dbg_util.h"
+
+bool file_rename(hl_string& old_pth, hl_string& nw_pth);
+bool file_exists(hl_string th_pth);
+bool file_touch(hl_string the_pth);
+bool file_newer_than(hl_string the_pth, time_t tm1);
+bool make_dir(hl_string the_pth, mode_t mod = 0700);
+bool change_dir(hl_string the_pth);
+hl_string path_get_running_path();
+hl_string path_to_absolute_path(hl_string pth);
+bool path_create(hl_string n_pth);
+bool path_begins_with(hl_string the_pth, hl_string the_beg);
+bool path_ends_with(hl_string& the_str, hl_string& the_suf);
+hl_string path_get_directory(hl_string the_pth, bool add_last_dir_sep);
+hl_string path_get_name(hl_string the_pth);
+hl_string get_errno_str(long val_errno);
 
 typedef uint64_t hl_token_t;
 typedef uint64_t hl_value_t;
@@ -61,11 +77,12 @@ class hcell;
 
 typedef void (*hc_caller_t)();
 
+
 class hclass_reg {
 public:
-	std::string nam;
-	std::map<std::string, hc_term*> values;
-	std::map<std::string, hc_term*> references;
+	hl_string nam;
+	std::map<hl_string, hc_term*> values;
+	std::map<hl_string, hc_term*> references;
 	std::list<hc_mth_def*> methods;
 	hc_mth_def* nucleus = hl_null;
 	hc_caller_t initer = hl_null;
@@ -80,6 +97,32 @@ public:
 	bool has_value(const char* attr);
 	bool has_reference(const char* attr);
 	
+	hl_string get_tmp_hh_name(){
+		return nam + "_tmp.hh";
+	}
+	
+	hl_string get_hh_name(){
+		return nam + ".hh";
+	}
+	
+	hl_string get_hh_define_str(){
+		hl_string out = nam;
+		std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+		out += "_HH_FILE";
+		return out;
+	}
+	
+	FILE* open_hh_file(const char* nm){
+		FILE* ff = fopen(nm, "w+");
+		if(ff == NULL){
+			fprintf(stderr, "Cannot open file %s\n", nm);
+			hl_abort_func(0, "ABORTING. Cannot open file.\n");
+		}
+		return ff;
+	}
+	
+	void print_hh_file();
+
 	void call_all_methods();
 };
 
@@ -87,10 +130,12 @@ extern hc_system& HLANG_SYS();
 
 class hc_system {
 public:
-	std::map<std::string, hclass_reg*> all_classes;
-	std::map<std::string, hc_term*> all_const;
-	std::map<std::string, hc_term*> all_token;
-	std::map<std::string, hc_term*> all_external;
+	std::map<hl_string, hclass_reg*> all_classes;
+	std::map<hl_string, hc_term*> all_const;
+	std::map<hl_string, hc_term*> all_token;
+	std::map<hl_string, hc_term*> all_external;
+	
+	hl_string project_nam;
 
 	hc_system(){
 		init_me();
@@ -121,8 +166,16 @@ public:
 		call_all_registered_methods();
 	}
 
+	void generate_hh_files();
+	void generate_cpp_code();
+	
+	hl_string get_cpp_dir_nam(){
+		return project_nam + "_cpp";
+	}
+	
 	virtual
 	void init_me(int caller = 0){
+		project_nam = "hl_generated_output";
 	}
 	
 };
@@ -140,6 +193,8 @@ template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
 enum	hc_syntax_op_t {
 	hc_invalid_op,
 
+	hc_dbg_op,
+	
 	hc_send_op,	// hsend
 	hc_tell_op,	// htell
 	
@@ -195,18 +250,6 @@ enum	hc_syntax_op_t {
 
 const char*
 hc_get_token(hc_syntax_op_t op);
-
-enum	hc_term_kind_t {
-	hc_invalid_kind,
-	hc_value_kind,
-	hc_reference_kind,
-	hc_def_kind,
-	hc_call_kind,
-	hc_unary_kind,
-	hc_binary_kind,
-	hc_send_kind
-};
-
 
 #define HC_DEFINE_BINARY_OP_BASE(the_code) \
 	hc_term* tm = new hc_binary_term(the_code, this, &o1); \
@@ -293,32 +336,6 @@ public:
 	hc_term&	operator -- (int xx);
 	
 	virtual 
-	hc_term_kind_t	get_term_kind(){
-		return hc_invalid_kind;
-	}
-	
-	friend
-	hc_term&	hif(hc_term& o1);
-
-	friend
-	hc_term&	helif(hc_term& o1);
-
-	friend
-	hc_term&	hfor(hc_term& o1);
-
-	friend
-	hc_term&	hwhile(hc_term& o1);
-
-	friend
-	hc_term&	hswitch(hc_term& o1);
-
-	friend
-	hc_term&	hcase(hc_term& o1);
-	
-	friend
-	void		hfunction(const char* nam, hc_term& o1);
-	
-	virtual 
 	hc_term*	get_src(){
 		return this;
 	}
@@ -351,6 +368,14 @@ public:
 	}
 };
 
+hc_term&	hif(hc_term& o1);
+hc_term&	helif(hc_term& o1);
+hc_term&	hfor(hc_term& o1);
+hc_term&	hwhile(hc_term& o1);
+hc_term&	hswitch(hc_term& o1);
+hc_term&	hcase(hc_term& o1);
+hc_term&	hdbg(const char* cod);
+
 class hc_unary_term : public hc_term {
 public:
 	hc_syntax_op_t op;
@@ -375,11 +400,6 @@ public:
 			pm_val = pm_val->get_src();
 		}
 		prm = pm_val;
-	}
-	
-	virtual 
-	hc_term_kind_t	get_term_kind(){
-		return hc_unary_kind;
 	}
 	
 	virtual 
@@ -444,11 +464,6 @@ public:
 	}
 	
 	virtual 
-	hc_term_kind_t	get_term_kind(){
-		return hc_binary_kind;
-	}
-	
-	virtual 
 	const char*	get_name(){
 		return hc_get_token(op);
 	}
@@ -510,11 +525,6 @@ public:
 	virtual 
 	hc_syntax_op_t	get_oper(){
 		return op;
-	}
-	
-	virtual 
-	hc_term_kind_t	get_term_kind(){
-		return hc_send_kind;
 	}
 	
 	virtual 
@@ -606,11 +616,6 @@ public:
 
 	//operator obj_t() { return ref; }		// cast op
 	 
-	virtual 
-	hc_term_kind_t	get_term_kind(){
-		return hc_value_kind;
-	}
-	
 	virtual 
 	const char*	get_name(){
 		return nam;
@@ -737,11 +742,6 @@ public:
 	//operator obj_t() { return ref; }		// cast op
 	
 	virtual 
-	hc_term_kind_t	get_term_kind(){
-		return hc_reference_kind;
-	}
-	
-	virtual 
 	const char*	get_name(){
 		return nam;
 	}
@@ -829,11 +829,6 @@ public:
 	}
 
 	virtual 
-	hc_term_kind_t	get_term_kind(){
-		return hc_def_kind;
-	}
-	
-	virtual 
 	const char*	get_name(){
 		return nam;
 	}
@@ -867,11 +862,6 @@ public:
 		the_mth = mthdef;
 	}
 
-	virtual 
-	hc_term_kind_t	get_term_kind(){
-		return hc_call_kind;
-	}
-	
 	virtual 
 	const char*	get_name(){
 		HL_CK(the_mth != hl_null);
@@ -949,6 +939,37 @@ hcall_mth(hc_term& (cl1_t::*mth_pt)() = hl_null){
 #define hmethod_def(cls, mth, code) hmethod_def_base(cls, mth, code, false)
 
 #define hnucleus_def(cls, mth, code) hmethod_def_base(cls, mth, code, true)
+
+class hc_dbg : public hc_term {
+public:
+	hl_string dbg_cod;
+	
+	virtual	~hc_dbg(){}
+	
+	hc_dbg(hl_string the_cod){
+		dbg_cod = the_cod;
+	}
+
+	virtual 
+	const char*	get_name(){
+		return "hc_dbg";
+	}
+	
+	virtual 
+	void print_term(){
+		std::cout << "hdbg_start(" << dbg_cod << ")hdbg_end\n";
+	}
+
+	virtual 
+	void print_code(){
+		print_term();
+	}
+
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_dbg_op;
+	}
+};
 
 /*
 class hmissive {

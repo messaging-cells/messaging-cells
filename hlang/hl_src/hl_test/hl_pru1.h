@@ -92,6 +92,7 @@ class cls_A3 : public hcell {
 public:
 	hcell_class(cls_A3);
 	
+	hint(xx1);
 	hchar(v1);
 	hint(v2);
 	hreference(cls_A2, rr2);

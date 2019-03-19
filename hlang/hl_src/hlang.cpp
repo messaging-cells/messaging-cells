@@ -1,8 +1,202 @@
 
-#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <limits.h>
+
+#include "sha2.h"
 #include "dbg_util.h"
 #include "hlang.hh"
+
+#define HL_PATH_MAX PATH_MAX
+
+bool
+file_rename(hl_string& old_pth, hl_string& nw_pth){
+	int ok = rename(old_pth.c_str(), nw_pth.c_str());
+	if(ok != 0){
+		fprintf(stderr, "ERROR. Cannot rename file %s  to %s \n", old_pth.c_str(), nw_pth.c_str());
+		hl_abort_func(0, "ABORTING. Cannot rename file.\n");
+	}
+	return (ok == 0);
+}
+
+bool
+file_exists(hl_string th_pth){
+	const char* fname = th_pth.c_str();
+	
+	bool ff_exists = (access(fname, F_OK) != -1);
+	return ff_exists;
+}
+
+bool 
+file_touch(hl_string the_pth){
+	int ok1 = utimensat(AT_FDCWD, the_pth.c_str(), NULL, 0);
+	return (ok1 == 0);
+}
+
+bool
+file_newer_than(hl_string the_pth, time_t tm1){
+	struct stat sf1;
+
+	int resp1 = stat(the_pth.c_str(), &sf1);
+	bool ok1 = (resp1 == 0);
+
+	double dtm = difftime(sf1.st_mtime, tm1);
+
+	bool nwr_than = ok1 && (dtm > 0);
+	return nwr_than;
+}
+
+bool
+make_dir(hl_string the_pth, mode_t mod){
+	int resp = mkdir(the_pth.c_str(), mod);
+	if(resp != 0){
+		fprintf(stderr, "ERROR. Cannot make dir %s \n", the_pth.c_str());
+		hl_abort_func(0, "ABORTING. Cannot make dir.\n");
+	}
+	return (resp == 0);
+}
+
+bool
+change_dir(hl_string the_pth){
+	int resp = chdir(the_pth.c_str());
+	if(resp != 0){
+		fprintf(stderr, "ERROR. Cannot change dir to %s \n", the_pth.c_str());
+		hl_abort_func(0, "ABORTING. Cannot change dir.\n");
+	}
+	return (resp == 0);
+}
+
+hl_string
+path_get_running_path(){
+	char exepath[HL_PATH_MAX] = {0};
+	readlink("/proc/self/exe", exepath, sizeof(exepath) - 1);
+	hl_string the_pth = exepath;
+	return the_pth;
+}
+
+hl_string
+path_to_absolute_path(hl_string pth){
+	if(pth.size() >= (HL_PATH_MAX - 1)){
+		fprintf(stderr, "ERROR. Path %s too long\n", pth.c_str());
+		hl_abort_func(0, "ABORTING. Path too long.\n");
+	}
+	
+	char rpath[HL_PATH_MAX];
+
+	char* rr = realpath(pth.c_str(), rpath);
+	if(rr == rpath){ 
+		hl_string real_pth = rpath;
+		return real_pth;
+	}
+	return pth;
+}
+
+bool
+path_create(hl_string n_pth){
+	int eos = (int)hl_string::npos;
+	int pos1 = n_pth.find('/');
+	bool path_ok = true;
+	while((pos1 == eos) || (pos1 < (int)n_pth.size())){
+		if(pos1 == eos){
+			pos1 = (int)n_pth.size();
+		}
+
+		hl_string nm_dir = n_pth.substr(0, pos1);
+		if(nm_dir.size() > 0){
+			path_ok = make_dir(nm_dir, 0700);
+			/*
+			resp = mkdir(nm_dir.c_str(), 0700);
+			//path_ok = ((resp == 0) || (errno == EEXIST));
+			path_ok = (resp == 0);
+			*/
+		}
+
+		if((pos1 + 1) < (int)n_pth.size()){
+			pos1 = n_pth.find('/', pos1 + 1);
+		} else {
+			pos1 = (int)n_pth.size();
+		}
+	}
+
+	return path_ok;
+}
+
+bool
+path_begins_with(hl_string the_pth, hl_string the_beg){
+	if(the_pth.size() < the_beg.size()){ 
+		return false; 
+	}
+
+	hl_string pref_str = the_pth.substr(0, the_beg.size());
+	if(pref_str != the_beg){ 
+		return false; 
+	}
+	return true;
+}
+
+bool
+path_ends_with(hl_string& the_str, hl_string& the_suf){
+	if(the_str.size() < the_suf.size()){
+		return false;
+	}
+	hl_str_pos_t pos1 = the_str.size() - the_suf.size();
+	hl_string sub_str = the_str.substr(pos1);
+	if(sub_str == the_suf){
+		return true;
+	}
+	return false;
+}
+
+hl_string
+path_get_directory(hl_string the_pth, bool add_last_dir_sep){
+	long pos = (long)the_pth.rfind('/');
+	hl_string the_dir = the_pth.substr(0, pos);
+	if(add_last_dir_sep){
+		the_dir = the_dir + '/';
+	}
+	return the_dir;
+}
+
+hl_string
+path_get_name(hl_string the_pth){
+	long eos = (long)hl_string::npos;
+	long pos = (long)the_pth.rfind('/');
+	if(pos == eos){
+		return the_pth;
+	}
+	hl_string the_nm = the_pth.substr(pos + 1);
+	return the_nm;
+}
+
+hl_string
+get_errno_str(long val_errno){
+	hl_string out_str = "?ERROR?";
+	switch(val_errno){
+	case EACCES:		out_str = "EACCES";		break;
+	case EBUSY:		out_str = "EBUSY";		break;
+	case EFAULT:		out_str = "EFAULT";		break;
+	case EINVAL:		out_str = "EINVAL";		break;
+	case EISDIR:		out_str = "EISDIR";		break;
+	case ELOOP:		out_str = "ELOOP";		break;
+	case EMLINK:		out_str = "EMLINK";		break;
+	case ENAMETOOLONG:	out_str = "ENAMETOOLONG";	break;
+	case ENOENT:		out_str = "ENOENT";		break;
+	case ENOMEM:		out_str = "ENOMEM";		break;
+	case ENOSPC:		out_str = "ENOSPC";		break;
+	case ENOTDIR:		out_str = "ENOTDIR";		break;
+	case ENOTEMPTY:		out_str = "ENOTEMPTY";		break;
+	case EEXIST:		out_str = "EEXIST";		break;
+	case EPERM:		out_str = "EPERM";		break;
+	case EROFS:		out_str = "EROFS";		break;
+	case EXDEV:		out_str = "EXDEV";		break;
+	case EIO:		out_str = "EIO";		break;
+	};
+	return out_str;
+}
+
 
 long	hc_term::HC_PRT_TERM_INDENT = 0;
 
@@ -202,6 +396,9 @@ const char*
 hc_get_token(hc_syntax_op_t op){
 	const char* tok = "INVALID_TOKEN";
 	switch(op){
+		case hc_dbg_op:
+			tok = "hdbg";
+		break;
 		case hc_send_op:
 			tok = "hsend";
 		break;
@@ -368,6 +565,12 @@ hc_term& hc_term::operator -- (int){
 	return *tm;
 }
 
+hc_term& 
+hdbg(const char* the_code){ 
+	hc_term* tm = new hc_dbg(the_code); 
+	return *tm; 
+} 
+
 HC_DEFINE_FUNC_OP(hif, hc_hif_op)
 HC_DEFINE_FUNC_OP(helif, hc_helif_op)
 HC_DEFINE_FUNC_OP(hfor, hc_hfor_op)
@@ -493,3 +696,71 @@ hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
 	return *tm;
 }
 
+void
+hclass_reg::print_hh_file(){
+	hl_string tmp_nm = get_tmp_hh_name();
+	FILE* ff = open_hh_file(tmp_nm.c_str());
+	const char* df_str = get_hh_define_str().c_str();
+	fprintf(ff, R"(
+#ifndef %s
+#define %s
+	)", df_str, df_str);
+	
+	fclose(ff);
+	
+	hl_string hh_nm = get_hh_name();
+	if(! file_exists(hh_nm)){
+		fprintf(stdout, "CREATING FILE: %s \n\n", hh_nm.c_str());
+		file_rename(tmp_nm, hh_nm); 
+	} else {
+		hl_uchar_t tmp_sh2[NUM_BYTES_SHA2];
+		hl_memset(tmp_sh2, 0, NUM_BYTES_SHA2);
+		
+		int ok = sha2_file(tmp_nm.c_str(), tmp_sh2, 0);
+		if(ok != 0){
+			fprintf(stderr, "ERROR. Cannot calc sha2 of file %s\n", tmp_nm.c_str());
+			hl_abort_func(0, "ABORTING. Cannot calc sha2.\n");
+		}
+		
+		hl_uchar_t old_sh2[NUM_BYTES_SHA2];
+		hl_memset(old_sh2, 0, NUM_BYTES_SHA2);
+		
+		int ok2 = sha2_file(hh_nm.c_str(), old_sh2, 0);
+		if(ok2 != 0){
+			fprintf(stderr, "ERROR. Cannot calc sha2 of file %s\n", hh_nm.c_str());
+			hl_abort_func(0, "ABORTING. Cannot calc sha2.\n");
+		}
+		
+		int cmp_val = memcmp(tmp_sh2, old_sh2, NUM_BYTES_SHA2);
+		if(cmp_val != 0){
+			fprintf(stdout, "FILES: \n %s \n %s \n DIFFER. REPLACING old file.\n", 
+					tmp_nm.c_str(), hh_nm.c_str());
+			
+			file_rename(tmp_nm, hh_nm); 
+		} else {
+			fprintf(stdout, "SKIPPING FILE: %s (IDENTICAL)\n", hh_nm.c_str());
+		}
+	}
+}
+
+
+void
+hc_system::generate_hh_files(){
+	auto it = all_classes.begin();
+	for(; it != all_classes.end(); ++it){
+		std::cout << "GENERATING HH FILE FOR CLASS " << it->first << '\n';
+		it->second->print_hh_file();
+		std::cout << "===========================================================\n";
+	}
+}
+
+
+void
+hc_system::generate_cpp_code(){
+	hl_string cpp_dr = get_cpp_dir_nam();
+	if(! file_exists(cpp_dr)){
+		make_dir(cpp_dr);
+	}
+	change_dir(cpp_dr);
+	generate_hh_files();
+}

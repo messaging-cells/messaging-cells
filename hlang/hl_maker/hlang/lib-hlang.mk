@@ -10,6 +10,7 @@ SRC_INCDIRS := ${HLANG_LIB_INCLUDES}
 
 SOURCES := \
 	${HLANG_BASE_DIR}/hl_util/dbg_util.cpp \
+	${HLANG_BASE_DIR}/hl_util/sha2.cpp \
 	${HLANG_BASE_DIR}/hlang.cpp \
 
 

@@ -60,6 +60,8 @@ hmethod_def(cls_A2, mth01, (
 	(r1->o4) + v2
 ));
 
+hl_string pru_str = "prueba_1";
+
 hmethod_def(cls_A3, mth01, (
 	r3->r1->o4(), 
 	r3->r1->mth02(), 
@@ -67,10 +69,18 @@ hmethod_def(cls_A3, mth01, (
 	aa1 = aa2, 
 	aa2 <<= aa3, 
 	aa3 = aa1,
+	hcase(r3),
 	hmsg_src(cls_A1)->o4(),
 	hmsg_ref(cls_A1)->o4(),
 	hmsg_val(long),
-	hmsg_tok(char)
+	hmsg_tok(char),
+	hdbg(R"my_code(
+		/* my coment */
+		// other  comment
+	printf("%s %d \n\t", añlskdhgf kajhnfg 
+	askjdhf """)
+	)my_code"
+	)
 ));
 
 class CLS_AA {};
@@ -84,10 +94,20 @@ void hl_test_1(int argc, char *argv[])
 	hexternal(CLS_A, e1);
 	hconst(long, k1, 123);
 	
-	printf("######################################################\n");
+	
 	printf("######################################################\n");
 
 	HLANG_SYS().init_sys();
+	
+	/*
+	const char* ex = "CADENA EX";
+	printf(R"my_str(%d "jose" )))}
+		%s R"otra(lkjlkajdfg laksdjgf "")) )otra"
+	)my_str", 123, ex);*/
+
+	printf("RUNNING PATH= %s \n", path_get_running_path().c_str());
+
+	HLANG_SYS().generate_cpp_code();	
 	
 	printf("\n End of Using bj_mchl_test_1\n");
 }

@@ -38,20 +38,10 @@ func to print a stack trace.
 #ifndef HL_DBG_UTIL_H
 #define HL_DBG_UTIL_H
 
-#include <iostream>
-#include <sstream>
-#include <fstream>	// used for hl_ofstream
-
-#define hl_null NULL
+#include "hl_string.h"
 
 #define HL_MAX_CALL_STACK_SZ 100
 #define HL_PRT_SIZE_T "%lu"
-#define HL_MAX_STR_SZ 300
-
-#define hl_c_decl extern "C"
-
-#define HL_STRINGIFY(x) #x
-#define HL_TOSTRING(x) HL_STRINGIFY(x)
 
 #define MC_ABORT_MSG(msg) mc_cstr("ABORTING. '" msg "' at " __FILE__ "(" HL_TOSTRING(__LINE__) ")")
 
@@ -71,24 +61,14 @@ hl_c_decl {
 }
 #endif
 
-typedef std::string hl_string;
-
 hl_string	hl_get_stack_trace( const hl_string & file, int line );
 void hl_abort_func(long val, const char* msg, bool prt_stk = false);
 
 #define HL_STACK_STR hl_get_stack_trace(__FILE__, __LINE__)
-#define DO_GETCHAR()			getchar()
-#define CARRIAGE_RETURN		((char)13)
-
-typedef std::ostream hl_ostream;
-typedef std::ostringstream hl_ostringstream;
-typedef std::ofstream hl_ofstream;
-
 
 const char* hl_get_ptd_log_fnam();
 bool hl_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool vv_ck, 
 				const char* file, int line, const char* ck_str, const char* fmt, ...);
-
 
 #define HL_CODE(cod) cod
 #define HL_DBG_CODE(cod) HL_DBG(cod)
