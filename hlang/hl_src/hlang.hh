@@ -89,6 +89,7 @@ class hc_system {
 public:
 	std::map<std::string, hclass_reg*> all_classes;
 	std::map<std::string, hc_term*> all_const;
+	std::map<std::string, hc_term*> all_token;
 	std::map<std::string, hc_term*> all_external;
 
 	hc_system(){
@@ -102,14 +103,23 @@ public:
 	void register_value(hcell* obj, hc_term* attr);
 	void register_reference(hcell* obj, hc_term* attr);
 
+	bool has_token(const char* attr);
 	bool has_const(const char* attr);
 	bool has_external(const char* attr);
 
+	void register_token(hc_term* attr);
 	void register_const(hc_term* attr);
 	void register_external(hc_term* attr);
 	
+	void init_all_token();
 	void init_all_attributes();
 	void call_all_registered_methods();
+	
+	void init_sys(){
+		init_all_attributes();
+		init_all_token();
+		call_all_registered_methods();
+	}
 
 	virtual
 	void init_me(int caller = 0){
@@ -521,6 +531,9 @@ public:
 	}
 };
 
+extern long hc_token_current_val;
+extern const char* hc_token_type_nam;
+
 template<class obj_t>
 class hc_value : public hc_term {
 public:
@@ -557,7 +570,11 @@ public:
 			if(owner != hl_null){
 				HLANG_SYS().register_value(owner, this);
 			} else {
-				HLANG_SYS().register_const(this);
+				if(typ == hc_token_type_nam){
+					HLANG_SYS().register_token(this);
+				} else {
+					HLANG_SYS().register_const(this);
+				}
 			}
 		} 
 		return *this;
@@ -751,19 +768,29 @@ hcast(hc_reference<cl1_t>& o1){
 	return (cl2_t*)(o1.ref);
 }
 
-#define hkeyword(nn) hc_keyword nn(#nn)
+#define htok_get(nn, obj) \
+	hc_value<hl_token_t> tk_get_ ## nn{hc_token_type_nam, obj->get_attr_nm("tk_get_", #nn), hl_null} 
 
-#define hvalue(tt, nn) hc_value<tt> nn{#tt, #nn, this}
+#define htok_set(nn, obj) \
+	hc_value<hl_token_t> tk_set_ ## nn{hc_token_type_nam, obj->get_attr_nm("tk_set_", #nn), hl_null} 
+
+#define htoks_att(nn, obj) htok_get(nn, this); htok_set(nn, this); 
+
+#define htok_base(nn, obj) hc_value<hl_token_t> nn{hc_token_type_nam, #nn, obj} 
+
+#define htoken(nn) htok_base(nn, hl_null)
+
+#define hvalue(tt, nn) htoks_att(nn, this); hc_value<tt> nn{#tt, #nn, this}
+
+#define hreference(tt, nn) htoks_att(nn, this); hc_reference<tt> nn{#tt, #nn, this}
+
+#define hkeyword(nn) hc_keyword nn(#nn)
 
 #define hconst(tt, nn, vv) hc_value<tt> nn{#tt, #nn, hl_null, vv}
 
-#define htoken(nn, vv) hconst(hl_token_t, nn, vv)
-
-#define hreference(tt, nn) hc_reference<tt> nn{#tt, #nn, this}
-
 #define hexternal(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
-#define htok(nn) hvalue(hl_token_t, nn)
+#define htok(nn) htok_base(nn, this)
 #define hchar(nn) hvalue(char, nn)
 #define hint(nn) hvalue(int, nn)
 #define hlong(nn) hvalue(long, nn)
@@ -976,6 +1003,8 @@ public:
 	const char* get_class_name(){
 		return "hcell";
 	}
+
+	const char* get_attr_nm(const char* pfix, const char* sfix);
 	
 	hme_def(hcell);
 	

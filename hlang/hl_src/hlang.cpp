@@ -1,8 +1,14 @@
 
 #include <stdio.h>
+#include <string.h>
+#include "dbg_util.h"
 #include "hlang.hh"
 
 long	hc_term::HC_PRT_TERM_INDENT = 0;
+
+long hc_token_current_val = 11;
+const char* hc_token_type_nam = "hl_token_t";
+
 
 hc_system& HLANG_SYS(){
 	static hc_system the_sys;
@@ -84,6 +90,22 @@ hc_system::register_reference(hcell* obj, hc_term* attr){
 }
 
 bool
+hc_system::has_token(const char* attr){
+	std::map<std::string, hc_term*>::iterator it;
+	it = all_token.find(attr);
+	return (it != all_token.end());
+}
+
+void
+hc_system::register_token(hc_term* attr){
+	HL_CK(attr != hl_null);
+	if(! has_token(attr->get_name())){
+		all_token[attr->get_name()] = attr;
+		printf("ADDING_TOKEN %s\n", attr->get_name());
+	}
+}
+
+bool
 hc_system::has_const(const char* attr){
 	std::map<std::string, hc_term*>::iterator it;
 	it = all_const.find(attr);
@@ -147,6 +169,19 @@ hc_system::call_all_registered_methods(){
 		std::cout << "CALLING METHODS FOR CLASS " << it->first << '\n';
 		it->second->call_all_methods();
 		std::cout << "===========================================================\n";
+	}
+}
+
+void
+hc_system::init_all_token(){
+	std::cout << "---------------------------------------------------------------\n";
+	auto it = all_token.begin();
+	for(; it != all_token.end(); ++it){
+		hc_token_current_val++;
+		hc_value<hl_token_t>* tok = (hc_value<hl_token_t>*)(it->second);
+		tok->val = hc_token_current_val;
+		printf("INITING TOKEN  %s = %ld \n", it->first.c_str(), hc_token_current_val);
+		//std::cout << "INITING TOKEN " << it->first << '\n';
 	}
 }
 
@@ -434,6 +469,16 @@ hc_send_term::print_term(){
 
 	HC_PRT_TERM_INDENT--;
 	printf(")");
+}
+
+const char*
+hcell::get_attr_nm(const char* pfix, const char* sfix){
+	static hl_ostringstream result;
+	result << pfix << get_class_name() << "_" << sfix;
+	const char* rr = strdup(result.str().c_str());
+	result.str("");
+	//printf("TOK_NM= %s\n", rr);
+	return rr;
 }
 
 hc_term&

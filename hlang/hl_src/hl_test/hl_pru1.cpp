@@ -86,9 +86,8 @@ void hl_test_1(int argc, char *argv[])
 	
 	printf("######################################################\n");
 	printf("######################################################\n");
-	
-	HLANG_SYS().init_all_attributes();
-	HLANG_SYS().call_all_registered_methods();
+
+	HLANG_SYS().init_sys();
 	
 	printf("\n End of Using bj_mchl_test_1\n");
 }

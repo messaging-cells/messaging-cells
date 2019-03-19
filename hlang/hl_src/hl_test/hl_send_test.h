@@ -5,19 +5,10 @@
 
 #include "hlang.hh"
 
-
-enum snd_tok_t : hl_token_t {
-	tk_snd_invalid,
-	tk_snd_start,
-	tk_snd_val1,
-	tk_snd_val2,
-	tk_snd_add,
-};
-
-htoken(pr_tok_snd_start, tk_snd_start);
-htoken(pr_tok_snd_val1, tk_snd_val1);
-htoken(pr_tok_snd_val2, tk_snd_val2);
-htoken(pr_tok_snd_add, tk_snd_add);
+htoken(pr_tok_snd_start);
+htoken(pr_tok_snd_val1);
+htoken(pr_tok_snd_val2);
+htoken(pr_tok_snd_add);
 
 class cls_snd;
 
