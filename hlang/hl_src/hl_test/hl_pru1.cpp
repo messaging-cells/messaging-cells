@@ -5,6 +5,31 @@
 #include "hlang.hh"
 #include "hl_pru1.h"
 
+htoken(pr_tok_snd_start);
+htoken(pr_tok_snd_val1);
+htoken(pr_tok_snd_val2);
+htoken(pr_tok_snd_add);
+
+hdbg_pre_hh(cls_A1, 
+R"cod(
+	/* this is just a comment for pre hh cod */
+)cod");
+
+hdbg_pos_hh(cls_A1,
+R"cod(
+	/* this is just a comment for pos hh cod */
+)cod");
+
+hdbg_pre_cpp(cls_A1,
+R"cod(
+	/* this is just a comment for pre cpp cod */
+)cod");
+
+hdbg_pos_cpp(cls_A1,
+R"cod(
+	/* this is just a comment for pos cpp cod */
+)cod");
+
 hcell_class_def(cls_A1);
 hcell_class_def(cls_A2);
 hcell_class_def(cls_A3);
@@ -17,7 +42,6 @@ hnucleus_def(cls_A1, central, (
 ));
 
 hmethod_def(cls_A1, mth01, (
-	(t1 = bj_tok_pru_get),
 	(r1 = (o1 + o2)),
 	(o2 = (r2 + r1)),
 	(r1 = r2) = (r4 + r5),
@@ -57,7 +81,8 @@ hmethod_def(cls_A1, mth03, (
 
 hmethod_def(cls_A2, mth01, (
 	hif(v1) >> (~ o1 + ! o2),
-	(r1->o4) + v2
+	(r1->o4) + v2,
+	hcon(k2)
 ));
 
 hl_string pru_str = "prueba_1";
@@ -87,13 +112,13 @@ class CLS_AA {};
 class CLS_BB : public CLS_AA {};
 class CLS_CC : public CLS_BB {};
 
+hconst(kk1, 123);
+
 void hl_test_1(int argc, char *argv[])
 {
 	printf("bj_mchl_test_1 \n");
 	
-	hexternal(CLS_A, e1);
-	hconst(long, k1, 123);
-	
+	haddress(CLS_A, e1);
 	
 	printf("######################################################\n");
 

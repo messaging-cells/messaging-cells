@@ -12,12 +12,32 @@
 
 #define HL_PATH_MAX PATH_MAX
 
+FILE*
+file_open(const char* nm){
+	FILE* ff = fopen(nm, "w+");
+	if(ff == NULL){
+		fprintf(stderr, "Cannot open file %s\n", nm);
+		hl_abort_func(0, "ABORTING. Cannot open file.\n");
+	}
+	return ff;
+}
+
 bool
 file_rename(hl_string& old_pth, hl_string& nw_pth){
 	int ok = rename(old_pth.c_str(), nw_pth.c_str());
 	if(ok != 0){
 		fprintf(stderr, "ERROR. Cannot rename file %s  to %s \n", old_pth.c_str(), nw_pth.c_str());
 		hl_abort_func(0, "ABORTING. Cannot rename file.\n");
+	}
+	return (ok == 0);
+}
+
+bool
+file_remove(hl_string& pth){
+	int ok = remove(pth.c_str());
+	if(ok != 0){
+		fprintf(stderr, "ERROR. Cannot remove file %s \n", pth.c_str());
+		hl_abort_func(0, "ABORTING. Cannot remove file.\n");
 	}
 	return (ok == 0);
 }
@@ -47,6 +67,42 @@ file_newer_than(hl_string the_pth, time_t tm1){
 
 	bool nwr_than = ok1 && (dtm > 0);
 	return nwr_than;
+}
+
+void
+file_update(hl_string& tmp_nm, hl_string& hh_nm){
+	if(! file_exists(hh_nm)){
+		fprintf(stdout, "CREATING FILE: %s \n\n", hh_nm.c_str());
+		file_rename(tmp_nm, hh_nm); 
+	} else {
+		hl_uchar_t tmp_sh2[NUM_BYTES_SHA2];
+		hl_memset(tmp_sh2, 0, NUM_BYTES_SHA2);
+		
+		int ok = sha2_file(tmp_nm.c_str(), tmp_sh2, 0);
+		if(ok != 0){
+			fprintf(stderr, "ERROR. Cannot calc sha2 of file %s\n", tmp_nm.c_str());
+			hl_abort_func(0, "ABORTING. Cannot calc sha2.\n");
+		}
+		
+		hl_uchar_t old_sh2[NUM_BYTES_SHA2];
+		hl_memset(old_sh2, 0, NUM_BYTES_SHA2);
+		
+		int ok2 = sha2_file(hh_nm.c_str(), old_sh2, 0);
+		if(ok2 != 0){
+			fprintf(stderr, "ERROR. Cannot calc sha2 of file %s\n", hh_nm.c_str());
+			hl_abort_func(0, "ABORTING. Cannot calc sha2.\n");
+		}
+		
+		int cmp_val = memcmp(tmp_sh2, old_sh2, NUM_BYTES_SHA2);
+		if(cmp_val != 0){
+			fprintf(stdout, "FILES: \n %s \n %s \n DIFFER. REPLACING old file.\n", 
+					tmp_nm.c_str(), hh_nm.c_str());
+			
+			file_rename(tmp_nm, hh_nm); 
+		} else {
+			fprintf(stdout, "SKIPPING FILE: %s (IDENTICAL)\n", hh_nm.c_str());
+		}
+	}
 }
 
 bool
@@ -197,12 +253,13 @@ get_errno_str(long val_errno){
 	return out_str;
 }
 
+hl_string get_upper_str(const hl_string& nam){
+	hl_string out = nam;
+	std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+	return out;
+}
 
 long	hc_term::HC_PRT_TERM_INDENT = 0;
-
-long hc_token_current_val = 11;
-const char* hc_token_type_nam = "hl_token_t";
-
 
 hc_system& HLANG_SYS(){
 	static hc_system the_sys;
@@ -284,51 +341,82 @@ hc_system::register_reference(hcell* obj, hc_term* attr){
 }
 
 bool
-hc_system::has_token(const char* attr){
+hc_system::has_address(const char* attr){
 	std::map<std::string, hc_term*>::iterator it;
-	it = all_token.find(attr);
-	return (it != all_token.end());
+	it = all_glb_address.find(attr);
+	return (it != all_glb_address.end());
 }
 
 void
-hc_system::register_token(hc_term* attr){
+hc_system::register_address(hc_term* attr){
 	HL_CK(attr != hl_null);
-	if(! has_token(attr->get_name())){
-		all_token[attr->get_name()] = attr;
-		printf("ADDING_TOKEN %s\n", attr->get_name());
+	if(! has_address(attr->get_name())){
+		all_glb_address[attr->get_name()] = attr;
+		printf("ADDING_ADDRESS %s\n", attr->get_name());
 	}
 }
 
-bool
-hc_system::has_const(const char* attr){
-	std::map<std::string, hc_term*>::iterator it;
-	it = all_const.find(attr);
-	return (it != all_const.end());
-}
-
-void
-hc_system::register_const(hc_term* attr){
-	HL_CK(attr != hl_null);
-	if(! has_const(attr->get_name())){
-		all_const[attr->get_name()] = attr;
-		printf("ADDING_CONST %s\n", attr->get_name());
+hc_term&
+hc_system::add_tok(const char* nm){
+	HL_CK(nm != hl_null);
+	hc_global* pt_glb = hl_null;
+	
+	auto it = all_glb_token.find(nm);
+	if(it != all_glb_token.end()){
+		fprintf(stderr, "Token already added %s\n", nm);
+		hl_abort_func(0, "ABORTING. Token already added.\n");
+		//return false;
 	}
+	pt_glb = new hc_global(nm);
+	all_glb_token[nm] = pt_glb;
+	printf("ADDING_GLB_TOKEN %s\n", nm);
+	return *pt_glb;
 }
 
-bool
-hc_system::has_external(const char* attr){
-	std::map<std::string, hc_term*>::iterator it;
-	it = all_external.find(attr);
-	return (it != all_external.end());
+hc_term&
+hc_system::get_tok(const char* nm){
+	HL_CK(nm != hl_null);
+	hc_global* pt_glb = hl_null;
+	
+	auto it = all_glb_token.find(nm);
+	if(it == all_glb_token.end()){
+		fprintf(stderr, "Token %s not existant. Maybe try without quotes?\n", nm);
+		hl_abort_func(0, "ABORTING. Token not existant. Maybe try without quotes?\n");
+	} 
+	pt_glb = it->second;
+	return *pt_glb;
 }
 
-void
-hc_system::register_external(hc_term* attr){
-	HL_CK(attr != hl_null);
-	if(! has_external(attr->get_name())){
-		all_external[attr->get_name()] = attr;
-		printf("ADDING_EXTERNAL %s\n", attr->get_name());
+hc_term&
+hc_system::add_con(const char* nm, const char* val){
+	HL_CK(nm != hl_null);
+	hc_global* pt_glb = hl_null;
+	
+	auto it = all_glb_const.find(nm);
+	if(it != all_glb_const.end()){
+		fprintf(stderr, "Constant already added %s\n", nm);
+		hl_abort_func(0, "ABORTING. Constant already added.\n");
+		//return false;
 	}
+	pt_glb = new hc_global(nm);
+	pt_glb->val = val;
+	all_glb_const[nm] = pt_glb;
+	printf("ADDING_GLB_CONSTANT %s\n", nm);
+	return *pt_glb;
+}
+
+hc_term&
+hc_system::get_con(const char* nm){
+	HL_CK(nm != hl_null);
+	hc_global* pt_glb = hl_null;
+	
+	auto it = all_glb_const.find(nm);
+	if(it == all_glb_const.end()){
+		fprintf(stderr, "Constant %s not existant. Maybe try without quotes?\n", nm);
+		hl_abort_func(0, "ABORTING. Constant not existant. Maybe try without quotes?\n");
+	} 
+	pt_glb = it->second;
+	return *pt_glb;
 }
 
 void
@@ -369,13 +457,13 @@ hc_system::call_all_registered_methods(){
 void
 hc_system::init_all_token(){
 	std::cout << "---------------------------------------------------------------\n";
-	auto it = all_token.begin();
-	for(; it != all_token.end(); ++it){
-		hc_token_current_val++;
-		hc_value<hl_token_t>* tok = (hc_value<hl_token_t>*)(it->second);
-		tok->val = hc_token_current_val;
-		printf("INITING TOKEN  %s = %ld \n", it->first.c_str(), hc_token_current_val);
-		//std::cout << "INITING TOKEN " << it->first << '\n';
+	long token_current_val = first_token_val;
+	auto it = all_glb_token.begin();
+	for(; it != all_glb_token.end(); ++it){
+		token_current_val++;
+		hc_global* tok = (hc_global*)(it->second);
+		tok->val = std::to_string(token_current_val);
+		printf("INITING TOKEN  %s = %ld \n", it->first.c_str(), token_current_val);
 	}
 }
 
@@ -420,9 +508,6 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_hif_op:
 			tok = "hif";
 		break;
-		case hc_helse_op:
-			tok = "helse";
-		break;
 		case hc_helif_op:
 			tok = "helif";
 		break;
@@ -438,6 +523,9 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_hcase_op:
 			tok = "hcase";
 		break;
+		case hc_helse_op:
+			tok = "helse";
+		break;
 		case hc_hbreak_op:
 			tok = "hbreak";
 		break;
@@ -446,6 +534,9 @@ hc_get_token(hc_syntax_op_t op){
 		break;
 		case hc_hreturn_op:
 			tok = "hreturn";
+		break;
+		case hc_habort_op:
+			tok = "habort";
 		break;
 		case hc_assig_op1:
 			tok = "=1";
@@ -582,6 +673,62 @@ hkeyword(helse);
 hkeyword(hbreak);
 hkeyword(hcontinue);
 hkeyword(hreturn);
+hkeyword(habort);
+
+bool
+hdbg_txt_pre_hh(const char* cls, const char* cod){
+	HL_CK(cls != hl_null);
+	hclass_reg* cls_reg = HLANG_SYS().get_class_reg(cls);
+	if(cls_reg->pre_hh_cod == hl_null){
+		cls_reg->pre_hh_cod = cod;
+	} else {
+		fprintf(stderr, "pre_hh_cod for %s already defined\n", cls);
+		hl_abort_func(0, "ABORTING. pre_hh_cod already defined.\n");
+	}
+	return true;
+}
+
+bool
+hdbg_txt_pos_hh(const char* cls, const char* cod){
+	HL_CK(cls != hl_null);
+	hclass_reg* cls_reg = HLANG_SYS().get_class_reg(cls);
+	if(cls_reg->pos_hh_cod == hl_null){
+		cls_reg->pos_hh_cod = cod;
+	} else {
+		fprintf(stderr, "pos_hh_cod for %s already defined\n", cls);
+		hl_abort_func(0, "ABORTING. pos_hh_cod already defined.\n");
+	}
+	return true;
+}
+
+bool
+hdbg_txt_pre_cpp(const char* cls, const char* cod){
+	HL_CK(cls != hl_null);
+	hclass_reg* cls_reg = HLANG_SYS().get_class_reg(cls);
+	if(cls_reg->pre_cpp_cod == hl_null){
+		cls_reg->pre_cpp_cod = cod;
+	} else {
+		fprintf(stderr, "pre_cpp_cod for %s already defined\n", cls);
+		hl_abort_func(0, "ABORTING. pre_cpp_cod already defined.\n");
+	}
+	return true;
+}
+
+bool
+hdbg_txt_pos_cpp(const char* cls, const char* cod){
+	HL_CK(cls != hl_null);
+	hclass_reg* cls_reg = HLANG_SYS().get_class_reg(cls);
+	if(cls_reg->pos_cpp_cod == hl_null){
+		cls_reg->pos_cpp_cod = cod;
+	} else {
+		fprintf(stderr, "pos_cpp_cod for %s already defined\n", cls);
+		hl_abort_func(0, "ABORTING. pos_cpp_cod already defined.\n");
+	}
+	return true;
+}
+
+htoken(hmsg_tok);
+hconst(hmsg_val, 0);
 
 void 
 hc_term::print_term(){
@@ -697,70 +844,221 @@ hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
 }
 
 void
-hclass_reg::print_hh_file(){
-	hl_string tmp_nm = get_tmp_hh_name();
-	FILE* ff = open_hh_file(tmp_nm.c_str());
-	const char* df_str = get_hh_define_str().c_str();
-	fprintf(ff, R"(
-#ifndef %s
-#define %s
-	)", df_str, df_str);
-	
-	fclose(ff);
-	
-	hl_string hh_nm = get_hh_name();
-	if(! file_exists(hh_nm)){
-		fprintf(stdout, "CREATING FILE: %s \n\n", hh_nm.c_str());
-		file_rename(tmp_nm, hh_nm); 
-	} else {
-		hl_uchar_t tmp_sh2[NUM_BYTES_SHA2];
-		hl_memset(tmp_sh2, 0, NUM_BYTES_SHA2);
-		
-		int ok = sha2_file(tmp_nm.c_str(), tmp_sh2, 0);
-		if(ok != 0){
-			fprintf(stderr, "ERROR. Cannot calc sha2 of file %s\n", tmp_nm.c_str());
-			hl_abort_func(0, "ABORTING. Cannot calc sha2.\n");
-		}
-		
-		hl_uchar_t old_sh2[NUM_BYTES_SHA2];
-		hl_memset(old_sh2, 0, NUM_BYTES_SHA2);
-		
-		int ok2 = sha2_file(hh_nm.c_str(), old_sh2, 0);
-		if(ok2 != 0){
-			fprintf(stderr, "ERROR. Cannot calc sha2 of file %s\n", hh_nm.c_str());
-			hl_abort_func(0, "ABORTING. Cannot calc sha2.\n");
-		}
-		
-		int cmp_val = memcmp(tmp_sh2, old_sh2, NUM_BYTES_SHA2);
-		if(cmp_val != 0){
-			fprintf(stdout, "FILES: \n %s \n %s \n DIFFER. REPLACING old file.\n", 
-					tmp_nm.c_str(), hh_nm.c_str());
-			
-			file_rename(tmp_nm, hh_nm); 
-		} else {
-			fprintf(stdout, "SKIPPING FILE: %s (IDENTICAL)\n", hh_nm.c_str());
-		}
-	}
-}
-
-
-void
 hc_system::generate_hh_files(){
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
-		std::cout << "GENERATING HH FILE FOR CLASS " << it->first << '\n';
 		it->second->print_hh_file();
-		std::cout << "===========================================================\n";
 	}
 }
 
 
 void
 hc_system::generate_cpp_code(){
-	hl_string cpp_dr = get_cpp_dir_nam();
+	hl_string cpp_dr = get_cpp_dir_name();
 	if(! file_exists(cpp_dr)){
 		make_dir(cpp_dr);
 	}
 	change_dir(cpp_dr);
+	print_hh_file();
+	print_glbs_hh_file();
 	generate_hh_files();
 }
+
+void
+hc_system::print_hh_file(){
+	hl_string tmp_nm = get_tmp_hh_name();
+	if(file_exists(tmp_nm)){
+		file_remove(tmp_nm);
+	}
+	FILE* ff = file_open(tmp_nm.c_str());
+	hl_string df_str = get_hh_define_str().c_str();
+
+	fprintf(ff, "#ifndef %s\n", df_str.c_str());
+	fprintf(ff, "#define %s\n", df_str.c_str());
+		
+	fprintf(ff, "\n");
+	auto it = all_classes.begin();
+	for(; it != all_classes.end(); ++it){
+		hclass_reg* cls_rg = it->second;
+		hl_string hh_nm = cls_rg->get_hh_name();
+		fprintf(ff, "#include \"%s\"\n", hh_nm.c_str());
+	}
+	fprintf(ff, "\n");
+	
+	fprintf(ff, "#endif // %s\n", df_str.c_str());
+	
+	fclose(ff);
+	
+	hl_string hh_nm = get_hh_name();
+	file_update(tmp_nm, hh_nm);
+	if(file_exists(tmp_nm)){
+		file_remove(tmp_nm);
+	}
+}
+
+void
+hc_system::print_glbs_hh_file(){
+	hl_string tmp_nm = get_glbs_tmp_hh_name();
+	if(file_exists(tmp_nm)){
+		file_remove(tmp_nm);
+	}
+	FILE* ff = file_open(tmp_nm.c_str());
+	hl_string df_str = get_glbs_hh_define_str().c_str();
+
+	fprintf(ff, "#ifndef %s\n", df_str.c_str());
+	fprintf(ff, "#define %s\n", df_str.c_str());
+		
+	fprintf(ff, "\n");
+	auto it1 = all_classes.begin();
+	for(; it1 != all_classes.end(); ++it1){
+		const char* cls_nm = it1->first.c_str();
+		fprintf(ff, "class %s;\n", cls_nm);
+	}
+	fprintf(ff, "\n");
+
+	fprintf(ff, "enum %s_idx_t : mck_handler_idx_t {\n", project_nam.c_str());
+	fprintf(ff, "\tidx_invalid = %s,\n", first_handler_idx.c_str());
+	it1 = all_classes.begin();
+	for(; it1 != all_classes.end(); ++it1){
+		const char* cls_nm = it1->first.c_str();
+		fprintf(ff, "\tidx_%s,\n", cls_nm);
+	}
+	fprintf(ff, "\tidx_total_%s\n", project_nam.c_str());
+	fprintf(ff, "};\n");
+	fprintf(ff, "\n");
+	
+	auto it2 = all_glb_token.begin();
+	for(; it2 != all_glb_token.end(); ++it2){
+		hc_global* tok = (hc_global*)(it2->second);
+		fprintf(ff, "#define %s %s \n", it2->first.c_str(), tok->val.c_str());
+	}
+	fprintf(ff, "\n");
+	
+	auto it3 = all_glb_const.begin();
+	for(; it3 != all_glb_const.end(); ++it3){
+		hc_global* con = (hc_global*)(it3->second);
+		fprintf(ff, "#define %s %s \n", it3->first.c_str(), con->val.c_str());
+	}
+	fprintf(ff, "\n");
+	
+	fprintf(ff, "#endif // %s\n", df_str.c_str());
+	
+	fclose(ff);
+	
+	hl_string hh_nm = get_glbs_hh_name();
+	file_update(tmp_nm, hh_nm);
+	if(file_exists(tmp_nm)){
+		file_remove(tmp_nm);
+	}
+}
+
+void
+hclass_reg::print_hh_file(){
+	hl_string tmp_nm = get_tmp_hh_name();
+	if(file_exists(tmp_nm)){
+		file_remove(tmp_nm);
+	}
+	FILE* ff = file_open(tmp_nm.c_str());
+	hl_string df_str = get_hh_define_str();
+	hl_string pr_glbs_hh_str = HLANG_SYS().get_glbs_hh_name();
+	fprintf(ff, R"(
+#ifndef %s
+#define %s
+		
+#include "cell.hh"
+#include "%s"
+)", df_str.c_str(), df_str.c_str(), pr_glbs_hh_str.c_str());
+	
+	fprintf(ff, "\n\n\n");
+	if(pre_hh_cod != hl_null){
+		fprintf(ff, "%s\n", pre_hh_cod);
+		fprintf(ff, "\n\n\n");
+	}
+	
+	print_hh_class_top_decl(ff);
+	print_hh_class_decl_content(ff);
+	fprintf(ff, "};\n");
+	
+	fprintf(ff, "\n\n\n");
+	if(pos_hh_cod != hl_null){
+		fprintf(ff, "%s\n", pos_hh_cod);
+		fprintf(ff, "\n\n\n");
+	}
+	
+	fprintf(ff, R"(
+#endif // %s
+)", df_str.c_str());
+	
+	fclose(ff);
+	
+	hl_string hh_nm = get_hh_name();
+	file_update(tmp_nm, hh_nm);
+	if(file_exists(tmp_nm)){
+		file_remove(tmp_nm);
+	}
+}
+
+void
+hclass_reg::print_hh_class_top_decl(FILE* ff){
+	
+	const char* cls_nm = nam.c_str();
+	fprintf(ff, R"(
+void %s_handler(missive* msv);
+		
+class mc_aligned %s : public cell {
+public:
+	MCK_DECLARE_MEM_METHODS(%s)
+	
+	virtual mc_opt_sz_fn 
+	mck_handler_idx_t	get_cell_id(){
+		return idx_%s;
+	}
+
+	%s(){
+		handler_idx = idx_%s;
+	}
+
+	~%s(){}
+
+	void handler(missive* msv);
+	
+)", cls_nm, cls_nm, cls_nm, cls_nm, cls_nm, cls_nm, cls_nm);
+
+	fprintf(ff, "\n\n");
+	
+}
+
+void
+hclass_reg::print_hh_class_decl_content(FILE* ff){
+	auto it1 = values.begin();
+	for(; it1 != values.end(); ++it1){
+		hc_term* trm = (hc_term*)(it1->second);
+		fprintf(ff, "\t%s %s = 0;\n", trm->get_type(), trm->get_name());
+	}
+	fprintf(ff, "\n\n");
+	
+	auto it2 = references.begin();
+	for(; it2 != references.end(); ++it2){
+		hc_term* trm = (hc_term*)(it2->second);
+		fprintf(ff, "\t%s* %s = mc_null;\n", trm->get_type(), trm->get_name());
+	}
+	fprintf(ff, "\n\n");
+	
+	auto it3 = methods.begin();
+	for(; it3 != methods.end(); ++it3){
+		hc_mth_def* mth = (*it3);
+		fprintf(ff, "\tvoid %s();\n", mth->get_name());
+	}
+	fprintf(ff, "\n\n");
+}
+
+/*
+ enum ph_hdlr_idx_t : mck_handler_idx_t {
+	idx_invalid = mck_tot_base_cell_classes,
+	idx_chopstick,
+	idx_philosopher,
+	idx_last_invalid,
+	idx_total
+};
+
+*/

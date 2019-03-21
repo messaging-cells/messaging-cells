@@ -34,8 +34,6 @@ class cls_A1 : public hcell {
 public:
 	hcell_class(cls_A1);
 
-	
-	htok(t1);
 	hchar(v1);
 	hint(v2);
 	hlong(o1);
@@ -71,7 +69,6 @@ public:
 	~cls_A1(){}
 	
 };
-
 
 class cls_A2 : public hcell {
 public:
@@ -131,12 +128,6 @@ public:
 	const char* get_cls_nam(){
 		return "pru_hcell";
 	}
-	
-	//operator obj_t() { return val; }
-	
-	//hattribute(int, nam);
-
-	//hmethod(nam);
 	
 	pru_hcell(){
 		init_pru_hcell();

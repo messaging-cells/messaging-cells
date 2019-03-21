@@ -48,10 +48,13 @@ hlang declarations.
 
 #include "dbg_util.h"
 
+FILE* file_open(const char* nm);
 bool file_rename(hl_string& old_pth, hl_string& nw_pth);
+bool file_remove(hl_string& pth);
 bool file_exists(hl_string th_pth);
 bool file_touch(hl_string the_pth);
 bool file_newer_than(hl_string the_pth, time_t tm1);
+void file_update(hl_string& tmp_nm, hl_string& hh_nm);
 bool make_dir(hl_string the_pth, mode_t mod = 0700);
 bool change_dir(hl_string the_pth);
 hl_string path_get_running_path();
@@ -62,6 +65,8 @@ bool path_ends_with(hl_string& the_str, hl_string& the_suf);
 hl_string path_get_directory(hl_string the_pth, bool add_last_dir_sep);
 hl_string path_get_name(hl_string the_pth);
 hl_string get_errno_str(long val_errno);
+hl_string get_upper_str(const hl_string& lower);
+
 
 typedef uint64_t hl_token_t;
 typedef uint64_t hl_value_t;
@@ -72,11 +77,12 @@ typedef int64_t hc_chip_idx;
 
 class hc_system;
 class hc_term;
+class hc_global;
+class hc_keyword;
 class hc_mth_def;
 class hcell;
 
 typedef void (*hc_caller_t)();
-
 
 class hclass_reg {
 public:
@@ -86,10 +92,18 @@ public:
 	std::list<hc_mth_def*> methods;
 	hc_mth_def* nucleus = hl_null;
 	hc_caller_t initer = hl_null;
+	const char* pre_hh_cod = hl_null;
+	const char* pos_hh_cod = hl_null;
+	const char* pre_cpp_cod = hl_null;
+	const char* pos_cpp_cod = hl_null;
 	
 	hclass_reg(){
 		nucleus = hl_null;
 		initer = hl_null;
+		pre_hh_cod = hl_null;
+		pos_hh_cod = hl_null;
+		pre_cpp_cod = hl_null;
+		pos_cpp_cod = hl_null;
 	}
 
 	virtual ~hclass_reg(){}
@@ -106,22 +120,14 @@ public:
 	}
 	
 	hl_string get_hh_define_str(){
-		hl_string out = nam;
-		std::transform(out.begin(), out.end(), out.begin(), ::toupper);
+		hl_string out = get_upper_str(nam);
 		out += "_HH_FILE";
 		return out;
 	}
 	
-	FILE* open_hh_file(const char* nm){
-		FILE* ff = fopen(nm, "w+");
-		if(ff == NULL){
-			fprintf(stderr, "Cannot open file %s\n", nm);
-			hl_abort_func(0, "ABORTING. Cannot open file.\n");
-		}
-		return ff;
-	}
-	
 	void print_hh_file();
+	void print_hh_class_top_decl(FILE* ff);
+	void print_hh_class_decl_content(FILE* ff);
 
 	void call_all_methods();
 };
@@ -130,31 +136,42 @@ extern hc_system& HLANG_SYS();
 
 class hc_system {
 public:
-	std::map<hl_string, hclass_reg*> all_classes;
-	std::map<hl_string, hc_term*> all_const;
-	std::map<hl_string, hc_term*> all_token;
-	std::map<hl_string, hc_term*> all_external;
-	
+	long first_token_val;
+	hl_string first_handler_idx;
 	hl_string project_nam;
+
+	std::map<hl_string, hclass_reg*> all_classes;
+	
+	std::map<hl_string, hc_term*> all_glb_address;
+	std::map<hl_string, hc_global*> all_glb_token;
+	std::map<hl_string, hc_global*> all_glb_const;
 
 	hc_system(){
 		init_me();
 	}
 
 	virtual ~hc_system(){}
+
+	virtual
+	void init_me(int caller = 0){
+		project_nam = "hl_generated_output";
+		first_token_val = 11;
+		first_handler_idx = "9";
+	}
+	
 	
 	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = hl_null);
 	void register_method(const char* cls, hc_mth_def* mth, bool is_nucl);
 	void register_value(hcell* obj, hc_term* attr);
 	void register_reference(hcell* obj, hc_term* attr);
 
-	bool has_token(const char* attr);
-	bool has_const(const char* attr);
-	bool has_external(const char* attr);
+	bool has_address(const char* attr);
+	void register_address(hc_term* attr);
 
-	void register_token(hc_term* attr);
-	void register_const(hc_term* attr);
-	void register_external(hc_term* attr);
+	hc_term& add_tok(const char* nm);
+	hc_term& add_con(const char* nm, const char* val);
+	hc_term& get_tok(const char* nm);
+	hc_term& get_con(const char* nm);
 	
 	void init_all_token();
 	void init_all_attributes();
@@ -169,14 +186,40 @@ public:
 	void generate_hh_files();
 	void generate_cpp_code();
 	
-	hl_string get_cpp_dir_nam(){
+	hl_string get_cpp_dir_name(){
 		return project_nam + "_cpp";
 	}
 	
-	virtual
-	void init_me(int caller = 0){
-		project_nam = "hl_generated_output";
+	hl_string get_glbs_tmp_hh_name(){
+		return project_nam + "_glbs_tmp.hh";
 	}
+	
+	hl_string get_glbs_hh_name(){
+		return project_nam + "_glbs.hh";
+	}
+	
+	hl_string get_glbs_hh_define_str(){
+		hl_string out = get_upper_str(project_nam);
+		out += "_GLBS_HH_FILE";
+		return out;
+	}
+	
+	hl_string get_tmp_hh_name(){
+		return project_nam + "_tmp.hh";
+	}
+	
+	hl_string get_hh_name(){
+		return project_nam + ".hh";
+	}
+	
+	hl_string get_hh_define_str(){
+		hl_string out = get_upper_str(project_nam);
+		out += "_HH_FILE";
+		return out;
+	}
+	
+	void print_glbs_hh_file();
+	void print_hh_file();
 	
 };
 
@@ -205,15 +248,17 @@ enum	hc_syntax_op_t {
 	
 	hc_hme_op,	// hme
 	hc_hif_op,	// hif
-	hc_helse_op,	// helse
 	hc_helif_op,	// helif
 	hc_hfor_op,	// hfor
 	hc_hwhile_op,	// hwhile
 	hc_hswitch_op,	// hswitch
 	hc_hcase_op,	// hcase
+
+	hc_helse_op,	// helse
 	hc_hbreak_op,	// hbreak
 	hc_hcontinue_op,	// hcontinue
 	hc_hreturn_op,	// hreturn
+	hc_habort_op,	// hreturn
 	
 	hc_assig_op1,	// =
 	hc_assig_op2,	// =
@@ -358,8 +403,18 @@ public:
 	}
 	
 	virtual 
+	const char*	get_type(){
+		return "INVALID_TYPE";
+	}	
+
+	virtual 
 	const char*	get_name(){
 		return "INVALID_NAME";
+	}	
+
+	virtual 
+	hl_string	get_value(){
+		return "0";
 	}	
 
 	virtual 
@@ -375,6 +430,44 @@ hc_term&	hwhile(hc_term& o1);
 hc_term&	hswitch(hc_term& o1);
 hc_term&	hcase(hc_term& o1);
 hc_term&	hdbg(const char* cod);
+
+bool	hdbg_txt_pre_hh(const char* cls, const char* cod);
+bool	hdbg_txt_pos_hh(const char* cls, const char* cod);
+bool	hdbg_txt_pre_cpp(const char* cls, const char* cod);
+bool	hdbg_txt_pos_cpp(const char* cls, const char* cod);
+
+#define hdbg_pre_hh(cls, cod) bool pre_hh_cod_ ## cls ## _ok = hdbg_txt_pre_hh(#cls, cod)
+#define hdbg_pos_hh(cls, cod) bool pos_hh_cod_ ## cls ## _ok = hdbg_txt_pos_hh(#cls, cod)
+#define hdbg_pre_cpp(cls, cod) bool pre_cpp_cod_ ## cls ## _ok = hdbg_txt_pre_cpp(#cls, cod)
+#define hdbg_pos_cpp(cls, cod) bool pos_cpp_cod_ ## cls ## _ok = hdbg_txt_pos_cpp(#cls, cod)
+
+class hc_global : public hc_term {
+public:
+	hl_string nam;
+	hl_string val;
+	
+	virtual	~hc_global(){}
+	
+	hc_global(hl_string the_nam){
+		nam = the_nam;
+	}
+
+	virtual 
+	const char*	get_name(){
+		return nam.c_str();
+	}
+	
+	virtual 
+	void print_term(){
+		std::cout << ' ' << get_name() << ' ';
+	}
+
+	virtual 
+	hl_string	get_value(){
+		return val;
+	}	
+};
+
 
 class hc_unary_term : public hc_term {
 public:
@@ -541,15 +634,9 @@ public:
 	}
 };
 
-extern long hc_token_current_val;
-extern const char* hc_token_type_nam;
-
 template<class obj_t>
 class hc_value : public hc_term {
 public:
-	static hc_value<obj_t>	HC_MSV_VAL;
-	static hc_value<obj_t>	HC_MSV_TOK;
-
 	const char* typ;
 	const char* nam;
 	obj_t	val;
@@ -580,11 +667,8 @@ public:
 			if(owner != hl_null){
 				HLANG_SYS().register_value(owner, this);
 			} else {
-				if(typ == hc_token_type_nam){
-					HLANG_SYS().register_token(this);
-				} else {
-					HLANG_SYS().register_const(this);
-				}
+				printf("FIX_THIS_CODE. %s %s \n", typ, nam);
+				//hl_abort_func(0, "FIX_THIS_CODE \n");
 			}
 		} 
 		return *this;
@@ -607,7 +691,7 @@ public:
 		HC_DEFINE_BINARY_OP_BASE(hc_assig_op3);
 	}
 
-	void operator ()(obj_t aa) { val = aa; }	// as unary func. used as init func
+	//void operator ()(obj_t aa) { val = aa; }	// as unary func. used as init func
 	hc_term& operator ()() { return *get_src(); }	// as empty func
 	
 	void  operator = (obj_t aa) { 
@@ -616,6 +700,11 @@ public:
 
 	//operator obj_t() { return ref; }		// cast op
 	 
+	virtual 
+	const char*	get_type(){
+		return typ;
+	}	
+
 	virtual 
 	const char*	get_name(){
 		return nam;
@@ -631,22 +720,24 @@ public:
 	hc_term*	get_src();
 };
 
-template<class obj_t>
-hc_value<obj_t> hc_value<obj_t>::HC_MSV_VAL{hl_null, hl_null};
-
-template<class obj_t>
-hc_value<obj_t> hc_value<obj_t>::HC_MSV_TOK{hl_null, hl_null};
-
-class hc_keyword : public hc_value<hc_syntax_op_t> {
+class hc_keyword : public hc_term {
 public:
+	hl_string nam;
+	
 	virtual	~hc_keyword(){}
 	
-	hc_keyword(const char* the_nam) : hc_value("hc_keyword", the_nam){
+	hc_keyword(hl_string the_nam){
+		nam = the_nam;
 	}
-		
+
+	virtual 
+	const char*	get_name(){
+		return nam.c_str();
+	}
+	
 	virtual 
 	void print_term(){
-		std::cout << ' ' << nam << ' ';
+		std::cout << ' ' << get_name() << ' ';
 	}
 };
 
@@ -674,7 +765,7 @@ public:
 		if(owner != hl_null){
 			HLANG_SYS().register_reference(owner, this);
 		} else {
-			HLANG_SYS().register_external(this);
+			HLANG_SYS().register_address(this);
 		}
 	}
 	
@@ -742,6 +833,11 @@ public:
 	//operator obj_t() { return ref; }		// cast op
 	
 	virtual 
+	const char*	get_type(){
+		return typ;
+	}	
+
+	virtual 
 	const char*	get_name(){
 		return nam;
 	}
@@ -768,17 +864,19 @@ hcast(hc_reference<cl1_t>& o1){
 	return (cl2_t*)(o1.ref);
 }
 
-#define htok_get(nn, obj) \
-	hc_value<hl_token_t> tk_get_ ## nn{hc_token_type_nam, obj->get_attr_nm("tk_get_", #nn), hl_null} 
+#define hconst(nn, vv) hc_term& nn = HLANG_SYS().add_con(#nn, #vv)
 
-#define htok_set(nn, obj) \
-	hc_value<hl_token_t> tk_set_ ## nn{hc_token_type_nam, obj->get_attr_nm("tk_set_", #nn), hl_null} 
+#define hdeclare_const(nn) extern hc_term& nn
 
+#define htoken(nn) hc_term& nn = HLANG_SYS().add_tok(#nn)
+
+#define hdeclare_token(nn) extern hc_term& nn
+
+#define htok_get(nn, obj) hc_term& tk_get_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_get_", #nn))
+
+#define htok_set(nn, obj) hc_term& tk_set_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_set_", #nn))
+	
 #define htoks_att(nn, obj) htok_get(nn, this); htok_set(nn, this); 
-
-#define htok_base(nn, obj) hc_value<hl_token_t> nn{hc_token_type_nam, #nn, obj} 
-
-#define htoken(nn) htok_base(nn, hl_null)
 
 #define hvalue(tt, nn) htoks_att(nn, this); hc_value<tt> nn{#tt, #nn, this}
 
@@ -786,11 +884,11 @@ hcast(hc_reference<cl1_t>& o1){
 
 #define hkeyword(nn) hc_keyword nn(#nn)
 
-#define hconst(tt, nn, vv) hc_value<tt> nn{#tt, #nn, hl_null, vv}
+#define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
-#define hexternal(tt, nn) hc_reference<tt> nn{#tt, #nn}
+#define htok(nn) HLANG_SYS().get_tok(#nn)
+#define hcon(nn) HLANG_SYS().get_con(#nn)
 
-#define htok(nn) htok_base(nn, this)
 #define hchar(nn) hvalue(char, nn)
 #define hint(nn) hvalue(int, nn)
 #define hlong(nn) hvalue(long, nn)
@@ -807,7 +905,7 @@ extern hc_keyword helse;
 extern hc_keyword hbreak;
 extern hc_keyword hcontinue;
 extern hc_keyword hreturn;
-
+extern hc_keyword habort;
 
 class hc_mth_def : public hc_term {
 public:
@@ -1090,10 +1188,17 @@ hc_reference<obj_t>::get_src(){
 	HC_GET_SOURCE();
 }
 
+hdeclare_const(hmsg_val);
+hdeclare_token(hmsg_tok);
+
 #define hmsg_src(cls) (cls::get_msg_src())
 #define hmsg_ref(cls) (cls::get_msg_ref())
-#define hmsg_val(typ) (hc_value<typ>::HC_MSV_VAL.init_val(#typ, "hmsg_val_" #typ))
-#define hmsg_tok(typ) (hc_value<typ>::HC_MSV_TOK.init_val(#typ, "hmsg_tok_" #typ))
+//define hmsg_val(typ) (hc_value<typ>::HC_MSV_VAL.init_val(#typ, "hmsg_val_" #typ))
+//define hmsg_tok(typ) (hc_value<typ>::HC_MSV_TOK.init_val(#typ, "hmsg_tok_" #typ))
+#define hmsg_val(typ) hcon(hmsg_val)
+#define hmsg_tok(typ) htok(hmsg_tok)
+
+//int HL_PRU_VAL = 0;
 
 #endif		// HLANG_H
 

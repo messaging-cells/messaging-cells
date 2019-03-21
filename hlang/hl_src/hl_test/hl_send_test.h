@@ -5,16 +5,12 @@
 
 #include "hlang.hh"
 
-htoken(pr_tok_snd_start);
-htoken(pr_tok_snd_val1);
-htoken(pr_tok_snd_val2);
-htoken(pr_tok_snd_add);
-
 class cls_snd;
 
-hconst(char, k0, 0);
-hconst(char, k1, 11);
-hconst(int, k2, 123);
+hdeclare_token(pr_tok_snd_start);
+hdeclare_token(pr_tok_snd_val1);
+hdeclare_token(pr_tok_snd_val2);
+hdeclare_token(pr_tok_snd_add);
 
 class cls_snd : public hcell {
 public:
