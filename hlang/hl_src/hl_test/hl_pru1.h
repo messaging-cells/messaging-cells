@@ -34,6 +34,10 @@ class cls_A1 : public hcell {
 public:
 	hcell_class(cls_A1);
 
+	hbool(b1);
+	hbool(b2);
+	hbool(b3);
+	hbool(b4);
 	hchar(v1);
 	hint(v2);
 	hlong(o1);
@@ -57,6 +61,7 @@ public:
 	hmethod(mth01);
 	hmethod(mth02);
 	hmethod(mth03);
+	hmethod(mth04);
 	
 	cls_A1(){
 		o1 = 1;

@@ -43,7 +43,9 @@ func to print a stack trace.
 #define HL_MAX_CALL_STACK_SZ 100
 #define HL_PRT_SIZE_T "%lu"
 
-#define MC_ABORT_MSG(msg) mc_cstr("ABORTING. '" msg "' at " __FILE__ "(" HL_TOSTRING(__LINE__) ")")
+#define HL_ABORT_MSG(msg) hl_cstr("ABORTING. '" msg "' at " __FILE__ "(" HL_TOSTRING(__LINE__) ")")
+
+#define HL_INFO_STR "Passed " __FILE__ "(" HL_TOSTRING(__LINE__) ")"
 
 #ifdef __cplusplus
 hl_c_decl {
@@ -62,13 +64,24 @@ hl_c_decl {
 #endif
 
 hl_string	hl_get_stack_trace( const hl_string & file, int line );
-void hl_abort_func(long val, const char* msg, bool prt_stk = false);
+void hl_ptr_call_stack_trace(FILE* out_fp);
+void hl_abort_func(bool prt_stk = false);
 
 #define HL_STACK_STR hl_get_stack_trace(__FILE__, __LINE__)
 
 const char* hl_get_ptd_log_fnam();
 bool hl_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool vv_ck, 
 				const char* file, int line, const char* ck_str, const char* fmt, ...);
+
+#define hl_abort(...) \
+{ \
+	fprintf(stderr, "\nABORTING.\n"); \
+	hl_ptr_call_stack_trace(hl_null); \
+	fprintf(stderr, __VA_ARGS__); \
+	hl_abort_func(); \
+} \
+
+// end_define
 
 #define HL_CODE(cod) cod
 #define HL_DBG_CODE(cod) HL_DBG(cod)

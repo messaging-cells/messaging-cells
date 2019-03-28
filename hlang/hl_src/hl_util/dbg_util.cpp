@@ -90,12 +90,14 @@ hl_ptr_call_stack_trace(FILE* out_fp) {
 }
 
 void 
-hl_abort_func(long val, const char* msg, bool prt_stk){
-	fprintf(stderr, "\nABORTING_WITH_ERR=%ld %s\n", val, msg);
+hl_abort_func(bool prt_stk){
 	if(prt_stk){
+		FILE* out_file = stderr;
+		fprintf(out_file, "\nABORTING.\n");
 		hl_ptr_call_stack_trace(hl_null);
+		fprintf(out_file, "\n\n");
 	}
-	
+
 	exit(EXIT_FAILURE);
 }
 
@@ -152,7 +154,8 @@ hl_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 			prt_buff[HL_MAX_STR_SZ - 1] = '\0';
 
 			if(size < 0){ 
-				hl_abort_func((long)hl_call_assert, "hl_call_assert._ERROR_. \n");
+				fprintf(out_file, "FATAL_ERROR_DURING_ASSERT.\n");
+				exit(EXIT_FAILURE);
 			}
 
 			fprintf(out_file, "%s", prt_buff);
@@ -171,8 +174,8 @@ hl_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 	}
 
 	if(is_assert && ! cond){
-		hl_abort_func((long)hl_call_assert, "ASSERT_FAILED. \n");
-		//thread_abort();
+		fprintf(out_file, "ASSERT_FAILED.\n");
+		exit(EXIT_FAILURE);
 	}
 	return cond;
 }

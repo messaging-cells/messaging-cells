@@ -12,7 +12,7 @@ hconst(k2, 123);
 hcell_class_def(cls_snd);
 
 hnucleus_def(cls_snd, central, (
-	hswitch(v1) >> (
+	hswitch(hmsg_tok(char)) >> (
 		hcase(pr_tok_snd_start) >> mth_start(), 
 		hcase(pr_tok_snd_val1) >> (v1 = hmsg_val), 
 		hcase(pr_tok_snd_val2) >> (v2 = hmsg_val(int)),

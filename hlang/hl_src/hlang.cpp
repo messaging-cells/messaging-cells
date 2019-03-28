@@ -16,8 +16,7 @@ FILE*
 file_open(const char* nm){
 	FILE* ff = fopen(nm, "w+");
 	if(ff == NULL){
-		fprintf(stderr, "Cannot open file %s\n", nm);
-		hl_abort_func(0, "ABORTING. Cannot open file.\n");
+		hl_abort("Cannot open file %s\n", nm);
 	}
 	return ff;
 }
@@ -26,8 +25,7 @@ bool
 file_rename(hl_string& old_pth, hl_string& nw_pth){
 	int ok = rename(old_pth.c_str(), nw_pth.c_str());
 	if(ok != 0){
-		fprintf(stderr, "ERROR. Cannot rename file %s  to %s \n", old_pth.c_str(), nw_pth.c_str());
-		hl_abort_func(0, "ABORTING. Cannot rename file.\n");
+		hl_abort("Cannot rename file %s  to %s \n", old_pth.c_str(), nw_pth.c_str());
 	}
 	return (ok == 0);
 }
@@ -36,8 +34,7 @@ bool
 file_remove(hl_string& pth){
 	int ok = remove(pth.c_str());
 	if(ok != 0){
-		fprintf(stderr, "ERROR. Cannot remove file %s \n", pth.c_str());
-		hl_abort_func(0, "ABORTING. Cannot remove file.\n");
+		hl_abort("Cannot remove file %s \n", pth.c_str());
 	}
 	return (ok == 0);
 }
@@ -80,8 +77,7 @@ file_update(hl_string& tmp_nm, hl_string& hh_nm){
 		
 		int ok = sha2_file(tmp_nm.c_str(), tmp_sh2, 0);
 		if(ok != 0){
-			fprintf(stderr, "ERROR. Cannot calc sha2 of file %s\n", tmp_nm.c_str());
-			hl_abort_func(0, "ABORTING. Cannot calc sha2.\n");
+			hl_abort("Cannot calc sha2 of file %s\n", tmp_nm.c_str());
 		}
 		
 		hl_uchar_t old_sh2[NUM_BYTES_SHA2];
@@ -89,8 +85,7 @@ file_update(hl_string& tmp_nm, hl_string& hh_nm){
 		
 		int ok2 = sha2_file(hh_nm.c_str(), old_sh2, 0);
 		if(ok2 != 0){
-			fprintf(stderr, "ERROR. Cannot calc sha2 of file %s\n", hh_nm.c_str());
-			hl_abort_func(0, "ABORTING. Cannot calc sha2.\n");
+			hl_abort("Cannot calc sha2 of file %s\n", hh_nm.c_str());
 		}
 		
 		int cmp_val = memcmp(tmp_sh2, old_sh2, NUM_BYTES_SHA2);
@@ -109,8 +104,7 @@ bool
 make_dir(hl_string the_pth, mode_t mod){
 	int resp = mkdir(the_pth.c_str(), mod);
 	if(resp != 0){
-		fprintf(stderr, "ERROR. Cannot make dir %s \n", the_pth.c_str());
-		hl_abort_func(0, "ABORTING. Cannot make dir.\n");
+		hl_abort("Cannot make dir %s \n", the_pth.c_str());
 	}
 	return (resp == 0);
 }
@@ -119,8 +113,7 @@ bool
 change_dir(hl_string the_pth){
 	int resp = chdir(the_pth.c_str());
 	if(resp != 0){
-		fprintf(stderr, "ERROR. Cannot change dir to %s \n", the_pth.c_str());
-		hl_abort_func(0, "ABORTING. Cannot change dir.\n");
+		hl_abort("Cannot change dir to %s \n", the_pth.c_str());
 	}
 	return (resp == 0);
 }
@@ -136,8 +129,7 @@ path_get_running_path(){
 hl_string
 path_to_absolute_path(hl_string pth){
 	if(pth.size() >= (HL_PATH_MAX - 1)){
-		fprintf(stderr, "ERROR. Path %s too long\n", pth.c_str());
-		hl_abort_func(0, "ABORTING. Path too long.\n");
+		hl_abort("Path %s too long\n", pth.c_str());
 	}
 	
 	char rpath[HL_PATH_MAX];
@@ -294,12 +286,12 @@ hc_system::register_method(const char* cls, hc_mth_def* mth, bool is_nucl){
 	hclass_reg* cls_reg = get_class_reg(cls);
 	if(is_nucl){
 		if(cls_reg->nucleus != hl_null){
-			printf("Nucleus for class %s alredy defined as %s \n", cls_reg->nam.c_str(), mth->get_name()); 
-			hl_abort_func(0, "Aborting. Nucleus alredy defined. \n");
+			hl_abort("Nucleus for class %s alredy defined as %s \n", 
+						  cls_reg->nam.c_str(), mth->get_name());
 		}
 		cls_reg->nucleus = mth;
 	} else {
-		cls_reg->methods.push_front(mth);
+		cls_reg->methods.push_back(mth);
 	}
 	printf("ADDING_METHOD %s.%s\n", cls_reg->nam.c_str(), mth->nam);
 }
@@ -363,8 +355,7 @@ hc_system::add_tok(const char* nm){
 	
 	auto it = all_glb_token.find(nm);
 	if(it != all_glb_token.end()){
-		fprintf(stderr, "Token already added %s\n", nm);
-		hl_abort_func(0, "ABORTING. Token already added.\n");
+		hl_abort("Token already added %s\n", nm);
 		//return false;
 	}
 	pt_glb = new hc_global(nm);
@@ -380,8 +371,7 @@ hc_system::get_tok(const char* nm){
 	
 	auto it = all_glb_token.find(nm);
 	if(it == all_glb_token.end()){
-		fprintf(stderr, "Token %s not existant. Maybe try without quotes?\n", nm);
-		hl_abort_func(0, "ABORTING. Token not existant. Maybe try without quotes?\n");
+		hl_abort("Token %s not existant. Maybe try without quotes?\n", nm);
 	} 
 	pt_glb = it->second;
 	return *pt_glb;
@@ -394,8 +384,7 @@ hc_system::add_con(const char* nm, const char* val){
 	
 	auto it = all_glb_const.find(nm);
 	if(it != all_glb_const.end()){
-		fprintf(stderr, "Constant already added %s\n", nm);
-		hl_abort_func(0, "ABORTING. Constant already added.\n");
+		hl_abort("Constant already added %s\n", nm);
 		//return false;
 	}
 	pt_glb = new hc_global(nm);
@@ -412,8 +401,7 @@ hc_system::get_con(const char* nm){
 	
 	auto it = all_glb_const.find(nm);
 	if(it == all_glb_const.end()){
-		fprintf(stderr, "Constant %s not existant. Maybe try without quotes?\n", nm);
-		hl_abort_func(0, "ABORTING. Constant not existant. Maybe try without quotes?\n");
+		hl_abort("Constant %s not existant. Maybe try without quotes?\n", nm);
 	} 
 	pt_glb = it->second;
 	return *pt_glb;
@@ -424,13 +412,12 @@ hclass_reg::call_all_methods(){
 	auto it = methods.begin();
 	for(; it != methods.end(); ++it){
 		hc_mth_def* mth_df = (*it);
-		std::cout << "\tCALLING METHOD " << mth_df->nam << '\n';
 		hc_caller_t cr = mth_df->caller;
 		(*cr)();
 		
 		mth_df->print_code();
 
-		std::cout << "-------------------------------\n";
+		std::cout << "-------------------------------------------\n";
 	}
 	if(nucleus != hl_null){
 		std::cout << "\tCALLING NUCLEUS " << nucleus->nam << '\n';
@@ -439,19 +426,19 @@ hclass_reg::call_all_methods(){
 		
 		nucleus->print_code();
 
-		std::cout << "-------------------------------\n";
+		std::cout << "-------------------------------------------\n";
 	}
 }
 
 void
 hc_system::call_all_registered_methods(){
-	std::cout << "---------------------------------------------------------------\n";
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
-		std::cout << "CALLING METHODS FOR CLASS " << it->first << '\n';
+		printf("===========================================================\n");
+		printf("CALLING METHODS FOR CLASS %s \n", it->first.c_str());
 		it->second->call_all_methods();
-		std::cout << "===========================================================\n";
 	}
+	printf("===========================================================\n");
 }
 
 void
@@ -478,6 +465,42 @@ hc_system::init_all_attributes(){
 			(*cr)();
 		}
 	}
+}
+
+bool
+hc_is_cond_oper(hc_syntax_op_t op){
+	bool is_co = false;
+	switch(op){
+		case hc_hif_op:
+		case hc_helif_op:
+		case hc_hfor_op:
+		case hc_hwhile_op:
+		case hc_hswitch_op:
+		case hc_hcase_op:
+		case hc_helse_op:
+			is_co = true;
+		break;
+		default:
+		break;
+	}
+	return is_co;
+}
+
+bool
+hc_is_assig_oper(hc_syntax_op_t op){
+	bool is_as = false;
+	switch(op){
+		case hc_assig_op1:
+		case hc_assig_op2:
+		case hc_assig_op3:
+		case hc_assig_op4:
+		case hc_assig_op5:
+			is_as = true;
+		break;
+		default:
+		break;
+	}
+	return is_as;
 }
 
 const char*
@@ -617,14 +640,44 @@ hc_get_token(hc_syntax_op_t op){
 	return tok;
 }
 
-hc_term& hc_term::operator , (hc_term& o1) { 
-	HC_DEFINE_BINARY_OP_BASE(hc_comma_op);
+void
+ck_is_not_cond(hc_term& o1){
+	if(hc_is_cond_oper(o1.get_oper())){
+		fprintf(stderr, "---------------------------------------------------\n");
+		fprintf(stderr, "NEAR\n");
+		fprintf(stderr, "---------------------------------------------------\n");
+		o1.print_term(stderr);
+		fprintf(stderr, "---------------------------------------------------\n");
+		hl_abort("Parameter %s to comma \",\" cannot be a conditional.\n", o1.get_name());
+	}
 }
 
-HC_DEFINE_BINARY_OP(>>, hc_then_op)
+hc_term& hc_term::operator , (hc_term& o1) { 
+	ck_is_not_cond(*this);
+	ck_is_not_cond(o1);
+	hc_binary_term* tm = new hc_binary_term(hc_comma_op, this, &o1); 
+	tm->has_st = true;
+	return *tm; 
+}
+
+hc_term& hc_term::operator >> (hc_term& o1) { 
+	if(! hc_is_cond_oper(get_oper())){
+		fprintf(stderr, "---------------------------------------------------\n");
+		fprintf(stderr, "NEAR\n");
+		fprintf(stderr, "---------------------------------------------------\n");
+		print_term(stderr);
+		fprintf(stderr, "---------------------------------------------------\n");
+		hl_abort("First parameter %s to then \">>\" must be a conditional.\n", get_name());
+	}
+	HC_DEFINE_BINARY_OP_BASE(hc_then_op);
+}
+
+//HC_DEFINE_BINARY_OP(>>, hc_then_op)
 HC_DEFINE_BINARY_OP(<<=, hc_async_asig_op)
 
-HC_DEFINE_BINARY_OP(=, hc_assig_op1)
+hc_term& hc_term::operator = (hc_term& o1) { 
+	HC_DEFINE_ASSIG_BASE(hc_assig_op1);
+}
 
 HC_DEFINE_BINARY_OP(+, hc_plus_op)
 HC_DEFINE_BINARY_OP(-, hc_minus_op)
@@ -662,6 +715,13 @@ hdbg(const char* the_code){
 	return *tm; 
 } 
 
+hkeyword(HINF);
+
+hc_term& 
+hinfo(int vv){ 
+	return HINF; 
+} 
+
 HC_DEFINE_FUNC_OP(hif, hc_hif_op)
 HC_DEFINE_FUNC_OP(helif, hc_helif_op)
 HC_DEFINE_FUNC_OP(hfor, hc_hfor_op)
@@ -669,7 +729,7 @@ HC_DEFINE_FUNC_OP(hwhile, hc_hwhile_op)
 HC_DEFINE_FUNC_OP(hswitch, hc_hswitch_op)
 HC_DEFINE_FUNC_OP(hcase, hc_hcase_op)
 
-hkeyword(helse);
+hkeyword_op(helse, hc_helse_op);
 hkeyword(hbreak);
 hkeyword(hcontinue);
 hkeyword(hreturn);
@@ -682,8 +742,7 @@ hdbg_txt_pre_hh(const char* cls, const char* cod){
 	if(cls_reg->pre_hh_cod == hl_null){
 		cls_reg->pre_hh_cod = cod;
 	} else {
-		fprintf(stderr, "pre_hh_cod for %s already defined\n", cls);
-		hl_abort_func(0, "ABORTING. pre_hh_cod already defined.\n");
+		hl_abort("pre_hh_cod for %s already defined\n", cls);
 	}
 	return true;
 }
@@ -695,8 +754,7 @@ hdbg_txt_pos_hh(const char* cls, const char* cod){
 	if(cls_reg->pos_hh_cod == hl_null){
 		cls_reg->pos_hh_cod = cod;
 	} else {
-		fprintf(stderr, "pos_hh_cod for %s already defined\n", cls);
-		hl_abort_func(0, "ABORTING. pos_hh_cod already defined.\n");
+		hl_abort("pos_hh_cod for %s already defined\n", cls);
 	}
 	return true;
 }
@@ -708,8 +766,7 @@ hdbg_txt_pre_cpp(const char* cls, const char* cod){
 	if(cls_reg->pre_cpp_cod == hl_null){
 		cls_reg->pre_cpp_cod = cod;
 	} else {
-		fprintf(stderr, "pre_cpp_cod for %s already defined\n", cls);
-		hl_abort_func(0, "ABORTING. pre_cpp_cod already defined.\n");
+		hl_abort("pre_cpp_cod for %s already defined\n", cls);
 	}
 	return true;
 }
@@ -721,8 +778,7 @@ hdbg_txt_pos_cpp(const char* cls, const char* cod){
 	if(cls_reg->pos_cpp_cod == hl_null){
 		cls_reg->pos_cpp_cod = cod;
 	} else {
-		fprintf(stderr, "pos_cpp_cod for %s already defined\n", cls);
-		hl_abort_func(0, "ABORTING. pos_cpp_cod already defined.\n");
+		hl_abort("pos_cpp_cod for %s already defined\n", cls);
 	}
 	return true;
 }
@@ -731,9 +787,8 @@ htoken(hmsg_tok);
 hconst(hmsg_val, 0);
 
 void 
-hc_term::print_term(){
-	//printf("%s \n", STACK_STR.c_str());
-	printf("INVALID_TERM!!!!\n");
+hc_term::print_term(FILE *st){
+	hl_abort("INVALID_TERM !!!!\n");
 }
 
 
@@ -746,49 +801,49 @@ hc_term::print_indent(){
 }
 
 void 
-hc_unary_term::print_term(){
+hc_unary_term::print_term(FILE *st){
 	const char* tok = hc_get_token(op);
-	printf("%s", tok);
-	printf("(");
+	fprintf(st, "%s", tok);
+	fprintf(st, "(");
 	HC_PRT_TERM_INDENT++;
-	if(prm != hl_null){ prm->print_term(); }
+	if(prm != hl_null){ prm->print_term(st); }
 	HC_PRT_TERM_INDENT--;
-	printf(")");
+	fprintf(st, ")");
 }
 
 void 
-hc_binary_term::print_term(){
+hc_binary_term::print_term(FILE *st){
 	const char* tok = hc_get_token(op);
 	switch(op){
 	case hc_comma_op:
-		if(lft != hl_null){ lft->print_term(); }
-		printf("%s\n", tok); print_indent();
-		if(rgt != hl_null){ rgt->print_term(); }
+		if(lft != hl_null){ lft->print_term(st); }
+		fprintf(st, "%s\n", tok); print_indent();
+		if(rgt != hl_null){ rgt->print_term(st); }
 	break;
 	default:
 		hc_syntax_op_t lft_op = lft->get_oper();
 		hc_syntax_op_t rgt_op = rgt->get_oper();
-		printf("("); 
+		fprintf(st, "("); 
 		HC_PRT_TERM_INDENT++;
 		
-		if(lft_op == hc_comma_op){ printf("("); }
-		if(lft != hl_null){ lft->print_term(); }
-		if(lft_op == hc_comma_op){ printf(")"); }
+		if(lft_op == hc_comma_op){ fprintf(st, "("); }
+		if(lft != hl_null){ lft->print_term(st); }
+		if(lft_op == hc_comma_op){ fprintf(st, ")"); }
 		
-		printf(" %s ", tok);
+		fprintf(st, " %s ", tok);
 		
-		if(rgt_op == hc_comma_op){ printf("("); }
-		if(rgt != hl_null){ rgt->print_term(); }
-		if(rgt_op == hc_comma_op){ printf(")"); }
+		if(rgt_op == hc_comma_op){ fprintf(st, "("); }
+		if(rgt != hl_null){ rgt->print_term(st); }
+		if(rgt_op == hc_comma_op){ fprintf(st, ")"); }
 		
 		HC_PRT_TERM_INDENT--;
-		printf(")");
+		fprintf(st, ")");
 	break;
 	}
 }
 
 void 
-hc_send_term::print_term(){
+hc_send_term::print_term(FILE *st){
 	HL_CK((op == hc_send_op) || (op == hc_tell_op));
 	
 	const char* tok_str = hc_get_token(op);
@@ -796,29 +851,29 @@ hc_send_term::print_term(){
 	hc_syntax_op_t tok_op = snd_tok->get_oper();
 	hc_syntax_op_t att_op = snd_att->get_oper();
 	
-	printf(" %s", tok_str);
+	fprintf(st, " %s", tok_str);
 	
-	printf("("); 
+	fprintf(st, "("); 
 	HC_PRT_TERM_INDENT++;
 	
-	if(dst_op == hc_comma_op){ printf("("); }
-	if(snd_dst != hl_null){ snd_dst->print_term(); }
-	if(dst_op == hc_comma_op){ printf(")"); }
+	if(dst_op == hc_comma_op){ fprintf(st, "("); }
+	if(snd_dst != hl_null){ snd_dst->print_term(st); }
+	if(dst_op == hc_comma_op){ fprintf(st, ")"); }
 	
-	printf(", ");
+	fprintf(st, ", ");
 	
-	if(tok_op == hc_comma_op){ printf("("); }
-	if(snd_tok != hl_null){ snd_tok->print_term(); }
-	if(tok_op == hc_comma_op){ printf(")"); }
+	if(tok_op == hc_comma_op){ fprintf(st, "("); }
+	if(snd_tok != hl_null){ snd_tok->print_term(st); }
+	if(tok_op == hc_comma_op){ fprintf(st, ")"); }
 
-	printf(", ");
+	fprintf(st, ", ");
 	
-	if(att_op == hc_comma_op){ printf("("); }
-	if(snd_att != hl_null){ snd_att->print_term(); }
-	if(att_op == hc_comma_op){ printf(")"); }
+	if(att_op == hc_comma_op){ fprintf(st, "("); }
+	if(snd_att != hl_null){ snd_att->print_term(st); }
+	if(att_op == hc_comma_op){ fprintf(st, ")"); }
 
 	HC_PRT_TERM_INDENT--;
-	printf(")");
+	fprintf(st, ")");
 }
 
 const char*
@@ -1052,13 +1107,43 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	fprintf(ff, "\n\n");
 }
 
-/*
- enum ph_hdlr_idx_t : mck_handler_idx_t {
-	idx_invalid = mck_tot_base_cell_classes,
-	idx_chopstick,
-	idx_philosopher,
-	idx_last_invalid,
-	idx_total
-};
+void
+hclass_reg::print_cpp_file(){
+	hl_string tmp_nm = get_tmp_cpp_name();
+	if(file_exists(tmp_nm)){
+		file_remove(tmp_nm);
+	}
+	FILE* ff = file_open(tmp_nm.c_str());
+	hl_string hh_nm = HLANG_SYS().get_hh_name();
+	
+	fprintf(ff, "\n\n");
+	fprintf(ff, "#include \"%s\"\n", hh_nm.c_str());
+	
+	fprintf(ff, "\n\n");
+	if(pre_cpp_cod != hl_null){
+		fprintf(ff, "%s\n", pre_cpp_cod);
+		fprintf(ff, "\n\n");
+	}
+	
+	print_cpp_class_defs(ff);
+	
+	fprintf(ff, "\n\n");
+	if(pos_cpp_cod != hl_null){
+		fprintf(ff, "%s\n", pos_cpp_cod);
+		fprintf(ff, "\n\n");
+	}
+	
+	fclose(ff);
+	
+	hl_string cpp_nm = get_cpp_name();
+	file_update(tmp_nm, cpp_nm);
+	if(file_exists(tmp_nm)){
+		file_remove(tmp_nm);
+	}
+}
 
-*/
+void
+hclass_reg::print_cpp_class_defs(FILE* ff){
+}
+
+

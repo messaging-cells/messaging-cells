@@ -45,6 +45,7 @@ hlang declarations.
 #include <map>
 #include <string>
 #include <list>
+#include <vector>
 
 #include "dbg_util.h"
 
@@ -75,6 +76,8 @@ typedef uint64_t hl_reference_t;
 typedef int64_t hc_chip_idx;
 #define hl_tok_last 0
 
+#define HC_MAX_LEVELS 10
+
 class hc_system;
 class hc_term;
 class hc_global;
@@ -96,6 +99,7 @@ public:
 	const char* pos_hh_cod = hl_null;
 	const char* pre_cpp_cod = hl_null;
 	const char* pos_cpp_cod = hl_null;
+	long max_steps_by_lv[HC_MAX_LEVELS];
 	
 	hclass_reg(){
 		nucleus = hl_null;
@@ -104,6 +108,9 @@ public:
 		pos_hh_cod = hl_null;
 		pre_cpp_cod = hl_null;
 		pos_cpp_cod = hl_null;
+		for(long aa = 0; aa < HC_MAX_LEVELS; aa++){
+			max_steps_by_lv[aa] = 0;
+		}
 	}
 
 	virtual ~hclass_reg(){}
@@ -129,6 +136,17 @@ public:
 	void print_hh_class_top_decl(FILE* ff);
 	void print_hh_class_decl_content(FILE* ff);
 
+	hl_string get_tmp_cpp_name(){
+		return nam + "_tmp.cpp";
+	}
+	
+	hl_string get_cpp_name(){
+		return nam + ".cpp";
+	}
+	
+	void print_cpp_file();
+	void print_cpp_class_defs(FILE* ff);
+	
 	void call_all_methods();
 };
 
@@ -220,6 +238,17 @@ public:
 	
 	void print_glbs_hh_file();
 	void print_hh_file();
+
+	hl_string get_tmp_cpp_name(){
+		return project_nam + "_tmp.cpp";
+	}
+	
+	hl_string get_cpp_name(){
+		return project_nam + ".cpp";
+	}
+	
+	void print_cpp_file();
+	void print_cpp_class_defs(FILE* ff);
 	
 };
 
@@ -302,6 +331,17 @@ hc_get_token(hc_syntax_op_t op);
 
 // end_define
 
+#define HC_DEFINE_ASSIG_BASE(the_code) \
+	if(o1.has_statements()){ \
+		hl_abort("Parameter %s to %s has statements. Invalid grammar.\n", \
+					o1.get_name(), get_name()); \
+	} \
+	hc_binary_term* tm = new hc_binary_term(the_code, this, &o1); \
+	tm->has_st = true; \
+	return *tm; \
+
+// end_define
+
 #define HC_DEFINE_BINARY_OP(the_op, the_code) \
 hc_term& hc_term::operator the_op (hc_term& o1) { \
 	HC_DEFINE_BINARY_OP_BASE(the_code) \
@@ -325,6 +365,10 @@ hc_term& hc_term::operator the_op (){ \
 #define HC_DEFINE_FUNC_OP(the_op, the_code) \
 hc_term& \
 the_op(hc_term& o1){ \
+	if(o1.has_statements()){ \
+		hl_abort("Parameter %s to %s has statements. Invalid grammar.\n", \
+					o1.get_name(), #the_op); \
+	} \
 	hc_term* tm = new hc_unary_term(the_code, &o1); \
 	return *tm; \
 } \
@@ -340,16 +384,16 @@ public:
 	hc_term(){}
 
 	virtual	~hc_term(){
-		//printf("%s \n", STACK_STR.c_str());
-		//bj_abort_func(0, "func: 'hc_term::~hc_term'"); 
 	}
 
 	// Don't allow copying (error prone):
 	// force use of referenced rows
 	
 	hc_term(hc_term& other){ 
-		hl_abort_func(0, "func: 'hc_term(hc_term&)' \n");
+		hl_abort("func: 'hc_term(hc_term&)' \n");
 		//HC_OBJECT_COPY_ERROR;
+		//printf("%s \n", STACK_STR.c_str());
+		//bj_abort_func(0, "func: 'hc_term::~hc_term'"); 
 	}
 
 	hc_term&  operator , (hc_term& o1);
@@ -385,12 +429,16 @@ public:
 		return this;
 	}
 	
+	bool 	is_closed_member(){
+		return (get_src() == this);
+	}
+	
 	virtual 
-	void print_term();
+	void print_term(FILE *st = stdout);
 
 	virtual 
 	void print_code(){
-		hl_abort_func(0, "Invalid call to 'print_code()'. " 
+		hl_abort("Invalid call to 'print_code()'.\n" 
 				"NOT_A_METHOD. It has no code to print.\n");
 	}
 
@@ -421,6 +469,11 @@ public:
 	bool	is_compound(){
 		return false;
 	}
+
+	virtual 
+	bool	has_statements(){
+		return false;
+	}
 };
 
 hc_term&	hif(hc_term& o1);
@@ -430,6 +483,9 @@ hc_term&	hwhile(hc_term& o1);
 hc_term&	hswitch(hc_term& o1);
 hc_term&	hcase(hc_term& o1);
 hc_term&	hdbg(const char* cod);
+hc_term&	hinfo(int pm = 0);
+
+#define hinf hinfo(fprintf(stderr, "%s \n", HL_INFO_STR))
 
 bool	hdbg_txt_pre_hh(const char* cls, const char* cod);
 bool	hdbg_txt_pos_hh(const char* cls, const char* cod);
@@ -458,8 +514,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(){
-		std::cout << ' ' << get_name() << ' ';
+	void print_term(FILE *st = stdout){
+		fprintf(st, " %s ", get_name());
+		//std::cout << ' ' << get_name() << ' ';
 	}
 
 	virtual 
@@ -468,9 +525,22 @@ public:
 	}	
 };
 
+inline
+void
+ck_closed_param(hc_term* pm, hc_term* tm, bool& has_st){
+	HL_CK(tm != hl_null);
+	if(pm == hl_null){ return; }
+	if(! pm->is_closed_member()){
+		hl_abort("Parameter %s to %s not closed. Close it with '()'.\n", 
+					pm->get_name(), tm->get_name());
+	}
+	has_st = (has_st || pm->has_statements());
+}
+
 
 class hc_unary_term : public hc_term {
 public:
+	bool has_st = false;
 	hc_syntax_op_t op;
 	hc_term* prm;
 	
@@ -488,10 +558,9 @@ public:
 	void init_unary_term(hc_syntax_op_t pm_op = hc_invalid_op, 
 						  hc_term* pm_val = hl_null)
 	{
+		has_st = false;
 		op = pm_op;
-		if(pm_val != hl_null){
-			pm_val = pm_val->get_src();
-		}
+		ck_closed_param(pm_val, this, has_st);
 		prm = pm_val;
 	}
 	
@@ -506,16 +575,22 @@ public:
 	}
 	
 	virtual 
-	void print_term();
+	void print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
 		return true;
 	}
+	
+	virtual 
+	bool	has_statements(){
+		return has_st;
+	}
 };
 
 class hc_binary_term : public hc_term {
 public:
+	bool has_st = false;
 	hc_syntax_op_t op;
 	hc_term* lft;
 	hc_term* rgt;
@@ -538,15 +613,10 @@ public:
 	void init_binary_term(hc_syntax_op_t pm_op = hc_invalid_op, 
 						  hc_term* pm_lft = hl_null, hc_term* pm_rgt = hl_null)
 	{
+		has_st = false;
 		op = pm_op;
-		if(op != hc_member_op){
-			if(pm_lft != hl_null){
-				pm_lft = pm_lft->get_src();
-			}
-			if(pm_rgt != hl_null){
-				pm_rgt = pm_rgt->get_src();
-			}
-		}
+		ck_closed_param(pm_lft, this, has_st);
+		ck_closed_param(pm_rgt, this, has_st);
 		lft = pm_lft;
 		rgt = pm_rgt;
 	}
@@ -562,11 +632,16 @@ public:
 	}
 	
 	virtual 
-	void print_term();
+	void print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
 		return true;
+	}
+	
+	virtual 
+	bool	has_statements(){
+		return has_st;
 	}
 };
 
@@ -600,16 +675,11 @@ public:
 						hc_term* pm_dst = hl_null, hc_term* pm_tok = hl_null,
 						hc_term* pm_att = hl_null)
 	{
+		bool has_st = false;
 		op = pm_op;
-		if(pm_dst != hl_null){
-			pm_dst = pm_dst->get_src();
-		}
-		if(pm_tok != hl_null){
-			pm_tok = pm_tok->get_src();
-		}
-		if(pm_att != hl_null){
-			pm_att = pm_att->get_src();
-		}
+		ck_closed_param(pm_dst, this, has_st);
+		ck_closed_param(pm_tok, this, has_st);
+		ck_closed_param(pm_att, this, has_st);
 		snd_dst = pm_dst;
 		snd_tok = pm_tok;
 		snd_att = pm_att;
@@ -626,7 +696,7 @@ public:
 	}
 	
 	virtual 
-	void print_term();
+	void print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
@@ -647,32 +717,15 @@ public:
 	hc_value(const char* the_typ, const char* the_nam, 
 			 hcell* the_owner = hl_null, obj_t the_val = obj_t())
 	{
-		typ = hl_null;
-		nam = hl_null;
-		owner = hl_null;
-		init_val(the_typ, the_nam, true, the_owner, the_val);
-	}
-	
-	hc_value& 
-	init_val(const char* the_typ, const char* the_nam, bool is_first = false, 
-			 hcell* the_owner = hl_null, obj_t the_val = obj_t())
-	{
-		if((typ == hl_null) && (the_typ != hl_null)){
-			HL_CK(! std::is_pointer<obj_t>::value);
-			HL_CK(! std::is_class<obj_t>::value);
-			typ = the_typ;
-			nam = the_nam;
-			val = the_val;
-			owner = the_owner;
-			if(owner != hl_null){
-				HLANG_SYS().register_value(owner, this);
-			} else {
-				printf("FIX_THIS_CODE. %s %s \n", typ, nam);
-				//hl_abort_func(0, "FIX_THIS_CODE \n");
-			}
-		} 
-		return *this;
-		//printf("caller=%s \n", the_caller);
+		HL_CK(the_owner != hl_null);
+		HL_CK(! std::is_pointer<obj_t>::value);
+		HL_CK(! std::is_class<obj_t>::value);
+		typ = the_typ;
+		nam = the_nam;
+		val = the_val;
+		
+		owner = the_owner;
+		HLANG_SYS().register_value(owner, this);
 	}
 	
 	hc_value(hc_value<obj_t>& other){ 
@@ -684,11 +737,11 @@ public:
 	}
 	
 	hc_term&	operator = (hc_term& o1){
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op2);
+		HC_DEFINE_ASSIG_BASE(hc_assig_op2);
 	}
 
 	hc_term&	operator = (hc_value<obj_t>& o1) { 
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op3);
+		HC_DEFINE_ASSIG_BASE(hc_assig_op3);
 	}
 
 	//void operator ()(obj_t aa) { val = aa; }	// as unary func. used as init func
@@ -711,9 +764,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(){
-		std::cout << ' ' << nam << ' ';
-		//printf(" VAL ");
+	void print_term(FILE *st = stdout){
+		fprintf(st, " %s ", get_name());
+		//std::cout << ' ' << get_name() << ' ';
 	}
 
 	virtual 
@@ -722,11 +775,13 @@ public:
 
 class hc_keyword : public hc_term {
 public:
+	hc_syntax_op_t op;
 	hl_string nam;
 	
 	virtual	~hc_keyword(){}
 	
-	hc_keyword(hl_string the_nam){
+	hc_keyword(hl_string the_nam, hc_syntax_op_t the_op = hc_invalid_op){
+		op = the_op;
 		nam = the_nam;
 	}
 
@@ -736,15 +791,20 @@ public:
 	}
 	
 	virtual 
-	void print_term(){
-		std::cout << ' ' << get_name() << ' ';
+	hc_syntax_op_t	get_oper(){
+		return op;
+	}
+	
+	virtual 
+	void print_term(FILE *st = stdout){
+		fprintf(st, " %s ", get_name());
+		//std::cout << ' ' << get_name() << ' ';
 	}
 };
 
 template<class obj_t>
 class hc_reference : public hc_term {
 public:
-	static hc_reference<obj_t>	HC_MSV_REF;
 	static obj_t*	HC_GLB_REF;
 	
 	const char* typ;
@@ -778,11 +838,11 @@ public:
 	}
 	
 	hc_term&	operator = (hc_term& o1){
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op4);
+		HC_DEFINE_ASSIG_BASE(hc_assig_op4);
 	}
 
 	hc_term&  operator = (hc_reference<obj_t>& o1) { 
-		HC_DEFINE_BINARY_OP_BASE(hc_assig_op5);
+		HC_DEFINE_ASSIG_BASE(hc_assig_op5);
 	}
 
 	void operator ()(obj_t* aa) { // as unary func. used as init func
@@ -805,7 +865,6 @@ public:
 	obj_t const *	operator -> () const {
 		if(ref == hl_null){
 			ref = get_glb_ref();
-			//ref = new obj_t();
 		}
 		if(ref->rf_src_tm != hl_null){ 
 			HL_PRT("\nCannot have recursive referencing in hlang.\n"); 
@@ -817,7 +876,6 @@ public:
     obj_t*	operator -> () {
 		if(ref == hl_null){
 			ref = get_glb_ref();
-			//ref = new obj_t();
 		}
 		if(ref->rf_src_tm != hl_null){ 
 			HL_PRT("\nCannot have recursive referencing in hlang.\n"); 
@@ -843,9 +901,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(){
-		std::cout << ' ' << nam << ' ';
-		//printf(" %p ", ref);
+	void print_term(FILE *st = stdout){
+		fprintf(st, " %s ", get_name());
+		//std::cout << ' ' << get_name() << ' ';
 	}
 
 	virtual 
@@ -854,9 +912,6 @@ public:
 
 template<class obj_t>
 obj_t* hc_reference<obj_t>::HC_GLB_REF = hl_null;
-
-template<class obj_t>
-hc_reference<obj_t> hc_reference<obj_t>::HC_MSV_REF{"hc_reference", "msv_ref"};
 
 template<class cl1_t, class cl2_t>
 cl2_t*
@@ -883,12 +938,14 @@ hcast(hc_reference<cl1_t>& o1){
 #define hreference(tt, nn) htoks_att(nn, this); hc_reference<tt> nn{#tt, #nn, this}
 
 #define hkeyword(nn) hc_keyword nn(#nn)
+#define hkeyword_op(nn, op) hc_keyword nn(#nn, op)
 
 #define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
 #define htok(nn) HLANG_SYS().get_tok(#nn)
 #define hcon(nn) HLANG_SYS().get_con(#nn)
 
+#define hbool(nn) hvalue(bool, nn)
 #define hchar(nn) hvalue(char, nn)
 #define hint(nn) hvalue(int, nn)
 #define hlong(nn) hvalue(long, nn)
@@ -914,6 +971,7 @@ public:
 	hc_term* cod = hl_null;
 	bool defining = false;
 	hc_caller_t caller = hl_null;
+	long num_steps = 0;
 	
 	virtual	~hc_mth_def(){}
 	
@@ -923,6 +981,7 @@ public:
 		cls = the_cls;
 		nam = the_nam;
 		caller = the_cllr;
+		num_steps = 0;
 		HLANG_SYS().register_method(the_cls, this, is_nucl);
 	}
 
@@ -932,13 +991,14 @@ public:
 	}
 	
 	virtual 
-	void print_term(){
-		std::cout << ' ' << get_name() << "() ";
+	void print_term(FILE *st = stdout){
+		fprintf(st, " %s() ", get_name());
+		//std::cout << ' ' << get_name() << "() ";
 	}
 
 	virtual 
 	void print_code(){
-		printf("\tCODE_FOR %s\n", get_name());
+		printf("CODE_FOR %s\n---------------\n", get_name());
 		if(cod == hl_null){
 			printf("EMPTY_COD for mth\n");
 		} else {
@@ -967,8 +1027,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(){
-		std::cout << ' ' << get_name() << "() ";
+	void print_term(FILE *st = stdout){
+		fprintf(st, " %s() ", get_name());
+		//std::cout << ' ' << get_name() << "() ";
 	}
 
 	virtual 
@@ -979,17 +1040,6 @@ public:
 	
 };
 
-typedef hc_term& (hcell::*pt_mth_t)();
-
-template<class cl1_t>
-bool 
-hcall_mth(hc_term& (cl1_t::*mth_pt)() = hl_null){
-	cl1_t oo1;
-	if(mth_pt != hl_null){
-		//(oo1.*mth_pt)();
-	}
-	return true;
-}
 
 #define hmethod(mth) \
 	static hc_mth_def mth ## _def_reg; \
@@ -998,6 +1048,17 @@ hcall_mth(hc_term& (cl1_t::*mth_pt)() = hl_null){
 // end_define
 
 #define hnucleus(mth) hmethod(mth)
+
+
+/*
+			fprintf(stderr, "Inside %s \n", __PRETTY_FUNCTION__); \
+			if(cls::mth ## _def_reg.defining){ \
+				HL_PRT("\nCannot have recursive methods in hlang.\nBad definition of %s.\n", \
+					#cls "::" #mth \
+				); \
+				hl_abort("BAD hlang METHOD DEFINITION \n"); \
+			} \
+*/
 
 
 #define hmethod_def_base(cls, mth, code, is_nucl) \
@@ -1013,23 +1074,18 @@ hcall_mth(hc_term& (cl1_t::*mth_pt)() = hl_null){
 			tmp = tmp->get_src(); \
 			rr = new hc_binary_term(hc_member_op, tmp, mc); \
 		} \
-		if(cls::mth ## _def_reg.cod == hl_null){ \
-			if(cls::mth ## _def_reg.defining){ \
-				HL_PRT("\nCannot have recursive methods in hlang.\nBad definition of %s.\n", \
-					#cls "::" #mth \
-				); \
-				hl_abort_func(0, "BAD hlang METHOD DEFINITION \n"); \
-			} \
-			cls::mth ## _def_reg.defining = true; \
+		if((cls::mth ## _def_reg.cod == hl_null) && (cls::mth ## _def_reg.defining)){ \
+			printf("CALLING_METHOD\n%s\n", __PRETTY_FUNCTION__); \
 			hc_term& tm = (code); \
-			cls::mth ## _def_reg.defining = false; \
 			cls::mth ## _def_reg.cod = tm.get_src(); \
 		} \
 		return *rr; \
 	} \
 	void cls ## _ ## mth ## _ ## caller(){ \
 		cls* obj = hc_reference<cls>::get_glb_ref(); \
+		cls::mth ## _def_reg.defining = true; \
 		obj->cls::mth(); \
+		cls::mth ## _def_reg.defining = false; \
 	} \
 
 // end_define
@@ -1054,8 +1110,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(){
-		std::cout << "hdbg_start(" << dbg_cod << ")hdbg_end\n";
+	void print_term(FILE *st = stdout){
+		fprintf(st, "hdbg_start(%s)hdbg_end\n", dbg_cod.c_str());
+		//std::cout << "hdbg_start(" << dbg_cod << ")hdbg_end\n";
 	}
 
 	virtual 
@@ -1193,8 +1250,6 @@ hdeclare_token(hmsg_tok);
 
 #define hmsg_src(cls) (cls::get_msg_src())
 #define hmsg_ref(cls) (cls::get_msg_ref())
-//define hmsg_val(typ) (hc_value<typ>::HC_MSV_VAL.init_val(#typ, "hmsg_val_" #typ))
-//define hmsg_tok(typ) (hc_value<typ>::HC_MSV_TOK.init_val(#typ, "hmsg_tok_" #typ))
 #define hmsg_val(typ) hcon(hmsg_val)
 #define hmsg_tok(typ) htok(hmsg_tok)
 

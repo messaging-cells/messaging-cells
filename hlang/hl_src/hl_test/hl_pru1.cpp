@@ -53,7 +53,10 @@ hmethod_def(cls_A1, mth01, (
 		hcase(o4) >> ++o5,
 		hcase(o1) >> o2
 	),
-	hif(o3) >> (~ o1 + ! o2),
+	//r1 = (o1, r2),
+	//hif((r1 = o1, r2 = o2, r3 = r4)) >> o1,
+	hif(b3 && (b4 || b1)) >> (~ o1 + ! o2),
+	hif(o3 && (o4 || o1)) >> (~ o1 + ! o2),
 	helif(o4) >> (o5 && o3),
 	hfor(o4) >> (o2 || o3),
 	hwhile(o4) >> (o1 & o3),
@@ -67,6 +70,7 @@ hmethod_def(cls_A1, mth01, (
 ));
 
 hmethod_def(cls_A1, mth02, (
+	! (hmsg_ref(cls_A3)->xx1()),
 	(r1 = (o1 + o2)),
 	mth01(), 
 	hreturn
@@ -76,12 +80,19 @@ hmethod_def(cls_A1, mth03, (
 	hif(o3) >> (~ o1 + ! o2),
 	(o2 = (r2 + r1)),
 	(o2 <<= (r2 + r1)),
+	r1 = hme(),
+	mth02()
+));
+
+hmethod_def(cls_A1, mth04, (
+	mth03(),
+	mth02(),
 	r1 = hme()
 ));
 
 hmethod_def(cls_A2, mth01, (
 	hif(v1) >> (~ o1 + ! o2),
-	(r1->o4) + v2,
+	(r1->o4()) + v2,
 	hcon(k2)
 ));
 
@@ -89,12 +100,14 @@ hl_string pru_str = "prueba_1";
 
 hmethod_def(cls_A3, mth01, (
 	r3->r1->o4(), 
-	r3->r1->mth02(), 
 	r3->r1->o4(),
+	aa1 = r3->r1(), hinf, 
+	r3->r1() = v1,
+	r3->r1->mth02(), 
 	aa1 = aa2, 
 	aa2 <<= aa3, 
 	aa3 = aa1,
-	hcase(r3),
+	hcase(r3) >> r3,
 	hmsg_src(cls_A1)->o4(),
 	hmsg_ref(cls_A1)->o4(),
 	hmsg_val(long),
@@ -132,7 +145,7 @@ void hl_test_1(int argc, char *argv[])
 
 	printf("RUNNING PATH= %s \n", path_get_running_path().c_str());
 
-	HLANG_SYS().generate_cpp_code();	
+	HLANG_SYS().generate_cpp_code();
 	
 	printf("\n End of Using bj_mchl_test_1\n");
 }
