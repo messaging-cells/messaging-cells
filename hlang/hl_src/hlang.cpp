@@ -251,6 +251,7 @@ hl_string get_upper_str(const hl_string& nam){
 	return out;
 }
 
+hc_mth_def*	hcell::defining_mth = hl_null;
 long	hc_term::HC_PRT_TERM_INDENT = 0;
 
 hc_system& HLANG_SYS(){
@@ -576,9 +577,6 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_assig_op5:
 			tok = "=5";
 		break;
-		case hc_async_asig_op:
-			tok = "<<=";
-		break;
 		case hc_less_than_op:
 			tok = "<";
 		break;
@@ -652,15 +650,35 @@ ck_is_not_cond(hc_term& o1){
 	}
 }
 
-hc_term& hc_term::operator , (hc_term& o1) { 
-	ck_is_not_cond(*this);
-	ck_is_not_cond(o1);
-	hc_binary_term* tm = new hc_binary_term(hc_comma_op, this, &o1); 
-	tm->has_st = true;
-	return *tm; 
+hc_steps_term*
+hc_term::to_steps(){
+	hc_steps_term* sts = hl_null;
+	if(get_oper() == hc_comma_op){
+		sts = (hc_steps_term*)this;
+	} else {
+		sts = new hc_steps_term(); 
+		sts->steps.push_back(this);
+	}
+	HL_CK(sts != hl_null);
+	return sts;
 }
 
-hc_term& hc_term::operator >> (hc_term& o1) { 
+hc_term& 
+hc_term::operator , (hc_term& o1) { 
+	ck_is_not_cond(*this);
+	ck_is_not_cond(o1);
+	bool has_st;
+	ck_closed_param(this, this, has_st);
+	ck_closed_param(&o1, this, has_st);
+	
+	hc_steps_term* sts = to_steps();
+	sts->steps.push_back(&o1);
+	
+	return *sts; 
+}
+
+hc_term& 
+hc_term::operator >> (hc_term& o1) { 
 	if(! hc_is_cond_oper(get_oper())){
 		fprintf(stderr, "---------------------------------------------------\n");
 		fprintf(stderr, "NEAR\n");
@@ -669,13 +687,13 @@ hc_term& hc_term::operator >> (hc_term& o1) {
 		fprintf(stderr, "---------------------------------------------------\n");
 		hl_abort("First parameter %s to then \">>\" must be a conditional.\n", get_name());
 	}
-	HC_DEFINE_BINARY_OP_BASE(hc_then_op);
+	hc_term* tm = new hc_binary_term(hc_then_op, this, &o1);
+	return *tm;
 }
 
-//HC_DEFINE_BINARY_OP(>>, hc_then_op)
-HC_DEFINE_BINARY_OP(<<=, hc_async_asig_op)
 
-hc_term& hc_term::operator = (hc_term& o1) { 
+hc_term& 
+hc_term::operator = (hc_term& o1) { 
 	HC_DEFINE_ASSIG_BASE(hc_assig_op1);
 }
 
@@ -699,12 +717,14 @@ HC_DEFINE_UNARY_OP(~, hc_bit_not_op)
 HC_DEFINE_UNARY_OP(++, hc_pre_inc_op)
 HC_DEFINE_UNARY_OP(--, hc_pre_dec_op)
 
-hc_term& hc_term::operator ++ (int){
+hc_term& 
+hc_term::operator ++ (int){
 	hc_term* tm = new hc_unary_term(hc_post_inc_op, this);
 	return *tm;
 }
 
-hc_term& hc_term::operator -- (int){
+hc_term& 
+hc_term::operator -- (int){
 	hc_term* tm = new hc_unary_term(hc_post_dec_op, this);
 	return *tm;
 }
@@ -793,10 +813,10 @@ hc_term::print_term(FILE *st){
 
 
 void //static
-hc_term::print_indent(){
+hc_term::print_indent(FILE *st){
 	HL_CK(HC_PRT_TERM_INDENT >= 0);
 	for(long aa = 0; aa < HC_PRT_TERM_INDENT; aa++){
-		printf("\t");
+		fprintf(st, "\t");
 	}
 }
 
@@ -811,14 +831,40 @@ hc_unary_term::print_term(FILE *st){
 	fprintf(st, ")");
 }
 
+void
+print_sep(FILE *st, hc_term* tm){
+	fprintf(st, "\n"); 
+	tm->print_label(st); 
+	hc_term::print_indent(st);
+}
+
+void
+hc_steps_term::print_term(FILE *st){
+	bool is_fst = true;
+	fprintf(st, "\n");
+	
+	auto it = steps.begin();
+	for(; it != steps.end(); ++it){
+		if(is_fst){ is_fst = false; } 
+		else { fprintf(st, " , \n"); }
+		hc_term* tm = (*it);
+		HL_CK(tm != hl_null);
+		tm->print_label(st); 
+		tm->print_term(st);
+	}
+}
+
 void 
 hc_binary_term::print_term(FILE *st){
 	const char* tok = hc_get_token(op);
+	HL_CK(lft != hl_null);
+	HL_CK(rgt != hl_null);
 	switch(op){
 	case hc_comma_op:
-		if(lft != hl_null){ lft->print_term(st); }
-		fprintf(st, "%s\n", tok); print_indent();
-		if(rgt != hl_null){ rgt->print_term(st); }
+		lft->print_term(st);
+		fprintf(st, "%s", tok); 
+		print_sep(st, rgt);
+		rgt->print_term(st);
 	break;
 	default:
 		hc_syntax_op_t lft_op = lft->get_oper();
@@ -827,13 +873,14 @@ hc_binary_term::print_term(FILE *st){
 		HC_PRT_TERM_INDENT++;
 		
 		if(lft_op == hc_comma_op){ fprintf(st, "("); }
-		if(lft != hl_null){ lft->print_term(st); }
+		lft->print_term(st);
 		if(lft_op == hc_comma_op){ fprintf(st, ")"); }
 		
 		fprintf(st, " %s ", tok);
+		if(op == hc_then_op){ print_sep(st, rgt); }
 		
 		if(rgt_op == hc_comma_op){ fprintf(st, "("); }
-		if(rgt != hl_null){ rgt->print_term(st); }
+		rgt->print_term(st);
 		if(rgt_op == hc_comma_op){ fprintf(st, ")"); }
 		
 		HC_PRT_TERM_INDENT--;

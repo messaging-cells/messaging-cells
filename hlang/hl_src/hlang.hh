@@ -81,9 +81,12 @@ typedef int64_t hc_chip_idx;
 class hc_system;
 class hc_term;
 class hc_global;
+class hc_steps_term;
 class hc_keyword;
 class hc_mth_def;
+class hc_mth_call;
 class hcell;
+class hc_ast_block;
 
 typedef void (*hc_caller_t)();
 
@@ -295,8 +298,6 @@ enum	hc_syntax_op_t {
 	hc_assig_op4,	// =
 	hc_assig_op5,	// =
 
-	hc_async_asig_op,	// <<=
-	
 	hc_less_than_op,	// <
 	hc_more_than_op,	// >
 	hc_less_equal_than_op,	// <=
@@ -380,8 +381,14 @@ class hc_term {
 public:
 	static long	HC_PRT_TERM_INDENT;
 	
+	hc_term* parent;
+	hc_term* next;
+	
 	// constructors
-	hc_term(){}
+	hc_term(){
+		parent = hl_null;
+		next = hl_null;
+	}
 
 	virtual	~hc_term(){
 	}
@@ -400,7 +407,6 @@ public:
 	hc_term&	operator >> (hc_term& o1);
 	
 	hc_term&	operator = (hc_term& o1);
-	hc_term&	operator <<= (hc_term& o1);
 	
 	hc_term&	operator < (hc_term& o1);
 	hc_term&	operator > (hc_term& o1);
@@ -443,7 +449,7 @@ public:
 	}
 
 	static
-	void print_indent();
+	void print_indent(FILE *st);
 	
 	virtual 
 	hc_syntax_op_t	get_oper(){
@@ -473,6 +479,18 @@ public:
 	virtual 
 	bool	has_statements(){
 		return false;
+	}
+	
+	hc_steps_term* to_steps();
+
+	virtual 
+	void	set_next(hc_term* nxt){
+		HL_CK(next == hl_null);
+		next = nxt;
+	}
+	
+	void print_label(FILE *st){
+		fprintf(st, "%p:\t", (void*)this);
 	}
 };
 
@@ -586,6 +604,48 @@ public:
 	bool	has_statements(){
 		return has_st;
 	}
+};
+
+class hc_steps_term : public hc_term {
+public:
+	std::list<hc_term*> steps;
+
+	virtual	~hc_steps_term(){
+		while(! steps.empty()){
+			hc_term* tm = steps.front();
+			HL_CK(tm != hl_null);
+			steps.pop_front();
+			if(tm->is_compound()){
+				delete tm;
+			}
+		}		
+	}
+	
+	hc_steps_term(){}
+	
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_comma_op;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return hc_get_token(get_oper());
+	}
+	
+	virtual 
+	void print_term(FILE *st = stdout);
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+	
+	virtual 
+	bool	has_statements(){
+		return true;
+	}
+	
 };
 
 class hc_binary_term : public hc_term {
@@ -972,6 +1032,7 @@ public:
 	bool defining = false;
 	hc_caller_t caller = hl_null;
 	long num_steps = 0;
+	std::list<hc_mth_def*> calls;
 	
 	virtual	~hc_mth_def(){}
 	
@@ -1050,23 +1111,12 @@ public:
 #define hnucleus(mth) hmethod(mth)
 
 
-/*
-			fprintf(stderr, "Inside %s \n", __PRETTY_FUNCTION__); \
-			if(cls::mth ## _def_reg.defining){ \
-				HL_PRT("\nCannot have recursive methods in hlang.\nBad definition of %s.\n", \
-					#cls "::" #mth \
-				); \
-				hl_abort("BAD hlang METHOD DEFINITION \n"); \
-			} \
-*/
-
-
 #define hmethod_def_base(cls, mth, code, is_nucl) \
 	void cls ## _ ## mth ## _ ## caller(); \
 	hc_mth_def cls::mth ## _def_reg{#cls, #mth, cls ## _ ## mth ## _ ## caller, is_nucl}; \
 	hc_term& \
 	cls::mth(){ \
-		hc_term* mc = new hc_mth_call(&cls::mth ## _def_reg); \
+		hc_mth_call* mc = new hc_mth_call(&cls::mth ## _def_reg); \
 		hc_term* rr = mc; \
 		if(rf_src_tm != hl_null){ \
 			hc_term* tmp = rf_src_tm; \
@@ -1077,15 +1127,23 @@ public:
 		if((cls::mth ## _def_reg.cod == hl_null) && (cls::mth ## _def_reg.defining)){ \
 			printf("CALLING_METHOD\n%s\n", __PRETTY_FUNCTION__); \
 			hc_term& tm = (code); \
-			cls::mth ## _def_reg.cod = tm.get_src(); \
+			cls::mth ## _def_reg.cod = tm.get_src()->to_steps(); \
+		} \
+		if(! cls::mth ## _def_reg.defining){ \
+			HL_CK(hcell::defining_mth != hl_null); \
+			hcell::defining_mth->calls.push_back(&cls::mth ## _def_reg); \
 		} \
 		return *rr; \
 	} \
 	void cls ## _ ## mth ## _ ## caller(){ \
 		cls* obj = hc_reference<cls>::get_glb_ref(); \
+		HL_CK(hcell::defining_mth == hl_null); \
+		hcell::defining_mth = &cls::mth ## _def_reg; \
 		cls::mth ## _def_reg.defining = true; \
 		obj->cls::mth(); \
 		cls::mth ## _def_reg.defining = false; \
+		hcell::defining_mth = hl_null; \
+		HL_CK(hcell::defining_mth == hl_null); \
 	} \
 
 // end_define
@@ -1156,6 +1214,8 @@ public:
 
 class hcell {
 public:
+	static hc_mth_def*	defining_mth;
+	
 	hc_chip_idx		hc_my_id = -1;
 	hc_term* 		hc_pt_me = hl_null;
 	hc_term* 		rf_src_tm = hl_null;
@@ -1253,7 +1313,12 @@ hdeclare_token(hmsg_tok);
 #define hmsg_val(typ) hcon(hmsg_val)
 #define hmsg_tok(typ) htok(hmsg_tok)
 
-//int HL_PRU_VAL = 0;
+class hc_ast_cond : hc_term {
+public:
+	hc_term* cond;
+	hc_term* if_true;
+	hc_term* if_false;
+};
 
 #endif		// HLANG_H
 

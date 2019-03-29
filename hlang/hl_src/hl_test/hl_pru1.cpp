@@ -45,8 +45,8 @@ hmethod_def(cls_A1, mth01, (
 	(r1 = (o1 + o2)),
 	(o2 = (r2 + r1)),
 	(r1 = r2) = (r4 + r5),
-	(o1 = o2) <<= (o4 + o5),
-	(o1 <<= o2),
+	(o1 = o2) = (o4 + o5),
+	(o1 = o2),
 	o4, o5, 
 	hswitch(o1) >> (
 		hcase(o2) >> o3++, 
@@ -79,7 +79,7 @@ hmethod_def(cls_A1, mth02, (
 hmethod_def(cls_A1, mth03, (
 	hif(o3) >> (~ o1 + ! o2),
 	(o2 = (r2 + r1)),
-	(o2 <<= (r2 + r1)),
+	(o2 = (r2 + r1)),
 	r1 = hme(),
 	mth02()
 ));
@@ -105,7 +105,7 @@ hmethod_def(cls_A3, mth01, (
 	r3->r1() = v1,
 	r3->r1->mth02(), 
 	aa1 = aa2, 
-	aa2 <<= aa3, 
+	aa2 = aa3, 
 	aa3 = aa1,
 	hcase(r3) >> r3,
 	hmsg_src(cls_A1)->o4(),
