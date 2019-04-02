@@ -500,7 +500,7 @@ int sha2_self_test( int verbose )
         k = i < 3;
 
         if( verbose != 0 )
-            printf( "  SHA-%d test #%d: ", 256 - k * 32, j + 1 );
+            fprintf(stdout, "  SHA-%d test #%d: ", 256 - k * 32, j + 1 );
 
         sha2_starts( &ctx, k );
 
@@ -519,17 +519,17 @@ int sha2_self_test( int verbose )
         if( memcmp( sha2sum, sha2_test_sum[i], 32 - k * 4 ) != 0 )
         {
             if( verbose != 0 )
-                printf( "failed\n" );
+                fprintf(stdout, "failed\n" );
 
             return( 1 );
         }
 
         if( verbose != 0 )
-            printf( "passed\n" );
+            fprintf(stdout, "passed\n" );
     }
 
     if( verbose != 0 )
-        printf( "\n" );
+        fprintf(stdout, "\n" );
 
     return( 0 );
 }

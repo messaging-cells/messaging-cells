@@ -58,13 +58,13 @@ hmethod_def(cls_A1, mth01, (
 	hif(b3 && (b4 || b1)) >> (~ o1 + ! o2),
 	hif(o3 && (o4 || o1)) >> (~ o1 + ! o2),
 	helif(o4) >> (o5 && o3),
-	hfor(o4) >> (o2 || o3),
+	helse >> o2,
+	hfor(o1 = r1, o1 < o2, o1++) >> (o2 || o3),
 	hwhile(o4) >> (o1 & o3),
 	hreturn,
 	//mth02(), 
 	hcontinue,
 	hbreak,
-	helse >> o2,
 	((o1 < o2) <= (o3 > o4)),
 	o4
 ));

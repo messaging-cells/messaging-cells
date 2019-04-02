@@ -81,7 +81,7 @@ typedef int64_t hc_chip_idx;
 class hc_system;
 class hc_term;
 class hc_global;
-class hc_steps_term;
+class hc_steps;
 class hc_keyword;
 class hc_mth_def;
 class hc_mth_call;
@@ -120,6 +120,8 @@ public:
 
 	bool has_value(const char* attr);
 	bool has_reference(const char* attr);
+	
+	long calc_depth();
 	
 	hl_string get_tmp_hh_name(){
 		return nam + "_tmp.hh";
@@ -279,13 +281,14 @@ enum	hc_syntax_op_t {
 	hc_then_op,	// >>
 	
 	hc_hme_op,	// hme
+	hc_hfor_op,	// hfor
 	hc_hif_op,	// hif
 	hc_helif_op,	// helif
-	hc_hfor_op,	// hfor
 	hc_hwhile_op,	// hwhile
 	hc_hswitch_op,	// hswitch
 	hc_hcase_op,	// hcase
-
+	
+	hc_hdefault_op,	// hdefault
 	hc_helse_op,	// helse
 	hc_hbreak_op,	// hbreak
 	hc_hcontinue_op,	// hcontinue
@@ -381,12 +384,12 @@ class hc_term {
 public:
 	static long	HC_PRT_TERM_INDENT;
 	
-	hc_term* parent;
+	long num_steps = 0;
 	hc_term* next;
 	
 	// constructors
 	hc_term(){
-		parent = hl_null;
+		num_steps = 0;
 		next = hl_null;
 	}
 
@@ -399,7 +402,7 @@ public:
 	hc_term(hc_term& other){ 
 		hl_abort("func: 'hc_term(hc_term&)' \n");
 		//HC_OBJECT_COPY_ERROR;
-		//printf("%s \n", STACK_STR.c_str());
+		//fprintf(stdout, "%s \n", STACK_STR.c_str());
 		//bj_abort_func(0, "func: 'hc_term::~hc_term'"); 
 	}
 
@@ -457,6 +460,15 @@ public:
 	}
 	
 	virtual 
+	hc_syntax_op_t	get_cond_oper(){
+		return hc_invalid_op;
+	}
+	
+	bool is_cond(){
+		return (get_cond_oper() != hc_invalid_op);
+	}
+	
+	virtual 
 	const char*	get_type(){
 		return "INVALID_TYPE";
 	}	
@@ -481,12 +493,20 @@ public:
 		return false;
 	}
 	
-	hc_steps_term* to_steps();
+	hc_steps* to_steps();
 
 	virtual 
-	void	set_next(hc_term* nxt){
+	void	set_next(hc_term& nxt){
 		HL_CK(next == hl_null);
-		next = nxt;
+		next = &nxt;
+	}
+	
+	virtual 
+	void	set_last(hc_term& nxt){}
+	
+	bool	is_if_closer(){
+		hc_syntax_op_t op = get_cond_oper();
+		return ((op != hc_helif_op) && (op != hc_helse_op));
 	}
 	
 	void print_label(FILE *st){
@@ -494,9 +514,9 @@ public:
 	}
 };
 
+hc_term&	hfor(hc_term& the_before, hc_term& the_cond, hc_term& the_end_each_loop);
 hc_term&	hif(hc_term& o1);
 hc_term&	helif(hc_term& o1);
-hc_term&	hfor(hc_term& o1);
 hc_term&	hwhile(hc_term& o1);
 hc_term&	hswitch(hc_term& o1);
 hc_term&	hcase(hc_term& o1);
@@ -534,7 +554,6 @@ public:
 	virtual 
 	void print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
-		//std::cout << ' ' << get_name() << ' ';
 	}
 
 	virtual 
@@ -573,13 +592,14 @@ public:
 		init_unary_term(pm_op, pm_val);
 	}
 
-	void init_unary_term(hc_syntax_op_t pm_op = hc_invalid_op, 
-						  hc_term* pm_val = hl_null)
+	void init_unary_term(hc_syntax_op_t pm_op, hc_term* pm_val)
 	{
+		HL_CK(pm_val != hl_null);
 		has_st = false;
 		op = pm_op;
 		ck_closed_param(pm_val, this, has_st);
 		prm = pm_val;
+		num_steps = prm->num_steps;
 	}
 	
 	virtual 
@@ -606,11 +626,13 @@ public:
 	}
 };
 
-class hc_steps_term : public hc_term {
+class hc_steps : public hc_term {
 public:
+	hc_term*	first_if = hl_null;
 	std::list<hc_term*> steps;
 
-	virtual	~hc_steps_term(){
+	virtual	~hc_steps(){
+		first_if = hl_null;
 		while(! steps.empty()){
 			hc_term* tm = steps.front();
 			HL_CK(tm != hl_null);
@@ -621,7 +643,16 @@ public:
 		}		
 	}
 	
-	hc_steps_term(){}
+	hc_steps(){
+		first_if = hl_null;
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_cond_oper(){
+		HL_CK(! steps.empty());
+		hc_term* tm = steps.back();
+		return tm->get_cond_oper();
+	}
 	
 	virtual 
 	hc_syntax_op_t	get_oper(){
@@ -646,6 +677,147 @@ public:
 		return true;
 	}
 	
+	void append_term(hc_term& o1);
+	
+};
+
+class hc_condition : public hc_term {
+public:
+	hc_term* eq_cond;
+	hc_term* cond;
+	hc_term* if_true;
+	hc_term* if_false;
+
+	virtual	~hc_condition(){
+		eq_cond = hl_null;
+		if((cond != hl_null) && cond->is_compound()){
+			delete cond;
+			cond = hl_null;
+		}
+		if((if_true != hl_null) && if_true->is_compound()){
+			delete if_true;
+			if_true = hl_null;
+		}
+		if_false = hl_null;
+	}
+	
+	hc_condition(hc_term* the_cond, hc_term* pm_if_true){
+		init_condition(the_cond, pm_if_true);
+	}
+	
+	void init_condition(hc_term* the_cond, hc_term* pm_if_true){
+		HL_CK(the_cond != hl_null);
+		HL_CK(pm_if_true != hl_null);
+		bool has_st = false;
+		ck_closed_param(the_cond, this, has_st);
+		ck_closed_param(pm_if_true, this, has_st);
+		eq_cond = hl_null;
+		cond = the_cond;
+		if_true = pm_if_true;
+		if_false = hl_null;
+		
+		num_steps = cond->num_steps;
+		num_steps += if_true->num_steps;
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_then_op;
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_cond_oper(){
+		HL_CK(cond != hl_null);
+		return cond->get_oper();
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return hc_get_token(get_oper());
+	}
+	
+	virtual 
+	void print_term(FILE *st = stdout);
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+	
+	virtual 
+	bool	has_statements(){
+		return true;
+	}
+	
+	bool can_add_to(hc_condition& cond);
+	
+	virtual 
+	void	set_next(hc_term& nxt);
+	
+	virtual 
+	void	set_last(hc_term& nxt);
+};
+
+class hc_for_loop : public hc_term {
+public:
+	hc_term* before;
+	hc_term* cond;
+	hc_term* end_each_loop;
+	
+	virtual	~hc_for_loop(){
+		if((before != hl_null) && before->is_compound()){
+			delete before;
+			before = hl_null;
+		}
+		if((cond != hl_null) && cond->is_compound()){
+			delete cond;
+			cond = hl_null;
+		}
+		if((end_each_loop != hl_null) && end_each_loop->is_compound()){
+			delete end_each_loop;
+			end_each_loop = hl_null;
+		}
+	}
+	
+	hc_for_loop(hc_term* the_before, hc_term* the_cond, hc_term* the_end_each_loop){
+		HL_CK(the_before != hl_null);
+		HL_CK(the_cond != hl_null);
+		HL_CK(the_end_each_loop != hl_null);
+		bool has_st = false;
+		ck_closed_param(the_before, this, has_st);
+		ck_closed_param(the_cond, this, has_st);
+		ck_closed_param(the_end_each_loop, this, has_st);
+		before = the_before;
+		cond = the_cond;
+		end_each_loop = the_end_each_loop;
+		
+		num_steps = before->num_steps;
+		num_steps += cond->num_steps;
+		num_steps += end_each_loop->num_steps;
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_hfor_op;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return hc_get_token(get_oper());
+	}
+	
+	virtual 
+	void print_term(FILE *st = stdout);
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+	
+	virtual 
+	bool	has_statements(){
+		return true;
+	}
 };
 
 class hc_binary_term : public hc_term {
@@ -673,12 +845,19 @@ public:
 	void init_binary_term(hc_syntax_op_t pm_op = hc_invalid_op, 
 						  hc_term* pm_lft = hl_null, hc_term* pm_rgt = hl_null)
 	{
+		//HL_CK(lft != hl_null);
+		//HL_CK(rgt != hl_null);
+		
 		has_st = false;
 		op = pm_op;
 		ck_closed_param(pm_lft, this, has_st);
 		ck_closed_param(pm_rgt, this, has_st);
 		lft = pm_lft;
 		rgt = pm_rgt;
+		
+		num_steps = 0;
+		if(lft != hl_null){ num_steps += lft->num_steps; }
+		if(rgt != hl_null){ num_steps += rgt->num_steps; }
 	}
 	
 	virtual 
@@ -735,6 +914,10 @@ public:
 						hc_term* pm_dst = hl_null, hc_term* pm_tok = hl_null,
 						hc_term* pm_att = hl_null)
 	{
+		HL_CK(pm_dst != hl_null);
+		HL_CK(pm_tok != hl_null);
+		HL_CK(pm_att != hl_null);
+		
 		bool has_st = false;
 		op = pm_op;
 		ck_closed_param(pm_dst, this, has_st);
@@ -743,6 +926,10 @@ public:
 		snd_dst = pm_dst;
 		snd_tok = pm_tok;
 		snd_att = pm_att;
+		
+		num_steps = snd_dst->num_steps;
+		num_steps += snd_tok->num_steps;
+		num_steps += snd_att->num_steps;
 	}
 	
 	virtual 
@@ -826,7 +1013,6 @@ public:
 	virtual 
 	void print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
-		//std::cout << ' ' << get_name() << ' ';
 	}
 
 	virtual 
@@ -858,7 +1044,6 @@ public:
 	virtual 
 	void print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
-		//std::cout << ' ' << get_name() << ' ';
 	}
 };
 
@@ -927,7 +1112,7 @@ public:
 			ref = get_glb_ref();
 		}
 		if(ref->rf_src_tm != hl_null){ 
-			HL_PRT("\nCannot have recursive referencing in hlang.\n"); 
+			hl_abort("\nCannot have recursive referencing in hlang.\n"); 
 		}
 		ref->rf_src_tm = this;
 		return ref;
@@ -938,7 +1123,7 @@ public:
 			ref = get_glb_ref();
 		}
 		if(ref->rf_src_tm != hl_null){ 
-			HL_PRT("\nCannot have recursive referencing in hlang.\n"); 
+			hl_abort("\nCannot have recursive referencing in hlang.\n"); 
 		}
 		ref->rf_src_tm = this;
 		return ref;
@@ -963,7 +1148,6 @@ public:
 	virtual 
 	void print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
-		//std::cout << ' ' << get_name() << ' ';
 	}
 
 	virtual 
@@ -1018,6 +1202,7 @@ hcast(hc_reference<cl1_t>& o1){
 #define huint32_t(nn) hvalue(uint32_t, nn)
 #define huint64_t(nn) hvalue(uint64_t, nn)
 
+extern hc_keyword hdefault;
 extern hc_keyword helse;
 extern hc_keyword hbreak;
 extern hc_keyword hcontinue;
@@ -1031,7 +1216,6 @@ public:
 	hc_term* cod = hl_null;
 	bool defining = false;
 	hc_caller_t caller = hl_null;
-	long num_steps = 0;
 	std::list<hc_mth_def*> calls;
 	
 	virtual	~hc_mth_def(){}
@@ -1042,9 +1226,10 @@ public:
 		cls = the_cls;
 		nam = the_nam;
 		caller = the_cllr;
-		num_steps = 0;
 		HLANG_SYS().register_method(the_cls, this, is_nucl);
 	}
+	
+	long 	calc_depth();
 
 	virtual 
 	const char*	get_name(){
@@ -1054,17 +1239,16 @@ public:
 	virtual 
 	void print_term(FILE *st = stdout){
 		fprintf(st, " %s() ", get_name());
-		//std::cout << ' ' << get_name() << "() ";
 	}
 
 	virtual 
 	void print_code(){
-		printf("CODE_FOR %s\n---------------\n", get_name());
+		fprintf(stdout, "CODE_FOR %s\n---------------\n", get_name());
 		if(cod == hl_null){
-			printf("EMPTY_COD for mth\n");
+			fprintf(stdout, "EMPTY_COD for mth\n");
 		} else {
 			cod->print_term();
-			printf("\n");
+			fprintf(stdout, "\n");
 		}
 	}
 	
@@ -1090,7 +1274,6 @@ public:
 	virtual 
 	void print_term(FILE *st = stdout){
 		fprintf(st, " %s() ", get_name());
-		//std::cout << ' ' << get_name() << "() ";
 	}
 
 	virtual 
@@ -1125,9 +1308,10 @@ public:
 			rr = new hc_binary_term(hc_member_op, tmp, mc); \
 		} \
 		if((cls::mth ## _def_reg.cod == hl_null) && (cls::mth ## _def_reg.defining)){ \
-			printf("CALLING_METHOD\n%s\n", __PRETTY_FUNCTION__); \
+			fprintf(stdout, "CALLING_METHOD\n%s\n", __PRETTY_FUNCTION__); \
 			hc_term& tm = (code); \
 			cls::mth ## _def_reg.cod = tm.get_src()->to_steps(); \
+			cls::mth ## _def_reg.num_steps = cls::mth ## _def_reg.cod->num_steps + 1; \
 		} \
 		if(! cls::mth ## _def_reg.defining){ \
 			HL_CK(hcell::defining_mth != hl_null); \
@@ -1169,8 +1353,7 @@ public:
 	
 	virtual 
 	void print_term(FILE *st = stdout){
-		fprintf(st, "hdbg_start(%s)hdbg_end\n", dbg_cod.c_str());
-		//std::cout << "hdbg_start(" << dbg_cod << ")hdbg_end\n";
+		fprintf(st, "hdbg_start(%s)hdbg_end", dbg_cod.c_str());
 	}
 
 	virtual 
@@ -1312,13 +1495,6 @@ hdeclare_token(hmsg_tok);
 #define hmsg_ref(cls) (cls::get_msg_ref())
 #define hmsg_val(typ) hcon(hmsg_val)
 #define hmsg_tok(typ) htok(hmsg_tok)
-
-class hc_ast_cond : hc_term {
-public:
-	hc_term* cond;
-	hc_term* if_true;
-	hc_term* if_false;
-};
 
 #endif		// HLANG_H
 

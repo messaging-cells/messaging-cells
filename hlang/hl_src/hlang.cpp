@@ -268,7 +268,7 @@ hc_system::get_class_reg(const char* cls, hc_caller_t the_initer){
 		hclass_reg* nr = new hclass_reg();
 		all_classes[cls] = nr;
 		added = true;
-		printf("ADDING_CLASS %s\n", cls);
+		fprintf(stdout, "ADDING_CLASS %s\n", cls);
 	}
 	hclass_reg* cls_reg = all_classes[cls];
 	if(added){
@@ -294,7 +294,7 @@ hc_system::register_method(const char* cls, hc_mth_def* mth, bool is_nucl){
 	} else {
 		cls_reg->methods.push_back(mth);
 	}
-	printf("ADDING_METHOD %s.%s\n", cls_reg->nam.c_str(), mth->nam);
+	fprintf(stdout, "ADDING_METHOD %s.%s\n", cls_reg->nam.c_str(), mth->nam);
 }
 
 bool
@@ -311,7 +311,7 @@ hc_system::register_value(hcell* obj, hc_term* attr){
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
 	if(! cls_reg->has_value(attr->get_name())){
 		(cls_reg->values)[attr->get_name()] = attr;
-		printf("ADDING_VALUE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
+		fprintf(stdout, "ADDING_VALUE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
 	}
 }
 
@@ -329,7 +329,7 @@ hc_system::register_reference(hcell* obj, hc_term* attr){
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
 	if(! cls_reg->has_reference(attr->get_name())){
 		(cls_reg->references)[attr->get_name()] = attr;
-		printf("ADDING_REFERENCE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
+		fprintf(stdout, "ADDING_REFERENCE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
 	}
 }
 
@@ -345,7 +345,7 @@ hc_system::register_address(hc_term* attr){
 	HL_CK(attr != hl_null);
 	if(! has_address(attr->get_name())){
 		all_glb_address[attr->get_name()] = attr;
-		printf("ADDING_ADDRESS %s\n", attr->get_name());
+		fprintf(stdout, "ADDING_ADDRESS %s\n", attr->get_name());
 	}
 }
 
@@ -361,7 +361,7 @@ hc_system::add_tok(const char* nm){
 	}
 	pt_glb = new hc_global(nm);
 	all_glb_token[nm] = pt_glb;
-	printf("ADDING_GLB_TOKEN %s\n", nm);
+	fprintf(stdout, "ADDING_GLB_TOKEN %s\n", nm);
 	return *pt_glb;
 }
 
@@ -391,7 +391,7 @@ hc_system::add_con(const char* nm, const char* val){
 	pt_glb = new hc_global(nm);
 	pt_glb->val = val;
 	all_glb_const[nm] = pt_glb;
-	printf("ADDING_GLB_CONSTANT %s\n", nm);
+	fprintf(stdout, "ADDING_GLB_CONSTANT %s\n", nm);
 	return *pt_glb;
 }
 
@@ -418,16 +418,16 @@ hclass_reg::call_all_methods(){
 		
 		mth_df->print_code();
 
-		std::cout << "-------------------------------------------\n";
+		fprintf(stderr, "-------------------------------------------(%ld steps)\n", mth_df->num_steps);
 	}
 	if(nucleus != hl_null){
-		std::cout << "\tCALLING NUCLEUS " << nucleus->nam << '\n';
+		fprintf(stdout, "\tCALLING NUCLEUS %s\n", nucleus->nam);
 		hc_caller_t cr = nucleus->caller;
 		(*cr)();
 		
 		nucleus->print_code();
 
-		std::cout << "-------------------------------------------\n";
+		fprintf(stderr, "-------------------------------------------(%ld steps)\n", nucleus->num_steps);
 	}
 }
 
@@ -435,32 +435,32 @@ void
 hc_system::call_all_registered_methods(){
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
-		printf("===========================================================\n");
-		printf("CALLING METHODS FOR CLASS %s \n", it->first.c_str());
+		fprintf(stdout, "===========================================================\n");
+		fprintf(stdout, "CALLING METHODS FOR CLASS %s \n", it->first.c_str());
 		it->second->call_all_methods();
 	}
-	printf("===========================================================\n");
+	fprintf(stdout, "===========================================================\n");
 }
 
 void
 hc_system::init_all_token(){
-	std::cout << "---------------------------------------------------------------\n";
+	fprintf(stdout, "---------------------------------------------------------------\n");;
 	long token_current_val = first_token_val;
 	auto it = all_glb_token.begin();
 	for(; it != all_glb_token.end(); ++it){
 		token_current_val++;
 		hc_global* tok = (hc_global*)(it->second);
 		tok->val = std::to_string(token_current_val);
-		printf("INITING TOKEN  %s = %ld \n", it->first.c_str(), token_current_val);
+		fprintf(stdout, "INITING TOKEN  %s = %ld \n", it->first.c_str(), token_current_val);
 	}
 }
 
 void
 hc_system::init_all_attributes(){
-	std::cout << "---------------------------------------------------------------\n";
+	fprintf(stdout, "---------------------------------------------------------------\n");
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
-		std::cout << "ADDING ATTRIBUTES FOR CLASS " << it->first << '\n';
+		fprintf(stdout, "ADDING ATTRIBUTES FOR CLASS %s \n", it->first.c_str());
 		hc_caller_t cr = it->second->initer;
 		if(cr != hl_null){
 			(*cr)();
@@ -472,13 +472,14 @@ bool
 hc_is_cond_oper(hc_syntax_op_t op){
 	bool is_co = false;
 	switch(op){
+		case hc_hfor_op:
 		case hc_hif_op:
 		case hc_helif_op:
-		case hc_hfor_op:
 		case hc_hwhile_op:
 		case hc_hswitch_op:
 		case hc_hcase_op:
 		case hc_helse_op:
+		case hc_hdefault_op:
 			is_co = true;
 		break;
 		default:
@@ -486,6 +487,47 @@ hc_is_cond_oper(hc_syntax_op_t op){
 	}
 	return is_co;
 }
+
+bool
+hc_can_start_cond_steps(hc_syntax_op_t op1){
+	bool can_strt = false;
+	switch(op1){
+		case hc_hfor_op:
+		case hc_hwhile_op:
+		case hc_hswitch_op:
+		case hc_hif_op:
+		case hc_hcase_op:
+			can_strt = true;
+			break;
+		default:
+		break;
+	}
+	return can_strt;
+}
+
+bool
+hc_can_add_cond_opers(hc_syntax_op_t op1, hc_syntax_op_t op2){
+	bool can_add = false;
+	switch(op1){
+		case hc_hswitch_op:
+		case hc_hwhile_op:
+		case hc_hfor_op:
+		case hc_helse_op:
+		case hc_hdefault_op:
+			break;
+		case hc_hif_op:
+		case hc_helif_op:
+			can_add = ((op2 == hc_helif_op) || (op2 == hc_helse_op));
+			break;
+		case hc_hcase_op:
+			can_add = ((op2 == hc_hcase_op) || (op2 == hc_hdefault_op));
+			break;
+		default:
+		break;
+	}
+	return can_add;
+}
+
 
 bool
 hc_is_assig_oper(hc_syntax_op_t op){
@@ -529,14 +571,14 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_hme_op:
 			tok = "hme";
 		break;
+		case hc_hfor_op:
+			tok = "hfor";
+		break;
 		case hc_hif_op:
 			tok = "hif";
 		break;
 		case hc_helif_op:
 			tok = "helif";
-		break;
-		case hc_hfor_op:
-			tok = "hfor";
 		break;
 		case hc_hwhile_op:
 			tok = "hwhile";
@@ -546,6 +588,9 @@ hc_get_token(hc_syntax_op_t op){
 		break;
 		case hc_hcase_op:
 			tok = "hcase";
+		break;
+		case hc_hdefault_op:
+			tok = "hdefault";
 		break;
 		case hc_helse_op:
 			tok = "helse";
@@ -650,17 +695,45 @@ ck_is_not_cond(hc_term& o1){
 	}
 }
 
-hc_steps_term*
+hc_steps*
 hc_term::to_steps(){
-	hc_steps_term* sts = hl_null;
+	hc_steps* sts = hl_null;
 	if(get_oper() == hc_comma_op){
-		sts = (hc_steps_term*)this;
+		sts = (hc_steps*)this;
 	} else {
-		sts = new hc_steps_term(); 
+		sts = new hc_steps(); 
 		sts->steps.push_back(this);
+		sts->num_steps += num_steps + 1;
 	}
 	HL_CK(sts != hl_null);
 	return sts;
+}
+
+void
+hc_condition::set_next(hc_term& nxt){
+	
+}
+
+void
+hc_condition::set_last(hc_term& nxt){
+	
+}
+
+void
+hc_steps::append_term(hc_term& o1){
+	HL_CK(! steps.empty());
+	hc_term* lst = steps.back();
+	lst->set_next(o1);
+	if((first_if != hl_null) && o1.is_if_closer()){
+		first_if->set_last(o1);
+		first_if = hl_null;
+	}
+		
+	steps.push_back(&o1);
+	num_steps += o1.num_steps + 1;
+	if(o1.get_cond_oper() == hc_hif_op){
+		first_if = &o1;
+	}
 }
 
 hc_term& 
@@ -671,8 +744,18 @@ hc_term::operator , (hc_term& o1) {
 	ck_closed_param(this, this, has_st);
 	ck_closed_param(&o1, this, has_st);
 	
-	hc_steps_term* sts = to_steps();
-	sts->steps.push_back(&o1);
+	hc_steps* sts = to_steps();
+	
+	if(sts->is_cond() && o1.is_cond()){
+		hc_syntax_op_t op1 = sts->get_cond_oper();
+		hc_syntax_op_t op2 = o1.get_cond_oper();
+		bool cadd = hc_can_add_cond_opers(op1, op2);
+		if(! hc_can_start_cond_steps(op2) && ! cadd){
+			hl_abort("Cannot add %s oper to %s oper.\n", hc_get_token(op2), hc_get_token(op1));
+		}
+	}
+	
+	sts->append_term(o1);
 	
 	return *sts; 
 }
@@ -687,7 +770,8 @@ hc_term::operator >> (hc_term& o1) {
 		fprintf(stderr, "---------------------------------------------------\n");
 		hl_abort("First parameter %s to then \">>\" must be a conditional.\n", get_name());
 	}
-	hc_term* tm = new hc_binary_term(hc_then_op, this, &o1);
+	hc_steps* sts = o1.to_steps();
+	hc_term* tm = new hc_condition(this, sts);
 	return *tm;
 }
 
@@ -742,18 +826,63 @@ hinfo(int vv){
 	return HINF; 
 } 
 
+hc_term&
+hfor(hc_term& the_before, hc_term& the_cond, hc_term& the_end_each_loop){
+	if(the_cond.has_statements()){
+		hl_abort("Condition %s to hfor has statements. Invalid grammar.\n",
+					the_cond.get_name());
+	}
+	hc_term* tm = new hc_for_loop(&the_before, &the_cond, &the_end_each_loop);
+	return *tm;
+}
+
+
 HC_DEFINE_FUNC_OP(hif, hc_hif_op)
 HC_DEFINE_FUNC_OP(helif, hc_helif_op)
-HC_DEFINE_FUNC_OP(hfor, hc_hfor_op)
 HC_DEFINE_FUNC_OP(hwhile, hc_hwhile_op)
 HC_DEFINE_FUNC_OP(hswitch, hc_hswitch_op)
 HC_DEFINE_FUNC_OP(hcase, hc_hcase_op)
 
+hkeyword_op(hdefault, hc_hdefault_op);
 hkeyword_op(helse, hc_helse_op);
 hkeyword(hbreak);
 hkeyword(hcontinue);
 hkeyword(hreturn);
 hkeyword(habort);
+
+long 
+hc_mth_def::calc_depth(){
+	long maxd = 0;
+	HL_CK(! defining);
+	defining = true;
+	auto it1 = calls.begin();
+	for(; it1 != calls.end(); ++it1){
+		hc_mth_def* cll = (*it1);
+		if(cll->defining){
+			hl_abort("Cannot have recursive methods in hlang. Already defining %s.\n", cll->get_name());
+		}
+		long dd = cll->calc_depth();
+		if(dd > maxd){
+			maxd = dd;
+		}
+	}
+	defining = false;
+	return (maxd + 1);
+}
+
+long 
+hclass_reg::calc_depth(){
+	long maxd = 0;
+	auto it1 = methods.begin();
+	for(; it1 != methods.end(); ++it1){
+		hc_mth_def* cll = (*it1);
+		long dd = cll->calc_depth();
+		if(dd > maxd){
+			maxd = dd;
+		}
+	}
+	return maxd;
+}
 
 bool
 hdbg_txt_pre_hh(const char* cls, const char* cod){
@@ -832,26 +961,64 @@ hc_unary_term::print_term(FILE *st){
 }
 
 void
-print_sep(FILE *st, hc_term* tm){
-	fprintf(st, "\n"); 
-	tm->print_label(st); 
-	hc_term::print_indent(st);
-}
-
-void
-hc_steps_term::print_term(FILE *st){
+hc_steps::print_term(FILE *st){
 	bool is_fst = true;
-	fprintf(st, "\n");
+	//fprintf(st, "(");
 	
 	auto it = steps.begin();
 	for(; it != steps.end(); ++it){
 		if(is_fst){ is_fst = false; } 
-		else { fprintf(st, " , \n"); }
+		else { fprintf(st, " ,"); }
 		hc_term* tm = (*it);
 		HL_CK(tm != hl_null);
+		
+		fprintf(st, "\n");
 		tm->print_label(st); 
+		hc_term::print_indent(st);
 		tm->print_term(st);
 	}
+	//fprintf(st, ")");
+}
+
+void 
+hc_condition::print_term(FILE *st){
+	const char* tok = hc_get_token(hc_then_op);
+	hc_term* tm1 = cond;
+	hc_term* tm2 = if_true;
+	
+	HL_CK(tm1 != hl_null);
+	HL_CK(tm2 != hl_null);
+	
+	fprintf(st, "("); 
+	hc_term::HC_PRT_TERM_INDENT++;
+	
+	tm1->print_term(st);
+	
+	fprintf(st, " %s ", tok);
+	
+	tm2->print_term(st);
+	
+	hc_term::HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
+}
+
+void 
+hc_for_loop::print_term(FILE *st){
+	const char* tok = hc_get_token(get_oper());
+	HL_CK(before != hl_null);
+	HL_CK(cond != hl_null);
+	HL_CK(end_each_loop != hl_null);
+	
+	fprintf(st, "%s", tok);
+	fprintf(st, "(");
+	HC_PRT_TERM_INDENT++;
+	before->print_term(st);
+	fprintf(st, " , ");
+	cond->print_term(st);
+	fprintf(st, " , ");
+	end_each_loop->print_term(st);
+	HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
 }
 
 void 
@@ -859,65 +1026,43 @@ hc_binary_term::print_term(FILE *st){
 	const char* tok = hc_get_token(op);
 	HL_CK(lft != hl_null);
 	HL_CK(rgt != hl_null);
-	switch(op){
-	case hc_comma_op:
-		lft->print_term(st);
-		fprintf(st, "%s", tok); 
-		print_sep(st, rgt);
-		rgt->print_term(st);
-	break;
-	default:
-		hc_syntax_op_t lft_op = lft->get_oper();
-		hc_syntax_op_t rgt_op = rgt->get_oper();
-		fprintf(st, "("); 
-		HC_PRT_TERM_INDENT++;
-		
-		if(lft_op == hc_comma_op){ fprintf(st, "("); }
-		lft->print_term(st);
-		if(lft_op == hc_comma_op){ fprintf(st, ")"); }
-		
-		fprintf(st, " %s ", tok);
-		if(op == hc_then_op){ print_sep(st, rgt); }
-		
-		if(rgt_op == hc_comma_op){ fprintf(st, "("); }
-		rgt->print_term(st);
-		if(rgt_op == hc_comma_op){ fprintf(st, ")"); }
-		
-		HC_PRT_TERM_INDENT--;
-		fprintf(st, ")");
-	break;
-	}
+	HL_CK(op != hc_comma_op);
+	HL_CK(op != hc_then_op);
+	
+	fprintf(st, "("); 
+	hc_term::HC_PRT_TERM_INDENT++;
+	
+	lft->print_term(st);
+	
+	fprintf(st, " %s ", tok);
+	
+	rgt->print_term(st);
+	
+	hc_term::HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
 }
+
 
 void 
 hc_send_term::print_term(FILE *st){
 	HL_CK((op == hc_send_op) || (op == hc_tell_op));
 	
 	const char* tok_str = hc_get_token(op);
-	hc_syntax_op_t dst_op = snd_dst->get_oper();
-	hc_syntax_op_t tok_op = snd_tok->get_oper();
-	hc_syntax_op_t att_op = snd_att->get_oper();
 	
 	fprintf(st, " %s", tok_str);
 	
 	fprintf(st, "("); 
 	HC_PRT_TERM_INDENT++;
 	
-	if(dst_op == hc_comma_op){ fprintf(st, "("); }
 	if(snd_dst != hl_null){ snd_dst->print_term(st); }
-	if(dst_op == hc_comma_op){ fprintf(st, ")"); }
 	
 	fprintf(st, ", ");
 	
-	if(tok_op == hc_comma_op){ fprintf(st, "("); }
 	if(snd_tok != hl_null){ snd_tok->print_term(st); }
-	if(tok_op == hc_comma_op){ fprintf(st, ")"); }
 
 	fprintf(st, ", ");
 	
-	if(att_op == hc_comma_op){ fprintf(st, "("); }
 	if(snd_att != hl_null){ snd_att->print_term(st); }
-	if(att_op == hc_comma_op){ fprintf(st, ")"); }
 
 	HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
@@ -929,7 +1074,7 @@ hcell::get_attr_nm(const char* pfix, const char* sfix){
 	result << pfix << get_class_name() << "_" << sfix;
 	const char* rr = strdup(result.str().c_str());
 	result.str("");
-	//printf("TOK_NM= %s\n", rr);
+	//fprintf(stdout, "TOK_NM= %s\n", rr);
 	return rr;
 }
 
