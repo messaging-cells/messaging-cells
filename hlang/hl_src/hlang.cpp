@@ -473,12 +473,12 @@ hc_is_cond_oper(hc_syntax_op_t op){
 	bool is_co = false;
 	switch(op){
 		case hc_hfor_op:
+		case hc_hwhile_op:
 		case hc_hif_op:
 		case hc_helif_op:
-		case hc_hwhile_op:
+		case hc_helse_op:
 		case hc_hswitch_op:
 		case hc_hcase_op:
-		case hc_helse_op:
 		case hc_hdefault_op:
 			is_co = true;
 		break;
@@ -494,8 +494,8 @@ hc_can_start_cond_steps(hc_syntax_op_t op1){
 	switch(op1){
 		case hc_hfor_op:
 		case hc_hwhile_op:
-		case hc_hswitch_op:
 		case hc_hif_op:
+		case hc_hswitch_op:
 		case hc_hcase_op:
 			can_strt = true;
 			break;
@@ -509,10 +509,10 @@ bool
 hc_can_add_cond_opers(hc_syntax_op_t op1, hc_syntax_op_t op2){
 	bool can_add = false;
 	switch(op1){
-		case hc_hswitch_op:
-		case hc_hwhile_op:
 		case hc_hfor_op:
+		case hc_hwhile_op:
 		case hc_helse_op:
+		case hc_hswitch_op:
 		case hc_hdefault_op:
 			break;
 		case hc_hif_op:
@@ -574,14 +574,17 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_hfor_op:
 			tok = "hfor";
 		break;
+		case hc_hwhile_op:
+			tok = "hwhile";
+		break;
 		case hc_hif_op:
 			tok = "hif";
 		break;
 		case hc_helif_op:
 			tok = "helif";
 		break;
-		case hc_hwhile_op:
-			tok = "hwhile";
+		case hc_helse_op:
+			tok = "helse";
 		break;
 		case hc_hswitch_op:
 			tok = "hswitch";
@@ -591,9 +594,6 @@ hc_get_token(hc_syntax_op_t op){
 		break;
 		case hc_hdefault_op:
 			tok = "hdefault";
-		break;
-		case hc_helse_op:
-			tok = "helse";
 		break;
 		case hc_hbreak_op:
 			tok = "hbreak";
@@ -697,6 +697,9 @@ ck_is_not_cond(hc_term& o1){
 
 hc_steps*
 hc_term::to_steps(){
+	if(! is_compound()){
+		hl_abort("Step %s is not statement. A step must be a statement.\n", get_name());
+	}
 	hc_steps* sts = hl_null;
 	if(get_oper() == hc_comma_op){
 		sts = (hc_steps*)this;
@@ -710,23 +713,18 @@ hc_term::to_steps(){
 }
 
 void
-hc_condition::set_next(hc_term& nxt){
-	
-}
-
-void
-hc_condition::set_last(hc_term& nxt){
-	
-}
-
-void
 hc_steps::append_term(hc_term& o1){
+	if(! o1.is_compound()){
+		hl_abort("Step %s is not statement. A step must be a statement.\n", o1.get_name());
+	}
+	
 	HL_CK(! steps.empty());
 	hc_term* lst = steps.back();
 	lst->set_next(o1);
 	if((first_if != hl_null) && o1.is_if_closer()){
-		first_if->set_last(o1);
+		hc_term* fst_tm = first_if;
 		first_if = hl_null;
+		fst_tm->set_last(o1);
 	}
 		
 	steps.push_back(&o1);
@@ -819,13 +817,6 @@ hdbg(const char* the_code){
 	return *tm; 
 } 
 
-hkeyword(HINF);
-
-hc_term& 
-hinfo(int vv){ 
-	return HINF; 
-} 
-
 hc_term&
 hfor(hc_term& the_before, hc_term& the_cond, hc_term& the_end_each_loop){
 	if(the_cond.has_statements()){
@@ -837,18 +828,11 @@ hfor(hc_term& the_before, hc_term& the_cond, hc_term& the_end_each_loop){
 }
 
 
+HC_DEFINE_FUNC_OP(hwhile, hc_hwhile_op)
 HC_DEFINE_FUNC_OP(hif, hc_hif_op)
 HC_DEFINE_FUNC_OP(helif, hc_helif_op)
-HC_DEFINE_FUNC_OP(hwhile, hc_hwhile_op)
 HC_DEFINE_FUNC_OP(hswitch, hc_hswitch_op)
 HC_DEFINE_FUNC_OP(hcase, hc_hcase_op)
-
-hkeyword_op(hdefault, hc_hdefault_op);
-hkeyword_op(helse, hc_helse_op);
-hkeyword(hbreak);
-hkeyword(hcontinue);
-hkeyword(hreturn);
-hkeyword(habort);
 
 long 
 hc_mth_def::calc_depth(){
@@ -973,9 +957,17 @@ hc_steps::print_term(FILE *st){
 		HL_CK(tm != hl_null);
 		
 		fprintf(st, "\n");
-		tm->print_label(st); 
+		tm->print_label(st);
+		fprintf(st, ":\t");
+		
 		hc_term::print_indent(st);
 		tm->print_term(st);
+		
+		fprintf(st, "\t[");
+		if(tm->next != hl_null){
+			tm->next->print_label(st);
+		}
+		fprintf(st, "]");
 	}
 	//fprintf(st, ")");
 }
@@ -995,6 +987,15 @@ hc_condition::print_term(FILE *st){
 	tm1->print_term(st);
 	
 	fprintf(st, " %s ", tok);
+	fprintf(st, " T[");
+	if_true->get_first_step()->print_label(st);
+	fprintf(st, " ]");
+	fprintf(st, " F[");
+	if(next != hl_null){
+		next->print_label(st);
+	}
+	fprintf(st, " ]");
+	
 	
 	tm2->print_term(st);
 	
@@ -1338,4 +1339,80 @@ void
 hclass_reg::print_cpp_class_defs(FILE* ff){
 }
 
+void
+hc_steps::set_next(hc_term& nxt){
+	HL_CK(! steps.empty());
+	hc_term* tm = steps.back();
+	tm->set_next(nxt);
+}
+
+void
+hc_steps::set_last(hc_term& nxt){
+	auto it = steps.begin();
+	for(; it != steps.end(); ++it){
+		hc_term* tm = (*it);
+		HL_CK(tm != hl_null);
+		tm->set_last(nxt);
+	}
+	set_next(nxt);
+}
+
+void
+hc_term::set_last(hc_term& nxt){
+}
+
+void
+hc_condition::set_next(hc_term& nxt){
+	hc_syntax_op_t op = get_cond_oper();
+	hc_term& th = *this;
+	switch(op){
+		case hc_hwhile_op:
+			next = &nxt;
+			HL_CK(if_true != hl_null);
+			if_true->set_last(th);
+		break;
+		case hc_hif_op:
+		case hc_helif_op:
+		case hc_helse_op:
+			next = &nxt;
+		break;
+		case hc_hswitch_op:
+			HL_CK(if_true != hl_null);
+			if_true->set_last(nxt);
+		break;
+		case hc_hcase_op:
+		case hc_hdefault_op:
+			next = &nxt;
+		break;
+		default:
+		break;
+	}
+}
+
+void
+hc_condition::set_last(hc_term& nxt){
+	hc_syntax_op_t op = get_cond_oper();
+	switch(op){
+		case hc_hif_op:
+		case hc_helif_op:
+		case hc_helse_op:
+			if_true->set_last(nxt);
+			if(next != &nxt){
+				HL_CK(next != hl_null);
+				HL_CK(next->is_cond());
+				next->set_last(nxt);
+			}
+		break;
+		case hc_hswitch_op:
+		case hc_hcase_op:
+		case hc_hdefault_op:
+			HL_CK(if_true != hl_null);
+			if_true->set_last(nxt);
+		break;
+		case hc_hwhile_op:
+		case hc_hfor_op:
+		default:
+		break;
+	}
+}
 

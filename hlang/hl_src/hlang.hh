@@ -281,15 +281,16 @@ enum	hc_syntax_op_t {
 	hc_then_op,	// >>
 	
 	hc_hme_op,	// hme
+	
 	hc_hfor_op,	// hfor
+	hc_hwhile_op,	// hwhile
 	hc_hif_op,	// hif
 	hc_helif_op,	// helif
-	hc_hwhile_op,	// hwhile
-	hc_hswitch_op,	// hswitch
-	hc_hcase_op,	// hcase
-	
-	hc_hdefault_op,	// hdefault
 	hc_helse_op,	// helse
+	hc_hswitch_op,	// hswitch
+	hc_hcase_op,	// hcase	
+	hc_hdefault_op,	// hdefault
+	
 	hc_hbreak_op,	// hbreak
 	hc_hcontinue_op,	// hcontinue
 	hc_hreturn_op,	// hreturn
@@ -494,6 +495,11 @@ public:
 	}
 	
 	hc_steps* to_steps();
+	
+	virtual 
+	hc_term* get_first_step(){
+		return this;
+	}
 
 	virtual 
 	void	set_next(hc_term& nxt){
@@ -502,7 +508,7 @@ public:
 	}
 	
 	virtual 
-	void	set_last(hc_term& nxt){}
+	void	set_last(hc_term& nxt);
 	
 	bool	is_if_closer(){
 		hc_syntax_op_t op = get_cond_oper();
@@ -510,7 +516,7 @@ public:
 	}
 	
 	void print_label(FILE *st){
-		fprintf(st, "%p:\t", (void*)this);
+		fprintf(st, "%p", (void*)this);
 	}
 };
 
@@ -522,8 +528,6 @@ hc_term&	hswitch(hc_term& o1);
 hc_term&	hcase(hc_term& o1);
 hc_term&	hdbg(const char* cod);
 hc_term&	hinfo(int pm = 0);
-
-#define hinf hinfo(fprintf(stderr, "%s \n", HL_INFO_STR))
 
 bool	hdbg_txt_pre_hh(const char* cls, const char* cod);
 bool	hdbg_txt_pos_hh(const char* cls, const char* cod);
@@ -679,6 +683,19 @@ public:
 	
 	void append_term(hc_term& o1);
 	
+	virtual 
+	hc_term* get_first_step(){
+		HL_CK(! steps.empty());
+		hc_term* tm = steps.front();
+		return tm;
+	}
+	
+	virtual 
+	void	set_next(hc_term& nxt);
+	
+	virtual 
+	void	set_last(hc_term& nxt);
+
 };
 
 class hc_condition : public hc_term {
@@ -686,7 +703,7 @@ public:
 	hc_term* eq_cond;
 	hc_term* cond;
 	hc_term* if_true;
-	hc_term* if_false;
+	//hc_term* if_false;
 
 	virtual	~hc_condition(){
 		eq_cond = hl_null;
@@ -698,7 +715,7 @@ public:
 			delete if_true;
 			if_true = hl_null;
 		}
-		if_false = hl_null;
+		//if_false = hl_null;
 	}
 	
 	hc_condition(hc_term* the_cond, hc_term* pm_if_true){
@@ -714,7 +731,7 @@ public:
 		eq_cond = hl_null;
 		cond = the_cond;
 		if_true = pm_if_true;
-		if_false = hl_null;
+		//if_false = hl_null;
 		
 		num_steps = cond->num_steps;
 		num_steps += if_true->num_steps;
@@ -756,6 +773,7 @@ public:
 	
 	virtual 
 	void	set_last(hc_term& nxt);
+	
 };
 
 class hc_for_loop : public hc_term {
@@ -1022,18 +1040,17 @@ public:
 class hc_keyword : public hc_term {
 public:
 	hc_syntax_op_t op;
-	hl_string nam;
+	//hl_string nam;
 	
 	virtual	~hc_keyword(){}
 	
-	hc_keyword(hl_string the_nam, hc_syntax_op_t the_op = hc_invalid_op){
+	hc_keyword(hc_syntax_op_t the_op){
 		op = the_op;
-		nam = the_nam;
 	}
 
 	virtual 
 	const char*	get_name(){
-		return nam.c_str();
+		return hc_get_token(op);
 	}
 	
 	virtual 
@@ -1044,6 +1061,11 @@ public:
 	virtual 
 	void print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
+	}
+	
+	virtual 
+	bool	is_compound(){
+		return true;
 	}
 };
 
@@ -1181,8 +1203,8 @@ hcast(hc_reference<cl1_t>& o1){
 
 #define hreference(tt, nn) htoks_att(nn, this); hc_reference<tt> nn{#tt, #nn, this}
 
-#define hkeyword(nn) hc_keyword nn(#nn)
-#define hkeyword_op(nn, op) hc_keyword nn(#nn, op)
+//define hkeyword(nn) hc_keyword nn(#nn)
+//define hkeyword_op(nn, op) hc_keyword nn(#nn, op)
 
 #define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
@@ -1202,12 +1224,15 @@ hcast(hc_reference<cl1_t>& o1){
 #define huint32_t(nn) hvalue(uint32_t, nn)
 #define huint64_t(nn) hvalue(uint64_t, nn)
 
-extern hc_keyword hdefault;
-extern hc_keyword helse;
-extern hc_keyword hbreak;
-extern hc_keyword hcontinue;
-extern hc_keyword hreturn;
-extern hc_keyword habort;
+#define hl_new_keyword(nn) (*(new hc_keyword(hc_ ## nn ## _op)))
+
+#define hdefault 	hl_new_keyword(hdefault)
+#define helse 		hl_new_keyword(helse)
+#define hbreak 		hl_new_keyword(hbreak)
+#define hcontinue 	hl_new_keyword(hcontinue)
+#define hreturn 	hl_new_keyword(hreturn)
+#define habort 		hl_new_keyword(habort)
+
 
 class hc_mth_def : public hc_term {
 public:
@@ -1282,6 +1307,10 @@ public:
 		the_mth->print_code();
 	}
 	
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
 };
 
 
@@ -1364,6 +1393,11 @@ public:
 	virtual 
 	hc_syntax_op_t	get_oper(){
 		return hc_dbg_op;
+	}
+	
+	virtual 
+	bool	is_compound(){
+		return true;
 	}
 };
 

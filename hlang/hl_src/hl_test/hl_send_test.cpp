@@ -17,7 +17,8 @@ hnucleus_def(cls_snd, central, (
 		hcase(pr_tok_snd_val1) >> (v1 = hmsg_val), 
 		hcase(pr_tok_snd_val2) >> (v2 = hmsg_val(int)),
 		hcase(pr_tok_snd_add) >> (sum = (v1 + v2))
-	)
+	),
+	hreturn
 ));
 
 
