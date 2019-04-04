@@ -700,13 +700,17 @@ hc_term::to_steps(){
 	if(! is_compound()){
 		hl_abort("Step %s is not statement. A step must be a statement.\n", get_name());
 	}
+	hc_term* pt_tm = this;
 	hc_steps* sts = hl_null;
 	if(get_oper() == hc_comma_op){
-		sts = (hc_steps*)this;
+		sts = (hc_steps*)pt_tm;
 	} else {
 		sts = new hc_steps(); 
-		sts->steps.push_back(this);
+		sts->steps.push_back(pt_tm);
 		sts->num_steps += num_steps + 1;
+		if(pt_tm->get_cond_oper() == hc_hif_op){
+			sts->first_if = pt_tm;
+		}
 	}
 	HL_CK(sts != hl_null);
 	return sts;
@@ -818,12 +822,15 @@ hdbg(const char* the_code){
 } 
 
 hc_term&
-hfor(hc_term& the_before, hc_term& the_cond, hc_term& the_end_each_loop){
+hfor(hc_term& the_cond, hc_term& the_end_each_loop){
 	if(the_cond.has_statements()){
 		hl_abort("Condition %s to hfor has statements. Invalid grammar.\n",
 					the_cond.get_name());
 	}
-	hc_term* tm = new hc_for_loop(&the_before, &the_cond, &the_end_each_loop);
+	
+	//hc_steps* sts_con = the_cond.to_steps();
+	hc_steps* sts_end = the_end_each_loop.to_steps();
+	hc_term* tm = new hc_for_loop(&the_cond, sts_end);
 	return *tm;
 }
 
@@ -919,9 +926,10 @@ hdbg_txt_pos_cpp(const char* cls, const char* cod){
 htoken(hmsg_tok);
 hconst(hmsg_val, 0);
 
-void 
+int
 hc_term::print_term(FILE *st){
 	hl_abort("INVALID_TERM !!!!\n");
+	return 0;
 }
 
 
@@ -933,7 +941,7 @@ hc_term::print_indent(FILE *st){
 	}
 }
 
-void 
+int
 hc_unary_term::print_term(FILE *st){
 	const char* tok = hc_get_token(op);
 	fprintf(st, "%s", tok);
@@ -942,9 +950,11 @@ hc_unary_term::print_term(FILE *st){
 	if(prm != hl_null){ prm->print_term(st); }
 	HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
+	
+	return 0;
 }
 
-void
+int
 hc_steps::print_term(FILE *st){
 	bool is_fst = true;
 	//fprintf(st, "(");
@@ -970,9 +980,10 @@ hc_steps::print_term(FILE *st){
 		fprintf(st, "]");
 	}
 	//fprintf(st, ")");
+	return 0;
 }
 
-void 
+int
 hc_condition::print_term(FILE *st){
 	const char* tok = hc_get_token(hc_then_op);
 	hc_term* tm1 = cond;
@@ -989,40 +1000,41 @@ hc_condition::print_term(FILE *st){
 	fprintf(st, " %s ", tok);
 	fprintf(st, " T[");
 	if_true->get_first_step()->print_label(st);
-	fprintf(st, " ]");
+	fprintf(st, "]");
 	fprintf(st, " F[");
 	if(next != hl_null){
 		next->print_label(st);
 	}
-	fprintf(st, " ]");
+	fprintf(st, "]");
 	
 	
 	tm2->print_term(st);
 	
 	hc_term::HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
+	
+	return 0;
 }
 
-void 
+int
 hc_for_loop::print_term(FILE *st){
 	const char* tok = hc_get_token(get_oper());
-	HL_CK(before != hl_null);
 	HL_CK(cond != hl_null);
 	HL_CK(end_each_loop != hl_null);
 	
 	fprintf(st, "%s", tok);
 	fprintf(st, "(");
 	HC_PRT_TERM_INDENT++;
-	before->print_term(st);
-	fprintf(st, " , ");
 	cond->print_term(st);
-	fprintf(st, " , ");
+	fprintf(st, "  _,_  ");
 	end_each_loop->print_term(st);
 	HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
+
+	return 0;
 }
 
-void 
+int
 hc_binary_term::print_term(FILE *st){
 	const char* tok = hc_get_token(op);
 	HL_CK(lft != hl_null);
@@ -1041,10 +1053,12 @@ hc_binary_term::print_term(FILE *st){
 	
 	hc_term::HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
+
+	return 0;
 }
 
 
-void 
+int
 hc_send_term::print_term(FILE *st){
 	HL_CK((op == hc_send_op) || (op == hc_tell_op));
 	
@@ -1067,6 +1081,8 @@ hc_send_term::print_term(FILE *st){
 
 	HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
+
+	return 0;
 }
 
 const char*
@@ -1348,6 +1364,11 @@ hc_steps::set_next(hc_term& nxt){
 
 void
 hc_steps::set_last(hc_term& nxt){
+	if(has_last){
+		return;
+	}
+	has_last = true;
+	
 	auto it = steps.begin();
 	for(; it != steps.end(); ++it){
 		hc_term* tm = (*it);
@@ -1358,6 +1379,13 @@ hc_steps::set_last(hc_term& nxt){
 }
 
 void
+hc_term::set_next(hc_term& nxt){
+	HL_CK_PRT((next == hl_null), "%d\n", (printf("GGGGG"), print_term()));
+	HL_CK(next == hl_null);
+	next = &nxt;
+}
+	
+void
 hc_term::set_last(hc_term& nxt){
 }
 
@@ -1366,6 +1394,20 @@ hc_condition::set_next(hc_term& nxt){
 	hc_syntax_op_t op = get_cond_oper();
 	hc_term& th = *this;
 	switch(op){
+		case hc_hfor_op:{
+			next = &nxt;
+			
+			HL_CK(cond != hl_null);
+			hc_for_loop& for_cond = *((hc_for_loop*)cond);
+			HL_CK(for_cond.end_each_loop != hl_null);
+			hc_term& for_end = *(for_cond.end_each_loop);
+			
+			for_end.set_last(th);
+			
+			HL_CK(if_true != hl_null);
+			if_true->set_last(for_end);
+		}
+		break;
 		case hc_hwhile_op:
 			next = &nxt;
 			HL_CK(if_true != hl_null);
@@ -1391,6 +1433,11 @@ hc_condition::set_next(hc_term& nxt){
 
 void
 hc_condition::set_last(hc_term& nxt){
+	if(has_last){
+		return;
+	}
+	has_last = true;
+
 	hc_syntax_op_t op = get_cond_oper();
 	switch(op){
 		case hc_hif_op:

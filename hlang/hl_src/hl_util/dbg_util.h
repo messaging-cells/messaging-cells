@@ -89,8 +89,11 @@ bool hl_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool vv_ck,
 #define HL_CK(vv) HL_DBG( \
 	hl_call_assert(hl_null, true, true, vv, __FILE__, __LINE__, #vv, hl_null))
 
+//	(! vv)?(hl_call_assert(hl_null, true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__), 0):(0))
+//	hl_call_assert(hl_null, true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
+
 #define HL_CK_PRT(vv, ...) HL_DBG( \
-	hl_call_assert(hl_null, true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))
+	(! vv)?(hl_call_assert(hl_null, true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__), 0):(0))
 
 #define HL_CK_LOG(vv, ...) HL_DBG( \
 	hl_call_assert(hl_get_ptd_log_fnam(), true, true, vv, __FILE__, __LINE__, #vv, __VA_ARGS__))

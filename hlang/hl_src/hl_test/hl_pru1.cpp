@@ -59,7 +59,7 @@ hmethod_def(cls_A1, mth01, (
 	hif(o3 && (o4 || o1)) >> (~ o1 + ! o2),
 	helif(o4) >> (o5 && o3),
 	helse >> o2--,
-	hfor(o1 = r1, o1 < o2, o1++) >> (o2 || o3),
+	hfor(o1 < o2, (o1++, o2 = o3 + o4)) >> (o2 || o3),
 	hwhile(o4) >> (
 		(o1 & o3),
 		o2++,
@@ -123,6 +123,50 @@ hmethod_def(cls_A3, mth01, (
 	askjdhf """)
 	)my_code"
 	)
+));
+
+hmethod_def(cls_A3, mth02, (
+			/*hif(o3) >> o2++,
+			helif(o3) >> (
+				hwhile(o3) >> (
+					hif(o3) >> o2--,	// FIX_THIS_CASE
+					o3++
+				),
+				o2++
+			),*/
+	
+	hswitch(o1) >> (
+		hcase(o2) >> (
+			hif(o3 && (o4 || o1)) >> (~ o1 + ! o2),
+			helif(o4) >> (
+				hwhile(o4) >> (
+					(o1 & o3),
+					o2++,
+					hif(o3) >> o2++,
+					o3++
+				),
+				o2++,
+				o1 = r3->r1->o4()
+			),
+			helse >> o2--,
+			hfor(o1 < o2, (o1++, o2 = o3 + o4)) >> (
+				(o2 || o3),
+				o3++,
+				o2--,
+				hfor(o1 < o2, (o1++, o2 = o3 + o4)) >> (o2 || o3)
+			),
+			hswitch(o1) >> (
+				hcase(o2) >> o3++, 
+				hcase(o4) >> ++o1, 
+				hcase(o1) >> o2--
+			) 
+		),
+		hcase(o4) >> ++o2, 
+		hcase(o1) >> o2--
+	),
+	aa1 = aa2, 
+	aa2 = aa3, 
+	aa3 = aa1
 ));
 
 class CLS_AA {};

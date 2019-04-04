@@ -444,7 +444,7 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout);
+	int print_term(FILE *st = stdout);
 
 	virtual 
 	void print_code(){
@@ -502,11 +502,8 @@ public:
 	}
 
 	virtual 
-	void	set_next(hc_term& nxt){
-		HL_CK(next == hl_null);
-		next = &nxt;
-	}
-	
+	void	set_next(hc_term& nxt);
+
 	virtual 
 	void	set_last(hc_term& nxt);
 	
@@ -516,11 +513,11 @@ public:
 	}
 	
 	void print_label(FILE *st){
-		fprintf(st, "%p", (void*)this);
+		fprintf(st, "%p", (void*)get_first_step());
 	}
 };
 
-hc_term&	hfor(hc_term& the_before, hc_term& the_cond, hc_term& the_end_each_loop);
+hc_term&	hfor(hc_term& the_cond, hc_term& the_end_each_loop);
 hc_term&	hif(hc_term& o1);
 hc_term&	helif(hc_term& o1);
 hc_term&	hwhile(hc_term& o1);
@@ -556,8 +553,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout){
+	int print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
+		return 0;
 	}
 
 	virtual 
@@ -617,7 +615,7 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout);
+	int print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
@@ -632,6 +630,7 @@ public:
 
 class hc_steps : public hc_term {
 public:
+	bool 		has_last = false;
 	hc_term*	first_if = hl_null;
 	std::list<hc_term*> steps;
 
@@ -648,6 +647,7 @@ public:
 	}
 	
 	hc_steps(){
+		has_last = false;
 		first_if = hl_null;
 	}
 	
@@ -669,7 +669,7 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout);
+	int print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
@@ -700,12 +700,14 @@ public:
 
 class hc_condition : public hc_term {
 public:
+	bool 	has_last = false;
 	hc_term* eq_cond;
 	hc_term* cond;
 	hc_term* if_true;
 	//hc_term* if_false;
 
 	virtual	~hc_condition(){
+		has_last = false;
 		eq_cond = hl_null;
 		if((cond != hl_null) && cond->is_compound()){
 			delete cond;
@@ -728,6 +730,8 @@ public:
 		bool has_st = false;
 		ck_closed_param(the_cond, this, has_st);
 		ck_closed_param(pm_if_true, this, has_st);
+		
+		has_last = false;
 		eq_cond = hl_null;
 		cond = the_cond;
 		if_true = pm_if_true;
@@ -754,7 +758,7 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout);
+	int print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
@@ -778,15 +782,10 @@ public:
 
 class hc_for_loop : public hc_term {
 public:
-	hc_term* before;
 	hc_term* cond;
 	hc_term* end_each_loop;
 	
 	virtual	~hc_for_loop(){
-		if((before != hl_null) && before->is_compound()){
-			delete before;
-			before = hl_null;
-		}
 		if((cond != hl_null) && cond->is_compound()){
 			delete cond;
 			cond = hl_null;
@@ -797,20 +796,16 @@ public:
 		}
 	}
 	
-	hc_for_loop(hc_term* the_before, hc_term* the_cond, hc_term* the_end_each_loop){
-		HL_CK(the_before != hl_null);
+	hc_for_loop(hc_term* the_cond, hc_term* the_end_each_loop){
 		HL_CK(the_cond != hl_null);
 		HL_CK(the_end_each_loop != hl_null);
 		bool has_st = false;
-		ck_closed_param(the_before, this, has_st);
 		ck_closed_param(the_cond, this, has_st);
 		ck_closed_param(the_end_each_loop, this, has_st);
-		before = the_before;
 		cond = the_cond;
 		end_each_loop = the_end_each_loop;
 		
-		num_steps = before->num_steps;
-		num_steps += cond->num_steps;
+		num_steps = cond->num_steps;
 		num_steps += end_each_loop->num_steps;
 	}
 	
@@ -825,7 +820,7 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout);
+	int print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
@@ -889,7 +884,7 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout);
+	int print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
@@ -961,7 +956,7 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout);
+	int print_term(FILE *st = stdout);
 
 	virtual 
 	bool	is_compound(){
@@ -1029,8 +1024,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout){
+	int print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
+		return 0;
 	}
 
 	virtual 
@@ -1059,8 +1055,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout){
+	int print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
+		return 0;
 	}
 	
 	virtual 
@@ -1168,8 +1165,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout){
+	int print_term(FILE *st = stdout){
 		fprintf(st, " %s ", get_name());
+		return 0;
 	}
 
 	virtual 
@@ -1202,9 +1200,6 @@ hcast(hc_reference<cl1_t>& o1){
 #define hvalue(tt, nn) htoks_att(nn, this); hc_value<tt> nn{#tt, #nn, this}
 
 #define hreference(tt, nn) htoks_att(nn, this); hc_reference<tt> nn{#tt, #nn, this}
-
-//define hkeyword(nn) hc_keyword nn(#nn)
-//define hkeyword_op(nn, op) hc_keyword nn(#nn, op)
 
 #define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
@@ -1262,8 +1257,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout){
+	int print_term(FILE *st = stdout){
 		fprintf(st, " %s() ", get_name());
+		return 0;
 	}
 
 	virtual 
@@ -1297,8 +1293,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout){
+	int print_term(FILE *st = stdout){
 		fprintf(st, " %s() ", get_name());
+		return 0;
 	}
 
 	virtual 
@@ -1381,8 +1378,9 @@ public:
 	}
 	
 	virtual 
-	void print_term(FILE *st = stdout){
+	int print_term(FILE *st = stdout){
 		fprintf(st, "hdbg_start(%s)hdbg_end", dbg_cod.c_str());
+		return 0;
 	}
 
 	virtual 

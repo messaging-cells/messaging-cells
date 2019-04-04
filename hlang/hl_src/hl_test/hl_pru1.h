@@ -94,6 +94,11 @@ class cls_A3 : public hcell {
 public:
 	hcell_class(cls_A3);
 	
+	hlong(o1);
+	hlong(o2);
+	hlong(o3);
+	hlong(o4);
+	
 	hint(xx1);
 	hchar(v1);
 	hint(v2);
@@ -105,6 +110,7 @@ public:
 	hreference(cls_A3, aa3);
 	
 	hmethod(mth01);
+	hmethod(mth02);
 
 };
 
