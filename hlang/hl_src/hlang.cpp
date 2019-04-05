@@ -357,7 +357,6 @@ hc_system::add_tok(const char* nm){
 	auto it = all_glb_token.find(nm);
 	if(it != all_glb_token.end()){
 		hl_abort("Token already added %s\n", nm);
-		//return false;
 	}
 	pt_glb = new hc_global(nm);
 	all_glb_token[nm] = pt_glb;
@@ -410,24 +409,28 @@ hc_system::get_con(const char* nm){
 
 void
 hclass_reg::call_all_methods(){
+	tot_steps = 0;
+	
 	auto it = methods.begin();
 	for(; it != methods.end(); ++it){
 		hc_mth_def* mth_df = (*it);
 		hc_caller_t cr = mth_df->caller;
 		(*cr)();
 		
-		mth_df->print_code();
+		mth_df->print_code(stdout);
 
-		fprintf(stderr, "-------------------------------------------(%ld steps)\n", mth_df->num_steps);
+		tot_steps += mth_df->num_steps;
+		fprintf(stdout, "-------------------------------------------(%ld steps)\n", mth_df->num_steps);
 	}
 	if(nucleus != hl_null){
 		fprintf(stdout, "\tCALLING NUCLEUS %s\n", nucleus->nam);
 		hc_caller_t cr = nucleus->caller;
 		(*cr)();
 		
-		nucleus->print_code();
+		nucleus->print_code(stdout);
 
-		fprintf(stderr, "-------------------------------------------(%ld steps)\n", nucleus->num_steps);
+		tot_steps += nucleus->num_steps;
+		fprintf(stdout, "-------------------------------------------(%ld steps)\n", nucleus->num_steps);
 	}
 }
 
@@ -436,10 +439,23 @@ hc_system::call_all_registered_methods(){
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
 		fprintf(stdout, "===========================================================\n");
-		fprintf(stdout, "CALLING METHODS FOR CLASS %s \n", it->first.c_str());
-		it->second->call_all_methods();
+		hclass_reg* cls_reg = it->second;
+		
+		fprintf(stdout, "CALLING METHODS FOR CLASS %s\n", it->first.c_str());
+		cls_reg->call_all_methods();
+		
+		cls_reg->init_depth();
+		fprintf(stdout, "---- %s depth %ld tot_steps %ld\n", 
+				it->first.c_str(), cls_reg->depth, cls_reg->tot_steps);
 	}
 	fprintf(stdout, "===========================================================\n");
+}
+
+void
+hc_system::init_sys(){
+	init_all_attributes();
+	init_all_token();
+	call_all_registered_methods();
 }
 
 void
@@ -683,6 +699,28 @@ hc_get_token(hc_syntax_op_t op){
 	return tok;
 }
 
+int
+hc_get_num_flag(hc_syntax_op_t op){
+	int nf = hl_invalid_bit;
+	switch(op){
+		case hc_hbreak_op:
+			nf = hl_has_break_bit;
+		break;
+		case hc_hcontinue_op:
+			nf = hl_has_continue_bit;
+		break;
+		case hc_hreturn_op:
+			nf = hl_has_return_bit;
+		break;
+		case hc_habort_op:
+			nf = hl_has_abort_bit;
+		break;
+		default:
+		break;
+	}
+	return nf;
+}
+
 void
 ck_is_not_cond(hc_term& o1){
 	if(hc_is_cond_oper(o1.get_oper())){
@@ -861,8 +899,8 @@ hc_mth_def::calc_depth(){
 	return (maxd + 1);
 }
 
-long 
-hclass_reg::calc_depth(){
+void
+hclass_reg::init_depth(){
 	long maxd = 0;
 	auto it1 = methods.begin();
 	for(; it1 != methods.end(); ++it1){
@@ -872,7 +910,7 @@ hclass_reg::calc_depth(){
 			maxd = dd;
 		}
 	}
-	return maxd;
+	depth = maxd;
 }
 
 bool
@@ -1364,10 +1402,10 @@ hc_steps::set_next(hc_term& nxt){
 
 void
 hc_steps::set_last(hc_term& nxt){
-	if(has_last){
+	if(get_has_last()){
 		return;
 	}
-	has_last = true;
+	set_has_last();
 	
 	auto it = steps.begin();
 	for(; it != steps.end(); ++it){
@@ -1380,7 +1418,7 @@ hc_steps::set_last(hc_term& nxt){
 
 void
 hc_term::set_next(hc_term& nxt){
-	HL_CK_PRT((next == hl_null), "%d\n", (printf("GGGGG"), print_term()));
+	HL_CK_PRT((next == hl_null), "%d\n", (printf("GGGGG"), print_term(stderr)));
 	HL_CK(next == hl_null);
 	next = &nxt;
 }
@@ -1406,12 +1444,19 @@ hc_condition::set_next(hc_term& nxt){
 			
 			HL_CK(if_true != hl_null);
 			if_true->set_last(for_end);
+			
+			if_true->set_jumps(hc_hbreak_op, nxt);
+			if_true->set_jumps(hc_hcontinue_op, th);
 		}
 		break;
-		case hc_hwhile_op:
+		case hc_hwhile_op:{
 			next = &nxt;
 			HL_CK(if_true != hl_null);
 			if_true->set_last(th);
+
+			if_true->set_jumps(hc_hbreak_op, nxt);
+			if_true->set_jumps(hc_hcontinue_op, th);
+		}
 		break;
 		case hc_hif_op:
 		case hc_helif_op:
@@ -1433,10 +1478,10 @@ hc_condition::set_next(hc_term& nxt){
 
 void
 hc_condition::set_last(hc_term& nxt){
-	if(has_last){
+	if(get_has_last()){
 		return;
 	}
-	has_last = true;
+	set_has_last();
 
 	hc_syntax_op_t op = get_cond_oper();
 	switch(op){
@@ -1463,3 +1508,62 @@ hc_condition::set_last(hc_term& nxt){
 	}
 }
 
+void
+hc_term::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+}
+	
+void
+hc_steps::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+	int flg = hc_get_num_flag(the_op);
+	if(get_flag(flg)){
+		return;
+	}
+	set_flag(flg);
+	
+	auto it = steps.begin();
+	for(; it != steps.end(); ++it){
+		hc_term* tm = (*it);
+		HL_CK(tm != hl_null);
+		tm->set_jumps(the_op, nxt);
+	}
+}
+	
+void
+hc_condition::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+	int flg = hc_get_num_flag(the_op);
+	if(get_flag(flg)){
+		return;
+	}
+	set_flag(flg);
+	
+	if_true->set_jumps(the_op, nxt);
+}
+
+void
+hc_keyword::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+	if(the_op != op){
+		return;
+	}
+	
+	int flg = hc_get_num_flag(the_op);
+	if(get_flag(flg)){
+		return;
+	}
+	set_flag(flg);
+
+	fprintf(stderr, "SETTING %s to %s \n", hc_get_token(op), nxt.get_name());
+	
+	next = &nxt;
+}
+	
+hc_mth_ret::hc_mth_ret(hc_mth_def* mthdef){
+	HL_CK(mthdef != hl_null);
+	the_mth = mthdef;
+	nam = "ret_";
+	nam.append(the_mth->get_name());
+}
+
+const char*
+hc_mth_ret::get_name(){
+	return nam.c_str();
+}

@@ -88,6 +88,10 @@ public:
 	hreference(cls_A1, rr2);
 	
 	hmethod(mth01);
+	hmethod(mth02);
+	hmethod(mth03);
+	hmethod(mth04);
+	hmethod(mth05);
 };
 
 class cls_A3 : public hcell {

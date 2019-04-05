@@ -68,6 +68,24 @@ hl_string path_get_name(hl_string the_pth);
 hl_string get_errno_str(long val_errno);
 hl_string get_upper_str(const hl_string& lower);
 
+//======================================================================
+// bitarray
+
+// where 'a' is the byte stream pointer, and b is the bit number.
+
+#define div8(b)	((b)>>3)
+#define mod8(b)	((b)&7)
+
+#define get_bit(a, b)		((((int8_t*)a)[div8(b)] >> mod8(b)) & 1)
+#define set_bit(a, b)		(((int8_t*)a)[div8(b)] |= (1 << mod8(b)))
+#define reset_bit(a, b) 	(((int8_t*)a)[div8(b)] &= ~(1 << mod8(b)))
+#define toggle_bit(a, b) 	(((int8_t*)a)[div8(b)] ^= (1 << mod8(b)))
+
+#define to_bytes(num_bits)	(div8(num_bits) + (mod8(num_bits) > 0))
+#define to_bits(num_bytes)	(num_bytes * k_num_bits_byte)
+
+//======================================================================
+// defs
 
 typedef uint64_t hl_token_t;
 typedef uint64_t hl_value_t;
@@ -90,6 +108,9 @@ class hc_ast_block;
 
 typedef void (*hc_caller_t)();
 
+//======================================================================
+// hclass_reg
+
 class hclass_reg {
 public:
 	hl_string nam;
@@ -102,7 +123,8 @@ public:
 	const char* pos_hh_cod = hl_null;
 	const char* pre_cpp_cod = hl_null;
 	const char* pos_cpp_cod = hl_null;
-	long max_steps_by_lv[HC_MAX_LEVELS];
+	long depth;
+	long tot_steps;
 	
 	hclass_reg(){
 		nucleus = hl_null;
@@ -111,9 +133,8 @@ public:
 		pos_hh_cod = hl_null;
 		pre_cpp_cod = hl_null;
 		pos_cpp_cod = hl_null;
-		for(long aa = 0; aa < HC_MAX_LEVELS; aa++){
-			max_steps_by_lv[aa] = 0;
-		}
+		depth = 0;
+		tot_steps = 0;
 	}
 
 	virtual ~hclass_reg(){}
@@ -121,7 +142,7 @@ public:
 	bool has_value(const char* attr);
 	bool has_reference(const char* attr);
 	
-	long calc_depth();
+	void init_depth();
 	
 	hl_string get_tmp_hh_name(){
 		return nam + "_tmp.hh";
@@ -199,13 +220,8 @@ public:
 	void init_all_token();
 	void init_all_attributes();
 	void call_all_registered_methods();
+	void init_sys();
 	
-	void init_sys(){
-		init_all_attributes();
-		init_all_token();
-		call_all_registered_methods();
-	}
-
 	void generate_hh_files();
 	void generate_cpp_code();
 	
@@ -380,16 +396,24 @@ the_op(hc_term& o1){ \
 
 // end_define
 
+#define hl_invalid_bit 			0
+#define hl_has_last_bit 		1
+#define hl_has_break_bit 		2
+#define hl_has_continue_bit 	3
+#define hl_has_return_bit 		4
+#define hl_has_abort_bit 		5
 
 class hc_term {
 public:
 	static long	HC_PRT_TERM_INDENT;
 	
+	int8_t	flags;
 	long num_steps = 0;
 	hc_term* next;
 	
 	// constructors
 	hc_term(){
+		flags = 0;
 		num_steps = 0;
 		next = hl_null;
 	}
@@ -444,10 +468,10 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout);
+	int print_term(FILE *st);
 
 	virtual 
-	void print_code(){
+	void print_code(FILE *st){
 		hl_abort("Invalid call to 'print_code()'.\n" 
 				"NOT_A_METHOD. It has no code to print.\n");
 	}
@@ -507,6 +531,9 @@ public:
 	virtual 
 	void	set_last(hc_term& nxt);
 	
+	virtual 
+	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
+	
 	bool	is_if_closer(){
 		hc_syntax_op_t op = get_cond_oper();
 		return ((op != hc_helif_op) && (op != hc_helse_op));
@@ -515,6 +542,31 @@ public:
 	void print_label(FILE *st){
 		fprintf(st, "%p", (void*)get_first_step());
 	}
+
+	void set_flag(int num_flg){
+		set_bit(&flags, num_flg);
+	}
+
+	void reset_flag(int num_flg){
+		reset_bit(&flags, num_flg);
+	}
+
+	bool get_flag(int num_flg){
+		return get_bit(&flags, num_flg);
+	}
+	
+	void set_has_last(){
+		set_bit(&flags, hl_has_last_bit);
+	}
+
+	void reset_has_last(){
+		reset_bit(&flags, hl_has_last_bit);
+	}
+
+	bool get_has_last(){
+		return get_bit(&flags, hl_has_last_bit);
+	}
+	
 };
 
 hc_term&	hfor(hc_term& the_cond, hc_term& the_end_each_loop);
@@ -553,7 +605,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout){
+	int print_term(FILE *st){
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -615,7 +667,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout);
+	int print_term(FILE *st);
 
 	virtual 
 	bool	is_compound(){
@@ -630,7 +682,6 @@ public:
 
 class hc_steps : public hc_term {
 public:
-	bool 		has_last = false;
 	hc_term*	first_if = hl_null;
 	std::list<hc_term*> steps;
 
@@ -647,7 +698,6 @@ public:
 	}
 	
 	hc_steps(){
-		has_last = false;
 		first_if = hl_null;
 	}
 	
@@ -669,7 +719,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout);
+	int print_term(FILE *st);
 
 	virtual 
 	bool	is_compound(){
@@ -696,18 +746,18 @@ public:
 	virtual 
 	void	set_last(hc_term& nxt);
 
+	virtual 
+	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
+	
 };
 
 class hc_condition : public hc_term {
 public:
-	bool 	has_last = false;
 	hc_term* eq_cond;
 	hc_term* cond;
 	hc_term* if_true;
-	//hc_term* if_false;
 
 	virtual	~hc_condition(){
-		has_last = false;
 		eq_cond = hl_null;
 		if((cond != hl_null) && cond->is_compound()){
 			delete cond;
@@ -717,7 +767,6 @@ public:
 			delete if_true;
 			if_true = hl_null;
 		}
-		//if_false = hl_null;
 	}
 	
 	hc_condition(hc_term* the_cond, hc_term* pm_if_true){
@@ -731,11 +780,9 @@ public:
 		ck_closed_param(the_cond, this, has_st);
 		ck_closed_param(pm_if_true, this, has_st);
 		
-		has_last = false;
 		eq_cond = hl_null;
 		cond = the_cond;
 		if_true = pm_if_true;
-		//if_false = hl_null;
 		
 		num_steps = cond->num_steps;
 		num_steps += if_true->num_steps;
@@ -758,7 +805,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout);
+	int print_term(FILE *st);
 
 	virtual 
 	bool	is_compound(){
@@ -777,6 +824,9 @@ public:
 	
 	virtual 
 	void	set_last(hc_term& nxt);
+	
+	virtual 
+	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
 	
 };
 
@@ -820,7 +870,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout);
+	int print_term(FILE *st);
 
 	virtual 
 	bool	is_compound(){
@@ -884,7 +934,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout);
+	int print_term(FILE *st);
 
 	virtual 
 	bool	is_compound(){
@@ -956,7 +1006,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout);
+	int print_term(FILE *st);
 
 	virtual 
 	bool	is_compound(){
@@ -1024,7 +1074,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout){
+	int print_term(FILE *st){
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -1036,7 +1086,6 @@ public:
 class hc_keyword : public hc_term {
 public:
 	hc_syntax_op_t op;
-	//hl_string nam;
 	
 	virtual	~hc_keyword(){}
 	
@@ -1055,7 +1104,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout){
+	int print_term(FILE *st){
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -1064,6 +1113,10 @@ public:
 	bool	is_compound(){
 		return true;
 	}
+
+	virtual 
+	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
+	
 };
 
 template<class obj_t>
@@ -1112,6 +1165,7 @@ public:
 	void operator ()(obj_t* aa) { // as unary func. used as init func
 		ref = aa; 
 	}	
+	
 	hc_term& operator ()() { return *get_src(); }	// as empty func. top member calls with this.
 	
 	void  operator = (obj_t* aa) { 
@@ -1165,7 +1219,7 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout){
+	int print_term(FILE *st){
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -1229,6 +1283,30 @@ hcast(hc_reference<cl1_t>& o1){
 #define habort 		hl_new_keyword(habort)
 
 
+class hc_mth_ret : public hc_term {
+public:
+	hl_string nam;
+	hc_mth_def* the_mth = hl_null;
+	
+	virtual	~hc_mth_ret(){}
+	
+	hc_mth_ret(hc_mth_def* mthdef);
+	
+	virtual 
+	const char*	get_name();
+	
+	virtual 
+	int print_term(FILE *st){
+		fprintf(st, "%s", get_name());
+		return 0;
+	}
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+};
+
 class hc_mth_def : public hc_term {
 public:
 	const char* cls = hl_null;
@@ -1237,8 +1315,14 @@ public:
 	bool defining = false;
 	hc_caller_t caller = hl_null;
 	std::list<hc_mth_def*> calls;
+	hc_mth_ret* ret = hl_null;
 	
-	virtual	~hc_mth_def(){}
+	virtual	~hc_mth_def(){
+		if(ret != hl_null){
+			delete ret;
+			ret = hl_null;
+		}
+	}
 	
 	hc_mth_def(const char* the_cls, const char* the_nam, 
 			   hc_caller_t the_cllr, bool is_nucl = false)
@@ -1246,6 +1330,9 @@ public:
 		cls = the_cls;
 		nam = the_nam;
 		caller = the_cllr;
+		
+		ret = new hc_mth_ret(this);
+		
 		HLANG_SYS().register_method(the_cls, this, is_nucl);
 	}
 	
@@ -1257,19 +1344,19 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout){
+	int print_term(FILE *st){
 		fprintf(st, " %s() ", get_name());
 		return 0;
 	}
 
 	virtual 
-	void print_code(){
-		fprintf(stdout, "CODE_FOR %s\n---------------\n", get_name());
+	void print_code(FILE *st){
+		fprintf(st, "CODE_FOR %s\n---------------\n", get_name());
 		if(cod == hl_null){
-			fprintf(stdout, "EMPTY_COD for mth\n");
+			fprintf(st, "EMPTY_COD for mth\n");
 		} else {
-			cod->print_term();
-			fprintf(stdout, "\n");
+			cod->print_term(st);
+			fprintf(st, "\n");
 		}
 	}
 	
@@ -1293,15 +1380,15 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout){
+	int print_term(FILE *st){
 		fprintf(st, " %s() ", get_name());
 		return 0;
 	}
 
 	virtual 
-	void print_code(){
+	void print_code(FILE *st){
 		HL_CK(the_mth != hl_null);
-		the_mth->print_code();
+		the_mth->print_code(st);
 	}
 	
 	virtual 
@@ -1335,8 +1422,12 @@ public:
 		} \
 		if((cls::mth ## _def_reg.cod == hl_null) && (cls::mth ## _def_reg.defining)){ \
 			fprintf(stdout, "CALLING_METHOD\n%s\n", __PRETTY_FUNCTION__); \
-			hc_term& tm = (code); \
-			cls::mth ## _def_reg.cod = tm.get_src()->to_steps(); \
+			hc_term& the_code = (code); \
+			hc_steps* sts_cod = the_code.get_src()->to_steps(); \
+			hc_mth_ret* ret_tm = cls::mth ## _def_reg.ret; \
+			sts_cod->append_term(*ret_tm); \
+			sts_cod->set_jumps(hc_hreturn_op, *ret_tm); \
+			cls::mth ## _def_reg.cod = sts_cod; \
 			cls::mth ## _def_reg.num_steps = cls::mth ## _def_reg.cod->num_steps + 1; \
 		} \
 		if(! cls::mth ## _def_reg.defining){ \
@@ -1378,14 +1469,14 @@ public:
 	}
 	
 	virtual 
-	int print_term(FILE *st = stdout){
+	int print_term(FILE *st){
 		fprintf(st, "hdbg_start(%s)hdbg_end", dbg_cod.c_str());
 		return 0;
 	}
 
 	virtual 
-	void print_code(){
-		print_term();
+	void print_code(FILE *st){
+		print_term(st);
 	}
 
 	virtual 

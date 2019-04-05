@@ -100,6 +100,22 @@ hmethod_def(cls_A2, mth01, (
 	hcon(k2)++
 ));
 
+hmethod_def(cls_A2, mth02, (
+	mth01()
+));
+
+hmethod_def(cls_A2, mth03, (
+	mth02()
+));
+
+hmethod_def(cls_A2, mth04, (
+	mth03()
+));
+
+hmethod_def(cls_A2, mth05, (
+	mth04()
+));
+
 hl_string pru_str = "prueba_1";
 
 hmethod_def(cls_A3, mth01, (
@@ -142,7 +158,8 @@ hmethod_def(cls_A3, mth02, (
 				hwhile(o4) >> (
 					(o1 & o3),
 					o2++,
-					hif(o3) >> o2++,
+					hif(o3) >> (o2++, hbreak),
+					hif(o3) >> (o2++, hreturn),
 					o3++
 				),
 				o2++,
@@ -152,6 +169,8 @@ hmethod_def(cls_A3, mth02, (
 			hfor(o1 < o2, (o1++, o2 = o3 + o4)) >> (
 				(o2 || o3),
 				o3++,
+				hif(o3) >> (o2++, hbreak),
+				hif(o3) >> (o2++, hcontinue),
 				o2--,
 				hfor(o1 < o2, (o1++, o2 = o3 + o4)) >> (o2 || o3)
 			),
@@ -185,12 +204,6 @@ void hl_test_1(int argc, char *argv[])
 
 	HLANG_SYS().init_sys();
 	
-	/*
-	const char* ex = "CADENA EX";
-	printf(R"my_str(%d "jose" )))}
-		%s R"otra(lkjlkajdfg laksdjgf "")) )otra"
-	)my_str", 123, ex);*/
-
 	printf("RUNNING PATH= %s \n", path_get_running_path().c_str());
 
 	HLANG_SYS().generate_cpp_code();
