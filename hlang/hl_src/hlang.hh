@@ -125,6 +125,8 @@ public:
 	const char* pos_cpp_cod = hl_null;
 	long depth;
 	long tot_steps;
+	long mth_call_num_step = 0;
+	long mth_ret_num_step = 0;
 	
 	hclass_reg(){
 		nucleus = hl_null;
@@ -135,6 +137,8 @@ public:
 		pos_cpp_cod = hl_null;
 		depth = 0;
 		tot_steps = 0;
+		mth_call_num_step = 0;
+		mth_ret_num_step = 0;
 	}
 
 	virtual ~hclass_reg(){}
@@ -174,6 +178,8 @@ public:
 	void print_cpp_class_defs(FILE* ff);
 	
 	void call_all_methods();
+	
+	void print_all_cpp_methods(FILE *st);
 };
 
 extern hc_system& HLANG_SYS();
@@ -223,6 +229,7 @@ public:
 	void init_sys();
 	
 	void generate_hh_files();
+	void generate_cpp_files();
 	void generate_cpp_code();
 	
 	hl_string get_cpp_dir_name(){
@@ -346,6 +353,9 @@ enum	hc_syntax_op_t {
 const char*
 hc_get_token(hc_syntax_op_t op);
 
+const char*
+hc_get_cpp_token(hc_syntax_op_t op);
+
 #define HC_DEFINE_BINARY_OP_BASE(the_code) \
 	hc_term* tm = new hc_binary_term(the_code, this, &o1); \
 	return *tm; \
@@ -383,14 +393,14 @@ hc_term& hc_term::operator the_op (){ \
 
 // end_define
 
-#define HC_DEFINE_FUNC_OP(the_op, the_code) \
+#define HC_DEFINE_FUNC_OP(the_op, the_class, the_code) \
 hc_term& \
 the_op(hc_term& o1){ \
 	if(o1.has_statements()){ \
 		hl_abort("Parameter %s to %s has statements. Invalid grammar.\n", \
 					o1.get_name(), #the_op); \
 	} \
-	hc_term* tm = new hc_unary_term(the_code, &o1); \
+	the_class* tm = new the_class(the_code, &o1); \
 	return *tm; \
 } \
 
@@ -402,20 +412,26 @@ the_op(hc_term& o1){ \
 #define hl_has_continue_bit 	3
 #define hl_has_return_bit 		4
 #define hl_has_abort_bit 		5
+#define hl_has_case_bit 		6
+
+#define hc_print_label(st, num) fprintf(st, "STEP_%ld", num)
 
 class hc_term {
 public:
 	static long	HC_PRT_TERM_INDENT;
+	static long	HC_NUM_LABEL;
 	
 	int8_t	flags;
 	long num_steps = 0;
 	hc_term* next;
+	long num_label = 0;
 	
 	// constructors
 	hc_term(){
 		flags = 0;
 		num_steps = 0;
 		next = hl_null;
+		num_label = 0;
 	}
 
 	virtual	~hc_term(){
@@ -471,8 +487,20 @@ public:
 	int print_term(FILE *st);
 
 	virtual 
-	void print_code(FILE *st){
-		hl_abort("Invalid call to 'print_code()'.\n" 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	void set_num_label(){}
+
+	virtual 
+	void print_text_code(FILE *st){
+		hl_abort("Invalid call to 'print_text_code()'.\n" 
+				"NOT_A_METHOD. It has no code to print.\n");
+	}
+
+	virtual 
+	void print_cpp_code(FILE *st){
+		hl_abort("Invalid call to 'print_cpp_code()'.\n" 
 				"NOT_A_METHOD. It has no code to print.\n");
 	}
 
@@ -539,9 +567,9 @@ public:
 		return ((op != hc_helif_op) && (op != hc_helse_op));
 	}
 	
-	void print_label(FILE *st){
-		fprintf(st, "%p", (void*)get_first_step());
-	}
+	long get_num_label();
+	
+	void print_label(FILE *st);
 
 	void set_flag(int num_flg){
 		set_bit(&flags, num_flg);
@@ -611,6 +639,12 @@ public:
 	}
 
 	virtual 
+	int print_cpp_term(FILE *st){
+		fprintf(st, " %s ", get_name());
+		return 0;
+	}
+
+	virtual 
 	hl_string	get_value(){
 		return val;
 	}	
@@ -670,6 +704,15 @@ public:
 	int print_term(FILE *st);
 
 	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	void set_num_label(){
+		HL_CK(prm != hl_null);
+		prm->set_num_label();
+	}
+
+	virtual 
 	bool	is_compound(){
 		return true;
 	}
@@ -678,6 +721,29 @@ public:
 	bool	has_statements(){
 		return has_st;
 	}
+};
+
+class hc_case_term : public hc_unary_term {
+public:
+	hc_term* the_sw_eq;
+	
+	virtual	~hc_case_term(){
+		the_sw_eq = hl_null;
+	}
+
+	hc_case_term(hc_syntax_op_t pm_op, hc_term* pm_val) : hc_unary_term(pm_op, pm_val) {
+		the_sw_eq = hl_null;
+	}
+
+	virtual 
+	int print_term(FILE *st);
+
+	virtual 
+	int print_cpp_term(FILE *st);
+	
+	virtual 
+	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
+	
 };
 
 class hc_steps : public hc_term {
@@ -722,6 +788,12 @@ public:
 	int print_term(FILE *st);
 
 	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	void set_num_label();
+
+	virtual 
 	bool	is_compound(){
 		return true;
 	}
@@ -753,12 +825,10 @@ public:
 
 class hc_condition : public hc_term {
 public:
-	hc_term* eq_cond;
 	hc_term* cond;
 	hc_term* if_true;
 
 	virtual	~hc_condition(){
-		eq_cond = hl_null;
 		if((cond != hl_null) && cond->is_compound()){
 			delete cond;
 			cond = hl_null;
@@ -780,7 +850,6 @@ public:
 		ck_closed_param(the_cond, this, has_st);
 		ck_closed_param(pm_if_true, this, has_st);
 		
-		eq_cond = hl_null;
 		cond = the_cond;
 		if_true = pm_if_true;
 		
@@ -808,6 +877,17 @@ public:
 	int print_term(FILE *st);
 
 	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	void set_num_label(){
+		HL_CK(cond != hl_null);
+		HL_CK(if_true != hl_null);
+		cond->set_num_label();
+		if_true->set_num_label();
+	}
+
+	virtual 
 	bool	is_compound(){
 		return true;
 	}
@@ -832,10 +912,12 @@ public:
 
 class hc_for_loop : public hc_term {
 public:
+	hc_condition* owner = hl_null;
 	hc_term* cond;
 	hc_term* end_each_loop;
 	
 	virtual	~hc_for_loop(){
+		owner = hl_null;
 		if((cond != hl_null) && cond->is_compound()){
 			delete cond;
 			cond = hl_null;
@@ -847,6 +929,8 @@ public:
 	}
 	
 	hc_for_loop(hc_term* the_cond, hc_term* the_end_each_loop){
+		owner = hl_null;
+		
 		HL_CK(the_cond != hl_null);
 		HL_CK(the_end_each_loop != hl_null);
 		bool has_st = false;
@@ -871,6 +955,17 @@ public:
 	
 	virtual 
 	int print_term(FILE *st);
+
+	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	void set_num_label(){
+		HL_CK(cond != hl_null);
+		HL_CK(end_each_loop != hl_null);
+		cond->set_num_label();
+		end_each_loop->set_num_label();
+	}
 
 	virtual 
 	bool	is_compound(){
@@ -935,6 +1030,17 @@ public:
 	
 	virtual 
 	int print_term(FILE *st);
+
+	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	void set_num_label(){
+		HL_CK(lft != hl_null);
+		HL_CK(rgt != hl_null);
+		lft->set_num_label();
+		rgt->set_num_label();
+	}
 
 	virtual 
 	bool	is_compound(){
@@ -1009,6 +1115,19 @@ public:
 	int print_term(FILE *st);
 
 	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	void set_num_label(){
+		HL_CK(snd_dst != hl_null);
+		HL_CK(snd_tok != hl_null);
+		HL_CK(snd_att != hl_null);
+		snd_dst->set_num_label();
+		snd_tok->set_num_label();
+		snd_att->set_num_label();
+	}
+
+	virtual 
 	bool	is_compound(){
 		return true;
 	}
@@ -1080,6 +1199,12 @@ public:
 	}
 
 	virtual 
+	int print_cpp_term(FILE *st){
+		fprintf(st, " %s ", get_name());
+		return 0;
+	}
+
+	virtual 
 	hc_term*	get_src();
 };
 
@@ -1109,6 +1234,12 @@ public:
 		return 0;
 	}
 	
+	virtual 
+	int print_cpp_term(FILE *st){
+		fprintf(st, " %s ", hc_get_cpp_token(op));
+		return 0;
+	}
+
 	virtual 
 	bool	is_compound(){
 		return true;
@@ -1225,6 +1356,12 @@ public:
 	}
 
 	virtual 
+	int print_cpp_term(FILE *st){
+		fprintf(st, " %s ", get_name());
+		return 0;
+	}
+
+	virtual 
 	hc_term*	get_src();
 };
 
@@ -1302,6 +1439,9 @@ public:
 	}
 
 	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
 	bool	is_compound(){
 		return true;
 	}
@@ -1316,6 +1456,7 @@ public:
 	hc_caller_t caller = hl_null;
 	std::list<hc_mth_def*> calls;
 	hc_mth_ret* ret = hl_null;
+	hclass_reg* my_cls = hl_null;
 	
 	virtual	~hc_mth_def(){
 		if(ret != hl_null){
@@ -1332,6 +1473,7 @@ public:
 		caller = the_cllr;
 		
 		ret = new hc_mth_ret(this);
+		my_cls = hl_null;
 		
 		HLANG_SYS().register_method(the_cls, this, is_nucl);
 	}
@@ -1350,7 +1492,19 @@ public:
 	}
 
 	virtual 
-	void print_code(FILE *st){
+	int print_cpp_term(FILE *st){
+		fprintf(st, " %s() ", get_name());
+		return 0;
+	}
+
+	virtual 
+	void set_num_label(){
+		HL_CK(cod != hl_null);
+		cod->set_num_label();
+	}
+
+	virtual 
+	void print_text_code(FILE *st){
 		fprintf(st, "CODE_FOR %s\n---------------\n", get_name());
 		if(cod == hl_null){
 			fprintf(st, "EMPTY_COD for mth\n");
@@ -1359,6 +1513,24 @@ public:
 			fprintf(st, "\n");
 		}
 	}
+	
+	virtual 
+	void print_cpp_code(FILE *st){
+		fprintf(st, "/* CODE_FOR %s\n--------------- */ \n", get_name());
+		if(cod == hl_null){
+			fprintf(st, "/* EMPTY_COD for mth */\n");
+		} else {
+			cod->print_cpp_term(st);
+			fprintf(st, "\n");
+		}
+	}
+	
+	/*virtual 
+	hc_term* get_first_step(){
+		HL_CK(cod != hl_null);
+		hc_term* tm = cod->get_first_step();
+		return tm;
+	}*/
 	
 };
 
@@ -1386,11 +1558,8 @@ public:
 	}
 
 	virtual 
-	void print_code(FILE *st){
-		HL_CK(the_mth != hl_null);
-		the_mth->print_code(st);
-	}
-	
+	int print_cpp_term(FILE *st);
+
 	virtual 
 	bool	is_compound(){
 		return true;
@@ -1475,8 +1644,9 @@ public:
 	}
 
 	virtual 
-	void print_code(FILE *st){
-		print_term(st);
+	int print_cpp_term(FILE *st){
+		fprintf(st, " %s ", dbg_cod.c_str());
+		return 0;
 	}
 
 	virtual 

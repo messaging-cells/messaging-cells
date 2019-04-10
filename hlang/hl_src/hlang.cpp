@@ -12,6 +12,20 @@
 
 #define HL_PATH_MAX PATH_MAX
 
+
+// =======================================================================================
+// GLOBAL
+
+hc_mth_def*	hcell::defining_mth = hl_null;
+long	hc_term::HC_PRT_TERM_INDENT = 0;
+long	hc_term::HC_NUM_LABEL = 0;
+
+htoken(hmsg_tok);
+hconst(hmsg_val, 0);
+
+// =======================================================================================
+// FILE_FUNCTIONS
+
 FILE*
 file_open(const char* nm){
 	FILE* ff = fopen(nm, "w+");
@@ -245,16 +259,18 @@ get_errno_str(long val_errno){
 	return out_str;
 }
 
-hl_string get_upper_str(const hl_string& nam){
+// =======================================================================================
+// HLANG_SYNTAX_FUNCTIONS
+
+hl_string 
+get_upper_str(const hl_string& nam){
 	hl_string out = nam;
 	std::transform(out.begin(), out.end(), out.begin(), ::toupper);
 	return out;
 }
 
-hc_mth_def*	hcell::defining_mth = hl_null;
-long	hc_term::HC_PRT_TERM_INDENT = 0;
-
-hc_system& HLANG_SYS(){
+hc_system& 
+HLANG_SYS(){
 	static hc_system the_sys;
 	return the_sys;
 }
@@ -285,6 +301,10 @@ hc_system::register_method(const char* cls, hc_mth_def* mth, bool is_nucl){
 	HL_CK(cls != hl_null);
 	HL_CK(mth != hl_null);
 	hclass_reg* cls_reg = get_class_reg(cls);
+	
+	//HL_CK(mth->my_cls == hl_null);
+	//mth->my_cls = cls_reg;
+	
 	if(is_nucl){
 		if(cls_reg->nucleus != hl_null){
 			hl_abort("Nucleus for class %s alredy defined as %s \n", 
@@ -417,7 +437,14 @@ hclass_reg::call_all_methods(){
 		hc_caller_t cr = mth_df->caller;
 		(*cr)();
 		
-		mth_df->print_code(stdout);
+		hc_term::HC_NUM_LABEL++;
+		mth_call_num_step = hc_term::HC_NUM_LABEL;
+		hc_term::HC_NUM_LABEL++;
+		mth_ret_num_step = hc_term::HC_NUM_LABEL;
+
+		mth_df->set_num_label();
+		
+		mth_df->print_text_code(stdout);
 
 		tot_steps += mth_df->num_steps;
 		fprintf(stdout, "-------------------------------------------(%ld steps)\n", mth_df->num_steps);
@@ -427,7 +454,9 @@ hclass_reg::call_all_methods(){
 		hc_caller_t cr = nucleus->caller;
 		(*cr)();
 		
-		nucleus->print_code(stdout);
+		nucleus->set_num_label();
+		
+		nucleus->print_text_code(stdout);
 
 		tot_steps += nucleus->num_steps;
 		fprintf(stdout, "-------------------------------------------(%ld steps)\n", nucleus->num_steps);
@@ -543,7 +572,6 @@ hc_can_add_cond_opers(hc_syntax_op_t op1, hc_syntax_op_t op2){
 	}
 	return can_add;
 }
-
 
 bool
 hc_is_assig_oper(hc_syntax_op_t op){
@@ -699,6 +727,143 @@ hc_get_token(hc_syntax_op_t op){
 	return tok;
 }
 
+const char*
+hc_get_cpp_token(hc_syntax_op_t op){
+	const char* tok = "INVALID_TOKEN";
+	switch(op){
+		case hc_dbg_op:
+			tok = "hdbg";
+		break;
+		case hc_send_op:
+			tok = "hsend";
+		break;
+		case hc_tell_op:
+			tok = "htell";
+		break;
+		case hc_member_op:
+			tok = "->";
+		break;
+		case hc_comma_op:
+			tok = "; /* , */";
+		break;
+		case hc_then_op:
+			tok = "/* >> */";
+		break;
+		case hc_hme_op:
+			tok = "hme";
+		break;
+		case hc_hfor_op:
+			tok = "/* hfor */ if";
+		break;
+		case hc_hwhile_op:
+			tok = "/* hwhile */ if";
+		break;
+		case hc_hif_op:
+			tok = "/* hif */ if";
+		break;
+		case hc_helif_op:
+			tok = "/* helif */ if";
+		break;
+		case hc_helse_op:
+			tok = "/* helse */";
+		break;
+		case hc_hswitch_op:
+			tok = "hswitch";
+		break;
+		case hc_hcase_op:
+			tok = "/* hcase */ if";
+		break;
+		case hc_hdefault_op:
+			tok = "/* hdefault */";
+		break;
+		case hc_hbreak_op:
+			tok = "/* hbreak */";
+		break;
+		case hc_hcontinue_op:
+			tok = "/* hcontinue */";
+		break;
+		case hc_hreturn_op:
+			tok = "/* hreturn */";
+		break;
+		case hc_habort_op:
+			tok = "habort";
+		break;
+		case hc_assig_op1:
+			tok = "/* =1 */ = ";
+		break;
+		case hc_assig_op2:
+			tok = "/* =2 */ = ";
+		break;
+		case hc_assig_op3:
+			tok = "/* =3 */ = ";
+		break;
+		case hc_assig_op4:
+			tok = "/* =4 */ = ";
+		break;
+		case hc_assig_op5:
+			tok = "/* =5 */ = ";
+		break;
+		case hc_less_than_op:
+			tok = "<";
+		break;
+		case hc_more_than_op:
+			tok = ">";
+		break;
+		case hc_less_equal_than_op:
+			tok = "<=";
+		break;
+		case hc_more_equal_than_op:
+			tok = ">=";
+		break;
+		case hc_equal_op:
+			tok = "==";
+		break;
+		case hc_not_equal_op:
+			tok = "!=";
+		break;
+		case hc_and_op:
+			tok = "&&";
+		break;
+		case hc_or_op:
+			tok = "||";
+		break;
+		case hc_not_op:
+			tok = "!";
+		break;
+		case hc_bit_and_op:
+			tok = "&";
+		break;
+		case hc_bit_or_op:
+			tok = "|";
+		break;
+		case hc_bit_not_op:
+			tok = "~";
+		break;
+
+		case hc_plus_op:
+			tok = "+";
+		break;
+		case hc_post_inc_op:
+			tok = "++";
+		break;
+		case hc_pre_inc_op:
+			tok = "++";
+		break;
+		case hc_minus_op:
+			tok = "-";
+		break;
+		case hc_post_dec_op:
+			tok = "--";
+		break;
+		case hc_pre_dec_op:
+			tok = "--";
+		break;
+		default:
+		break;
+	}
+	return tok;
+}
+
 int
 hc_get_num_flag(hc_syntax_op_t op){
 	int nf = hl_invalid_bit;
@@ -714,6 +879,9 @@ hc_get_num_flag(hc_syntax_op_t op){
 		break;
 		case hc_habort_op:
 			nf = hl_has_abort_bit;
+		break;
+		case hc_hcase_op:
+			nf = hl_has_case_bit;
 		break;
 		default:
 		break;
@@ -811,7 +979,11 @@ hc_term::operator >> (hc_term& o1) {
 		hl_abort("First parameter %s to then \">>\" must be a conditional.\n", get_name());
 	}
 	hc_steps* sts = o1.to_steps();
-	hc_term* tm = new hc_condition(this, sts);
+	hc_condition* tm = new hc_condition(this, sts);
+	if(get_oper() == hc_hfor_op){
+		hc_for_loop* for_tm = (hc_for_loop*)this;
+		for_tm->owner = tm;
+	}
 	return *tm;
 }
 
@@ -866,18 +1038,17 @@ hfor(hc_term& the_cond, hc_term& the_end_each_loop){
 					the_cond.get_name());
 	}
 	
-	//hc_steps* sts_con = the_cond.to_steps();
 	hc_steps* sts_end = the_end_each_loop.to_steps();
 	hc_term* tm = new hc_for_loop(&the_cond, sts_end);
 	return *tm;
 }
 
 
-HC_DEFINE_FUNC_OP(hwhile, hc_hwhile_op)
-HC_DEFINE_FUNC_OP(hif, hc_hif_op)
-HC_DEFINE_FUNC_OP(helif, hc_helif_op)
-HC_DEFINE_FUNC_OP(hswitch, hc_hswitch_op)
-HC_DEFINE_FUNC_OP(hcase, hc_hcase_op)
+HC_DEFINE_FUNC_OP(hwhile, hc_unary_term, hc_hwhile_op)
+HC_DEFINE_FUNC_OP(hif, hc_unary_term, hc_hif_op)
+HC_DEFINE_FUNC_OP(helif, hc_unary_term, hc_helif_op)
+HC_DEFINE_FUNC_OP(hswitch, hc_unary_term, hc_hswitch_op)
+HC_DEFINE_FUNC_OP(hcase, hc_case_term, hc_hcase_op)
 
 long 
 hc_mth_def::calc_depth(){
@@ -961,9 +1132,43 @@ hdbg_txt_pos_cpp(const char* cls, const char* cod){
 	return true;
 }
 
-htoken(hmsg_tok);
-hconst(hmsg_val, 0);
+const char*
+hcell::get_attr_nm(const char* pfix, const char* sfix){
+	static hl_ostringstream result;
+	result << pfix << get_class_name() << "_" << sfix;
+	const char* rr = strdup(result.str().c_str());
+	result.str("");
+	return rr;
+}
 
+hc_term&
+hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
+	hc_term* tm = new hc_send_term(hc_send_op, &dst, &tok, &att);
+	return *tm;
+}
+
+hc_term&
+hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
+	hc_term* tm = new hc_send_term(hc_tell_op, &dst, &tok, &att);
+	return *tm;
+}
+
+// =======================================================================================
+// HLANG_TEXT_PRINTING
+
+long
+hc_term::get_num_label(){
+	long num_lb = get_first_step()->num_label;
+	HL_CK(num_lb != 0);
+	return num_lb;
+}
+
+void
+hc_term::print_label(FILE *st){
+	//fprintf(st, "%p", (void*)get_first_step());
+	hc_print_label(st, get_num_label());
+}
+	
 int
 hc_term::print_term(FILE *st){
 	hl_abort("INVALID_TERM !!!!\n");
@@ -993,6 +1198,21 @@ hc_unary_term::print_term(FILE *st){
 }
 
 int
+hc_case_term::print_term(FILE *st){
+	const char* tok = hc_get_token(op);
+	fprintf(st, "%s", tok);
+	fprintf(st, "(");
+	HC_PRT_TERM_INDENT++;
+	if(prm != hl_null){ prm->print_term(st); }
+	fprintf(st, " sw== ");
+	if(the_sw_eq != hl_null){ the_sw_eq->print_term(st); }
+	HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
+	
+	return 0;
+}
+
+int
 hc_steps::print_term(FILE *st){
 	bool is_fst = true;
 	//fprintf(st, "(");
@@ -1011,14 +1231,28 @@ hc_steps::print_term(FILE *st){
 		hc_term::print_indent(st);
 		tm->print_term(st);
 		
-		fprintf(st, "\t[");
-		if(tm->next != hl_null){
-			tm->next->print_label(st);
+		if(tm->get_oper() != hc_then_op){
+			fprintf(st, "\t[");
+			if(tm->next != hl_null){
+				tm->next->print_label(st);
+			}
+			fprintf(st, "]");
 		}
-		fprintf(st, "]");
 	}
 	//fprintf(st, ")");
 	return 0;
+}
+
+void
+hc_steps::set_num_label(){
+	auto it = steps.begin();
+	for(; it != steps.end(); ++it){
+		hc_term* tm = (*it);
+		HL_CK(tm != hl_null);
+		hc_term::HC_NUM_LABEL++;
+		tm->num_label = hc_term::HC_NUM_LABEL;
+		tm->set_num_label();
+	}
 }
 
 int
@@ -1057,6 +1291,7 @@ hc_condition::print_term(FILE *st){
 int
 hc_for_loop::print_term(FILE *st){
 	const char* tok = hc_get_token(get_oper());
+	HL_CK(owner != hl_null);
 	HL_CK(cond != hl_null);
 	HL_CK(end_each_loop != hl_null);
 	
@@ -1123,27 +1358,220 @@ hc_send_term::print_term(FILE *st){
 	return 0;
 }
 
+// =======================================================================================
+// LINK_CONTROL_STRUCTURES
+
+void
+hc_steps::set_next(hc_term& nxt){
+	HL_CK(! steps.empty());
+	hc_term* tm = steps.back();
+	tm->set_next(nxt);
+}
+
+void
+hc_steps::set_last(hc_term& nxt){
+	if(get_has_last()){
+		return;
+	}
+	set_has_last();
+	
+	auto it = steps.begin();
+	for(; it != steps.end(); ++it){
+		hc_term* tm = (*it);
+		HL_CK(tm != hl_null);
+		tm->set_last(nxt);
+	}
+	set_next(nxt);
+}
+
+void
+hc_term::set_next(hc_term& nxt){
+	HL_CK_PRT((next == hl_null), "%d\n", (printf("GGGGG"), print_term(stderr)));
+	HL_CK(next == hl_null);
+	next = &nxt;
+}
+	
+void
+hc_term::set_last(hc_term& nxt){
+	// Leave empty
+}
+
+void
+hc_condition::set_next(hc_term& nxt){
+	hc_syntax_op_t op = get_cond_oper();
+	hc_term& th = *this;
+	switch(op){
+		case hc_hfor_op:{
+			next = &nxt;
+			
+			HL_CK(cond != hl_null);
+			hc_for_loop& for_cond = *((hc_for_loop*)cond);
+			HL_CK(for_cond.end_each_loop != hl_null);
+			hc_term& for_end = *(for_cond.end_each_loop);
+			
+			for_end.set_last(th);
+			
+			HL_CK(if_true != hl_null);
+			if_true->set_last(for_end);
+			
+			if_true->set_jumps(hc_hbreak_op, nxt);
+			if_true->set_jumps(hc_hcontinue_op, th);
+		}
+		break;
+		case hc_hwhile_op:{
+			next = &nxt;
+			HL_CK(if_true != hl_null);
+			if_true->set_last(th);
+
+			if_true->set_jumps(hc_hbreak_op, nxt);
+			if_true->set_jumps(hc_hcontinue_op, th);
+		}
+		break;
+		case hc_hif_op:
+		case hc_helif_op:
+		case hc_helse_op:
+			next = &nxt;
+		break;
+		case hc_hswitch_op:{
+			HL_CK(if_true != hl_null);
+			if_true->set_last(nxt);
+			
+			HL_CK(cond != hl_null);
+			hc_unary_term* cnd = (hc_unary_term*)cond;
+			HL_CK(cnd->prm != hl_null);
+			
+			if_true->set_jumps(hc_hcase_op, *(cnd->prm));
+		}
+		break;
+		case hc_hcase_op:
+		case hc_hdefault_op:
+			next = &nxt;
+		break;
+		default:
+		break;
+	}
+}
+
+void
+hc_condition::set_last(hc_term& nxt){
+	if(get_has_last()){
+		return;
+	}
+	set_has_last();
+
+	hc_syntax_op_t op = get_cond_oper();
+	switch(op){
+		case hc_hif_op:
+		case hc_helif_op:
+		case hc_helse_op:
+			if_true->set_last(nxt);
+			if(next != &nxt){
+				HL_CK(next != hl_null);
+				HL_CK(next->is_cond());
+				next->set_last(nxt);
+			}
+		break;
+		case hc_hswitch_op:
+		case hc_hcase_op:
+		case hc_hdefault_op:
+			HL_CK(if_true != hl_null);
+			if_true->set_last(nxt);
+		break;
+		case hc_hwhile_op:
+		case hc_hfor_op:
+		default:
+		break;
+	}
+}
+
+void
+hc_term::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+	// Leave empty
+}
+	
+void
+hc_steps::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+	int flg = hc_get_num_flag(the_op);
+	if(get_flag(flg)){
+		return;
+	}
+	set_flag(flg);
+	
+	auto it = steps.begin();
+	for(; it != steps.end(); ++it){
+		hc_term* tm = (*it);
+		HL_CK(tm != hl_null);
+		tm->set_jumps(the_op, nxt);
+	}
+}
+
+void
+hc_case_term::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+	if(the_op != hc_hcase_op){
+		return;
+	}
+	
+	int flg = hc_get_num_flag(the_op);
+	if(get_flag(flg)){
+		return;
+	}
+	set_flag(flg);
+	
+	HL_CK(get_oper() == hc_hcase_op);
+	HL_CK(the_sw_eq == hl_null);
+	the_sw_eq = &nxt;
+}
+
+void
+hc_condition::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+	int flg = hc_get_num_flag(the_op);
+	if(get_flag(flg)){
+		return;
+	}
+	set_flag(flg);
+	
+	if(get_cond_oper() == hc_hcase_op){
+		cond->set_jumps(the_op, nxt);
+		return;
+	}
+	
+	if_true->set_jumps(the_op, nxt);
+}
+
+void
+hc_keyword::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+	if(the_op != op){
+		return;
+	}
+	if(the_op == hc_hcase_op){
+		return;
+	}
+	
+	int flg = hc_get_num_flag(the_op);
+	if(get_flag(flg)){
+		return;
+	}
+	set_flag(flg);
+
+	fprintf(stderr, "SETTING %s to %s \n", hc_get_token(op), nxt.get_name());
+	
+	next = &nxt;
+}
+	
+hc_mth_ret::hc_mth_ret(hc_mth_def* mthdef){
+	HL_CK(mthdef != hl_null);
+	the_mth = mthdef;
+	nam = "ret_";
+	nam.append(the_mth->get_name());
+}
+
 const char*
-hcell::get_attr_nm(const char* pfix, const char* sfix){
-	static hl_ostringstream result;
-	result << pfix << get_class_name() << "_" << sfix;
-	const char* rr = strdup(result.str().c_str());
-	result.str("");
-	//fprintf(stdout, "TOK_NM= %s\n", rr);
-	return rr;
+hc_mth_ret::get_name(){
+	return nam.c_str();
 }
 
-hc_term&
-hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
-	hc_term* tm = new hc_send_term(hc_send_op, &dst, &tok, &att);
-	return *tm;
-}
-
-hc_term&
-hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
-	hc_term* tm = new hc_send_term(hc_tell_op, &dst, &tok, &att);
-	return *tm;
-}
+// =======================================================================================
+// CPP_CODE_GENERATION
 
 void
 hc_system::generate_hh_files(){
@@ -1153,6 +1581,13 @@ hc_system::generate_hh_files(){
 	}
 }
 
+void
+hc_system::generate_cpp_files(){
+	auto it = all_classes.begin();
+	for(; it != all_classes.end(); ++it){
+		it->second->print_cpp_file();
+	}
+}
 
 void
 hc_system::generate_cpp_code(){
@@ -1164,6 +1599,7 @@ hc_system::generate_cpp_code(){
 	print_hh_file();
 	print_glbs_hh_file();
 	generate_hh_files();
+	generate_cpp_files();
 }
 
 void
@@ -1242,6 +1678,22 @@ hc_system::print_glbs_hh_file(){
 		fprintf(ff, "#define %s %s \n", it3->first.c_str(), con->val.c_str());
 	}
 	fprintf(ff, "\n");
+	
+	/*
+	long aa = 0;
+	for(aa = 0; aa < hc_term::HC_NUM_LABEL; aa++){
+		fprintf(ff, "#define ");
+		hc_print_label(ff, aa);
+		fprintf(ff, " %ld \n", aa);
+	}
+	fprintf(ff, "\n\n");
+	*/
+
+	fprintf(ff, "#define HG_LN0(nn) case nn: {\n");
+	fprintf(ff, "#define HG_LN(nn) } break; case nn: {\n");
+	fprintf(ff, "#define HG_LNL() } break; default: break;\n");
+	
+	fprintf(ff, "\n\n");
 	
 	fprintf(ff, "#endif // %s\n", df_str.c_str());
 	
@@ -1332,6 +1784,13 @@ public:
 
 void
 hclass_reg::print_hh_class_decl_content(FILE* ff){
+	
+	fprintf(ff, "\tlong hg_step = 0;\n");
+	fprintf(ff, "\tlong hg_stack_idx = 0;\n");
+	fprintf(ff, "\tlong hg_stack_arr[%ld];\n", depth);
+	fprintf(ff, "\tlong hg_ret_step = 0;\n");
+	fprintf(ff, "\tlong hg_cll_step = 0;\n");
+
 	auto it1 = values.begin();
 	for(; it1 != values.end(); ++it1){
 		hc_term* trm = (hc_term*)(it1->second);
@@ -1390,180 +1849,302 @@ hclass_reg::print_cpp_file(){
 }
 
 void
-hclass_reg::print_cpp_class_defs(FILE* ff){
-}
+hclass_reg::print_all_cpp_methods(FILE *st){
+	tot_steps = 0;
+	
+	auto it = methods.begin();
+	for(; it != methods.end(); ++it){
+		hc_mth_def* mth_df = (*it);
 
-void
-hc_steps::set_next(hc_term& nxt){
-	HL_CK(! steps.empty());
-	hc_term* tm = steps.back();
-	tm->set_next(nxt);
-}
-
-void
-hc_steps::set_last(hc_term& nxt){
-	if(get_has_last()){
-		return;
+		mth_df->print_cpp_code(st);
 	}
-	set_has_last();
+	if(nucleus != hl_null){
+		fprintf(st, "\t/* THE_NUCLEUS %s */\n", nucleus->nam);
+		
+		nucleus->print_cpp_code(st);
+	}
+}
+
+void
+hclass_reg::print_cpp_class_defs(FILE* st){
+	print_all_cpp_methods(st);
+}
+
+int
+hc_term::print_cpp_term(FILE *st){
+	hl_abort("INVALID_TERM !!!!\n");
+	return 0;
+}
+
+int
+hc_unary_term::print_cpp_term(FILE *st){
+	hc_syntax_op_t c_op = get_oper();
+	HL_CK(c_op != hc_hcase_op);
+	if(c_op == hc_hswitch_op){
+		fprintf(st, "/*");
+	}
+	
+	const char* tok = hc_get_cpp_token(op);
+	HL_CK(prm != hl_null);
+	fprintf(st, "%s", tok);
+	fprintf(st, "(");
+	HC_PRT_TERM_INDENT++;
+	prm->print_cpp_term(st);
+	HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
+
+	if(c_op == hc_hswitch_op){
+		fprintf(st, "*/");
+	}
+	
+	return 0;
+}
+
+int
+hc_case_term::print_cpp_term(FILE *st){
+	hc_syntax_op_t c_op = get_oper();
+	HL_CK(c_op == hc_hcase_op);
+	
+	const char* tok = hc_get_cpp_token(op);
+	HL_CK(prm != hl_null);
+	fprintf(st, "%s", tok);
+	fprintf(st, "(");
+	HC_PRT_TERM_INDENT++;
+	prm->print_cpp_term(st);
+	fprintf(st, " == ");
+	if(the_sw_eq != hl_null){ the_sw_eq->print_term(st); }
+	HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
+
+	return 0;
+}
+
+int
+hc_steps::print_cpp_term(FILE *st){
+	bool is_fst = true;
 	
 	auto it = steps.begin();
 	for(; it != steps.end(); ++it){
+		if(is_fst){ is_fst = false; } 
+		else { fprintf(st, " ;"); }
 		hc_term* tm = (*it);
 		HL_CK(tm != hl_null);
-		tm->set_last(nxt);
-	}
-	set_next(nxt);
-}
-
-void
-hc_term::set_next(hc_term& nxt){
-	HL_CK_PRT((next == hl_null), "%d\n", (printf("GGGGG"), print_term(stderr)));
-	HL_CK(next == hl_null);
-	next = &nxt;
-}
-	
-void
-hc_term::set_last(hc_term& nxt){
-}
-
-void
-hc_condition::set_next(hc_term& nxt){
-	hc_syntax_op_t op = get_cond_oper();
-	hc_term& th = *this;
-	switch(op){
-		case hc_hfor_op:{
-			next = &nxt;
-			
-			HL_CK(cond != hl_null);
-			hc_for_loop& for_cond = *((hc_for_loop*)cond);
-			HL_CK(for_cond.end_each_loop != hl_null);
-			hc_term& for_end = *(for_cond.end_each_loop);
-			
-			for_end.set_last(th);
-			
-			HL_CK(if_true != hl_null);
-			if_true->set_last(for_end);
-			
-			if_true->set_jumps(hc_hbreak_op, nxt);
-			if_true->set_jumps(hc_hcontinue_op, th);
+		
+		fprintf(st, "\n");
+		fprintf(st, "HG_LN(%ld)\t", tm->get_num_label());
+		
+		hc_term::print_indent(st);
+		tm->print_cpp_term(st);
+		
+		hc_syntax_op_t c_op = tm->get_oper();
+		if((c_op != hc_then_op) && (tm->next != hl_null)){
+			HL_CK_PRT((tm->next != hl_null), "oper = %s \n", hc_get_token(c_op));
+			fprintf(st, ";\thg_step = %ld;", tm->next->get_num_label());
 		}
-		break;
-		case hc_hwhile_op:{
-			next = &nxt;
-			HL_CK(if_true != hl_null);
-			if_true->set_last(th);
+	}
+	
+	return 0;
+}
 
-			if_true->set_jumps(hc_hbreak_op, nxt);
-			if_true->set_jumps(hc_hcontinue_op, th);
-		}
-		break;
-		case hc_hif_op:
-		case hc_helif_op:
-		case hc_helse_op:
-			next = &nxt;
-		break;
-		case hc_hswitch_op:
-			HL_CK(if_true != hl_null);
-			if_true->set_last(nxt);
-		break;
-		case hc_hcase_op:
-		case hc_hdefault_op:
-			next = &nxt;
-		break;
+int
+hc_condition::print_cpp_term(FILE *st){
+	const char* tok = hc_get_cpp_token(hc_then_op);
+	hc_term* tm1 = cond;
+	hc_term* tm2 = if_true;
+	
+	HL_CK(tm1 != hl_null);
+	HL_CK(tm2 != hl_null);
+	
+	fprintf(st, "/*(*/"); 
+	hc_term::HC_PRT_TERM_INDENT++;
+
+	tm1->print_cpp_term(st);
+
+	hc_syntax_op_t c_op = tm1->get_oper();
+	if(c_op == hc_hswitch_op){
+		fprintf(st, "hg_step = %ld;", if_true->get_num_label());
+	} else if(c_op != hc_hfor_op){
+		HL_CK(next != hl_null);
+		fprintf(st, "{ hg_step = %ld; } else { hg_step = %ld; }",
+			if_true->get_num_label(),
+			next->get_num_label()
+		);
+	}
+	fprintf(st, " %s ", tok);
+	
+	tm2->print_cpp_term(st);
+	
+	hc_term::HC_PRT_TERM_INDENT--;
+	fprintf(st, "/*)*/");
+	
+	return 0;
+}
+
+int
+hc_for_loop::print_cpp_term(FILE *st){
+	const char* tok = hc_get_cpp_token(get_oper());
+	HL_CK(owner != hl_null);
+	HL_CK(cond != hl_null);
+	HL_CK(end_each_loop != hl_null);
+	
+	fprintf(st, "%s", tok);
+	fprintf(st, "/*(*/");
+	HC_PRT_TERM_INDENT++;
+	cond->print_cpp_term(st);
+	
+	fprintf(st, "{ hg_step = %ld; } else { hg_step = %ld; }",
+		owner->if_true->get_num_label(),
+		owner->next->get_num_label()
+	);
+	
+	fprintf(st, "/*  _,_  */");
+	end_each_loop->print_cpp_term(st);
+	HC_PRT_TERM_INDENT--;
+	fprintf(st, "/*)*/");
+
+	return 0;
+}
+
+int
+hc_binary_term::print_cpp_term(FILE *st){
+	const char* tok = hc_get_cpp_token(op);
+	HL_CK(lft != hl_null);
+	HL_CK(rgt != hl_null);
+	HL_CK(op != hc_comma_op);
+	HL_CK(op != hc_then_op);
+	
+	fprintf(st, "("); 
+	hc_term::HC_PRT_TERM_INDENT++;
+	
+	lft->print_cpp_term(st);
+	
+	fprintf(st, " %s ", tok);
+	
+	rgt->print_cpp_term(st);
+	
+	hc_term::HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
+
+	return 0;
+}
+
+int
+hc_send_term::print_cpp_term(FILE *st){
+	HL_CK((op == hc_send_op) || (op == hc_tell_op));
+	
+	const char* tok_str = hc_get_cpp_token(op);
+	
+	fprintf(st, " %s", tok_str);
+	
+	fprintf(st, "("); 
+	HC_PRT_TERM_INDENT++;
+	
+	if(snd_dst != hl_null){ snd_dst->print_cpp_term(st); }
+	
+	fprintf(st, ", ");
+	
+	if(snd_tok != hl_null){ snd_tok->print_cpp_term(st); }
+
+	fprintf(st, ", ");
+	
+	if(snd_att != hl_null){ snd_att->print_cpp_term(st); }
+
+	HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
+	
+	return 0;
+}
+
+int
+hc_mth_ret::print_cpp_term(FILE *st){
+	fprintf(st, "/* %s */", get_name());
+	return 0;
+}
+
+int
+hc_mth_call::print_cpp_term(FILE *st){
+	HL_CK(the_mth != hl_null);
+	//HL_CK(the_mth->my_cls != hl_null);
+	fprintf(st, "/* %s() */", get_name());
+	//fprintf(st, "/* %s() MTH_NXT = %ld */", get_name(), next->get_num_label());
+	/*
+	fprintf(st, "hg_ret_step = %ld; hg_cll_step = %ld; hg_step = %ld", 
+		next->get_num_label(), the_mth->get_num_label(), the_mth->my_cls->mth_call_num_step
+	);*/
+	return 0;
+}
+
+#define HG_CLS_DEPTH 4
+
+void hg_call_mth(){
+	long hg_ret_step = 0;
+	long hg_cll_step = 0;
+	
+	long hg_step = 0;
+	long hg_stack_idx = 0;
+	long hg_stack_arr[HG_CLS_DEPTH];
+	
+	HL_MARK_USED(hg_step);
+	HL_MARK_USED(hg_stack_arr);
+	
+	switch(hg_stack_idx){
+		case 0:
+			hg_stack_arr[0] = hg_ret_step;
+			hg_stack_idx = 1;
+			break;
+		case 1:
+			hg_stack_arr[1] = hg_ret_step;
+			hg_stack_idx = 2;
+			break;
+		case 2:
+			hg_stack_arr[2] = hg_ret_step;
+			hg_stack_idx = 3;
+			break;
+		case 3:
+			hg_stack_arr[3] = hg_ret_step;
+			hg_stack_idx = 4;
+			break;
 		default:
-		break;
-	}
+			// ABORT
+			break;
+	};
+	
+	hg_step = hg_cll_step;
 }
 
-void
-hc_condition::set_last(hc_term& nxt){
-	if(get_has_last()){
-		return;
-	}
-	set_has_last();
-
-	hc_syntax_op_t op = get_cond_oper();
-	switch(op){
-		case hc_hif_op:
-		case hc_helif_op:
-		case hc_helse_op:
-			if_true->set_last(nxt);
-			if(next != &nxt){
-				HL_CK(next != hl_null);
-				HL_CK(next->is_cond());
-				next->set_last(nxt);
-			}
-		break;
-		case hc_hswitch_op:
-		case hc_hcase_op:
-		case hc_hdefault_op:
-			HL_CK(if_true != hl_null);
-			if_true->set_last(nxt);
-		break;
-		case hc_hwhile_op:
-		case hc_hfor_op:
+void hg_ret_mth(){
+	long hg_step = 0;
+	long hg_stack_idx = 0;
+	long hg_stack_arr[HG_CLS_DEPTH];
+	
+	HL_MARK_USED(hg_step);
+	HL_MARK_USED(hg_stack_arr);
+	
+	switch(hg_stack_idx){
+		case 1:
+			hg_stack_idx = 0;
+			hg_step = hg_stack_arr[0];
+			hg_stack_arr[0] = 0;
+			break;
+		case 2:
+			hg_stack_idx = 1;
+			hg_step = hg_stack_arr[1];
+			hg_stack_arr[1] = 0;
+			break;
+		case 3:
+			hg_stack_idx = 2;
+			hg_step = hg_stack_arr[2];
+			hg_stack_arr[2] = 0;
+			break;
+		case 4:
+			hg_stack_idx = 3;
+			hg_step = hg_stack_arr[3];
+			hg_stack_arr[3] = 0;
+			break;
 		default:
-		break;
-	}
+			// ABORT
+			break;
+	};
+	
 }
 
-void
-hc_term::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
-}
-	
-void
-hc_steps::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
-	int flg = hc_get_num_flag(the_op);
-	if(get_flag(flg)){
-		return;
-	}
-	set_flag(flg);
-	
-	auto it = steps.begin();
-	for(; it != steps.end(); ++it){
-		hc_term* tm = (*it);
-		HL_CK(tm != hl_null);
-		tm->set_jumps(the_op, nxt);
-	}
-}
-	
-void
-hc_condition::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
-	int flg = hc_get_num_flag(the_op);
-	if(get_flag(flg)){
-		return;
-	}
-	set_flag(flg);
-	
-	if_true->set_jumps(the_op, nxt);
-}
-
-void
-hc_keyword::set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
-	if(the_op != op){
-		return;
-	}
-	
-	int flg = hc_get_num_flag(the_op);
-	if(get_flag(flg)){
-		return;
-	}
-	set_flag(flg);
-
-	fprintf(stderr, "SETTING %s to %s \n", hc_get_token(op), nxt.get_name());
-	
-	next = &nxt;
-}
-	
-hc_mth_ret::hc_mth_ret(hc_mth_def* mthdef){
-	HL_CK(mthdef != hl_null);
-	the_mth = mthdef;
-	nam = "ret_";
-	nam.append(the_mth->get_name());
-}
-
-const char*
-hc_mth_ret::get_name(){
-	return nam.c_str();
-}
