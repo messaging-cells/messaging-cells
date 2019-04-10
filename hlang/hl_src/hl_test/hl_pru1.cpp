@@ -127,7 +127,7 @@ hmethod_def(cls_A3, mth01, (
 	aa1 = aa2, 
 	aa2 = aa3, 
 	aa3 = aa1,
-	hcase(r3) >> r3--,
+	//hcase(r3) >> r3--,
 	hmsg_src(cls_A1)->o4(),
 	hmsg_ref(cls_A1)->o4(),
 	hmsg_val(long)--,

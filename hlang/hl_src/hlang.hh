@@ -49,6 +49,11 @@ hlang declarations.
 
 #include "dbg_util.h"
 
+#define MAX_BUFF_SZ 0xFFF
+
+extern char PROC_LINK_BUFF[];
+extern char FILE_NAME_BUFF[];
+
 FILE* file_open(const char* nm);
 bool file_rename(hl_string& old_pth, hl_string& nw_pth);
 bool file_remove(hl_string& pth);
@@ -177,6 +182,11 @@ public:
 	void print_cpp_file();
 	void print_cpp_class_defs(FILE* ff);
 	
+	void print_cpp_call_mth_case(FILE* st, long idx);
+	void print_cpp_ret_mth_case(FILE* st, long idx);
+	void print_cpp_call_mth_code(FILE* st);
+	void print_cpp_ret_mth_code(FILE* st);
+	
 	void call_all_methods();
 	
 	void print_all_cpp_methods(FILE *st);
@@ -293,6 +303,10 @@ template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
 enum	hc_syntax_op_t {
 	hc_invalid_op,
 
+	hc_mth_call_op,
+	hc_mth_def_op,
+	hc_mth_ret_op,
+	
 	hc_dbg_op,
 	
 	hc_send_op,	// hsend
@@ -1442,6 +1456,11 @@ public:
 	int print_cpp_term(FILE *st);
 
 	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_mth_ret_op;
+	}
+	
+	virtual 
 	bool	is_compound(){
 		return true;
 	}
@@ -1525,12 +1544,17 @@ public:
 		}
 	}
 	
-	/*virtual 
+	virtual 
 	hc_term* get_first_step(){
 		HL_CK(cod != hl_null);
 		hc_term* tm = cod->get_first_step();
 		return tm;
-	}*/
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_mth_def_op;
+	}
 	
 };
 
@@ -1560,6 +1584,11 @@ public:
 	virtual 
 	int print_cpp_term(FILE *st);
 
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_mth_call_op;
+	}
+	
 	virtual 
 	bool	is_compound(){
 		return true;
