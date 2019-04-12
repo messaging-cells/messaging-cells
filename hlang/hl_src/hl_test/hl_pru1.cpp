@@ -36,15 +36,15 @@ hcell_class_def(cls_A3);
 hcell_class_def(cls_A4);
 
 hnucleus_def(cls_A1, central, (
-	(r1 = (o1 + o2)),
+	(o1 = (o1 + o2)),
 	mth01(), 
 	hreturn
 ));
 
 hmethod_def(cls_A1, mth01, (
-	(r1 = (o1 + o2)),
-	(o2 = (r2 + r1)),
-	(r1 = r2) = (r4 + r5),
+	(o1 = (o1 + o2)),
+	(o2 = (o2 + o1)),
+	(o1 = o2) = (o4 + o5),
 	(o1 = o2) = (o4 + o5),
 	(o1 = o2),
 	o4++, o5++, 
@@ -53,8 +53,8 @@ hmethod_def(cls_A1, mth01, (
 		hcase(o4) >> ++o5, 
 		hcase(o1) >> o2--
 	), 
-	//r1 = (o1, r2),
-	//hif((r1 = o1, r2 = o2, r3 = r4)) >> o1,
+	//o1 = (o1, o2),
+	//hif((o1 = o1, o2 = o2, o3 = o4)) >> o1,
 	hif(b3 && (b4 || b1)) >> (~ o1 + ! o2),
 	hif(o3 && (o4 || o1)) >> (~ o1 + ! o2),
 	helif(o4) >> (o5 && o3),
@@ -75,23 +75,23 @@ hmethod_def(cls_A1, mth01, (
 
 hmethod_def(cls_A1, mth02, (
 	! (hmsg_ref(cls_A3)->xx1()),
-	(r1 = (o1 + o2)),
+	(o1 = (o1 + o2)),
 	mth01(), 
 	hreturn
 ));
 
 hmethod_def(cls_A1, mth03, (
 	hif(o3) >> (~ o1 + ! o2),
-	(o2 = (r2 + r1)),
-	(o2 = (r2 + r1)),
-	r1 = hme(),
+	(o2 = (o2 + o1)),
+	(o2 = (o2 + o1)),
+	o1 = hme(),
 	mth02()
 ));
 
 hmethod_def(cls_A1, mth04, (
 	mth03(),
 	mth02(),
-	r1 = hme()
+	o1 = hme()
 ));
 
 hmethod_def(cls_A2, mth01, (
@@ -130,8 +130,8 @@ hmethod_def(cls_A3, mth01, (
 	//hcase(r3) >> r3--,
 	hmsg_src(cls_A1)->o4(),
 	hmsg_ref(cls_A1)->o4(),
-	hmsg_val(long)--,
-	hmsg_tok(char)--,
+	hmsg_val_as(long)--,
+	hmsg_tok_as(char)--,
 	hdbg(R"my_code(
 		/* my coment */
 		// other  comment
@@ -198,7 +198,7 @@ void hl_test_1(int argc, char *argv[])
 {
 	printf("bj_mchl_test_1 \n");
 	
-	haddress(CLS_A, e1);
+	//haddress(CLS_A, e1);
 	
 	printf("######################################################\n");
 

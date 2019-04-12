@@ -35,6 +35,11 @@ TGT_PREREQS := ${HLANG_LIB_DIR}/libhlang.a
 
 define POST_OPERS
 	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 
+	pwd
+	cd $(TARGET_DIR)/${HLANG_BIN_DIR}; ./hlang_tests.elf
+	pwd
+	#./hlang_tests.elf
+	printf "====================================\nFinished generating cpp code \n\n\n" 
 endef
 
 TGT_POSTMAKE := ${POST_OPERS}

@@ -4,8 +4,12 @@ TARGET_DIR := ./hl_install
 
 HL_CURR_DIR := $(shell pwd)
 
+#	./generated_cpp/generated_cpp.mk \
+
+
 SUBMAKEFILES := \
 	./hlang/hlang.mk \
+	./generated_cpp/generated_cpp.mk \
 
 
 default: all

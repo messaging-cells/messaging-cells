@@ -63,6 +63,7 @@ typedef agent_ref cell_ref_t;
 
 typedef uint16_t mck_token_t; 
 typedef uint16_t mc_alloc_size_t; 
+typedef uint64_t mck_value_t; 
 
 #define BJ_INVALID_TOKEN ((mck_token_t)(~((mck_token_t)0x0)))
 #define BJ_INVALID_ALLOC_SZ ((mc_alloc_size_t)(~((mc_alloc_size_t)0x0)))
@@ -766,6 +767,10 @@ public:
 
 	mc_opt_sz_fn
 	void
+	send_val(cell* des, mck_token_t tok, mck_value_t val);
+
+	mc_opt_sz_fn
+	void
 	respond(missive* msv, mck_token_t tok);
 };
 
@@ -794,6 +799,7 @@ public:
 	cell* 				dst;
 	cell*				src;
 	mck_token_t 		tok;
+	mck_value_t			val;
 
 	mc_opt_sz_fn 
 	missive(){
@@ -809,10 +815,13 @@ public:
 			(! mc_has_mask(flg, mc_dbg_msv_sent_flag)) || mc_has_mask(flg, mc_dbg_msv_received_flag), 
 			"cll=%d dbg=%p tok=%d src=%p dst=%p\n", 
 			dbg_caller, (void*)(uintptr_t)flg, tok, (void*)src, (void*)dst);
+		
+		//PTD_DBG_CODE(flg = 0);
+		flg = 0;
 		dst = mc_null;
 		src = mc_null;
 		tok = 0;
-		PTD_DBG_CODE(flg = 0);
+		val = 0;
 	}
 
 	//! Sends this \ref missive . It calls \ref mck_as_glb_pt with src before sending.

@@ -20,8 +20,8 @@ hc_mth_def*	hcell::defining_mth = hl_null;
 long	hc_term::HC_PRT_TERM_INDENT = 0;
 long	hc_term::HC_NUM_LABEL = 0;
 
-htoken(hmsg_tok);
-hconst(hmsg_val, 0);
+//htoken(hmsg_tok);
+//hconst(hmsg_val, 0);
 
 // =======================================================================================
 // FILE_FUNCTIONS
@@ -614,6 +614,12 @@ const char*
 hc_get_token(hc_syntax_op_t op){
 	const char* tok = "INVALID_TOKEN";
 	switch(op){
+		case hc_hmsg_tok_op:
+			tok = "hc_hmsg_tok_op";
+		break;
+		case hc_hmsg_val_op:
+			tok = "hc_hmsg_val_op";
+		break;
 		case hc_mth_call_op:
 			tok = "hc_mth_call_op";
 		break;
@@ -760,6 +766,12 @@ const char*
 hc_get_cpp_token(hc_syntax_op_t op){
 	const char* tok = "INVALID_TOKEN";
 	switch(op){
+		case hc_hmsg_tok_op:
+			tok = "hmsg_tok";
+		break;
+		case hc_hmsg_val_op:
+			tok = "hmsg_val";
+		break;
 		case hc_mth_call_op:
 			tok = "hc_mth_call_op";
 		break;
@@ -773,10 +785,10 @@ hc_get_cpp_token(hc_syntax_op_t op){
 			tok = "hdbg";
 		break;
 		case hc_send_op:
-			tok = "hsend";
+			tok = "send_val";
 		break;
 		case hc_tell_op:
-			tok = "htell";
+			tok = "tell_val";
 		break;
 		case hc_member_op:
 			tok = "->";
@@ -1724,19 +1736,9 @@ hc_system::print_glbs_hh_file(){
 	}
 	fprintf(ff, "\n");
 	
-	/*
-	long aa = 0;
-	for(aa = 0; aa < hc_term::HC_NUM_LABEL; aa++){
-		fprintf(ff, "#define ");
-		hc_print_label(ff, aa);
-		fprintf(ff, " %ld \n", aa);
-	}
-	fprintf(ff, "\n\n");
-	*/
-
-	fprintf(ff, "#define HG_LN0(nn) case nn: {\n");
+	//fprintf(ff, "#define HG_LN0(nn) case nn: {\n");
 	fprintf(ff, "#define HG_LN(nn) } break; case nn: {\n");
-	fprintf(ff, "#define HG_LNL() } break; default: break;\n");
+	//fprintf(ff, "#define HG_LNL() } break; default: break;\n");
 	
 	fprintf(ff, "\n\n");
 	
@@ -1896,6 +1898,22 @@ hclass_reg::print_cpp_file(){
 void
 hclass_reg::print_all_cpp_methods(FILE *st){
 	//tot_steps = 0;
+	fprintf(st, "void\n");
+	fprintf(st, "%s::handler(missive* msv){\n", nam.c_str());
+	fprintf(st, "PTD_CK(msv != mc_null);\n");
+	fprintf(st, "cell* hmsg_src = msv->src;\n");
+	fprintf(st, "mck_token_t hmsg_tok = msv->tok;\n");
+	fprintf(st, "mck_value_t hmsg_val = msv->val;\n");
+	fprintf(st, "cell* hmsg_ref = (cell*)(msv->val);\n");
+	fprintf(st, "\n");
+	fprintf(st, "MC_MARK_USED(hmsg_src);\n");
+	fprintf(st, "MC_MARK_USED(hmsg_tok);\n");
+	fprintf(st, "MC_MARK_USED(hmsg_val);\n");
+	fprintf(st, "MC_MARK_USED(hmsg_ref);\n");
+	fprintf(st, "\n");
+	fprintf(st, "switch(hg_step){\n");
+	fprintf(st, "case 0: {\n");
+	fprintf(st, "\n");
 	
 	print_cpp_call_mth_code(st);
 	print_cpp_ret_mth_code(st);
@@ -1911,6 +1929,15 @@ hclass_reg::print_all_cpp_methods(FILE *st){
 		
 		nucleus->print_cpp_code(st);
 	}
+
+	fprintf(st, "} break;\n");
+	fprintf(st, "default:\n");
+	fprintf(st, "break;\n");
+	fprintf(st, "\n");
+	fprintf(st, "} // closes switch\n");
+	fprintf(st, "} // closes handler\n");
+	fprintf(st, "\n");
+		
 }
 
 void
@@ -1960,7 +1987,7 @@ hc_case_term::print_cpp_term(FILE *st){
 	HC_PRT_TERM_INDENT++;
 	prm->print_cpp_term(st);
 	fprintf(st, " == ");
-	if(the_sw_eq != hl_null){ the_sw_eq->print_term(st); }
+	if(the_sw_eq != hl_null){ the_sw_eq->print_cpp_term(st); }
 	HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
 
@@ -2139,7 +2166,6 @@ void
 hclass_reg::print_cpp_call_mth_case(FILE* st, long idx){
 	long idx_inc = idx + 1;
 	fprintf(st, "\t\tcase %ld:\n", idx);
-	fprintf(st, "\t\t\thg_stack_arr[%ld] = hg_ret_step;\n", idx);
 	fprintf(st, "\t\t\thg_stack_idx = %ld;\n", idx_inc);
 	fprintf(st, "\t\tbreak;\n");
 }
@@ -2149,14 +2175,13 @@ hclass_reg::print_cpp_ret_mth_case(FILE* st, long idx){
 	long idx_dec = idx - 1;
 	fprintf(st, "\t\tcase %ld:\n", idx);
 	fprintf(st, "\t\t\thg_stack_idx = %ld;\n", idx_dec);
-	fprintf(st, "\t\t\thg_step = hg_stack_arr[%ld];\n", idx_dec);
-	fprintf(st, "\t\t\thg_stack_arr[%ld] = %ld;\n", idx_dec, idx_dec);
 	fprintf(st, "\t\tbreak;\n");
 }
 
 void
 hclass_reg::print_cpp_call_mth_code(FILE* st){
 	fprintf(st, "HG_LN(%ld)\n", mth_call_num_step);
+	fprintf(st, "\thg_stack_arr[hg_stack_idx] = hg_ret_step;\n");
 	fprintf(st, "\tswitch(hg_stack_idx){\n");
 	
 	for(long aa = 0; aa < depth; aa++){
@@ -2168,6 +2193,7 @@ hclass_reg::print_cpp_call_mth_code(FILE* st){
 	fprintf(st, "\t};\n");
 	fprintf(st, "\n");
 	fprintf(st, "\thg_step = hg_cll_step;\n");
+	fprintf(st, "\n");
 }
 
 void
@@ -2182,5 +2208,9 @@ hclass_reg::print_cpp_ret_mth_code(FILE* st){
 	fprintf(st, "\t\tdefault:\n");
 	fprintf(st, "\t\tbreak;\n");
 	fprintf(st, "\t};\n");
+	fprintf(st, "\n");
+	fprintf(st, "\thg_step = hg_stack_arr[hg_stack_idx];\n");
+	fprintf(st, "\thg_stack_arr[hg_stack_idx] = 0;\n");
+	fprintf(st, "\n");
 }
 

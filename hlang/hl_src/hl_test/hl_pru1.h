@@ -20,11 +20,13 @@ enum pru_tok_t : hl_token_t {
 	bj_tok_pru_end
 };
 
+/*
 class CLS_A {};
 class CLS_B {};
 class CLS_C {};
 class CLS_D {};
 class CLS_E {};
+*/
 
 //hclass(
 class cls_A2;
@@ -47,11 +49,13 @@ public:
 	hlong(o5);
 	hint8_t(o6);
 	huint8_t(o7);
+	/*
 	hreference(CLS_A, r1);
 	hreference(CLS_B, r2);
 	hreference(CLS_C, r3);
 	hreference(CLS_D, r4);
 	hreference(CLS_A, r5);
+	*/
 
 	hreference(cls_A2, rA2);
 	hreference(cls_A3, rA3);

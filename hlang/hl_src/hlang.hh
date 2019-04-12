@@ -303,6 +303,9 @@ template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
 enum	hc_syntax_op_t {
 	hc_invalid_op,
 
+	hc_hmsg_tok_op,
+	hc_hmsg_val_op,
+	
 	hc_mth_call_op,
 	hc_mth_def_op,
 	hc_mth_ret_op,
@@ -489,22 +492,10 @@ public:
 	hc_term&	operator -- (int xx);
 	
 	virtual 
-	hc_term*	get_src(){
-		return this;
-	}
-	
-	bool 	is_closed_member(){
-		return (get_src() == this);
-	}
-	
-	virtual 
 	int print_term(FILE *st);
 
 	virtual 
 	int print_cpp_term(FILE *st);
-
-	virtual 
-	void set_num_label(){}
 
 	virtual 
 	void print_text_code(FILE *st){
@@ -518,9 +509,14 @@ public:
 				"NOT_A_METHOD. It has no code to print.\n");
 	}
 
-	static
-	void print_indent(FILE *st);
+	virtual 
+	hc_term*	get_src(){
+		return this;
+	}
 	
+	virtual 
+	void set_num_label(){}
+
 	virtual 
 	hc_syntax_op_t	get_oper(){
 		return hc_invalid_op;
@@ -529,10 +525,6 @@ public:
 	virtual 
 	hc_syntax_op_t	get_cond_oper(){
 		return hc_invalid_op;
-	}
-	
-	bool is_cond(){
-		return (get_cond_oper() != hc_invalid_op);
 	}
 	
 	virtual 
@@ -560,8 +552,6 @@ public:
 		return false;
 	}
 	
-	hc_steps* to_steps();
-	
 	virtual 
 	hc_term* get_first_step(){
 		return this;
@@ -576,10 +566,23 @@ public:
 	virtual 
 	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
 	
+	static
+	void print_indent(FILE *st);
+	
+	bool 	is_closed_member(){
+		return (get_src() == this);
+	}
+	
+	bool is_cond(){
+		return (get_cond_oper() != hc_invalid_op);
+	}
+	
 	bool	is_if_closer(){
 		hc_syntax_op_t op = get_cond_oper();
 		return ((op != hc_helif_op) && (op != hc_helse_op));
 	}
+	
+	hc_steps* to_steps();
 	
 	long get_num_label();
 	
@@ -1264,11 +1267,116 @@ public:
 	
 };
 
+class hc_cast : public hc_term {
+public:
+	const char* cast_str;
+	hc_term* the_tm;
+	
+	virtual	~hc_cast(){}
+	
+	hc_cast(const char* the_cast, hc_term& tm){
+		HL_CK(the_cast != hl_null);
+		cast_str = the_cast;
+		the_tm = tm.get_src();
+	}
+
+	virtual 
+	int print_term(FILE *st){
+		HL_CK(cast_str != hl_null);
+		fprintf(st, "(cast(%s)", cast_str);
+		the_tm->print_term(st);
+		fprintf(st, ")");
+		return 0;
+	}
+	
+	virtual 
+	int print_cpp_term(FILE *st){
+		HL_CK(cast_str != hl_null);
+		fprintf(st, "((%s)", cast_str);
+		the_tm->print_cpp_term(st);
+		fprintf(st, ")");
+		return 0;
+	}
+
+	virtual 
+	void set_num_label(){
+		HL_CK(the_tm != hl_null);
+		the_tm->set_num_label();
+	}
+
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		HL_CK(the_tm != hl_null);
+		return the_tm->get_oper();
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_cond_oper(){
+		HL_CK(the_tm != hl_null);
+		return the_tm->get_cond_oper();
+	}
+	
+	virtual 
+	const char*	get_type(){
+		HL_CK(the_tm != hl_null);
+		return the_tm->get_type();
+	}	
+
+	virtual 
+	const char*	get_name(){
+		HL_CK(the_tm != hl_null);
+		return the_tm->get_name();
+	}	
+
+	virtual 
+	hl_string	get_value(){
+		HL_CK(the_tm != hl_null);
+		return the_tm->get_value();
+	}	
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+
+	virtual 
+	bool	has_statements(){
+		HL_CK(the_tm != hl_null);
+		return the_tm->has_statements();
+	}
+	
+	virtual 
+	hc_term* get_first_step(){
+		HL_CK(the_tm != hl_null);
+		return the_tm->get_first_step();
+	}
+
+	virtual 
+	void	set_next(hc_term& nxt){
+		HL_CK(the_tm != hl_null);
+		return the_tm->set_next(nxt);
+	}
+
+	virtual 
+	void	set_last(hc_term& nxt){
+		HL_CK(the_tm != hl_null);
+		return the_tm->set_last(nxt);
+	}
+	
+	virtual 
+	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt){
+		HL_CK(the_tm != hl_null);
+		return the_tm->set_jumps(the_op, nxt);
+	}
+	
+};
+
 template<class obj_t>
 class hc_reference : public hc_term {
 public:
 	static obj_t*	HC_GLB_REF;
 	
+	bool has_cast;
 	const char* typ;
 	const char* nam;
 	obj_t*	ref;
@@ -1276,10 +1384,12 @@ public:
 	
 	virtual	~hc_reference(){}
 	
-	hc_reference(const char* the_typ, const char* the_nam, hcell* the_owner = hl_null){
+	hc_reference(const char* the_typ, const char* the_nam, 
+				 hcell* the_owner = hl_null, bool with_cast = false){
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(std::is_class<obj_t>::value);
 		//HL_CK((std::is_base_of<hcell, obj_t>::value));
+		has_cast = with_cast;
 		typ = the_typ;
 		nam = the_nam;
 		ref = hl_null;
@@ -1365,13 +1475,27 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(typ != hl_null);
+		if(has_cast){
+			fprintf(st, "((%s*)", typ);
+		}
 		fprintf(st, " %s ", get_name());
+		if(has_cast){
+			fprintf(st, ")");
+		}
 		return 0;
 	}
 
 	virtual 
 	int print_cpp_term(FILE *st){
+		HL_CK(typ != hl_null);
+		if(has_cast){
+			fprintf(st, "((%s*)", typ);
+		}
 		fprintf(st, " %s ", get_name());
+		if(has_cast){
+			fprintf(st, ")");
+		}
 		return 0;
 	}
 
@@ -1382,11 +1506,14 @@ public:
 template<class obj_t>
 obj_t* hc_reference<obj_t>::HC_GLB_REF = hl_null;
 
-template<class cl1_t, class cl2_t>
-cl2_t*
-hcast(hc_reference<cl1_t>& o1){
-	return (cl2_t*)(o1.ref);
+inline
+hc_term&
+hc_new_cast(const char* cst_str, hc_term& o1){
+	hc_cast* tm = new hc_cast(cst_str, o1);
+	return *tm;
 }
+
+#define hcast(typ, tm) hc_new_cast(#typ, (tm))
 
 #define hconst(nn, vv) hc_term& nn = HLANG_SYS().add_con(#nn, #vv)
 
@@ -1433,6 +1560,8 @@ hcast(hc_reference<cl1_t>& o1){
 #define hreturn 	hl_new_keyword(hreturn)
 #define habort 		hl_new_keyword(habort)
 
+#define hmsg_tok 	hl_new_keyword(hmsg_tok)
+#define hmsg_val 	hl_new_keyword(hmsg_val)
 
 class hc_mth_ret : public hc_term {
 public:
@@ -1535,7 +1664,7 @@ public:
 	
 	virtual 
 	void print_cpp_code(FILE *st){
-		fprintf(st, "/* CODE_FOR %s\n--------------- */ \n", get_name());
+		fprintf(st, "\n// CODE_FOR %s\n//--------------- \n", get_name());
 		if(cod == hl_null){
 			fprintf(st, "/* EMPTY_COD for mth */\n");
 		} else {
@@ -1775,11 +1904,11 @@ public:
 		hc_reference<cls>::get_glb_ref(); \
 	} \
 	hc_reference<cls>& cls::get_msg_ref(){ \
-		static hc_reference<cls> gref{#cls, "hmsg_ref_" #cls}; \
+		static hc_reference<cls> gref{#cls, "hmsg_ref", hl_null, true}; \
 		return gref; \
 	} \
 	hc_reference<cls>& cls::get_msg_src(){ \
-		static hc_reference<cls> gref{#cls, "hmsg_src_" #cls}; \
+		static hc_reference<cls> gref{#cls, "hmsg_src", hl_null, true}; \
 		return gref; \
 	} \
 
@@ -1810,13 +1939,13 @@ hc_reference<obj_t>::get_src(){
 	HC_GET_SOURCE();
 }
 
-hdeclare_const(hmsg_val);
-hdeclare_token(hmsg_tok);
+//hdeclare_const(hmsg_val);
+//hdeclare_token(hmsg_tok);
 
 #define hmsg_src(cls) (cls::get_msg_src())
 #define hmsg_ref(cls) (cls::get_msg_ref())
-#define hmsg_val(typ) hcon(hmsg_val)
-#define hmsg_tok(typ) htok(hmsg_tok)
+#define hmsg_val_as(typ) hcast(typ, hmsg_val)
+#define hmsg_tok_as(typ) hcast(typ, hmsg_tok)
 
 #endif		// HLANG_H
 

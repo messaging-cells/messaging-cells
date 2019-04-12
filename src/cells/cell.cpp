@@ -880,6 +880,17 @@ cell::send(cell* des, mck_token_t tok){
 }
 
 void
+cell::send_val(cell* des, mck_token_t tok, mck_value_t val){
+	missive* msv = mc_missive_acquire();
+	
+	msv->src = this;
+	msv->dst = des;
+	msv->tok = tok;
+	msv->val = val;
+	msv->send();
+}
+
+void
 cell::respond(missive* msv_orig, mck_token_t tok){
 	missive* msv = mc_missive_acquire();
 	
