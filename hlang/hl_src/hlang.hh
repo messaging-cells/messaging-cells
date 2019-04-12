@@ -45,7 +45,8 @@ hlang declarations.
 #include <map>
 #include <string>
 #include <list>
-#include <vector>
+#include <set>
+//include <vector>
 
 #include "dbg_util.h"
 
@@ -119,8 +120,13 @@ typedef void (*hc_caller_t)();
 class hclass_reg {
 public:
 	hl_string nam;
-	std::map<hl_string, hc_term*> values;
-	std::map<hl_string, hc_term*> references;
+	std::set<hl_string> attributes;
+	//std::map<hl_string, hc_term*> values;
+	//std::map<hl_string, hc_term*> references;
+	std::list<hc_term*> values;
+	std::list<hc_term*> references;
+	std::list<hc_term*> safe_values;
+	std::list<hc_term*> safe_references;
 	std::list<hc_mth_def*> methods;
 	hc_mth_def* nucleus = hl_null;
 	hc_caller_t initer = hl_null;
@@ -148,6 +154,11 @@ public:
 
 	virtual ~hclass_reg(){}
 
+	bool has_attribute(const char* attr){
+		auto it = attributes.find(attr);
+		return (it != attributes.end());
+	}
+	
 	bool has_value(const char* attr);
 	bool has_reference(const char* attr);
 	
@@ -313,7 +324,7 @@ enum	hc_syntax_op_t {
 	hc_dbg_op,
 	
 	hc_send_op,	// hsend
-	hc_tell_op,	// htell
+	hc_safe_send_op,	// hsafe_send
 	
 	hc_member_op,	// ->
 	
@@ -565,6 +576,11 @@ public:
 	
 	virtual 
 	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
+	
+	virtual 
+	bool	is_safe(){
+		return false;
+	}
 	
 	static
 	void print_indent(FILE *st);
@@ -1153,22 +1169,27 @@ public:
 template<class obj_t>
 class hc_value : public hc_term {
 public:
+	bool safe_val;
 	const char* typ;
 	const char* nam;
 	obj_t	val;
 	hcell*	owner;
 	
 	virtual	~hc_value(){}
+
+	//		 hcell* the_owner = hl_null, obj_t the_val = obj_t())
 	
 	hc_value(const char* the_typ, const char* the_nam, 
-			 hcell* the_owner = hl_null, obj_t the_val = obj_t())
+			 hcell* the_owner = hl_null, bool safe_vl = false)
 	{
 		HL_CK(the_owner != hl_null);
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(! std::is_class<obj_t>::value);
+		safe_val = safe_vl;
 		typ = the_typ;
 		nam = the_nam;
-		val = the_val;
+		//val = the_val;
+		val = obj_t();
 		
 		owner = the_owner;
 		HLANG_SYS().register_value(owner, this);
@@ -1223,6 +1244,13 @@ public:
 
 	virtual 
 	hc_term*	get_src();
+
+	virtual 
+	bool	is_safe(){
+		return safe_val;
+	}
+	
+	
 };
 
 class hc_keyword : public hc_term {
@@ -1371,11 +1399,43 @@ public:
 	
 };
 
+class hc_literal : public hc_term {
+public:
+	const char* lit_str;
+	
+	virtual	~hc_literal(){}
+	
+	hc_literal(const char* the_lit){
+		HL_CK(the_lit != hl_null);
+		lit_str = the_lit;
+	}
+
+	virtual 
+	int print_term(FILE *st){
+		HL_CK(lit_str != hl_null);
+		fprintf(st, "(lit %s)", lit_str);
+		return 0;
+	}
+	
+	virtual 
+	int print_cpp_term(FILE *st){
+		HL_CK(lit_str != hl_null);
+		fprintf(st, " %s ", lit_str);
+		return 0;
+	}
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+};
+
 template<class obj_t>
 class hc_reference : public hc_term {
 public:
 	static obj_t*	HC_GLB_REF;
 	
+	bool safe_ref;
 	bool has_cast;
 	const char* typ;
 	const char* nam;
@@ -1385,10 +1445,11 @@ public:
 	virtual	~hc_reference(){}
 	
 	hc_reference(const char* the_typ, const char* the_nam, 
-				 hcell* the_owner = hl_null, bool with_cast = false){
+				 hcell* the_owner = hl_null, bool safe_rf = false, bool with_cast = false){
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(std::is_class<obj_t>::value);
 		//HL_CK((std::is_base_of<hcell, obj_t>::value));
+		safe_ref = safe_rf;
 		has_cast = with_cast;
 		typ = the_typ;
 		nam = the_nam;
@@ -1501,6 +1562,12 @@ public:
 
 	virtual 
 	hc_term*	get_src();
+
+	virtual 
+	bool	is_safe(){
+		return safe_ref;
+	}
+	
 };
 
 template<class obj_t>
@@ -1513,7 +1580,16 @@ hc_new_cast(const char* cst_str, hc_term& o1){
 	return *tm;
 }
 
+inline
+hc_term&
+hc_new_literal(const char* the_lit){
+	hc_literal* tm = new hc_literal(the_lit);
+	return *tm;
+}
+
 #define hcast(typ, tm) hc_new_cast(#typ, (tm))
+
+#define hlit(the_lit) hc_new_literal(#the_lit)
 
 #define hconst(nn, vv) hc_term& nn = HLANG_SYS().add_con(#nn, #vv)
 
@@ -1532,6 +1608,10 @@ hc_new_cast(const char* cst_str, hc_term& o1){
 #define hvalue(tt, nn) htoks_att(nn, this); hc_value<tt> nn{#tt, #nn, this}
 
 #define hreference(tt, nn) htoks_att(nn, this); hc_reference<tt> nn{#tt, #nn, this}
+
+#define hsafe_value(tt, nn) htoks_att(nn, this); hc_value<tt> nn{#tt, #nn, this, true}
+
+#define hsafe_reference(tt, nn) htoks_att(nn, this); hc_reference<tt> nn{#tt, #nn, this, true}
 
 #define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
@@ -1879,7 +1959,7 @@ public:
 	hme_def(hcell);
 	
 	hc_term& hsend(hc_term& dst, hc_term& tok, hc_term& att);
-	hc_term& htell(hc_term& dst, hc_term& tok, hc_term& att);
+	hc_term& hsafe_send(hc_term& dst, hc_term& tok, hc_term& att);
 };
 
 #define hcell_class(cls) \
@@ -1904,11 +1984,11 @@ public:
 		hc_reference<cls>::get_glb_ref(); \
 	} \
 	hc_reference<cls>& cls::get_msg_ref(){ \
-		static hc_reference<cls> gref{#cls, "hmsg_ref", hl_null, true}; \
+		static hc_reference<cls> gref{#cls, "hmsg_ref", hl_null, false, true}; \
 		return gref; \
 	} \
 	hc_reference<cls>& cls::get_msg_src(){ \
-		static hc_reference<cls> gref{#cls, "hmsg_src", hl_null, true}; \
+		static hc_reference<cls> gref{#cls, "hmsg_src", hl_null, false, true}; \
 		return gref; \
 	} \
 

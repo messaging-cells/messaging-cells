@@ -91,7 +91,8 @@ hmethod_def(cls_A1, mth03, (
 hmethod_def(cls_A1, mth04, (
 	mth03(),
 	mth02(),
-	o1 = hme()
+	o1 = hme(),
+	o2 = hlit(12345)
 ));
 
 hmethod_def(cls_A2, mth01, (

@@ -334,29 +334,19 @@ hc_system::register_method(const char* cls, hc_mth_def* mth, bool is_nucl){
 	fprintf(stdout, "ADDING_METHOD %s.%s\n", cls_reg->nam.c_str(), mth->nam);
 }
 
-bool
-hclass_reg::has_value(const char* attr){
-	std::map<std::string, hc_term*>::iterator it;
-	it = values.find(attr);
-	return (it != values.end());
-}
-
 void
 hc_system::register_value(hcell* obj, hc_term* attr){
 	HL_CK(obj != hl_null);
 	HL_CK(attr != hl_null);
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
-	if(! cls_reg->has_value(attr->get_name())){
-		(cls_reg->values)[attr->get_name()] = attr;
+	if(! cls_reg->has_attribute(attr->get_name())){
+		if(attr->is_safe()){
+			cls_reg->safe_values.push_back(attr);
+		} else {
+			cls_reg->values.push_back(attr);
+		}
 		fprintf(stdout, "ADDING_VALUE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
 	}
-}
-
-bool
-hclass_reg::has_reference(const char* attr){
-	std::map<std::string, hc_term*>::iterator it;
-	it = references.find(attr);
-	return (it != references.end());
 }
 
 void
@@ -364,8 +354,12 @@ hc_system::register_reference(hcell* obj, hc_term* attr){
 	HL_CK(obj != hl_null);
 	HL_CK(attr != hl_null);
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
-	if(! cls_reg->has_reference(attr->get_name())){
-		(cls_reg->references)[attr->get_name()] = attr;
+	if(! cls_reg->has_attribute(attr->get_name())){
+		if(attr->is_safe()){
+			cls_reg->safe_references.push_back(attr);
+		} else {
+			cls_reg->references.push_back(attr);
+		}
 		fprintf(stdout, "ADDING_REFERENCE %s.%s\n", cls_reg->nam.c_str(), attr->get_name());
 	}
 }
@@ -635,8 +629,8 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_send_op:
 			tok = "hsend";
 		break;
-		case hc_tell_op:
-			tok = "htell";
+		case hc_safe_send_op:
+			tok = "hsafe_send";
 		break;
 		case hc_member_op:
 			tok = "->";
@@ -787,8 +781,8 @@ hc_get_cpp_token(hc_syntax_op_t op){
 		case hc_send_op:
 			tok = "send_val";
 		break;
-		case hc_tell_op:
-			tok = "tell_val";
+		case hc_safe_send_op:
+			tok = "safe_send_val";
 		break;
 		case hc_member_op:
 			tok = "->";
@@ -1198,8 +1192,8 @@ hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
 }
 
 hc_term&
-hcell::htell(hc_term& dst, hc_term& tok, hc_term& att){
-	hc_term* tm = new hc_send_term(hc_tell_op, &dst, &tok, &att);
+hcell::hsafe_send(hc_term& dst, hc_term& tok, hc_term& att){
+	hc_term* tm = new hc_send_term(hc_safe_send_op, &dst, &tok, &att);
 	return *tm;
 }
 
@@ -1390,7 +1384,7 @@ hc_binary_term::print_term(FILE *st){
 
 int
 hc_send_term::print_term(FILE *st){
-	HL_CK((op == hc_send_op) || (op == hc_tell_op));
+	HL_CK((op == hc_send_op) || (op == hc_safe_send_op));
 	
 	const char* tok_str = hc_get_token(op);
 	
@@ -1838,19 +1832,40 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	fprintf(ff, "\tlong hg_ret_step = 0;\n");
 	fprintf(ff, "\tlong hg_cll_step = 0;\n");
 
+	fprintf(ff, "\n\n");
+	fprintf(ff, "\t/* VALUES */\n");
+	
 	auto it1 = values.begin();
 	for(; it1 != values.end(); ++it1){
-		hc_term* trm = (hc_term*)(it1->second);
+		hc_term* trm = (*it1);
 		fprintf(ff, "\t%s %s = 0;\n", trm->get_type(), trm->get_name());
 	}
 	fprintf(ff, "\n\n");
+	fprintf(ff, "\t/* SAFE_VALUES */\n");
+	
+	it1 = safe_values.begin();
+	for(; it1 != safe_values.end(); ++it1){
+		hc_term* trm = (*it1);
+		fprintf(ff, "\t%s %s = 0;\n", trm->get_type(), trm->get_name());
+	}
+	fprintf(ff, "\n\n");
+	fprintf(ff, "\t/* REFERENCES */\n");
 	
 	auto it2 = references.begin();
 	for(; it2 != references.end(); ++it2){
-		hc_term* trm = (hc_term*)(it2->second);
+		hc_term* trm = (*it2);
 		fprintf(ff, "\t%s* %s = mc_null;\n", trm->get_type(), trm->get_name());
 	}
 	fprintf(ff, "\n\n");
+	fprintf(ff, "\t/* SAFE_REFERENCES */\n");
+	
+	it2 = safe_references.begin();
+	for(; it2 != safe_references.end(); ++it2){
+		hc_term* trm = (*it2);
+		fprintf(ff, "\t%s* %s = mc_null;\n", trm->get_type(), trm->get_name());
+	}
+	fprintf(ff, "\n\n");
+	fprintf(ff, "\t/* METHODS */\n");
 	
 	auto it3 = methods.begin();
 	for(; it3 != methods.end(); ++it3){
@@ -2109,7 +2124,7 @@ hc_binary_term::print_cpp_term(FILE *st){
 
 int
 hc_send_term::print_cpp_term(FILE *st){
-	HL_CK((op == hc_send_op) || (op == hc_tell_op));
+	HL_CK((op == hc_send_op) || (op == hc_safe_send_op));
 	
 	const char* tok_str = hc_get_cpp_token(op);
 	
