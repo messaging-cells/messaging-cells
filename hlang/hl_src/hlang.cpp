@@ -340,8 +340,10 @@ hc_system::register_value(hcell* obj, hc_term* attr){
 	HL_CK(attr != hl_null);
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
 	if(! cls_reg->has_attribute(attr->get_name())){
-		if(attr->is_safe()){
+		if(attr->get_has_safe()){
 			cls_reg->safe_values.push_back(attr);
+			cls_reg->tot_safe_attrs++;
+			attr->set_safe_idx(cls_reg->tot_safe_attrs);
 		} else {
 			cls_reg->values.push_back(attr);
 		}
@@ -355,8 +357,10 @@ hc_system::register_reference(hcell* obj, hc_term* attr){
 	HL_CK(attr != hl_null);
 	hclass_reg* cls_reg = get_class_reg(obj->get_class_name());
 	if(! cls_reg->has_attribute(attr->get_name())){
-		if(attr->is_safe()){
+		if(attr->get_has_safe()){
 			cls_reg->safe_references.push_back(attr);
+			cls_reg->tot_safe_attrs++;
+			attr->set_safe_idx(cls_reg->tot_safe_attrs);
 		} else {
 			cls_reg->references.push_back(attr);
 		}
@@ -930,6 +934,7 @@ hc_get_num_flag(hc_syntax_op_t op){
 		default:
 		break;
 	}
+	HL_CK(nf != hl_invalid_bit);
 	return nf;
 }
 
@@ -1209,7 +1214,6 @@ hc_term::get_num_label(){
 
 void
 hc_term::print_label(FILE *st){
-	//fprintf(st, "%p", (void*)get_first_step());
 	hc_print_label(st, get_num_label());
 }
 	
@@ -1219,8 +1223,12 @@ hc_term::print_term(FILE *st){
 	return 0;
 }
 
+void // static
+hc_term::print_new_line(FILE *st){
+	fprintf(st, "\n");
+}
 
-void //static
+void // static
 hc_term::print_indent(FILE *st){
 	HL_CK(HC_PRT_TERM_INDENT >= 0);
 	for(long aa = 0; aa < HC_PRT_TERM_INDENT; aa++){
@@ -1274,9 +1282,15 @@ hc_steps::print_term(FILE *st){
 		hc_term* tm = (*it);
 		HL_CK(tm != hl_null);
 		
-		fprintf(st, "\n");
+		print_new_line(st);
 		tm->print_label(st);
-		fprintf(st, ":\t");
+		bool hsf = tm->get_has_safe();
+		if(hsf){
+			fprintf(st, "#");
+		} else {
+			fprintf(st, ":");
+		}
+		fprintf(st, "\t");
 		
 		hc_term::print_indent(st);
 		tm->print_term(st);
@@ -1322,7 +1336,7 @@ hc_condition::print_term(FILE *st){
 	
 	fprintf(st, " %s ", tok);
 	fprintf(st, " T[");
-	if_true->get_first_step()->print_label(st);
+	if_true->print_label(st);
 	fprintf(st, "]");
 	fprintf(st, " F[");
 	if(next != hl_null){
@@ -2020,7 +2034,7 @@ hc_steps::print_cpp_term(FILE *st){
 		hc_term* tm = (*it);
 		HL_CK(tm != hl_null);
 		
-		fprintf(st, "\n");
+		print_new_line(st);
 		fprintf(st, "HG_LN(%ld)\t", tm->get_num_label());
 		
 		hc_term::print_indent(st);

@@ -45,8 +45,10 @@ public:
 	hlong(o1);
 	hlong(o2);
 	hlong(o3);
-	hlong(o4);
-	hlong(o5);
+	//hlong(o4);
+	//hlong(o5);
+	hsafe_long(o4);
+	hsafe_long(o5);
 	hint8_t(o6);
 	huint8_t(o7);
 	/*

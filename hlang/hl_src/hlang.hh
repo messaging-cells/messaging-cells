@@ -52,6 +52,9 @@ hlang declarations.
 
 #define MAX_BUFF_SZ 0xFFF
 
+#define HL_INVALID_IDX -1
+#define HL_MAX_SAFE_IDX 63
+
 extern char PROC_LINK_BUFF[];
 extern char FILE_NAME_BUFF[];
 
@@ -128,6 +131,7 @@ public:
 	std::list<hc_term*> safe_values;
 	std::list<hc_term*> safe_references;
 	std::list<hc_mth_def*> methods;
+	
 	hc_mth_def* nucleus = hl_null;
 	hc_caller_t initer = hl_null;
 	const char* pre_hh_cod = hl_null;
@@ -138,6 +142,7 @@ public:
 	long tot_steps;
 	long mth_call_num_step = 0;
 	long mth_ret_num_step = 0;
+	long tot_safe_attrs = 0;
 	
 	hclass_reg(){
 		nucleus = hl_null;
@@ -150,9 +155,10 @@ public:
 		tot_steps = 0;
 		mth_call_num_step = 0;
 		mth_ret_num_step = 0;
+		tot_safe_attrs = 0;
 	}
 
-	virtual ~hclass_reg(){}
+	virtual	~hclass_reg(){}
 
 	bool has_attribute(const char* attr){
 		auto it = attributes.find(attr);
@@ -221,7 +227,7 @@ public:
 		init_me();
 	}
 
-	virtual ~hc_system(){}
+	virtual	~hc_system(){}
 
 	virtual
 	void init_me(int caller = 0){
@@ -385,7 +391,7 @@ const char*
 hc_get_cpp_token(hc_syntax_op_t op);
 
 #define HC_DEFINE_BINARY_OP_BASE(the_code) \
-	hc_term* tm = new hc_binary_term(the_code, this, &o1); \
+	hc_binary_term* tm = new hc_binary_term(the_code, this, &o1); \
 	return *tm; \
 
 // end_define
@@ -434,7 +440,8 @@ the_op(hc_term& o1){ \
 
 // end_define
 
-#define hl_invalid_bit 			0
+#define hl_invalid_bit			-1
+#define hl_has_safe_bit 		0
 #define hl_has_last_bit 		1
 #define hl_has_break_bit 		2
 #define hl_has_continue_bit 	3
@@ -529,6 +536,9 @@ public:
 	void set_num_label(){}
 
 	virtual 
+	void get_safe_attributes(uint64_t& all_safe){}
+
+	virtual 
 	hc_syntax_op_t	get_oper(){
 		return hc_invalid_op;
 	}
@@ -577,11 +587,12 @@ public:
 	virtual 
 	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
 	
-	virtual 
-	bool	is_safe(){
-		return false;
-	}
+	virtual
+	void	set_safe_idx(int16_t idx){}
 	
+	static
+	void print_new_line(FILE *st);
+
 	static
 	void print_indent(FILE *st);
 	
@@ -628,6 +639,24 @@ public:
 		return get_bit(&flags, hl_has_last_bit);
 	}
 	
+	void set_has_safe(){
+		set_bit(&flags, hl_has_safe_bit);
+	}
+
+	void reset_has_safe(){
+		reset_bit(&flags, hl_has_safe_bit);
+	}
+
+	bool get_has_safe(){
+		return get_bit(&flags, hl_has_safe_bit);
+	}
+	
+	void or_has_safe(hc_term* tm){
+		if((tm != hl_null) && tm->get_has_safe()){
+			set_has_safe();
+		}
+	}
+
 };
 
 hc_term&	hfor(hc_term& the_cond, hc_term& the_end_each_loop);
@@ -721,6 +750,8 @@ public:
 		ck_closed_param(pm_val, this, has_st);
 		prm = pm_val;
 		num_steps = prm->num_steps;
+		
+		or_has_safe(prm);
 	}
 	
 	virtual 
@@ -743,6 +774,12 @@ public:
 	void set_num_label(){
 		HL_CK(prm != hl_null);
 		prm->set_num_label();
+	}
+
+	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		HL_CK(prm != hl_null);
+		prm->get_safe_attributes(all_safe);
 	}
 
 	virtual 
@@ -888,6 +925,9 @@ public:
 		
 		num_steps = cond->num_steps;
 		num_steps += if_true->num_steps;
+
+		or_has_safe(cond);
+		or_has_safe(if_true);
 	}
 	
 	virtual 
@@ -918,6 +958,14 @@ public:
 		HL_CK(if_true != hl_null);
 		cond->set_num_label();
 		if_true->set_num_label();
+	}
+
+	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		HL_CK(cond != hl_null);
+		HL_CK(if_true != hl_null);
+		cond->get_safe_attributes(all_safe);
+		if_true->get_safe_attributes(all_safe);
 	}
 
 	virtual 
@@ -974,6 +1022,9 @@ public:
 		
 		num_steps = cond->num_steps;
 		num_steps += end_each_loop->num_steps;
+		
+		or_has_safe(cond);
+		or_has_safe(the_end_each_loop);
 	}
 	
 	virtual 
@@ -998,6 +1049,14 @@ public:
 		HL_CK(end_each_loop != hl_null);
 		cond->set_num_label();
 		end_each_loop->set_num_label();
+	}
+
+	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		HL_CK(cond != hl_null);
+		HL_CK(end_each_loop != hl_null);
+		cond->get_safe_attributes(all_safe);
+		end_each_loop->get_safe_attributes(all_safe);
 	}
 
 	virtual 
@@ -1049,6 +1108,9 @@ public:
 		num_steps = 0;
 		if(lft != hl_null){ num_steps += lft->num_steps; }
 		if(rgt != hl_null){ num_steps += rgt->num_steps; }
+		
+		or_has_safe(lft);
+		or_has_safe(rgt);
 	}
 	
 	virtual 
@@ -1075,6 +1137,14 @@ public:
 		rgt->set_num_label();
 	}
 
+	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		HL_CK(lft != hl_null);
+		HL_CK(rgt != hl_null);
+		lft->get_safe_attributes(all_safe);
+		rgt->get_safe_attributes(all_safe);
+	}
+	
 	virtual 
 	bool	is_compound(){
 		return true;
@@ -1132,6 +1202,10 @@ public:
 		num_steps = snd_dst->num_steps;
 		num_steps += snd_tok->num_steps;
 		num_steps += snd_att->num_steps;
+		
+		or_has_safe(snd_dst);
+		or_has_safe(snd_tok);
+		or_has_safe(snd_att);
 	}
 	
 	virtual 
@@ -1161,6 +1235,16 @@ public:
 	}
 
 	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		HL_CK(snd_dst != hl_null);
+		HL_CK(snd_tok != hl_null);
+		HL_CK(snd_att != hl_null);
+		snd_dst->get_safe_attributes(all_safe);
+		snd_tok->get_safe_attributes(all_safe);
+		snd_att->get_safe_attributes(all_safe);
+	}
+	
+	virtual 
 	bool	is_compound(){
 		return true;
 	}
@@ -1169,7 +1253,7 @@ public:
 template<class obj_t>
 class hc_value : public hc_term {
 public:
-	bool safe_val;
+	int16_t	safe_idx;
 	const char* typ;
 	const char* nam;
 	obj_t	val;
@@ -1185,7 +1269,10 @@ public:
 		HL_CK(the_owner != hl_null);
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(! std::is_class<obj_t>::value);
-		safe_val = safe_vl;
+		if(safe_vl && (the_owner != hl_null)){
+			set_has_safe();
+		}
+		safe_idx = HL_INVALID_IDX;
 		typ = the_typ;
 		nam = the_nam;
 		//val = the_val;
@@ -1232,6 +1319,9 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		if(get_has_safe()){
+			fprintf(st, "<%d>", safe_idx);
+		}
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -1245,12 +1335,20 @@ public:
 	virtual 
 	hc_term*	get_src();
 
-	virtual 
-	bool	is_safe(){
-		return safe_val;
+	virtual
+	void	set_safe_idx(int16_t idx){
+		if(idx > HL_MAX_SAFE_IDX){
+			hl_abort("Error in attribute %s. Cannot have more that %d safe attributes per class \n", 
+					 get_name(), HL_MAX_SAFE_IDX);
+		}
+		safe_idx = idx;
 	}
 	
-	
+	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		set_bit(&all_safe, safe_idx);
+	}
+
 };
 
 class hc_keyword : public hc_term {
@@ -1306,6 +1404,8 @@ public:
 		HL_CK(the_cast != hl_null);
 		cast_str = the_cast;
 		the_tm = tm.get_src();
+		
+		or_has_safe(the_tm);
 	}
 
 	virtual 
@@ -1332,6 +1432,12 @@ public:
 		the_tm->set_num_label();
 	}
 
+	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		HL_CK(the_tm != hl_null);
+		the_tm->get_safe_attributes(all_safe);
+	}
+	
 	virtual 
 	hc_syntax_op_t	get_oper(){
 		HL_CK(the_tm != hl_null);
@@ -1435,7 +1541,7 @@ class hc_reference : public hc_term {
 public:
 	static obj_t*	HC_GLB_REF;
 	
-	bool safe_ref;
+	int16_t	safe_idx;
 	bool has_cast;
 	const char* typ;
 	const char* nam;
@@ -1449,7 +1555,10 @@ public:
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(std::is_class<obj_t>::value);
 		//HL_CK((std::is_base_of<hcell, obj_t>::value));
-		safe_ref = safe_rf;
+		if(safe_rf && (the_owner != hl_null)){
+			set_has_safe();
+		}
+		safe_idx = HL_INVALID_IDX;
 		has_cast = with_cast;
 		typ = the_typ;
 		nam = the_nam;
@@ -1540,6 +1649,9 @@ public:
 		if(has_cast){
 			fprintf(st, "((%s*)", typ);
 		}
+		if(get_has_safe()){
+			fprintf(st, "<%d>", safe_idx);
+		}
 		fprintf(st, " %s ", get_name());
 		if(has_cast){
 			fprintf(st, ")");
@@ -1563,11 +1675,20 @@ public:
 	virtual 
 	hc_term*	get_src();
 
-	virtual 
-	bool	is_safe(){
-		return safe_ref;
+	virtual
+	void	set_safe_idx(int16_t idx){
+		if(idx > HL_MAX_SAFE_IDX){
+			hl_abort("Error in attribute %s. Cannot have more that %d safe attributes per class \n", 
+					 get_name(), HL_MAX_SAFE_IDX);
+		}
+		safe_idx = idx;
 	}
 	
+	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		set_bit(&all_safe, safe_idx);
+	}
+
 };
 
 template<class obj_t>
@@ -1630,6 +1751,19 @@ hc_new_literal(const char* the_lit){
 #define huint16_t(nn) hvalue(uint16_t, nn)
 #define huint32_t(nn) hvalue(uint32_t, nn)
 #define huint64_t(nn) hvalue(uint64_t, nn)
+
+#define hsafe_bool(nn) hsafe_value(bool, nn)
+#define hsafe_char(nn) hsafe_value(char, nn)
+#define hsafe_int(nn) hsafe_value(int, nn)
+#define hsafe_long(nn) hsafe_value(long, nn)
+#define hsafe_int8_t(nn) hsafe_value(int8_t, nn)
+#define hsafe_int16_t(nn) hsafe_value(int16_t, nn)
+#define hsafe_int32_t(nn) hsafe_value(int32_t, nn)
+#define hsafe_int64_t(nn) hsafe_value(int64_t, nn)
+#define hsafe_uint8_t(nn) hsafe_value(uint8_t, nn)
+#define hsafe_uint16_t(nn) hsafe_value(uint16_t, nn)
+#define hsafe_uint32_t(nn) hsafe_value(uint32_t, nn)
+#define hsafe_uint64_t(nn) hsafe_value(uint64_t, nn)
 
 #define hl_new_keyword(nn) (*(new hc_keyword(hc_ ## nn ## _op)))
 
@@ -1731,6 +1865,12 @@ public:
 		cod->set_num_label();
 	}
 
+	virtual 
+	void get_safe_attributes(uint64_t& all_safe){
+		HL_CK(cod != hl_null);
+		cod->get_safe_attributes(all_safe);
+	}
+	
 	virtual 
 	void print_text_code(FILE *st){
 		fprintf(st, "CODE_FOR %s\n---------------\n", get_name());
@@ -1905,7 +2045,7 @@ public:
 		init_me();
 	}
 
-	virtual ~hmissive(){}
+	virtual	~hmissive(){}
 
 	virtual
 	void init_me(int caller = 0){}
@@ -1942,7 +2082,7 @@ public:
 		init_me();
 	}
 	
-	virtual ~hcell(){}
+	virtual	~hcell(){}
 
 	virtual
 	void init_me(int caller = 0){
@@ -1952,6 +2092,12 @@ public:
 	virtual
 	const char* get_class_name(){
 		return "hcell";
+	}
+
+	virtual
+	hclass_reg* get_class_reg(){
+		hl_abort("Calling hcell::get_class_reg(). Your classes MUST inherit from hcell. \n");
+		return hl_null;
 	}
 
 	const char* get_attr_nm(const char* pfix, const char* sfix);
@@ -1967,6 +2113,7 @@ public:
 	static hclass_reg* hc_register_ ## cls; \
 	static hc_reference<cls>& get_msg_ref(); \
 	static hc_reference<cls>& get_msg_src(); \
+	virtual	hclass_reg* get_class_reg(); \
 	virtual	const char* get_class_name(); \
 	hme_def(cls); \
 
@@ -1976,6 +2123,10 @@ public:
 	void cls ## _ref_initer(); \
 	hclass_reg* cls::hc_register_ ## cls = HLANG_SYS().get_class_reg(#cls, cls ## _ref_initer); \
 	const char* cls::hc_class_name = #cls; \
+	hclass_reg* \
+	cls::get_class_reg(){ \
+		return cls::hc_register_ ## cls; \
+	} \
 	const char* \
 	cls::get_class_name(){ \
 		return cls::hc_class_name; \
