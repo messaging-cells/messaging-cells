@@ -99,6 +99,7 @@ hl_string get_upper_str(const hl_string& lower);
 typedef uint64_t hl_token_t;
 typedef uint64_t hl_value_t;
 typedef uint64_t hl_reference_t;
+typedef uint64_t hl_safe_bits_t;
 
 typedef int64_t hc_chip_idx;
 #define hl_tok_last 0
@@ -449,8 +450,6 @@ the_op(hc_term& o1){ \
 #define hl_has_abort_bit 		5
 #define hl_has_case_bit 		6
 
-#define hc_print_label(st, num) fprintf(st, "STEP_%ld", num)
-
 class hc_term {
 public:
 	static long	HC_PRT_TERM_INDENT;
@@ -536,7 +535,7 @@ public:
 	void set_num_label(){}
 
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){}
+	void get_safe_attributes(hl_safe_bits_t& all_safe){}
 
 	virtual 
 	hc_syntax_op_t	get_oper(){
@@ -777,7 +776,7 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		HL_CK(prm != hl_null);
 		prm->get_safe_attributes(all_safe);
 	}
@@ -891,6 +890,8 @@ public:
 	virtual 
 	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
 	
+	void	set_back_next(hc_term& nxt);
+	void	append_safe_check(hc_term& stp_tm);
 };
 
 class hc_condition : public hc_term {
@@ -961,7 +962,7 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		HL_CK(cond != hl_null);
 		HL_CK(if_true != hl_null);
 		cond->get_safe_attributes(all_safe);
@@ -1052,7 +1053,7 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		HL_CK(cond != hl_null);
 		HL_CK(end_each_loop != hl_null);
 		cond->get_safe_attributes(all_safe);
@@ -1138,7 +1139,7 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		HL_CK(lft != hl_null);
 		HL_CK(rgt != hl_null);
 		lft->get_safe_attributes(all_safe);
@@ -1235,7 +1236,7 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		HL_CK(snd_dst != hl_null);
 		HL_CK(snd_tok != hl_null);
 		HL_CK(snd_att != hl_null);
@@ -1345,7 +1346,7 @@ public:
 	}
 	
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		set_bit(&all_safe, safe_idx);
 	}
 
@@ -1433,7 +1434,7 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		HL_CK(the_tm != hl_null);
 		the_tm->get_safe_attributes(all_safe);
 	}
@@ -1530,6 +1531,49 @@ public:
 		return 0;
 	}
 
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+};
+
+class hc_safe_check : public hc_term {
+public:
+	hl_safe_bits_t safe_pattern;
+	
+	virtual	~hc_safe_check(){}
+	
+	hc_safe_check(hl_safe_bits_t all_safe, hc_term& nxt){
+		safe_pattern = all_safe;
+		next = &nxt;
+	}
+
+	virtual 
+	const char*	get_name(){
+		return "hc_safe_check";
+	}
+	
+	virtual 
+	int print_term(FILE *st){
+		fprintf(st, "safe_ck(%#lx)", safe_pattern);
+		return 0;
+	}
+	
+	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	hc_syntax_op_t	get_cond_oper(){
+		HL_CK(next != hl_null);
+		return next->get_cond_oper();
+	}
+	
+	virtual 
+	void	set_next(hc_term& nxt);
+
+	virtual 
+	void	set_last(hc_term& nxt);
+	
 	virtual 
 	bool	is_compound(){
 		return true;
@@ -1685,7 +1729,7 @@ public:
 	}
 	
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		set_bit(&all_safe, safe_idx);
 	}
 
@@ -1866,7 +1910,7 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(uint64_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe){
 		HL_CK(cod != hl_null);
 		cod->get_safe_attributes(all_safe);
 	}

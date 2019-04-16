@@ -950,6 +950,33 @@ ck_is_not_cond(hc_term& o1){
 	}
 }
 
+void
+hc_steps::set_back_next(hc_term& o1){
+	HL_CK(! steps.empty());
+	hc_term* lst = steps.back();
+	lst->set_next(o1);
+	if((first_if != hl_null) && o1.is_if_closer()){
+		hc_term* fst_tm = first_if;
+		first_if = hl_null;
+		fst_tm->set_last(o1);
+	}
+}
+
+void
+hc_steps::append_safe_check(hc_term& stp_tm){
+	
+	hl_safe_bits_t safe_patt = 0;
+	stp_tm.get_safe_attributes(safe_patt);
+	HL_CK(safe_patt != 0);
+	hc_safe_check* ck_tm = new hc_safe_check(safe_patt, stp_tm);
+	
+	if(! steps.empty()){
+		set_back_next(*ck_tm);
+	}
+	steps.push_back(ck_tm);
+	num_steps++;
+}
+
 hc_steps*
 hc_term::to_steps(){
 	if(! is_compound()){
@@ -961,9 +988,17 @@ hc_term::to_steps(){
 		sts = (hc_steps*)pt_tm;
 	} else {
 		sts = new hc_steps(); 
+		
+		if(pt_tm->get_has_safe()){
+			HL_CK(sts->steps.empty());
+			sts->append_safe_check(*pt_tm);
+			sts->set_back_next(*pt_tm);
+		}
+		
 		sts->steps.push_back(pt_tm);
 		sts->num_steps += num_steps + 1;
 		if(pt_tm->get_cond_oper() == hc_hif_op){
+			HL_CK(sts->first_if == hl_null);
 			sts->first_if = pt_tm;
 		}
 	}
@@ -976,19 +1011,17 @@ hc_steps::append_term(hc_term& o1){
 	if(! o1.is_compound()){
 		hl_abort("Step %s is not statement. A step must be a statement.\n", o1.get_name());
 	}
-	
-	HL_CK(! steps.empty());
-	hc_term* lst = steps.back();
-	lst->set_next(o1);
-	if((first_if != hl_null) && o1.is_if_closer()){
-		hc_term* fst_tm = first_if;
-		first_if = hl_null;
-		fst_tm->set_last(o1);
+
+	if(o1.get_has_safe()){
+		HL_CK(! steps.empty());
+		append_safe_check(o1);
 	}
-		
+	
+	set_back_next(o1);
 	steps.push_back(&o1);
 	num_steps += o1.num_steps + 1;
 	if(o1.get_cond_oper() == hc_hif_op){
+		HL_CK(first_if == hl_null);
 		first_if = &o1;
 	}
 }
@@ -1214,7 +1247,8 @@ hc_term::get_num_label(){
 
 void
 hc_term::print_label(FILE *st){
-	hc_print_label(st, get_num_label());
+	//fprintf(st, "STEP_%ld", get_num_label());
+	fprintf(st, "(%p)_%ld", (void*)get_first_step(), get_num_label());
 }
 	
 int
@@ -1431,6 +1465,8 @@ hc_steps::set_next(hc_term& nxt){
 	HL_CK(! steps.empty());
 	hc_term* tm = steps.back();
 	tm->set_next(nxt);
+	//fprintf(stdout, "\n setting_back_next for %p with %p \n", (void*)tm, (void*)(&nxt));
+	//fprintf(stdout, "%s \n", HL_STACK_STR.c_str());
 }
 
 void
@@ -1514,6 +1550,21 @@ hc_condition::set_next(hc_term& nxt){
 		break;
 		default:
 		break;
+	}
+}
+
+void
+hc_safe_check::set_next(hc_term& nxt){
+	HL_CK(next != hl_null);
+}
+
+void
+hc_safe_check::set_last(hc_term& nxt){
+	HL_CK(next != hl_null);
+	hc_syntax_op_t op = next->get_cond_oper();
+	if((op == hc_helif_op) || (op == hc_helse_op)){
+		fprintf(stdout, "\n setting_safe_nxt_last %p with %p \n", (void*)next, (void*)(&nxt));
+		next->set_last(nxt);
 	}
 }
 
@@ -2243,3 +2294,9 @@ hclass_reg::print_cpp_ret_mth_code(FILE* st){
 	fprintf(st, "\n");
 }
 
+int
+hc_safe_check::print_cpp_term(FILE *st){
+	fprintf(st, "/* WRITE_HERE_THE_SAFE_CHECK */ ");
+	fprintf(st, "hg_step = %ld;", next->get_num_label());
+	return 0;
+}
