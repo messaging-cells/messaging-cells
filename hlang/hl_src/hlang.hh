@@ -141,6 +141,7 @@ public:
 	const char* pos_cpp_cod = hl_null;
 	long depth;
 	long tot_steps;
+	long mth_safe_wait_step = 0;
 	long mth_call_num_step = 0;
 	long mth_ret_num_step = 0;
 	long tot_safe_attrs = 0;
@@ -154,6 +155,7 @@ public:
 		pos_cpp_cod = hl_null;
 		depth = 0;
 		tot_steps = 0;
+		mth_safe_wait_step = 0;
 		mth_call_num_step = 0;
 		mth_ret_num_step = 0;
 		tot_safe_attrs = 0;
@@ -202,6 +204,8 @@ public:
 	
 	void print_cpp_call_mth_case(FILE* st, long idx);
 	void print_cpp_ret_mth_case(FILE* st, long idx);
+	
+	void print_cpp_call_wait_safe_code(FILE* st);
 	void print_cpp_call_mth_code(FILE* st);
 	void print_cpp_ret_mth_code(FILE* st);
 	
@@ -320,6 +324,8 @@ template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
 
 enum	hc_syntax_op_t {
 	hc_invalid_op,
+	
+	hc_safe_check_op,
 
 	hc_hmsg_tok_op,
 	hc_hmsg_val_op,
@@ -535,7 +541,7 @@ public:
 	void set_num_label(){}
 
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){}
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){}
 
 	virtual 
 	hc_syntax_op_t	get_oper(){
@@ -776,9 +782,9 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		HL_CK(prm != hl_null);
-		prm->get_safe_attributes(all_safe);
+		prm->get_safe_attributes(all_safe, owr);
 	}
 
 	virtual 
@@ -962,11 +968,11 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		HL_CK(cond != hl_null);
 		HL_CK(if_true != hl_null);
-		cond->get_safe_attributes(all_safe);
-		if_true->get_safe_attributes(all_safe);
+		cond->get_safe_attributes(all_safe, owr);
+		if_true->get_safe_attributes(all_safe, owr);
 	}
 
 	virtual 
@@ -1053,11 +1059,11 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		HL_CK(cond != hl_null);
 		HL_CK(end_each_loop != hl_null);
-		cond->get_safe_attributes(all_safe);
-		end_each_loop->get_safe_attributes(all_safe);
+		cond->get_safe_attributes(all_safe, owr);
+		end_each_loop->get_safe_attributes(all_safe, owr);
 	}
 
 	virtual 
@@ -1139,11 +1145,11 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		HL_CK(lft != hl_null);
 		HL_CK(rgt != hl_null);
-		lft->get_safe_attributes(all_safe);
-		rgt->get_safe_attributes(all_safe);
+		lft->get_safe_attributes(all_safe, owr);
+		rgt->get_safe_attributes(all_safe, owr);
 	}
 	
 	virtual 
@@ -1236,13 +1242,13 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		HL_CK(snd_dst != hl_null);
 		HL_CK(snd_tok != hl_null);
 		HL_CK(snd_att != hl_null);
-		snd_dst->get_safe_attributes(all_safe);
-		snd_tok->get_safe_attributes(all_safe);
-		snd_att->get_safe_attributes(all_safe);
+		snd_dst->get_safe_attributes(all_safe, owr);
+		snd_tok->get_safe_attributes(all_safe, owr);
+		snd_att->get_safe_attributes(all_safe, owr);
 	}
 	
 	virtual 
@@ -1346,8 +1352,14 @@ public:
 	}
 	
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
-		set_bit(&all_safe, safe_idx);
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
+		if(safe_idx != HL_INVALID_IDX){
+			if(owr == hl_null){
+				HL_CK(owner != hl_null);
+				owr = owner;
+			}
+			set_bit(&all_safe, safe_idx);
+		}
 	}
 
 };
@@ -1434,9 +1446,9 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		HL_CK(the_tm != hl_null);
-		the_tm->get_safe_attributes(all_safe);
+		the_tm->get_safe_attributes(all_safe, owr);
 	}
 	
 	virtual 
@@ -1540,12 +1552,15 @@ public:
 class hc_safe_check : public hc_term {
 public:
 	hl_safe_bits_t safe_pattern;
+	hcell* owner;
 	
 	virtual	~hc_safe_check(){}
 	
-	hc_safe_check(hl_safe_bits_t all_safe, hc_term& nxt){
+	hc_safe_check(hl_safe_bits_t all_safe, hc_term& nxt, hcell* owr){
+		HL_CK(owr != hl_null);
 		safe_pattern = all_safe;
 		next = &nxt;
+		owner = owr;
 	}
 
 	virtual 
@@ -1562,6 +1577,11 @@ public:
 	virtual 
 	int print_cpp_term(FILE *st);
 
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_safe_check_op;
+	}
+	
 	virtual 
 	hc_syntax_op_t	get_cond_oper(){
 		HL_CK(next != hl_null);
@@ -1729,8 +1749,14 @@ public:
 	}
 	
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
-		set_bit(&all_safe, safe_idx);
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
+		if(safe_idx != HL_INVALID_IDX){
+			if(owr == hl_null){
+				HL_CK(owner != hl_null);
+				owr = owner;
+			}
+			set_bit(&all_safe, safe_idx);
+		}
 	}
 
 };
@@ -1910,9 +1936,9 @@ public:
 	}
 
 	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe){
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		HL_CK(cod != hl_null);
-		cod->get_safe_attributes(all_safe);
+		cod->get_safe_attributes(all_safe, owr);
 	}
 	
 	virtual 
@@ -2169,7 +2195,7 @@ public:
 	const char* cls::hc_class_name = #cls; \
 	hclass_reg* \
 	cls::get_class_reg(){ \
-		return cls::hc_register_ ## cls; \
+		return HLANG_SYS().get_class_reg(#cls); \
 	} \
 	const char* \
 	cls::get_class_name(){ \

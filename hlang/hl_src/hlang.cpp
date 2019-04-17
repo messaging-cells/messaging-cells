@@ -447,6 +447,10 @@ hclass_reg::call_all_methods(){
 	tot_steps = 0;
 
 	hc_term::HC_NUM_LABEL++;
+	HL_CK(mth_safe_wait_step == 0);
+	mth_safe_wait_step = hc_term::HC_NUM_LABEL;
+	
+	hc_term::HC_NUM_LABEL++;
 	HL_CK(mth_call_num_step == 0);
 	mth_call_num_step = hc_term::HC_NUM_LABEL;
 	
@@ -612,6 +616,9 @@ const char*
 hc_get_token(hc_syntax_op_t op){
 	const char* tok = "INVALID_TOKEN";
 	switch(op){
+		case hc_safe_check_op:
+			tok = "hc_safe_check_op";
+		break;
 		case hc_hmsg_tok_op:
 			tok = "hc_hmsg_tok_op";
 		break;
@@ -764,6 +771,9 @@ const char*
 hc_get_cpp_token(hc_syntax_op_t op){
 	const char* tok = "INVALID_TOKEN";
 	switch(op){
+		case hc_safe_check_op:
+			tok = "hc_safe_check_op";
+		break;
 		case hc_hmsg_tok_op:
 			tok = "hmsg_tok";
 		break;
@@ -966,9 +976,12 @@ void
 hc_steps::append_safe_check(hc_term& stp_tm){
 	
 	hl_safe_bits_t safe_patt = 0;
-	stp_tm.get_safe_attributes(safe_patt);
+	hcell* owr = hl_null;
+	stp_tm.get_safe_attributes(safe_patt, owr);
 	HL_CK(safe_patt != 0);
-	hc_safe_check* ck_tm = new hc_safe_check(safe_patt, stp_tm);
+	HL_CK(owr != hl_null);
+	
+	hc_safe_check* ck_tm = new hc_safe_check(safe_patt, stp_tm, owr);
 	
 	if(! steps.empty()){
 		set_back_next(*ck_tm);
@@ -1891,6 +1904,8 @@ public:
 void
 hclass_reg::print_hh_class_decl_content(FILE* ff){
 	
+	fprintf(ff, "\tmc_replies_bits_t hg_pending_replies = 0;\n");
+	fprintf(ff, "\tmc_replies_bits_t hg_needed_replies = 0;\n");
 	fprintf(ff, "\tlong hg_step = 0;\n");
 	fprintf(ff, "\tlong hg_stack_idx = 0;\n");
 	fprintf(ff, "\tlong hg_stack_arr[%ld];\n", depth);
@@ -1995,6 +2010,7 @@ hclass_reg::print_all_cpp_methods(FILE *st){
 	fprintf(st, "case 0: {\n");
 	fprintf(st, "\n");
 	
+	print_cpp_call_wait_safe_code(st);
 	print_cpp_call_mth_code(st);
 	print_cpp_ret_mth_code(st);
 	
@@ -2094,7 +2110,9 @@ hc_steps::print_cpp_term(FILE *st){
 		hc_syntax_op_t c_op = tm->get_oper();
 		if(		(c_op != hc_then_op) && 
 				(c_op != hc_mth_call_op) && 
-				(c_op != hc_mth_ret_op)	)
+				(c_op != hc_mth_ret_op) &&
+				(c_op != hc_safe_check_op)
+		  )
 		{
 			HL_CK_PRT((tm->next != hl_null), 
 				"DURING %s writing file:\n %s\n", hc_get_token(c_op), get_file_path(st));
@@ -2259,6 +2277,11 @@ hclass_reg::print_cpp_ret_mth_case(FILE* st, long idx){
 }
 
 void
+hclass_reg::print_cpp_call_wait_safe_code(FILE* st){
+	fprintf(st, "HG_LN(%ld)\n", mth_safe_wait_step);
+}
+
+void
 hclass_reg::print_cpp_call_mth_code(FILE* st){
 	fprintf(st, "HG_LN(%ld)\n", mth_call_num_step);
 	fprintf(st, "\thg_stack_arr[hg_stack_idx] = hg_ret_step;\n");
@@ -2296,7 +2319,22 @@ hclass_reg::print_cpp_ret_mth_code(FILE* st){
 
 int
 hc_safe_check::print_cpp_term(FILE *st){
-	fprintf(st, "/* WRITE_HERE_THE_SAFE_CHECK */ ");
-	fprintf(st, "hg_step = %ld;", next->get_num_label());
+	HL_CK(next != hl_null);
+	HL_CK(owner != hl_null);
+	hclass_reg* creg = owner->get_class_reg();
+	HL_CK(creg != hl_null);
+	
+	fprintf(st, "if((hg_pending_replies & %#lx) == 0){ hg_step = %ld; }", 
+			safe_pattern,
+			next->get_num_label());
+	
+	fprintf(st, "\n");
+	fprintf(st, "/*     */\t");
+	hc_term::print_indent(st);
+	
+	//fprintf(st, " ");
+	fprintf(st, "else { hg_ret_step = %ld; hg_needed_replies = %#lx; hg_step = %ld; }", 
+		next->get_num_label(), safe_pattern, creg->mth_safe_wait_step
+	);
 	return 0;
 }

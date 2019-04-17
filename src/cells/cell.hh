@@ -64,6 +64,8 @@ typedef agent_ref cell_ref_t;
 typedef uint16_t mck_token_t; 
 typedef uint16_t mc_alloc_size_t; 
 typedef uint64_t mck_value_t; 
+typedef uint64_t mc_replies_bits_t;
+
 
 #define BJ_INVALID_TOKEN ((mck_token_t)(~((mck_token_t)0x0)))
 #define BJ_INVALID_ALLOC_SZ ((mc_alloc_size_t)(~((mc_alloc_size_t)0x0)))

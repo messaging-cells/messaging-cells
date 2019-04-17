@@ -1,6 +1,7 @@
 
 
 #include <stdio.h>
+#include <bitset>
 
 #include "hlang.hh"
 #include "hl_pru1.h"
@@ -197,18 +198,30 @@ hconst(kk1, 123);
 
 void hl_test_1(int argc, char *argv[])
 {
-	printf("bj_mchl_test_1 \n");
+	fprintf(stdout, "bj_mchl_test_1 \n");
 	
 	//haddress(CLS_A, e1);
 	
-	printf("######################################################\n");
+	fprintf(stdout, "######################################################\n");
 
 	HLANG_SYS().init_sys();
 	
-	printf("RUNNING PATH= %s \n", path_get_running_path().c_str());
+	fprintf(stdout, "RUNNING PATH= %s \n", path_get_running_path().c_str());
 
 	HLANG_SYS().generate_cpp_code();
 	
-	printf("\n End of Using bj_mchl_test_1\n");
+	if(argc > 2){
+		std::size_t sz = 0;
+		long v1 = std::stol(argv[1], &sz, 2);
+		long v2 = std::stol(argv[2], &sz, 2);
+		long v3 = (v1 & v2);
+		std::string b1 = std::bitset<sizeof(long)>(v1).to_string();
+		std::string b2 = std::bitset<sizeof(long)>(v2).to_string();
+		std::string b3 = std::bitset<sizeof(long)>(v3).to_string();
+		//bool all_ok = ((v1 & v2) == 0);
+		fprintf(stdout, "%s & %s == %s \n", b1.c_str(), b2.c_str(), b3.c_str());
+	}
+	
+	fprintf(stdout, "\n End of Using bj_mchl_test_1\n");
 }
 
