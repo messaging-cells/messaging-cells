@@ -96,6 +96,10 @@ hmethod_def(cls_A1, mth04, (
 	o2 = hlit(12345)
 ));
 
+hnucleus_def(cls_A2, nucl_A2, (
+	hreturn
+));
+
 hmethod_def(cls_A2, mth01, (
 	hif(v1) >> (~ o1 + ! o2),
 	(r1->o4()) + v2,
@@ -119,6 +123,10 @@ hmethod_def(cls_A2, mth05, (
 ));
 
 hl_string pru_str = "prueba_1";
+
+hnucleus_def(cls_A3, nucl_A3, (
+	hreturn
+));
 
 hmethod_def(cls_A3, mth01, (
 	r3->r1->o4(), 
@@ -190,9 +198,16 @@ hmethod_def(cls_A3, mth02, (
 	aa3 = aa1
 ));
 
+hnucleus_def(cls_A4, nucl_A4, (
+	hreturn
+));
+
+
+/*
 class CLS_AA {};
 class CLS_BB : public CLS_AA {};
 class CLS_CC : public CLS_BB {};
+*/
 
 hconst(kk1, 123);
 

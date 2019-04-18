@@ -141,6 +141,7 @@ public:
 	const char* pos_cpp_cod = hl_null;
 	long depth;
 	long tot_steps;
+	long mth_handler_return_step = 0;
 	long mth_safe_wait_step = 0;
 	long mth_call_num_step = 0;
 	long mth_ret_num_step = 0;
@@ -155,6 +156,7 @@ public:
 		pos_cpp_cod = hl_null;
 		depth = 0;
 		tot_steps = 0;
+		mth_handler_return_step = 0;
 		mth_safe_wait_step = 0;
 		mth_call_num_step = 0;
 		mth_ret_num_step = 0;
@@ -205,6 +207,7 @@ public:
 	void print_cpp_call_mth_case(FILE* st, long idx);
 	void print_cpp_ret_mth_case(FILE* st, long idx);
 	
+	void print_cpp_handler_return_code(FILE* st);
 	void print_cpp_call_wait_safe_code(FILE* st);
 	void print_cpp_call_mth_code(FILE* st);
 	void print_cpp_ret_mth_code(FILE* st);
@@ -1344,10 +1347,12 @@ public:
 
 	virtual
 	void	set_safe_idx(int16_t idx){
+		HL_CK(get_has_safe());
 		if(idx > HL_MAX_SAFE_IDX){
 			hl_abort("Error in attribute %s. Cannot have more that %d safe attributes per class \n", 
 					 get_name(), HL_MAX_SAFE_IDX);
 		}
+		HL_CK(safe_idx == HL_INVALID_IDX);
 		safe_idx = idx;
 	}
 	
@@ -1741,10 +1746,12 @@ public:
 
 	virtual
 	void	set_safe_idx(int16_t idx){
+		HL_CK(get_has_safe());
 		if(idx > HL_MAX_SAFE_IDX){
 			hl_abort("Error in attribute %s. Cannot have more that %d safe attributes per class \n", 
 					 get_name(), HL_MAX_SAFE_IDX);
 		}
+		HL_CK(safe_idx == HL_INVALID_IDX);
 		safe_idx = idx;
 	}
 	

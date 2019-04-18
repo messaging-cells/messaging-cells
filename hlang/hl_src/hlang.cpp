@@ -447,6 +447,10 @@ hclass_reg::call_all_methods(){
 	tot_steps = 0;
 
 	hc_term::HC_NUM_LABEL++;
+	HL_CK(mth_handler_return_step == 0);
+	mth_handler_return_step = hc_term::HC_NUM_LABEL;
+	
+	hc_term::HC_NUM_LABEL++;
 	HL_CK(mth_safe_wait_step == 0);
 	mth_safe_wait_step = hc_term::HC_NUM_LABEL;
 	
@@ -1992,6 +1996,11 @@ hclass_reg::print_cpp_file(){
 
 void
 hclass_reg::print_all_cpp_methods(FILE *st){
+	if(nucleus == hl_null){
+		//fprintf(st, "// CLASS_WITHOUT_NUCLEUS !!!!\n");
+		hl_abort("Error. hcell class %s without nucleus.\n", nam.c_str());
+		return;
+	}
 	//tot_steps = 0;
 	fprintf(st, "void\n");
 	fprintf(st, "%s::handler(missive* msv){\n", nam.c_str());
@@ -2006,10 +2015,13 @@ hclass_reg::print_all_cpp_methods(FILE *st){
 	fprintf(st, "MC_MARK_USED(hmsg_val);\n");
 	fprintf(st, "MC_MARK_USED(hmsg_ref);\n");
 	fprintf(st, "\n");
+	fprintf(st, "while(true){\n");
 	fprintf(st, "switch(hg_step){\n");
 	fprintf(st, "case 0: {\n");
+	fprintf(st, "\thg_step = %ld;\n", nucleus->get_num_label());
 	fprintf(st, "\n");
 	
+	print_cpp_handler_return_code(st);
 	print_cpp_call_wait_safe_code(st);
 	print_cpp_call_mth_code(st);
 	print_cpp_ret_mth_code(st);
@@ -2031,6 +2043,7 @@ hclass_reg::print_all_cpp_methods(FILE *st){
 	fprintf(st, "break;\n");
 	fprintf(st, "\n");
 	fprintf(st, "} // closes switch\n");
+	fprintf(st, "} // closes while\n");
 	fprintf(st, "} // closes handler\n");
 	fprintf(st, "\n");
 		
@@ -2264,7 +2277,9 @@ void
 hclass_reg::print_cpp_call_mth_case(FILE* st, long idx){
 	long idx_inc = idx + 1;
 	fprintf(st, "\t\tcase %ld:\n", idx);
+	fprintf(st, "\t\t\thg_stack_arr[%ld] = hg_ret_step;\n", idx);
 	fprintf(st, "\t\t\thg_stack_idx = %ld;\n", idx_inc);
+	fprintf(st, "\t\t\thg_step = hg_cll_step;\n");
 	fprintf(st, "\t\tbreak;\n");
 }
 
@@ -2273,18 +2288,37 @@ hclass_reg::print_cpp_ret_mth_case(FILE* st, long idx){
 	long idx_dec = idx - 1;
 	fprintf(st, "\t\tcase %ld:\n", idx);
 	fprintf(st, "\t\t\thg_stack_idx = %ld;\n", idx_dec);
+	fprintf(st, "\t\t\thg_step = hg_stack_arr[%ld];\n", idx_dec);
+	fprintf(st, "\t\t\thg_stack_arr[%ld] = 0;\n", idx_dec);
 	fprintf(st, "\t\tbreak;\n");
 }
 
 void
+hclass_reg::print_cpp_handler_return_code(FILE* st){
+	HL_CK(nucleus != hl_null);
+	fprintf(st, "// print_cpp_handler_return_code\n");
+	fprintf(st, "HG_LN(%ld)\n", mth_handler_return_step);
+	fprintf(st, "\thg_step = %ld;\n", nucleus->get_num_label());
+	fprintf(st, "\treturn;\n");
+	fflush(st);
+}
+
+void
 hclass_reg::print_cpp_call_wait_safe_code(FILE* st){
+	fprintf(st, "// print_cpp_call_wait_safe_code\n");
 	fprintf(st, "HG_LN(%ld)\n", mth_safe_wait_step);
+	
+	fprintf(st, "\tif((hg_pending_replies & hg_needed_replies) == 0){ hg_step = hg_ret_step; }");
+	fprintf(st, "\n");
+	fprintf(st, "\telse { return; }");
+	fprintf(st, "\n");
+	fflush(st);
 }
 
 void
 hclass_reg::print_cpp_call_mth_code(FILE* st){
+	fprintf(st, "// print_cpp_call_mth_code\n");
 	fprintf(st, "HG_LN(%ld)\n", mth_call_num_step);
-	fprintf(st, "\thg_stack_arr[hg_stack_idx] = hg_ret_step;\n");
 	fprintf(st, "\tswitch(hg_stack_idx){\n");
 	
 	for(long aa = 0; aa < depth; aa++){
@@ -2295,14 +2329,19 @@ hclass_reg::print_cpp_call_mth_code(FILE* st){
 	fprintf(st, "\t\tbreak;\n");
 	fprintf(st, "\t};\n");
 	fprintf(st, "\n");
-	fprintf(st, "\thg_step = hg_cll_step;\n");
 	fprintf(st, "\n");
+	fflush(st);
 }
 
 void
 hclass_reg::print_cpp_ret_mth_code(FILE* st){
+	fprintf(st, "// print_cpp_ret_mth_code\n");
 	fprintf(st, "HG_LN(%ld)\n", mth_ret_num_step);
 	fprintf(st, "\tswitch(hg_stack_idx){\n");
+	
+	fprintf(st, "\t\tcase 0:\n");
+	fprintf(st, "\t\t\thg_step = %ld;\n", mth_handler_return_step);
+	fprintf(st, "\t\tbreak;\n");
 	
 	for(long aa = 1; aa <= depth; aa++){
 		print_cpp_ret_mth_case(st, aa);
@@ -2312,9 +2351,8 @@ hclass_reg::print_cpp_ret_mth_code(FILE* st){
 	fprintf(st, "\t\tbreak;\n");
 	fprintf(st, "\t};\n");
 	fprintf(st, "\n");
-	fprintf(st, "\thg_step = hg_stack_arr[hg_stack_idx];\n");
-	fprintf(st, "\thg_stack_arr[hg_stack_idx] = 0;\n");
 	fprintf(st, "\n");
+	fflush(st);
 }
 
 int

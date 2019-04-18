@@ -98,6 +98,9 @@ public:
 	hmethod(mth03);
 	hmethod(mth04);
 	hmethod(mth05);
+
+	hnucleus(nucl_A2);
+	
 };
 
 class cls_A3 : public hcell {
@@ -122,6 +125,7 @@ public:
 	hmethod(mth01);
 	hmethod(mth02);
 
+	hnucleus(nucl_A3);
 };
 
 class cls_A4 : public hcell {
@@ -129,6 +133,8 @@ public:
 	hcell_class(cls_A4);
 	
 	hchar(a1);
+
+	hnucleus(nucl_A4);
 };
 
 
