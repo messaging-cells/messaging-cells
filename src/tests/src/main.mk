@@ -118,6 +118,8 @@ SUBMAKEFILES := \
 	./hello_world/hello_world.mk \
 	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_ptd.mk \
+	./send_safe_msg/send_safe_msg_eph.mk \
+	./send_safe_msg/send_safe_msg_ptd.mk \
 	./eating_philo/philo_ptd.mk \
 	./eating_philo/philo_eph.mk \
 	./send_manageru_msg/send_manageru_msg_ptd.mk \

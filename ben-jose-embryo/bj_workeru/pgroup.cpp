@@ -12,17 +12,17 @@ void pru_lambda2()
 
 void 
 pgrp_item_pgrp_op_handler(missive* msv){
-	PTD_CK(! msv->is_replying());
+	//PTD_CK(! msv->is_replying());
 	MCK_CALL_HANDLER(pgrp_item, pgrp_op_handler, msv);
 }
 
 void 
 pgroup_pgrp_op_handler(missive* msv){
-	if(msv->is_replying()){
+	/*if(msv->is_replying()){
 		MCK_CALL_REPLY_HANDLER(pgroup, pgrp_op_handler, msv);
 		msv->release();
 		return;
-	}
+	}*/
 	MCK_CALL_HANDLER(pgroup, pgrp_op_handler, msv);
 }
 

@@ -285,6 +285,14 @@ public:
 		return out;
 	}
 	
+	hl_string get_glbs_tmp_cpp_name(){
+		return project_nam + "_glbs_tmp.cpp";
+	}
+	
+	hl_string get_glbs_cpp_name(){
+		return project_nam + "_glbs.cpp";
+	}
+	
 	hl_string get_tmp_hh_name(){
 		return project_nam + "_tmp.hh";
 	}
@@ -302,6 +310,8 @@ public:
 	void print_glbs_hh_file();
 	void print_hh_file();
 
+	void print_glbs_cpp_file();
+	
 	hl_string get_tmp_cpp_name(){
 		return project_nam + "_tmp.cpp";
 	}
@@ -1800,8 +1810,12 @@ hc_new_literal(const char* the_lit){
 #define htok_get(nn, obj) hc_term& tk_get_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_get_", #nn))
 
 #define htok_set(nn, obj) hc_term& tk_set_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_set_", #nn))
-	
-#define htoks_att(nn, obj) htok_get(nn, this); htok_set(nn, this); 
+
+#define htok_att_id(nn, obj) hc_term& hid_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("hid_", #nn))
+
+//define htoks_att(nn, obj) htok_get(nn, this); htok_set(nn, this); 
+
+#define htoks_att(nn, obj) htok_att_id(nn, this); 
 
 #define hvalue(tt, nn) htoks_att(nn, this); hc_value<tt> nn{#tt, #nn, this}
 

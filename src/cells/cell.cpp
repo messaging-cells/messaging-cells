@@ -661,7 +661,7 @@ kernel::handle_missives(){
 		handle_work_from_manageru();
 	}
 
-	release_all_missives(ker->delayed_to_release, mc_null, has_dbg);
+	//release_all_missives(ker->delayed_to_release, mc_null, has_dbg);
 	
 	PTD_CK(! has_dbg || ! in_work.is_alone());
 	PTD_DBG_CODE(
@@ -817,7 +817,8 @@ kernel::handle_missives(){
 		nxt = wrk->bn_right;
 
 		if(mgrp->handled){
-			release_all_missives(mgrp->all_agts, &(ker->delayed_to_release), has_dbg);
+			//release_all_missives(mgrp->all_agts, &(ker->delayed_to_release), has_dbg);
+			release_all_missives(mgrp->all_agts, mc_null, has_dbg);
 			PTD_CK(mgrp->all_agts.is_alone());
 			mgrp->release(4);
 		}
@@ -844,28 +845,7 @@ kernel::release_all_missives(grip& all_msv, grip* pending, bool has_dbg){
 		missive* msv = (missive*)wrk;
 		nxt = wrk->bn_right;
 
-		//bool dlyed = mc_has_mask(msv->flg, mc_msv_delayed_flag);
-		bool dlyed = msv->is_delayed();
-		if(dlyed){
-			if(pending != mc_null){
-				msv->let_go();
-				pending->bind_to_my_left(*msv);
-			}
-		} else {
-			//bool rply = mc_has_mask(msv->flg, mc_msv_reply_flag);
-			bool rply = msv->is_reply();
-			if(rply){
-				msv->let_go();
-				msv->set_replying();
-				
-				cell* hdlr_src = (msv)->src;
-				PTD_CK(hdlr_src != mc_null);
-				PTD_CK(mc_addr_is_local(hdlr_src));
-				mck_handle_missive_base(msv, hdlr_src->handler_idx);
-			} else {
-				msv->release(5);
-			}
-		}
+		msv->release(5);
 	}
 }
 
@@ -876,17 +856,6 @@ cell::send(cell* des, mck_token_t tok){
 	msv->src = this;
 	msv->dst = des;
 	msv->tok = tok;
-	msv->send();
-}
-
-void
-cell::send_val(cell* des, mck_token_t tok, mck_value_t val){
-	missive* msv = mc_missive_acquire();
-	
-	msv->src = this;
-	msv->dst = des;
-	msv->tok = tok;
-	msv->val = val;
 	msv->send();
 }
 

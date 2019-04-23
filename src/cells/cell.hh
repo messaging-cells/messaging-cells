@@ -63,8 +63,6 @@ typedef agent_ref cell_ref_t;
 
 typedef uint16_t mck_token_t; 
 typedef uint16_t mc_alloc_size_t; 
-typedef uint64_t mck_value_t; 
-typedef uint64_t mc_replies_bits_t;
 
 
 #define BJ_INVALID_TOKEN ((mck_token_t)(~((mck_token_t)0x0)))
@@ -372,7 +370,7 @@ public:
 	grip local_work;
 	grip out_work;
 	grip sent_work;
-	grip delayed_to_release;
+	//grip delayed_to_release;
 
 	char* class_names_arr[kernel_class_names_arr_sz];
 
@@ -769,10 +767,6 @@ public:
 
 	mc_opt_sz_fn
 	void
-	send_val(cell* des, mck_token_t tok, mck_value_t val);
-
-	mc_opt_sz_fn
-	void
 	respond(missive* msv, mck_token_t tok);
 };
 
@@ -801,7 +795,6 @@ public:
 	cell* 				dst;
 	cell*				src;
 	mck_token_t 		tok;
-	mck_value_t			val;
 
 	mc_opt_sz_fn 
 	missive(){
@@ -823,7 +816,6 @@ public:
 		dst = mc_null;
 		src = mc_null;
 		tok = 0;
-		val = 0;
 	}
 
 	//! Sends this \ref missive . It calls \ref mck_as_glb_pt with src before sending.
@@ -841,6 +833,7 @@ public:
 		MCK_KERNEL->local_work.bind_to_my_left(*this);
 	}
 
+	/*
 	//! Sets the delayed flag in this \ref missive .
 	mc_inline_fn 
 	void set_delayed(){
@@ -894,6 +887,7 @@ public:
 	void reset_replying(){
 		mc_reset_mask(flg, mc_msv_replying_flag);
 	}
+	*/
 	
 	mc_inline_fn 
 	void send_to_manageru(){
@@ -1034,8 +1028,11 @@ mc_kernel_handler(missive* msv) mc_external_code_ram;
 #define mc_glb_binder_get_rgt(bdr, id) ((binder*)mc_addr_set_id((id), ((bdr)->bn_right)))
 #define mc_glb_binder_get_lft(bdr, id) ((binder*)mc_addr_set_id((id), ((bdr)->bn_left)))
 
-#define mch_glb_binder_get_rgt(bdr, id) (binder*)mc_glb_binder_get_rgt((binder*)mc_workeru_pt_to_manageru_pt(bdr), id)
-#define mch_glb_binder_get_lft(bdr, id) (binder*)mc_glb_binder_get_lft((binder*)mc_workeru_pt_to_manageru_pt(bdr), id)
+#define mch_glb_binder_get_rgt(bdr, id) \
+	(binder*)mc_glb_binder_get_rgt((binder*)mc_workeru_pt_to_manageru_pt(bdr), id)
+
+#define mch_glb_binder_get_lft(bdr, id) \
+	(binder*)mc_glb_binder_get_lft((binder*)mc_workeru_pt_to_manageru_pt(bdr), id)
 
 #define MCK_CALL_HANDLER(cls, nam, msv) (((cls*)(mck_as_loc_pt(msv->dst)))->nam(msv))
 
