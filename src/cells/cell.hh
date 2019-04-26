@@ -832,62 +832,6 @@ public:
 		src = (cell*)mck_as_glb_pt(src);
 		MCK_KERNEL->local_work.bind_to_my_left(*this);
 	}
-
-	/*
-	//! Sets the delayed flag in this \ref missive .
-	mc_inline_fn 
-	void set_delayed(){
-		mc_set_mask(flg, mc_msv_delayed_flag);
-	}
-	
-	//! Checks if the delayed flag in this \ref missive is set.
-	mc_inline_fn 
-	bool is_delayed(){
-		return mc_has_mask(flg, mc_msv_delayed_flag);
-	}
-	
-	//! Resets the delayed flag in this \ref missive .
-	mc_inline_fn 
-	void reset_delayed(){
-		mc_reset_mask(flg, mc_msv_delayed_flag);
-	}
-	
-	//! Sets the reply flag in this \ref missive .
-	mc_inline_fn 
-	void set_reply(){
-		mc_set_mask(flg, mc_msv_reply_flag);
-	}
-	
-	//! Checks if the reply flag in this \ref missive is set.
-	mc_inline_fn 
-	bool is_reply(){
-		return mc_has_mask(flg, mc_msv_reply_flag);
-	}
-	
-	//! Resets the reply flag in this \ref missive .
-	mc_inline_fn 
-	void reset_reply(){
-		mc_reset_mask(flg, mc_msv_reply_flag);
-	}
-	
-	//! Sets the replying flag in this \ref missive .
-	mc_inline_fn 
-	void set_replying(){
-		mc_set_mask(flg, mc_msv_replying_flag);
-	}
-	
-	//! Checks if the replying flag in this \ref missive is set.
-	mc_inline_fn 
-	bool is_replying(){
-		return mc_has_mask(flg, mc_msv_replying_flag);
-	}
-	
-	//! Resets the replying flag in this \ref missive .
-	mc_inline_fn 
-	void reset_replying(){
-		mc_reset_mask(flg, mc_msv_replying_flag);
-	}
-	*/
 	
 	mc_inline_fn 
 	void send_to_manageru(){

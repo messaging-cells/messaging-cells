@@ -267,6 +267,11 @@ public:
 	void generate_cpp_files();
 	void generate_cpp_code();
 	
+	hl_string get_cpp_idx_total_str(){
+		hl_string tot = "idx_total_" + project_nam;
+		return tot;
+	}
+	
 	hl_string get_cpp_dir_name(){
 		return project_nam + "_cpp";
 	}
@@ -2261,13 +2266,13 @@ hc_reference<obj_t>::get_src(){
 	HC_GET_SOURCE();
 }
 
-//hdeclare_const(hmsg_val);
-//hdeclare_token(hmsg_tok);
-
 #define hmsg_src(cls) (cls::get_msg_src())
 #define hmsg_ref(cls) (cls::get_msg_ref())
 #define hmsg_val_as(typ) hcast(typ, hmsg_val)
 #define hmsg_tok_as(typ) hcast(typ, hmsg_tok)
+
+hdeclare_token(htk_set);
+hdeclare_token(htk_get);
 
 #endif		// HLANG_H
 

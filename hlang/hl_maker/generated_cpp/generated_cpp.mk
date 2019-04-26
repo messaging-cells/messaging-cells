@@ -30,6 +30,7 @@ SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${BMETAL_CXXFLAGS} ${GCPP_TESTS_DBG_FLAG}
 SRC_INCDIRS := ${MC_STD_INCDIRS}
 
 SOURCES := \
+	${GCPP_TESTS_BASE_DIR}/hl_generated_output_glbs.cpp \
 	${GCPP_TESTS_BASE_DIR}/cls_snd.cpp \
 
 

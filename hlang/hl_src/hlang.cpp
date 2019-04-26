@@ -20,8 +20,8 @@ hc_mth_def*	hcell::defining_mth = hl_null;
 long	hc_term::HC_PRT_TERM_INDENT = 0;
 long	hc_term::HC_NUM_LABEL = 0;
 
-//htoken(hmsg_tok);
-//hconst(hmsg_val, 0);
+htoken(htk_set);
+htoken(htk_get);
 
 // =======================================================================================
 // FILE_FUNCTIONS
@@ -1779,6 +1779,9 @@ hc_system::print_glbs_hh_file(){
 
 	fprintf(ff, "#ifndef %s\n", df_str.c_str());
 	fprintf(ff, "#define %s\n", df_str.c_str());
+	
+	fprintf(ff, "\n");
+	fprintf(ff, "#include \"cell.hh\"\n");
 		
 	fprintf(ff, "\n");
 	auto it1 = all_classes.begin();
@@ -1796,17 +1799,24 @@ class hg_missive;
 typedef mck_token_t hg_token_t;
 typedef uint64_t hg_replies_bits_t;
 typedef uint64_t hg_value_t; 
-typedef long hg_idx_t; 
+typedef long hg_id_t; 
 typedef long hg_step_t; 
+typedef uint8_t hg_bit_t; 
+typedef uint8_t hg_idx_t; 
+typedef uint8_t hg_flags_t; 
 
 class mc_aligned hg_cell_base : public cell {
 public:
+	hg_cell_base* hg_next_msg = mc_null;
+	
 	hg_cell_base* hmsg_src = mc_null;
 	hg_token_t hmsg_tok = 0;
+	
+	hg_flags_t hg_msg_flags = 0;
 	hg_value_t hmsg_val = 0;
 	hg_cell_base* hmsg_ref = mc_null;
-	
-	hg_idx_t hg_msg_idx = 0;
+	hg_id_t hg_msg_att_id = 0;
+	hg_bit_t hg_msg_reply_bit = 0;
 	
 	hg_replies_bits_t hg_pending_replies = 0;
 	hg_replies_bits_t hg_needed_replies = 0;
@@ -1817,11 +1827,17 @@ public:
 	hg_step_t hg_cll_step = 0;
 	
 	hg_cell_base(){
+		hg_next_msg = mc_null;
+	
 		hmsg_src = mc_null;
 		hmsg_tok = 0;
+		
+		hg_msg_flags = 0;
 		hmsg_val = 0;
 		hmsg_ref = mc_null;
-	
+		hg_msg_att_id = 0;
+		hg_msg_reply_bit = 0;
+		
 		hg_pending_replies = 0;
 		hg_needed_replies = 0;
 		hg_step = 0;
@@ -1833,45 +1849,91 @@ public:
 	~hg_cell_base(){}
 	
 	void
-	send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val){}
+	send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val);
 
 };
 
+#define hg_missive_acquire_arr(num) ((hg_missive *)(kernel::do_acquire(idx_hg_missive, num)))
+#define hg_missive_acquire() hg_missive_acquire_arr(1)
+	
 class mc_aligned hg_missive : public missive {
 public:
-	hg_value_t		val;
+	MCK_DECLARE_MEM_METHODS(hg_missive)
+	
+	hg_flags_t	flags = 0;
+	hg_value_t	val = 0;
+	hg_id_t 	att_id = 0;
+	hg_bit_t 	reply_bit = 0;
 	
 	hg_missive(){
+		flags = 0;
 		val = 0;
+		att_id = 0;
+		reply_bit = 0;
 	}
 
 	~hg_missive(){}
 };
 
-/*
-hg_inline_fn
-void
-hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val){
-	hg_missive* msv = hg_missive_acquire();
-	
-	msv->src = this;
-	msv->dst = des;
-	msv->tok = tok;
-	msv->val = val;
-	msv->send();
-}*/
-
 )base");
+
+	const char* prj_nam = project_nam.c_str();
 	
-	fprintf(ff, "enum %s_idx_t : mck_handler_idx_t {\n", project_nam.c_str());
+	hl_string idx_tot_str = get_cpp_idx_total_str();
+	const char* idx_tot = idx_tot_str.c_str();
+
+	fprintf(ff, "enum %s_idx_t : mck_handler_idx_t {\n", prj_nam);
 	fprintf(ff, "\tidx_invalid = %s,\n", first_handler_idx.c_str());
+	fprintf(ff, "\tidx_hg_missive,\n");
 	it1 = all_classes.begin();
 	for(; it1 != all_classes.end(); ++it1){
 		const char* cls_nm = it1->first.c_str();
 		fprintf(ff, "\tidx_%s,\n", cls_nm);
 	}
-	fprintf(ff, "\tidx_total_%s\n", project_nam.c_str());
+	fprintf(ff, "\t%s\n", idx_tot);
 	fprintf(ff, "};\n");
+	fprintf(ff, "\n");
+	
+	
+	fprintf(ff, R"base(
+		
+		
+class mc_aligned hg_glbs_%s : public agent {
+public:
+	MCK_DECLARE_MEM_METHODS(hg_glbs_%s)
+	
+	missive_handler_t all_net_handlers[%s];
+	
+	grip* all_ava[%s];
+	mc_alloc_kernel_func_t all_acq[%s];
+	mc_alloc_kernel_func_t all_sep[%s];
+
+	grip	ava_hg_missives;
+
+	void	init_mem_funcs();
+	
+)base", prj_nam, prj_nam, idx_tot, idx_tot, idx_tot, idx_tot);
+	
+	fprintf(ff, "\n");
+	it1 = all_classes.begin();
+	for(; it1 != all_classes.end(); ++it1){
+		const char* cls_nm = it1->first.c_str();
+		fprintf(ff, "\tgrip\tava_%ss;\n", cls_nm);
+	}
+	fprintf(ff, "\n");
+	fprintf(ff, "};\n");
+	fprintf(ff, "\n\n");
+
+	fprintf(ff, "#define hg_globals ((hg_glbs_%s *)(kernel::get_sys()->user_data))\n", prj_nam);
+	fprintf(ff, "#define hg_handlers (hg_globals->all_net_handlers)\n");
+	fprintf(ff, "#define hg_missives_ava (hg_globals->ava_hg_missives\n");
+	fprintf(ff, "\n\n");
+
+	it1 = all_classes.begin();
+	for(; it1 != all_classes.end(); ++it1){
+		const char* cls_nm = it1->first.c_str();
+		fprintf(ff, "#define hg_ava_%ss (hg_globals->ava_%ss)\n", cls_nm, cls_nm);
+	}
 	fprintf(ff, "\n");
 	
 	auto it2 = all_glb_token.begin();
@@ -1879,7 +1941,7 @@ hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val){
 		hc_global* tok = (hc_global*)(it2->second);
 		fprintf(ff, "#define %s %s \n", it2->first.c_str(), tok->val.c_str());
 	}
-	fprintf(ff, "\n");
+	fprintf(ff, "\n\n");
 	
 	auto it3 = all_glb_const.begin();
 	for(; it3 != all_glb_const.end(); ++it3){
@@ -1913,9 +1975,42 @@ hc_system::print_glbs_cpp_file(){
 	}
 	FILE* ff = file_open(tmp_nm.c_str());
 	hl_string pr_glbs_hh_str = HLANG_SYS().get_glbs_hh_name();
+	
+	const char* prj_nam = project_nam.c_str();
 
 	fprintf(ff, "\n\n");
 	fprintf(ff, "#include \"%s\"\n", pr_glbs_hh_str.c_str());
+	fprintf(ff, "\n\n");
+	
+	//fprintf(ff, "MCK_DEFINE_ACQUIRE_ALLOC(hg_glbs_%s, 32);\n\n", prj_nam);
+	//fprintf(ff, "MCK_DEFINE_MEM_METHODS(hg_missive, 32, hg_missives_ava, 0);\n");
+	fprintf(ff, "\n\n");
+	
+	hl_string idx_tot_str = get_cpp_idx_total_str();
+	const char* idx_tot = idx_tot_str.c_str();
+	
+	fprintf(ff, R"base(
+void
+hg_glbs_%s::init_mem_funcs(){
+	mc_init_arr_vals(%s, all_ava, mc_null);
+	mc_init_arr_vals(%s, all_acq, mc_null);
+	mc_init_arr_vals(%s, all_sep, mc_null);
+	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
+}
+		
+void
+hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val){
+	hg_missive* msv = hg_missive_acquire();
+	
+	msv->src = this;
+	msv->dst = des;
+	msv->tok = tok;
+	msv->val = val;
+	msv->send();
+}
+
+)base", prj_nam, idx_tot, idx_tot, idx_tot);
+	
 	
 	fclose(ff);
 	
@@ -1939,7 +2034,6 @@ hclass_reg::print_hh_file(){
 #ifndef %s
 #define %s
 		
-#include "cell.hh"
 #include "%s"
 )", df_str.c_str(), df_str.c_str(), pr_glbs_hh_str.c_str());
 	
@@ -1978,15 +2072,19 @@ hclass_reg::print_hh_class_top_decl(FILE* ff){
 	const char* cls_nm = nam.c_str();
 	fprintf(ff, R"(
 void %s_handler(hg_missive* msv);
+void hg_%s_init_mem_funcs();
 		
+#define hg_%s_acquire_arr(num) ((%s*)(kernel::do_acquire(idx_%s, num)))
+#define hg_%s_acquire() hg_%s_acquire_arr(1)
+	
 class mc_aligned %s : public hg_cell_base {
 public:
 	MCK_DECLARE_MEM_METHODS(%s)
 	
-	virtual mc_opt_sz_fn 
-	mck_handler_idx_t	get_cell_id(){
-		return idx_%s;
-	}
+	//virtual mc_opt_sz_fn 
+	//mck_handler_idx_t	get_cell_id(){
+	//	return idx_%s;
+	//}
 
 	%s(){
 		handler_idx = idx_%s;
@@ -1996,7 +2094,10 @@ public:
 
 	void handler(hg_missive* msv);
 	
-)", cls_nm, cls_nm, cls_nm, cls_nm, cls_nm, cls_nm, cls_nm);
+)", 
+cls_nm, cls_nm,
+cls_nm, cls_nm, cls_nm, cls_nm, cls_nm, 
+cls_nm, cls_nm, cls_nm, cls_nm, cls_nm, cls_nm);
 
 	fprintf(ff, "\n\n");
 	
@@ -2061,6 +2162,25 @@ hclass_reg::print_cpp_file(){
 	
 	fprintf(ff, "\n\n");
 	fprintf(ff, "#include \"%s\"\n", hh_nm.c_str());
+	fprintf(ff, "\n\n");
+
+	const char* cls_nam = nam.c_str();
+
+	fprintf(ff, "MCK_DEFINE_MEM_METHODS(%s, 32, hg_ava_%ss, 0)\n", cls_nam, cls_nam);
+	
+	fprintf(ff, R"base(
+void 
+hg_%s_init_mem_funcs(){
+	(hg_globals->all_ava)[idx_%s] = &(hg_ava_%ss);
+	(hg_globals->all_acq)[idx_%s] = (mc_alloc_kernel_func_t)%s::acquire_alloc;
+	(hg_globals->all_sep)[idx_%s] = (mc_alloc_kernel_func_t)%s::separate;
+	PTD_CK(%s::ck_cell_id(idx_%s));
+}
+
+)base",
+cls_nam, cls_nam, cls_nam,
+cls_nam, cls_nam, cls_nam, cls_nam, cls_nam, cls_nam
+	);
 	
 	fprintf(ff, "\n\n");
 	if(pre_cpp_cod != hl_null){
@@ -2093,14 +2213,26 @@ hclass_reg::print_all_cpp_methods(FILE *st){
 		return;
 	}
 	//tot_steps = 0;
-	fprintf(st, "void\n");
-	fprintf(st, "%s::handler(hg_missive* msv){\n", nam.c_str());
-	fprintf(st, "PTD_CK(msv != mc_null);\n");
-	fprintf(st, "hmsg_src = (hg_cell_base*)(msv->src);\n");
-	fprintf(st, "hmsg_tok = (hg_token_t)(msv->tok);\n");
-	fprintf(st, "hmsg_val = msv->val;\n");
-	fprintf(st, "hmsg_ref = (hg_cell_base*)(msv->val);\n");
-	fprintf(st, "\n");
+	fprintf(st, R"(
+void
+%s::handler(hg_missive* msv){
+PTD_CK(msv != mc_null);
+hmsg_src = (hg_cell_base*)(msv->src);
+hmsg_tok = (hg_token_t)(msv->tok);
+hmsg_val = msv->val;
+hmsg_ref = (hg_cell_base*)(msv->val);
+
+if((hmsg_tok == htk_get) || (hmsg_tok == htk_set)){
+	if(hmsg_tok == htk_get){
+	} else {
+		PTD_CK(hmsg_tok == htk_set);
+		//send_val( src ,  pr_tok_snd_val1 ,  k1 );
+	}
+	return;
+}
+
+)", nam.c_str());
+	
 	fprintf(st, "while(true){\n");
 	fprintf(st, "switch(hg_step){\n");
 	fprintf(st, "case 0: {\n");
@@ -2462,3 +2594,4 @@ hc_safe_check::print_cpp_term(FILE *st){
 	);
 	return 0;
 }
+
