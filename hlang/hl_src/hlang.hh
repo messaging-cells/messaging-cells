@@ -214,6 +214,7 @@ public:
 	
 	void call_all_methods();
 	
+	void print_cpp_get_set_switch(FILE* ff);
 	void print_all_cpp_methods(FILE *st);
 };
 
@@ -253,10 +254,10 @@ public:
 	bool has_address(const char* attr);
 	void register_address(hc_term* attr);
 
-	hc_term& add_tok(const char* nm);
-	hc_term& add_con(const char* nm, const char* val);
-	hc_term& get_tok(const char* nm);
-	hc_term& get_con(const char* nm);
+	hc_global& add_tok(const char* nm);
+	hc_global& add_con(const char* nm, const char* val);
+	hc_global& get_tok(const char* nm);
+	hc_global& get_con(const char* nm);
 	
 	void init_all_token();
 	void init_all_attributes();
@@ -587,6 +588,11 @@ public:
 	}	
 
 	virtual 
+	hl_string	get_id(){
+		return "INVALID_ID";
+	}
+	
+	virtual 
 	bool	is_compound(){
 		return false;
 	}
@@ -680,6 +686,7 @@ public:
 		}
 	}
 
+	void print_cpp_get_set_switch(FILE* ff);
 };
 
 hc_term&	hfor(hc_term& the_cond, hc_term& the_end_each_loop);
@@ -804,7 +811,7 @@ public:
 		HL_CK(prm != hl_null);
 		prm->get_safe_attributes(all_safe, owr);
 	}
-
+	
 	virtual 
 	bool	is_compound(){
 		return true;
@@ -1278,6 +1285,7 @@ public:
 template<class obj_t>
 class hc_value : public hc_term {
 public:
+	hc_global* my_id;
 	int16_t	safe_idx;
 	const char* typ;
 	const char* nam;
@@ -1288,12 +1296,13 @@ public:
 
 	//		 hcell* the_owner = hl_null, obj_t the_val = obj_t())
 	
-	hc_value(const char* the_typ, const char* the_nam, 
+	hc_value(const char* the_typ, const char* the_nam, hc_global* the_id = hl_null, 
 			 hcell* the_owner = hl_null, bool safe_vl = false)
 	{
 		HL_CK(the_owner != hl_null);
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(! std::is_class<obj_t>::value);
+		my_id = the_id;
 		if(safe_vl && (the_owner != hl_null)){
 			set_has_safe();
 		}
@@ -1382,6 +1391,14 @@ public:
 		}
 	}
 
+	virtual 
+	hl_string	get_id(){
+		if(my_id == hl_null){
+			return "INVALID_ID";
+		}
+		return my_id->nam;
+	}	
+	
 };
 
 class hc_keyword : public hc_term {
@@ -1625,6 +1642,7 @@ class hc_reference : public hc_term {
 public:
 	static obj_t*	HC_GLB_REF;
 	
+	hc_global* my_id;
 	int16_t	safe_idx;
 	bool has_cast;
 	const char* typ;
@@ -1634,11 +1652,12 @@ public:
 	
 	virtual	~hc_reference(){}
 	
-	hc_reference(const char* the_typ, const char* the_nam, 
+	hc_reference(const char* the_typ, const char* the_nam, hc_global* the_id = hl_null, 
 				 hcell* the_owner = hl_null, bool safe_rf = false, bool with_cast = false){
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(std::is_class<obj_t>::value);
 		//HL_CK((std::is_base_of<hcell, obj_t>::value));
+		my_id = the_id;
 		if(safe_rf && (the_owner != hl_null)){
 			set_has_safe();
 		}
@@ -1781,6 +1800,14 @@ public:
 		}
 	}
 
+	virtual 
+	hl_string	get_id(){
+		if(my_id == hl_null){
+			return "INVALID_ID";
+		}
+		return my_id->nam;
+	}	
+	
 };
 
 template<class obj_t>
@@ -1812,23 +1839,29 @@ hc_new_literal(const char* the_lit){
 
 #define hdeclare_token(nn) extern hc_term& nn
 
-#define htok_get(nn, obj) hc_term& tk_get_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_get_", #nn))
+//define htok_get(nn, obj) hc_term& tk_get_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_get_", #nn))
 
-#define htok_set(nn, obj) hc_term& tk_set_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_set_", #nn))
+//define htok_set(nn, obj) hc_term& tk_set_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_set_", #nn))
 
-#define htok_att_id(nn, obj) hc_term& hid_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("hid_", #nn))
+#define hatt_id(nn) hid_ ## nn
+
+#define htok_att_id(nn, obj) hc_global& hatt_id(nn) = HLANG_SYS().add_tok(obj->get_attr_nm("hid_", #nn))
 
 //define htoks_att(nn, obj) htok_get(nn, this); htok_set(nn, this); 
 
 #define htoks_att(nn, obj) htok_att_id(nn, this); 
 
-#define hvalue(tt, nn) htoks_att(nn, this); hc_value<tt> nn{#tt, #nn, this}
+#define hvalue(tt, nn) htoks_att(nn, this); \
+	hc_value<tt> nn{#tt, #nn, &(hatt_id(nn)), this}
 
-#define hreference(tt, nn) htoks_att(nn, this); hc_reference<tt> nn{#tt, #nn, this}
+#define hreference(tt, nn) htoks_att(nn, this); \
+	hc_reference<tt> nn{#tt, #nn, &(hatt_id(nn)), this}
 
-#define hsafe_value(tt, nn) htoks_att(nn, this); hc_value<tt> nn{#tt, #nn, this, true}
+#define hsafe_value(tt, nn) htoks_att(nn, this); \
+	hc_value<tt> nn{#tt, #nn, &(hatt_id(nn)), this, true}
 
-#define hsafe_reference(tt, nn) htoks_att(nn, this); hc_reference<tt> nn{#tt, #nn, this, true}
+#define hsafe_reference(tt, nn) htoks_att(nn, this); \
+	hc_reference<tt> nn{#tt, #nn, &(hatt_id(nn)), this, true}
 
 #define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
@@ -2152,7 +2185,7 @@ public:
 #define hme_def(cls) \
     virtual	hc_term&	hme(){ \
 		if(hc_pt_me == hl_null){ \
-			hc_reference<cls>* tmp = new hc_reference<cls>(#cls, "hme_" #cls, this); \
+			hc_reference<cls>* tmp = new hc_reference<cls>(#cls, "hme_" #cls, hl_null, this); \
 			tmp->ref = this; \
 			hc_pt_me = tmp; \
 		} \
@@ -2231,11 +2264,11 @@ public:
 		hc_reference<cls>::get_glb_ref(); \
 	} \
 	hc_reference<cls>& cls::get_msg_ref(){ \
-		static hc_reference<cls> gref{#cls, "hmsg_ref", hl_null, false, true}; \
+		static hc_reference<cls> gref{#cls, "hmsg_ref", hl_null, hl_null, false, true}; \
 		return gref; \
 	} \
 	hc_reference<cls>& cls::get_msg_src(){ \
-		static hc_reference<cls> gref{#cls, "hmsg_src", hl_null, false, true}; \
+		static hc_reference<cls> gref{#cls, "hmsg_src", hl_null, hl_null, false, true}; \
 		return gref; \
 	} \
 

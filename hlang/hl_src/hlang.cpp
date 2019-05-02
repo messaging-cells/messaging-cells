@@ -384,7 +384,7 @@ hc_system::register_address(hc_term* attr){
 	}
 }
 
-hc_term&
+hc_global&
 hc_system::add_tok(const char* nm){
 	HL_CK(nm != hl_null);
 	hc_global* pt_glb = hl_null;
@@ -399,7 +399,7 @@ hc_system::add_tok(const char* nm){
 	return *pt_glb;
 }
 
-hc_term&
+hc_global&
 hc_system::get_tok(const char* nm){
 	HL_CK(nm != hl_null);
 	hc_global* pt_glb = hl_null;
@@ -412,7 +412,7 @@ hc_system::get_tok(const char* nm){
 	return *pt_glb;
 }
 
-hc_term&
+hc_global&
 hc_system::add_con(const char* nm, const char* val){
 	HL_CK(nm != hl_null);
 	hc_global* pt_glb = hl_null;
@@ -429,7 +429,7 @@ hc_system::add_con(const char* nm, const char* val){
 	return *pt_glb;
 }
 
-hc_term&
+hc_global&
 hc_system::get_con(const char* nm){
 	HL_CK(nm != hl_null);
 	hc_global* pt_glb = hl_null;
@@ -1926,7 +1926,7 @@ public:
 
 	fprintf(ff, "#define hg_globals ((hg_glbs_%s *)(kernel::get_sys()->user_data))\n", prj_nam);
 	fprintf(ff, "#define hg_handlers (hg_globals->all_net_handlers)\n");
-	fprintf(ff, "#define hg_missives_ava (hg_globals->ava_hg_missives\n");
+	fprintf(ff, "#define hg_missives_ava (hg_globals->ava_hg_missives)\n");
 	fprintf(ff, "\n\n");
 
 	it1 = all_classes.begin();
@@ -1982,14 +1982,22 @@ hc_system::print_glbs_cpp_file(){
 	fprintf(ff, "#include \"%s\"\n", pr_glbs_hh_str.c_str());
 	fprintf(ff, "\n\n");
 	
-	//fprintf(ff, "MCK_DEFINE_ACQUIRE_ALLOC(hg_glbs_%s, 32);\n\n", prj_nam);
-	//fprintf(ff, "MCK_DEFINE_MEM_METHODS(hg_missive, 32, hg_missives_ava, 0);\n");
+	fprintf(ff, "MCK_DEFINE_ACQUIRE_ALLOC(hg_glbs_%s, 32);\n\n", prj_nam);
+	fprintf(ff, "MCK_DEFINE_MEM_METHODS(hg_missive, 32, hg_missives_ava, 0);\n");
 	fprintf(ff, "\n\n");
 	
 	hl_string idx_tot_str = get_cpp_idx_total_str();
 	const char* idx_tot = idx_tot_str.c_str();
 	
 	fprintf(ff, R"base(
+void 
+hg_missive_init_mem_funcs(){
+	(hg_globals->all_ava)[idx_hg_missive] = &(hg_missives_ava);
+	(hg_globals->all_acq)[idx_hg_missive] = (mc_alloc_kernel_func_t)hg_missive::acquire_alloc;
+	(hg_globals->all_sep)[idx_hg_missive] = (mc_alloc_kernel_func_t)hg_missive::separate;
+	PTD_CK(hg_missive::ck_cell_id(idx_hg_missive));
+}
+
 void
 hg_glbs_%s::init_mem_funcs(){
 	mc_init_arr_vals(%s, all_ava, mc_null);
@@ -2071,7 +2079,7 @@ hclass_reg::print_hh_class_top_decl(FILE* ff){
 	
 	const char* cls_nm = nam.c_str();
 	fprintf(ff, R"(
-void %s_handler(hg_missive* msv);
+void %s_handler(missive* msv);
 void hg_%s_init_mem_funcs();
 		
 #define hg_%s_acquire_arr(num) ((%s*)(kernel::do_acquire(idx_%s, num)))
@@ -2206,6 +2214,64 @@ cls_nam, cls_nam, cls_nam, cls_nam, cls_nam, cls_nam
 }
 
 void
+hc_term::print_cpp_get_set_switch(FILE* st){
+	const char* the_id = get_id().c_str();
+	fprintf(st, R"gs(
+		case %s:{
+			if(hmsg_tok == htk_get){
+			} else {
+				PTD_CK(hmsg_tok == htk_set);
+			}
+		}
+		break;
+)gs", the_id);
+	
+	//send_val( src ,  pr_tok_snd_val1 ,  k1 );
+}
+
+void
+hclass_reg::print_cpp_get_set_switch(FILE* st){
+	
+	fprintf(st, "\n\n");
+	fprintf(st, "\tswitch(hg_msg_att_id){ // begin_get_set_switch\n");
+	fprintf(st, "\t/* VALUES */\n");
+	
+	auto it1 = values.begin();
+	for(; it1 != values.end(); ++it1){
+		hc_term* trm = (*it1);
+		trm->print_cpp_get_set_switch(st);
+	}
+	fprintf(st, "\n\n");
+	fprintf(st, "\t/* SAFE_VALUES */\n");
+	
+	it1 = safe_values.begin();
+	for(; it1 != safe_values.end(); ++it1){
+		hc_term* trm = (*it1);
+		trm->print_cpp_get_set_switch(st);
+	}
+	fprintf(st, "\n\n");
+	fprintf(st, "\t/* REFERENCES */\n");
+	
+	auto it2 = references.begin();
+	for(; it2 != references.end(); ++it2){
+		hc_term* trm = (*it2);
+		trm->print_cpp_get_set_switch(st);
+	}
+	fprintf(st, "\n\n");
+	fprintf(st, "\t/* SAFE_REFERENCES */\n");
+	
+	it2 = safe_references.begin();
+	for(; it2 != safe_references.end(); ++it2){
+		hc_term* trm = (*it2);
+		trm->print_cpp_get_set_switch(st);
+	}
+	
+	fprintf(st, "\t} // end_get_set_switch\n");
+	fprintf(st, "\n\n");
+}
+
+
+void
 hclass_reg::print_all_cpp_methods(FILE *st){
 	if(nucleus == hl_null){
 		//fprintf(st, "// CLASS_WITHOUT_NUCLEUS !!!!\n");
@@ -2214,24 +2280,35 @@ hclass_reg::print_all_cpp_methods(FILE *st){
 	}
 	//tot_steps = 0;
 	fprintf(st, R"(
+		
+void 
+%s_handler(missive* msv){
+	(((%s*)(mck_as_loc_pt(msv->dst)))->handler((hg_missive*)msv));
+}
+
+		
+// ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬
+// ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬
+// BEGINNING_OF_THE_HANDLER
+		
 void
 %s::handler(hg_missive* msv){
 PTD_CK(msv != mc_null);
 hmsg_src = (hg_cell_base*)(msv->src);
-hmsg_tok = (hg_token_t)(msv->tok);
+hmsg_tok = (hg_token_t)(msv->tok);	
 hmsg_val = msv->val;
 hmsg_ref = (hg_cell_base*)(msv->val);
+hg_msg_flags = msv->flags;
+hg_msg_att_id = msv->att_id;
+hg_msg_reply_bit = msv->reply_bit;
+)", nam.c_str(), nam.c_str(), nam.c_str());
 
-if((hmsg_tok == htk_get) || (hmsg_tok == htk_set)){
-	if(hmsg_tok == htk_get){
-	} else {
-		PTD_CK(hmsg_tok == htk_set);
-		//send_val( src ,  pr_tok_snd_val1 ,  k1 );
-	}
-	return;
-}
-
-)", nam.c_str());
+	fprintf(st, "\n\n");
+	fprintf(st, "if((hmsg_tok == htk_get) || (hmsg_tok == htk_set)){\n");
+	print_cpp_get_set_switch(st);
+	fprintf(st, "\treturn;\n");
+	fprintf(st, "}\n");
+	fprintf(st, "\n\n");
 	
 	fprintf(st, "while(true){\n");
 	fprintf(st, "switch(hg_step){\n");
@@ -2264,7 +2341,13 @@ if((hmsg_tok == htk_get) || (hmsg_tok == htk_set)){
 	fprintf(st, "} // closes while\n");
 	fprintf(st, "} // closes handler\n");
 	fprintf(st, "\n");
-		
+
+	fprintf(st, R"(
+// END_OF_THE_HANDLER
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+)");
+	
 }
 
 void
@@ -2514,6 +2597,7 @@ hclass_reg::print_cpp_ret_mth_case(FILE* st, long idx){
 void
 hclass_reg::print_cpp_handler_return_code(FILE* st){
 	HL_CK(nucleus != hl_null);
+	fprintf(st, "\n\n");
 	fprintf(st, "// print_cpp_handler_return_code\n");
 	fprintf(st, "HG_LN(%ld)\n", mth_handler_return_step);
 	fprintf(st, "\thg_step = %ld;\n", nucleus->get_num_label());
@@ -2523,6 +2607,7 @@ hclass_reg::print_cpp_handler_return_code(FILE* st){
 
 void
 hclass_reg::print_cpp_call_wait_safe_code(FILE* st){
+	fprintf(st, "\n\n");
 	fprintf(st, "// print_cpp_call_wait_safe_code\n");
 	fprintf(st, "HG_LN(%ld)\n", mth_safe_wait_step);
 	
@@ -2535,6 +2620,7 @@ hclass_reg::print_cpp_call_wait_safe_code(FILE* st){
 
 void
 hclass_reg::print_cpp_call_mth_code(FILE* st){
+	fprintf(st, "\n\n");
 	fprintf(st, "// print_cpp_call_mth_code\n");
 	fprintf(st, "HG_LN(%ld)\n", mth_call_num_step);
 	fprintf(st, "\tswitch(hg_stack_idx){\n");
@@ -2547,12 +2633,12 @@ hclass_reg::print_cpp_call_mth_code(FILE* st){
 	fprintf(st, "\t\tbreak;\n");
 	fprintf(st, "\t};\n");
 	fprintf(st, "\n");
-	fprintf(st, "\n");
 	fflush(st);
 }
 
 void
 hclass_reg::print_cpp_ret_mth_code(FILE* st){
+	fprintf(st, "\n\n");
 	fprintf(st, "// print_cpp_ret_mth_code\n");
 	fprintf(st, "HG_LN(%ld)\n", mth_ret_num_step);
 	fprintf(st, "\tswitch(hg_stack_idx){\n");
