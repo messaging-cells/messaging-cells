@@ -24,7 +24,7 @@ hnucleus_def(cls_snd, central, (
 
 hmethod_def(cls_snd, mth_start, (
 	hdbg(R"my_code(printf("Started mth_start\n");)my_code"),
-	dst = hmsg_ref(cls_snd),
+	dst = hmsg_ref_as(cls_snd),
 	hsend(dst, pr_tok_snd_val1, hcon(k1)),
 	hsend(dst, pr_tok_snd_val2, hcon(k2)),
 	hsend(dst, pr_tok_snd_add, hcon(k0)),

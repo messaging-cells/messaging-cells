@@ -75,7 +75,7 @@ hmethod_def(cls_A1, mth01, (
 ));
 
 hmethod_def(cls_A1, mth02, (
-	! (hmsg_ref(cls_A3)->xx1()),
+	! (hmsg_ref_as(cls_A3)->xx1()),
 	(o1 = (o1 + o2)),
 	mth01(), 
 	hreturn
@@ -138,8 +138,8 @@ hmethod_def(cls_A3, mth01, (
 	aa2 = aa3, 
 	aa3 = aa1,
 	//hcase(r3) >> r3--,
-	hmsg_src(cls_A1)->o4(),
-	hmsg_ref(cls_A1)->o4(),
+	hmsg_src_as(cls_A1)->o4(),
+	hmsg_ref_as(cls_A1)->o4(),
 	hmsg_val_as(long)--,
 	hmsg_tok_as(char)--,
 	hdbg(R"my_code(

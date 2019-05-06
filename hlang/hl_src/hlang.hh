@@ -52,7 +52,7 @@ hlang declarations.
 
 #define MAX_BUFF_SZ 0xFFF
 
-#define HL_INVALID_IDX -1
+#define HL_INVALID_SAFE_IDX 0
 #define HL_MAX_SAFE_IDX 63
 
 extern char PROC_LINK_BUFF[];
@@ -82,16 +82,16 @@ hl_string get_upper_str(const hl_string& lower);
 
 // where 'a' is the byte stream pointer, and b is the bit number.
 
-#define div8(b)	((b)>>3)
-#define mod8(b)	((b)&7)
+#define hl_div8(b)	((b)>>3)
+#define hl_mod8(b)	((b)&7)
 
-#define get_bit(a, b)		((((int8_t*)a)[div8(b)] >> mod8(b)) & 1)
-#define set_bit(a, b)		(((int8_t*)a)[div8(b)] |= (1 << mod8(b)))
-#define reset_bit(a, b) 	(((int8_t*)a)[div8(b)] &= ~(1 << mod8(b)))
-#define toggle_bit(a, b) 	(((int8_t*)a)[div8(b)] ^= (1 << mod8(b)))
+#define hl_get_bit(a, b)		((((int8_t*)a)[hl_div8(b)] >> hl_mod8(b)) & 1)
+#define hl_set_bit(a, b)		(((int8_t*)a)[hl_div8(b)] |= (1 << hl_mod8(b)))
+#define hl_reset_bit(a, b) 		(((int8_t*)a)[hl_div8(b)] &= ~(1 << hl_mod8(b)))
+#define hl_toggle_bit(a, b) 	(((int8_t*)a)[hl_div8(b)] ^= (1 << hl_mod8(b)))
 
-#define to_bytes(num_bits)	(div8(num_bits) + (mod8(num_bits) > 0))
-#define to_bits(num_bytes)	(num_bytes * k_num_bits_byte)
+#define hl_to_bytes(num_bits)	(hl_div8(num_bits) + (hl_mod8(num_bits) > 0))
+#define hl_to_bits(num_bytes)	(num_bytes * 8)
 
 //======================================================================
 // defs
@@ -100,6 +100,7 @@ typedef uint64_t hl_token_t;
 typedef uint64_t hl_value_t;
 typedef uint64_t hl_reference_t;
 typedef uint64_t hl_safe_bits_t;
+typedef uint8_t hl_safe_idx_t; 
 
 typedef int64_t hc_chip_idx;
 #define hl_tok_last 0
@@ -145,7 +146,7 @@ public:
 	long mth_safe_wait_step = 0;
 	long mth_call_num_step = 0;
 	long mth_ret_num_step = 0;
-	long tot_safe_attrs = 0;
+	hl_safe_idx_t tot_safe_attrs = 0;
 	
 	hclass_reg(){
 		nucleus = hl_null;
@@ -215,6 +216,8 @@ public:
 	void call_all_methods();
 	
 	void print_cpp_get_set_switch(FILE* ff);
+	void print_cpp_replies_switch(FILE* ff);
+	void print_cpp_handle_reply(FILE* ff);
 	void print_all_cpp_methods(FILE *st);
 };
 
@@ -346,6 +349,8 @@ enum	hc_syntax_op_t {
 	
 	hc_safe_check_op,
 
+	hc_hmsg_src_op,
+	hc_hmsg_ref_op,
 	hc_hmsg_tok_op,
 	hc_hmsg_val_op,
 	
@@ -355,8 +360,10 @@ enum	hc_syntax_op_t {
 	
 	hc_dbg_op,
 	
+	hc_get_op,	// hget
+	hc_set_op,	// hset
 	hc_send_op,	// hsend
-	hc_safe_send_op,	// hsafe_send
+	hc_reply_op,	// hreply
 	
 	hc_member_op,	// ->
 	
@@ -578,6 +585,11 @@ public:
 	}	
 
 	virtual 
+	hl_string	get_cpp_casted_value(){
+		return "INVALID_TYPE";
+	}	
+
+	virtual 
 	const char*	get_name(){
 		return "INVALID_NAME";
 	}	
@@ -617,8 +629,11 @@ public:
 	void	set_jumps(hc_syntax_op_t the_op, hc_term& nxt);
 	
 	virtual
-	void	set_safe_idx(int16_t idx){}
+	void	set_safe_idx(hl_safe_idx_t idx){}
 	
+	virtual 
+	hl_safe_idx_t get_safe_idx(){ return HL_INVALID_SAFE_IDX; }
+		
 	static
 	void print_new_line(FILE *st);
 
@@ -645,39 +660,39 @@ public:
 	void print_label(FILE *st);
 
 	void set_flag(int num_flg){
-		set_bit(&flags, num_flg);
+		hl_set_bit(&flags, num_flg);
 	}
 
 	void reset_flag(int num_flg){
-		reset_bit(&flags, num_flg);
+		hl_reset_bit(&flags, num_flg);
 	}
 
 	bool get_flag(int num_flg){
-		return get_bit(&flags, num_flg);
+		return hl_get_bit(&flags, num_flg);
 	}
 	
 	void set_has_last(){
-		set_bit(&flags, hl_has_last_bit);
+		hl_set_bit(&flags, hl_has_last_bit);
 	}
 
 	void reset_has_last(){
-		reset_bit(&flags, hl_has_last_bit);
+		hl_reset_bit(&flags, hl_has_last_bit);
 	}
 
 	bool get_has_last(){
-		return get_bit(&flags, hl_has_last_bit);
+		return hl_get_bit(&flags, hl_has_last_bit);
 	}
 	
 	void set_has_safe(){
-		set_bit(&flags, hl_has_safe_bit);
+		hl_set_bit(&flags, hl_has_safe_bit);
 	}
 
 	void reset_has_safe(){
-		reset_bit(&flags, hl_has_safe_bit);
+		hl_reset_bit(&flags, hl_has_safe_bit);
 	}
 
 	bool get_has_safe(){
-		return get_bit(&flags, hl_has_safe_bit);
+		return hl_get_bit(&flags, hl_has_safe_bit);
 	}
 	
 	void or_has_safe(hc_term* tm){
@@ -686,7 +701,9 @@ public:
 		}
 	}
 
-	void print_cpp_get_set_switch(FILE* ff);
+	void print_cpp_get_set_case(FILE* ff);
+	void print_cpp_reply_case(FILE* st);
+
 };
 
 hc_term&	hfor(hc_term& the_cond, hc_term& the_end_each_loop);
@@ -764,8 +781,8 @@ public:
 	virtual	~hc_unary_term(){
 		if((prm != hl_null) && prm->is_compound()){
 			delete prm;
-			prm = hl_null;
 		}
+		prm = hl_null;
 	}
 
 	hc_unary_term(hc_syntax_op_t pm_op, hc_term* pm_val){
@@ -933,12 +950,12 @@ public:
 	virtual	~hc_condition(){
 		if((cond != hl_null) && cond->is_compound()){
 			delete cond;
-			cond = hl_null;
 		}
+		cond = hl_null;
 		if((if_true != hl_null) && if_true->is_compound()){
 			delete if_true;
-			if_true = hl_null;
 		}
+		if_true = hl_null;
 	}
 	
 	hc_condition(hc_term* the_cond, hc_term* pm_if_true){
@@ -1033,12 +1050,12 @@ public:
 		owner = hl_null;
 		if((cond != hl_null) && cond->is_compound()){
 			delete cond;
-			cond = hl_null;
 		}
+		cond = hl_null;
 		if((end_each_loop != hl_null) && end_each_loop->is_compound()){
 			delete end_each_loop;
-			end_each_loop = hl_null;
 		}
+		end_each_loop = hl_null;
 	}
 	
 	hc_for_loop(hc_term* the_cond, hc_term* the_end_each_loop){
@@ -1112,12 +1129,12 @@ public:
 	virtual	~hc_binary_term(){
 		if((lft != hl_null) && lft->is_compound()){
 			delete lft;
-			lft = hl_null;
 		}
+		lft = hl_null;
 		if((rgt != hl_null) && rgt->is_compound()){
 			delete rgt;
-			rgt = hl_null;
 		}
+		rgt = hl_null;
 	}
 	
 	hc_binary_term(hc_syntax_op_t pm_op, hc_term* pm_lft, hc_term* pm_rgt){
@@ -1194,29 +1211,33 @@ public:
 	hc_term* snd_dst;
 	hc_term* snd_tok;
 	hc_term* snd_att;
+	hc_global* snd_req_id;
 	
 	virtual	~hc_send_term(){
 		if((snd_dst != hl_null) && snd_dst->is_compound()){
 			delete snd_dst;
-			snd_dst = hl_null;
 		}
+		snd_dst = hl_null;
 		if((snd_tok != hl_null) && snd_tok->is_compound()){
 			delete snd_tok;
-			snd_tok = hl_null;
 		}
+		snd_tok = hl_null;
 		if((snd_att != hl_null) && snd_att->is_compound()){
 			delete snd_att;
-			snd_att = hl_null;
 		}
+		snd_att = hl_null;
+		snd_req_id = hl_null;
 	}
 	
-	hc_send_term(hc_syntax_op_t pm_op, hc_term* pm_dst, hc_term* pm_tok, hc_term* pm_att){
-		init_send_term(pm_op, pm_dst, pm_tok, pm_att);
+	hc_send_term(hc_syntax_op_t pm_op, hc_term* pm_dst, hc_term* pm_tok, hc_term* pm_att,
+		hc_global* pm_idx = hl_null)
+	{
+		init_send_term(pm_op, pm_dst, pm_tok, pm_att, pm_idx);
 	}
 	
 	void init_send_term(hc_syntax_op_t pm_op = hc_invalid_op, 
 						hc_term* pm_dst = hl_null, hc_term* pm_tok = hl_null,
-						hc_term* pm_att = hl_null)
+						hc_term* pm_att = hl_null, hc_global* pm_idx = hl_null)
 	{
 		HL_CK(pm_dst != hl_null);
 		HL_CK(pm_tok != hl_null);
@@ -1230,6 +1251,7 @@ public:
 		snd_dst = pm_dst;
 		snd_tok = pm_tok;
 		snd_att = pm_att;
+		snd_req_id = pm_idx;
 		
 		num_steps = snd_dst->num_steps;
 		num_steps += snd_tok->num_steps;
@@ -1286,7 +1308,7 @@ template<class obj_t>
 class hc_value : public hc_term {
 public:
 	hc_global* my_id;
-	int16_t	safe_idx;
+	hl_safe_idx_t safe_idx;
 	const char* typ;
 	const char* nam;
 	obj_t	val;
@@ -1306,7 +1328,7 @@ public:
 		if(safe_vl && (the_owner != hl_null)){
 			set_has_safe();
 		}
-		safe_idx = HL_INVALID_IDX;
+		safe_idx = HL_INVALID_SAFE_IDX;
 		typ = the_typ;
 		nam = the_nam;
 		//val = the_val;
@@ -1347,6 +1369,13 @@ public:
 	}	
 
 	virtual 
+	hl_string	get_cpp_casted_value(){
+		hl_string tt(typ);
+		hl_string vv = "((" + tt + ")hmsg_val)";
+		return vv;
+	}	
+
+	virtual 
 	const char*	get_name(){
 		return nam;
 	}
@@ -1370,24 +1399,28 @@ public:
 	hc_term*	get_src();
 
 	virtual
-	void	set_safe_idx(int16_t idx){
+	void	set_safe_idx(hl_safe_idx_t idx){
 		HL_CK(get_has_safe());
 		if(idx > HL_MAX_SAFE_IDX){
 			hl_abort("Error in attribute %s. Cannot have more that %d safe attributes per class \n", 
 					 get_name(), HL_MAX_SAFE_IDX);
 		}
-		HL_CK(safe_idx == HL_INVALID_IDX);
+		HL_CK(safe_idx == HL_INVALID_SAFE_IDX);
 		safe_idx = idx;
+		HL_CK(safe_idx > HL_INVALID_SAFE_IDX);
 	}
 	
 	virtual 
+	hl_safe_idx_t get_safe_idx(){ return safe_idx; }
+	
+	virtual 
 	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
-		if(safe_idx != HL_INVALID_IDX){
+		if(safe_idx != HL_INVALID_SAFE_IDX){
 			if(owr == hl_null){
 				HL_CK(owner != hl_null);
 				owr = owner;
 			}
-			set_bit(&all_safe, safe_idx);
+			hl_set_bit(&all_safe, safe_idx);
 		}
 	}
 
@@ -1504,6 +1537,12 @@ public:
 	const char*	get_type(){
 		HL_CK(the_tm != hl_null);
 		return the_tm->get_type();
+	}	
+
+	virtual 
+	hl_string	get_cpp_casted_value(){
+		HL_CK(the_tm != hl_null);
+		return the_tm->get_cpp_casted_value();
 	}	
 
 	virtual 
@@ -1643,7 +1682,7 @@ public:
 	static obj_t*	HC_GLB_REF;
 	
 	hc_global* my_id;
-	int16_t	safe_idx;
+	hl_safe_idx_t safe_idx;
 	bool has_cast;
 	const char* typ;
 	const char* nam;
@@ -1661,7 +1700,7 @@ public:
 		if(safe_rf && (the_owner != hl_null)){
 			set_has_safe();
 		}
-		safe_idx = HL_INVALID_IDX;
+		safe_idx = HL_INVALID_SAFE_IDX;
 		has_cast = with_cast;
 		typ = the_typ;
 		nam = the_nam;
@@ -1742,6 +1781,13 @@ public:
 	}	
 
 	virtual 
+	hl_string	get_cpp_casted_value(){
+		hl_string tt(typ);
+		hl_string vv = "((" + tt + "*)hmsg_ref)";
+		return vv;
+	}	
+
+	virtual 
 	const char*	get_name(){
 		return nam;
 	}
@@ -1779,24 +1825,28 @@ public:
 	hc_term*	get_src();
 
 	virtual
-	void	set_safe_idx(int16_t idx){
+	void	set_safe_idx(hl_safe_idx_t idx){
 		HL_CK(get_has_safe());
 		if(idx > HL_MAX_SAFE_IDX){
 			hl_abort("Error in attribute %s. Cannot have more that %d safe attributes per class \n", 
 					 get_name(), HL_MAX_SAFE_IDX);
 		}
-		HL_CK(safe_idx == HL_INVALID_IDX);
+		HL_CK(safe_idx == HL_INVALID_SAFE_IDX);
 		safe_idx = idx;
+		HL_CK(safe_idx > HL_INVALID_SAFE_IDX);
 	}
 	
 	virtual 
+	hl_safe_idx_t get_safe_idx(){ return safe_idx; }
+	
+	virtual 
 	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
-		if(safe_idx != HL_INVALID_IDX){
+		if(safe_idx != HL_INVALID_SAFE_IDX){
 			if(owr == hl_null){
 				HL_CK(owner != hl_null);
 				owr = owner;
 			}
-			set_bit(&all_safe, safe_idx);
+			hl_set_bit(&all_safe, safe_idx);
 		}
 	}
 
@@ -1903,6 +1953,8 @@ hc_new_literal(const char* the_lit){
 #define hreturn 	hl_new_keyword(hreturn)
 #define habort 		hl_new_keyword(habort)
 
+#define hmsg_src 	hl_new_keyword(hmsg_src)
+#define hmsg_ref 	hl_new_keyword(hmsg_ref)
 #define hmsg_tok 	hl_new_keyword(hmsg_tok)
 #define hmsg_val 	hl_new_keyword(hmsg_val)
 
@@ -1952,8 +2004,8 @@ public:
 	virtual	~hc_mth_def(){
 		if(ret != hl_null){
 			delete ret;
-			ret = hl_null;
 		}
+		ret = hl_null;
 	}
 	
 	hc_mth_def(const char* the_cls, const char* the_nam, 
@@ -2233,8 +2285,10 @@ public:
 	
 	hme_def(hcell);
 	
+	hc_term& hget(hc_term& dst, hc_global& idx, hc_term& att);
+	hc_term& hset(hc_term& dst, hc_global& idx, hc_term& att);
 	hc_term& hsend(hc_term& dst, hc_term& tok, hc_term& att);
-	hc_term& hsafe_send(hc_term& dst, hc_term& tok, hc_term& att);
+	hc_term& hreply(hc_term& att);
 };
 
 #define hcell_class(cls) \
@@ -2299,8 +2353,8 @@ hc_reference<obj_t>::get_src(){
 	HC_GET_SOURCE();
 }
 
-#define hmsg_src(cls) (cls::get_msg_src())
-#define hmsg_ref(cls) (cls::get_msg_ref())
+#define hmsg_src_as(cls) (cls::get_msg_src())
+#define hmsg_ref_as(cls) (cls::get_msg_ref())
 #define hmsg_val_as(typ) hcast(typ, hmsg_val)
 #define hmsg_tok_as(typ) hcast(typ, hmsg_tok)
 

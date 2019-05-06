@@ -296,11 +296,11 @@ mc_v32_of_p16(uint16_t* p16){
 
 #define mc_get_bit(a, b)		((((uint8_t*)a)[mc_div8(b)] >> mc_mod8(b)) & 1)
 #define mc_set_bit(a, b)		(((uint8_t*)a)[mc_div8(b)] |= (1 << mc_mod8(b)))
-#define mc_reset_bit(a, b) 	(((uint8_t*)a)[mc_div8(b)] &= ~(1 << mc_mod8(b)))
+#define mc_reset_bit(a, b) 		(((uint8_t*)a)[mc_div8(b)] &= ~(1 << mc_mod8(b)))
 #define mc_toggle_bit(a, b) 	(((uint8_t*)a)[mc_div8(b)] ^= (1 << mc_mod8(b)))
 
 #define mc_to_bytes(num_bits)	(mc_div8(num_bits) + (mc_mod8(num_bits) > 0))
-#define mc_to_bits(num_bytes)	(num_bytes * k_num_bits_byte)
+#define mc_to_bits(num_bytes)	(num_bytes * 8)
 
 #define mc_byte_to_binary_pattern "%c%c%c%c%c%c%c%c"
 

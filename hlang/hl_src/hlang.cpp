@@ -540,6 +540,22 @@ hc_system::init_all_attributes(){
 }
 
 bool
+hc_is_send_oper(hc_syntax_op_t op){
+	bool is_snd = false;
+	switch(op){
+		case hc_set_op:
+		case hc_get_op:
+		case hc_send_op:
+		case hc_reply_op:
+			is_snd = true;
+		break;
+		default:
+		break;
+	}
+	return is_snd;
+}
+
+bool
 hc_is_cond_oper(hc_syntax_op_t op){
 	bool is_co = false;
 	switch(op){
@@ -623,6 +639,12 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_safe_check_op:
 			tok = "hc_safe_check_op";
 		break;
+		case hc_hmsg_src_op:
+			tok = "hc_hmsg_src_op";
+		break;
+		case hc_hmsg_ref_op:
+			tok = "hc_hmsg_ref_op";
+		break;
 		case hc_hmsg_tok_op:
 			tok = "hc_hmsg_tok_op";
 		break;
@@ -641,11 +663,17 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_dbg_op:
 			tok = "hdbg";
 		break;
+		case hc_get_op:
+			tok = "hget";
+		break;
+		case hc_set_op:
+			tok = "hset";
+		break;
 		case hc_send_op:
 			tok = "hsend";
 		break;
-		case hc_safe_send_op:
-			tok = "hsafe_send";
+		case hc_reply_op:
+			tok = "hreply";
 		break;
 		case hc_member_op:
 			tok = "->";
@@ -778,6 +806,12 @@ hc_get_cpp_token(hc_syntax_op_t op){
 		case hc_safe_check_op:
 			tok = "hc_safe_check_op";
 		break;
+		case hc_hmsg_src_op:
+			tok = "hmsg_src";
+		break;
+		case hc_hmsg_ref_op:
+			tok = "hmsg_ref";
+		break;
 		case hc_hmsg_tok_op:
 			tok = "hmsg_tok";
 		break;
@@ -796,11 +830,17 @@ hc_get_cpp_token(hc_syntax_op_t op){
 		case hc_dbg_op:
 			tok = "hdbg";
 		break;
+		case hc_get_op:
+			tok = "send_val";
+		break;
+		case hc_set_op:
+			tok = "send_val";
+		break;
 		case hc_send_op:
 			tok = "send_val";
 		break;
-		case hc_safe_send_op:
-			tok = "safe_send_val";
+		case hc_reply_op:
+			tok = "send_val";
 		break;
 		case hc_member_op:
 			tok = "->";
@@ -1241,14 +1281,26 @@ hcell::get_attr_nm(const char* pfix, const char* sfix){
 }
 
 hc_term&
+hcell::hget(hc_term& dst, hc_global& idx, hc_term& att){
+	hc_term* tm = new hc_send_term(hc_get_op, &dst, &htk_get, &att, &idx);
+	return *tm;
+}
+
+hc_term&
+hcell::hset(hc_term& dst, hc_global& idx, hc_term& att){
+	hc_term* tm = new hc_send_term(hc_set_op, &dst, &htk_set, &att, &idx);
+	return *tm;
+}
+
+hc_term&
 hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
 	hc_term* tm = new hc_send_term(hc_send_op, &dst, &tok, &att);
 	return *tm;
 }
 
 hc_term&
-hcell::hsafe_send(hc_term& dst, hc_term& tok, hc_term& att){
-	hc_term* tm = new hc_send_term(hc_safe_send_op, &dst, &tok, &att);
+hcell::hreply(hc_term& att){
+	hc_term* tm = new hc_send_term(hc_reply_op, &hmsg_src, &hmsg_tok, &att);
 	return *tm;
 }
 
@@ -1449,7 +1501,10 @@ hc_binary_term::print_term(FILE *st){
 
 int
 hc_send_term::print_term(FILE *st){
-	HL_CK((op == hc_send_op) || (op == hc_safe_send_op));
+	HL_CK(hc_is_send_oper(op));
+	HL_CK(snd_dst != hl_null);
+	HL_CK(snd_tok != hl_null);
+	HL_CK(snd_att != hl_null);
 	
 	const char* tok_str = hc_get_token(op);
 	
@@ -1458,15 +1513,18 @@ hc_send_term::print_term(FILE *st){
 	fprintf(st, "("); 
 	HC_PRT_TERM_INDENT++;
 	
-	if(snd_dst != hl_null){ snd_dst->print_term(st); }
+	snd_dst->print_term(st);
 	
 	fprintf(st, ", ");
-	
-	if(snd_tok != hl_null){ snd_tok->print_term(st); }
+	if(op == hc_send_op){
+		snd_tok->print_term(st);
+	} else {
+		HL_CK(snd_req_id != hl_null);
+		snd_req_id->print_term(st);
+	}
 
-	fprintf(st, ", ");
-	
-	if(snd_att != hl_null){ snd_att->print_term(st); }
+	fprintf(st, ", ");	
+	snd_att->print_term(st);
 
 	HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
@@ -1794,7 +1852,28 @@ hc_system::print_glbs_hh_file(){
 	fprintf(ff, R"base(
 #define hg_inline_fn mc_inline_fn
 		
+#define HG_INVALID_SAFE_IDX 0
+		
 class hg_missive;
+
+//======================================================================
+// bitarray
+
+// where 'a' is the byte stream pointer, and b is the bit number.
+
+#define hg_div8(b)	((b)>>3)
+#define hg_mod8(b)	((b)&7)
+
+#define hg_get_bit(a, b)		((((int8_t*)a)[hg_div8(b)] >> hg_mod8(b)) & 1)
+#define hg_set_bit(a, b)		(((int8_t*)a)[hg_div8(b)] |= (1 << hg_mod8(b)))
+#define hg_reset_bit(a, b) 		(((int8_t*)a)[hg_div8(b)] &= ~(1 << hg_mod8(b)))
+#define hg_toggle_bit(a, b) 	(((int8_t*)a)[hg_div8(b)] ^= (1 << hg_mod8(b)))
+
+#define hg_to_bytes(num_bits)	(hg_div8(num_bits) + (hg_mod8(num_bits) > 0))
+#define hg_to_bits(num_bytes)	(num_bytes * 8)
+
+//======================================================================
+// typedefs
 		
 typedef mck_token_t hg_token_t;
 typedef uint64_t hg_replies_bits_t;
@@ -1804,6 +1883,9 @@ typedef long hg_step_t;
 typedef uint8_t hg_bit_t; 
 typedef uint8_t hg_idx_t; 
 typedef uint8_t hg_flags_t; 
+
+//======================================================================
+// cell_base
 
 class mc_aligned hg_cell_base : public cell {
 public:
@@ -1849,13 +1931,18 @@ public:
 	~hg_cell_base(){}
 	
 	void
-	send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val);
+	send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val, hg_id_t att_id, 
+			hg_bit_t rply_bit, bool is_rply = false);
 
 };
 
 #define hg_missive_acquire_arr(num) ((hg_missive *)(kernel::do_acquire(idx_hg_missive, num)))
 #define hg_missive_acquire() hg_missive_acquire_arr(1)
 	
+
+#define hg_msv_flg_is_reply		1
+#define hg_msv_flg_force_write	2
+
 class mc_aligned hg_missive : public missive {
 public:
 	MCK_DECLARE_MEM_METHODS(hg_missive)
@@ -2007,13 +2094,26 @@ hg_glbs_%s::init_mem_funcs(){
 }
 		
 void
-hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val){
+hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val, 
+			hg_id_t req_id, hg_bit_t rply_bit, bool is_rply)
+{
 	hg_missive* msv = hg_missive_acquire();
+	
+	PTD_CK(((tok != htk_get) && (tok != htk_set)) || (rply_bit != HG_INVALID_SAFE_IDX));
+	if(is_rply){
+		PTD_CK(rply_bit != HG_INVALID_SAFE_IDX);
+		hg_set_bit(&(msv->flags), hg_msv_flg_is_reply);
+	} else if(rply_bit != HG_INVALID_SAFE_IDX){
+		hg_set_bit(&(hg_pending_replies), rply_bit);
+	}
 	
 	msv->src = this;
 	msv->dst = des;
 	msv->tok = tok;
 	msv->val = val;
+	msv->att_id = req_id;
+	msv->reply_bit = rply_bit;
+
 	msv->send();
 }
 
@@ -2214,22 +2314,6 @@ cls_nam, cls_nam, cls_nam, cls_nam, cls_nam, cls_nam
 }
 
 void
-hc_term::print_cpp_get_set_switch(FILE* st){
-	const char* the_id = get_id().c_str();
-	fprintf(st, R"gs(
-		case %s:{
-			if(hmsg_tok == htk_get){
-			} else {
-				PTD_CK(hmsg_tok == htk_set);
-			}
-		}
-		break;
-)gs", the_id);
-	
-	//send_val( src ,  pr_tok_snd_val1 ,  k1 );
-}
-
-void
 hclass_reg::print_cpp_get_set_switch(FILE* st){
 	
 	fprintf(st, "\n\n");
@@ -2239,7 +2323,7 @@ hclass_reg::print_cpp_get_set_switch(FILE* st){
 	auto it1 = values.begin();
 	for(; it1 != values.end(); ++it1){
 		hc_term* trm = (*it1);
-		trm->print_cpp_get_set_switch(st);
+		trm->print_cpp_get_set_case(st);
 	}
 	fprintf(st, "\n\n");
 	fprintf(st, "\t/* SAFE_VALUES */\n");
@@ -2247,7 +2331,7 @@ hclass_reg::print_cpp_get_set_switch(FILE* st){
 	it1 = safe_values.begin();
 	for(; it1 != safe_values.end(); ++it1){
 		hc_term* trm = (*it1);
-		trm->print_cpp_get_set_switch(st);
+		trm->print_cpp_get_set_case(st);
 	}
 	fprintf(st, "\n\n");
 	fprintf(st, "\t/* REFERENCES */\n");
@@ -2255,7 +2339,7 @@ hclass_reg::print_cpp_get_set_switch(FILE* st){
 	auto it2 = references.begin();
 	for(; it2 != references.end(); ++it2){
 		hc_term* trm = (*it2);
-		trm->print_cpp_get_set_switch(st);
+		trm->print_cpp_get_set_case(st);
 	}
 	fprintf(st, "\n\n");
 	fprintf(st, "\t/* SAFE_REFERENCES */\n");
@@ -2263,7 +2347,7 @@ hclass_reg::print_cpp_get_set_switch(FILE* st){
 	it2 = safe_references.begin();
 	for(; it2 != safe_references.end(); ++it2){
 		hc_term* trm = (*it2);
-		trm->print_cpp_get_set_switch(st);
+		trm->print_cpp_get_set_case(st);
 	}
 	
 	fprintf(st, "\t} // end_get_set_switch\n");
@@ -2301,15 +2385,21 @@ hmsg_ref = (hg_cell_base*)(msv->val);
 hg_msg_flags = msv->flags;
 hg_msg_att_id = msv->att_id;
 hg_msg_reply_bit = msv->reply_bit;
+bool hg_msg_is_rply = hg_get_bit(&(hg_msg_flags), hg_msv_flg_is_reply);
+bool hg_msg_force_write = hg_get_bit(&(hg_msg_flags), hg_msv_flg_force_write);
+
 )", nam.c_str(), nam.c_str(), nam.c_str());
 
 	fprintf(st, "\n\n");
-	fprintf(st, "if((hmsg_tok == htk_get) || (hmsg_tok == htk_set)){\n");
+	fprintf(st, "if(! hg_msg_is_rply && ((hmsg_tok == htk_get) || (hmsg_tok == htk_set))){\n");
+	fprintf(st, "\tbool is_pending_att = false;\n");
 	print_cpp_get_set_switch(st);
 	fprintf(st, "\treturn;\n");
 	fprintf(st, "}\n");
-	fprintf(st, "\n\n");
+
+	print_cpp_handle_reply(st);
 	
+	fprintf(st, "\n\n");
 	fprintf(st, "while(true){\n");
 	fprintf(st, "switch(hg_step){\n");
 	fprintf(st, "case 0: {\n");
@@ -2520,33 +2610,6 @@ hc_binary_term::print_cpp_term(FILE *st){
 }
 
 int
-hc_send_term::print_cpp_term(FILE *st){
-	HL_CK((op == hc_send_op) || (op == hc_safe_send_op));
-	
-	const char* tok_str = hc_get_cpp_token(op);
-	
-	fprintf(st, " %s", tok_str);
-	
-	fprintf(st, "("); 
-	HC_PRT_TERM_INDENT++;
-	
-	if(snd_dst != hl_null){ snd_dst->print_cpp_term(st); }
-	
-	fprintf(st, ", ");
-	
-	if(snd_tok != hl_null){ snd_tok->print_cpp_term(st); }
-
-	fprintf(st, ", ");
-	
-	if(snd_att != hl_null){ snd_att->print_cpp_term(st); }
-
-	HC_PRT_TERM_INDENT--;
-	fprintf(st, ")");
-	
-	return 0;
-}
-
-int
 hc_mth_ret::print_cpp_term(FILE *st){
 	HL_CK(the_mth != hl_null);
 	hc_syntax_op_t c_op = get_oper();
@@ -2602,19 +2665,6 @@ hclass_reg::print_cpp_handler_return_code(FILE* st){
 	fprintf(st, "HG_LN(%ld)\n", mth_handler_return_step);
 	fprintf(st, "\thg_step = %ld;\n", nucleus->get_num_label());
 	fprintf(st, "\treturn;\n");
-	fflush(st);
-}
-
-void
-hclass_reg::print_cpp_call_wait_safe_code(FILE* st){
-	fprintf(st, "\n\n");
-	fprintf(st, "// print_cpp_call_wait_safe_code\n");
-	fprintf(st, "HG_LN(%ld)\n", mth_safe_wait_step);
-	
-	fprintf(st, "\tif((hg_pending_replies & hg_needed_replies) == 0){ hg_step = hg_ret_step; }");
-	fprintf(st, "\n");
-	fprintf(st, "\telse { return; }");
-	fprintf(st, "\n");
 	fflush(st);
 }
 
@@ -2679,5 +2729,155 @@ hc_safe_check::print_cpp_term(FILE *st){
 		next->get_num_label(), safe_pattern, creg->mth_safe_wait_step
 	);
 	return 0;
+}
+
+int
+hc_send_term::print_cpp_term(FILE *st){
+	HL_CK(hc_is_send_oper(op));
+	HL_CK(snd_dst != hl_null);
+	HL_CK(snd_tok != hl_null);
+	HL_CK(snd_att != hl_null);
+
+	if(op == hc_reply_op){
+		fprintf(st, " send_val(hmsg_src, hmsg_tok, ");
+		snd_att->print_cpp_term(st);
+		fprintf(st, ", 0, hg_msg_reply_bit, true)");
+		return 0;
+	}
+	
+	// send_val(
+	const char* tok_str = hc_get_cpp_token(op);
+	
+	fprintf(st, " %s", tok_str);
+	
+	fprintf(st, "("); 
+	HC_PRT_TERM_INDENT++;
+	
+	snd_dst->print_cpp_term(st);
+	
+	fprintf(st, ", ");
+	snd_tok->print_cpp_term(st);
+
+	fprintf(st, ", ");
+	snd_att->print_cpp_term(st);
+
+	if(snd_req_id != hl_null){
+		fprintf(st, ", %s", snd_req_id->get_name());
+	} else {
+		fprintf(st, ", 0");
+	}
+	
+	fprintf(st, ", %d", snd_att->get_safe_idx());
+	
+	HC_PRT_TERM_INDENT--;
+	fprintf(st, ")");
+	
+	return 0;
+}
+
+void
+hc_term::print_cpp_get_set_case(FILE* st){
+	hl_string id_str = get_id();
+	const char* the_id = id_str.c_str();
+	hl_string val_str = get_cpp_casted_value();
+	const char* the_val = val_str.c_str();
+	hl_safe_idx_t bit_idx = get_safe_idx();
+	
+	fprintf(st, "\t\tcase %s:{\n", the_id);
+	if(bit_idx != HL_INVALID_SAFE_IDX){
+		fprintf(st, "\t\t\tis_pending_att = hg_get_bit(&(hg_pending_replies), %d);\n", bit_idx);
+	}
+	fprintf(st, R"gs(
+			if(hmsg_tok == htk_get){
+				send_val(hmsg_src, htk_get, (hg_value_t)%s, 0, hg_msg_reply_bit, true);
+			} else {
+				PTD_CK(hmsg_tok == htk_set);
+				if(hg_msg_force_write || (! is_pending_att)){
+					%s = %s;
+					send_val(hmsg_src, htk_set, hmsg_val, 0, hg_msg_reply_bit, true);
+				} else {
+					send_val(hmsg_src, htk_set, (hg_value_t)%s, 0, hg_msg_reply_bit, true);
+				}
+			}
+		}
+		break;
+)gs", get_name(), get_name(), the_val, get_name());
+}
+
+void
+hc_term::print_cpp_reply_case(FILE* st){
+	hl_string val_str = get_cpp_casted_value();
+	const char* the_val = val_str.c_str();
+	hl_safe_idx_t bit_idx = get_safe_idx();
+	HL_CK(bit_idx != HL_INVALID_SAFE_IDX);
+	
+	fprintf(st, R"gs(
+		case %d:{
+			%s = %s;
+		}
+		break;
+)gs", bit_idx, get_name(), the_val);
+}
+
+void
+hclass_reg::print_cpp_replies_switch(FILE* st){
+	
+	fprintf(st, "\n\n");
+	fprintf(st, "\tswitch(hg_msg_reply_bit){ // begin_replies_switch\n");
+	fprintf(st, "\t/* SAFE_VALUES */\n");
+	
+	auto it1 = safe_values.begin();
+	for(; it1 != safe_values.end(); ++it1){
+		hc_term* trm = (*it1);
+		trm->print_cpp_reply_case(st);
+	}
+	fprintf(st, "\n\n");
+	fprintf(st, "\t/* SAFE_REFERENCES */\n");
+	
+	auto it2 = safe_references.begin();
+	for(; it2 != safe_references.end(); ++it2){
+		hc_term* trm = (*it2);
+		trm->print_cpp_reply_case(st);
+	}
+	
+	fprintf(st, "\t} // begin_replies_switch\n");
+	fprintf(st, "\n\n");
+}
+
+void
+hclass_reg::print_cpp_handle_reply(FILE* st){
+	fprintf(st, R"gs(
+		
+		
+// HANDLE REPLIES		
+if(hg_msg_is_rply){
+	PTD_CK(hg_msg_reply_bit != HG_INVALID_SAFE_IDX);
+	hg_reset_bit(&(hg_pending_replies), hg_msg_reply_bit);
+	
+)gs");
+	
+	print_cpp_replies_switch(st);
+	
+	fprintf(st, R"gs(
+	if(hg_step != %ld){
+		return;
+	}
+}
+)gs", mth_safe_wait_step);
+		
+}
+
+void
+hclass_reg::print_cpp_call_wait_safe_code(FILE* st){
+	fprintf(st, R"gs(
+		
+		
+// print_cpp_call_wait_safe_code
+HG_LN(%ld)
+	if((hg_pending_replies & hg_needed_replies) == 0){ hg_step = hg_ret_step; }
+	else { return; }
+)gs", mth_safe_wait_step);
+	
+	fflush(st);
 }
 
