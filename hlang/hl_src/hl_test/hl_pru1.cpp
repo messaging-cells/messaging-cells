@@ -83,6 +83,7 @@ hmethod_def(cls_A1, mth02, (
 
 hmethod_def(cls_A1, mth03, (
 	hif(o3) >> (~ o1 + ! o2),
+	hsend(rA3, pr_tok_snd_val1, o5),
 	(o2 = (o2 + o1)),
 	(o2 = (o2 + o1)),
 	o1 = hme(),
@@ -93,7 +94,8 @@ hmethod_def(cls_A1, mth04, (
 	mth03(),
 	mth02(),
 	o1 = hme(),
-	o2 = hlit(12345)
+	o2 = hlit(12345),
+	hsend(rA2, pr_tok_snd_val1, o4)
 ));
 
 hnucleus_def(cls_A2, nucl_A2, (
@@ -194,7 +196,9 @@ hmethod_def(cls_A3, mth02, (
 		hcase(o1) >> o2--
 	),
 	aa1 = aa2, 
+	hset(aa1, htok(hid_cls_A1_b4), xx1),
 	aa2 = aa3, 
+	hget(aa1, htok(hid_cls_A1_b1), o4),
 	aa3 = aa1
 ));
 

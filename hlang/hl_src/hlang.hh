@@ -634,6 +634,11 @@ public:
 	virtual 
 	hl_safe_idx_t get_safe_idx(){ return HL_INVALID_SAFE_IDX; }
 		
+	virtual 
+	hl_safe_bits_t get_safe_bit_mask(){
+		return 0;
+	}
+
 	static
 	void print_new_line(FILE *st);
 
@@ -1296,6 +1301,10 @@ public:
 		snd_dst->get_safe_attributes(all_safe, owr);
 		snd_tok->get_safe_attributes(all_safe, owr);
 		snd_att->get_safe_attributes(all_safe, owr);
+		if(all_safe != 0){
+			all_safe = (0 - 1);
+			HL_CK(all_safe > 0);
+		}
 	}
 	
 	virtual 
@@ -1409,9 +1418,18 @@ public:
 		safe_idx = idx;
 		HL_CK(safe_idx > HL_INVALID_SAFE_IDX);
 	}
-	
+
 	virtual 
 	hl_safe_idx_t get_safe_idx(){ return safe_idx; }
+
+	virtual 
+	hl_safe_bits_t get_safe_bit_mask(){
+		hl_safe_bits_t msk = 0;
+		if(safe_idx != HL_INVALID_SAFE_IDX){
+			hl_set_bit(&msk, safe_idx);
+		}
+		return msk;
+	}
 	
 	virtual 
 	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
@@ -1840,6 +1858,15 @@ public:
 	hl_safe_idx_t get_safe_idx(){ return safe_idx; }
 	
 	virtual 
+	hl_safe_bits_t get_safe_bit_mask(){
+		hl_safe_bits_t msk = 0;
+		if(safe_idx != HL_INVALID_SAFE_IDX){
+			hl_set_bit(&msk, safe_idx);
+		}
+		return msk;
+	}
+	
+	virtual 
 	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		if(safe_idx != HL_INVALID_SAFE_IDX){
 			if(owr == hl_null){
@@ -1889,15 +1916,9 @@ hc_new_literal(const char* the_lit){
 
 #define hdeclare_token(nn) extern hc_term& nn
 
-//define htok_get(nn, obj) hc_term& tk_get_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_get_", #nn))
-
-//define htok_set(nn, obj) hc_term& tk_set_ ## nn = HLANG_SYS().add_tok(obj->get_attr_nm("tk_set_", #nn))
-
 #define hatt_id(nn) hid_ ## nn
 
 #define htok_att_id(nn, obj) hc_global& hatt_id(nn) = HLANG_SYS().add_tok(obj->get_attr_nm("hid_", #nn))
-
-//define htoks_att(nn, obj) htok_get(nn, this); htok_set(nn, this); 
 
 #define htoks_att(nn, obj) htok_att_id(nn, this); 
 

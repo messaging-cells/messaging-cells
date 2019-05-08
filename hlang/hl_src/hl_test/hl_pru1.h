@@ -110,7 +110,7 @@ public:
 	hlong(o1);
 	hlong(o2);
 	hlong(o3);
-	hlong(o4);
+	hsafe_long(o4);
 	
 	hint(xx1);
 	hchar(v1);

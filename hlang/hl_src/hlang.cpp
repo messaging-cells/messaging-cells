@@ -20,6 +20,7 @@ hc_mth_def*	hcell::defining_mth = hl_null;
 long	hc_term::HC_PRT_TERM_INDENT = 0;
 long	hc_term::HC_NUM_LABEL = 0;
 
+htoken(hid_next_msg);
 htoken(htk_set);
 htoken(htk_get);
 
@@ -1854,7 +1855,45 @@ hc_system::print_glbs_hh_file(){
 		
 #define HG_INVALID_SAFE_IDX 0
 		
+#define hg_null mc_null
+		
 class hg_missive;
+
+//======================================================================
+// flags
+
+typedef uint8_t hg_flags_t;
+
+#define	hg_flag0	((hg_flags_t)0x01)
+#define	hg_flag1	((hg_flags_t)0x02)
+#define	hg_flag2	((hg_flags_t)0x04)
+#define	hg_flag3	((hg_flags_t)0x08)
+#define	hg_flag4	((hg_flags_t)0x10)
+#define	hg_flag5	((hg_flags_t)0x20)
+#define	hg_flag6	((hg_flags_t)0x40)
+#define	hg_flag7	((hg_flags_t)0x80)
+
+#define hg_set_mask(flgs, mask) (flgs |= mask)
+#define hg_reset_mask(flgs, mask) (flgs &= ~mask)
+#define hg_has_mask(flgs, mask) (flgs & mask)
+
+static hg_inline_fn
+hg_flags_t	hg_set_flag(hg_flags_t& flgs, hg_flags_t bit_flag){
+	flgs = (hg_flags_t)(flgs | bit_flag);
+	return flgs;
+}
+
+static hg_inline_fn
+hg_flags_t 	hg_reset_flag(hg_flags_t& flgs, hg_flags_t bit_flag){
+	flgs = (hg_flags_t)(flgs & ~bit_flag);
+	return flgs;
+}
+
+static hg_inline_fn
+bool	hg_get_flag(hg_flags_t flgs, hg_flags_t bit_flag){
+	hg_flags_t  resp  = (hg_flags_t)(flgs & bit_flag);
+	return (resp != 0);
+}
 
 //======================================================================
 // bitarray
@@ -1889,19 +1928,19 @@ typedef uint8_t hg_flags_t;
 
 class mc_aligned hg_cell_base : public cell {
 public:
-	hg_cell_base* hg_next_msg = mc_null;
+	hg_cell_base* hg_my_queue = hg_null;
 	
-	hg_cell_base* hmsg_src = mc_null;
+	hg_cell_base* hg_next_msg = hg_null;
+	
+	hg_cell_base* hmsg_src = hg_null;
 	hg_token_t hmsg_tok = 0;
 	
 	hg_flags_t hg_msg_flags = 0;
 	hg_value_t hmsg_val = 0;
-	hg_cell_base* hmsg_ref = mc_null;
+	hg_cell_base* hmsg_ref = hg_null;
 	hg_id_t hg_msg_att_id = 0;
-	hg_bit_t hg_msg_reply_bit = 0;
 	
-	hg_replies_bits_t hg_pending_replies = 0;
-	hg_replies_bits_t hg_needed_replies = 0;
+	hg_replies_bits_t hg_pending_reply_bit = 0;
 	hg_idx_t hg_stack_idx = 0;
 	
 	hg_step_t hg_step = 0;
@@ -1909,19 +1948,17 @@ public:
 	hg_step_t hg_cll_step = 0;
 	
 	hg_cell_base(){
-		hg_next_msg = mc_null;
+		hg_next_msg = hg_null;
 	
-		hmsg_src = mc_null;
+		hmsg_src = hg_null;
 		hmsg_tok = 0;
 		
 		hg_msg_flags = 0;
 		hmsg_val = 0;
-		hmsg_ref = mc_null;
+		hmsg_ref = hg_null;
 		hg_msg_att_id = 0;
-		hg_msg_reply_bit = 0;
 		
-		hg_pending_replies = 0;
-		hg_needed_replies = 0;
+		hg_pending_reply_bit = 0;
 		hg_step = 0;
 		hg_stack_idx = 0;
 		hg_ret_step = 0;
@@ -1932,7 +1969,7 @@ public:
 	
 	void
 	send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val, hg_id_t att_id, 
-			hg_bit_t rply_bit, bool is_rply = false);
+			bool is_rply, hg_replies_bits_t pending_bit = 0);
 
 };
 
@@ -1950,13 +1987,11 @@ public:
 	hg_flags_t	flags = 0;
 	hg_value_t	val = 0;
 	hg_id_t 	att_id = 0;
-	hg_bit_t 	reply_bit = 0;
 	
 	hg_missive(){
 		flags = 0;
 		val = 0;
 		att_id = 0;
-		reply_bit = 0;
 	}
 
 	~hg_missive(){}
@@ -2087,24 +2122,25 @@ hg_missive_init_mem_funcs(){
 
 void
 hg_glbs_%s::init_mem_funcs(){
-	mc_init_arr_vals(%s, all_ava, mc_null);
-	mc_init_arr_vals(%s, all_acq, mc_null);
-	mc_init_arr_vals(%s, all_sep, mc_null);
+	mc_init_arr_vals(%s, all_ava, hg_null);
+	mc_init_arr_vals(%s, all_acq, hg_null);
+	mc_init_arr_vals(%s, all_sep, hg_null);
 	kernel::set_cell_mem_funcs(all_ava, all_acq, all_sep);
 }
 		
 void
 hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val, 
-			hg_id_t req_id, hg_bit_t rply_bit, bool is_rply)
+			hg_id_t req_id, bool is_rply, hg_replies_bits_t pending_bit)
 {
 	hg_missive* msv = hg_missive_acquire();
 	
-	PTD_CK(((tok != htk_get) && (tok != htk_set)) || (rply_bit != HG_INVALID_SAFE_IDX));
 	if(is_rply){
-		PTD_CK(rply_bit != HG_INVALID_SAFE_IDX);
+		PTD_CK(pending_bit == 0);
 		hg_set_bit(&(msv->flags), hg_msv_flg_is_reply);
-	} else if(rply_bit != HG_INVALID_SAFE_IDX){
-		hg_set_bit(&(hg_pending_replies), rply_bit);
+	}
+	if(pending_bit != 0){
+		PTD_CK(hg_pending_reply_bit == 0);
+		hg_pending_reply_bit = pending_bit;
 	}
 	
 	msv->src = this;
@@ -2112,7 +2148,6 @@ hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val,
 	msv->tok = tok;
 	msv->val = val;
 	msv->att_id = req_id;
-	msv->reply_bit = rply_bit;
 
 	msv->send();
 }
@@ -2238,7 +2273,7 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	auto it2 = references.begin();
 	for(; it2 != references.end(); ++it2){
 		hc_term* trm = (*it2);
-		fprintf(ff, "\t%s* %s = mc_null;\n", trm->get_type(), trm->get_name());
+		fprintf(ff, "\t%s* %s = hg_null;\n", trm->get_type(), trm->get_name());
 	}
 	fprintf(ff, "\n\n");
 	fprintf(ff, "\t/* SAFE_REFERENCES */\n");
@@ -2246,7 +2281,7 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	it2 = safe_references.begin();
 	for(; it2 != safe_references.end(); ++it2){
 		hc_term* trm = (*it2);
-		fprintf(ff, "\t%s* %s = mc_null;\n", trm->get_type(), trm->get_name());
+		fprintf(ff, "\t%s* %s = hg_null;\n", trm->get_type(), trm->get_name());
 	}
 	fprintf(ff, "\n\n");
 	fprintf(ff, "\t/* METHODS */\n");
@@ -2318,6 +2353,21 @@ hclass_reg::print_cpp_get_set_switch(FILE* st){
 	
 	fprintf(st, "\n\n");
 	fprintf(st, "\tswitch(hg_msg_att_id){ // begin_get_set_switch\n");
+	
+	fprintf(st, R"gs(
+		case hid_next_msg:{
+			if(hmsg_tok == htk_get){
+				send_val(hmsg_src, htk_get, (hg_value_t)hg_next_msg, 0, true);
+			} else {
+				PTD_CK(hmsg_tok == htk_set);
+				PTD_CK((hg_next_msg == hg_null) == (hmsg_val == 0));
+				hg_next_msg = (hg_cell_base*)hmsg_val;
+				//send_val(hmsg_src, htk_set, hmsg_val, 0, true);  // SET_DOES_NOT_REPLY
+			}
+		}
+		break;
+)gs");
+	
 	fprintf(st, "\t/* VALUES */\n");
 	
 	auto it1 = values.begin();
@@ -2377,14 +2427,13 @@ void
 		
 void
 %s::handler(hg_missive* msv){
-PTD_CK(msv != mc_null);
+PTD_CK(msv != hg_null);
 hmsg_src = (hg_cell_base*)(msv->src);
 hmsg_tok = (hg_token_t)(msv->tok);	
 hmsg_val = msv->val;
 hmsg_ref = (hg_cell_base*)(msv->val);
 hg_msg_flags = msv->flags;
 hg_msg_att_id = msv->att_id;
-hg_msg_reply_bit = msv->reply_bit;
 bool hg_msg_is_rply = hg_get_bit(&(hg_msg_flags), hg_msv_flg_is_reply);
 bool hg_msg_force_write = hg_get_bit(&(hg_msg_flags), hg_msv_flg_force_write);
 
@@ -2392,7 +2441,6 @@ bool hg_msg_force_write = hg_get_bit(&(hg_msg_flags), hg_msv_flg_force_write);
 
 	fprintf(st, "\n\n");
 	fprintf(st, "if(! hg_msg_is_rply && ((hmsg_tok == htk_get) || (hmsg_tok == htk_set))){\n");
-	fprintf(st, "\tbool is_pending_att = false;\n");
 	print_cpp_get_set_switch(st);
 	fprintf(st, "\treturn;\n");
 	fprintf(st, "}\n");
@@ -2716,7 +2764,7 @@ hc_safe_check::print_cpp_term(FILE *st){
 	hclass_reg* creg = owner->get_class_reg();
 	HL_CK(creg != hl_null);
 	
-	fprintf(st, "if((hg_pending_replies & %#lx) == 0){ hg_step = %ld; }", 
+	fprintf(st, "if((hg_pending_reply_bit & %#lx) == 0){ hg_step = %ld; }", 
 			safe_pattern,
 			next->get_num_label());
 	
@@ -2725,8 +2773,8 @@ hc_safe_check::print_cpp_term(FILE *st){
 	hc_term::print_indent(st);
 	
 	//fprintf(st, " ");
-	fprintf(st, "else { hg_ret_step = %ld; hg_needed_replies = %#lx; hg_step = %ld; }", 
-		next->get_num_label(), safe_pattern, creg->mth_safe_wait_step
+	fprintf(st, "else { hg_ret_step = %ld; hg_step = %ld; }", 
+		next->get_num_label(), creg->mth_safe_wait_step
 	);
 	return 0;
 }
@@ -2741,7 +2789,7 @@ hc_send_term::print_cpp_term(FILE *st){
 	if(op == hc_reply_op){
 		fprintf(st, " send_val(hmsg_src, hmsg_tok, ");
 		snd_att->print_cpp_term(st);
-		fprintf(st, ", 0, hg_msg_reply_bit, true)");
+		fprintf(st, ", 0, true)");
 		return 0;
 	}
 	
@@ -2767,7 +2815,9 @@ hc_send_term::print_cpp_term(FILE *st){
 		fprintf(st, ", 0");
 	}
 	
-	fprintf(st, ", %d", snd_att->get_safe_idx());
+	fprintf(st, ", false");
+	
+	fprintf(st, ", %#lx", snd_att->get_safe_bit_mask());
 	
 	HC_PRT_TERM_INDENT--;
 	fprintf(st, ")");
@@ -2781,27 +2831,35 @@ hc_term::print_cpp_get_set_case(FILE* st){
 	const char* the_id = id_str.c_str();
 	hl_string val_str = get_cpp_casted_value();
 	const char* the_val = val_str.c_str();
-	hl_safe_idx_t bit_idx = get_safe_idx();
+	hl_safe_bits_t msk = get_safe_bit_mask();
 	
-	fprintf(st, "\t\tcase %s:{\n", the_id);
-	if(bit_idx != HL_INVALID_SAFE_IDX){
-		fprintf(st, "\t\t\tis_pending_att = hg_get_bit(&(hg_pending_replies), %d);\n", bit_idx);
-	}
 	fprintf(st, R"gs(
+		case %s:{
 			if(hmsg_tok == htk_get){
-				send_val(hmsg_src, htk_get, (hg_value_t)%s, 0, hg_msg_reply_bit, true);
+				send_val(hmsg_src, htk_get, (hg_value_t)%s, 0, true);
 			} else {
 				PTD_CK(hmsg_tok == htk_set);
-				if(hg_msg_force_write || (! is_pending_att)){
+)gs", the_id, get_name());
+	
+	
+	fprintf(st, "\t\t\t\t");
+	if(msk == 0){
+		fprintf(st, "if(hg_msg_force_write){\n");
+	} else {
+		fprintf(st, "if(hg_msg_force_write || (hg_pending_reply_bit != %#lx)){\n", msk);
+	}
+	
+	
+	fprintf(st, R"gs(
 					%s = %s;
-					send_val(hmsg_src, htk_set, hmsg_val, 0, hg_msg_reply_bit, true);
+					send_val(hmsg_src, htk_set, hmsg_val, 0, true);
 				} else {
-					send_val(hmsg_src, htk_set, (hg_value_t)%s, 0, hg_msg_reply_bit, true);
+					send_val(hmsg_src, htk_set, (hg_value_t)%s, 0, true);
 				}
 			}
 		}
 		break;
-)gs", get_name(), get_name(), the_val, get_name());
+)gs", get_name(), the_val, get_name());
 }
 
 void
@@ -2823,7 +2881,7 @@ void
 hclass_reg::print_cpp_replies_switch(FILE* st){
 	
 	fprintf(st, "\n\n");
-	fprintf(st, "\tswitch(hg_msg_reply_bit){ // begin_replies_switch\n");
+	fprintf(st, "\tswitch(hg_pending_reply_bit){ // begin_replies_switch\n");
 	fprintf(st, "\t/* SAFE_VALUES */\n");
 	
 	auto it1 = safe_values.begin();
@@ -2850,20 +2908,23 @@ hclass_reg::print_cpp_handle_reply(FILE* st){
 		
 		
 // HANDLE REPLIES		
-if(hg_msg_is_rply){
-	PTD_CK(hg_msg_reply_bit != HG_INVALID_SAFE_IDX);
-	hg_reset_bit(&(hg_pending_replies), hg_msg_reply_bit);
+if(hg_pending_reply_bit != 0){
+	PTD_CK(hg_step == %ld);
 	
-)gs");
+	if(! hg_msg_is_rply){
+		send_val(hmsg_src, htk_set, (hg_value_t)hg_my_queue, hid_next_msg, false);
+		hg_my_queue = (hg_cell_base*)hmsg_src;
+		return;
+	}
+	
+)gs", mth_safe_wait_step);
 	
 	print_cpp_replies_switch(st);
 	
 	fprintf(st, R"gs(
-	if(hg_step != %ld){
-		return;
-	}
+	hg_pending_reply_bit = 0;
 }
-)gs", mth_safe_wait_step);
+)gs");
 		
 }
 
@@ -2874,8 +2935,10 @@ hclass_reg::print_cpp_call_wait_safe_code(FILE* st){
 		
 // print_cpp_call_wait_safe_code
 HG_LN(%ld)
-	if((hg_pending_replies & hg_needed_replies) == 0){ hg_step = hg_ret_step; }
-	else { return; }
+	if(hg_pending_reply_bit == 0){ hg_step = hg_ret_step; }
+	else { 
+		return; 
+	}
 )gs", mth_safe_wait_step);
 	
 	fflush(st);
