@@ -20,17 +20,17 @@ enum pru_tok_t : hl_token_t {
 	bj_tok_pru_end
 };
 
-/*
-class CLS_A {};
-class CLS_B {};
-class CLS_C {};
-class CLS_D {};
-class CLS_E {};
-*/
-
-//hclass(
 class cls_A2;
 class cls_A3;
+
+class msv_1 : public hcell {
+public:
+	hmissive_class(msv_1);
+	
+	hchar(a1);
+	hmethod(mth01);
+};
+
 
 class cls_A1 : public hcell {
 public:
@@ -47,17 +47,12 @@ public:
 	hlong(o3);
 	//hlong(o4);
 	//hlong(o5);
-	hsafe_long(o4);
-	hsafe_long(o5);
+	//hsafe_long(o4);
+	//hsafe_long(o5);
+	hreference(msv_1, o4);
+	hreference(msv_1, o5);
 	hint8_t(o6);
 	huint8_t(o7);
-	/*
-	hreference(CLS_A, r1);
-	hreference(CLS_B, r2);
-	hreference(CLS_C, r3);
-	hreference(CLS_D, r4);
-	hreference(CLS_A, r5);
-	*/
 
 	hreference(cls_A2, rA2);
 	hreference(cls_A3, rA3);
@@ -73,8 +68,6 @@ public:
 		o1 = 1;
 		o2 = 2;
 		o3 = 3;
-		o4 = 4;
-		o5 = 5;
 	}
 
 	~cls_A1(){}
@@ -110,7 +103,8 @@ public:
 	hlong(o1);
 	hlong(o2);
 	hlong(o3);
-	hsafe_long(o4);
+	//hsafe_long(o4);
+	hreference(msv_1, o4);
 	
 	hint(xx1);
 	hchar(v1);
@@ -133,10 +127,10 @@ public:
 	hcell_class(cls_A4);
 	
 	hchar(a1);
+	hreference(msv_1, r1);
 
 	hnucleus(nucl_A4);
 };
-
 
 //hcell(name);
 //hmissive(name);

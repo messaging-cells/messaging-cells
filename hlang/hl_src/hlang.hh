@@ -134,6 +134,8 @@ public:
 	std::list<hc_term*> safe_references;
 	std::list<hc_mth_def*> methods;
 	
+	bool with_methods = false;
+	
 	hc_mth_def* nucleus = hl_null;
 	hc_caller_t initer = hl_null;
 	const char* pre_hh_cod = hl_null;
@@ -149,6 +151,8 @@ public:
 	hl_safe_idx_t tot_safe_attrs = 0;
 	
 	hclass_reg(){
+		with_methods = false;
+	
 		nucleus = hl_null;
 		initer = hl_null;
 		pre_hh_cod = hl_null;
@@ -213,7 +217,7 @@ public:
 	void print_cpp_call_mth_code(FILE* st);
 	void print_cpp_ret_mth_code(FILE* st);
 	
-	void call_all_methods();
+	void print_all_methods();
 	
 	void print_cpp_get_set_switch(FILE* ff);
 	void print_cpp_replies_switch(FILE* ff);
@@ -249,10 +253,12 @@ public:
 	}
 	
 	
-	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = hl_null);
-	void register_method(const char* cls, hc_mth_def* mth, bool is_nucl);
+	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = hl_null, bool with_mths = false);
+	void register_method(const char* cls, hc_mth_def* mth, bool is_nucl, bool can_register);
 	void register_value(hcell* obj, hc_term* attr);
 	void register_reference(hcell* obj, hc_term* attr);
+	
+	bool is_missive_class(const char* cls);
 
 	bool has_address(const char* attr);
 	void register_address(hc_term* attr);
@@ -264,8 +270,9 @@ public:
 	
 	void init_all_token();
 	void init_all_attributes();
-	void call_all_registered_methods();
 	void init_sys();
+
+	void print_all_registered_methods();
 	
 	void generate_hh_files();
 	void generate_cpp_files();
@@ -484,8 +491,10 @@ the_op(hc_term& o1){ \
 
 class hc_term {
 public:
+	static hc_mth_def* HC_CURRENT_DEFINING_METHOD;
 	static long	HC_PRT_TERM_INDENT;
 	static long	HC_NUM_LABEL;
+	static const char* HC_INVALID_TYPE;
 	
 	int8_t	flags;
 	long num_steps = 0;
@@ -581,12 +590,17 @@ public:
 	
 	virtual 
 	const char*	get_type(){
-		return "INVALID_TYPE";
+		return HC_INVALID_TYPE;
 	}	
 
 	virtual 
+	hclass_reg* get_type_reg(){
+		return hl_null;
+	}
+
+	virtual 
 	hl_string	get_cpp_casted_value(){
-		return "INVALID_TYPE";
+		return HC_INVALID_TYPE;
 	}	
 
 	virtual 
@@ -643,7 +657,7 @@ public:
 	void print_new_line(FILE *st);
 
 	static
-	void print_indent(FILE *st);
+	void print_indent(FILE *st, bool with_case_margin = false);
 	
 	bool 	is_closed_member(){
 		return (get_src() == this);
@@ -709,6 +723,7 @@ public:
 	void print_cpp_get_set_case(FILE* ff);
 	void print_cpp_reply_case(FILE* st);
 
+	void print_type_reg_comment(FILE* st);
 };
 
 hc_term&	hfor(hc_term& the_cond, hc_term& the_end_each_loop);
@@ -1313,11 +1328,58 @@ public:
 	}
 };
 
+class hc_new_obj_term : public hc_term {
+public:
+	hc_term* nw_att;
+	
+	virtual	~hc_new_obj_term(){
+		if((nw_att != hl_null) && nw_att->is_compound()){
+			delete nw_att;
+		}
+		nw_att = hl_null;
+	}
+	
+	hc_new_obj_term(hc_term* pm_att)
+	{
+		HL_CK(pm_att != hl_null);
+		
+		bool has_st = false;
+		ck_closed_param(pm_att, this, has_st);
+		nw_att = pm_att;
+		
+		num_steps += nw_att->num_steps;
+		
+		or_has_safe(nw_att);
+	}
+	
+	virtual 
+	int print_term(FILE *st);
+
+	virtual 
+	int print_cpp_term(FILE *st);
+
+	virtual 
+	void set_num_label(){
+		HL_CK(nw_att != hl_null);
+		nw_att->set_num_label();
+	}
+
+	virtual 
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
+		HL_CK(nw_att != hl_null);
+		nw_att->get_safe_attributes(all_safe, owr);
+	}
+	
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+};
+
 template<class obj_t>
 class hc_value : public hc_term {
 public:
 	hc_global* my_id;
-	hl_safe_idx_t safe_idx;
 	const char* typ;
 	const char* nam;
 	obj_t	val;
@@ -1328,19 +1390,14 @@ public:
 	//		 hcell* the_owner = hl_null, obj_t the_val = obj_t())
 	
 	hc_value(const char* the_typ, const char* the_nam, hc_global* the_id = hl_null, 
-			 hcell* the_owner = hl_null, bool safe_vl = false)
+			 hcell* the_owner = hl_null)
 	{
 		HL_CK(the_owner != hl_null);
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(! std::is_class<obj_t>::value);
 		my_id = the_id;
-		if(safe_vl && (the_owner != hl_null)){
-			set_has_safe();
-		}
-		safe_idx = HL_INVALID_SAFE_IDX;
 		typ = the_typ;
 		nam = the_nam;
-		//val = the_val;
 		val = obj_t();
 		
 		owner = the_owner;
@@ -1380,7 +1437,7 @@ public:
 	virtual 
 	hl_string	get_cpp_casted_value(){
 		hl_string tt(typ);
-		hl_string vv = "((" + tt + ")hmsg_val)";
+		hl_string vv = "((" + tt + ")hg_msg_val)";
 		return vv;
 	}	
 
@@ -1391,9 +1448,6 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
-		if(get_has_safe()){
-			fprintf(st, "<%d>", safe_idx);
-		}
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -1406,41 +1460,6 @@ public:
 
 	virtual 
 	hc_term*	get_src();
-
-	virtual
-	void	set_safe_idx(hl_safe_idx_t idx){
-		HL_CK(get_has_safe());
-		if(idx > HL_MAX_SAFE_IDX){
-			hl_abort("Error in attribute %s. Cannot have more that %d safe attributes per class \n", 
-					 get_name(), HL_MAX_SAFE_IDX);
-		}
-		HL_CK(safe_idx == HL_INVALID_SAFE_IDX);
-		safe_idx = idx;
-		HL_CK(safe_idx > HL_INVALID_SAFE_IDX);
-	}
-
-	virtual 
-	hl_safe_idx_t get_safe_idx(){ return safe_idx; }
-
-	virtual 
-	hl_safe_bits_t get_safe_bit_mask(){
-		hl_safe_bits_t msk = 0;
-		if(safe_idx != HL_INVALID_SAFE_IDX){
-			hl_set_bit(&msk, safe_idx);
-		}
-		return msk;
-	}
-	
-	virtual 
-	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
-		if(safe_idx != HL_INVALID_SAFE_IDX){
-			if(owr == hl_null){
-				HL_CK(owner != hl_null);
-				owr = owner;
-			}
-			hl_set_bit(&all_safe, safe_idx);
-		}
-	}
 
 	virtual 
 	hl_string	get_id(){
@@ -1710,12 +1729,14 @@ public:
 	virtual	~hc_reference(){}
 	
 	hc_reference(const char* the_typ, const char* the_nam, hc_global* the_id = hl_null, 
-				 hcell* the_owner = hl_null, bool safe_rf = false, bool with_cast = false){
+				 hcell* the_owner = hl_null, bool with_cast = false){
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(std::is_class<obj_t>::value);
 		//HL_CK((std::is_base_of<hcell, obj_t>::value));
 		my_id = the_id;
-		if(safe_rf && (the_owner != hl_null)){
+		
+		bool is_sf = HLANG_SYS().is_missive_class(the_typ);
+		if(is_sf && (the_owner != hl_null)){
 			set_has_safe();
 		}
 		safe_idx = HL_INVALID_SAFE_IDX;
@@ -1799,9 +1820,16 @@ public:
 	}	
 
 	virtual 
+	hclass_reg* get_type_reg(){
+		const char* typ = get_type();
+		hclass_reg* rg = HLANG_SYS().get_class_reg(typ);
+		return rg;
+	}
+	
+	virtual 
 	hl_string	get_cpp_casted_value(){
 		hl_string tt(typ);
-		hl_string vv = "((" + tt + "*)hmsg_ref)";
+		hl_string vv = "((" + tt + "*)hg_msg_ref)";
 		return vv;
 	}	
 
@@ -1928,12 +1956,6 @@ hc_new_literal(const char* the_lit){
 #define hreference(tt, nn) htoks_att(nn, this); \
 	hc_reference<tt> nn{#tt, #nn, &(hatt_id(nn)), this}
 
-#define hsafe_value(tt, nn) htoks_att(nn, this); \
-	hc_value<tt> nn{#tt, #nn, &(hatt_id(nn)), this, true}
-
-#define hsafe_reference(tt, nn) htoks_att(nn, this); \
-	hc_reference<tt> nn{#tt, #nn, &(hatt_id(nn)), this, true}
-
 #define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
 #define htok(nn) HLANG_SYS().get_tok(#nn)
@@ -1951,19 +1973,6 @@ hc_new_literal(const char* the_lit){
 #define huint16_t(nn) hvalue(uint16_t, nn)
 #define huint32_t(nn) hvalue(uint32_t, nn)
 #define huint64_t(nn) hvalue(uint64_t, nn)
-
-#define hsafe_bool(nn) hsafe_value(bool, nn)
-#define hsafe_char(nn) hsafe_value(char, nn)
-#define hsafe_int(nn) hsafe_value(int, nn)
-#define hsafe_long(nn) hsafe_value(long, nn)
-#define hsafe_int8_t(nn) hsafe_value(int8_t, nn)
-#define hsafe_int16_t(nn) hsafe_value(int16_t, nn)
-#define hsafe_int32_t(nn) hsafe_value(int32_t, nn)
-#define hsafe_int64_t(nn) hsafe_value(int64_t, nn)
-#define hsafe_uint8_t(nn) hsafe_value(uint8_t, nn)
-#define hsafe_uint16_t(nn) hsafe_value(uint16_t, nn)
-#define hsafe_uint32_t(nn) hsafe_value(uint32_t, nn)
-#define hsafe_uint64_t(nn) hsafe_value(uint64_t, nn)
 
 #define hl_new_keyword(nn) (*(new hc_keyword(hc_ ## nn ## _op)))
 
@@ -2030,7 +2039,7 @@ public:
 	}
 	
 	hc_mth_def(const char* the_cls, const char* the_nam, 
-			   hc_caller_t the_cllr, bool is_nucl = false)
+			   hc_caller_t the_cllr, bool is_nucl = false, bool can_register = false)
 	{
 		cls = the_cls;
 		nam = the_nam;
@@ -2039,7 +2048,7 @@ public:
 		ret = new hc_mth_ret(this);
 		my_cls = hl_null;
 		
-		HLANG_SYS().register_method(the_cls, this, is_nucl);
+		HLANG_SYS().register_method(the_cls, this, is_nucl, can_register);
 	}
 	
 	long 	calc_depth();
@@ -2158,7 +2167,8 @@ public:
 
 #define hmethod_def_base(cls, mth, code, is_nucl) \
 	void cls ## _ ## mth ## _ ## caller(); \
-	hc_mth_def cls::mth ## _def_reg{#cls, #mth, cls ## _ ## mth ## _ ## caller, is_nucl}; \
+	hc_mth_def cls::mth ## _def_reg \
+		{#cls, #mth, cls ## _ ## mth ## _ ## caller, is_nucl, cls::hc_can_have_methods}; \
 	hc_term& \
 	cls::mth(){ \
 		hc_mth_call* mc = new hc_mth_call(&cls::mth ## _def_reg); \
@@ -2180,20 +2190,20 @@ public:
 			cls::mth ## _def_reg.num_steps = cls::mth ## _def_reg.cod->num_steps + 1; \
 		} \
 		if(! cls::mth ## _def_reg.defining){ \
-			HL_CK(hcell::defining_mth != hl_null); \
-			hcell::defining_mth->calls.push_back(&cls::mth ## _def_reg); \
+			HL_CK(hc_term::HC_CURRENT_DEFINING_METHOD != hl_null); \
+			hc_term::HC_CURRENT_DEFINING_METHOD->calls.push_back(&cls::mth ## _def_reg); \
 		} \
 		return *rr; \
 	} \
 	void cls ## _ ## mth ## _ ## caller(){ \
 		cls* obj = hc_reference<cls>::get_glb_ref(); \
-		HL_CK(hcell::defining_mth == hl_null); \
-		hcell::defining_mth = &cls::mth ## _def_reg; \
+		HL_CK(hc_term::HC_CURRENT_DEFINING_METHOD == hl_null); \
+		hc_term::HC_CURRENT_DEFINING_METHOD = &cls::mth ## _def_reg; \
 		cls::mth ## _def_reg.defining = true; \
 		obj->cls::mth(); \
 		cls::mth ## _def_reg.defining = false; \
-		hcell::defining_mth = hl_null; \
-		HL_CK(hcell::defining_mth == hl_null); \
+		hc_term::HC_CURRENT_DEFINING_METHOD = hl_null; \
+		HL_CK(hc_term::HC_CURRENT_DEFINING_METHOD == hl_null); \
 	} \
 
 // end_define
@@ -2240,21 +2250,6 @@ public:
 	}
 };
 
-/*
-class hmissive {
-public:
-	hmissive(){
-		init_me();
-	}
-
-	virtual	~hmissive(){}
-
-	virtual
-	void init_me(int caller = 0){}
-	
-};
-*/
-
 #define hme_def(cls) \
     virtual	hc_term&	hme(){ \
 		if(hc_pt_me == hl_null){ \
@@ -2270,11 +2265,8 @@ public:
 
 class hcell {
 public:
-	static hc_mth_def*	defining_mth;
-	
-	hc_chip_idx		hc_my_id = -1;
-	hc_term* 		hc_pt_me = hl_null;
 	hc_term* 		rf_src_tm = hl_null;
+	hc_term* 		hc_pt_me = hl_null;
 
 	hl_reference_t 	msv_src;
 	hl_token_t 		msv_tok;
@@ -2296,12 +2288,6 @@ public:
 		return "hcell";
 	}
 
-	virtual
-	hclass_reg* get_class_reg(){
-		hl_abort("Calling hcell::get_class_reg(). Your classes MUST inherit from hcell. \n");
-		return hl_null;
-	}
-
 	const char* get_attr_nm(const char* pfix, const char* sfix);
 	
 	hme_def(hcell);
@@ -2310,14 +2296,40 @@ public:
 	hc_term& hset(hc_term& dst, hc_global& idx, hc_term& att);
 	hc_term& hsend(hc_term& dst, hc_term& tok, hc_term& att);
 	hc_term& hreply(hc_term& att);
+
+	hc_term& hnew(hc_term& att);
 };
 
+#define hmissive_class(cls) \
+	static bool hc_can_have_methods; \
+	static const char* hc_class_name; \
+	static hclass_reg* hc_register_ ## cls; \
+	virtual	const char* get_class_name(); \
+
+// end_define
+
+#define hmissive_class_def(cls) \
+	void cls ## _ref_initer(); \
+	hclass_reg* cls::hc_register_ ## cls = HLANG_SYS().get_class_reg(#cls, cls ## _ref_initer); \
+	bool cls::hc_can_have_methods = false; \
+	const char* cls::hc_class_name = #cls; \
+	const char* \
+	cls::get_class_name(){ \
+		return cls::hc_class_name; \
+	} \
+	void cls ## _ref_initer(){ \
+		hc_reference<cls>::get_glb_ref(); \
+	} \
+
+// end_define
+
+
 #define hcell_class(cls) \
+	static bool hc_can_have_methods; \
 	static const char* hc_class_name; \
 	static hclass_reg* hc_register_ ## cls; \
 	static hc_reference<cls>& get_msg_ref(); \
 	static hc_reference<cls>& get_msg_src(); \
-	virtual	hclass_reg* get_class_reg(); \
 	virtual	const char* get_class_name(); \
 	hme_def(cls); \
 
@@ -2325,12 +2337,9 @@ public:
 
 #define hcell_class_def(cls) \
 	void cls ## _ref_initer(); \
-	hclass_reg* cls::hc_register_ ## cls = HLANG_SYS().get_class_reg(#cls, cls ## _ref_initer); \
+	hclass_reg* cls::hc_register_ ## cls = HLANG_SYS().get_class_reg(#cls, cls ## _ref_initer, true); \
+	bool cls::hc_can_have_methods = true; \
 	const char* cls::hc_class_name = #cls; \
-	hclass_reg* \
-	cls::get_class_reg(){ \
-		return HLANG_SYS().get_class_reg(#cls); \
-	} \
 	const char* \
 	cls::get_class_name(){ \
 		return cls::hc_class_name; \
@@ -2339,11 +2348,11 @@ public:
 		hc_reference<cls>::get_glb_ref(); \
 	} \
 	hc_reference<cls>& cls::get_msg_ref(){ \
-		static hc_reference<cls> gref{#cls, "hmsg_ref", hl_null, hl_null, false, true}; \
+		static hc_reference<cls> gref{#cls, "hg_msg_ref", hl_null, hl_null, true}; \
 		return gref; \
 	} \
 	hc_reference<cls>& cls::get_msg_src(){ \
-		static hc_reference<cls> gref{#cls, "hmsg_src", hl_null, hl_null, false, true}; \
+		static hc_reference<cls> gref{#cls, "hg_msg_src", hl_null, hl_null, true}; \
 		return gref; \
 	} \
 
@@ -2381,6 +2390,7 @@ hc_reference<obj_t>::get_src(){
 
 hdeclare_token(htk_set);
 hdeclare_token(htk_get);
+hdeclare_token(htk_start);
 
 #endif		// HLANG_H
 

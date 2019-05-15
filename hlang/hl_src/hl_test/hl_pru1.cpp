@@ -36,6 +36,8 @@ hcell_class_def(cls_A2);
 hcell_class_def(cls_A3);
 hcell_class_def(cls_A4);
 
+hmissive_class_def(msv_1);
+
 hnucleus_def(cls_A1, central, (
 	(o1 = (o1 + o2)),
 	mth01(), 
@@ -203,8 +205,13 @@ hmethod_def(cls_A3, mth02, (
 ));
 
 hnucleus_def(cls_A4, nucl_A4, (
+	hnew(r1),
 	hreturn
 ));
+
+/*hmethod_def(msv_1, mth01, (
+	hreturn
+));*/
 
 
 /*
