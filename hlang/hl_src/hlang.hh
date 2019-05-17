@@ -249,7 +249,7 @@ public:
 	void init_me(int caller = 0){
 		project_nam = "hl_generated_output";
 		first_token_val = 11;
-		first_handler_idx = "9";
+		first_handler_idx = "mck_tot_base_cell_classes";
 	}
 	
 	
@@ -277,6 +277,11 @@ public:
 	void generate_hh_files();
 	void generate_cpp_files();
 	void generate_cpp_code();
+	
+	hl_string get_cpp_idx_last_str(){
+		hl_string tot = "idx_last_ivalid_" + project_nam;
+		return tot;
+	}
 	
 	hl_string get_cpp_idx_total_str(){
 		hl_string tot = "idx_total_" + project_nam;
@@ -367,6 +372,9 @@ enum	hc_syntax_op_t {
 	
 	hc_dbg_op,
 	
+	hc_acquire_op,	// hacquire
+	hc_release_op,	// hrelease
+	
 	hc_get_op,	// hget
 	hc_set_op,	// hset
 	hc_send_op,	// hsend
@@ -391,7 +399,8 @@ enum	hc_syntax_op_t {
 	hc_hbreak_op,	// hbreak
 	hc_hcontinue_op,	// hcontinue
 	hc_hreturn_op,	// hreturn
-	hc_habort_op,	// hreturn
+	hc_habort_op,	// habort
+	hc_hfinished_op,	// hfinished
 	
 	hc_assig_op1,	// =
 	hc_assig_op2,	// =
@@ -1328,20 +1337,23 @@ public:
 	}
 };
 
-class hc_new_obj_term : public hc_term {
+class hc_mem_oper_term : public hc_term {
 public:
+	hc_syntax_op_t op;
 	hc_term* nw_att;
 	
-	virtual	~hc_new_obj_term(){
+	virtual	~hc_mem_oper_term(){
 		if((nw_att != hl_null) && nw_att->is_compound()){
 			delete nw_att;
 		}
 		nw_att = hl_null;
 	}
 	
-	hc_new_obj_term(hc_term* pm_att)
+	hc_mem_oper_term(hc_syntax_op_t pm_op, hc_term* pm_att)
 	{
 		HL_CK(pm_att != hl_null);
+		
+		op = pm_op;
 		
 		bool has_st = false;
 		ck_closed_param(pm_att, this, has_st);
@@ -1350,6 +1362,16 @@ public:
 		num_steps += nw_att->num_steps;
 		
 		or_has_safe(nw_att);
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return op;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return hc_get_token(op);
 	}
 	
 	virtual 
@@ -1499,7 +1521,11 @@ public:
 	
 	virtual 
 	int print_cpp_term(FILE *st){
-		fprintf(st, " %s ", hc_get_cpp_token(op));
+		if(op != hc_hfinished_op){
+			fprintf(st, " %s ", hc_get_cpp_token(op));
+		} else {
+			fprintf(st, "kernel::stop_sys(htk_finished);");
+		}
 		return 0;
 	}
 
@@ -1982,6 +2008,7 @@ hc_new_literal(const char* the_lit){
 #define hcontinue 	hl_new_keyword(hcontinue)
 #define hreturn 	hl_new_keyword(hreturn)
 #define habort 		hl_new_keyword(habort)
+#define hfinished	hl_new_keyword(hfinished)
 
 #define hmsg_src 	hl_new_keyword(hmsg_src)
 #define hmsg_ref 	hl_new_keyword(hmsg_ref)
@@ -2297,7 +2324,8 @@ public:
 	hc_term& hsend(hc_term& dst, hc_term& tok, hc_term& att);
 	hc_term& hreply(hc_term& att);
 
-	hc_term& hnew(hc_term& att);
+	hc_term& hacquire(hc_term& att);
+	hc_term& hrelease(hc_term& att);
 };
 
 #define hmissive_class(cls) \
@@ -2391,6 +2419,7 @@ hc_reference<obj_t>::get_src(){
 hdeclare_token(htk_set);
 hdeclare_token(htk_get);
 hdeclare_token(htk_start);
+hdeclare_token(htk_finished);
 
 #endif		// HLANG_H
 

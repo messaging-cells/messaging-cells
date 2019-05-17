@@ -11,6 +11,7 @@ hdeclare_token(pr_tok_snd_start);
 hdeclare_token(pr_tok_snd_val1);
 hdeclare_token(pr_tok_snd_val2);
 hdeclare_token(pr_tok_snd_add);
+hdeclare_token(pr_tok_snd_finished);
 
 class cls_snd : public hcell {
 public:

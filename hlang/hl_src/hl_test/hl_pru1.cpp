@@ -10,6 +10,7 @@ htoken(pr_tok_snd_start);
 htoken(pr_tok_snd_val1);
 htoken(pr_tok_snd_val2);
 htoken(pr_tok_snd_add);
+htoken(pr_tok_snd_finished);
 
 hdbg_pre_hh(cls_A1, 
 R"cod(
@@ -205,7 +206,7 @@ hmethod_def(cls_A3, mth02, (
 ));
 
 hnucleus_def(cls_A4, nucl_A4, (
-	hnew(r1),
+	hacquire(r1),
 	hreturn
 ));
 

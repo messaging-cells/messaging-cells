@@ -38,7 +38,7 @@ LD_IN_SECTIONS :=
 
 # =======================================
 
-TARGET := send_safe_msg_ptd.elf
+TARGET := philo_ptd.elf
 
 TGT_LDFLAGS := ${MC_STD_PTD_LDFLAGS} ${LD_IN_SECTIONS} -rdynamic
 TGT_LDLIBS  := ${MC_STD_PTD_LDLIBS}
@@ -46,11 +46,11 @@ TGT_PREREQS := ${MC_PTD_LIBS}
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
-SRC_CFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -pthread
-SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -pthread
+SRC_CFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -g3 -pthread
+SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -g3 -pthread
 
 SRC_INCDIRS := ${MC_STD_INCDIRS}
 
-SOURCES := send_safe_msg.cpp ../nil_manageru/nil_manageru.cpp
+SOURCES := philo.cpp ../nil_manageru/nil_manageru.cpp
 
 

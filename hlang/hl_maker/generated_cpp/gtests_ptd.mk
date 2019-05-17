@@ -38,27 +38,19 @@ LD_IN_SECTIONS :=
 
 # =======================================
 
-TARGET := send_safe_msg_eph.elf
+TARGET := gcpp-tests-ptd.elf
 
-TGT_LDFLAGS := ${MC_STD_EPH_LDFLAGS} ${LD_IN_SECTIONS} 
-TGT_LDLIBS  := ${MC_STD_EPH_LDLIBS}
+TGT_LDFLAGS := ${MC_STD_PTD_LDFLAGS} ${LD_IN_SECTIONS} -rdynamic
+TGT_LDLIBS  := ${MC_STD_PTD_LDLIBS}
+TGT_PREREQS := ${MC_PTD_LIBS}
 
-TGT_CC := e-gcc
-TGT_CXX := e-g++
-TGT_LINKER := e-ld
+TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
-define POST_OPERS
-	e-objdump -D $(TARGET_DIR)/$(TARGET) > $(TARGET_DIR)/$(TARGET).s
-	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 
-endef
-
-TGT_POSTMAKE := ${POST_OPERS}
-
-SRC_CFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS}
-SRC_CXXFLAGS := -DMC_IS_EPH_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS}
+SRC_CFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -g3 -pthread
+SRC_CXXFLAGS := -DMC_IS_PTD_CODE ${MC_STD_EPH_CXXFLAGS} ${MC_DBG_FLAG} ${SRC_IN_SECTIONS} -g3 -pthread
 
 SRC_INCDIRS := ${MC_STD_INCDIRS}
 
-SOURCES := send_safe_msg.cpp
+SOURCES := philo.cpp ../nil_manageru/nil_manageru.cpp
 
 
