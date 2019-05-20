@@ -21,11 +21,11 @@ long	hc_term::HC_PRT_TERM_INDENT = 0;
 long	hc_term::HC_NUM_LABEL = 0;
 const char* hc_term::HC_INVALID_TYPE = "INVALID_TYPE";
 
-htoken(hid_next_msg);
-htoken(htk_set);
-htoken(htk_get);
-htoken(htk_start);
-htoken(htk_finished);
+hdefine_token(hid_next_msg);
+hdefine_token(htk_set);
+hdefine_token(htk_get);
+hdefine_token(htk_start);
+hdefine_token(htk_finished);
 
 // =======================================================================================
 // FILE_FUNCTIONS

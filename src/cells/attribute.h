@@ -90,10 +90,13 @@ mc_c_decl {
 	char* mcm_get_ptd_log_fnam();
 	bool mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool vv_ck, 
 					const char* file, int line, const char* ck_str, const char* fmt, ...);
+	void mcm_thread_abort();
 
 	//void mcm_printf(const char *format, ...);
 	//void mcm_log(const char *fmt, ...);
 
+	#define PTD_ABORT() mcm_thread_abort()
+	
 	#define PTD_CODE(cod) cod
 	#define PTD_DBG_CODE(cod) MC_DBG(cod)
 
@@ -148,6 +151,7 @@ mc_c_decl {
 		#define EPH_CODE(cod) 
 	#endif
 
+	#define PTD_ABORT() 
 	#define PTD_CODE(cod) 
 	#define PTD_32_CODE(cod) 
 	#define PTD_64_CODE(cod) 

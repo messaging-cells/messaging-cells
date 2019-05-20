@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd ./hl_maker/hl_install/gcpp_tests/bin
-./gcpp-tests-ptd.elf $*
+cd ./hl_maker/hl_install/htests/bin/hsend_msg/
+./mc_send_msg_ptd.elf $*
 

@@ -13,6 +13,10 @@ hdeclare_token(pr_tok_snd_val2);
 hdeclare_token(pr_tok_snd_add);
 hdeclare_token(pr_tok_snd_finished);
 
+hdeclare_const(k0);
+hdeclare_const(k1);
+hdeclare_const(k2);
+
 class cls_snd : public hcell {
 public:
 	hcell_class(cls_snd);

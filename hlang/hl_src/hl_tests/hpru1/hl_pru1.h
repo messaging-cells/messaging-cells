@@ -13,12 +13,12 @@
 // TEST CODE
 // TEST CODE
 
-enum pru_tok_t : hl_token_t {
-	bj_tok_pru_invalid = hl_tok_last + 1,
-	bj_tok_pru_get,
-	bj_tok_pru_set,
-	bj_tok_pru_end
-};
+hdeclare_token(pr_tok_pru1);
+hdeclare_token(pr_tok_pru2);
+
+hdeclare_const(k0);
+hdeclare_const(k1);
+hdeclare_const(k2);
 
 class cls_A2;
 class cls_A3;
@@ -45,10 +45,6 @@ public:
 	hlong(o1);
 	hlong(o2);
 	hlong(o3);
-	//hlong(o4);
-	//hlong(o5);
-	//hsafe_long(o4);
-	//hsafe_long(o5);
 	hreference(msv_1, o4);
 	hreference(msv_1, o5);
 	hint8_t(o6);
@@ -103,7 +99,6 @@ public:
 	hlong(o1);
 	hlong(o2);
 	hlong(o3);
-	//hsafe_long(o4);
 	hreference(msv_1, o4);
 	
 	hint(xx1);
@@ -132,47 +127,8 @@ public:
 	hnucleus(nucl_A4);
 };
 
-//hcell(name);
-//hmissive(name);
-
-//hreference(class, name);
-
-
-//HC_ALL_CLASSES.insert(std::pair<std::string, hdecl_class*>("pru_hcell", (hdecl_class*)hl_null));
-
-/*
-class pru_hcell : public cell {
-public:
-	MCK_DECLARE_MEM_METHODS(pru_hcell)
-	
-	static
-	const char* get_cls_nam(){
-		return "pru_hcell";
-	}
-	
-	pru_hcell(){
-		init_pru_hcell();
-	}
-
-	~pru_hcell(){}
-
-	void init_pru_hcell(){
-		handler_idx = bj_cell_id(pru_hcell);
-	}
-
-	void handler(missive* msv);
-	
-	//int attr_03 = func_01(pru_hcell::get_cls_nam(), (void*)(&pru_hcell::handler));
-	int attr_01 = func_01("name_attr_01", hl_null);
-	int attr_02 = func_01("name_attr_02", hl_null);
-	
-};
-*/
-
 void hl_test_1(int argc, char *argv[]);
 
-// _Generic
-//static const char* get_str(){ return typeid(obj_t).name(); }
 
 #endif		// TEST_PRU1_H
 

@@ -5,9 +5,9 @@
 #include "hlang.hh"
 #include "hl_send_test.h"
 
-hconst(k0, 98);
-hconst(k1, 11);
-hconst(k2, 123);
+hdefine_const(k0, 98);
+hdefine_const(k1, 11);
+hdefine_const(k2, 123);
 
 hcell_class_def(cls_snd);
 
@@ -26,11 +26,10 @@ hnucleus_def(cls_snd, central, (
 			sum = (v1 + v2),
 			hdbg(R"my_code(printf("GOT pr_tok_snd_add\n");)my_code"),
 			hsend(hmsg_src, pr_tok_snd_finished, hlit(0))
-			, hfinished
 		),
 		hcase(pr_tok_snd_finished) >> (
-			hdbg(R"my_code(printf("GOT pr_tok_snd_finished\n");)my_code")
-			, hfinished
+			hdbg(R"my_code(printf("GOT pr_tok_snd_finished\n");)my_code"),
+			habort
 		)
 	),
 	hreturn
@@ -49,9 +48,6 @@ hmethod_def(cls_snd, mth_start, (
 void hl_send_test(int argc, char *argv[])
 {
 	printf("hl_send_test \n");
-	
-	//hexternal(CLS_A, e1);
-	//hconst(long, k1, 123);
 	
 	printf("######################################################\n");
 	printf("######################################################\n");

@@ -132,7 +132,7 @@ void *
 thread_start(void *arg);
 
 void 
-thread_abort();
+mcm_thread_abort();
 
 void
 mch_load_map();

@@ -6,11 +6,12 @@
 #include "hlang.hh"
 #include "hl_pru1.h"
 
-htoken(pr_tok_snd_start);
-htoken(pr_tok_snd_val1);
-htoken(pr_tok_snd_val2);
-htoken(pr_tok_snd_add);
-htoken(pr_tok_snd_finished);
+hdefine_token(pr_tok_pru1);
+hdefine_token(pr_tok_pru2);
+
+hdefine_const(k0, 98);
+hdefine_const(k1, 11);
+hdefine_const(k2, 123);
 
 hdbg_pre_hh(cls_A1, 
 R"cod(
@@ -86,7 +87,7 @@ hmethod_def(cls_A1, mth02, (
 
 hmethod_def(cls_A1, mth03, (
 	hif(o3) >> (~ o1 + ! o2),
-	hsend(rA3, pr_tok_snd_val1, o5),
+	hsend(rA3, pr_tok_pru1, o5),
 	(o2 = (o2 + o1)),
 	(o2 = (o2 + o1)),
 	o1 = hme(),
@@ -98,7 +99,7 @@ hmethod_def(cls_A1, mth04, (
 	mth02(),
 	o1 = hme(),
 	o2 = hlit(12345),
-	hsend(rA2, pr_tok_snd_val1, o4)
+	hsend(rA2, pr_tok_pru2, o4)
 ));
 
 hnucleus_def(cls_A2, nucl_A2, (
@@ -221,7 +222,7 @@ class CLS_BB : public CLS_AA {};
 class CLS_CC : public CLS_BB {};
 */
 
-hconst(kk1, 123);
+hdefine_const(kk1, 123);
 
 void hl_test_1(int argc, char *argv[])
 {
@@ -250,5 +251,15 @@ void hl_test_1(int argc, char *argv[])
 	}
 	
 	fprintf(stdout, "\n End of Using bj_mchl_test_1\n");
+}
+
+int main(int argc, char *argv[]){
+	int rr = 0;
+	printf("HGENERATION_STARTING: hcod_compile_pru1 ==================================== \n");
+	
+	hl_test_1(argc, argv);	
+
+	printf("HGENERATION_FINISHED: hcod_compile_pru1 ==================================== \n");
+	return rr;
 }
 

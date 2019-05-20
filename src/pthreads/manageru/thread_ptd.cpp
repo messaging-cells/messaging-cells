@@ -239,7 +239,7 @@ mcm_call_assert(char* out_fnam, bool is_assert, bool prt_stck, bool cond,
 
 	if(is_assert && ! cond){
 		//assert(cond);
-		thread_abort();
+		mcm_thread_abort();
 	}
 	return cond;
 }
@@ -276,7 +276,7 @@ thread_start(void *arg){
 }
 
 void 
-thread_abort(){
+mcm_thread_abort(){
 	if(mc_is_manageru_thread()){
 		abort();
 	}

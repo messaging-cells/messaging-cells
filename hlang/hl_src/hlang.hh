@@ -96,9 +96,6 @@ hl_string get_upper_str(const hl_string& lower);
 //======================================================================
 // defs
 
-typedef uint64_t hl_token_t;
-typedef uint64_t hl_value_t;
-typedef uint64_t hl_reference_t;
 typedef uint64_t hl_safe_bits_t;
 typedef uint8_t hl_safe_idx_t; 
 
@@ -1521,10 +1518,10 @@ public:
 	
 	virtual 
 	int print_cpp_term(FILE *st){
-		if(op != hc_hfinished_op){
+		if((op != hc_hfinished_op) && (op != hc_habort_op)){
 			fprintf(st, " %s ", hc_get_cpp_token(op));
 		} else {
-			fprintf(st, "kernel::stop_sys(htk_finished);");
+			fprintf(st, "PTD_ABORT();");
 		}
 		return 0;
 	}
@@ -1962,11 +1959,11 @@ hc_new_literal(const char* the_lit){
 
 #define hlit(the_lit) hc_new_literal(#the_lit)
 
-#define hconst(nn, vv) hc_term& nn = HLANG_SYS().add_con(#nn, #vv)
+#define hdefine_const(nn, vv) hc_term& nn = HLANG_SYS().add_con(#nn, #vv)
 
 #define hdeclare_const(nn) extern hc_term& nn
 
-#define htoken(nn) hc_term& nn = HLANG_SYS().add_tok(#nn)
+#define hdefine_token(nn) hc_term& nn = HLANG_SYS().add_tok(#nn)
 
 #define hdeclare_token(nn) extern hc_term& nn
 
@@ -2295,10 +2292,6 @@ public:
 	hc_term* 		rf_src_tm = hl_null;
 	hc_term* 		hc_pt_me = hl_null;
 
-	hl_reference_t 	msv_src;
-	hl_token_t 		msv_tok;
-	hl_value_t 		msv_val;
-	
 	hcell(){
 		init_me();
 	}
