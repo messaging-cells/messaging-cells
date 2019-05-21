@@ -9,9 +9,8 @@ TGT_PREREQS := ${HLANG_LIB_DIR}/libhlang.a
 
 define POST_OPERS
 	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 
-	pwd
 	cd $(TARGET_DIR)/${HTESTS_BIN_DIR}/hsend_msg; ./hl_send_msg.elf
-	pwd
+	$(MAKE) ${TARGET_DIR}/${HTESTS_BIN_DIR}/hsend_msg/mc_send_msg_ptd.elf
 	printf "====================================\nFinished hl_send_msg.elf \n\n\n" 
 endef
 
