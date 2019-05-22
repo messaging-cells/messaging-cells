@@ -113,6 +113,7 @@ public:
 	
 	hmethod(mth01);
 	hmethod(mth02);
+	hmethod(mth03);
 
 	hnucleus(nucl_A3);
 };

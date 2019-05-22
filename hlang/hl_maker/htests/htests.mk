@@ -45,6 +45,8 @@ SUBMAKEFILES := \
 	./hpru1/hl_pru1.mk \
 	./hsend_msg/hl_send_msg.mk \
 	./hsend_msg/mc_send_msg.mk \
+	./hphilo/hl_philo.mk \
+	./hphilo/mc_philo.mk \
 	
 	
 	

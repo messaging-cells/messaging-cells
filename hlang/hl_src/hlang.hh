@@ -398,6 +398,8 @@ enum	hc_syntax_op_t {
 	hc_hreturn_op,	// hreturn
 	hc_habort_op,	// habort
 	hc_hfinished_op,	// hfinished
+
+	hc_hthis_op,	// hthis
 	
 	hc_assig_op1,	// =
 	hc_assig_op2,	// =
@@ -2006,6 +2008,8 @@ hc_new_literal(const char* the_lit){
 #define hreturn 	hl_new_keyword(hreturn)
 #define habort 		hl_new_keyword(habort)
 #define hfinished	hl_new_keyword(hfinished)
+
+#define hthis	 	hl_new_keyword(hthis)
 
 #define hmsg_src 	hl_new_keyword(hmsg_src)
 #define hmsg_ref 	hl_new_keyword(hmsg_ref)

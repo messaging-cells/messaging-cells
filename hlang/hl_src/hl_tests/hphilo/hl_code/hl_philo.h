@@ -8,8 +8,9 @@
 class chopstick;
 class philosopher;
 
-#define MAX_BITES 10
+hdeclare_const(MAX_BITES);
 
+hdeclare_token(pr_tok_invalid);
 hdeclare_token(pr_tok_eat);
 hdeclare_token(pr_tok_take);
 hdeclare_token(pr_tok_taken);
@@ -25,36 +26,27 @@ class chopstick : public hcell {
 public:
 	hcell_class(chopstick);
 	
-	hreference(hcell, owner);
-	hreference(hcell, last_src);
+	hreference(philosopher, owner);
+	hreference(philosopher, last_src);
 
 	hl_philo_tok(last_sent);
 	hl_philo_tok(last_recv);
 
-	chopstick(){
-		init_chopstick();
-	}
-
-	~chopstick(){}
-
-	void init_chopstick(){
-		/*
-		handler_idx = idx_chopstick;
-		owner = mc_null;
-
-		last_src = mc_null;
-		last_sent = tok_invalid;
-		last_recv = tok_invalid;
-		*/
-	}
+	//chopstick(){}
+	//~chopstick(){}
 
 	hnucleus(chopstick_nucl);
+
+	hmethod(init_chopstick);
+	
 };
 
 class philosopher : public hcell {
 public:
 	hcell_class(philosopher);
 
+	hreference(philosopher, manager);
+	
 	hreference(chopstick, left);
 	hreference(chopstick, right);
 
@@ -75,49 +67,15 @@ public:
 	hl_philo_tok(last_recv_lft);
 	hl_philo_tok(last_recv_rgt);
 	
-	philosopher(){
-		init_philosopher();
-	}
-
-	~philosopher(){}
-
-	void init_philosopher(){
-		/*
-		handler_idx = idx_philosopher;
-
-		left = mc_null;
-		right = mc_null;
-
-		num_bites = 0;
-		lft_ph_full = false;
-		rgt_ph_full = false;
-
-		lft_stick = mc_null;
-		rgt_stick = mc_null;
-		lft_philo = mc_null;
-		rgt_philo = mc_null;
-
-		last_sent = tok_invalid;
-		last_sent_lft = tok_invalid;
-		last_sent_rgt = tok_invalid;
-		last_recv = tok_invalid;
-		last_recv_lft = tok_invalid;
-		last_recv_rgt = tok_invalid;
-		*/
-	}
+	//philosopher(){}
+	//~philosopher(){}
 
 	hnucleus(philosopher_nucl);
 
+	hmethod(init_philosopher);
 	hmethod(send_full);
 	hmethod(call_exit);
 	
-	/*
-	void send(cell* dst, philo_tok_t tok);
-
-	bool can_exit(){
-		return ((left == mc_null) && (right == mc_null) && (num_bites == MAX_BITES) && rgt_ph_full && lft_ph_full);
-	}
-	*/
 };
 
 

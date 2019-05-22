@@ -642,6 +642,21 @@ hc_can_add_cond_opers(hc_syntax_op_t op1, hc_syntax_op_t op2){
 }
 
 bool
+hc_is_direct_oper(hc_syntax_op_t op){
+	bool isdi = false;
+	switch(op){
+		case hc_hswitch_op:
+		case hc_helse_op:
+		case hc_hdefault_op:
+			isdi = true;
+			break;
+		default:
+		break;
+	}
+	return isdi;
+}
+
+bool
 hc_is_assig_oper(hc_syntax_op_t op){
 	bool is_as = false;
 	switch(op){
@@ -718,6 +733,9 @@ hc_get_token(hc_syntax_op_t op){
 		break;
 		case hc_hme_op:
 			tok = "hme";
+		break;
+		case hc_hthis_op:
+			tok = "hthis";
 		break;
 		case hc_hfor_op:
 			tok = "hfor";
@@ -894,6 +912,9 @@ hc_get_cpp_token(hc_syntax_op_t op){
 		break;
 		case hc_hme_op:
 			tok = "hme";
+		break;
+		case hc_hthis_op:
+			tok = "this";
 		break;
 		case hc_hfor_op:
 			tok = "/* hfor */ if";
@@ -1610,13 +1631,14 @@ hc_steps::set_last(hc_term& nxt){
 	}
 	set_has_last();
 	
+	set_next(nxt);
+	
 	auto it = steps.begin();
 	for(; it != steps.end(); ++it){
 		hc_term* tm = (*it);
 		HL_CK(tm != hl_null);
 		tm->set_last(nxt);
 	}
-	set_next(nxt);
 }
 
 void
@@ -1716,7 +1738,7 @@ hc_condition::set_last(hc_term& nxt){
 		case hc_helse_op:
 			if_true->set_last(nxt);
 			if(next != &nxt){
-				HL_CK(next != hl_null);
+				HL_CK_PRT((next != hl_null), "is %s", hc_get_token(op));
 				HL_CK(next->is_cond());
 				next->set_last(nxt);
 			}
@@ -2656,7 +2678,9 @@ hc_condition::print_cpp_term(FILE *st){
 	tm1->print_cpp_term(st);
 
 	hc_syntax_op_t c_op = tm1->get_oper();
-	if(c_op == hc_hswitch_op){
+	bool is_di = hc_is_direct_oper(c_op);
+	if(is_di){
+		HL_CK(if_true != hl_null);
 		fprintf(st, "hg_step = %ld;", if_true->get_num_label());
 	} else if(c_op != hc_hfor_op){
 		HL_CK(next != hl_null);

@@ -196,7 +196,7 @@ hmethod_def(cls_A3, mth02, (
 				hcase(o1) >> o2--
 			) 
 		),
-		hcase(o4) >> ++o2, 
+		hcase(o4) >> o2--,
 		hcase(o1) >> o2--
 	),
 	aa1 = aa2, 
@@ -204,6 +204,16 @@ hmethod_def(cls_A3, mth02, (
 	aa2 = aa3, 
 	hget(aa1, htok(hid_cls_A1_b1), o4),
 	aa3 = aa1
+));
+
+hmethod_def(cls_A3, mth03, (
+	hswitch(o1) >> (
+		hcase(o4) >> (
+			hif(o3 && (o4 || o1)) >> (~ o1 + ! o2) ,
+			helse >> o2--
+		)
+	),
+	aa1 = aa2
 ));
 
 hnucleus_def(cls_A4, nucl_A4, (
