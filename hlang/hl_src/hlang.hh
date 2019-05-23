@@ -402,6 +402,8 @@ enum	hc_syntax_op_t {
 	hc_hthis_op,	// hthis
 	hc_hnull_op,	// hnull
 	
+	hc_hskip_op,	// hskip
+	
 	hc_assig_op1,	// =
 	hc_assig_op2,	// =
 	hc_assig_op3,	// =
@@ -743,12 +745,17 @@ hc_term&	hswitch(hc_term& o1);
 hc_term&	hcase(hc_term& o1);
 hc_term&	hdbg(const char* cod);
 
-/*
 #ifdef FULL_DEBUG
-#else
-#endif
-*/
 #	define HCK(prm) hdbg("PTD_CK(" prm ")")
+#	define HCK_PRT(prm) hdbg("PTD_CK_PRT(" prm ")")
+#	define HPRT(prm) hdbg("PTD_PRT(" prm ")")
+#	define HLOG(prm) hdbg("PTD_LOG(" prm ")")
+#else
+#	define HCK(prm) hskip
+#	define HCK_PRT(prm) hskip
+#	define HPRT(prm) hskip
+#	define HLOG(prm) hskip
+#endif
 
 bool	hdbg_txt_pre_hh(const char* cls, const char* cod);
 bool	hdbg_txt_pos_hh(const char* cls, const char* cod);
@@ -958,11 +965,7 @@ public:
 	void append_term(hc_term& o1);
 	
 	virtual 
-	hc_term* get_first_step(){
-		HL_CK(! steps.empty());
-		hc_term* tm = steps.front();
-		return tm;
-	}
+	hc_term* get_first_step();
 	
 	virtual 
 	void	set_next(hc_term& nxt);
@@ -1527,10 +1530,10 @@ public:
 	
 	virtual 
 	int print_cpp_term(FILE *st){
-		if((op != hc_hfinished_op) && (op != hc_habort_op)){
-			fprintf(st, " %s ", hc_get_cpp_token(op));
-		} else {
+		if((op == hc_hfinished_op) || (op == hc_habort_op)){
 			fprintf(st, "PTD_ABORT();");
+		} else {
+			fprintf(st, " %s ", hc_get_cpp_token(op));
 		}
 		return 0;
 	}
@@ -2018,6 +2021,8 @@ hc_new_literal(const char* the_lit){
 
 #define hthis	 	hl_new_keyword(hthis)
 #define hnull	 	hl_new_keyword(hnull)
+
+#define hskip	 	hl_new_keyword(hskip)
 
 #define hmsg_src 	hl_new_keyword(hmsg_src)
 #define hmsg_ref 	hl_new_keyword(hmsg_ref)

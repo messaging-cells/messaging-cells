@@ -5,7 +5,7 @@
 #include "hlang.hh"
 #include "hl_philo.h"
 
-hdefine_const(MAX_BITES, 10);
+hdefine_const(MAX_BITES, 0x10);
 
 hdefine_token(pr_tok_invalid);
 hdefine_token(pr_tok_eat);
@@ -110,7 +110,7 @@ hnucleus_def(philosopher, philosopher_nucl, (
 			HCK("hg_msg_src == this"),
 			HCK("left == hg_null"),
 			HCK("right == hg_null"),
-			//HCK("num_bites < MAX_BITES"),
+			HCK("num_bites < MAX_BITES"),
 			philosopher_send(lft_stick, pr_tok_take)
 		),
 		hcase(pr_tok_taken) >> (
@@ -128,10 +128,11 @@ hnucleus_def(philosopher, philosopher_nucl, (
 
 				HCK("left != hg_null"),
 				HCK("right != hg_null"),
-				//PTD_CK("num_bites < MAX_BITES),
+				HCK("num_bites < MAX_BITES"),
+				//num_bites = (num_bites << 1),
 				num_bites++,
-				//PH_DBG("#BITES %d \n", num_bites),
-				//PTD_LOG("#BITES %d \n", num_bites),
+				HPRT(R"("#BITES %d \n", num_bites)"),
+				//HLOG(R"("#BITES %d \n", num_bites)"),
 
 				philosopher_send(lft_stick, pr_tok_drop),
 				philosopher_send(rgt_stick, pr_tok_drop)
@@ -157,14 +158,14 @@ hnucleus_def(philosopher, philosopher_nucl, (
 				left = hnull
 			),
 			hif(hmsg_src_as(chopstick) == rgt_stick) >> (
-				HCK("right == rgt_stick"),
+				HCK_PRT(R"(right == rgt_stick, "right = %p", (void*)right)"),
 				right = hnull
 			),
 			hif((left == hnull) && (right == hnull)) >> (
 				hif(num_bites == MAX_BITES) >> (
-					//PH_DBG("I AM FULL \n"),
-					//PTD_LOG("I AM FULL \n"),
-
+					HPRT(R"("I AM FULL \n")"),
+					HLOG(R"("I AM FULL \n")"),
+	
 					philosopher_send(lft_philo, pr_tok_yes_full),
 					philosopher_send(rgt_philo, pr_tok_yes_full),
 

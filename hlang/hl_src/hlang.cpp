@@ -740,6 +740,9 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_hnull_op:
 			tok = "hnull";
 		break;
+		case hc_hskip_op:
+			tok = "hskip";
+		break;
 		case hc_hfor_op:
 			tok = "hfor";
 		break;
@@ -921,6 +924,9 @@ hc_get_cpp_token(hc_syntax_op_t op){
 		break;
 		case hc_hnull_op:
 			tok = "hg_null";
+		break;
+		case hc_hskip_op:
+			tok = "/* hskip */";
 		break;
 		case hc_hfor_op:
 			tok = "/* hfor */ if";
@@ -1459,6 +1465,29 @@ hc_case_term::print_term(FILE *st){
 	return 0;
 }
 
+// virtual
+hc_term*
+hc_steps::get_first_step(){
+	HL_CK(! steps.empty());
+	//hc_term* tm = steps.front();
+	hc_term* tm = hl_null;
+	
+	auto it = steps.begin();
+	for(; it != steps.end(); ++it){
+		tm = (*it);
+		HL_CK(tm != hl_null);
+		hc_syntax_op_t op = tm->get_oper();
+		if(op != hc_hskip_op){
+			break;
+		}
+	}
+	if(tm == hl_null){
+		hl_abort("Block with only hdbg code not allowed.\n");
+	}
+	HL_CK(tm != hl_null);
+	return tm;
+}
+	
 int
 hc_steps::print_term(FILE *st){
 	bool is_fst = true;
@@ -2155,9 +2184,7 @@ public:
 	}
 	fprintf(ff, "\n");
 	
-	//fprintf(ff, "#define HG_LN0(nn) case nn: {\n");
 	fprintf(ff, "#define HG_LN(nn) } break; case nn: {\n");
-	//fprintf(ff, "#define HG_LNL() } break; default: break;\n");
 	
 	fprintf(ff, "\n\n");
 	
@@ -2564,6 +2591,8 @@ hg_msg_att_id = msv->att_id;
 
 		fprintf(st, "} break;\n");
 		fprintf(st, "default:\n");
+		fprintf(st, "\tmck_abort(1, mc_cstr(\"PANIC_ERROR.BAD_CASE_in");
+		fprintf(st, "hclass_reg::print_all_cpp_methods\"));\n");
 		fprintf(st, "break;\n");
 		fprintf(st, "\n");
 		fprintf(st, "} // closes switch\n");
@@ -2647,13 +2676,19 @@ hc_steps::print_cpp_term(FILE *st){
 		hc_term* tm = (*it);
 		HL_CK(tm != hl_null);
 		
+		hc_syntax_op_t c_op = tm->get_oper();
+		bool is_skp = (c_op == hc_hskip_op);
+		
 		print_new_line(st);
+		
+		if(is_skp){ fprintf(st, "/*"); }
 		fprintf(st, "HG_LN(%ld)\t", tm->get_num_label());
+		if(is_skp){ fprintf(st, "*/"); }
 		
 		hc_term::print_indent(st);
 		tm->print_cpp_term(st);
 		
-		hc_syntax_op_t c_op = tm->get_oper();
+		if(is_skp){ fprintf(st, "/*"); }
 		if(		(c_op != hc_then_op) && 
 				(c_op != hc_mth_call_op) && 
 				(c_op != hc_mth_ret_op) &&
@@ -2664,6 +2699,7 @@ hc_steps::print_cpp_term(FILE *st){
 				"DURING %s writing file:\n %s\n", hc_get_token(c_op), get_file_path(st));
 			fprintf(st, ";\thg_step = %ld;", tm->next->get_num_label());
 		}
+		if(is_skp){ fprintf(st, "*/"); }
 	}
 	
 	return 0;
@@ -2813,6 +2849,8 @@ hclass_reg::print_cpp_call_mth_code(FILE* st){
 	}
 	
 	fprintf(st, "\t\tdefault:\n");
+	fprintf(st, "\t\t\tmck_abort(1, mc_cstr(\"PANIC_ERROR.BAD_CASE_in");
+	fprintf(st, "hclass_reg::print_cpp_call_mth_code\"));\n");
 	fprintf(st, "\t\tbreak;\n");
 	fprintf(st, "\t};\n");
 	fprintf(st, "\n");
@@ -2835,6 +2873,8 @@ hclass_reg::print_cpp_ret_mth_code(FILE* st){
 	}
 	
 	fprintf(st, "\t\tdefault:\n");
+	fprintf(st, "\t\t\tmck_abort(1, mc_cstr(\"PANIC_ERROR.BAD_CASE_in");
+	fprintf(st, "hclass_reg::print_cpp_ret_mth_code\"));\n");
 	fprintf(st, "\t\tbreak;\n");
 	fprintf(st, "\t};\n");
 	fprintf(st, "\n");
