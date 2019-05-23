@@ -396,8 +396,9 @@ enum	hc_syntax_op_t {
 	hc_hbreak_op,	// hbreak
 	hc_hcontinue_op,	// hcontinue
 	hc_hreturn_op,	// hreturn
-	hc_habort_op,	// habort
 	hc_hfinished_op,	// hfinished
+	
+	hc_habort_op, // habort
 
 	hc_hthis_op,	// hthis
 	hc_hnull_op,	// hnull
@@ -410,6 +411,9 @@ enum	hc_syntax_op_t {
 	hc_assig_op4,	// =
 	hc_assig_op5,	// =
 
+	hc_shift_left_op,	// <<
+	hc_shift_right_op,	// >>
+	
 	hc_less_than_op,	// <
 	hc_more_than_op,	// >
 	hc_less_equal_than_op,	// <=
@@ -537,6 +541,9 @@ public:
 	hc_term&	operator /= (hc_term& o1);
 	
 	hc_term&	operator = (hc_term& o1);
+
+	hc_term&	operator << (hc_term& o1);
+	hc_term&	operator >> (hc_term& o1);
 	
 	hc_term&	operator < (hc_term& o1);
 	hc_term&	operator > (hc_term& o1);
@@ -744,6 +751,7 @@ hc_term&	hwhile(hc_term& o1);
 hc_term&	hswitch(hc_term& o1);
 hc_term&	hcase(hc_term& o1);
 hc_term&	hdbg(const char* cod);
+hc_term&	habort(const char* cod);
 
 #ifdef FULL_DEBUG
 #	define HCK(prm) hdbg("PTD_CK(" prm ")")
@@ -1530,8 +1538,8 @@ public:
 	
 	virtual 
 	int print_cpp_term(FILE *st){
-		if((op == hc_hfinished_op) || (op == hc_habort_op)){
-			fprintf(st, "PTD_ABORT();");
+		if(op == hc_hfinished_op){
+			fprintf(st, R"finish(PTD_ABORT("NORMAL_ABORTING_with_hfinished\n");)finish");
 		} else {
 			fprintf(st, " %s ", hc_get_cpp_token(op));
 		}
@@ -2016,7 +2024,6 @@ hc_new_literal(const char* the_lit){
 #define hbreak 		hl_new_keyword(hbreak)
 #define hcontinue 	hl_new_keyword(hcontinue)
 #define hreturn 	hl_new_keyword(hreturn)
-#define habort 		hl_new_keyword(habort)
 #define hfinished	hl_new_keyword(hfinished)
 
 #define hthis	 	hl_new_keyword(hthis)
@@ -2270,7 +2277,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
-		fprintf(st, "hdbg_start(%s)hdbg_end", dbg_cod.c_str());
+		fprintf(st, "hdbg{%s}", dbg_cod.c_str());
 		return 0;
 	}
 
@@ -2283,6 +2290,44 @@ public:
 	virtual 
 	hc_syntax_op_t	get_oper(){
 		return hc_dbg_op;
+	}
+	
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+};
+
+class hc_abort : public hc_term {
+public:
+	hl_string ab_msg;
+	
+	virtual	~hc_abort(){}
+	
+	hc_abort(hl_string the_msg){
+		ab_msg = the_msg;
+	}
+
+	virtual 
+	const char*	get_name(){
+		return "hc_abort";
+	}
+	
+	virtual 
+	int print_term(FILE *st){
+		fprintf(st, "habort(%s)", ab_msg.c_str());
+		return 0;
+	}
+
+	virtual 
+	int print_cpp_term(FILE *st){
+		fprintf(st, "PTD_ABORT(%s)", ab_msg.c_str());
+		return 0;
+	}
+
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_habort_op;
 	}
 	
 	virtual 

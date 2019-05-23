@@ -797,6 +797,12 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_assig_op5:
 			tok = "=5";
 		break;
+		case hc_shift_left_op:
+			tok = "<<";
+		break;
+		case hc_shift_right_op:
+			tok = ">>";
+		break;
 		case hc_less_than_op:
 			tok = "<";
 		break;
@@ -981,6 +987,12 @@ hc_get_cpp_token(hc_syntax_op_t op){
 		break;
 		case hc_assig_op5:
 			tok = "/* =5 */ = ";
+		break;
+		case hc_shift_left_op:
+			tok = "<<";
+		break;
+		case hc_shift_right_op:
+			tok = ">>";
 		break;
 		case hc_less_than_op:
 			tok = "<";
@@ -1212,6 +1224,9 @@ hc_term::operator = (hc_term& o1) {
 HC_DEFINE_BINARY_OP(+, hc_plus_op)
 HC_DEFINE_BINARY_OP(-, hc_minus_op)
 
+HC_DEFINE_BINARY_OP(<<, hc_shift_left_op)
+HC_DEFINE_BINARY_OP(>>, hc_shift_right_op)
+
 HC_DEFINE_BINARY_OP(<, hc_less_than_op)
 HC_DEFINE_BINARY_OP(>, hc_more_than_op)
 HC_DEFINE_BINARY_OP(<=, hc_less_equal_than_op)
@@ -1244,6 +1259,12 @@ hc_term::operator -- (int){
 hc_term& 
 hdbg(const char* the_code){ 
 	hc_term* tm = new hc_dbg(the_code); 
+	return *tm; 
+} 
+
+hc_term& 
+habort(const char* the_code){ 
+	hc_term* tm = new hc_abort(the_code); 
 	return *tm; 
 } 
 

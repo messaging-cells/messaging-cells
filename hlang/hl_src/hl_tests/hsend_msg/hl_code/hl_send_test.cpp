@@ -35,7 +35,7 @@ hnucleus_def(cls_snd, central, (
 		),
 		hcase(pr_tok_snd_finished) /= (
 			hdbg(R"my_code(printf("GOT pr_tok_snd_finished. Ending with abort (no sync). \n");)my_code"),
-			habort
+			hfinished
 		)
 	),
 	hreturn

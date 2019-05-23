@@ -48,9 +48,8 @@ hnucleus_def(chopstick, chopstick_nucl, (
 			owner = hnull,
 			last_sent = pr_tok_droped,
 			hsend(hmsg_src, pr_tok_droped, hlit(0))
-		)
-		//default:
-		//	mck_abort(1, mc_cstr("BAD_STICK_TOK"));
+		),
+		hdefault /= habort("\"BAD_chopstick_nucleus_CASE\"")
 	),
 	hreturn
 ));
@@ -129,10 +128,10 @@ hnucleus_def(philosopher, philosopher_nucl, (
 				HCK("left != hg_null"),
 				HCK("right != hg_null"),
 				HCK("num_bites < MAX_BITES"),
-				//num_bites = (num_bites << 1),
-				num_bites++,
+				num_bites = (num_bites << hlit(1)),
+				//num_bites++,
 				HPRT(R"("#BITES %d \n", num_bites)"),
-				//HLOG(R"("#BITES %d \n", num_bites)"),
+				HLOG(R"("#BITES %d \n", num_bites)"),
 
 				philosopher_send(lft_stick, pr_tok_drop),
 				philosopher_send(rgt_stick, pr_tok_drop)
@@ -191,9 +190,8 @@ hnucleus_def(philosopher, philosopher_nucl, (
 			hif(philosopher_can_exit()) /= (
 				call_exit()
 			)
-		)
-		//default
-		//	mck_abort(1, mc_cstr("BAD_PHILO_TOK")),
+		),
+		hdefault /= habort("\"BAD_philosopher_nucleus_CASE\"")
 	), 
 
 	hreturn

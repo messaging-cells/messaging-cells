@@ -95,7 +95,7 @@ mc_c_decl {
 	//void mcm_printf(const char *format, ...);
 	//void mcm_log(const char *fmt, ...);
 
-	#define PTD_ABORT() mcm_thread_abort()
+	#define PTD_ABORT(...) printf(__VA_ARGS__); mcm_thread_abort();
 	
 	#define PTD_CODE(cod) cod
 	#define PTD_DBG_CODE(cod) MC_DBG(cod)
