@@ -380,7 +380,7 @@ enum	hc_syntax_op_t {
 	hc_member_op,	// ->
 	
 	hc_comma_op,	// ,
-	hc_then_op,	// >>
+	hc_then_op,	// /=
 	
 	hc_hme_op,	// hme
 	
@@ -534,7 +534,7 @@ public:
 	}
 
 	hc_term&  operator , (hc_term& o1);
-	hc_term&	operator >> (hc_term& o1);
+	hc_term&	operator /= (hc_term& o1);
 	
 	hc_term&	operator = (hc_term& o1);
 	

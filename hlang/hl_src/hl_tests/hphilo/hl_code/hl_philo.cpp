@@ -29,21 +29,21 @@ hmethod_def(chopstick, init_chopstick, (
 ));
 
 hnucleus_def(chopstick, chopstick_nucl, (
-	hswitch(hmsg_tok_as(long)) >> (
-		hcase(pr_tok_take) >> (
+	hswitch(hmsg_tok_as(long)) /= (
+		hcase(pr_tok_take) /= (
 			HCK("owner != hg_msg_src"),
-			hif(owner == hnull) >> (
+			hif(owner == hnull) /= (
 				owner = hmsg_src_as(philosopher),
 				last_sent = pr_tok_taken,
 				hsend(hmsg_src, pr_tok_taken, hlit(0))
 			),
-			helse >> (
+			helse /= (
 				HCK("owner != hg_null"),
 				last_sent = pr_tok_not_taken,
 				hsend(hmsg_src, pr_tok_not_taken, hlit(0))
 			)
 		),
-		hcase(pr_tok_drop) >> (
+		hcase(pr_tok_drop) /= (
 			HCK("owner == hg_msg_src"),
 			owner = hnull,
 			last_sent = pr_tok_droped,
@@ -81,8 +81,8 @@ hmethod_def(philosopher, init_philosopher, (
 
 #define philosopher_send(dst, tok) \
 	last_sent = tok, \
-	hif(hcast(chopstick*, dst) == lft_stick) >> (last_sent_lft = tok), \
-	hif(hcast(chopstick*, dst) == rgt_stick) >> (last_sent_rgt = tok), \
+	hif(hcast(chopstick*, dst) == lft_stick) /= (last_sent_lft = tok), \
+	hif(hcast(chopstick*, dst) == rgt_stick) /= (last_sent_rgt = tok), \
 	hsend(dst, tok, hlit(0)) \
 	
 	
@@ -102,26 +102,26 @@ hmethod_def(philosopher, call_exit, (
 hnucleus_def(philosopher, philosopher_nucl, (
 	last_recv = hmsg_tok,
 
-	hif(hmsg_src_as(chopstick) == lft_stick) >> ( last_recv_lft = hmsg_tok ),
-	hif(hmsg_src_as(chopstick) == rgt_stick) >> ( last_recv_rgt = hmsg_tok ),
+	hif(hmsg_src_as(chopstick) == lft_stick) /= ( last_recv_lft = hmsg_tok ),
+	hif(hmsg_src_as(chopstick) == rgt_stick) /= ( last_recv_rgt = hmsg_tok ),
 
-	hswitch(hmsg_tok_as(long)) >> (
-		hcase(pr_tok_eat) >> (
+	hswitch(hmsg_tok_as(long)) /= (
+		hcase(pr_tok_eat) /= (
 			HCK("hg_msg_src == this"),
 			HCK("left == hg_null"),
 			HCK("right == hg_null"),
 			HCK("num_bites < MAX_BITES"),
 			philosopher_send(lft_stick, pr_tok_take)
 		),
-		hcase(pr_tok_taken) >> (
+		hcase(pr_tok_taken) /= (
 			HCK("(hg_msg_src == lft_stick) || (hg_msg_src == rgt_stick)"),
-			hif(hmsg_src == lft_stick) >> (
+			hif(hmsg_src == lft_stick) /= (
 				HCK("left == hg_null"),
 				HCK("right == hg_null"),
 				left = lft_stick,
 				philosopher_send(rgt_stick, pr_tok_take)
 			),
-			hif(hmsg_src == rgt_stick) >> (
+			hif(hmsg_src == rgt_stick) /= (
 				HCK("left == lft_stick"),
 				HCK("right == hg_null"),
 				right = rgt_stick,
@@ -138,57 +138,57 @@ hnucleus_def(philosopher, philosopher_nucl, (
 				philosopher_send(rgt_stick, pr_tok_drop)
 			)
 		),
-		hcase(pr_tok_not_taken) >> (
+		hcase(pr_tok_not_taken) /= (
 			HCK("(hg_msg_src == lft_stick) || (hg_msg_src == rgt_stick)"),
-			hif(hmsg_src == lft_stick) >> (
+			hif(hmsg_src == lft_stick) /= (
 				HCK("left == hg_null"),
 				HCK("right == hg_null"),
 				philosopher_send(hthis, pr_tok_eat)
 			),
-			hif(hmsg_src == rgt_stick) >> (
+			hif(hmsg_src == rgt_stick) /= (
 				HCK("left == lft_stick"),
 				HCK("right == hg_null"),
 				philosopher_send(lft_stick, pr_tok_drop)
 			)
 		),
-		hcase(pr_tok_droped) >> (
+		hcase(pr_tok_droped) /= (
 			HCK("(hg_msg_src == lft_stick) || (hg_msg_src == rgt_stick)"),
-			hif(hmsg_src_as(chopstick) == lft_stick) >> (
+			hif(hmsg_src_as(chopstick) == lft_stick) /= (
 				HCK("left == lft_stick"),
 				left = hnull
 			),
-			hif(hmsg_src_as(chopstick) == rgt_stick) >> (
+			hif(hmsg_src_as(chopstick) == rgt_stick) /= (
 				HCK_PRT(R"(right == rgt_stick, "right = %p", (void*)right)"),
 				right = hnull
 			),
-			hif((left == hnull) && (right == hnull)) >> (
-				hif(num_bites == MAX_BITES) >> (
+			hif((left == hnull) && (right == hnull)) /= (
+				hif(num_bites == MAX_BITES) /= (
 					HPRT(R"("I AM FULL \n")"),
 					HLOG(R"("I AM FULL \n")"),
 	
 					philosopher_send(lft_philo, pr_tok_yes_full),
 					philosopher_send(rgt_philo, pr_tok_yes_full),
 
-					hif(philosopher_can_exit()) >> (
+					hif(philosopher_can_exit()) /= (
 						call_exit()
 					)
 				),
-				helse  >> (
+				helse  /= (
 					philosopher_send(hthis, pr_tok_eat)
 				)
 			)
 		),
-		hcase(pr_tok_yes_full) >> (
+		hcase(pr_tok_yes_full) /= (
 			HCK("(hg_msg_src == lft_philo) || (hg_msg_src == rgt_philo)"),
-			hif(hmsg_src_as(philosopher) == lft_philo) >> ( 
+			hif(hmsg_src_as(philosopher) == lft_philo) /= ( 
 				HCK("! lft_ph_full"),
 				lft_ph_full = hlit(true)
 			),
-			hif(hmsg_src_as(philosopher) == rgt_philo) >> ( 
+			hif(hmsg_src_as(philosopher) == rgt_philo) /= ( 
 				HCK("! rgt_ph_full"),
 				rgt_ph_full = hlit(true)
 			),
-			hif(philosopher_can_exit()) >> (
+			hif(philosopher_can_exit()) /= (
 				call_exit()
 			)
 		)

@@ -18,22 +18,22 @@ hdefine_const(k2, 123);
 hcell_class_def(cls_snd);
 
 hnucleus_def(cls_snd, central, (
-	hswitch(hmsg_tok_as(char)) >> (
-		hcase(htk_start) >> mth_start(), 
-		hcase(pr_tok_snd_val1) >> (
+	hswitch(hmsg_tok_as(char)) /= (
+		hcase(htk_start) /= mth_start(), 
+		hcase(pr_tok_snd_val1) /= (
 			v1 = hmsg_val, 
 			hdbg(R"my_code(printf("GOT pr_tok_snd_val1\n");)my_code")
 		),
-		hcase(pr_tok_snd_val2) >> (
+		hcase(pr_tok_snd_val2) /= (
 			v2 = hmsg_val_as(int),
 			hdbg(R"my_code(printf("GOT pr_tok_snd_val2\n");)my_code")
 		),
-		hcase(pr_tok_snd_add) >> (
+		hcase(pr_tok_snd_add) /= (
 			sum = (v1 + v2),
 			hdbg(R"my_code(printf("GOT pr_tok_snd_add\n");)my_code"),
 			hsend(hmsg_src, pr_tok_snd_finished, hlit(0))
 		),
-		hcase(pr_tok_snd_finished) >> (
+		hcase(pr_tok_snd_finished) /= (
 			hdbg(R"my_code(printf("GOT pr_tok_snd_finished. Ending with abort (no sync). \n");)my_code"),
 			habort
 		)

@@ -729,7 +729,7 @@ hc_get_token(hc_syntax_op_t op){
 			tok = ",";
 		break;
 		case hc_then_op:
-			tok = ">>";
+			tok = "/=";
 		break;
 		case hc_hme_op:
 			tok = "hme";
@@ -914,7 +914,7 @@ hc_get_cpp_token(hc_syntax_op_t op){
 			tok = "; /* , */";
 		break;
 		case hc_then_op:
-			tok = "/* >> */";
+			tok = "/* /= */";
 		break;
 		case hc_hme_op:
 			tok = "hme";
@@ -1185,14 +1185,14 @@ hc_term::operator , (hc_term& o1) {
 }
 
 hc_term& 
-hc_term::operator >> (hc_term& o1) { 
+hc_term::operator /= (hc_term& o1) { 
 	if(! hc_is_cond_oper(get_oper())){
 		fprintf(stderr, "---------------------------------------------------\n");
 		fprintf(stderr, "NEAR\n");
 		fprintf(stderr, "---------------------------------------------------\n");
 		print_term(stderr);
 		fprintf(stderr, "---------------------------------------------------\n");
-		hl_abort("First parameter %s to then \">>\" must be a conditional.\n", get_name());
+		hl_abort("First parameter %s to then \"/=\" must be a conditional.\n", get_name());
 	}
 	hc_steps* sts = o1.to_steps();
 	hc_condition* tm = new hc_condition(this, sts);

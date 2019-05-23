@@ -53,19 +53,19 @@ hmethod_def(cls_A1, mth01, (
 	(o1 = o2) = (o4 + o5),
 	(o1 = o2),
 	o4++, o5++, 
-	hswitch(o1) >> (
-		hcase(o2) >> o3++, 
-		hcase(o4) >> ++o5, 
-		hcase(o1) >> o2--
+	hswitch(o1) /= (
+		hcase(o2) /= o3++, 
+		hcase(o4) /= ++o5, 
+		hcase(o1) /= o2--
 	), 
 	//o1 = (o1, o2),
-	//hif((o1 = o1, o2 = o2, o3 = o4)) >> o1,
-	hif(b3 && (b4 || b1)) >> (~ o1 + ! o2),
-	hif(o3 && (o4 || o1)) >> (~ o1 + ! o2),
-	helif(o4) >> ( (~ o1 + ! o2), (o5 && o3)),
-	helse >> o2--,
-	hfor(o1 < o2, (o1++, o2 = o3 + o4)) >> (o2 || o3),
-	hwhile(o4) >> (
+	//hif((o1 = o1, o2 = o2, o3 = o4)) /= o1,
+	hif(b3 && (b4 || b1)) /= (~ o1 + ! o2),
+	hif(o3 && (o4 || o1)) /= (~ o1 + ! o2),
+	helif(o4) /= ( (~ o1 + ! o2), (o5 && o3)),
+	helse /= o2--,
+	hfor(o1 < o2, (o1++, o2 = o3 + o4)) /= (o2 || o3),
+	hwhile(o4) /= (
 		(o1 & o3),
 		o2++,
 		o3++
@@ -86,7 +86,7 @@ hmethod_def(cls_A1, mth02, (
 ));
 
 hmethod_def(cls_A1, mth03, (
-	hif(o3) >> (~ o1 + ! o2),
+	hif(o3) /= (~ o1 + ! o2),
 	hsend(rA3, pr_tok_pru1, o5),
 	(o2 = (o2 + o1)),
 	(o2 = (o2 + o1)),
@@ -107,7 +107,7 @@ hnucleus_def(cls_A2, nucl_A2, (
 ));
 
 hmethod_def(cls_A2, mth01, (
-	hif(v1) >> (~ o1 + ! o2),
+	hif(v1) /= (~ o1 + ! o2),
 	(r1->o4()) + v2,
 	hcon(k2)++
 ));
@@ -143,7 +143,7 @@ hmethod_def(cls_A3, mth01, (
 	aa1 = aa2, 
 	aa2 = aa3, 
 	aa3 = aa1,
-	//hcase(r3) >> r3--,
+	//hcase(r3) /= r3--,
 	hmsg_src_as(cls_A1)->o4(),
 	hmsg_ref_as(cls_A1)->o4(),
 	hmsg_val_as(long)--,
@@ -158,46 +158,46 @@ hmethod_def(cls_A3, mth01, (
 ));
 
 hmethod_def(cls_A3, mth02, (
-			/*hif(o3) >> o2++,
-			helif(o3) >> (
-				hwhile(o3) >> (
-					hif(o3) >> o2--,	// FIX_THIS_CASE
+			/*hif(o3) /= o2++,
+			helif(o3) /= (
+				hwhile(o3) /= (
+					hif(o3) /= o2--,	// FIX_THIS_CASE
 					o3++
 				),
 				o2++
 			),*/
 	
-	hswitch(o1) >> (
-		hcase(o2) >> (
-			hif(o3 && (o4 || o1)) >> (~ o1 + ! o2),
-			helif(o4) >> (
-				hwhile(o4) >> (
+	hswitch(o1) /= (
+		hcase(o2) /= (
+			hif(o3 && (o4 || o1)) /= (~ o1 + ! o2),
+			helif(o4) /= (
+				hwhile(o4) /= (
 					(o1 & o3),
 					o2++,
-					hif(o3) >> (o2++, hbreak),
-					hif(o3) >> (o2++, hreturn),
+					hif(o3) /= (o2++, hbreak),
+					hif(o3) /= (o2++, hreturn),
 					o3++
 				),
 				o2++,
 				o1 = r3->r1->o4()
 			),
-			helse >> o2--,
-			hfor(o1 < o2, (o1++, o2 = o3 + o4)) >> (
+			helse /= o2--,
+			hfor(o1 < o2, (o1++, o2 = o3 + o4)) /= (
 				(o2 || o3),
 				o3++,
-				hif(o3) >> (o2++, hbreak),
-				hif(o3) >> (o2++, hcontinue),
+				hif(o3) /= (o2++, hbreak),
+				hif(o3) /= (o2++, hcontinue),
 				o2--,
-				hfor(o1 < o2, (o1++, o2 = o3 + o4)) >> (o2 || o3)
+				hfor(o1 < o2, (o1++, o2 = o3 + o4)) /= (o2 || o3)
 			),
-			hswitch(o1) >> (
-				hcase(o2) >> o3++, 
-				hcase(o4) >> ++o1, 
-				hcase(o1) >> o2--
+			hswitch(o1) /= (
+				hcase(o2) /= o3++, 
+				hcase(o4) /= ++o1, 
+				hcase(o1) /= o2--
 			) 
 		),
-		hcase(o4) >> o2--,
-		hcase(o1) >> o2--
+		hcase(o4) /= o2--,
+		hcase(o1) /= o2--
 	),
 	aa1 = aa2, 
 	hset(aa1, htok(hid_cls_A1_b4), xx1),
@@ -207,10 +207,10 @@ hmethod_def(cls_A3, mth02, (
 ));
 
 hmethod_def(cls_A3, mth03, (
-	hswitch(o1) >> (
-		hcase(o4) >> (
-			hif(o3 && (o4 || o1)) >> (~ o1 + ! o2) ,
-			helse >> o2--
+	hswitch(o1) /= (
+		hcase(o4) /= (
+			hif(o3 && (o4 || o1)) /= (~ o1 + ! o2) ,
+			helse /= o2--
 		)
 	),
 	aa1 = aa2
