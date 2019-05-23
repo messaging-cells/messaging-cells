@@ -214,7 +214,7 @@ public:
 	void print_cpp_call_mth_code(FILE* st);
 	void print_cpp_ret_mth_code(FILE* st);
 	
-	void print_all_methods();
+	void print_all_methods(FILE* ff);
 	
 	void print_cpp_get_set_switch(FILE* ff);
 	void print_cpp_replies_switch(FILE* ff);
@@ -265,11 +265,11 @@ public:
 	hc_global& get_tok(const char* nm);
 	hc_global& get_con(const char* nm);
 	
-	void init_all_token();
-	void init_all_attributes();
-	void init_sys();
+	void init_all_token(FILE* st);
+	void init_all_attributes(FILE* st);
+	void init_sys(FILE* st = stdout);
 
-	void print_all_registered_methods();
+	void print_all_registered_methods(FILE* st);
 	
 	void generate_hh_files();
 	void generate_cpp_files();
@@ -400,6 +400,7 @@ enum	hc_syntax_op_t {
 	hc_hfinished_op,	// hfinished
 
 	hc_hthis_op,	// hthis
+	hc_hnull_op,	// hnull
 	
 	hc_assig_op1,	// =
 	hc_assig_op2,	// =
@@ -507,14 +508,14 @@ public:
 	int8_t	flags;
 	long num_steps = 0;
 	hc_term* next;
-	long num_label = 0;
+	long label_number = 0;
 	
 	// constructors
 	hc_term(){
 		flags = 0;
 		num_steps = 0;
 		next = hl_null;
-		num_label = 0;
+		label_number = 0;
 	}
 
 	virtual	~hc_term(){
@@ -741,7 +742,13 @@ hc_term&	hwhile(hc_term& o1);
 hc_term&	hswitch(hc_term& o1);
 hc_term&	hcase(hc_term& o1);
 hc_term&	hdbg(const char* cod);
-hc_term&	hinfo(int pm = 0);
+
+/*
+#ifdef FULL_DEBUG
+#else
+#endif
+*/
+#	define HCK(prm) hdbg("PTD_CK(" prm ")")
 
 bool	hdbg_txt_pre_hh(const char* cls, const char* cod);
 bool	hdbg_txt_pos_hh(const char* cls, const char* cod);
@@ -2010,6 +2017,7 @@ hc_new_literal(const char* the_lit){
 #define hfinished	hl_new_keyword(hfinished)
 
 #define hthis	 	hl_new_keyword(hthis)
+#define hnull	 	hl_new_keyword(hnull)
 
 #define hmsg_src 	hl_new_keyword(hmsg_src)
 #define hmsg_ref 	hl_new_keyword(hmsg_ref)

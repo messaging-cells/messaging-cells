@@ -469,7 +469,7 @@ hc_system::get_con(const char* nm){
 }
 
 void
-hclass_reg::print_all_methods(){
+hclass_reg::print_all_methods(FILE* st){
 	tot_steps = 0;
 
 	hc_term::HC_NUM_LABEL++;
@@ -496,68 +496,68 @@ hclass_reg::print_all_methods(){
 		
 		mth_df->set_num_label();
 		
-		mth_df->print_text_code(stdout);
+		mth_df->print_text_code(st);
 
 		tot_steps += mth_df->num_steps;
-		fprintf(stdout, "-------------------------------------------(%ld steps)\n", mth_df->num_steps);
+		fprintf(st, "-------------------------------------------(%ld steps)\n", mth_df->num_steps);
 	}
 	if(nucleus != hl_null){
-		fprintf(stdout, "\tCALLING NUCLEUS %s\n", nucleus->nam);
+		fprintf(st, "\tCALLING NUCLEUS %s\n", nucleus->nam);
 		hc_caller_t cr = nucleus->caller;
 		(*cr)();
 		
 		nucleus->set_num_label();
 		
-		nucleus->print_text_code(stdout);
+		nucleus->print_text_code(st);
 
 		tot_steps += nucleus->num_steps;
-		fprintf(stdout, "-------------------------------------------(%ld steps)\n", nucleus->num_steps);
+		fprintf(st, "-------------------------------------------(%ld steps)\n", nucleus->num_steps);
 	}
 }
 
 void
-hc_system::print_all_registered_methods(){
+hc_system::print_all_registered_methods(FILE* st){
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
-		fprintf(stdout, "===========================================================\n");
+		fprintf(st, "===========================================================\n");
 		hclass_reg* cls_reg = it->second;
 		
-		fprintf(stdout, "CALLING METHODS FOR CLASS %s\n", it->first.c_str());
-		cls_reg->print_all_methods();
+		fprintf(st, "CALLING METHODS FOR CLASS %s\n", it->first.c_str());
+		cls_reg->print_all_methods(st);
 		
 		cls_reg->init_depth();
-		fprintf(stdout, "---- %s depth %ld tot_steps %ld\n", 
+		fprintf(st, "---- %s depth %ld tot_steps %ld\n", 
 				it->first.c_str(), cls_reg->depth, cls_reg->tot_steps);
 	}
-	fprintf(stdout, "===========================================================\n");
+	fprintf(st, "===========================================================\n");
 }
 
 void
-hc_system::init_sys(){
-	init_all_attributes();
-	init_all_token();
-	print_all_registered_methods();
+hc_system::init_sys(FILE* st){
+	init_all_attributes(st);
+	init_all_token(st);
+	print_all_registered_methods(st);
 }
 
 void
-hc_system::init_all_token(){
-	fprintf(stdout, "---------------------------------------------------------------\n");;
+hc_system::init_all_token(FILE* st){
+	fprintf(st, "---------------------------------------------------------------\n");;
 	long token_current_val = first_token_val;
 	auto it = all_glb_token.begin();
 	for(; it != all_glb_token.end(); ++it){
 		token_current_val++;
 		hc_global* tok = (hc_global*)(it->second);
 		tok->val = std::to_string(token_current_val);
-		fprintf(stdout, "INITING TOKEN  %s = %ld \n", it->first.c_str(), token_current_val);
+		fprintf(st, "INITING TOKEN  %s = %ld \n", it->first.c_str(), token_current_val);
 	}
 }
 
 void
-hc_system::init_all_attributes(){
-	fprintf(stdout, "---------------------------------------------------------------\n");
+hc_system::init_all_attributes(FILE* st){
+	fprintf(st, "---------------------------------------------------------------\n");
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
-		fprintf(stdout, "ADDING ATTRIBUTES FOR CLASS %s \n", it->first.c_str());
+		fprintf(st, "ADDING ATTRIBUTES FOR CLASS %s \n", it->first.c_str());
 		hc_caller_t cr = it->second->initer;
 		if(cr != hl_null){
 			(*cr)();
@@ -737,6 +737,9 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_hthis_op:
 			tok = "hthis";
 		break;
+		case hc_hnull_op:
+			tok = "hnull";
+		break;
 		case hc_hfor_op:
 			tok = "hfor";
 		break;
@@ -915,6 +918,9 @@ hc_get_cpp_token(hc_syntax_op_t op){
 		break;
 		case hc_hthis_op:
 			tok = "this";
+		break;
+		case hc_hnull_op:
+			tok = "hg_null";
 		break;
 		case hc_hfor_op:
 			tok = "/* hfor */ if";
@@ -1386,7 +1392,7 @@ hcell::hrelease(hc_term& att){
 
 long
 hc_term::get_num_label(){
-	long num_lb = get_first_step()->num_label;
+	long num_lb = get_first_step()->label_number;
 	HL_CK(num_lb != 0);
 	return num_lb;
 }
@@ -1498,7 +1504,7 @@ hc_steps::set_num_label(){
 		hc_term* tm = (*it);
 		HL_CK(tm != hl_null);
 		hc_term::HC_NUM_LABEL++;
-		tm->num_label = hc_term::HC_NUM_LABEL;
+		tm->label_number = hc_term::HC_NUM_LABEL;
 		tm->set_num_label();
 	}
 }
@@ -1719,7 +1725,7 @@ hc_safe_check::set_last(hc_term& nxt){
 	HL_CK(next != hl_null);
 	hc_syntax_op_t op = next->get_cond_oper();
 	if((op == hc_helif_op) || (op == hc_helse_op)){
-		fprintf(stdout, "\n setting_safe_nxt_last %p with %p \n", (void*)next, (void*)(&nxt));
+		fprintf(stdout, "\n hc_safe_check::set_last %p with %p \n", (void*)next, (void*)(&nxt));
 		next->set_last(nxt);
 	}
 }
