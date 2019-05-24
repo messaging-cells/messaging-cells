@@ -192,6 +192,7 @@ public:
 	}
 	
 	void print_hh_file();
+	void print_hh_all_mth_step_id(FILE* st);
 	void print_hh_class_top_decl(FILE* ff);
 	void print_hh_class_decl_content(FILE* ff);
 
@@ -2151,7 +2152,7 @@ public:
 			fprintf(st, "\n");
 		}
 	}
-	
+
 	virtual 
 	hc_term* get_first_step(){
 		HL_CK(cod != hl_null);
@@ -2164,6 +2165,7 @@ public:
 		return hc_mth_def_op;
 	}
 	
+	void print_hh_step_id(FILE *st);
 };
 
 class hc_mth_call : public hc_term {

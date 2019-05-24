@@ -24,6 +24,33 @@ void test_init_handlers(){
 	kernel::set_cell_handlers(hndlrs);
 }
 
+#define left_chp_nn(nn) (nn)
+#define right_chp_nn(nn) ((nn == 15)?(0):(nn + 1))
+
+#define left_phl_nn(nn) ((nn == 0)?(15):(nn - 1))
+#define right_phl_nn(nn) ((nn == 15)?(0):(nn + 1))
+
+class philo_global_info {
+public:
+	philosopher* my_philo = hg_null;
+	chopstick* my_stick = hg_null;
+};
+
+
+philo_global_info*
+get_remote_philo_dat(mc_workeru_id_t rem_id){
+	kernel* rem_ker = mck_get_kernel_by_id(rem_id);
+	PTD_CK(rem_ker != mc_null);
+	mc_spin_cond(rem_ker->user_data == mc_null);
+	hg_glbs_hl_generated_output* rem_dat = (hg_glbs_hl_generated_output*)(rem_ker->user_data);
+	PTD_CK(rem_dat != mc_null);
+	mc_spin_cond(rem_dat->hg_user_data == mc_null);
+	
+	philo_global_info* rem_ph_dat = (philo_global_info*)(rem_dat->hg_user_data);
+	PTD_CK(rem_ph_dat != mc_null);
+	return rem_ph_dat;
+}
+
 void mc_workerus_main() {
 	kernel::init_sys();
 	kernel* ker = mck_get_kernel();
@@ -36,7 +63,7 @@ void mc_workerus_main() {
 	if(workeru_dat == mc_null){
 		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERU DATA"));
 	}
-
+	
 	ker->user_data = workeru_dat;
 
 	workeru_dat->init_mem_funcs();
@@ -50,50 +77,51 @@ void mc_workerus_main() {
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
 
-	philosopher* my_philo = hg_philosopher_acquire();
+	philo_global_info ph_dat;
 	
-	hg_globals()->hg_user_data = my_philo;
+	ph_dat.my_philo = hg_philosopher_acquire();
+	ph_dat.my_stick = hg_chopstick_acquire();
 	
-	/*
-	if(nn == 0){
-		mck_slog2("WORKERU 0 started\n");
+	//CELL_INIT_BEGINING. NEVER INIT CELL THIS WAY. Only for testing purposes.
+	hg_missive null_msv;
+	
+	ph_dat.my_philo->hg_step = hg_init_philosopher_step_id;
+	ph_dat.my_philo->handler(&null_msv);
+	
+	ph_dat.my_stick->hg_step = hg_init_chopstick_step_id;
+	ph_dat.my_stick->handler(&null_msv);
+	//CELL_INIT_END. NEVER INIT CELL THIS WAY. Only for testing purposes.
+	
+	hg_globals()->hg_user_data = &ph_dat;
+	
+	mc_workeru_id_t	lft_stk_id = mc_nn_to_id(left_chp_nn(nn));
+	mc_workeru_id_t	rgt_stk_id = mc_nn_to_id(right_chp_nn(nn));
+	mc_workeru_id_t	lft_phi_id = mc_nn_to_id(left_phl_nn(nn));
+	mc_workeru_id_t	rgt_phi_id = mc_nn_to_id(right_phl_nn(nn));
 
-		kernel::run_sys();
-	} else
-	if(nn == 1){
-		mck_slog2("WORKERU 1 started\n");
-		mc_workeru_id_t dst = mc_nn_to_id(0);
-
-		mc_spin_cond(kernel::get_workeru_kernel(dst) == mc_null);
-		
-		kernel* ker2 = kernel::get_workeru_kernel(dst);
-		PTD_CK(ker2 != mc_null);
-		mc_spin_cond(ker2->user_data == mc_null);
-		
-		hg_glbs_hl_generated_output* dat2 = (hg_glbs_hl_generated_output*)(ker2->user_data);
-		PTD_CK(dat2 != mc_null);
-		mc_spin_cond(dat2->hg_user_data == mc_null);
-		
-		cls_snd* obj1 = snd_obj;
-		cls_snd* obj2 = (cls_snd*)(dat2->hg_user_data);
-
-		PTD_CK(obj1 != mc_null);
-		PTD_CK(obj2 != mc_null);
-		
-		hg_missive* msv = hg_missive_acquire();
-		
-		msv->tok = htk_start;
-		msv->src = obj1;
-		msv->dst = obj2;
-		msv->val = (hg_value_t)obj1;
-		msv->send();
-		
-		PTD_PRT("SENT MISSIVE\n");
-		mck_slog2("SENT MISSIVE\n");
-
-		kernel::run_sys();
-	} 
-	*/
+	philo_global_info* mgr_dat = get_remote_philo_dat(mc_nn_to_id(0));
+	ph_dat.my_philo->manager = mgr_dat->my_philo;
+	
+	philo_global_info* lft_stk_dat = get_remote_philo_dat(lft_stk_id);
+	philo_global_info* rgt_stk_dat = get_remote_philo_dat(rgt_stk_id);
+	philo_global_info* lft_phi_dat = get_remote_philo_dat(lft_phi_id);
+	philo_global_info* rgt_phi_dat = get_remote_philo_dat(rgt_phi_id);
+	
+	ph_dat.my_philo->lft_stick = lft_stk_dat->my_stick;
+	ph_dat.my_philo->rgt_stick = rgt_stk_dat->my_stick;
+	ph_dat.my_philo->lft_philo = lft_phi_dat->my_philo;
+	ph_dat.my_philo->rgt_philo = rgt_phi_dat->my_philo;
+	
+	PTD_PRT("PHILO_STARTED %ld\n", nn);
+	hg_missive* msv = hg_missive_acquire();
+	
+	msv->tok = pr_tok_eat;
+	msv->src = ph_dat.my_philo;
+	msv->dst = ph_dat.my_philo;
+	msv->val = (hg_value_t)0;
+	msv->send();
+	
+	kernel::run_sys();
 
 	mck_slog2("FINISHED !!\n");	
 

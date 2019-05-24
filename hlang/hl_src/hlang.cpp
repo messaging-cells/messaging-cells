@@ -2298,6 +2298,19 @@ hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val,
 }
 
 void
+hclass_reg::print_hh_all_mth_step_id(FILE* st){
+	auto it = methods.begin();
+	for(; it != methods.end(); ++it){
+		hc_mth_def* mth_df = (*it);
+
+		mth_df->print_hh_step_id(st);
+	}
+	if(nucleus != hl_null){
+		nucleus->print_hh_step_id(st);
+	}
+}
+
+void
 hclass_reg::print_hh_file(){
 	hl_string tmp_nm = get_tmp_hh_name();
 	if(file_exists(tmp_nm)){
@@ -2319,6 +2332,7 @@ hclass_reg::print_hh_file(){
 		fprintf(ff, "\n\n\n");
 	}
 	
+	print_hh_all_mth_step_id(ff);
 	print_hh_class_top_decl(ff);
 	print_hh_class_decl_content(ff);
 	fprintf(ff, "};\n");
@@ -2422,7 +2436,7 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	auto it3 = methods.begin();
 	for(; it3 != methods.end(); ++it3){
 		hc_mth_def* mth = (*it3);
-		fprintf(ff, "\tvoid %s();\n", mth->get_name());
+		fprintf(ff, "\t/* void %s(); */\n", mth->get_name());
 	}
 	fprintf(ff, "\n\n");
 }
@@ -3196,5 +3210,10 @@ hc_mem_oper_term::print_cpp_term(FILE *st){
 	fprintf(st, ") */"); 
 	nw_att->print_type_reg_comment(st);
 	return 0;
+}
+
+void
+hc_mth_def::print_hh_step_id(FILE *st){
+	fprintf(st, "#define hg_%s_step_id %ld \n", get_name(), get_num_label());
 }
 

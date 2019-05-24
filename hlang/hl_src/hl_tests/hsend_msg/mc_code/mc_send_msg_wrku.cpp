@@ -55,9 +55,10 @@ void mc_workerus_main() {
 		mck_slog2("WORKERU 1 started\n");
 		mc_workeru_id_t dst = mc_nn_to_id(0);
 
-		mc_spin_cond(kernel::get_workeru_kernel(dst) == mc_null);
+		//mc_spin_cond(kernel::get_workeru_kernel(dst) == mc_null);
+		//kernel* ker2 = kernel::get_workeru_kernel(dst);
 		
-		kernel* ker2 = kernel::get_workeru_kernel(dst);
+		kernel* ker2 = mck_get_kernel_by_id(dst);
 		PTD_CK(ker2 != mc_null);
 		mc_spin_cond(ker2->user_data == mc_null);
 		

@@ -1245,3 +1245,13 @@ agent::release(int dbg_caller){
 	PTD_DBG_CODE(dbg_release(dbg_caller));
 }
 
+kernel*	
+mck_get_kernel_by_id(mc_workeru_id_t dst_id){
+	kernel* loc_ker = MCK_KERNEL;
+	PTD_CK(loc_ker != mc_null);
+	if(dst_id == kernel::get_workeru_id()){
+		return loc_ker;
+	}
+	kernel* rem_ker = (kernel*)mc_addr_set_id(dst_id, loc_ker);
+	return rem_ker;
+}

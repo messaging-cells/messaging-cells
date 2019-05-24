@@ -9,6 +9,7 @@ class chopstick;
 class philosopher;
 
 hdeclare_const(MAX_BITES);
+hdeclare_const(TOT_WAIT_FULL);
 
 hdeclare_token(pr_tok_invalid);
 hdeclare_token(pr_tok_eat);
@@ -45,14 +46,14 @@ class philosopher : public hcell {
 public:
 	hcell_class(philosopher);
 
+	hint(tot_philo);
+	hint(num_full);
 	hreference(philosopher, manager);
 	
 	hreference(chopstick, left);
 	hreference(chopstick, right);
 
 	hint(num_bites);
-	hbool(lft_ph_full);
-	hbool(rgt_ph_full);
 
 	hreference(chopstick, lft_stick);
 	hreference(chopstick, rgt_stick);
@@ -73,8 +74,6 @@ public:
 	hnucleus(philosopher_nucl);
 
 	hmethod(init_philosopher);
-	hmethod(send_full);
-	hmethod(call_exit);
 	
 };
 

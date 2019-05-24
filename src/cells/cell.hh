@@ -328,6 +328,8 @@ Every workeru must have one and only one kernel inited with kernel::init_sys.
 //! Gets the local kernel
 #define mck_get_kernel() MCK_KERNEL
 
+kernel*	mck_get_kernel_by_id(mc_workeru_id_t id);
+
 void mc_kernel_handler(missive* msv);
 
 void ptd_dbg_prt_ack_arr(int sz, mck_ack_t* arr);
