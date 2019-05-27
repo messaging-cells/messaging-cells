@@ -47,6 +47,8 @@ SUBMAKEFILES := \
 	./hsend_msg/mc_send_msg.mk \
 	./hphilo/hl_philo.mk \
 	./hphilo/mc_philo.mk \
+	./hget_set/hl_get_set.mk \
+	./hget_set/mc_get_set.mk \
 	
 	
 	

@@ -123,8 +123,6 @@ class hclass_reg {
 public:
 	hl_string nam;
 	std::set<hl_string> attributes;
-	//std::map<hl_string, hc_term*> values;
-	//std::map<hl_string, hc_term*> references;
 	std::list<hc_term*> values;
 	std::list<hc_term*> references;
 	std::list<hc_term*> safe_values;
@@ -1420,6 +1418,7 @@ template<class obj_t>
 class hc_value : public hc_term {
 public:
 	hc_global* my_id;
+	hl_safe_idx_t safe_idx;
 	const char* typ;
 	const char* nam;
 	obj_t	val;
@@ -1430,12 +1429,16 @@ public:
 	//		 hcell* the_owner = hl_null, obj_t the_val = obj_t())
 	
 	hc_value(const char* the_typ, const char* the_nam, hc_global* the_id = hl_null, 
-			 hcell* the_owner = hl_null)
+			 hcell* the_owner = hl_null, bool safe_vl = false)
 	{
 		HL_CK(the_owner != hl_null);
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(! std::is_class<obj_t>::value);
 		my_id = the_id;
+		if(safe_vl && (the_owner != hl_null)){
+			set_has_safe();
+		}
+		safe_idx = HL_INVALID_SAFE_IDX;
 		typ = the_typ;
 		nam = the_nam;
 		val = obj_t();
@@ -1488,6 +1491,9 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		if(get_has_safe()){
+			fprintf(st, "<%d>", safe_idx);
+		}
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -1500,6 +1506,41 @@ public:
 
 	virtual 
 	hc_term*	get_src();
+
+	virtual
+	void	set_safe_idx(hl_safe_idx_t idx){
+		HL_CK(get_has_safe());
+		if(idx > HL_MAX_SAFE_IDX){
+			hl_abort("Error in attribute %s. Cannot have more that %d safe attributes per class \n", 
+					 get_name(), HL_MAX_SAFE_IDX);
+		}
+		HL_CK(safe_idx == HL_INVALID_SAFE_IDX);
+		safe_idx = idx;
+		HL_CK(safe_idx > HL_INVALID_SAFE_IDX);
+	}
+
+	virtual 
+	hl_safe_idx_t get_safe_idx(){ return safe_idx; }
+
+	virtual 
+	hl_safe_bits_t get_safe_bit_mask(){
+		hl_safe_bits_t msk = 0;
+		if(safe_idx != HL_INVALID_SAFE_IDX){
+			hl_set_bit(&msk, safe_idx);
+		}
+		return msk;
+	}
+	
+	virtual 
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
+		if(safe_idx != HL_INVALID_SAFE_IDX){
+			if(owr == hl_null){
+				HL_CK(owner != hl_null);
+				owr = owner;
+			}
+			hl_set_bit(&all_safe, safe_idx);
+		}
+	}
 
 	virtual 
 	hl_string	get_id(){
@@ -1773,13 +1814,13 @@ public:
 	virtual	~hc_reference(){}
 	
 	hc_reference(const char* the_typ, const char* the_nam, hc_global* the_id = hl_null, 
-				 hcell* the_owner = hl_null, bool with_cast = false){
+				 hcell* the_owner = hl_null, bool with_cast = false, bool rf_safe = false){
 		HL_CK(! std::is_pointer<obj_t>::value);
 		HL_CK(std::is_class<obj_t>::value);
 		//HL_CK((std::is_base_of<hcell, obj_t>::value));
 		my_id = the_id;
 		
-		bool is_sf = HLANG_SYS().is_missive_class(the_typ);
+		bool is_sf = HLANG_SYS().is_missive_class(the_typ) || rf_safe;
 		if(is_sf && (the_owner != hl_null)){
 			set_has_safe();
 		}
@@ -1997,9 +2038,16 @@ hc_new_literal(const char* the_lit){
 #define hvalue(tt, nn) htoks_att(nn, this); \
 	hc_value<tt> nn{#tt, #nn, &(hatt_id(nn)), this}
 
+#define hsafe_value(tt, nn) htoks_att(nn, this); \
+	hc_value<tt> nn{#tt, #nn, &(hatt_id(nn)), this, true}
+
 #define hreference(tt, nn) htoks_att(nn, this); \
 	hc_reference<tt> nn{#tt, #nn, &(hatt_id(nn)), this}
 
+#define hsafe_reference(tt, nn) htoks_att(nn, this); \
+	hc_reference<tt> nn{#tt, #nn, &(hatt_id(nn)), this, false, true}
+
+	
 #define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
 #define htok(nn) HLANG_SYS().get_tok(#nn)
@@ -2017,6 +2065,20 @@ hc_new_literal(const char* the_lit){
 #define huint16_t(nn) hvalue(uint16_t, nn)
 #define huint32_t(nn) hvalue(uint32_t, nn)
 #define huint64_t(nn) hvalue(uint64_t, nn)
+
+#define hsafe_bool(nn) hsafe_value(bool, nn)
+#define hsafe_char(nn) hsafe_value(char, nn)
+#define hsafe_int(nn) hsafe_value(int, nn)
+#define hsafe_long(nn) hsafe_value(long, nn)
+#define hsafe_int8_t(nn) hsafe_value(int8_t, nn)
+#define hsafe_int16_t(nn) hsafe_value(int16_t, nn)
+#define hsafe_int32_t(nn) hsafe_value(int32_t, nn)
+#define hsafe_int64_t(nn) hsafe_value(int64_t, nn)
+#define hsafe_uint8_t(nn) hsafe_value(uint8_t, nn)
+#define hsafe_uint16_t(nn) hsafe_value(uint16_t, nn)
+#define hsafe_uint32_t(nn) hsafe_value(uint32_t, nn)
+#define hsafe_uint64_t(nn) hsafe_value(uint64_t, nn)
+
 
 #define hl_new_keyword(nn) (*(new hc_keyword(hc_ ## nn ## _op)))
 
