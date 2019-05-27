@@ -1341,10 +1341,10 @@ public:
 		snd_dst->get_safe_attributes(all_safe, owr);
 		snd_tok->get_safe_attributes(all_safe, owr);
 		snd_att->get_safe_attributes(all_safe, owr);
-		if(all_safe != 0){
+		/*if(all_safe != 0){
 			all_safe = (0 - 1);
 			HL_CK(all_safe > 0);
-		}
+		}*/
 	}
 	
 	virtual 
