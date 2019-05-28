@@ -24,6 +24,10 @@ void mc_workerus_main() {
 
 	mc_workeru_nn_t nn = ker->get_workeru_nn();
 	
+	if(cls_gs_data::hg_dbg_get_set_func == hg_null){
+		cls_gs_data::hg_dbg_get_set_func = &gs_dbg_func;
+	}
+	
 	hg_glbs_hl_generated_output* workeru_dat = hg_glbs_hl_generated_output::acquire_alloc();
 	if(workeru_dat == mc_null){
 		mck_abort(1, mc_cstr("CAN NOT INIT GLB WORKERU DATA"));

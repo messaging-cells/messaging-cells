@@ -242,7 +242,7 @@ void hl_test_1(int argc, char *argv[])
 	
 	fprintf(stdout, "######################################################\n");
 
-	HLANG_SYS().init_sys();
+	HLANG_SYS().init_sys(hl_null);
 	
 	fprintf(stdout, "RUNNING PATH= %s \n", path_get_running_path().c_str());
 

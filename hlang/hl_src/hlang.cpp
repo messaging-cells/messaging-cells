@@ -297,11 +297,15 @@ HLANG_SYS(){
 }
 
 hclass_reg*
-hc_system::get_class_reg(const char* cls, hc_caller_t the_initer, bool with_mths){
+hc_system::get_class_reg(const char* cls, hc_caller_t the_initer, bool with_mths, bool only_get){
+	HL_CK(cls != hl_null);
 	std::map<std::string, hclass_reg*>::iterator it;
 	it = all_classes.find(cls);
 	bool added = false;
 	if(it == all_classes.end()){
+		if(only_get){
+			return hl_null;
+		}
 		hclass_reg* nr = new hclass_reg();
 		all_classes[cls] = nr;
 		added = true;
@@ -469,7 +473,23 @@ hc_system::get_con(const char* nm){
 }
 
 void
-hclass_reg::print_all_methods(FILE* st){
+hclass_reg::print_methods(FILE* st){
+	auto it = methods.begin();
+	for(; it != methods.end(); ++it){
+		hc_mth_def* mth_df = (*it);
+		
+		mth_df->print_text_code(st);
+		fprintf(st, "-------------------------------------------(%ld steps)\n", mth_df->num_steps);
+	}
+	if(nucleus != hl_null){
+		fprintf(st, "\tPRINTING_NUCLEUS %s\n", nucleus->nam);
+		nucleus->print_text_code(st);
+		fprintf(st, "-------------------------------------------(%ld steps)\n", nucleus->num_steps);
+	}
+}
+
+void
+hclass_reg::init_methods(){
 	tot_steps = 0;
 
 	hc_term::HC_NUM_LABEL++;
@@ -496,68 +516,87 @@ hclass_reg::print_all_methods(FILE* st){
 		
 		mth_df->set_num_label();
 		
-		mth_df->print_text_code(st);
-
 		tot_steps += mth_df->num_steps;
-		fprintf(st, "-------------------------------------------(%ld steps)\n", mth_df->num_steps);
 	}
 	if(nucleus != hl_null){
-		fprintf(st, "\tCALLING NUCLEUS %s\n", nucleus->nam);
 		hc_caller_t cr = nucleus->caller;
 		(*cr)();
 		
 		nucleus->set_num_label();
 		
-		nucleus->print_text_code(st);
-
 		tot_steps += nucleus->num_steps;
-		fprintf(st, "-------------------------------------------(%ld steps)\n", nucleus->num_steps);
 	}
 }
 
 void
-hc_system::print_all_registered_methods(FILE* st){
+hc_system::print_all_methods(FILE* st){
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
-		fprintf(st, "===========================================================\n");
+		hclass_reg* cls_reg = it->second;
+		cls_reg->print_methods(st);
+	}
+}
+
+void
+hc_system::init_all_methods(FILE* st){
+	auto it = all_classes.begin();
+	for(; it != all_classes.end(); ++it){
 		hclass_reg* cls_reg = it->second;
 		
-		fprintf(st, "CALLING METHODS FOR CLASS %s\n", it->first.c_str());
-		cls_reg->print_all_methods(st);
+		if(st != hl_null){ 
+			fprintf(st, "===========================================================\n");
+			fprintf(st, "INITING_METHODS_FOR_CLASS %s\n", it->first.c_str());
+		}
+		cls_reg->init_methods();
 		
 		cls_reg->init_depth();
-		fprintf(st, "---- %s depth %ld tot_steps %ld\n", 
-				it->first.c_str(), cls_reg->depth, cls_reg->tot_steps);
+		if(st != hl_null){ 
+			fprintf(st, "---- %s depth %ld tot_steps %ld\n", 
+					it->first.c_str(), cls_reg->depth, cls_reg->tot_steps);
+		}
 	}
-	fprintf(st, "===========================================================\n");
+	if(st != hl_null){ 
+		fprintf(st, "===========================================================\n");
+	}
 }
 
 void
 hc_system::init_sys(FILE* st){
 	init_all_attributes(st);
 	init_all_token(st);
-	print_all_registered_methods(st);
+	init_all_methods(st);
+	if(st != hl_null){
+		print_all_methods(st);
+	}
 }
 
 void
 hc_system::init_all_token(FILE* st){
-	fprintf(st, "---------------------------------------------------------------\n");;
+	if(st != hl_null){ 
+		fprintf(st, "---------------------------------------------------------------\n");
+	}
 	long token_current_val = first_token_val;
 	auto it = all_glb_token.begin();
 	for(; it != all_glb_token.end(); ++it){
 		token_current_val++;
 		hc_global* tok = (hc_global*)(it->second);
 		tok->val = std::to_string(token_current_val);
-		fprintf(st, "INITING TOKEN  %s = %ld \n", it->first.c_str(), token_current_val);
+		if(st != hl_null){ 
+			fprintf(st, "INITING TOKEN  %s = %ld \n", it->first.c_str(), token_current_val);
+		}
 	}
 }
 
 void
 hc_system::init_all_attributes(FILE* st){
-	fprintf(st, "---------------------------------------------------------------\n");
+	if(st != hl_null){ 
+		fprintf(st, "---------------------------------------------------------------\n");
+	}
 	auto it = all_classes.begin();
 	for(; it != all_classes.end(); ++it){
-		fprintf(st, "ADDING ATTRIBUTES FOR CLASS %s \n", it->first.c_str());
+		if(st != hl_null){ 
+			fprintf(st, "ADDING ATTRIBUTES FOR CLASS %s \n", it->first.c_str());
+		}
 		hc_caller_t cr = it->second->initer;
 		if(cr != hl_null){
 			(*cr)();
@@ -1432,6 +1471,7 @@ hc_term::print_label(FILE *st){
 	
 int
 hc_term::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	hl_abort("INVALID_TERM !!!!\n");
 	return 0;
 }
@@ -1454,6 +1494,7 @@ hc_term::print_indent(FILE *st, bool with_case_margin){
 
 int
 hc_unary_term::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	const char* tok = hc_get_token(op);
 	fprintf(st, "%s", tok);
 	fprintf(st, "(");
@@ -1467,6 +1508,7 @@ hc_unary_term::print_term(FILE *st){
 
 int
 hc_case_term::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	const char* tok = hc_get_token(op);
 	HL_CK(prm != hl_null);
 
@@ -1511,6 +1553,7 @@ hc_steps::get_first_step(){
 	
 int
 hc_steps::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	bool is_fst = true;
 	//fprintf(st, "(");
 	
@@ -1561,6 +1604,7 @@ hc_steps::set_num_label(){
 
 int
 hc_condition::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	const char* tok = hc_get_token(hc_then_op);
 	hc_term* tm1 = cond;
 	hc_term* tm2 = if_true;
@@ -1594,6 +1638,7 @@ hc_condition::print_term(FILE *st){
 
 int
 hc_for_loop::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	const char* tok = hc_get_token(get_oper());
 	HL_CK(owner != hl_null);
 	HL_CK(cond != hl_null);
@@ -1613,6 +1658,7 @@ hc_for_loop::print_term(FILE *st){
 
 int
 hc_binary_term::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	const char* tok = hc_get_token(op);
 	HL_CK(lft != hl_null);
 	HL_CK(rgt != hl_null);
@@ -1637,6 +1683,7 @@ hc_binary_term::print_term(FILE *st){
 
 int
 hc_send_term::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	HL_CK(hc_is_send_oper(op));
 	HL_CK(snd_dst != hl_null);
 	HL_CK(snd_tok != hl_null);
@@ -1963,6 +2010,7 @@ hc_system::print_hh_file(){
 	}
 }
 
+
 void
 hc_system::print_glbs_hh_file(){
 	hl_string tmp_nm = get_glbs_tmp_hh_name();
@@ -1988,6 +2036,7 @@ hc_system::print_glbs_hh_file(){
 
 	fprintf(ff, R"base(
 class hg_missive;
+class hg_cell_base;
 
 #define hg_inline_fn mc_inline_fn
 #define HG_INVALID_SAFE_IDX 0
@@ -2049,6 +2098,18 @@ typedef long hg_step_t;
 typedef uint8_t hg_bit_t; 
 typedef uint8_t hg_idx_t; 
 typedef uint8_t hg_flags_t; 
+
+typedef void (*hg_dbg_fn_t)(void*);
+	
+class mc_aligned hg_dbg_mem_st {
+public:
+	hg_cell_base* 	obj = hg_null;
+	hg_cell_base* 	src = hg_null;
+	hg_token_t 		tok = 0;
+	hg_value_t 		msg_val = 0;
+	hg_value_t 		att_val = 0;
+	hg_id_t 		att_id = 0;
+};
 
 //======================================================================
 // cell_base
@@ -2214,6 +2275,8 @@ public:
 		fprintf(ff, "#define %s %s \n", it3->first.c_str(), con->val.c_str());
 	}
 	fprintf(ff, "\n");
+
+	fprintf(ff, "const char* hg_dbg_tok_to_str(hg_token_t tok);\n\n");
 	
 	fprintf(ff, "#define HG_LN(nn) } break; case nn: {\n");
 	
@@ -2228,6 +2291,31 @@ public:
 	if(file_exists(tmp_nm)){
 		file_remove(tmp_nm);
 	}
+}
+
+void
+hc_system::print_glbs_cpp_dbg_tok_to_str_func(FILE* ff){
+	fprintf(ff, R"base(
+const char* 
+hg_dbg_tok_to_str(hg_token_t tok){
+	const char* resp = "HG_INVALID_TOKEN";
+	switch(tok){
+)base");
+	
+	auto it2 = all_glb_token.begin();
+	for(; it2 != all_glb_token.end(); ++it2){
+		//hc_global* tok = (hc_global*)(it2->second);
+		const char* id_tok = it2->first.c_str();
+		fprintf(ff, "\t\tcase %s: resp = \"%s\"; break;\n", id_tok, id_tok);
+	}
+	fprintf(ff, "\n\n");
+
+	fprintf(ff, R"base(
+	}
+	return resp;
+}
+)base");
+	
 }
 
 void
@@ -2297,7 +2385,8 @@ hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val,
 }
 
 )base", prj_nam, idx_tot, idx_tot, idx_tot, idx_last, idx_last, idx_last, idx_tot);
-	
+
+	print_glbs_cpp_dbg_tok_to_str_func(ff);
 	
 	fclose(ff);
 	
@@ -2380,6 +2469,9 @@ void hg_%s_init_mem_funcs();
 	
 class mc_aligned %s : public hg_cell_base {
 public:
+	static
+	hg_dbg_fn_t hg_dbg_get_set_func;
+	
 	MCK_DECLARE_MEM_METHODS(%s)
 	
 	//virtual mc_opt_sz_fn 
@@ -2415,7 +2507,8 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	auto it1 = values.begin();
 	for(; it1 != values.end(); ++it1){
 		hc_term* trm = (*it1);
-		fprintf(ff, "\t%s %s = 0;\n", trm->get_type(), trm->get_name());
+		const char* tm_nm = trm->get_name();
+		fprintf(ff, "\t%s %s = 0;\n", trm->get_type(), tm_nm);
 	}
 	fprintf(ff, "\n\n");
 	fprintf(ff, "\t/* SAFE_VALUES */\n");
@@ -2423,7 +2516,8 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	it1 = safe_values.begin();
 	for(; it1 != safe_values.end(); ++it1){
 		hc_term* trm = (*it1);
-		fprintf(ff, "\t%s %s = 0;\n", trm->get_type(), trm->get_name());
+		const char* tm_nm = trm->get_name();
+		fprintf(ff, "\t%s %s = 0;\n", trm->get_type(), tm_nm);
 	}
 	fprintf(ff, "\n\n");
 	fprintf(ff, "\t/* REFERENCES */\n");
@@ -2431,7 +2525,8 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	auto it2 = references.begin();
 	for(; it2 != references.end(); ++it2){
 		hc_term* trm = (*it2);
-		fprintf(ff, "\t%s* %s = hg_null;\n", trm->get_type(), trm->get_name());
+		const char* tm_nm = trm->get_name();
+		fprintf(ff, "\t%s* %s = hg_null;\n", trm->get_type(), tm_nm);
 	}
 	fprintf(ff, "\n\n");
 	fprintf(ff, "\t/* SAFE_REFERENCES */\n");
@@ -2439,7 +2534,8 @@ hclass_reg::print_hh_class_decl_content(FILE* ff){
 	it2 = safe_references.begin();
 	for(; it2 != safe_references.end(); ++it2){
 		hc_term* trm = (*it2);
-		fprintf(ff, "\t%s* %s = hg_null;\n", trm->get_type(), trm->get_name());
+		const char* tm_nm = trm->get_name();
+		fprintf(ff, "\t%s* %s = hg_null;\n", trm->get_type(), tm_nm);
 	}
 	fprintf(ff, "\n\n");
 	fprintf(ff, "\t/* METHODS */\n");
@@ -2470,6 +2566,9 @@ hclass_reg::print_cpp_file(){
 	fprintf(ff, "MCK_DEFINE_MEM_METHODS(%s, 32, hg_ava_%ss, 0)\n", cls_nam, cls_nam);
 	
 	fprintf(ff, R"base(
+hg_dbg_fn_t
+%s::hg_dbg_get_set_func = hg_null;
+		
 void 
 hg_%s_init_mem_funcs(){
 	(hg_globals()->all_ava)[idx_%s] = &(hg_ava_%ss);
@@ -2479,7 +2578,7 @@ hg_%s_init_mem_funcs(){
 }
 
 )base",
-cls_nam, cls_nam, cls_nam,
+cls_nam, cls_nam, cls_nam, cls_nam,
 cls_nam, cls_nam, cls_nam, cls_nam, cls_nam, cls_nam
 	);
 	
@@ -2514,10 +2613,24 @@ cls_nam, cls_nam, cls_nam, cls_nam, cls_nam, cls_nam
 
 void
 hclass_reg::print_cpp_get_set_switch(FILE* st){
+	if(with_dbg_mem){
+		fprintf(st, R"gs(
+	if(hg_dbg_get_set_func != hg_null){
+		hg_dbg_mem_st hg_get_set_pms;
+		hg_get_set_pms.obj = this;
+		hg_get_set_pms.src = hg_msg_src;
+		hg_get_set_pms.tok = hg_msg_tok;
+		hg_get_set_pms.msg_val = (hg_value_t)hg_msg_val;
+		hg_get_set_pms.att_id = hg_msg_att_id;
+		
+		(*hg_dbg_get_set_func)(&hg_get_set_pms);
+	}
+		)gs");
+	}
 	
 	fprintf(st, "\n\n");
 	fprintf(st, "\tswitch(hg_msg_att_id){ // begin_get_set_switch\n");
-	
+
 	fprintf(st, R"gs(
 		case hid_next_msg:{
 			if(hg_msg_tok == htk_get){
@@ -2604,7 +2717,7 @@ hg_msg_att_id = msv->att_id;
 hg_msg_reply_bit = msv->reply_bit;
 
 )", nam.c_str(), nam.c_str(), nam.c_str());
-
+	
 	fprintf(st, "\n\n");
 	fprintf(st, "if(! hg_msg_is_rply() && ((hg_msg_tok == htk_get) || (hg_msg_tok == htk_set))){\n");
 	print_cpp_get_set_switch(st);
@@ -3037,22 +3150,24 @@ hc_term::print_cpp_get_set_case(FILE* st){
 	hl_string val_str = get_cpp_casted_value();
 	const char* the_val = val_str.c_str();
 	hl_safe_bits_t msk = get_safe_bit_mask();
+
+	fprintf(st, "\t\tcase %s:{\n", the_id);
+	
+	const char* tm_nm = get_name();
 	
 	fprintf(st, R"gs(
-		case %s:{
 			if(hg_msg_tok == htk_get){
 				send_val(hg_msg_src, htk_get, (hg_value_t)%s, 0, hg_msg_is_reply_flag, hg_msg_reply_bit);
 			} else {
 				PTD_CK(hg_msg_tok == htk_set);
-	)gs", the_id, get_name());
-	
+	)gs", tm_nm);
 	
 	fprintf(st, "\t\t\t\t");
 	if(msk == 0){
 		fprintf(st, R"gs(
 				%s = %s;
 				send_val(hg_msg_src, htk_set, hg_msg_val, 0, hg_msg_is_reply_flag, hg_msg_reply_bit);
-		)gs", get_name(), the_val);
+		)gs", tm_nm, the_val);
 	} else {
 		fprintf(st, R"gs(
 				if(hg_msg_force_write() || ((hg_pending_replies & %#lx) == 0)){
@@ -3062,13 +3177,13 @@ hc_term::print_cpp_get_set_case(FILE* st){
 					send_val(hg_msg_src, htk_set, (hg_value_t)%s, 0, 
 						hg_msg_is_reply_flag | hg_msg_set_failed_flag, hg_msg_reply_bit);
 				}
-		)gs", msk, get_name(), the_val, get_name());
+		)gs", msk, tm_nm, the_val, tm_nm);
 	}
 	fprintf(st, R"gs(
 			}
 		}
 		break;
-	)gs");
+)gs");
 }
 
 void
@@ -3197,6 +3312,7 @@ HG_LN(%ld)
 
 int
 hc_mem_oper_term::print_term(FILE *st){
+	HL_CK(st != hl_null);
 	const char* tok = hc_get_token(op);
 	HL_CK(nw_att != hl_null);
 	

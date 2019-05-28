@@ -129,6 +129,7 @@ public:
 	std::list<hc_term*> safe_references;
 	std::list<hc_mth_def*> methods;
 	
+	bool with_dbg_mem = false;
 	bool with_methods = false;
 	
 	hc_mth_def* nucleus = hl_null;
@@ -146,6 +147,7 @@ public:
 	hl_safe_idx_t tot_safe_attrs = 0;
 	
 	hclass_reg(){
+		with_dbg_mem = false;
 		with_methods = false;
 	
 		nucleus = hl_null;
@@ -173,7 +175,10 @@ public:
 	bool has_value(const char* attr);
 	bool has_reference(const char* attr);
 	
+	void init_methods();
 	void init_depth();
+
+	void print_methods(FILE* st);
 	
 	hl_string get_tmp_hh_name(){
 		return nam + "_tmp.hh";
@@ -213,7 +218,6 @@ public:
 	void print_cpp_call_mth_code(FILE* st);
 	void print_cpp_ret_mth_code(FILE* st);
 	
-	void print_all_methods(FILE* ff);
 	
 	void print_cpp_get_set_switch(FILE* ff);
 	void print_cpp_replies_switch(FILE* ff);
@@ -249,7 +253,8 @@ public:
 	}
 	
 	
-	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = hl_null, bool with_mths = false);
+	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = hl_null, 
+							  bool with_mths = false, bool only_get = false);
 	void register_method(const char* cls, hc_mth_def* mth, bool is_nucl, bool can_register);
 	void register_value(hcell* obj, hc_term* attr);
 	void register_reference(hcell* obj, hc_term* attr);
@@ -266,9 +271,10 @@ public:
 	
 	void init_all_token(FILE* st);
 	void init_all_attributes(FILE* st);
-	void init_sys(FILE* st = stdout);
+	void init_all_methods(FILE* st);
+	void init_sys(FILE* st);
 
-	void print_all_registered_methods(FILE* st);
+	void print_all_methods(FILE* st);
 	
 	void generate_hh_files();
 	void generate_cpp_files();
@@ -327,6 +333,7 @@ public:
 	void print_glbs_hh_file();
 	void print_hh_file();
 
+	void print_glbs_cpp_dbg_tok_to_str_func(FILE* ff);
 	void print_glbs_cpp_file();
 	
 	hl_string get_tmp_cpp_name(){
@@ -339,7 +346,13 @@ public:
 	
 	void print_cpp_file();
 	void print_cpp_class_defs(FILE* ff);
-	
+
+	void set_dbg_mem_code_generation(const char* cls_nm){
+		hclass_reg* rg = get_class_reg(cls_nm, hl_null, false, true);
+		if(rg != hl_null){
+			rg->with_dbg_mem = true;
+		}
+	}
 };
 
 
@@ -792,6 +805,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -1491,6 +1505,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		if(get_has_safe()){
 			fprintf(st, "<%d>", safe_idx);
 		}
@@ -1574,6 +1589,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		fprintf(st, " %s ", get_name());
 		return 0;
 	}
@@ -1615,6 +1631,7 @@ public:
 
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		HL_CK(cast_str != hl_null);
 		fprintf(st, "(cast(%s)", cast_str);
 		the_tm->print_term(st);
@@ -1729,6 +1746,7 @@ public:
 
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		HL_CK(lit_str != hl_null);
 		fprintf(st, "(lit %s)", lit_str);
 		return 0;
@@ -1768,6 +1786,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		fprintf(st, "safe_ck(%#lx)", safe_pattern);
 		return 0;
 	}
@@ -1908,6 +1927,7 @@ public:
 	hclass_reg* get_type_reg(){
 		const char* typ = get_type();
 		hclass_reg* rg = HLANG_SYS().get_class_reg(typ);
+		HL_CK(rg != hl_null);
 		return rg;
 	}
 	
@@ -1925,6 +1945,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		HL_CK(typ != hl_null);
 		if(has_cast){
 			fprintf(st, "((%s*)", typ);
@@ -2113,6 +2134,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		fprintf(st, "%s", get_name());
 		return 0;
 	}
@@ -2171,6 +2193,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		fprintf(st, " %s() ", get_name());
 		return 0;
 	}
@@ -2249,6 +2272,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		fprintf(st, " %s() ", get_name());
 		return 0;
 	}
@@ -2341,6 +2365,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		fprintf(st, "hdbg{%s}", dbg_cod.c_str());
 		return 0;
 	}
@@ -2379,6 +2404,7 @@ public:
 	
 	virtual 
 	int print_term(FILE *st){
+		HL_CK(st != hl_null);
 		fprintf(st, "habort(%s)", ab_msg.c_str());
 		return 0;
 	}
