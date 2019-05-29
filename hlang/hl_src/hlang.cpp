@@ -493,6 +493,10 @@ hclass_reg::init_methods(){
 	tot_steps = 0;
 
 	hc_term::HC_NUM_LABEL++;
+	HL_CK(mth_nucleus_caller_step == 0);
+	mth_nucleus_caller_step = hc_term::HC_NUM_LABEL;
+	
+	hc_term::HC_NUM_LABEL++;
 	HL_CK(mth_handler_return_step == 0);
 	mth_handler_return_step = hc_term::HC_NUM_LABEL;
 	
@@ -1419,18 +1423,28 @@ hcell::get_attr_nm(const char* pfix, const char* sfix){
 
 hc_term&
 hcell::hget(hc_term& dst, hc_global& idx, hc_term& att){
+	if(! att.is_safe_attribute()){
+		hl_abort("Attribute %s is not safe. hget needs a safe attribute.\n", att.get_name());
+	}
 	hc_term* tm = new hc_send_term(hc_get_op, &dst, &htk_get, &att, &idx);
 	return *tm;
 }
 
 hc_term&
 hcell::hset(hc_term& dst, hc_global& idx, hc_term& att){
+	if(! att.is_safe_attribute()){
+		hl_abort("Attribute %s is not safe. hset needs a safe attribute.\n", att.get_name());
+	}
 	hc_term* tm = new hc_send_term(hc_set_op, &dst, &htk_set, &att, &idx);
 	return *tm;
 }
 
 hc_term&
 hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
+	hclass_reg* rg = HLANG_SYS().get_class_reg(get_class_name());
+	if(! rg->allow_send_values && ! att.is_message_reference()){
+		hl_abort("Reference %s is not a message. hsend needs a message reference.\n", att.get_name());
+	}
 	hc_term* tm = new hc_send_term(hc_send_op, &dst, &tok, &att);
 	return *tm;
 }
@@ -2708,13 +2722,32 @@ void
 void
 %s::handler(hg_missive* msv){
 PTD_CK(msv != hg_null);
+	
+hg_cell_base* 	hg_tmp_src = (hg_cell_base*)(msv->src);
+hg_token_t 		hg_tmp_tok = (hg_token_t)(msv->tok);
+hg_flags_t 		hg_tmp_flags = msv->flags;
+hg_value_t 		hg_tmp_val = msv->val;
+hg_cell_base* 	hg_tmp_ref = (hg_cell_base*)(msv->val);
+hg_id_t 		hg_tmp_att_id = msv->att_id;
+hg_bit_t 		hg_tmp_reply_bit = msv->reply_bit;
+
+hg_msg_src = hg_tmp_src;
+hg_msg_tok = hg_tmp_tok;
+hg_msg_flags = hg_tmp_flags;
+hg_msg_val = hg_tmp_val;
+hg_msg_ref = hg_tmp_ref;
+hg_msg_att_id = hg_tmp_att_id;
+hg_msg_reply_bit = hg_tmp_reply_bit;
+
+/*
 hg_msg_src = (hg_cell_base*)(msv->src);
 hg_msg_tok = (hg_token_t)(msv->tok);	
+hg_msg_flags = msv->flags;
 hg_msg_val = msv->val;
 hg_msg_ref = (hg_cell_base*)(msv->val);
-hg_msg_flags = msv->flags;
 hg_msg_att_id = msv->att_id;
 hg_msg_reply_bit = msv->reply_bit;
+*/
 
 )", nam.c_str(), nam.c_str(), nam.c_str());
 	
@@ -2732,9 +2765,11 @@ hg_msg_reply_bit = msv->reply_bit;
 		fprintf(st, "while(true){\n");
 		fprintf(st, "switch(hg_step){\n");
 		fprintf(st, "case 0: {\n");
-		fprintf(st, "\thg_step = %ld;\n", nucleus->get_num_label());
+		fprintf(st, "\thg_step = %ld;\n", nucleus->get_cod_num_label());
+		//fprintf(st, "\thg_step = %ld;\n", mth_nucleus_caller_step);
 		fprintf(st, "\n");
 		
+		print_cpp_nucleus_caller_code(st);
 		print_cpp_handler_return_code(st);
 		print_cpp_call_wait_safe_code(st);
 		print_cpp_call_mth_code(st);
@@ -3092,7 +3127,7 @@ hc_send_term::print_cpp_term(FILE *st){
 	
 	fprintf(st, " %s", tok_str);
 	
-	fprintf(st, "("); 
+	fprintf(st, "( (hg_cell_base*)"); 
 	HC_PRT_TERM_INDENT++;
 	
 	snd_dst->print_cpp_term(st);
@@ -3100,7 +3135,7 @@ hc_send_term::print_cpp_term(FILE *st){
 	fprintf(st, ", ");
 	snd_tok->print_cpp_term(st);
 
-	fprintf(st, ", ");
+	fprintf(st, ", (hg_value_t)");
 	snd_att->print_cpp_term(st);
 
 	fprintf(st, ", ");
@@ -3131,15 +3166,19 @@ hc_send_term::print_cpp_term(FILE *st){
 
 void
 hc_term::print_type_reg_comment(FILE* st){
-	hclass_reg* att_cls = get_type_reg();
-	if(att_cls != hl_null){
-		if(att_cls->with_methods){
-			fprintf(st, " /* ATT_IS_CELL */");
+	hc_syntax_op_t op = get_oper();
+	if(op == hc_reference_op){
+		if(is_message_reference()){
+			fprintf(st, " /* ATT_IS_MSG */");
 		} else {
-			fprintf(st, " /* ATT_IS_MSV */");
+			fprintf(st, " /* ATT_IS_CELL */");
 		}
-	} else {
+	} 
+	else if(op == hc_value_op){
 		fprintf(st, " /* ATT_IS_VAL */");
+	} 
+	else {
+		fprintf(st, " /* INVALID_ATT !!! */");
 	}
 }
 
@@ -3243,12 +3282,14 @@ if(hg_pending_replies != 0){
 			return;
 		}	
 		// PUSH_QUEUE
+		// FIX_THIS_CODE :
+		PTD_CK(false); 
 		if(hg_tail_queue == hg_null){
 			PTD_CK(hg_head_queue == hg_null);
 			hg_tail_queue = hg_msg_src;
 			hg_head_queue = hg_msg_src;
 		} else {
-			send_val(hg_tail_queue, htk_set, (hg_value_t)hg_msg_src, hid_next_msg, 0, 0);
+			send_val(hg_tail_queue, htk_set, hg_msg_val, hid_next_msg, 0, 0);
 			hg_tail_queue = hg_msg_src;
 		}
 		return;
@@ -3278,9 +3319,30 @@ HG_LN(%ld)
 }
 
 void
+hclass_reg::print_cpp_nucleus_caller_code(FILE* st){
+	HL_CK(nucleus != hl_null);
+	fprintf(st, R"(
+
+// print_cpp_nucleus_caller_code
+HG_LN(%ld)
+	hg_msg_src = hg_tmp_src;
+	hg_msg_tok = hg_tmp_tok;
+	hg_msg_flags = hg_tmp_flags;
+	hg_msg_val = hg_tmp_val;
+	hg_msg_ref = hg_tmp_ref;
+	hg_msg_att_id = hg_tmp_att_id;
+	hg_msg_reply_bit = hg_tmp_reply_bit;
+	
+)", mth_nucleus_caller_step);
+	
+	fflush(st);
+}
+
+void
 hclass_reg::print_cpp_handler_return_code(FILE* st){
 	HL_CK(nucleus != hl_null);
-	long nucl_step = nucleus->get_num_label();
+	long nucl_step = nucleus->get_cod_num_label();
+	//long nucl_step = mth_nucleus_caller_step;
 	//hl_safe_bits_t msk = queue_aux->get_safe_bit_mask();
 	//hl_safe_idx_t bit_idx = queue_aux->get_safe_idx();
 	hl_safe_bits_t msk = 0;
@@ -3341,6 +3403,6 @@ hc_mem_oper_term::print_cpp_term(FILE *st){
 
 void
 hc_mth_def::print_hh_step_id(FILE *st){
-	fprintf(st, "#define hg_%s_step_id %ld \n", get_name(), get_num_label());
+	fprintf(st, "#define hg_%s_step_id %ld \n", get_name(), get_cod_num_label());
 }
 

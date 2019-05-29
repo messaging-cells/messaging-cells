@@ -129,8 +129,9 @@ public:
 	std::list<hc_term*> safe_references;
 	std::list<hc_mth_def*> methods;
 	
-	bool with_dbg_mem = false;
 	bool with_methods = false;
+	bool with_dbg_mem = false;
+	bool allow_send_values = false;
 	
 	hc_mth_def* nucleus = hl_null;
 	hc_caller_t initer = hl_null;
@@ -140,6 +141,7 @@ public:
 	const char* pos_cpp_cod = hl_null;
 	long depth;
 	long tot_steps;
+	long mth_nucleus_caller_step = 0;
 	long mth_handler_return_step = 0;
 	long mth_safe_wait_step = 0;
 	long mth_call_num_step = 0;
@@ -147,8 +149,9 @@ public:
 	hl_safe_idx_t tot_safe_attrs = 0;
 	
 	hclass_reg(){
-		with_dbg_mem = false;
 		with_methods = false;
+		with_dbg_mem = false;
+		allow_send_values = false;
 	
 		nucleus = hl_null;
 		initer = hl_null;
@@ -158,6 +161,7 @@ public:
 		pos_cpp_cod = hl_null;
 		depth = 0;
 		tot_steps = 0;
+		mth_nucleus_caller_step = 0;
 		mth_handler_return_step = 0;
 		mth_safe_wait_step = 0;
 		mth_call_num_step = 0;
@@ -213,6 +217,7 @@ public:
 	void print_cpp_call_mth_case(FILE* st, long idx);
 	void print_cpp_ret_mth_case(FILE* st, long idx);
 	
+	void print_cpp_nucleus_caller_code(FILE* st);
 	void print_cpp_handler_return_code(FILE* st);
 	void print_cpp_call_wait_safe_code(FILE* st);
 	void print_cpp_call_mth_code(FILE* st);
@@ -252,6 +257,10 @@ public:
 		first_handler_idx = "mck_tot_base_cell_classes";
 	}
 	
+	hclass_reg* get_hcell_reg(const char* cls_nm){
+		hclass_reg* rg = get_class_reg(cls_nm, hl_null, false, true);
+		return rg;
+	}
 	
 	hclass_reg* get_class_reg(const char* cls, hc_caller_t the_initer = hl_null, 
 							  bool with_mths = false, bool only_get = false);
@@ -348,11 +357,19 @@ public:
 	void print_cpp_class_defs(FILE* ff);
 
 	void set_dbg_mem_code_generation(const char* cls_nm){
-		hclass_reg* rg = get_class_reg(cls_nm, hl_null, false, true);
+		hclass_reg* rg = get_hcell_reg(cls_nm);
 		if(rg != hl_null){
 			rg->with_dbg_mem = true;
 		}
 	}
+
+	void allow_send_values(const char* cls_nm){
+		hclass_reg* rg = get_hcell_reg(cls_nm);
+		if(rg != hl_null){
+			rg->allow_send_values = true;
+		}
+	}
+	
 };
 
 
@@ -367,6 +384,9 @@ template <> struct HC_ILLEGAL_USE_OF_OBJECT<true>{};
 
 enum	hc_syntax_op_t {
 	hc_invalid_op,
+
+	hc_value_op,
+	hc_reference_op,
 	
 	hc_safe_check_op,
 
@@ -549,7 +569,7 @@ public:
 		//bj_abort_func(0, "func: 'hc_term::~hc_term'"); 
 	}
 
-	hc_term&  operator , (hc_term& o1);
+	hc_term&	operator , (hc_term& o1);
 	hc_term&	operator /= (hc_term& o1);
 	
 	hc_term&	operator = (hc_term& o1);
@@ -624,11 +644,6 @@ public:
 	}	
 
 	virtual 
-	hclass_reg* get_type_reg(){
-		return hl_null;
-	}
-
-	virtual 
 	hl_string	get_cpp_casted_value(){
 		return HC_INVALID_TYPE;
 	}	
@@ -682,6 +697,12 @@ public:
 	hl_safe_bits_t get_safe_bit_mask(){
 		return 0;
 	}
+
+	virtual 
+	bool 	is_safe_attribute(){ return false; }
+
+	virtual 
+	bool 	is_message_reference(){ return false; }
 
 	static
 	void print_new_line(FILE *st);
@@ -749,7 +770,7 @@ public:
 			set_has_safe();
 		}
 	}
-
+	
 	void print_cpp_get_set_case(FILE* ff);
 	void print_cpp_reply_case(FILE* st);
 
@@ -1355,10 +1376,6 @@ public:
 		snd_dst->get_safe_attributes(all_safe, owr);
 		snd_tok->get_safe_attributes(all_safe, owr);
 		snd_att->get_safe_attributes(all_safe, owr);
-		/*if(all_safe != 0){
-			all_safe = (0 - 1);
-			HL_CK(all_safe > 0);
-		}*/
 	}
 	
 	virtual 
@@ -1487,6 +1504,11 @@ public:
 	//operator obj_t() { return ref; }		// cast op
 	 
 	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_value_op;
+	}
+	
+	virtual 
 	const char*	get_type(){
 		return typ;
 	}	
@@ -1546,6 +1568,9 @@ public:
 		return msk;
 	}
 	
+	virtual 
+	bool 	is_safe_attribute(){ return get_has_safe(); }
+
 	virtual 
 	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		if(safe_idx != HL_INVALID_SAFE_IDX){
@@ -1919,17 +1944,22 @@ public:
 	//operator obj_t() { return ref; }		// cast op
 	
 	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_reference_op;
+	}
+	
+	virtual 
 	const char*	get_type(){
 		return typ;
 	}	
 
-	virtual 
+	/*virtual 
 	hclass_reg* get_type_reg(){
 		const char* typ = get_type();
 		hclass_reg* rg = HLANG_SYS().get_class_reg(typ);
 		HL_CK(rg != hl_null);
 		return rg;
-	}
+	}*/
 	
 	virtual 
 	hl_string	get_cpp_casted_value(){
@@ -2000,6 +2030,16 @@ public:
 		return msk;
 	}
 	
+	virtual 
+	bool 	is_safe_attribute(){ return get_has_safe(); }
+
+	virtual 
+	bool 	is_message_reference(){ 
+		const char* typ = get_type();
+		hclass_reg* rg = HLANG_SYS().get_class_reg(typ);
+		return (! rg->with_methods); 
+	}
+
 	virtual 
 	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
 		if(safe_idx != HL_INVALID_SAFE_IDX){
@@ -2237,9 +2277,15 @@ public:
 			fprintf(st, "\n");
 		}
 	}
+	
+	bool	is_nucleus(){
+		HL_CK(my_cls != hl_null);
+		return (my_cls->nucleus == this);
+	}
 
 	virtual 
 	hc_term* get_first_step(){
+		HL_CK(! is_nucleus());
 		HL_CK(cod != hl_null);
 		hc_term* tm = cod->get_first_step();
 		return tm;
@@ -2248,6 +2294,16 @@ public:
 	virtual 
 	hc_syntax_op_t	get_oper(){
 		return hc_mth_def_op;
+	}
+	
+	long get_cod_num_label(){
+		if(is_nucleus()){
+			hc_term* tm = cod->get_first_step();
+			long num_lb = tm->label_number;
+			HL_CK(num_lb != 0);
+			return num_lb;
+		}
+		return get_num_label();
 	}
 	
 	void print_hh_step_id(FILE *st);

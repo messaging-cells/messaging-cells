@@ -99,9 +99,9 @@ public:
 	hlong(o1);
 	hlong(o2);
 	hlong(o3);
-	hreference(msv_1, o4);
+	hsafe_reference(msv_1, o4);
 	
-	hint(xx1);
+	hsafe_int(xx1);
 	hchar(v1);
 	hint(v2);
 	hreference(cls_A2, rr2);

@@ -39,6 +39,8 @@ hnucleus_def(cls_gs_data, central, (
 			hset(dst, htok(hid_cls_gs_data_v2), s1),
 			HPRT(R"("after hset 2\n")"),
 			hget(dst, htok(hid_cls_gs_data_v1), s2),
+			s1 = s2,
+			HPRT(R"("GOT s2 = %ld\n", s2)"),
 			s1 = hlit(0),
 			s2 = hlit(0),
 			HPRT(R"("FINISHING\n")"),

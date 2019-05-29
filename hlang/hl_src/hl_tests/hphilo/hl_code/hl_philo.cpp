@@ -179,6 +179,8 @@ int main(int argc, char *argv[]){
 	
 	fprintf(stdout, "######################################################\n");
 
+	HLANG_SYS().allow_send_values("chopstick");
+	HLANG_SYS().allow_send_values("philosopher");
 	HLANG_SYS().init_sys(hl_null);
 	
 	fprintf(stdout, "RUNNING PATH= %s \n", path_get_running_path().c_str());

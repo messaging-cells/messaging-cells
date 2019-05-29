@@ -5,26 +5,29 @@
 
 #include "hlang.hh"
 
+class msv_1;
 class cls_snd;
 
-hdeclare_token(pr_tok_snd_start);
-hdeclare_token(pr_tok_snd_val1);
-hdeclare_token(pr_tok_snd_val2);
-hdeclare_token(pr_tok_snd_add);
-hdeclare_token(pr_tok_snd_finished);
+hdeclare_token(tk_start);
+hdeclare_token(tk_write_val);
+hdeclare_token(tk_finished);
 
-hdeclare_const(k0);
-hdeclare_const(k1);
-hdeclare_const(k2);
+class msv_1 : public hcell {
+public:
+	hmissive_class(msv_1);
+	
+	hlong(vv);
+};
 
 class cls_snd : public hcell {
 public:
 	hcell_class(cls_snd);
 	
 	hreference(cls_snd, dst);
-	hchar(v1);
-	hint(v2);
-	hlong(sum);
+	hreference(msv_1, dat);
+	
+	hsafe_long(out);
+	hsafe_long(in);
 
 	hnucleus(central);
 	
