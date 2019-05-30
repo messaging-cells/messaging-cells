@@ -644,7 +644,7 @@ public:
 	}	
 
 	virtual 
-	hl_string	get_cpp_casted_value(){
+	hl_string	get_cpp_casted_tmp_msv_val(){
 		return HC_INVALID_TYPE;
 	}	
 
@@ -1514,9 +1514,9 @@ public:
 	}	
 
 	virtual 
-	hl_string	get_cpp_casted_value(){
+	hl_string	get_cpp_casted_tmp_msv_val(){
 		hl_string tt(typ);
-		hl_string vv = "((" + tt + ")hg_msg_val)";
+		hl_string vv = "((" + tt + ")hg_tmp_val)";
 		return vv;
 	}	
 
@@ -1701,12 +1701,6 @@ public:
 	const char*	get_type(){
 		HL_CK(the_tm != hl_null);
 		return the_tm->get_type();
-	}	
-
-	virtual 
-	hl_string	get_cpp_casted_value(){
-		HL_CK(the_tm != hl_null);
-		return the_tm->get_cpp_casted_value();
 	}	
 
 	virtual 
@@ -1953,18 +1947,10 @@ public:
 		return typ;
 	}	
 
-	/*virtual 
-	hclass_reg* get_type_reg(){
-		const char* typ = get_type();
-		hclass_reg* rg = HLANG_SYS().get_class_reg(typ);
-		HL_CK(rg != hl_null);
-		return rg;
-	}*/
-	
 	virtual 
-	hl_string	get_cpp_casted_value(){
+	hl_string	get_cpp_casted_tmp_msv_val(){
 		hl_string tt(typ);
-		hl_string vv = "((" + tt + "*)hg_msg_ref)";
+		hl_string vv = "((" + tt + "*)hg_tmp_ref)";
 		return vv;
 	}	
 
