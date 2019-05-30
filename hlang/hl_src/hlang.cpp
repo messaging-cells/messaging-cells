@@ -24,6 +24,7 @@ const char* hc_term::HC_INVALID_TYPE = "INVALID_TYPE";
 hdefine_token(hid_next_msg);
 hdefine_token(htk_set);
 hdefine_token(htk_get);
+hdefine_token(htk_send_again);
 hdefine_token(htk_start);
 hdefine_token(htk_finished);
 
@@ -612,10 +613,10 @@ bool
 hc_is_send_oper(hc_syntax_op_t op){
 	bool is_snd = false;
 	switch(op){
-		case hc_set_op:
-		case hc_get_op:
-		case hc_send_op:
-		case hc_reply_op:
+		case hc_hset_op:
+		case hc_hget_op:
+		case hc_hsend_op:
+		case hc_hreply_op:
 			is_snd = true;
 		break;
 		default:
@@ -753,17 +754,20 @@ hc_get_token(hc_syntax_op_t op){
 		case hc_release_op:
 			tok = "hrelease";
 		break;
-		case hc_get_op:
+		case hc_hget_op:
 			tok = "hget";
 		break;
-		case hc_set_op:
+		case hc_hset_op:
 			tok = "hset";
 		break;
-		case hc_send_op:
+		case hc_hsend_op:
 			tok = "hsend";
 		break;
-		case hc_reply_op:
+		case hc_hreply_op:
 			tok = "hreply";
+		break;
+		case hc_hwait_op:
+			tok = "hwait";
 		break;
 		case hc_member_op:
 			tok = "->";
@@ -944,17 +948,20 @@ hc_get_cpp_token(hc_syntax_op_t op){
 		case hc_release_op:
 			tok = "hg_release";
 		break;
-		case hc_get_op:
+		case hc_hget_op:
 			tok = "send_val";
 		break;
-		case hc_set_op:
+		case hc_hset_op:
 			tok = "send_val";
 		break;
-		case hc_send_op:
+		case hc_hsend_op:
 			tok = "send_val";
 		break;
-		case hc_reply_op:
+		case hc_hreply_op:
 			tok = "send_val";
+		break;
+		case hc_hwait_op:
+			tok = "hwait";
 		break;
 		case hc_member_op:
 			tok = "->";
@@ -1330,6 +1337,27 @@ HC_DEFINE_FUNC_OP(helif, hc_unary_term, hc_helif_op)
 HC_DEFINE_FUNC_OP(hswitch, hc_unary_term, hc_hswitch_op)
 HC_DEFINE_FUNC_OP(hcase, hc_case_term, hc_hcase_op)
 
+hc_term&
+hacquire(hc_term& att){
+	hc_term* tm = new hc_mem_oper_term(hc_acquire_op, &att);
+	return *tm;
+}
+
+hc_term&
+hrelease(hc_term& att){
+	hc_term* tm = new hc_mem_oper_term(hc_release_op, &att);
+	return *tm;
+}
+
+hc_term&
+hwait(hc_term& att){
+	if(! att.is_safe_attribute()){
+		hl_abort("Attribute %s is not safe. hwait needs a safe attribute.\n", att.get_name());
+	}
+	hc_term* tm = new hc_wait_term(&att);
+	return *tm;
+}
+
 long 
 hc_mth_def::calc_depth(){
 	long maxd = 0;
@@ -1426,7 +1454,7 @@ hcell::hget(hc_term& dst, hc_global& idx, hc_term& att){
 	if(! att.is_safe_attribute()){
 		hl_abort("Attribute %s is not safe. hget needs a safe attribute.\n", att.get_name());
 	}
-	hc_term* tm = new hc_send_term(hc_get_op, &dst, &htk_get, &att, &idx);
+	hc_term* tm = new hc_send_term(hc_hget_op, &dst, &htk_get, &att, &idx);
 	return *tm;
 }
 
@@ -1435,7 +1463,7 @@ hcell::hset(hc_term& dst, hc_global& idx, hc_term& att){
 	if(! att.is_safe_attribute()){
 		hl_abort("Attribute %s is not safe. hset needs a safe attribute.\n", att.get_name());
 	}
-	hc_term* tm = new hc_send_term(hc_set_op, &dst, &htk_set, &att, &idx);
+	hc_term* tm = new hc_send_term(hc_hset_op, &dst, &htk_set, &att, &idx);
 	return *tm;
 }
 
@@ -1445,25 +1473,13 @@ hcell::hsend(hc_term& dst, hc_term& tok, hc_term& att){
 	if(! rg->allow_send_values && ! att.is_message_reference()){
 		hl_abort("Reference %s is not a message. hsend needs a message reference.\n", att.get_name());
 	}
-	hc_term* tm = new hc_send_term(hc_send_op, &dst, &tok, &att);
+	hc_term* tm = new hc_send_term(hc_hsend_op, &dst, &tok, &att);
 	return *tm;
 }
 
 hc_term&
 hcell::hreply(hc_term& att){
-	hc_term* tm = new hc_send_term(hc_reply_op, &hmsg_src, &hmsg_tok, &att);
-	return *tm;
-}
-
-hc_term&
-hcell::hacquire(hc_term& att){
-	hc_term* tm = new hc_mem_oper_term(hc_acquire_op, &att);
-	return *tm;
-}
-
-hc_term&
-hcell::hrelease(hc_term& att){
-	hc_term* tm = new hc_mem_oper_term(hc_release_op, &att);
+	hc_term* tm = new hc_send_term(hc_hreply_op, &hmsg_src, &hmsg_tok, &att);
 	return *tm;
 }
 
@@ -1713,7 +1729,7 @@ hc_send_term::print_term(FILE *st){
 	snd_dst->print_term(st);
 	
 	fprintf(st, ", ");
-	if(op == hc_send_op){
+	if(op == hc_hsend_op){
 		snd_tok->print_term(st);
 	} else {
 		HL_CK(snd_req_id != hl_null);
@@ -2192,10 +2208,12 @@ void hg_missive_init_mem_funcs();
 #define hg_msv_is_reply_flag 		hg_flag2
 #define hg_msv_force_set_flag 		hg_flag3
 #define hg_msv_set_failed_flag 		hg_flag4
+#define hg_msv_is_send_again_flag 	hg_flag5
 
 #define hg_tmp_is_message() (hg_tmp_flags & hg_msv_is_message_flag)
 #define hg_tmp_is_rply() (hg_tmp_flags & hg_msv_is_reply_flag)
 #define hg_tmp_force_write() (hg_tmp_flags & hg_msv_force_set_flag)
+#define hg_tmp_is_send_again() (hg_tmp_flags & hg_msv_is_send_again_flag)
 
 class mc_aligned hg_missive : public missive {
 public:
@@ -2374,20 +2392,18 @@ hg_glbs_%s::init_mem_funcs(){
 }
 		
 void
-hg_cell_base::send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val, 
-			hg_id_t msg_req_id, hg_flags_t snd_flags, hg_bit_t rply_bit)
+hg_cell_base::send_val(hg_cell_base* the_dst, hg_token_t the_tok, hg_value_t the_val, 
+			hg_id_t the_req_id, hg_flags_t the_flags, hg_bit_t the_rply_bit)
 {
 	hg_missive* msv = hg_missive_acquire();
 	
-	PTD_CK(! (snd_flags & hg_msv_is_reply_flag) || (hg_pending_replies == 0));
-	
 	msv->src = this;
-	msv->dst = des;
-	msv->tok = tok;
-	msv->flags = snd_flags;
-	msv->val = val;
-	msv->att_id = msg_req_id;
-	msv->reply_bit = rply_bit;
+	msv->dst = the_dst;
+	msv->tok = the_tok;
+	msv->flags = the_flags;
+	msv->val = the_val;
+	msv->att_id = the_req_id;
+	msv->reply_bit = the_rply_bit;
 
 	msv->send();
 }
@@ -2734,7 +2750,40 @@ hg_bit_t 		hg_tmp_reply_bit = msv->reply_bit;
 	fprintf(st, "\treturn;\n");
 	fprintf(st, "}\n");
 	
+	if(! with_methods){
+	fprintf(st, R"(
+
+if((hg_tmp_tok != htk_get) && (hg_tmp_tok != htk_set) && (hg_tmp_tok != htk_send_again)){
+	hg_msg_src = hg_tmp_src;
+	hg_msg_tok = hg_tmp_tok;
+	hg_msg_flags = hg_tmp_flags;
+	hg_msg_val = hg_tmp_val;
+	hg_msg_ref = hg_tmp_ref;
+	hg_msg_att_id = hg_tmp_att_id;
+	hg_msg_reply_bit = hg_tmp_reply_bit;
+}
+
+if(hg_tmp_tok == htk_send_again){
+	hg_missive* msv = hg_missive_acquire();
+	
+	hg_msg_flags = hg_msg_flags | hg_msv_is_send_again_flag;
+	
+	msv->src = hg_msg_ref;
+	msv->dst = hg_msg_src;
+	msv->tok = hg_msg_tok;
+	msv->flags = hg_msg_flags;
+	msv->val = (hg_value_t)this;
+	msv->att_id = hg_msg_att_id;
+	msv->reply_bit = hg_msg_reply_bit;
+
+	msv->send();
+}
+
+)");
+	}
+	
 	if(nucleus != hl_null){
+		HL_CK(with_methods);
 
 		print_cpp_handle_reply(st);
 		
@@ -3084,7 +3133,7 @@ hc_send_term::print_cpp_term(FILE *st){
 	HL_CK(snd_tok != hl_null);
 	HL_CK(snd_att != hl_null);
 
-	if(op == hc_reply_op){
+	if(op == hc_hreply_op){
 		fprintf(st, " send_val(hg_msg_src, hg_msg_tok, ");
 		snd_att->print_cpp_term(st);
 		fprintf(st, ", 0, hg_msv_is_reply_flag, hg_msg_reply_bit)");
@@ -3263,11 +3312,13 @@ if(hg_pending_replies != 0){
 		PTD_CK(false); 
 		if(hg_tail_queue == hg_null){
 			PTD_CK(hg_head_queue == hg_null);
-			hg_tail_queue = hg_tmp_src;
-			hg_head_queue = hg_tmp_src;
+			hg_tail_queue = hg_tmp_ref;
+			hg_head_queue = hg_tmp_ref;
 		} else {
 			send_val(hg_tail_queue, htk_set, hg_tmp_val, hid_next_msg, 0, 0);
-			hg_tail_queue = hg_tmp_src;
+			hg_tail_queue = hg_tmp_ref;
+			send_val(hg_tmp_ref, hg_tmp_tok, (hg_value_t)hg_tmp_src, 
+					hg_tmp_att_id, hg_msg_flags, hg_tmp_reply_bit);
 		}
 		return;
 	}

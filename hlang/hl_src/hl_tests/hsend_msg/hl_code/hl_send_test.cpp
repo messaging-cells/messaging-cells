@@ -17,13 +17,13 @@ hnucleus_def(cls_snd, central, (
 	hswitch(hmsg_tok_as(char)) /= (
 		hcase(htk_start) /= mth_start(), 
 		hcase(tk_write_val) /= (
-			hget(hmsg_val, htok(hid_msv_1_vv), in),
-			out = in,
-			hdbg(R"my_code(printf("GOT tk_write_val\n");)my_code"),
+			hget(hmsg_ref, htok(hid_msv_1_vv), in),
+			hwait(in),
+			HPRT(R"("GOT in = %ld\n", in)"),
 			hsend(hmsg_src, tk_finished, hlit(0))
 		),
 		hcase(tk_finished) /= (
-			hdbg(R"my_code(printf("GOT pr_tok_snd_finished. Ending with abort (no sync). \n");)my_code"),
+			HPRT(R"("GOT tk_finished. Ending with hfinished. \n")"),
 			hfinished
 		)
 	),
@@ -32,9 +32,12 @@ hnucleus_def(cls_snd, central, (
 
 
 hmethod_def(cls_snd, mth_start, (
-	hdbg(R"my_code(printf("Started mth_start\n");)my_code"),
-	hsend(dst, tk_write_val, dat),
-	hdbg(R"my_code(printf("Ended mth_start\n");)my_code")
+	// dst and dat MUST BE pre-inited before calling this func
+	HPRT(R"("Started mth_start.\n")"),
+	out = hlit(432),
+	hset(dat, htok(hid_msv_1_vv), out),
+	hwait(out),
+	hsend(dst, tk_write_val, dat)
 ));
 
 int main(int argc, char *argv[]){

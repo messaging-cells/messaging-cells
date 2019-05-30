@@ -404,10 +404,11 @@ enum	hc_syntax_op_t {
 	hc_acquire_op,	// hacquire
 	hc_release_op,	// hrelease
 	
-	hc_get_op,	// hget
-	hc_set_op,	// hset
-	hc_send_op,	// hsend
-	hc_reply_op,	// hreply
+	hc_hget_op,	// hget
+	hc_hset_op,	// hset
+	hc_hsend_op,	// hsend
+	hc_hreply_op,	// hreply
+	hc_hwait_op,	// hwait
 	
 	hc_member_op,	// ->
 	
@@ -785,6 +786,10 @@ hc_term&	hswitch(hc_term& o1);
 hc_term&	hcase(hc_term& o1);
 hc_term&	hdbg(const char* cod);
 hc_term&	habort(const char* cod);
+
+hc_term& hacquire(hc_term& att);
+hc_term& hrelease(hc_term& att);
+hc_term& hwait(hc_term& att);
 
 #ifdef FULL_DEBUG
 #	define HCK(prm) hdbg("PTD_CK(" prm ")")
@@ -1186,6 +1191,74 @@ public:
 		HL_CK(end_each_loop != hl_null);
 		cond->get_safe_attributes(all_safe, owr);
 		end_each_loop->get_safe_attributes(all_safe, owr);
+	}
+
+	virtual 
+	bool	is_compound(){
+		return true;
+	}
+	
+	virtual 
+	bool	has_statements(){
+		return true;
+	}
+};
+
+class hc_wait_term : public hc_term {
+public:
+	hc_term* att;
+	
+	virtual	~hc_wait_term(){
+		if((att != hl_null) && att->is_compound()){
+			delete att;
+		}
+		att = hl_null;
+	}
+	
+	hc_wait_term(hc_term* the_att){
+		HL_CK(the_att != hl_null);
+		bool has_st = false;
+		ck_closed_param(the_att, this, has_st);
+		att = the_att;
+		
+		num_steps = att->num_steps;
+		
+		or_has_safe(att);
+	}
+	
+	virtual 
+	hc_syntax_op_t	get_oper(){
+		return hc_hwait_op;
+	}
+	
+	virtual 
+	const char*	get_name(){
+		return hc_get_token(get_oper());
+	}
+	
+	virtual 
+	int print_term(FILE *st){
+		HL_CK(st != hl_null);
+		fprintf(st, " %s(%s) ", get_name(), att->get_name());
+		return 0;
+	}
+
+	virtual 
+	int print_cpp_term(FILE *st){
+		fprintf(st, " /* %s(%s) */", get_name(), att->get_name());
+		return 0;
+	}
+
+	virtual 
+	void set_num_label(){
+		HL_CK(att != hl_null);
+		att->set_num_label();
+	}
+
+	virtual 
+	void get_safe_attributes(hl_safe_bits_t& all_safe, hcell*& owr){
+		HL_CK(att != hl_null);
+		att->get_safe_attributes(all_safe, owr);
 	}
 
 	virtual 
@@ -2511,8 +2584,6 @@ public:
 	hc_term& hsend(hc_term& dst, hc_term& tok, hc_term& att);
 	hc_term& hreply(hc_term& att);
 
-	hc_term& hacquire(hc_term& att);
-	hc_term& hrelease(hc_term& att);
 };
 
 #define hmissive_class(cls) \
