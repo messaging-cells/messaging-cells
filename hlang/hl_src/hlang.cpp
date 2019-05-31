@@ -502,6 +502,10 @@ hclass_reg::init_methods(){
 	mth_handler_return_step = hc_term::HC_NUM_LABEL;
 	
 	hc_term::HC_NUM_LABEL++;
+	HL_CK(mth_queue_pop_step == 0);
+	mth_queue_pop_step = hc_term::HC_NUM_LABEL;
+	
+	hc_term::HC_NUM_LABEL++;
 	HL_CK(mth_safe_wait_step == 0);
 	mth_safe_wait_step = hc_term::HC_NUM_LABEL;
 	
@@ -2063,6 +2067,12 @@ hc_system::print_glbs_hh_file(){
 		fprintf(ff, "class %s;\n", cls_nm);
 	}
 	fprintf(ff, "\n");
+	
+	hl_safe_bits_t get_nxt_bit = 0;
+	hl_set_bit(&get_nxt_bit, HC_GET_NEXT_SAFE_IDX);
+	
+	hl_safe_bits_t snd_again_bit = 0;
+	hl_set_bit(&snd_again_bit, HC_SEND_AGAIN_SAFE_IDX);
 
 	fprintf(ff, R"base(
 class hg_missive;
@@ -2071,11 +2081,17 @@ class hg_cell_base;
 #define hg_inline_fn mc_inline_fn
 #define HG_INVALID_SAFE_IDX 0
 #define hg_null mc_null
-		
+
+#define HG_GET_NEXT_SAFE_IDX %d
+#define HG_SEND_AGAIN_SAFE_IDX %d
+
+#define HG_GET_NEXT_SAFE_BIT %#lx
+#define HG_SEND_AGAIN_SAFE_BIT %#lx
+
 //======================================================================
 // handler indexes
 
-)base");
+)base", HC_GET_NEXT_SAFE_IDX, HC_SEND_AGAIN_SAFE_IDX, get_nxt_bit, snd_again_bit);
 	
 	const char* prj_nam = project_nam.c_str();
 
@@ -2663,7 +2679,7 @@ hclass_reg::print_cpp_get_set_switch(FILE* st){
 					hg_msv_is_reply_flag, hg_tmp_reply_bit);
 			} else {
 				PTD_CK(hg_tmp_tok == htk_set);
-				PTD_CK((hg_next_msg == hg_null) == (hg_tmp_val == 0));
+				PTD_CK((hg_next_msg == hg_null) != (hg_tmp_val == 0));
 				hg_next_msg = (hg_cell_base*)hg_tmp_val;
 				
 				// SET_DOES_NOT_REPLY
@@ -2754,6 +2770,8 @@ hg_bit_t 		hg_tmp_reply_bit = msv->reply_bit;
 	fprintf(st, R"(
 
 if((hg_tmp_tok != htk_get) && (hg_tmp_tok != htk_set) && (hg_tmp_tok != htk_send_again)){
+	PTD_CK(! (hg_tmp_flags & hg_msv_is_reply_flag));
+	
 	hg_msg_src = hg_tmp_src;
 	hg_msg_tok = hg_tmp_tok;
 	hg_msg_flags = hg_tmp_flags;
@@ -2766,6 +2784,8 @@ if((hg_tmp_tok != htk_get) && (hg_tmp_tok != htk_set) && (hg_tmp_tok != htk_send
 if(hg_tmp_tok == htk_send_again){
 	hg_missive* msv = hg_missive_acquire();
 	
+	PTD_CK(! (hg_msg_flags & hg_msv_is_reply_flag));
+	
 	hg_msg_flags = hg_msg_flags | hg_msv_is_send_again_flag;
 	
 	msv->src = hg_msg_ref;
@@ -2777,6 +2797,10 @@ if(hg_tmp_tok == htk_send_again){
 	msv->reply_bit = hg_msg_reply_bit;
 
 	msv->send();
+	
+	if(hg_next_msg != hg_null){
+		hg_next_msg = hg_null;
+	}
 }
 
 )");
@@ -2797,6 +2821,7 @@ if(hg_tmp_tok == htk_send_again){
 		
 		print_cpp_nucleus_caller_code(st);
 		print_cpp_handler_return_code(st);
+		print_cpp_queue_pop_code(st);
 		print_cpp_call_wait_safe_code(st);
 		print_cpp_call_mth_code(st);
 		print_cpp_ret_mth_code(st);
@@ -3273,16 +3298,34 @@ hclass_reg::print_cpp_replies_switch(FILE* st){
 	
 	fprintf(st, "\n\n");
 	fprintf(st, "\tswitch(hg_tmp_reply_bit){ // begin_replies_switch\n");
-	fprintf(st, "\t/* SAFE_VALUES */\n");
+
+	fprintf(st, R"gs(
+		case HG_GET_NEXT_SAFE_IDX:{
+			PTD_CK(hg_pending_replies == HG_GET_NEXT_SAFE_BIT);
+			PTD_CK(hg_needed_replies == HG_GET_NEXT_SAFE_BIT);
+			hg_pending_replies = (hg_pending_replies & (~ HG_GET_NEXT_SAFE_BIT));
+			PTD_CK(hg_pending_replies == 0);
+		}
+		break;
+
+		case HG_SEND_AGAIN_SAFE_IDX:{
+			PTD_CK(hg_pending_replies == HG_SEND_AGAIN_SAFE_BIT);
+			PTD_CK(hg_needed_replies == HG_SEND_AGAIN_SAFE_BIT);
+			hg_pending_replies = (hg_pending_replies & (~ HG_SEND_AGAIN_SAFE_BIT));
+			PTD_CK(hg_pending_replies == 0);
+		}
+		break;
+	)gs");
 	
+	fprintf(st, "\t/* SAFE_VALUES */\n");
 	auto it1 = safe_values.begin();
 	for(; it1 != safe_values.end(); ++it1){
 		hc_term* trm = (*it1);
 		trm->print_cpp_reply_case(st);
 	}
 	fprintf(st, "\n\n");
-	fprintf(st, "\t/* SAFE_REFERENCES */\n");
 	
+	fprintf(st, "\t/* SAFE_REFERENCES */\n");
 	auto it2 = safe_references.begin();
 	for(; it2 != safe_references.end(); ++it2){
 		hc_term* trm = (*it2);
@@ -3302,14 +3345,21 @@ hclass_reg::print_cpp_handle_reply(FILE* st){
 if(hg_pending_replies != 0){
 	PTD_CK((hg_step == %ld) || (hg_step == %ld));
 	
-	if(! hg_tmp_is_rply()){
+	if((hg_pending_replies & HG_SEND_AGAIN_SAFE_BIT) && hg_tmp_is_send_again()){
+		PTD_CK(hg_pending_replies == HG_SEND_AGAIN_SAFE_BIT);
+		PTD_CK(! hg_tmp_is_rply());
+		PTD_CK(hg_tmp_tok != htk_send_again); 
+		PTD_CK(hg_tmp_tok != htk_set); 
+		PTD_CK(hg_tmp_tok != htk_get);
+		hg_pending_replies = 0;
+	}
+	else if(! hg_tmp_is_rply()){
 		if(! hg_tmp_is_message()){
 			// THIS_MESSAGE_IS_LOST_PERIOD_USERS FAULT.
 			return;
 		}	
 		// PUSH_QUEUE
-		// FIX_THIS_CODE :
-		PTD_CK(false); 
+		PTD_CK(false); // CODING
 		if(hg_tail_queue == hg_null){
 			PTD_CK(hg_head_queue == hg_null);
 			hg_tail_queue = hg_tmp_ref;
@@ -3317,27 +3367,36 @@ if(hg_pending_replies != 0){
 		} else {
 			send_val(hg_tail_queue, htk_set, hg_tmp_val, hid_next_msg, 0, 0);
 			hg_tail_queue = hg_tmp_ref;
+			
+			PTD_CK(hg_tmp_is_message());
+			PTD_CK(! hg_tmp_is_rply());
+			PTD_CK(hg_tmp_tok != htk_send_again); 
+			PTD_CK(hg_tmp_tok != htk_set); 
+			PTD_CK(hg_tmp_tok != htk_get); 
 			send_val(hg_tmp_ref, hg_tmp_tok, (hg_value_t)hg_tmp_src, 
-					hg_tmp_att_id, hg_msg_flags, hg_tmp_reply_bit);
+					hg_tmp_att_id, hg_tmp_flags, hg_tmp_reply_bit);
 		}
 		return;
 	}
+	else {
 	
 )gs", mth_safe_wait_step, mth_handler_return_step);
 	
 	print_cpp_replies_switch(st);
 	
-	fprintf(st, "}");
+	fprintf(st, R"gs(
+	}
+}
+)gs");
 }
 
 void
 hclass_reg::print_cpp_call_wait_safe_code(FILE* st){
 	fprintf(st, R"gs(
 		
-		
 // print_cpp_call_wait_safe_code
 HG_LN(%ld)
-	if((hg_pending_replies & hg_needed_replies) == 0){ hg_step = hg_ret_step; }
+	if((hg_pending_replies & hg_needed_replies) == 0){ hg_needed_replies = 0; hg_step = hg_ret_step; }
 	else { 
 		return; 
 	}
@@ -3371,19 +3430,11 @@ HG_LN(%ld)
 
 void
 hclass_reg::print_cpp_handler_return_code(FILE* st){
-	HL_CK(nucleus != hl_null);
-	//long nucl_step = nucleus->get_cod_num_label();
-	long nucl_step = mth_nucleus_caller_step;
-	//hl_safe_bits_t msk = queue_aux->get_safe_bit_mask();
-	//hl_safe_idx_t bit_idx = queue_aux->get_safe_idx();
-	hl_safe_bits_t msk = 0;
-	hl_safe_idx_t bit_idx = 0;
 	fprintf(st, R"(
 
 
 // print_cpp_handler_return_code
 HG_LN(%ld)
-	// ASK_NEXT_HEAD
 	if(hg_pending_replies != 0){
 		return;
 	}
@@ -3392,13 +3443,46 @@ HG_LN(%ld)
 		hg_step = %ld;
 		return;
 	}
-	// FIX_THIS_CODE :
-	PTD_CK(false);
-	//send_val(hg_head_queue, htk_get, 0, hid_next_msg, hg_msv_needs_reply_flag, %d);
-	hg_pending_replies = %#lx;
+	PTD_CK(false); // CODING
+	// ASK_NEXT_HEAD
+	send_val(hg_head_queue, htk_get, 0, hid_next_msg, hg_msv_needs_reply_flag, HG_GET_NEXT_SAFE_IDX);
+	hg_pending_replies = HG_GET_NEXT_SAFE_BIT;
+	hg_needed_replies = HG_GET_NEXT_SAFE_BIT;
 	hg_ret_step = %ld; 
 	hg_step = %ld;
-)", mth_handler_return_step, nucl_step, bit_idx, msk, nucl_step, mth_safe_wait_step);
+)", mth_handler_return_step, 
+	mth_nucleus_caller_step, 
+	mth_queue_pop_step, 
+	mth_safe_wait_step);
+	
+	fflush(st);
+}
+
+void
+hclass_reg::print_cpp_queue_pop_code(FILE* st){
+	//HG_SEND_AGAIN_SAFE_IDX
+	fprintf(st, R"(
+
+// print_cpp_queue_pop_code
+HG_LN(%ld)
+	PTD_CK(false); // CODING
+	PTD_CK(hg_tmp_tok == htk_get); 
+	PTD_CK(hg_pending_replies == 0); 
+	PTD_CK(hg_needed_replies == 0); 
+	
+	// hg_tmp_ref holds the next of hg_head_queue
+	
+	send_val(hg_head_queue, htk_send_again, 0, 0, 0, 0);
+	if(hg_head_queue == hg_tail_queue){
+		hg_tail_queue = hg_tmp_ref;
+	}
+	hg_head_queue = hg_tmp_ref;
+	// SEND_AGAIN
+	hg_pending_replies = HG_SEND_AGAIN_SAFE_BIT;
+	hg_needed_replies = HG_SEND_AGAIN_SAFE_BIT;
+	hg_ret_step = %ld; 
+	hg_step = %ld;
+)", mth_queue_pop_step, mth_nucleus_caller_step, mth_safe_wait_step);
 	
 	fflush(st);
 }

@@ -54,6 +54,9 @@ hlang declarations.
 
 #define HL_INVALID_SAFE_IDX 0
 #define HL_MAX_SAFE_IDX 63
+#define HC_NUM_RESERVED_SAFE_IDX 4
+#define HC_GET_NEXT_SAFE_IDX 1
+#define HC_SEND_AGAIN_SAFE_IDX 2
 
 extern char PROC_LINK_BUFF[];
 extern char FILE_NAME_BUFF[];
@@ -143,10 +146,11 @@ public:
 	long tot_steps;
 	long mth_nucleus_caller_step = 0;
 	long mth_handler_return_step = 0;
+	long mth_queue_pop_step = 0;
 	long mth_safe_wait_step = 0;
 	long mth_call_num_step = 0;
 	long mth_ret_num_step = 0;
-	hl_safe_idx_t tot_safe_attrs = 0;
+	hl_safe_idx_t tot_safe_attrs = HC_NUM_RESERVED_SAFE_IDX;
 	
 	hclass_reg(){
 		with_methods = false;
@@ -163,10 +167,11 @@ public:
 		tot_steps = 0;
 		mth_nucleus_caller_step = 0;
 		mth_handler_return_step = 0;
+		mth_queue_pop_step = 0;
 		mth_safe_wait_step = 0;
 		mth_call_num_step = 0;
 		mth_ret_num_step = 0;
-		tot_safe_attrs = 0;
+		tot_safe_attrs = HC_NUM_RESERVED_SAFE_IDX;
 	}
 
 	virtual	~hclass_reg(){}
@@ -219,6 +224,7 @@ public:
 	
 	void print_cpp_nucleus_caller_code(FILE* st);
 	void print_cpp_handler_return_code(FILE* st);
+	void print_cpp_queue_pop_code(FILE* st);
 	void print_cpp_call_wait_safe_code(FILE* st);
 	void print_cpp_call_mth_code(FILE* st);
 	void print_cpp_ret_mth_code(FILE* st);
