@@ -12,6 +12,7 @@ void htests_send_msg_init_handlers(){
 	missive_handler_t* hndlrs = hg_handlers;
 	mc_init_arr_vals(idx_total_hl_generated_output, hndlrs, mc_null);
 	hndlrs[idx_cls_snd] = cls_snd_handler;
+	hndlrs[idx_msv_1] = msv_1_handler;
 	hndlrs[idx_last_ivalid_hl_generated_output] = kernel::invalid_handler_func;
 
 	kernel::set_cell_handlers(hndlrs);
@@ -34,6 +35,7 @@ void mc_workerus_main() {
 	workeru_dat->init_mem_funcs();
 	hg_missive_init_mem_funcs();
 	hg_cls_snd_init_mem_funcs();
+	hg_msv_1_init_mem_funcs();
 	
 	htests_send_msg_init_handlers();
 
@@ -43,6 +45,11 @@ void mc_workerus_main() {
 	agent_grp::separate(mc_out_num_workerus);
 
 	cls_snd* snd_obj = hg_cls_snd_acquire();
+
+	if(nn == 0){
+		msv_1* a_msg = hg_msv_1_acquire();
+		snd_obj->dat = a_msg;
+	}
 	
 	hg_globals()->hg_user_data = snd_obj;
 	

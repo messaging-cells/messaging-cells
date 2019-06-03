@@ -23,7 +23,6 @@ class cls_snd : public hcell {
 public:
 	hcell_class(cls_snd);
 	
-	hreference(cls_snd, dst);
 	hreference(msv_1, dat);
 	
 	hsafe_long(out);

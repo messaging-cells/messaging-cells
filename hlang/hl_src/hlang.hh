@@ -1937,7 +1937,8 @@ public:
 		//HL_CK((std::is_base_of<hcell, obj_t>::value));
 		my_id = the_id;
 		
-		bool is_sf = HLANG_SYS().is_missive_class(the_typ) || rf_safe;
+		//bool is_sf = HLANG_SYS().is_missive_class(the_typ) || rf_safe;
+		bool is_sf = rf_safe;
 		if(is_sf && (the_owner != hl_null)){
 			set_has_safe();
 		}

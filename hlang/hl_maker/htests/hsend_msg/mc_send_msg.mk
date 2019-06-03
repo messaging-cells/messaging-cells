@@ -21,6 +21,7 @@ SOURCES := \
 	${HTESTS_BASE_DIR}/hsend_msg/mc_code/mc_send_msg_mgru.cpp \
 	${HTESTS_BASE_DIR}/hsend_msg/mc_code/mc_send_msg_wrku.cpp \
 	${MC_SEND_MSG_BASE_DIR}/hl_generated_output_glbs.cpp \
+	${MC_SEND_MSG_BASE_DIR}/msv_1.cpp \
 	${MC_SEND_MSG_BASE_DIR}/cls_snd.cpp \
 	
 	

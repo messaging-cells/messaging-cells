@@ -17,9 +17,12 @@ hnucleus_def(cls_snd, central, (
 	hswitch(hmsg_tok_as(char)) /= (
 		hcase(htk_start) /= mth_start(), 
 		hcase(tk_write_val) /= (
+			HPRT(R"("src_before = %p\n", (void*)hg_msg_src)"),
 			hget(hmsg_ref, htok(hid_msv_1_vv), in),
 			hwait(in),
 			HPRT(R"("GOT in = %ld\n", in)"),
+			HPRT(R"("src_after = %p\n", (void*)hg_msg_src)"),
+			//hfinished
 			hsend(hmsg_src, tk_finished, hlit(0))
 		),
 		hcase(tk_finished) /= (
@@ -32,12 +35,13 @@ hnucleus_def(cls_snd, central, (
 
 
 hmethod_def(cls_snd, mth_start, (
-	// dst and dat MUST BE pre-inited before calling this func
+	// dat MUST BE pre-inited before calling this func
 	HPRT(R"("Started mth_start.\n")"),
 	out = hlit(432),
 	hset(dat, htok(hid_msv_1_vv), out),
 	hwait(out),
-	hsend(dst, tk_write_val, dat)
+	HPRT(R"("Ended mth_start.\n")"),
+	hsend(hmsg_src, tk_write_val, dat)
 ));
 
 int main(int argc, char *argv[]){
