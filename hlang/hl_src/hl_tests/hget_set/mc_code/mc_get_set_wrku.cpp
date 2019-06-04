@@ -46,7 +46,8 @@ void mc_workerus_main() {
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
 
-	cls_gs_data* snd_obj = hg_cls_gs_data_acquire();
+	cls_gs_data* snd_obj = hg_null;
+	hg_acquire(cls_gs_data, snd_obj);
 	
 	hg_globals()->hg_user_data = snd_obj;
 	

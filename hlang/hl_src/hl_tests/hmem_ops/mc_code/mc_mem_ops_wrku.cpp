@@ -8,10 +8,11 @@ hg_globals(){
 	return ((hg_glbs_hl_generated_output *)(kernel::get_sys()->user_data));
 }
 
-void htests_send_val_init_handlers(){
+void htests_mem_ops_init_handlers(){
 	missive_handler_t* hndlrs = hg_handlers;
 	mc_init_arr_vals(idx_total_hl_generated_output, hndlrs, mc_null);
-	hndlrs[idx_cls_snd_val] = cls_snd_val_handler;
+	hndlrs[idx_cls_mem_ops] = cls_mem_ops_handler;
+	hndlrs[idx_msv_1] = msv_1_handler;
 	hndlrs[idx_last_ivalid_hl_generated_output] = kernel::invalid_handler_func;
 
 	kernel::set_cell_handlers(hndlrs);
@@ -33,17 +34,25 @@ void mc_workerus_main() {
 
 	workeru_dat->init_mem_funcs();
 	hg_missive_init_mem_funcs();
-	hg_cls_snd_val_init_mem_funcs();
+	hg_cls_mem_ops_init_mem_funcs();
+	hg_msv_1_init_mem_funcs();
 	
-	htests_send_val_init_handlers();
+	htests_mem_ops_init_handlers();
 
 	cell::separate(mc_out_num_workerus);
 	missive::separate(mc_out_num_workerus);
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
 
-	cls_snd_val* snd_obj = hg_null;
-	hg_acquire(cls_snd_val, snd_obj);
+	cls_mem_ops* snd_obj = hg_null;
+	hg_acquire(cls_mem_ops, snd_obj);
+	
+	if(nn == 0){
+		msv_1* a_msg = hg_null;
+		hg_acquire(msv_1, a_msg);
+		
+		snd_obj->dat = a_msg;
+	}
 	
 	hg_globals()->hg_user_data = snd_obj;
 	
@@ -67,8 +76,8 @@ void mc_workerus_main() {
 		PTD_CK(dat2 != mc_null);
 		mc_spin_cond(dat2->hg_user_data == mc_null);
 		
-		cls_snd_val* obj1 = snd_obj;
-		cls_snd_val* obj2 = (cls_snd_val*)(dat2->hg_user_data);
+		cls_mem_ops* obj1 = snd_obj;
+		cls_mem_ops* obj2 = (cls_mem_ops*)(dat2->hg_user_data);
 
 		PTD_CK(obj1 != mc_null);
 		PTD_CK(obj2 != mc_null);

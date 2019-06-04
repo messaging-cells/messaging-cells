@@ -79,8 +79,8 @@ void mc_workerus_main() {
 
 	philo_global_info ph_dat;
 	
-	ph_dat.my_philo = hg_philosopher_acquire();
-	ph_dat.my_stick = hg_chopstick_acquire();
+	hg_acquire(philosopher, ph_dat.my_philo);
+	hg_acquire(chopstick, ph_dat.my_stick);
 	
 	//CELL_INIT_BEGINING. NEVER INIT CELL THIS WAY. Only for testing purposes.
 	hg_missive null_msv;

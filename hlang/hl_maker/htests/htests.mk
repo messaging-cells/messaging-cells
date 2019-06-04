@@ -51,6 +51,8 @@ SUBMAKEFILES := \
 	./hget_set/mc_get_set.mk \
 	./hsend_msg/hl_send_msg.mk \
 	./hsend_msg/mc_send_msg.mk \
+	./hmem_ops/hl_mem_ops.mk \
+	./hmem_ops/mc_mem_ops.mk \
 	
 	
 	

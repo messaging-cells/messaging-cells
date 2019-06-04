@@ -22,11 +22,14 @@ long	hc_term::HC_NUM_LABEL = 0;
 const char* hc_term::HC_INVALID_TYPE = "INVALID_TYPE";
 
 hdefine_token(hid_next_msg);
-hdefine_token(htk_set);
+
+hdefine_token(htk_release);
 hdefine_token(htk_get);
-hdefine_token(htk_send_again);
+hdefine_token(htk_set);
 hdefine_token(htk_start);
 hdefine_token(htk_finished);
+
+hdefine_token(htk_send_again);
 
 // =======================================================================================
 // FILE_FUNCTIONS
@@ -2160,8 +2163,17 @@ public:
 //======================================================================
 // cell_base
 
+#define hg_cell_acquired_flag 		hg_flag0
+#define hg_cell_to_release_flag 	hg_flag1
+
+#define hg_acquire(cls, ref) (ref) = hg_ ## cls ## _acquire(); (ref)->set_acquired_flag();
+
+#define hg_release(ref) send_val(ref, htk_release, 0, 0, 0, 0);
+
 class mc_aligned hg_cell_base : public cell {
 public:
+	hg_flags_t 	hg_cell_flags = 0;
+	
 	hg_cell_base* hg_head_queue = hg_null;
 	hg_cell_base* hg_tail_queue = hg_null;
 	
@@ -2184,6 +2196,8 @@ public:
 	hg_step_t hg_cll_step = 0;
 	
 	hg_cell_base(){
+		hg_cell_flags = 0;
+	
 		hg_head_queue = hg_null;
 		hg_tail_queue = hg_null;
 	
@@ -2211,13 +2225,44 @@ public:
 	void
 	send_val(hg_cell_base* des, hg_token_t tok, hg_value_t val, hg_id_t att_id, 
 			hg_flags_t snd_flags, hg_bit_t rply_bit);
+	
+	void
+	set_acquired_flag(){
+		PTD_CK(! has_acquired_flag());
+		hg_set_mask(hg_cell_flags, hg_cell_acquired_flag);
+	}
+
+	void
+	reset_acquired_flag(){
+		hg_reset_mask(hg_cell_flags, hg_cell_acquired_flag);
+	}
+
+	bool
+	has_acquired_flag(){
+		return hg_has_mask(hg_cell_flags, hg_cell_acquired_flag);
+	}
+
+	void
+	set_to_release_flag(){
+		PTD_CK(! has_to_release_flag());
+		hg_set_mask(hg_cell_flags, hg_cell_to_release_flag);
+	}
+
+	void
+	reset_to_release_flag(){
+		hg_reset_mask(hg_cell_flags, hg_cell_to_release_flag);
+	}
+
+	bool
+	has_to_release_flag(){
+		return hg_has_mask(hg_cell_flags, hg_cell_to_release_flag);
+	}
 
 };
 
 void hg_missive_init_mem_funcs();
 
-#define hg_missive_acquire_arr(num) ((hg_missive *)(kernel::do_acquire(idx_hg_missive, num)))
-#define hg_missive_acquire() hg_missive_acquire_arr(1)
+#define hg_missive_acquire() ((hg_missive *)(kernel::do_acquire(idx_hg_missive, 1)))
 	
 #define hg_msv_is_message_flag 		hg_flag0
 #define hg_msv_needs_reply_flag 	hg_flag1
@@ -2504,8 +2549,7 @@ hclass_reg::print_hh_class_top_decl(FILE* ff){
 void %s_handler(missive* msv);
 void hg_%s_init_mem_funcs();
 		
-#define hg_%s_acquire_arr(num) ((%s*)(kernel::do_acquire(idx_%s, num)))
-#define hg_%s_acquire() hg_%s_acquire_arr(1)
+#define hg_%s_acquire() ((%s*)(kernel::do_acquire(idx_%s, 1)))
 	
 class mc_aligned %s : public hg_cell_base {
 public:
@@ -2528,7 +2572,6 @@ public:
 	void handler(hg_missive* msv);
 	
 )", 
-cls_nm, cls_nm,
 cls_nm, cls_nm, cls_nm, cls_nm, cls_nm, 
 cls_nm, cls_nm, cls_nm, cls_nm, cls_nm, cls_nm);
 
@@ -2652,7 +2695,20 @@ cls_nam, cls_nam, cls_nam, cls_nam, cls_nam, cls_nam
 }
 
 void
-hclass_reg::print_cpp_get_set_switch(FILE* st){
+hclass_reg::print_cpp_get_set_switch_code(FILE* st){
+
+	if(with_methods){
+		fprintf(st, R"gc(
+if(! hg_tmp_is_rply() && (hg_tmp_tok == htk_release)){
+	set_to_release_flag();
+	return;
+}
+		)gc");
+	}
+	
+	fprintf(st, "\n");
+	fprintf(st, "if(! hg_tmp_is_rply() && ((hg_tmp_tok == htk_get) || (hg_tmp_tok == htk_set))){\n");
+	
 	if(with_dbg_mem){
 		fprintf(st, R"gs(
 	if(hg_dbg_get_set_func != hg_null){
@@ -2723,6 +2779,9 @@ hclass_reg::print_cpp_get_set_switch(FILE* st){
 	
 	fprintf(st, "\t} // end_get_set_switch\n");
 	fprintf(st, "\n\n");
+	
+	fprintf(st, "\treturn;\n");
+	fprintf(st, "}\n");
 }
 
 
@@ -2734,7 +2793,7 @@ hclass_reg::print_all_cpp_methods(FILE *st){
 			return;
 	}	
 	//tot_steps = 0;
-	fprintf(st, R"(
+	fprintf(st, R"gc(
 		
 void 
 %s_handler(missive* msv){
@@ -2748,6 +2807,7 @@ void
 		
 void
 %s::handler(hg_missive* msv){
+PTD_CK(has_acquired_flag());
 PTD_CK(msv != hg_null);
 	
 hg_cell_base* 	hg_tmp_src = (hg_cell_base*)(msv->src);
@@ -2758,16 +2818,19 @@ hg_cell_base* 	hg_tmp_ref = (hg_cell_base*)(msv->val);
 hg_id_t 		hg_tmp_att_id = msv->att_id;
 hg_bit_t 		hg_tmp_reply_bit = msv->reply_bit;
 
-)", nam.c_str(), nam.c_str(), nam.c_str());
+
+)gc", nam.c_str(), nam.c_str(), nam.c_str());
 	
-	fprintf(st, "\n\n");
-	fprintf(st, "if(! hg_tmp_is_rply() && ((hg_tmp_tok == htk_get) || (hg_tmp_tok == htk_set))){\n");
-	print_cpp_get_set_switch(st);
-	fprintf(st, "\treturn;\n");
-	fprintf(st, "}\n");
+	print_cpp_get_set_switch_code(st);
 	
 	if(! with_methods){
-	fprintf(st, R"(
+	fprintf(st, R"gc(
+		
+if(hg_tmp_tok == htk_release){
+	release();
+	
+	return;
+}
 
 if((hg_tmp_tok != htk_get) && (hg_tmp_tok != htk_set) && (hg_tmp_tok != htk_send_again)){
 	PTD_CK(! (hg_tmp_flags & hg_msv_is_reply_flag));
@@ -2779,6 +2842,8 @@ if((hg_tmp_tok != htk_get) && (hg_tmp_tok != htk_set) && (hg_tmp_tok != htk_send
 	hg_msg_ref = hg_tmp_ref;
 	hg_msg_att_id = hg_tmp_att_id;
 	hg_msg_reply_bit = hg_tmp_reply_bit;
+	
+	return;
 }
 
 if(hg_tmp_tok == htk_send_again){
@@ -2801,21 +2866,22 @@ if(hg_tmp_tok == htk_send_again){
 	if(hg_next_msg != hg_null){
 		hg_next_msg = hg_null;
 	}
+	
+	return;
 }
 
-)");
+)gc");
 	}
 	
 	if(nucleus != hl_null){
 		HL_CK(with_methods);
 
-		print_cpp_handle_reply(st);
+		print_cpp_handle_reply_code(st);
 		
 		fprintf(st, "\n\n");
 		fprintf(st, "while(true){\n");
 		fprintf(st, "switch(hg_step){\n");
 		fprintf(st, "case 0: {\n");
-		//fprintf(st, "\thg_step = %ld;\n", nucleus->get_cod_num_label());
 		fprintf(st, "\thg_step = %ld;\n", mth_nucleus_caller_step);
 		fprintf(st, "\n");
 		
@@ -3294,7 +3360,7 @@ hc_term::print_cpp_reply_case(FILE* st){
 }
 
 void
-hclass_reg::print_cpp_replies_switch(FILE* st){
+hclass_reg::print_cpp_replies_switch_code(FILE* st){
 	
 	fprintf(st, "\n\n");
 	fprintf(st, "\tswitch(hg_tmp_reply_bit){ // begin_replies_switch\n");
@@ -3337,7 +3403,7 @@ hclass_reg::print_cpp_replies_switch(FILE* st){
 }
 
 void
-hclass_reg::print_cpp_handle_reply(FILE* st){
+hclass_reg::print_cpp_handle_reply_code(FILE* st){
 	fprintf(st, R"gs(
 		
 		
@@ -3382,7 +3448,7 @@ if(hg_pending_replies != 0){
 	
 )gs", mth_safe_wait_step, mth_handler_return_step);
 	
-	print_cpp_replies_switch(st);
+	print_cpp_replies_switch_code(st);
 	
 	fprintf(st, R"gs(
 	}
@@ -3441,6 +3507,11 @@ HG_LN(%ld)
 	PTD_CK(hg_pending_replies == 0);
 	if(hg_head_queue == hg_null){
 		hg_step = %ld;
+		if(has_to_release_flag()){
+			hg_cell_flags = 0;
+			hg_step = 0;
+			release();
+		}
 		return;
 	}
 	PTD_CK(false); // CODING
@@ -3507,11 +3578,14 @@ hc_mem_oper_term::print_cpp_term(FILE *st){
 	const char* tok = hc_get_cpp_token(op);
 	HL_CK(nw_att != hl_null);
 	
-	fprintf(st, "/* %s(%s, ", tok, nw_att->get_type()); 
+	fprintf(st, "%s(", tok); 
+	if(op == hc_acquire_op){
+		fprintf(st, "%s, ", nw_att->get_type()); 
+	}
 	HC_PRT_TERM_INDENT++;	
 	nw_att->print_cpp_term(st);
 	HC_PRT_TERM_INDENT--;	
-	fprintf(st, ") */"); 
+	fprintf(st, ")"); 
 	nw_att->print_type_reg_comment(st);
 	return 0;
 }
@@ -3521,3 +3595,5 @@ hc_mth_def::print_hh_step_id(FILE *st){
 	fprintf(st, "#define hg_%s_step_id %ld \n", get_name(), get_cod_num_label());
 }
 
+// fprintf(st, R"gc()gc");
+	

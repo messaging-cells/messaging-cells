@@ -44,10 +44,13 @@ void mc_workerus_main() {
 	agent_ref::separate(mc_out_num_workerus);
 	agent_grp::separate(mc_out_num_workerus);
 
-	cls_snd* snd_obj = hg_cls_snd_acquire();
+	cls_snd* snd_obj = hg_null;
+	hg_acquire(cls_snd, snd_obj);
 
 	if(nn == 0){
-		msv_1* a_msg = hg_msv_1_acquire();
+		msv_1* a_msg = hg_null;
+		hg_acquire(msv_1, a_msg);
+		
 		snd_obj->dat = a_msg;
 	}
 	

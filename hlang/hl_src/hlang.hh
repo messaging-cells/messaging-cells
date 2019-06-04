@@ -222,6 +222,10 @@ public:
 	void print_cpp_call_mth_case(FILE* st, long idx);
 	void print_cpp_ret_mth_case(FILE* st, long idx);
 	
+	void print_cpp_get_set_switch_code(FILE* ff);
+	void print_cpp_handle_reply_code(FILE* ff);
+	void print_cpp_replies_switch_code(FILE* ff);
+	
 	void print_cpp_nucleus_caller_code(FILE* st);
 	void print_cpp_handler_return_code(FILE* st);
 	void print_cpp_queue_pop_code(FILE* st);
@@ -229,10 +233,6 @@ public:
 	void print_cpp_call_mth_code(FILE* st);
 	void print_cpp_ret_mth_code(FILE* st);
 	
-	
-	void print_cpp_get_set_switch(FILE* ff);
-	void print_cpp_replies_switch(FILE* ff);
-	void print_cpp_handle_reply(FILE* ff);
 	void print_all_cpp_methods(FILE *st);
 };
 
@@ -2681,8 +2681,9 @@ hc_reference<obj_t>::get_src(){
 #define hmsg_val_as(typ) hcast(typ, hmsg_val)
 #define hmsg_tok_as(typ) hcast(typ, hmsg_tok)
 
-hdeclare_token(htk_set);
+hdeclare_token(htk_release);
 hdeclare_token(htk_get);
+hdeclare_token(htk_set);
 hdeclare_token(htk_start);
 hdeclare_token(htk_finished);
 
