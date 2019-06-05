@@ -17,7 +17,7 @@ hnucleus_def(cls_mem_ops, central, (
 	hswitch(hmsg_tok_as(char)) /= (
 		hcase(htk_start) /= mth_start(), 
 		hcase(tk_write_val) /= (
-			hget(hmsg_ref, htok(hid_msv_1_vv), in),
+			hget(hmsg_ref, hatt(hid_msv_1_vv), in),
 			hwait(in),
 			hrelease(hmsg_ref),
 			HPRT(R"("GOT in = %ld\n", in)"),
@@ -37,7 +37,7 @@ hmethod_def(cls_mem_ops, mth_start, (
 	hacquire(dat),
 	HPRT(R"("Started mth_start.\n")"),
 	out = hlit(432),
-	hset(dat, htok(hid_msv_1_vv), out),
+	hset(dat, hatt(hid_msv_1_vv), out),
 	hwait(out),
 	HPRT(R"("Ended mth_start.\n")"),
 	hsend(hmsg_src, tk_write_val, dat)

@@ -240,6 +240,7 @@ extern hc_system& HLANG_SYS();
 
 class hc_system {
 public:
+	long first_att_id_val;
 	long first_token_val;
 	hl_string first_handler_idx;
 	hl_string project_nam;
@@ -247,6 +248,7 @@ public:
 	std::map<hl_string, hclass_reg*> all_classes;
 	
 	std::map<hl_string, hc_term*> all_glb_address;
+	std::map<hl_string, hc_global*> all_glb_att_id;
 	std::map<hl_string, hc_global*> all_glb_token;
 	std::map<hl_string, hc_global*> all_glb_const;
 
@@ -259,6 +261,7 @@ public:
 	virtual
 	void init_me(int caller = 0){
 		project_nam = "hl_generated_output";
+		first_att_id_val = 5;
 		first_token_val = 11;
 		first_handler_idx = "mck_tot_base_cell_classes";
 	}
@@ -279,13 +282,16 @@ public:
 	bool has_address(const char* attr);
 	void register_address(hc_term* attr);
 
+	hc_global& add_att(const char* nm);
 	hc_global& add_tok(const char* nm);
 	hc_global& add_con(const char* nm, const char* val);
+	hc_global& get_att(const char* nm);
 	hc_global& get_tok(const char* nm);
 	hc_global& get_con(const char* nm);
 	
-	void init_all_token(FILE* st);
 	void init_all_attributes(FILE* st);
+	void init_all_att_id(FILE* st);
+	void init_all_token(FILE* st);
 	void init_all_methods(FILE* st);
 	void init_sys(FILE* st);
 
@@ -348,7 +354,9 @@ public:
 	void print_glbs_hh_file();
 	void print_hh_file();
 
+	void print_glbs_cpp_dbg_att_id_to_str_func(FILE* ff);
 	void print_glbs_cpp_dbg_tok_to_str_func(FILE* ff);
+	void print_glbs_cpp_dbg_cell_idx_to_str_func(FILE* ff);
 	void print_glbs_cpp_file();
 	
 	hl_string get_tmp_cpp_name(){
@@ -2158,25 +2166,24 @@ hc_new_literal(const char* the_lit){
 
 #define hatt_id(nn) hid_ ## nn
 
-#define htok_att_id(nn, obj) hc_global& hatt_id(nn) = HLANG_SYS().add_tok(obj->get_attr_nm("hid_", #nn))
+#define hdef_att_id(nn, obj) hc_global& hatt_id(nn) = HLANG_SYS().add_att(obj->get_attr_nm("hid_", #nn))
 
-#define htoks_att(nn, obj) htok_att_id(nn, this); 
-
-#define hvalue(tt, nn) htoks_att(nn, this); \
+#define hvalue(tt, nn) hdef_att_id(nn, this); \
 	hc_value<tt> nn{#tt, #nn, &(hatt_id(nn)), this}
 
-#define hsafe_value(tt, nn) htoks_att(nn, this); \
+#define hsafe_value(tt, nn) hdef_att_id(nn, this); \
 	hc_value<tt> nn{#tt, #nn, &(hatt_id(nn)), this, true}
 
-#define hreference(tt, nn) htoks_att(nn, this); \
+#define hreference(tt, nn) hdef_att_id(nn, this); \
 	hc_reference<tt> nn{#tt, #nn, &(hatt_id(nn)), this}
 
-#define hsafe_reference(tt, nn) htoks_att(nn, this); \
+#define hsafe_reference(tt, nn) hdef_att_id(nn, this); \
 	hc_reference<tt> nn{#tt, #nn, &(hatt_id(nn)), this, false, true}
 
 	
 #define haddress(tt, nn) hc_reference<tt> nn{#tt, #nn}
 
+#define hatt(nn) HLANG_SYS().get_att(#nn)
 #define htok(nn) HLANG_SYS().get_tok(#nn)
 #define hcon(nn) HLANG_SYS().get_con(#nn)
 

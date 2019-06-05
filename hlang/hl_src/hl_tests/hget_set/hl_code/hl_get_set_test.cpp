@@ -15,11 +15,11 @@ void gs_dbg_func(void*);
 hdbg_pre_cpp(cls_gs_data,
 R"cod(
 void gs_dbg_func(void* pm){
-	hg_dbg_mem_st* dat = (hg_dbg_mem_st*)pm;
+	hg_dbg_get_set_st* dat = (hg_dbg_get_set_st*)pm;
 	MC_MARK_USED(dat);
 	PTD_CK(dat != hg_null);
 	const char* tok_str = hg_dbg_tok_to_str(dat->tok);
-	const char* id_str = hg_dbg_tok_to_str(dat->att_id);
+	const char* id_str = hg_dbg_att_id_to_str(dat->att_id);
 	printf("dbg_get_set: %s %s %ld \n", tok_str, id_str, dat->msg_val);
 }
 )cod");
@@ -32,13 +32,13 @@ hnucleus_def(cls_gs_data, central, (
 			dst = hmsg_ref_as(cls_gs_data),
 			s1 = hlit(123),
 			HPRT(R"("before hset 1\n")"),
-			hset(dst, htok(hid_cls_gs_data_v1), s1),
+			hset(dst, hatt(hid_cls_gs_data_v1), s1),
 			HPRT(R"("after hset 1\n")"),
 			s1 = hlit(321),
 			HPRT(R"("before hset 2\n")"),
-			hset(dst, htok(hid_cls_gs_data_v2), s1),
+			hset(dst, hatt(hid_cls_gs_data_v2), s1),
 			HPRT(R"("after hset 2\n")"),
-			hget(dst, htok(hid_cls_gs_data_v1), s2),
+			hget(dst, hatt(hid_cls_gs_data_v1), s2),
 			s1 = s2,
 			HPRT(R"("GOT s2 = %ld\n", s2)"),
 			s1 = hlit(0),

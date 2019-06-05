@@ -21,7 +21,8 @@ long	hc_term::HC_PRT_TERM_INDENT = 0;
 long	hc_term::HC_NUM_LABEL = 0;
 const char* hc_term::HC_INVALID_TYPE = "INVALID_TYPE";
 
-hdefine_token(hid_next_msg);
+//hdefine_token(hid_next_msg);
+hc_term& hid_next_msg = HLANG_SYS().add_att("hid_next_msg");
 
 hdefine_token(htk_release);
 hdefine_token(htk_get);
@@ -419,6 +420,34 @@ hc_system::register_address(hc_term* attr){
 }
 
 hc_global&
+hc_system::add_att(const char* nm){
+	HL_CK(nm != hl_null);
+	hc_global* pt_glb = hl_null;
+	
+	auto it = all_glb_att_id.find(nm);
+	if(it != all_glb_att_id.end()){
+		hl_abort("Attribute_id already added %s\n", nm);
+	}
+	pt_glb = new hc_global(nm);
+	all_glb_att_id[nm] = pt_glb;
+	fprintf(stdout, "ADDING_GLB_ATTRIBUTE_ID %s\n", nm);
+	return *pt_glb;
+}
+
+hc_global&
+hc_system::get_att(const char* nm){
+	HL_CK(nm != hl_null);
+	hc_global* pt_glb = hl_null;
+	
+	auto it = all_glb_att_id.find(nm);
+	if(it == all_glb_att_id.end()){
+		hl_abort("Attribute_id %s not existant. Maybe try without quotes?\n", nm);
+	} 
+	pt_glb = it->second;
+	return *pt_glb;
+}
+
+hc_global&
 hc_system::add_tok(const char* nm){
 	HL_CK(nm != hl_null);
 	hc_global* pt_glb = hl_null;
@@ -575,10 +604,28 @@ hc_system::init_all_methods(FILE* st){
 void
 hc_system::init_sys(FILE* st){
 	init_all_attributes(st);
+	init_all_att_id(st);
 	init_all_token(st);
 	init_all_methods(st);
 	if(st != hl_null){
 		print_all_methods(st);
+	}
+}
+
+void
+hc_system::init_all_att_id(FILE* st){
+	if(st != hl_null){ 
+		fprintf(st, "---------------------------------------------------------------\n");
+	}
+	long id_current_val = first_att_id_val;
+	auto it = all_glb_att_id.begin();
+	for(; it != all_glb_att_id.end(); ++it){
+		id_current_val++;
+		hc_global* the_id = (hc_global*)(it->second);
+		the_id->val = std::to_string(id_current_val);
+		if(st != hl_null){ 
+			fprintf(st, "INITING_ATTRIBUTE_ID  %s = %ld \n", it->first.c_str(), id_current_val);
+		}
 	}
 }
 
@@ -2150,13 +2197,12 @@ typedef uint8_t hg_flags_t;
 
 typedef void (*hg_dbg_fn_t)(void*);
 	
-class mc_aligned hg_dbg_mem_st {
+class mc_aligned hg_dbg_get_set_st {
 public:
 	hg_cell_base* 	obj = hg_null;
 	hg_cell_base* 	src = hg_null;
 	hg_token_t 		tok = 0;
 	hg_value_t 		msg_val = 0;
-	hg_value_t 		att_val = 0;
 	hg_id_t 		att_id = 0;
 };
 
@@ -2349,6 +2395,13 @@ public:
 	}
 	fprintf(ff, "\n");
 	
+	auto it_att = all_glb_att_id.begin();
+	for(; it_att != all_glb_att_id.end(); ++it_att){
+		hc_global* tok = (hc_global*)(it_att->second);
+		fprintf(ff, "#define %s %s \n", it_att->first.c_str(), tok->val.c_str());
+	}
+	fprintf(ff, "\n\n");
+	
 	auto it2 = all_glb_token.begin();
 	for(; it2 != all_glb_token.end(); ++it2){
 		hc_global* tok = (hc_global*)(it2->second);
@@ -2363,7 +2416,9 @@ public:
 	}
 	fprintf(ff, "\n");
 
+	fprintf(ff, "const char* hg_dbg_att_id_to_str(hg_token_t tok);\n\n");
 	fprintf(ff, "const char* hg_dbg_tok_to_str(hg_token_t tok);\n\n");
+	fprintf(ff, "const char* hg_dbg_cell_idx_to_str(%s_idx_t idx);\n\n", prj_nam);
 	
 	fprintf(ff, "#define HG_LN(nn) } break; case nn: {\n");
 	
@@ -2381,6 +2436,30 @@ public:
 }
 
 void
+hc_system::print_glbs_cpp_dbg_att_id_to_str_func(FILE* ff){
+	fprintf(ff, R"base(
+const char* 
+hg_dbg_att_id_to_str(hg_token_t tok){
+	const char* resp = "HG_INVALID_ATTRIBUTE_ID";
+	switch(tok){
+)base");
+	
+	auto it2 = all_glb_att_id.begin();
+	for(; it2 != all_glb_att_id.end(); ++it2){
+		const char* id_tok = it2->first.c_str();
+		fprintf(ff, "\t\tcase %s: resp = \"%s\"; break;\n", id_tok, id_tok);
+	}
+	fprintf(ff, R"base(
+		default:
+		break;
+	}
+	return resp;
+}
+)base");
+	
+}
+
+void
 hc_system::print_glbs_cpp_dbg_tok_to_str_func(FILE* ff){
 	fprintf(ff, R"base(
 const char* 
@@ -2391,13 +2470,12 @@ hg_dbg_tok_to_str(hg_token_t tok){
 	
 	auto it2 = all_glb_token.begin();
 	for(; it2 != all_glb_token.end(); ++it2){
-		//hc_global* tok = (hc_global*)(it2->second);
 		const char* id_tok = it2->first.c_str();
 		fprintf(ff, "\t\tcase %s: resp = \"%s\"; break;\n", id_tok, id_tok);
 	}
-	fprintf(ff, "\n\n");
-
 	fprintf(ff, R"base(
+		default:
+		break;
 	}
 	return resp;
 }
@@ -2471,7 +2549,9 @@ hg_cell_base::send_val(hg_cell_base* the_dst, hg_token_t the_tok, hg_value_t the
 
 )base", prj_nam, idx_tot, idx_tot, idx_tot, idx_last, idx_last, idx_last, idx_tot);
 
+	print_glbs_cpp_dbg_att_id_to_str_func(ff);
 	print_glbs_cpp_dbg_tok_to_str_func(ff);
+	print_glbs_cpp_dbg_cell_idx_to_str_func(ff);
 	
 	fclose(ff);
 	
@@ -2712,7 +2792,7 @@ if(! hg_tmp_is_rply() && (hg_tmp_tok == htk_release)){
 	if(with_dbg_mem){
 		fprintf(st, R"gs(
 	if(hg_dbg_get_set_func != hg_null){
-		hg_dbg_mem_st hg_get_set_pms;
+		hg_dbg_get_set_st hg_get_set_pms;
 		
 		hg_get_set_pms.obj = this;
 		hg_get_set_pms.src = hg_tmp_src;
@@ -3597,3 +3677,30 @@ hc_mth_def::print_hh_step_id(FILE *st){
 
 // fprintf(st, R"gc()gc");
 	
+void
+hc_system::print_glbs_cpp_dbg_cell_idx_to_str_func(FILE* ff){
+	const char* prj_nam = project_nam.c_str();
+	
+	fprintf(ff, R"base(
+const char* 
+hg_dbg_cell_idx_to_str(%s_idx_t tok){
+	const char* resp = "HG_INVALID_CELL_NAME";
+	switch(tok){
+)base", prj_nam);
+
+	fprintf(ff, "\t\tcase idx_hg_missive: resp = \"hg_missive\"; break;\n");
+	auto it1 = all_classes.begin();
+	for(; it1 != all_classes.end(); ++it1){
+		const char* cls_nm = it1->first.c_str();
+		fprintf(ff, "\t\tcase idx_%s: resp = \"%s\"; break;\n", cls_nm, cls_nm);
+	}
+	fprintf(ff, R"base(
+		default:
+		break;
+	}
+	return resp;
+}
+)base");
+	
+}
+

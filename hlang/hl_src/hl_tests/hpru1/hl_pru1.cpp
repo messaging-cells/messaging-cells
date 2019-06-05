@@ -200,9 +200,9 @@ hmethod_def(cls_A3, mth02, (
 		hcase(o1) /= o2--
 	),
 	aa1 = aa2, 
-	hset(aa1, htok(hid_cls_A1_b4), xx1),
+	hset(aa1, hatt(hid_cls_A1_b4), xx1),
 	aa2 = aa3, 
-	hget(aa1, htok(hid_cls_A1_b1), o4),
+	hget(aa1, hatt(hid_cls_A1_b1), o4),
 	aa3 = aa1
 ));
 

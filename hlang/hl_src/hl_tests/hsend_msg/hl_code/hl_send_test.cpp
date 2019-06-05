@@ -18,7 +18,7 @@ hnucleus_def(cls_snd, central, (
 		hcase(htk_start) /= mth_start(), 
 		hcase(tk_write_val) /= (
 			HPRT(R"("src_before = %p\n", (void*)hg_msg_src)"),
-			hget(hmsg_ref, htok(hid_msv_1_vv), in),
+			hget(hmsg_ref, hatt(hid_msv_1_vv), in),
 			hwait(in),
 			HPRT(R"("GOT in = %ld\n", in)"),
 			HPRT(R"("src_after = %p\n", (void*)hg_msg_src)"),
@@ -38,7 +38,7 @@ hmethod_def(cls_snd, mth_start, (
 	// dat MUST BE pre-inited before calling this func
 	HPRT(R"("Started mth_start.\n")"),
 	out = hlit(432),
-	hset(dat, htok(hid_msv_1_vv), out),
+	hset(dat, hatt(hid_msv_1_vv), out),
 	hwait(out),
 	HPRT(R"("Ended mth_start.\n")"),
 	hsend(hmsg_src, tk_write_val, dat)
