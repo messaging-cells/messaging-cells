@@ -217,6 +217,7 @@ public:
 	}
 	
 	void print_cpp_file();
+	void print_cpp_release_me_mth(FILE* ff);
 	void print_cpp_class_defs(FILE* ff);
 	
 	void print_cpp_call_mth_case(FILE* st, long idx);
@@ -784,6 +785,15 @@ public:
 		if((tm != hl_null) && tm->get_has_safe()){
 			set_has_safe();
 		}
+	}
+
+	bool with_dbg_mem(){ 
+		const char* typ = get_type();
+		hclass_reg* rg = HLANG_SYS().get_hcell_reg(typ);
+		if(rg != hl_null){
+			return rg->with_dbg_mem;
+		}
+		return false; 
 	}
 	
 	void print_cpp_get_set_case(FILE* ff);

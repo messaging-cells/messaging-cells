@@ -2206,15 +2206,40 @@ public:
 	hg_id_t 		att_id = 0;
 };
 
+enum	hg_mem_op_t {
+	hg_invalid_op,
+	hg_acquire_op,
+	hg_release_op
+};
+
+const char* hg_mem_op_to_str(hg_mem_op_t op);
+
+class mc_aligned hg_dbg_mem_oper_st {
+public:
+	hg_cell_base* 	obj = hg_null;
+	hg_mem_op_t		op = hg_invalid_op;
+};
+
 //======================================================================
 // cell_base
 
 #define hg_cell_acquired_flag 		hg_flag0
 #define hg_cell_to_release_flag 	hg_flag1
 
-#define hg_acquire(cls, ref) (ref) = hg_ ## cls ## _acquire(); (ref)->set_acquired_flag();
-
-#define hg_release(ref) send_val(ref, htk_release, 0, 0, 0, 0);
+#define hg_acquire(cls, ref) \
+	(ref) = hg_ ## cls ## _acquire(); \
+	(ref)->set_acquired_flag(); \
+	
+// end_of_macro
+	
+#define hg_release(ref) \
+	if((ref) != this){ \
+		send_val((ref), htk_release, 0, 0, 0, 0); \
+	} else { \
+		release_me(); \
+	} \
+	
+// end_of_macro	
 
 class mc_aligned hg_cell_base : public cell {
 public:
@@ -2484,6 +2509,33 @@ hg_dbg_tok_to_str(hg_token_t tok){
 }
 
 void
+hc_system::print_glbs_cpp_dbg_cell_idx_to_str_func(FILE* ff){
+	const char* prj_nam = project_nam.c_str();
+	
+	fprintf(ff, R"base(
+const char* 
+hg_dbg_cell_idx_to_str(%s_idx_t tok){
+	const char* resp = "HG_INVALID_CELL_NAME";
+	switch(tok){
+)base", prj_nam);
+
+	fprintf(ff, "\t\tcase idx_hg_missive: resp = \"hg_missive\"; break;\n");
+	auto it1 = all_classes.begin();
+	for(; it1 != all_classes.end(); ++it1){
+		const char* cls_nm = it1->first.c_str();
+		fprintf(ff, "\t\tcase idx_%s: resp = \"%s\"; break;\n", cls_nm, cls_nm);
+	}
+	fprintf(ff, R"base(
+		default:
+		break;
+	}
+	return resp;
+}
+)base");
+	
+}
+
+void
 hc_system::print_glbs_cpp_file(){
 	hl_string tmp_nm = get_glbs_tmp_cpp_name();
 	if(file_exists(tmp_nm)){
@@ -2545,6 +2597,18 @@ hg_cell_base::send_val(hg_cell_base* the_dst, hg_token_t the_tok, hg_value_t the
 	msv->reply_bit = the_rply_bit;
 
 	msv->send();
+}
+
+const char* 
+hg_mem_op_to_str(hg_mem_op_t op){
+	const char* resp = "HG_INVALID_MEM_OP";
+	switch(op){
+		case hg_acquire_op: resp = "hg_acquire_op"; break;
+		case hg_release_op: resp = "hg_release_op"; break;
+		default:
+		break;
+	}
+	return resp;
 }
 
 )base", prj_nam, idx_tot, idx_tot, idx_tot, idx_last, idx_last, idx_last, idx_tot);
@@ -2635,6 +2699,8 @@ class mc_aligned %s : public hg_cell_base {
 public:
 	static
 	hg_dbg_fn_t hg_dbg_get_set_func;
+	static
+	hg_dbg_fn_t hg_dbg_mem_op_func;
 	
 	MCK_DECLARE_MEM_METHODS(%s)
 	
@@ -2642,6 +2708,8 @@ public:
 	//mck_handler_idx_t	get_cell_id(){
 	//	return idx_%s;
 	//}
+	
+	void release_me();
 
 	%s(){
 		handler_idx = idx_%s;
@@ -2731,6 +2799,9 @@ hclass_reg::print_cpp_file(){
 	fprintf(ff, R"base(
 hg_dbg_fn_t
 %s::hg_dbg_get_set_func = hg_null;
+
+hg_dbg_fn_t
+%s::hg_dbg_mem_op_func = hg_null;
 		
 void 
 hg_%s_init_mem_funcs(){
@@ -2741,9 +2812,11 @@ hg_%s_init_mem_funcs(){
 }
 
 )base",
-cls_nam, cls_nam, cls_nam, cls_nam,
+cls_nam, cls_nam, cls_nam, cls_nam, cls_nam,
 cls_nam, cls_nam, cls_nam, cls_nam, cls_nam, cls_nam
 	);
+
+	print_cpp_release_me_mth(ff);
 	
 	if(with_methods){
 		fprintf(ff, "\n\n// IT_HAS_METHODS (cell)\n");
@@ -2777,6 +2850,8 @@ cls_nam, cls_nam, cls_nam, cls_nam, cls_nam, cls_nam
 void
 hclass_reg::print_cpp_get_set_switch_code(FILE* st){
 
+	const char* cls_nm = nam.c_str();
+	
 	if(with_methods){
 		fprintf(st, R"gc(
 if(! hg_tmp_is_rply() && (hg_tmp_tok == htk_release)){
@@ -2791,7 +2866,7 @@ if(! hg_tmp_is_rply() && (hg_tmp_tok == htk_release)){
 	
 	if(with_dbg_mem){
 		fprintf(st, R"gs(
-	if(hg_dbg_get_set_func != hg_null){
+	if(%s::hg_dbg_get_set_func != hg_null){
 		hg_dbg_get_set_st hg_get_set_pms;
 		
 		hg_get_set_pms.obj = this;
@@ -2800,9 +2875,9 @@ if(! hg_tmp_is_rply() && (hg_tmp_tok == htk_release)){
 		hg_get_set_pms.msg_val = (hg_value_t)hg_tmp_val;
 		hg_get_set_pms.att_id = hg_tmp_att_id;
 		
-		(*hg_dbg_get_set_func)(&hg_get_set_pms);
+		(*%s::hg_dbg_get_set_func)(&hg_get_set_pms);
 	}
-		)gs");
+		)gs", cls_nm, cls_nm);
 	}
 	
 	fprintf(st, "\n\n");
@@ -2907,7 +2982,7 @@ hg_bit_t 		hg_tmp_reply_bit = msv->reply_bit;
 	fprintf(st, R"gc(
 		
 if(hg_tmp_tok == htk_release){
-	release();
+	release_me();
 	
 	return;
 }
@@ -3590,7 +3665,7 @@ HG_LN(%ld)
 		if(has_to_release_flag()){
 			hg_cell_flags = 0;
 			hg_step = 0;
-			release();
+			release_me();
 		}
 		return;
 	}
@@ -3655,17 +3730,36 @@ hc_mem_oper_term::print_term(FILE *st){
 
 int
 hc_mem_oper_term::print_cpp_term(FILE *st){
-	const char* tok = hc_get_cpp_token(op);
 	HL_CK(nw_att != hl_null);
 	
-	fprintf(st, "%s(", tok); 
+	const char* typ = nw_att->get_type();
 	if(op == hc_acquire_op){
-		fprintf(st, "%s, ", nw_att->get_type()); 
+		fprintf(st, "hg_acquire(%s, ", typ); 
+	} else {
+		HL_CK(op == hc_release_op);
+		fprintf(st, "hg_release("); 
 	}
 	HC_PRT_TERM_INDENT++;	
 	nw_att->print_cpp_term(st);
 	HC_PRT_TERM_INDENT--;	
 	fprintf(st, ")"); 
+	
+	if(op == hc_acquire_op){
+		hclass_reg* rg = HLANG_SYS().get_hcell_reg(typ);
+		if((rg != hl_null) && (rg->with_dbg_mem)){
+			fprintf(st, R"gc(
+			if(%s::hg_dbg_mem_op_func != hg_null){
+				hg_dbg_mem_oper_st dbg_pms;
+				
+				dbg_pms.obj = this;
+				dbg_pms.op = hg_acquire_op;
+				
+				(*%s::hg_dbg_mem_op_func)(&dbg_pms);
+			}
+			)gc", typ, typ);
+		}
+	}
+	
 	nw_att->print_type_reg_comment(st);
 	return 0;
 }
@@ -3678,29 +3772,31 @@ hc_mth_def::print_hh_step_id(FILE *st){
 // fprintf(st, R"gc()gc");
 	
 void
-hc_system::print_glbs_cpp_dbg_cell_idx_to_str_func(FILE* ff){
-	const char* prj_nam = project_nam.c_str();
+hclass_reg::print_cpp_release_me_mth(FILE *st){
+	const char* cls_nam = nam.c_str();
 	
-	fprintf(ff, R"base(
-const char* 
-hg_dbg_cell_idx_to_str(%s_idx_t tok){
-	const char* resp = "HG_INVALID_CELL_NAME";
-	switch(tok){
-)base", prj_nam);
+	fprintf(st, R"gc(
+void
+%s::release_me(){
+	release();
+	reset_acquired_flag();
+	)gc", cls_nam);
+	
+	if(with_dbg_mem){
+		fprintf(st, R"gc(
+		if(%s::hg_dbg_mem_op_func != hg_null){
+			hg_dbg_mem_oper_st dbg_pms;
+			
+			dbg_pms.obj = this;
+			dbg_pms.op = hg_release_op;
+			
+			(*%s::hg_dbg_mem_op_func)(&dbg_pms);
+		}
+		)gc", cls_nam, cls_nam);
+	}
 
-	fprintf(ff, "\t\tcase idx_hg_missive: resp = \"hg_missive\"; break;\n");
-	auto it1 = all_classes.begin();
-	for(; it1 != all_classes.end(); ++it1){
-		const char* cls_nm = it1->first.c_str();
-		fprintf(ff, "\t\tcase idx_%s: resp = \"%s\"; break;\n", cls_nm, cls_nm);
-	}
-	fprintf(ff, R"base(
-		default:
-		break;
-	}
-	return resp;
+	fprintf(st, R"gc(
 }
-)base");
+	)gc");
 	
 }
-

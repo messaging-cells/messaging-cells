@@ -13,6 +13,22 @@ hdefine_token(tk_finished);
 hmissive_class_def(msv_1);		
 hcell_class_def(cls_mem_ops);
 
+hdbg_pre_hh(msv_1, 
+R"cod(
+void mops_dbg_func(void*);
+)cod");
+
+hdbg_pre_cpp(msv_1,
+R"cod(
+void mops_dbg_func(void* pm){
+	hg_dbg_mem_oper_st* dat = (hg_dbg_mem_oper_st*)pm;
+	MC_MARK_USED(dat);
+	PTD_CK(dat != hg_null);
+	const char* op_str = hg_mem_op_to_str(dat->op);
+	printf("dbg_mem_op %s msv_1 %p \n", op_str, (void*)(dat->obj));
+}
+)cod");
+
 hnucleus_def(cls_mem_ops, central, (
 	hswitch(hmsg_tok_as(char)) /= (
 		hcase(htk_start) /= mth_start(), 
@@ -50,6 +66,7 @@ int main(int argc, char *argv[]){
 	fprintf(stdout, "######################################################\n");
 
 	HLANG_SYS().allow_send_values("cls_mem_ops");
+	HLANG_SYS().set_dbg_mem_code_generation("msv_1");
 	HLANG_SYS().init_sys(hl_null);
 	
 	fprintf(stdout, "RUNNING PATH= %s \n", path_get_running_path().c_str());
