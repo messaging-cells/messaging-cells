@@ -1,0 +1,4 @@
+yosys -s synth.script -l synth.log
+arachne-pnr -d 1k -p GO_BOARD.pcf -P vq100 -o numbers.routed numbers.blif
+icepack numbers.routed numbers.bin
+sudo iceprog numbers.bin

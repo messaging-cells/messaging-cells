@@ -1,14 +1,11 @@
 #!/bin/bash
 
-echo "FULL_CLEAN" 
+echo "Clean fpga_tests" 
 
 CURR_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd $SCRIPT_DIR
-mc_maker/clean.sh
-src/tests/src/clean.sh
-ben-jose-embryo/bj_maker/clean.sh
-hlang/clean.sh
+dbg_hcell_src_snk/clean.sh
 cd $CURR_DIR
 

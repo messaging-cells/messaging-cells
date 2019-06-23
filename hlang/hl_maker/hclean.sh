@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "hlang clean" 
+echo "Clean hlang" 
 
 CURR_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
