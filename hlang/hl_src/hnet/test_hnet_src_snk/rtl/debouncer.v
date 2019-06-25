@@ -1,4 +1,6 @@
 
+`default_nettype	none
+
 module debounce 
 	(	input i_Clk,
 		input i_Switch,

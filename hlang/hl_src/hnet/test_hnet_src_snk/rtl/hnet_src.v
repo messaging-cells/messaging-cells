@@ -1,6 +1,8 @@
 
 `include "hglobal.v"
 
+`default_nettype	none
+
 module cellnet_source 
 #(parameter MIN_ADDR=1, MAX_ADDR=1, ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
 (

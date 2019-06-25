@@ -35,7 +35,7 @@ ${PRJ_PREFIX}.asc : ${PRJ_PREFIX}.json
 
 ${PRJ_PREFIX}.json : ${RTL_FILES}
 	mkdir -p ${BUILD_DIR}; cd ${RTL_DIR}; \
-	${YOSYS_EXE} -q -s synth.script -l ../${BUILD_DIR}/synth.log
+	${YOSYS_EXE} -q synth.tcl -l ../${BUILD_DIR}/synth.log
 
 .PHONY: prog
 prog:

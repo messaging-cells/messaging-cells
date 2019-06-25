@@ -1,7 +1,7 @@
 
 `include "hglobal.v"
 
-// `ifdef
+`default_nettype	none
 
 module cellnet_sink
 #(parameter LOCAL_ADDR=1, ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)

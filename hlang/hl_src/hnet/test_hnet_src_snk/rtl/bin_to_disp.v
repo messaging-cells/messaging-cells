@@ -1,4 +1,6 @@
 
+`default_nettype	none
+
 module bin_to_disp
   (input  i_Clk,      // Main Clock (25 MHz)
    input  [3:0] i_Binary_Num, 

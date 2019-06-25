@@ -1,6 +1,8 @@
 
 `include "hglobal.v"
 
+`default_nettype	none
+
 module hnet_top (
 	input  i_clk,      // Main Clock (25 MHz)
 	input  i_Switch_1, 

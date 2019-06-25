@@ -1,8 +1,9 @@
 # verilog_defaults -add -I./cell_src_snk/
+yosys -import
 read_verilog bin_to_disp.v; 
 read_verilog debouncer.v; 
 read_verilog hnet_src.v; 
 read_verilog hnet_snk.v; 
 read_verilog hnet.v;
-synth_ice40 -blif ../build/hnet.blif;
-synth_ice40 -json ../build/hnet.json;
+synth_ice40 -blif ../$::env(BUILD_DIR)/hnet.blif;
+synth_ice40 -json ../$::env(BUILD_DIR)/hnet.json;
