@@ -1,0 +1,8 @@
+# verilog_defaults -add -I./cell_src_snk/
+read_verilog bin_to_disp.v; 
+read_verilog debouncer.v; 
+read_verilog hnet_src.v; 
+read_verilog hnet_snk.v; 
+read_verilog hnet.v;
+synth_ice40 -blif ../build/hnet.blif;
+synth_ice40 -json ../build/hnet.json;

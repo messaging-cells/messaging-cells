@@ -1,5 +1,5 @@
 
-`include "global.v"
+`include "hglobal.v"
 
 module cellnet_source 
 #(parameter MIN_ADDR=1, MAX_ADDR=1, ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)

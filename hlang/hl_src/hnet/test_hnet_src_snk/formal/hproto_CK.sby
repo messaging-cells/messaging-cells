@@ -20,4 +20,4 @@ prep -top sfifo
 [files]
 ./cellnet_src.v
 ./cellnet_snk.v
-./hnet_proto_CK.v
+./hproto_CK.v

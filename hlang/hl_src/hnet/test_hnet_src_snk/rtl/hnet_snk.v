@@ -1,5 +1,5 @@
 
-`include "global.v"
+`include "hglobal.v"
 
 // `ifdef
 

@@ -1,7 +1,7 @@
 
-`include "global.v"
+`include "hglobal.v"
 
-module Project_7_Segment_Top (
+module hnet_top (
 	input  i_clk,      // Main Clock (25 MHz)
 	input  i_Switch_1, 
 	output o_Segment1_A,
