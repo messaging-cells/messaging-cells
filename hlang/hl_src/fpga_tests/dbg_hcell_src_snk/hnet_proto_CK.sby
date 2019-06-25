@@ -1,0 +1,23 @@
+[tasks]
+prf
+cvr
+
+[options]
+prf: mode prove
+prf: depth 20
+cvr: mode cover
+cvr: depth 35
+
+[engines]
+smtbmc
+
+[script]
+read -formal cellnet_src.v
+read -formal cellnet_snk.v
+read -formal hnet_proto_CK.v
+prep -top sfifo
+
+[files]
+./cellnet_src.v
+./cellnet_snk.v
+./hnet_proto_CK.v

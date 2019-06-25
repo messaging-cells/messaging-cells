@@ -2,3 +2,7 @@ yosys -s synth.script -l synth.log
 nextpnr-ice40 --hx1k --package vq100 --json numbers.json --pcf GO_BOARD.pcf --asc numbers.asc
 icepack numbers.asc numbers_nxt.bin
 sudo iceprog numbers_nxt.bin
+
+
+# sby -f proto_CK.sby
+

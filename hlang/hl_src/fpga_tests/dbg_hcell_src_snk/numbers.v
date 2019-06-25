@@ -20,25 +20,33 @@ module Project_7_Segment_Top (
 	output o_Segment2_F,
 	output o_Segment2_G,
 	output o_LED_1,
-	output o_LED_2
+	output o_LED_2,
+	output o_LED_3,
+	output o_LED_4
 	);
  
 	wire w_Switch_1;
-	reg  r_Switch_1 = 1'b0;
-	//reg [3:0] r_Count = 4'b0000;
+	reg  r_Switch_1 = `OFF;
 
-	reg [31:0] blk_src = 0;
-	reg [31:0] blk_snk = 0;
+	reg [2:0] c_src = 0;
+	reg [6:0] c_snk = 0;
+	
+	reg clk_src = `OFF;
+	reg clk_snk = `OFF;
+	
 	reg [`DATA_SIZE-1:0] disp_i_data = 1;
 	reg [`DATA_SIZE-1:0] disp_o_data = 2;
 	
-	reg r_LED_1 = 1'b0;
-	reg r_LED_2 = 1'b0;
+	reg r_LED_1 = `OFF;
+	reg r_LED_2 = `OFF;
+	reg r_LED_3 = `OFF;
+	reg r_LED_4 = `OFF;
   
 	wire cn_req;
 	wire cn_ack;
 	wire [`ADDRESS_SIZE-1:0] cn_addr;
 	wire [`DATA_SIZE-1:0] cn_data;
+	wire cn_err;
 	
 	//reg [`DATA_SIZE-1:0] cn_i_data = 0;
 	wire [`DATA_SIZE-1:0] cn_o_data;
@@ -59,8 +67,27 @@ module Project_7_Segment_Top (
 	wire w_Segment2_F;
 	wire w_Segment2_G;
 
+	always @(posedge i_clk)
+	begin
+		if(c_src == 0) begin
+			c_src <= 1;
+			`bit_toggle(clk_src);
+		end
+		else  begin
+			c_src <= (c_src << 1);
+		end
+		if(c_snk == 0) begin
+			c_snk <= 1;
+			`bit_toggle(clk_snk);
+		end
+		else  begin
+			c_snk <= (c_snk << 1);
+		end
+	end
+	
 	cellnet_source cn_src_1 (
-		.i_clk(i_clk),
+		.i_clk(clk_src),
+		//.i_clk(i_clk),
 		.o_addr(cn_addr),
 		.o_dat(cn_data),
 		.o_req(cn_req),
@@ -68,12 +95,14 @@ module Project_7_Segment_Top (
 	);
 
 	cellnet_sink cn_snk_1 (
-		.i_clk(i_clk),
+		.i_clk(clk_snk),
+		//.i_clk(i_clk),
 		.i_addr(cn_addr),
 		.i_dat(cn_data),
 		.i_req(cn_req),
 		.o_ack(cn_ack),
-		.o_dat(cn_o_data)
+		.o_dat(cn_o_data),
+		.o_err(cn_err)
 	);
      
 	// Instantiate Debounce Filter
@@ -83,25 +112,26 @@ module Project_7_Segment_Top (
 		.o_Switch(w_Switch_1)
 	);
 		
-  // Purpose: When Switch is pressed, increment counter.
-  // When counter gets to 9, start it back at 0 again.
+	// Purpose: When Switch is pressed, update display i_data and o_data
 	always @(posedge i_clk)
 	begin
 		r_Switch_1 <= w_Switch_1;
 		
-		// Increment Count when switch is pushed down
-		if (w_Switch_1 == 1'b1 && r_Switch_1 == 1'b0)
+		if((w_Switch_1 == `ON) && (r_Switch_1 == `OFF))
 		begin
 			disp_i_data <= cn_data;
 			disp_o_data <= cn_o_data;
-			/*if (r_Count == 9)
-				r_Count <= 0;
-			else
-				r_Count <= r_Count + 1;
-			end*/
 		end
 	end
-   
+
+	// CHECK err line
+	always @(posedge i_clk)
+	begin
+		if(cn_err == `ON) begin
+			r_LED_1 <= `ON;
+		end
+	end
+	
 	bin_to_disp disp_1(
 	.i_Clk(i_clk),
 	.i_Binary_Num(disp_i_data),
@@ -114,7 +144,7 @@ module Project_7_Segment_Top (
 	.o_Segment_G(w_Segment1_G)
 	);
 	
-  // Instantiate Binary to 7-Segment Converter
+	// Instantiate Binary to 7-Segment Converter
 	bin_to_disp disp2(
 	.i_Clk(i_clk),
 	.i_Binary_Num(disp_o_data),
@@ -145,5 +175,7 @@ module Project_7_Segment_Top (
 
 	assign o_LED_1 = r_LED_1;
 	assign o_LED_2 = r_LED_2;
+	assign o_LED_3 = r_LED_3;
+	assign o_LED_4 = r_LED_4;
 
 endmodule
