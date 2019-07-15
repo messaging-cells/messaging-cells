@@ -11,6 +11,7 @@ ICEPACK_EXE = icepack
 ICEPROG_EXE = iceprog
 
 RTL_DIR = rtl
+CHECK_DIR = ck_src_snk
 
 RTL_FILES = \
 	${RTL_DIR}/bin_to_disp.v \
@@ -41,5 +42,9 @@ ${PRJ_PREFIX}.json : ${RTL_FILES}
 prog:
 	sudo ${ICEPROG_EXE} ${PRJ_PREFIX}.bin
 	
+
+.PHONY: check
+check:
+	cd ${CHECK_DIR}; sby -f hproto_CK.sby
 
 # sby -f proto_CK.sby

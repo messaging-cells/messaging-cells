@@ -34,6 +34,50 @@ module formal_top ();
 
 	`ifdef	FORMAL
 		initial assert(cn_req == `OFF);
+		initial assert(cn_ack == `OFF);
+		initial assert(cn_err == `OFF);
+		initial assert(cn_data == 0);
+		initial assert(cn_o_data == 0);
+		
+		reg	f_past_valid;
+		initial	f_past_valid = `OFF;
+		always @(posedge cn_clk) begin
+			f_past_valid <= `ON;
+		end
+		
+		always @(posedge cn_clk) begin
+		
+			if((! cn_req) && (! cn_ack)) begin
+				assert(cn_data == cn_o_data);
+			end
+				
+			if(cn_req && (! cn_ack)) begin
+			end
+			
+			if(cn_req && cn_ack) begin
+			end
+			
+			if((! cn_req) && cn_ack) begin
+			end
+			
+			if(f_past_valid) begin
+			
+				if($past(cn_req) && cn_req) begin
+					assert(cn_data == $past(cn_data));
+					assert(cn_addr == $past(cn_addr));
+				end
+			
+				if((! $past(cn_req)) && cn_req) begin
+					assert(cn_o_data == $past(cn_data));
+				end
+				
+				if((! $past(cn_ack)) && cn_ack) begin
+					assert(cn_o_data == $past(cn_data));
+				end
+			end
+			
+		end
+		
 	`endif
 	
      
