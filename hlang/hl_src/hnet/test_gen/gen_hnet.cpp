@@ -14,6 +14,23 @@ hnode::print_node(FILE* ff, hg_prt_mode_t md){
 }
 
 void // virtual
+hnode_1to1::print_node(FILE* ff, hg_prt_mode_t md){
+	if(md == hg_addr_prt){
+		print_addr(ff);
+		return;
+	}
+	
+	fprintf(ff, "<");
+	print_addr(ff);
+	fprintf(ff, "i");
+	in1->print_node(ff, hg_addr_prt);
+	fprintf(ff, "o");
+	out1->print_node(ff, hg_addr_prt);
+	fprintf(ff, ">");
+	fprintf(ff, "\n");
+}
+
+void // virtual
 hnode_1to2::print_node(FILE* ff, hg_prt_mode_t md){
 	if(md == hg_addr_prt){
 		print_addr(ff);
@@ -152,9 +169,14 @@ hmultinode::is_binnet(){
 }
 
 void
-print_pt_nods(vector<hnode**>& vec){
+print_pt_nods(FILE* ff, vector<hnode**>& vec){
 	for(long ii = 0; ii < (long)vec.size(); ii++){
-		fprintf(stdout, "%ld:%p:%p\n", ii, (void*)(vec[ii]), (void*)(*(vec[ii])));
+		fprintf(ff, "\t");
+		if(vec[ii] != gh_null){
+			fprintf(ff, "%ld:%p:%p\n", ii, (void*)(vec[ii]), (void*)(*(vec[ii])));
+		} else {
+			fprintf(ff, "gh_null \n");
+		}
 	}
 }
 
@@ -170,37 +192,52 @@ hnode_box::print_box(FILE* ff){
 	fprintf(ff, "BOX\n");
 	fprintf(ff, "INPUTS\n");
 	for(long ii = 0; ii < (long)inputs.size(); ii++){
-		(*(inputs[ii]))->print_node(ff, hg_full_prt);
+		fprintf(ff, "\t");
+		if(inputs[ii] != gh_null){
+			(*(inputs[ii]))->print_node(ff, hg_full_prt);
+		} else {
+			fprintf(ff, "gh_null \n");
+		}
 	}
 	fprintf(ff, "OUTPUTS\n");
 	for(long ii = 0; ii < (long)outputs.size(); ii++){
-		(*(outputs[ii]))->print_node(ff, hg_full_prt);
+		fprintf(ff, "\t");
+		if(outputs[ii] != gh_null){
+			(*(outputs[ii]))->print_node(ff, hg_full_prt);
+		} else {
+			fprintf(ff, "gh_null \n");
+		}
 	}
 	fprintf(ff, "ALL_NODES\n");
 	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
+		GH_CK(all_nodes[ii] != gh_null);
 		all_nodes[ii]->print_node(ff, hg_full_prt);
 	}
 	fprintf(ff, "\n");
 }
 
 hnode_box*
-get_binnet_1_to_n(long num_out){
+get_binnet_m_to_M(long num_in, long num_out){
 	hnode_box* bx = new hnode_box;
 	long dpth = 0;
 	GH_MARK_USED(dpth);
 	long nout = 0;
 	GH_MARK_USED(nout);
-	GH_CK(num_out > 1);
+	GH_CK(num_in > 0);
+	GH_CK(num_in < num_out);
+
+	bx->inputs.resize(num_in, gh_null);
 	
 	vector<hnode**> next_level;
 	
 	long out_idx = 0;
 	long out_sz = 0;
-	for(long aa = 0; aa < (num_out - 1); aa++){
+	for(long aa = 0; aa < (num_out - num_in); aa++){
 		hnode_1to2* bnod = new hnode_1to2;
 		bnod->init_to_me();
 		
-		if(out_idx == out_sz){
+		bool in_fst_lv = (aa < num_in);
+		if(! in_fst_lv && (out_idx == out_sz)){
 			bx->outputs = next_level;
 			next_level.clear();
 			out_idx = 0;
@@ -211,30 +248,31 @@ get_binnet_1_to_n(long num_out){
 		next_level.push_back(&(bnod->out2));
 		
 		bx->all_nodes.push_back(bnod);
-		bx->all_nodes.back()->addr = bx->all_nodes.size();
+		bx->all_nodes.back()->addr = bx->all_nodes.size() - 1;
 
-		/*
-		fprintf(stdout, "=========================================\n");
+		
+		/*fprintf(stdout, "=========================================\n");
 		fprintf(stdout, "ITER %ld\n", aa);
+		//fprintf(stdout, "INPUTS\n");
+		//print_pt_nods(stdout, bx->inputs);
+		//fprintf(stdout, "_______\n");
 		fprintf(stdout, "OUTPUTS\n");
-		print_pt_nods(bx->outputs);
+		print_pt_nods(stdout, bx->outputs);
 		fprintf(stdout, "_______\n");
 		fprintf(stdout, "NEXT_LV\n");
-		print_pt_nods(next_level);
-		fprintf(stdout, "_______\n");
-		*/
+		print_pt_nods(stdout, next_level);
+		fprintf(stdout, "_______\n");*/
 		
-		if(aa == 0){
+		
+		if(in_fst_lv){
 			GH_CK(bx->outputs.empty());
 			GH_CK(out_idx == 0);
 			GH_CK(out_sz == 0);
+
+			//fprintf(stdout, "STARTING_aa=%ld\n", aa);
 			
-			bx->inputs.push_back(&(bnod->in1));
-			GH_CK(*(bx->inputs[0]) == bnod);
-			
-			GH_CK(next_level.size() == 2);
-			GH_CK(*(next_level[0]) == bnod);
-			GH_CK(*(next_level[0]) == *(next_level[1]));
+			bx->inputs[aa] = (&(bnod->in1));
+			GH_CK(*(bx->inputs[aa]) == bnod);
 		} else {
 			GH_CK(! bx->outputs.empty());
 			GH_CK(out_idx < out_sz);
@@ -253,26 +291,116 @@ get_binnet_1_to_n(long num_out){
 		}
 	}
 	
-	bx->outputs.erase(bx->outputs.begin(), bx->outputs.begin() + out_idx);
+	if(! bx->outputs.empty()){
+		bx->outputs.erase(bx->outputs.begin(), bx->outputs.begin() + out_idx);
+	}
 	bx->outputs.insert(bx->outputs.end(), next_level.begin(), next_level.end());
+	if((long)(bx->outputs.size()) < num_out){
+		GH_CK((num_in * 2) > num_out);
+		bx->outputs.resize(num_out, gh_null);
+	}
 
 	GH_CK((long)(bx->outputs.size()) == num_out);
 	
 	return bx;
 }
 
+hnode_box*
+get_binnet_M_to_m(long num_in, long num_out){
+	GH_CK(num_out > 0);
+	GH_CK(num_in > num_out);
+	
+	hnode_box* obx = get_binnet_m_to_M(num_out, num_in);
+	hnode_box* cbx = obx->get_M_to_m();
+	delete obx;
+	return cbx;
+}
+
 int
 main(int argc, char *argv[]){
-	if(argc < 2){
-		printf("args: <num>\n");
+	if(argc < 3){
+		printf("%s <num_in> <num_out>\n", argv[0]);
 		return 1;
 	}
 	
-	long vv = atol(argv[1]);
+	long ni = atol(argv[1]);
+	long no = atol(argv[2]);
 	
-	hnode_box* bx = get_binnet_1_to_n(vv);
+	//hnode_box* bx = get_binnet_m_to_M(ni, no);
+	hnode_box* bx = get_binnet_M_to_m(ni, no);
+	GH_MARK_USED(bx);
+	
 	bx->print_box(stdout);
 	
 	return 0;
+}
+
+void
+hnode_box::reset_nodes(){
+	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
+		GH_CK(all_nodes[ii] != gh_null);
+		delete all_nodes[ii];
+	}
+	inputs.clear();
+	outputs.clear();
+}
+
+hnode_box*
+hnode_box::get_M_to_m(){
+	long i_sz = (long)inputs.size();
+	long o_sz = (long)outputs.size();
+	GH_CK(i_sz != o_sz);
+	GH_CK(i_sz > 0);
+	GH_CK(i_sz < o_sz);
+	
+	hnode_box* bx = new hnode_box;
+	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
+		GH_CK(all_nodes[ii] != gh_null);
+		hnode_2to1* bnod = new hnode_2to1;
+		bnod->init_to_me();
+
+		bx->all_nodes.push_back(bnod);
+		bx->all_nodes.back()->addr = bx->all_nodes.size() - 1;
+	}
+	
+	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
+		GH_CK(all_nodes[ii] != gh_null);
+		hnode_1to2* onod = (hnode_1to2*)(all_nodes[ii]);
+		hnode_2to1* cnod = (hnode_2to1*)(bx->all_nodes[ii]);
+		GH_CK(onod->addr == ii);
+		GH_CK(cnod->addr == ii);
+		
+		hg_addr_t o_in1_addr = onod->in1->addr;
+		hg_addr_t o_out1_addr = onod->out1->addr;
+		hg_addr_t o_out2_addr = onod->out2->addr;
+		
+		cnod->out1 = bx->all_nodes[o_in1_addr];
+		cnod->in1 = bx->all_nodes[o_out1_addr];
+		cnod->in2 = bx->all_nodes[o_out2_addr];
+		
+		if(cnod->out1 == cnod){
+			bx->outputs.push_back(&(cnod->out1));
+		}
+		if(cnod->in1 == cnod){
+			bx->inputs.push_back(&(cnod->in1));
+		}
+		if(cnod->in2 == cnod){
+			bx->inputs.push_back(&(cnod->in2));
+		}
+	}
+	
+	long num_in = o_sz;
+	long num_out = i_sz;
+	if((long)(bx->inputs.size()) < num_in){
+		bx->inputs.resize(num_in, gh_null);
+	}
+	if((long)(bx->outputs.size()) < num_out){
+		bx->outputs.resize(num_out, gh_null);
+	}
+
+	GH_CK((long)(bx->inputs.size()) == num_in);
+	GH_CK((long)(bx->outputs.size()) == num_out);
+	
+	return bx;
 }
 

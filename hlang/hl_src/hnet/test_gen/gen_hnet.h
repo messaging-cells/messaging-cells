@@ -24,13 +24,15 @@ enum hg_prt_mode_t {
 	hg_info_prt
 };
 
+typedef long hg_addr_t;
+
 class hnode {
 public:
-	long addr = 0;
+	hg_addr_t addr = 0;
 	bool ready = false;
 	
 	hnode(){}
-	~hnode(){}
+	virtual ~hnode(){}
 	
 	virtual void
 	print_node(FILE* ff, hg_prt_mode_t md);
@@ -53,6 +55,31 @@ public:
 	hnode* in1 = gh_null;
 };
 
+class hnode_1to1 : public hnode {
+public:
+	long val_out1 = 0;
+	
+	hnode* in1 = gh_null;
+	hnode* out1 = gh_null;
+
+	hnode_1to1(){
+		val_out1 = 0;
+	
+		in1 = gh_null;
+		out1 = gh_null;
+	}
+	virtual ~hnode_1to1(){}
+	
+	void init_to_me(){
+		in1 = this;
+		out1 = this;
+	}
+
+	virtual void
+	print_node(FILE* ff, hg_prt_mode_t md);
+	
+};
+
 class hnode_1to2 : public hnode {
 public:
 	long val_out1 = 0;
@@ -70,7 +97,7 @@ public:
 		out1 = gh_null;
 		out2 = gh_null;
 	}
-	~hnode_1to2(){}
+	virtual ~hnode_1to2(){}
 	
 	void init_to_me(){
 		in1 = this;
@@ -98,7 +125,7 @@ public:
 		in2 = gh_null;
 		out1 = gh_null;
 	}
-	~hnode_2to1(){}
+	virtual ~hnode_2to1(){}
 	
 	void init_to_me(){
 		in1 = this;
@@ -119,13 +146,15 @@ public:
 	vector<hnode**> outputs;
 	
 	hnode_box(){}
-	~hnode_box(){}
+	~hnode_box(){
+		reset_nodes();
+	}
 
-	void
-	init_all_addr();
+	void 	init_all_addr();
+	void 	reset_nodes();
+	void 	print_box(FILE* ff);
 	
-	void
-	print_box(FILE* ff);
+	hnode_box* get_M_to_m();
 	
 };
 
@@ -138,7 +167,7 @@ public:
 	//hnod_net*
 	
 	hmultinode(){}
-	~hmultinode(){}
+	virtual ~hmultinode(){}
 	
 	virtual void
 	print_node(FILE* ff, hg_prt_mode_t md);
