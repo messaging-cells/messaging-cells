@@ -1,5 +1,5 @@
 
-#include "gen_hnet.h"
+#include "hgen_net.h"
 
 using namespace std;
 

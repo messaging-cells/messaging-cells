@@ -6,7 +6,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "Cleaning" $(basename $SCRIPT_DIR)
 
 cd $SCRIPT_DIR
-rm gennet
+rm -rf hg_build
+rm -f gennet.elf
 cd $CURR_DIR
 
 

@@ -7,6 +7,7 @@ echo "Cleaning" $(basename $SCRIPT_DIR)
 
 cd $SCRIPT_DIR
 hl_maker/hclean.sh
-hl_src/hnet/clean.sh
+verilog_test_proto/clean.sh
+hgen_net/clean.sh
 cd $CURR_DIR
 
