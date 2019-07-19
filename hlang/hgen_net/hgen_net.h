@@ -32,6 +32,7 @@ enum hg_hnode_kind_t {
 	hg_2_to_1_nod
 };
 
+typedef long hg_target_addr_t;
 typedef long hg_addr_t;
 
 class hnode {
@@ -57,6 +58,16 @@ public:
 	
 	void
 	print_addr(FILE* ff);
+};
+
+class test_cls {
+public:
+	long val;
+	
+	test_cls(){}
+	~test_cls(){
+		fprintf(stdout, "DESTROING test_cls obj %ld\n", val);
+	}
 };
 
 class hnode_1to1 : public hnode {
@@ -96,12 +107,12 @@ public:
 
 class hnode_direct : public hnode_1to1 {
 public:
+};
+
+class hnode_target : public hnode_1to1 {
+public:
 	virtual void
 	print_node(FILE* ff, hg_prt_mode_t md);
-
-	bool is_active(){
-		return ((in1 == this) && (out1 == this));
-	}
 };
 
 class hnode_src : public hnode_1to1 {
@@ -201,13 +212,23 @@ public:
 	vector<hnode**> outputs;
 	
 	hnode_box(){}
-	~hnode_box(){
-		reset_nodes();
+	virtual ~hnode_box(){
+		release_nodes();
+	}
+
+	void 	clear_box(){
+		// CAREFUL. Pointers are not released.
+		all_direct.clear();
+		all_nodes.clear();
+		inputs.clear();
+		outputs.clear();
 	}
 	
 	void 	init_all_addr();
 	void 	init_all_direct();
-	void 	reset_nodes();
+	void 	release_nodes();
+	
+	virtual
 	void 	print_box(FILE* ff, hg_prt_mode_t md);
 	
 	hnode_1to2* add_1to2();
@@ -216,7 +237,7 @@ public:
 	
 	hnode_box* get_2to1_net_box();
 	
-	void move_nodes_to(hnode_box& bx);
+	bool move_nodes_to(hnode_box& bx);
 	
 	hnode* set_output(long out, hnode* nd){
 		GH_CK(out < (long)outputs.size());
@@ -278,41 +299,76 @@ public:
 		GH_CK(nd.out1 == &nd);
 		nd.out1 = pi;
 	}
+
+	void connect_outputs_to_box_inputs(hnode_box& bx);
 };
 
-class hnode_2_to_2_box : public hnode_box {
+hnode_box*
+gh_get_binnet_m_to_n(long num_in, long num_out);
+
+class hroute_box : public hnode_box {
 public:
-	hnode_2_to_2_box(){
-		init_box();
+	long base;
+	hroute_box(long bb){
+		base = bb;
 	}
-	~hnode_2_to_2_box(){
+	virtual ~hroute_box(){
+		release_nodes();
 	}
-
-	void 	init_box();
+	
+	void 	init_route_box(long num_in, long num_out);
+	
+	void 	init_as_2to2_route_box();
+	void 	init_as_3to2_route_box();
+	void 	init_as_2to3_route_box();
+	
 };
-
-class hnode_3_to_2_box : public hnode_box {
+	
+class htarget_box : public hnode_box {
 public:
-	hnode_3_to_2_box(){
-		init_box();
+	long base;
+	hnode_target* target = gh_null;
+	
+	htarget_box(long bb){
+		base = bb;
+		target = gh_null;
 	}
-	~hnode_3_to_2_box(){
+	virtual ~htarget_box(){
+		release_nodes();
+		if(target != gh_null){
+			delete target;
+		}
+		target = gh_null;
 	}
 
-	void 	init_box();
+	void 	join_outputs(hroute_box* rte_bx, hnode_box* spl_bx);
+	
+	void 	init_target_box(long lft_sz, long rgt_sz);
 };
-
-class hnode_2_to_3_box : public hnode_box {
+	
+class hlognet_box : public hnode_box {
 public:
-	hnode_2_to_3_box(){
-		init_box();
+	long base;
+	vector<hnode_target*> all_targets;
+	
+	hlognet_box(long bb){
+		base = bb;
 	}
-	~hnode_2_to_3_box(){
+	virtual ~hlognet_box(){
+		release_nodes();
+		release_targets();
 	}
+	void 	release_targets();
+	
+	void 	init_all_target_addr();
+	
+	void 	init_lognet_box(long num_elems);
+	void 	init_as_io();
 
-	void 	init_box();
+	virtual
+	void 	print_box(FILE* ff, hg_prt_mode_t md);
 };
-
+	
 class hmultinode : public hnode {
 public:
 	vector<hnode*> inputs;
