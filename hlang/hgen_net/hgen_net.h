@@ -204,6 +204,27 @@ public:
 long 	gh_get_first_null_idx(vector<hnode**>& vec);
 bool 	gh_is_free_io(hnode** io);
 
+hnode* 	gh_set_io(vector<hnode**> all_io, long idx_io, hnode* nd){
+	GH_CK(idx_io < (long)all_io.size());
+	hnode** ppo = all_io[idx_io];
+	GH_CK(gh_is_free_io(ppo));
+	hnode* po = *ppo;
+	*ppo = nd;
+	return po;
+}
+
+void gh_connect_out_to_in(vector<hnode**> all_out, long out, vector<hnode**> all_in, long in){
+	GH_CK(in < (long)all_in.size());
+	hnode** ppi = all_in[in];
+	GH_CK(gh_is_free_io(ppi));
+	hnode* pi = *ppi;
+	hnode* po = gh_set_io(all_out, out, pi);
+	*ppi = po;
+}
+
+void
+gh_connect_outputs_to_inputs(vector<hnode**>& out, vector<hnode**>& in);
+
 class hnode_box {
 public:
 	vector<hnode_direct*> all_direct;
@@ -237,33 +258,19 @@ public:
 	
 	hnode_box* get_2to1_net_box();
 	
+	bool move_io_to(vector<hnode**>& in, vector<hnode**>& out);
 	bool move_nodes_to(hnode_box& bx);
 	
 	hnode* set_output(long out, hnode* nd){
-		GH_CK(out < (long)outputs.size());
-		hnode** ppo = outputs[out];
-		GH_CK(gh_is_free_io(ppo));
-		hnode* po = *ppo;
-		*ppo = nd;
-		return po;
+		return gh_set_io(outputs, out, nd);
 	}
 
 	hnode* set_input(long in, hnode* nd){
-		GH_CK(in < (long)inputs.size());
-		hnode** ppi = inputs[in];
-		GH_CK(gh_is_free_io(ppi));
-		hnode* pi = *ppi;
-		*ppi = nd;
-		return pi;
+		return gh_set_io(inputs, in, nd);
 	}
 
 	void connect_output_to_box_input(long out, long in, hnode_box& bx){
-		GH_CK(in < (long)bx.inputs.size());
-		hnode** ppi = bx.inputs[in];
-		GH_CK(gh_is_free_io(ppi));
-		hnode* pi = *ppi;
-		hnode* po = set_output(out, pi);
-		*ppi = po;
+		gh_connect_out_to_in(outputs, out, bx.inputs, in);
 	}
 	
 	void connect_output_to_node_input(long out, hnode_2to1& nd, long in){
@@ -300,7 +307,9 @@ public:
 		nd.out1 = pi;
 	}
 
-	void connect_outputs_to_box_inputs(hnode_box& bx);
+	void connect_outputs_to_box_inputs(hnode_box& bx){
+		gh_connect_outputs_to_inputs(outputs, bx.inputs);
+	}
 };
 
 hnode_box*
@@ -324,10 +333,17 @@ public:
 	
 };
 	
+void
+gh_print_io(FILE* ff, hg_prt_mode_t md, vector<hnode**>& all_io);
+
 class htarget_box : public hnode_box {
 public:
 	long base;
 	hnode_target* target = gh_null;
+	vector<hnode**> lft_in;
+	vector<hnode**> lft_out;
+	vector<hnode**> rgt_in;
+	vector<hnode**> rgt_out;
 	
 	htarget_box(long bb){
 		base = bb;
@@ -339,20 +355,34 @@ public:
 			delete target;
 		}
 		target = gh_null;
+		lft_in.clear();
+		lft_out.clear();
+		rgt_in.clear();
+		rgt_out.clear();
 	}
 
 	void 	join_outputs(hroute_box* rte_bx, hnode_box* spl_bx);
-	
+
+	void 	init_basic_target_box(long lft_ht, long rgt_ht);
 	void 	init_target_box(long lft_sz, long rgt_sz);
+
+	virtual
+	void 	print_box(FILE* ff, hg_prt_mode_t md);
 };
-	
+
+void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_out);
+
 class hlognet_box : public hnode_box {
 public:
 	long base;
+	long height;
+	long length;
 	vector<hnode_target*> all_targets;
 	
 	hlognet_box(long bb){
 		base = bb;
+		height = 0;
+		length = 0;
 	}
 	virtual ~hlognet_box(){
 		release_nodes();
@@ -361,9 +391,12 @@ public:
 	void 	release_targets();
 	
 	void 	init_all_target_addr();
-	
+
+	void 	init_length(long num_elems);
 	void 	init_lognet_box(long num_elems);
 	void 	init_as_io();
+	
+	htarget_box* get_target_box(long idx);
 
 	virtual
 	void 	print_box(FILE* ff, hg_prt_mode_t md);
