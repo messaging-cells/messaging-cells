@@ -225,14 +225,23 @@ void gh_connect_out_to_in(vector<hnode**> all_out, long out, vector<hnode**> all
 void
 gh_connect_outputs_to_inputs(vector<hnode**>& out, vector<hnode**>& in);
 
+bool
+gh_move_io(vector<hnode**>& src, vector<hnode**>& dst);
+
+
 class hnode_box {
 public:
+	long base;
+	
 	vector<hnode_direct*> all_direct;
 	vector<hnode*> all_nodes;
 	vector<hnode**> inputs;
 	vector<hnode**> outputs;
 	
-	hnode_box(){}
+	hnode_box(){
+		base = 0;
+	}
+	
 	virtual ~hnode_box(){
 		release_nodes();
 	}
@@ -258,7 +267,6 @@ public:
 	
 	hnode_box* get_2to1_net_box();
 	
-	bool move_io_to(vector<hnode**>& in, vector<hnode**>& out);
 	bool move_nodes_to(hnode_box& bx);
 	
 	hnode* set_output(long out, hnode* nd){
@@ -317,9 +325,9 @@ gh_get_binnet_m_to_n(long num_in, long num_out);
 
 class hroute_box : public hnode_box {
 public:
-	long base;
 	hroute_box(long bb){
 		base = bb;
+		GH_CK(base > 1);
 	}
 	virtual ~hroute_box(){
 		release_nodes();
@@ -338,7 +346,6 @@ gh_print_io(FILE* ff, hg_prt_mode_t md, vector<hnode**>& all_io);
 
 class htarget_box : public hnode_box {
 public:
-	long base;
 	hnode_target* target = gh_null;
 	vector<hnode**> lft_in;
 	vector<hnode**> lft_out;
@@ -348,7 +355,9 @@ public:
 	htarget_box(long bb){
 		base = bb;
 		target = gh_null;
+		GH_CK(base > 1);
 	}
+	
 	virtual ~htarget_box(){
 		release_nodes();
 		if(target != gh_null){
@@ -360,8 +369,10 @@ public:
 		rgt_in.clear();
 		rgt_out.clear();
 	}
+	
+	bool ck_target_box(long lft_ht, long rgt_ht);
 
-	void 	join_outputs(hroute_box* rte_bx, hnode_box* spl_bx);
+	void 	join_outputs(hnode_box* rte_bx, hnode_box* spl_bx, long num_out, vector<hnode**>& all_out);
 
 	void 	init_basic_target_box(long lft_ht, long rgt_ht);
 	void 	init_target_box(long lft_sz, long rgt_sz);
@@ -374,7 +385,6 @@ void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_o
 
 class hlognet_box : public hnode_box {
 public:
-	long base;
 	long height;
 	long length;
 	vector<hnode_target*> all_targets;
@@ -383,7 +393,9 @@ public:
 		base = bb;
 		height = 0;
 		length = 0;
+		GH_CK(base > 1);
 	}
+	
 	virtual ~hlognet_box(){
 		release_nodes();
 		release_targets();
