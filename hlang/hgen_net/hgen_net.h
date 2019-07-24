@@ -16,6 +16,8 @@ using namespace std;
 #define GH_MARK_USED(X)  ((void)(&(X)))
 #define GH_CK(prm) assert(prm)
 
+#define GH_INVALID_IDX -1
+
 #define gh_null NULL
 
 enum hg_prt_mode_t {
@@ -32,8 +34,31 @@ enum hg_hnode_kind_t {
 	hg_2_to_1_nod
 };
 
+enum hg_nk_lnk_mod_t {
+	hg_invalid_ck_mod,
+	hg_strict_ck_mod,
+	hg_valid_self_ck_mod,
+	hg_soft_ck_mod
+};
+
+enum gh_io_kind_t {
+	gh_in_kind,
+	gh_out_kind
+};
+
 typedef long hg_target_addr_t;
 typedef long hg_addr_t;
+
+class hnode;
+
+typedef vector<hnode**> ppnode_vec_t;
+
+class hgen_globals {
+public:
+	hg_nk_lnk_mod_t CK_LINK_MODE = hg_soft_ck_mod;
+};
+
+extern hgen_globals GH_GLOBALS;
 
 class hnode {
 public:
@@ -46,6 +71,8 @@ public:
 	virtual void
 	print_node(FILE* ff, hg_prt_mode_t md);
 	
+	virtual bool 	ck_connections(){ return false; }
+	
 	virtual hg_hnode_kind_t
 	get_kind(){
 		return hg_invalid_nod;
@@ -56,11 +83,15 @@ public:
 		return false;
 	}
 	
-	/*virtual hnode*
-	get_kind(){
-		return hg_invalid_nod;
-	}*/
-	
+	virtual hnode* 	get_in0(){ return gh_null; }
+	virtual hnode* 	get_in1(){ return gh_null; }
+	virtual hnode* 	get_out0(){ return gh_null; }
+	virtual hnode* 	get_out1(){ return gh_null; }
+
+	virtual void set_direct_idx(gh_io_kind_t kk, ppnode_vec_t& all_io, long idx){}
+
+	bool ck_link(hnode* lnk, gh_io_kind_t kk);
+
 	void
 	print_addr(FILE* ff);
 };
@@ -95,6 +126,15 @@ public:
 		out0 = this;
 	}
 
+	virtual hnode* 	get_in0(){ return in0; }
+	virtual hnode* 	get_out0(){ return out0; }
+
+	virtual bool 	ck_connections(){ 
+		bool c1 = ck_link(in0, gh_in_kind);
+		bool c2 = ck_link(out0, gh_out_kind);
+		return (c1 && c2);
+	}
+	
 	virtual hg_hnode_kind_t
 	get_kind(){
 		return hg_1_to_1_nod;
@@ -112,6 +152,31 @@ public:
 
 class hnode_direct : public hnode_1to1 {
 public:
+	ppnode_vec_t* in_vec = gh_null;
+	long in_idx = GH_INVALID_IDX;
+	
+	ppnode_vec_t* out_vec = gh_null;
+	long out_idx = GH_INVALID_IDX;
+
+	virtual void 
+	set_direct_idx(gh_io_kind_t kk, ppnode_vec_t& all_io, long idx){
+		GH_CK(idx != GH_INVALID_IDX);
+		if(kk == gh_out_kind){
+			GH_CK(out_idx == GH_INVALID_IDX);
+			GH_CK(&out0 == all_io[idx]);
+			out_vec = &all_io;
+			out_idx = idx;
+		} else {
+			GH_CK(kk == gh_in_kind);
+			GH_CK(in_idx == GH_INVALID_IDX);
+			GH_CK(&in0 == all_io[idx]);
+			in_vec = &all_io;
+			in_idx = idx;
+		}
+	}
+	
+	virtual void
+	print_node(FILE* ff, hg_prt_mode_t md);
 };
 
 class hnode_target : public hnode_1to1 {
@@ -153,6 +218,17 @@ public:
 		out1 = this;
 	}
 
+	virtual hnode* 	get_in0(){ return in0; }
+	virtual hnode* 	get_out0(){ return out0; }
+	virtual hnode* 	get_out1(){ return out1; }
+	
+	virtual bool 	ck_connections(){ 
+		bool c1 = ck_link(in0, gh_in_kind);
+		bool c2 = ck_link(out0, gh_out_kind);
+		bool c3 = ck_link(out1, gh_out_kind);
+		return (c1 && c2 && c3);
+	}
+	
 	virtual hg_hnode_kind_t
 	get_kind(){
 		return hg_1_to_2_nod;
@@ -191,6 +267,17 @@ public:
 		out0 = this;
 	}
 	
+	virtual hnode* 	get_in0(){ return in0; }
+	virtual hnode* 	get_in1(){ return in1; }
+	virtual hnode* 	get_out0(){ return out0; }
+	
+	virtual bool 	ck_connections(){ 
+		bool c1 = ck_link(in0, gh_in_kind);
+		bool c2 = ck_link(in1, gh_in_kind);
+		bool c3 = ck_link(out0, gh_out_kind);
+		return (c1 && c2 && c3);
+	}
+	
 	virtual hg_hnode_kind_t
 	get_kind(){
 		return hg_2_to_1_nod;
@@ -206,10 +293,10 @@ public:
 	
 };
 
-long 	gh_get_first_null_idx(vector<hnode**>& vec);
+long 	gh_get_first_null_idx(ppnode_vec_t& vec);
 bool 	gh_is_free_io(hnode** io);
 
-hnode* 	gh_set_io(vector<hnode**> all_io, long idx_io, hnode* nd){
+hnode* 	gh_set_io(ppnode_vec_t& all_io, long idx_io, hnode* nd){
 	GH_CK(idx_io < (long)all_io.size());
 	hnode** ppo = all_io[idx_io];
 	GH_CK(gh_is_free_io(ppo));
@@ -218,30 +305,20 @@ hnode* 	gh_set_io(vector<hnode**> all_io, long idx_io, hnode* nd){
 	return po;
 }
 
-void gh_connect_out_to_in(vector<hnode**> all_out, long out, vector<hnode**> all_in, long in){
-	GH_CK(in < (long)all_in.size());
-	hnode** ppi = all_in[in];
-	GH_CK(gh_is_free_io(ppi));
-	hnode* pi = *ppi;
-	hnode* po = gh_set_io(all_out, out, pi);
-	*ppi = po;
-}
-
-void
-gh_connect_outputs_to_inputs(vector<hnode**>& out, vector<hnode**>& in);
-
-bool
-gh_move_io(vector<hnode**>& src, vector<hnode**>& dst);
-
+void gh_connect_out_to_in(ppnode_vec_t& all_out, long out, ppnode_vec_t& all_in, long in);
+void gh_connect_outputs_to_inputs(ppnode_vec_t& out, ppnode_vec_t& in);
+bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
+void gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst);
+void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
 
 class hnode_box {
 public:
 	long base;
 	
-	vector<hnode_direct*> all_direct;
+	vector<hnode*> all_direct;
 	vector<hnode*> all_nodes;
-	vector<hnode**> inputs;
-	vector<hnode**> outputs;
+	ppnode_vec_t inputs;
+	ppnode_vec_t outputs;
 	
 	hnode_box(){
 		base = 0;
@@ -320,9 +397,8 @@ public:
 		nd.out0 = pi;
 	}
 
-	void connect_outputs_to_box_inputs(hnode_box& bx){
-		gh_connect_outputs_to_inputs(outputs, bx.inputs);
-	}
+	void remove_connected_directs();
+	void connect_outputs_to_box_inputs(hnode_box& bx);
 };
 
 hnode_box*
@@ -347,15 +423,15 @@ public:
 };
 	
 void
-gh_print_io(FILE* ff, hg_prt_mode_t md, vector<hnode**>& all_io);
+gh_print_io(FILE* ff, hg_prt_mode_t md, ppnode_vec_t& all_io);
 
 class htarget_box : public hnode_box {
 public:
 	hnode_target* target = gh_null;
-	vector<hnode**> lft_in;
-	vector<hnode**> lft_out;
-	vector<hnode**> rgt_in;
-	vector<hnode**> rgt_out;
+	ppnode_vec_t lft_in;
+	ppnode_vec_t lft_out;
+	ppnode_vec_t rgt_in;
+	ppnode_vec_t rgt_out;
 	
 	htarget_box(long bb){
 		base = bb;
@@ -370,7 +446,7 @@ public:
 	void del_htarget_box();
 	bool ck_target_box(long lft_ht, long rgt_ht);
 
-	void 	join_outputs(hnode_box* rte_bx, hnode_box* spl_bx, long num_out, vector<hnode**>& all_out);
+	void 	join_outputs(hnode_box* rte_bx, hnode_box* spl_bx, long num_out, ppnode_vec_t& all_out);
 
 	void 	init_basic_target_box(long lft_ht, long rgt_ht);
 	void 	init_target_box(long lft_sz, long rgt_sz);
