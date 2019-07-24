@@ -139,14 +139,14 @@ hnode_1to1::print_node(FILE* ff, hg_prt_mode_t md){
 	fprintf(ff, "[");
 	if(md == hg_full_pt_prt){
 		fprintf(ff, "(%p)", this);
-		fprintf(ff, "i(%p -> %p)", &in1, in1);
-		fprintf(ff, "o(%p -> %p)", &out1, out1);
+		fprintf(ff, "i(%p -> %p)", &in0, in0);
+		fprintf(ff, "o(%p -> %p)", &out0, out0);
 	} else {
 		print_addr(ff);
 		fprintf(ff, "i");
-		in1->print_node(ff, hg_addr_prt);
+		in0->print_node(ff, hg_addr_prt);
 		fprintf(ff, "o");
-		out1->print_node(ff, hg_addr_prt);
+		out0->print_node(ff, hg_addr_prt);
 	}
 	fprintf(ff, "]");
 	fprintf(ff, "\n");
@@ -154,8 +154,8 @@ hnode_1to1::print_node(FILE* ff, hg_prt_mode_t md){
 
 void // virtual
 hnode_target::print_node(FILE* ff, hg_prt_mode_t md){
+	fprintf(ff, "tg");
 	if(md == hg_addr_prt){
-		fprintf(ff, "tg");
 		print_addr(ff);
 		return;
 	}
@@ -172,17 +172,17 @@ hnode_1to2::print_node(FILE* ff, hg_prt_mode_t md){
 	fprintf(ff, "<");
 	if(md == hg_full_pt_prt){
 		fprintf(ff, "(%p)", this);
-		fprintf(ff, "i(%p -> %p)", &in1, in1);
+		fprintf(ff, "i(%p -> %p)", &in0, in0);
+		fprintf(ff, "o(%p -> %p)", &out0, out0);
 		fprintf(ff, "o(%p -> %p)", &out1, out1);
-		fprintf(ff, "o(%p -> %p)", &out2, out2);
 	} else {
 		print_addr(ff);
 		fprintf(ff, "i");
-		in1->print_node(ff, hg_addr_prt);
+		in0->print_node(ff, hg_addr_prt);
+		fprintf(ff, "o");
+		out0->print_node(ff, hg_addr_prt);
 		fprintf(ff, "o");
 		out1->print_node(ff, hg_addr_prt);
-		fprintf(ff, "o");
-		out2->print_node(ff, hg_addr_prt);
 	}
 	fprintf(ff, ">");
 	fprintf(ff, "\n");
@@ -198,17 +198,17 @@ hnode_2to1::print_node(FILE* ff, hg_prt_mode_t md){
 	fprintf(ff, "<");
 	if(md == hg_full_pt_prt){
 		fprintf(ff, "(%p)", this);
+		fprintf(ff, "i(%p -> %p)", &in0, in0);
 		fprintf(ff, "i(%p -> %p)", &in1, in1);
-		fprintf(ff, "i(%p -> %p)", &in2, in2);
-		fprintf(ff, "o(%p -> %p)", &out1, out1);
+		fprintf(ff, "o(%p -> %p)", &out0, out0);
 	} else {
 		print_addr(ff);
 		fprintf(ff, "i");
-		in1->print_node(ff, hg_addr_prt);
+		in0->print_node(ff, hg_addr_prt);
 		fprintf(ff, "i");
-		in2->print_node(ff, hg_addr_prt);
+		in1->print_node(ff, hg_addr_prt);
 		fprintf(ff, "o");
-		out1->print_node(ff, hg_addr_prt);
+		out0->print_node(ff, hg_addr_prt);
 	}
 	fprintf(ff, ">");
 	fprintf(ff, "\n");
@@ -253,6 +253,7 @@ hnode_box::print_box(FILE* ff, hg_prt_mode_t md){
 
 void
 htarget_box::print_box(FILE* ff, hg_prt_mode_t md){
+	GH_CK(target != gh_null);
 	hnode_box::print_box(ff, md);
 	fprintf(ff, "LFT_IN %ld\n", (long)lft_in.size());
 	gh_print_io(ff, md, lft_in);
@@ -262,6 +263,9 @@ htarget_box::print_box(FILE* ff, hg_prt_mode_t md){
 	gh_print_io(ff, md, rgt_in);
 	fprintf(ff, "RGT_OUT %ld\n", (long)rgt_out.size());
 	gh_print_io(ff, md, rgt_out);
+	fprintf(ff, "TARGET \n");
+	target->print_node(ff, md);
+	fprintf(ff, "++++++++++++\n");
 }
 
 void
@@ -320,8 +324,8 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 			out_sz = bx->outputs.size();
 		}
 		
+		next_level.push_back(&(bnod->out0));
 		next_level.push_back(&(bnod->out1));
-		next_level.push_back(&(bnod->out2));
 		
 		/*fprintf(stdout, "=========================================\n");
 		fprintf(stdout, "ITER %ld\n", aa);
@@ -343,7 +347,7 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 
 			//fprintf(stdout, "STARTING_aa=%ld\n", aa);
 			
-			bx->inputs[aa] = (&(bnod->in1));
+			bx->inputs[aa] = (&(bnod->in0));
 			GH_CK(*(bx->inputs[aa]) == bnod);
 		} else {
 			GH_CK(! bx->outputs.empty());
@@ -356,7 +360,7 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 
 			//fprintf(stdout, "DOING__ %ld:%p:%p\n", out_idx, (void*)old_pt_out, (void*)old_out);
 			
-			bnod->in1 = old_out;
+			bnod->in0 = old_out;
 			*old_pt_out = bnod;
 			
 			out_idx++;
@@ -452,8 +456,8 @@ hnode_box::init_all_direct(){
 		GH_CK(outputs[oo] == gh_null);
 		
 		hnode_direct* dr = add_direct();
-		inputs[ii] = (&(dr->in1));
-		outputs[oo] = (&(dr->out1));
+		inputs[ii] = (&(dr->in0));
+		outputs[oo] = (&(dr->out0));
 	}
 }
 
@@ -463,8 +467,22 @@ hnode_box::release_nodes(){
 		GH_CK(all_nodes[ii] != gh_null);
 		delete all_nodes[ii];
 	}
+	all_nodes.clear();
 	inputs.clear();
 	outputs.clear();
+}
+
+void
+htarget_box::del_htarget_box(){
+	release_nodes();
+	if(target != gh_null){
+		delete target;
+	}
+	target = gh_null;
+	lft_in.clear();
+	lft_out.clear();
+	rgt_in.clear();
+	rgt_out.clear();
 }
 
 hnode_box*
@@ -494,22 +512,22 @@ hnode_box::get_2to1_net_box(){
 		GH_CK(onod->get_kind() == hg_1_to_2_nod);
 		GH_CK(cnod->get_kind() == hg_2_to_1_nod);
 		
-		hg_addr_t o_in1_addr = onod->in1->addr;
+		hg_addr_t o_in0_addr = onod->in0->addr;
+		hg_addr_t o_out0_addr = onod->out0->addr;
 		hg_addr_t o_out1_addr = onod->out1->addr;
-		hg_addr_t o_out2_addr = onod->out2->addr;
 		
-		cnod->out1 = bx->all_nodes[o_in1_addr];
+		cnod->out0 = bx->all_nodes[o_in0_addr];
+		cnod->in0 = bx->all_nodes[o_out0_addr];
 		cnod->in1 = bx->all_nodes[o_out1_addr];
-		cnod->in2 = bx->all_nodes[o_out2_addr];
 		
-		if(cnod->out1 == cnod){
-			bx->outputs.push_back(&(cnod->out1));
+		if(cnod->out0 == cnod){
+			bx->outputs.push_back(&(cnod->out0));
+		}
+		if(cnod->in0 == cnod){
+			bx->inputs.push_back(&(cnod->in0));
 		}
 		if(cnod->in1 == cnod){
 			bx->inputs.push_back(&(cnod->in1));
-		}
-		if(cnod->in2 == cnod){
-			bx->inputs.push_back(&(cnod->in2));
 		}
 	}
 	
@@ -576,22 +594,22 @@ hroute_box::init_as_2to2_route_box(){
 	hnode_2to1* nd4 = add_2to1();
 	
 	inputs.resize(2, gh_null);
-	inputs[0] = (&(nd1->in1));
-	inputs[1] = (&(nd2->in1));
+	inputs[0] = (&(nd1->in0));
+	inputs[1] = (&(nd2->in0));
 	
 	outputs.resize(2, gh_null);
-	outputs[0] = (&(nd3->out1));
-	outputs[1] = (&(nd4->out1));
+	outputs[0] = (&(nd3->out0));
+	outputs[1] = (&(nd4->out0));
 	
-	nd1->out1 = nd3;
-	nd1->out2 = nd4;
-	nd2->out1 = nd3;
-	nd2->out2 = nd4;
+	nd1->out0 = nd3;
+	nd1->out1 = nd4;
+	nd2->out0 = nd3;
+	nd2->out1 = nd4;
 	
-	nd3->in1 = nd1;
-	nd3->in2 = nd2;
-	nd4->in1 = nd1;
-	nd4->in2 = nd2;
+	nd3->in0 = nd1;
+	nd3->in1 = nd2;
+	nd4->in0 = nd1;
+	nd4->in1 = nd2;
 	
 	GH_CK(all_direct.empty());
 }
@@ -605,9 +623,9 @@ hroute_box::init_as_2to3_route_box(){
 	hnode_2to1* nd3 = add_2to1();
 
 	outputs.resize(3, gh_null);
-	outputs[0] = (&(nd1->out1));
-	outputs[1] = (&(nd2->out1));
-	outputs[2] = (&(nd3->out1));
+	outputs[0] = (&(nd1->out0));
+	outputs[1] = (&(nd2->out0));
+	outputs[2] = (&(nd3->out0));
 	
 	bx1->connect_output_to_node_input(0, *nd1, 0);
 	bx1->connect_output_to_node_input(1, *nd2, 0);
@@ -651,9 +669,9 @@ hroute_box::init_as_3to2_route_box(){
 	hnode_1to2* nd3 = add_1to2();
 	
 	inputs.resize(3, gh_null);
-	inputs[0] = (&(nd1->in1));
-	inputs[1] = (&(nd2->in1));
-	inputs[2] = (&(nd3->in1));
+	inputs[0] = (&(nd1->in0));
+	inputs[1] = (&(nd2->in0));
+	inputs[2] = (&(nd3->in0));
 
 	bx1->connect_node_output_to_input(*nd1, 0, 0);
 	bx1->connect_node_output_to_input(*nd2, 0, 1);
@@ -694,27 +712,27 @@ hlognet_box::init_as_io(){
 		
 		hnode_1to2* nd1 = add_1to2();
 		hnode_2to1* nd2 = add_2to1();
-		inputs.push_back(&(nd1->in1));
-		outputs.push_back(&(nd2->out1));
+		inputs.push_back(&(nd1->in0));
+		outputs.push_back(&(nd2->out0));
 		
-		nd1->out1 = nd2;
-		nd2->in2 = nd1;
+		nd1->out0 = nd2;
+		nd2->in1 = nd1;
 		
-		GH_CK(tg->in1 != gh_null);
-		GH_CK(tg->in1->get_kind() == hg_2_to_1_nod);
-		hnode_2to1* tg_in = (hnode_2to1*)tg->in1;
+		GH_CK(tg->in0 != gh_null);
+		GH_CK(tg->in0->get_kind() == hg_2_to_1_nod);
+		hnode_2to1* tg_in = (hnode_2to1*)tg->in0;
 		GH_CK(tg_in != gh_null);
-		nd2->in1 = tg_in;
-		tg_in->out1 = nd2;
-		tg->in1 = gh_null;
+		nd2->in0 = tg_in;
+		tg_in->out0 = nd2;
+		tg->in0 = gh_null;
 		
-		GH_CK(tg->out1 != gh_null);
-		GH_CK(tg->out1->get_kind() == hg_1_to_2_nod);
-		hnode_1to2* tg_out = (hnode_1to2*)tg->out1;
+		GH_CK(tg->out0 != gh_null);
+		GH_CK(tg->out0->get_kind() == hg_1_to_2_nod);
+		hnode_1to2* tg_out = (hnode_1to2*)tg->out0;
 		GH_CK(tg_out != gh_null);
-		nd1->out2 = tg_out;
-		tg_out->in1 = nd1;
-		tg->out1 = gh_null;
+		nd1->out1 = tg_out;
+		tg_out->in0 = nd1;
+		tg->out0 = gh_null;
 		
 		delete tg;
 	}
@@ -808,7 +826,7 @@ htarget_box::join_outputs(hnode_box* bx1, hnode_box* bx2, long num_out, vector<h
 		bx1->connect_output_to_node_input(aa, *nd_out, 0);
 		bx2->connect_output_to_node_input(aa, *nd_out, 1);
 
-		all_out.push_back(&(nd_out->out1));
+		all_out.push_back(&(nd_out->out0));
 	}
 }
 
@@ -870,8 +888,8 @@ htarget_box::ck_target_box(long lft_ht, long rgt_ht){
 	GH_CK((long)lft_out.size() == rgt_ht);
 	GH_CK((long)rgt_in.size() == rgt_ht);
 	GH_CK((long)rgt_out.size() == lft_ht);
-	GH_CK(target->in1->get_kind() == hg_2_to_1_nod);
-	GH_CK(target->out1->get_kind() == hg_1_to_2_nod);
+	GH_CK(target->in0->get_kind() == hg_2_to_1_nod);
+	GH_CK(target->out0->get_kind() == hg_1_to_2_nod);
 	GH_CK(all_direct.empty());
 	return true;
 }
@@ -902,10 +920,10 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	join_outputs(rgt, spl_rgt, lft_ht, rgt_out);
 	
 	target = new hnode_target;
-	target->in1 = tg_in;
-	tg_in->out1 = target;
-	target->out1 = tg_out;
-	tg_out->in1 = target;
+	target->in0 = tg_in;
+	tg_in->out0 = target;
+	target->out0 = tg_out;
+	tg_out->in0 = target;
 	
 	long lft_lst = lft->outputs.size() - 1;
 	lft->connect_output_to_node_input(lft_lst, *tg_in, 0);
@@ -1094,6 +1112,11 @@ test_get_target(int argc, char *argv[]){
 	long ll = atol(argv[2]);
 	long idx = atol(argv[3]);
 
+	long nin = 0;
+	long nout = 0;
+	gh_calc_num_io(bb, ll, idx, nin, nout);
+	fprintf(stdout, "base=%ld length=%ld idx=%ld num_in=%ld num_out=%ld\n", bb, ll, idx, nin, nout);
+	
 	hlognet_box* lbx = new hlognet_box(bb);
 	lbx->init_length(ll);
 	htarget_box* bx = lbx->get_target_box(idx);
@@ -1116,6 +1139,7 @@ main(int argc, char *argv[]){
 	//resp = test_num_io(argc, argv);
 	resp = test_get_target(argc, argv);
 	
+	printf("ENDING_TESTS______________________\n");
 	return resp;
 }
 
@@ -1125,6 +1149,8 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	GH_CK(rgt_ht >= 0);
 	GH_CK((lft_ht <= 1) || (rgt_ht <= 1));
 	
+	hnode_box& dest = *this;
+	
 	long full_ht = lft_ht + rgt_ht;
 	target = new hnode_target;
 	
@@ -1132,12 +1158,12 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		GH_CK((lft_ht != 0) || (rgt_ht != 0));
 		if(full_ht == 1){
 			if(lft_ht == 1){
-				lft_in.push_back(&(target->in1));
-				rgt_out.push_back(&(target->out1));
+				lft_in.push_back(&(target->in0));
+				rgt_out.push_back(&(target->out0));
 			} else {
 				GH_CK(rgt_ht == 1);
-				lft_out.push_back(&(target->out1));
-				rgt_in.push_back(&(target->in1));
+				lft_out.push_back(&(target->out0));
+				rgt_in.push_back(&(target->in0));
 			}
 			return;
 		}
@@ -1150,12 +1176,12 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		GH_CK(spl_in->outputs.size() == 1);
 		hnode* nd_in = *(spl_in->outputs[0]);
 		gh_set_io(spl_in->outputs, 0, target);
-		target->in1 = nd_in;
+		target->in0 = nd_in;
 		
 		GH_CK(spl_out->inputs.size() == 1);
 		hnode* nd_out = *(spl_out->inputs[0]);
 		gh_set_io(spl_out->inputs, 0, target);
-		target->out1 = nd_out;
+		target->out0 = nd_out;
 		
 		if(lft_ht == 0){
 			gh_move_io(spl_out->outputs, lft_out);
@@ -1166,6 +1192,9 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 			gh_move_io(spl_out->outputs, rgt_out);
 		}
 		
+		spl_in->move_nodes_to(dest);
+		spl_out->move_nodes_to(dest);
+		
 		return;
 	}
 	
@@ -1174,54 +1203,54 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 			hnode_2to1* tg_in = add_2to1();
 			hnode_1to2* tg_out = add_1to2();
 			
-			target->in1 = tg_in;
-			tg_in->out1 = target;
-			target->out1 = tg_out;
-			tg_out->in1 = target;
+			target->in0 = tg_in;
+			tg_in->out0 = target;
+			target->out0 = tg_out;
+			tg_out->in0 = target;
 			
-			lft_in.push_back(&(tg_in->in1));
-			lft_out.push_back(&(tg_out->out1));
-			rgt_in.push_back(&(tg_in->in2));
-			rgt_out.push_back(&(tg_out->out2));
+			lft_in.push_back(&(tg_in->in0));
+			lft_out.push_back(&(tg_out->out0));
+			rgt_in.push_back(&(tg_in->in1));
+			rgt_out.push_back(&(tg_out->out1));
 					
-			GH_CK(target->in1->get_kind() == hg_2_to_1_nod);
-			GH_CK(target->out1->get_kind() == hg_1_to_2_nod);
+			GH_CK(target->in0->get_kind() == hg_2_to_1_nod);
+			GH_CK(target->out0->get_kind() == hg_1_to_2_nod);
 		} else {
 			hnode_2to1* tg_in = add_2to1();
 			hnode_1to2* tg_out = add_1to2();
 			
-			target->in1 = tg_in;
-			tg_in->out1 = target;
-			target->out1 = tg_out;
-			tg_out->in1 = target;
+			target->in0 = tg_in;
+			tg_in->out0 = target;
+			target->out0 = tg_out;
+			tg_out->in0 = target;
 			
 			hnode_1to2* l_in = add_1to2();
 			hnode_2to1* l_out = add_2to1();
 			hnode_1to2* r_in = add_1to2();
 			hnode_2to1* r_out = add_2to1();
 
-			l_in->out1 = l_out;
-			l_out->in1 = l_in;
+			l_in->out0 = l_out;
+			l_out->in0 = l_in;
 			
-			l_in->out2 = tg_in;
-			tg_in->in1 = l_in;
+			l_in->out1 = tg_in;
+			tg_in->in0 = l_in;
 
-			l_out->in2 = tg_out;
-			tg_out->out1 = l_out;
+			l_out->in1 = tg_out;
+			tg_out->out0 = l_out;
 			
-			tg_out->out2 = r_out;
-			r_out->in2 = tg_out;
+			tg_out->out1 = r_out;
+			r_out->in1 = tg_out;
 			
-			r_out->in1 = r_in;
-			r_in->out2 = r_out;
+			r_out->in0 = r_in;
+			r_in->out1 = r_out;
 
-			r_in->out1 = tg_in;
-			tg_in->in2 = r_in;
+			r_in->out0 = tg_in;
+			tg_in->in1 = r_in;
 			
-			lft_in.push_back(&(l_in->in1));
-			lft_out.push_back(&(l_out->out1));
-			rgt_in.push_back(&(r_in->in1));
-			rgt_out.push_back(&(r_out->out1));
+			lft_in.push_back(&(l_in->in0));
+			lft_out.push_back(&(l_out->out0));
+			rgt_in.push_back(&(r_in->in0));
+			rgt_out.push_back(&(r_out->out0));
 		}
 		return;
 	}
@@ -1231,10 +1260,10 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	hnode_2to1* tg_in = add_2to1();
 	hnode_1to2* tg_out = add_1to2();
 	
-	target->in1 = tg_in;
-	tg_in->out1 = target;
-	target->out1 = tg_out;
-	tg_out->in1 = target;
+	target->in0 = tg_in;
+	tg_in->out0 = target;
+	target->out0 = tg_out;
+	tg_out->in0 = target;
 	
 	long bt1_ht = full_ht - 1;
 	GH_CK(bt1_ht > 1);
@@ -1253,6 +1282,7 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 			gh_move_io(bn->inputs, rgt_in);
 		}
 		bn->connect_outputs_to_box_inputs(*rt_in_bx);
+		bn->move_nodes_to(dest);
 	} else {
 		if(rgt_ht == 1){
 			GH_CK(lft_ht > 1);
@@ -1276,15 +1306,15 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		rt_in_bx->connect_output_to_node_input(1, *tg_in, 0);
 		spl_bx_out->connect_node_output_to_input(*tg_out, 1, 0);
 		
-		tg_out->out1 = bx_out;
-		bx_out->in2 = tg_out;
+		tg_out->out0 = bx_out;
+		bx_out->in1 = tg_out;
 		
-		tg_in->in2 = bx_in;
-		bx_in->out1 = tg_in;
+		tg_in->in1 = bx_in;
+		bx_in->out0 = tg_in;
 		
 		join_outputs(spl_bx_in, spl_bx_out, bt1_ht, rgt_out);
-		lft_out.push_back(&(bx_out->out1));
-		rgt_in.push_back(&(bx_in->in1));
+		lft_out.push_back(&(bx_out->out0));
+		rgt_in.push_back(&(bx_in->in0));
 	} else {
 		GH_CK(lft_ht == 1);
 		GH_CK(rgt_ht > 1);
@@ -1292,16 +1322,20 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		rt_in_bx->connect_output_to_node_input(0, *tg_in, 1);
 		rt_in_bx->connect_output_to_node_input(1, *bx_out, 1);
 		
-		bx_in->out2 = tg_in;
-		tg_in->in1 = bx_in;
+		bx_in->out1 = tg_in;
+		tg_in->in0 = bx_in;
 		
-		tg_out->out2 = bx_out;
-		bx_out->in1 = tg_out;
+		tg_out->out1 = bx_out;
+		bx_out->in0 = tg_out;
 		
 		join_outputs(spl_bx_in, spl_bx_out, bt1_ht, lft_out);
-		lft_in.push_back(&(bx_in->in1));
-		rgt_out.push_back(&(bx_out->out1));
+		lft_in.push_back(&(bx_in->in0));
+		rgt_out.push_back(&(bx_out->out0));
 	}
+	
+	rt_in_bx->move_nodes_to(dest);
+	spl_bx_in->move_nodes_to(dest);
+	spl_bx_out->move_nodes_to(dest);
 	
 	init_all_addr();
 

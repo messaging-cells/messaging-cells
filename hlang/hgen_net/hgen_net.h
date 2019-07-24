@@ -56,6 +56,11 @@ public:
 		return false;
 	}
 	
+	/*virtual hnode*
+	get_kind(){
+		return hg_invalid_nod;
+	}*/
+	
 	void
 	print_addr(FILE* ff);
 };
@@ -72,22 +77,22 @@ public:
 
 class hnode_1to1 : public hnode {
 public:
-	long val_out1 = 0;
+	long val_out0 = 0;
 	
-	hnode* in1 = gh_null;
-	hnode* out1 = gh_null;
+	hnode* in0 = gh_null;
+	hnode* out0 = gh_null;
 
 	hnode_1to1(){
-		val_out1 = 0;
+		val_out0 = 0;
 	
-		in1 = gh_null;
-		out1 = gh_null;
+		in0 = gh_null;
+		out0 = gh_null;
 	}
 	virtual ~hnode_1to1(){}
 	
 	void init_to_me(){
-		in1 = this;
-		out1 = this;
+		in0 = this;
+		out0 = this;
 	}
 
 	virtual hg_hnode_kind_t
@@ -97,7 +102,7 @@ public:
 	
 	virtual bool
 	has_io(hnode** io){
-		return ((&in1 == io) || (&out1 == io));
+		return ((&in0 == io) || (&out0 == io));
 	}
 	
 	virtual void
@@ -125,27 +130,27 @@ public:
 
 class hnode_1to2 : public hnode {
 public:
+	long val_out0 = 0;
 	long val_out1 = 0;
-	long val_out2 = 0;
 	
-	hnode* in1 = gh_null;
+	hnode* in0 = gh_null;
+	hnode* out0 = gh_null;
 	hnode* out1 = gh_null;
-	hnode* out2 = gh_null;
 
 	hnode_1to2(){
+		val_out0 = 0;
 		val_out1 = 0;
-		val_out2 = 0;
 	
-		in1 = gh_null;
+		in0 = gh_null;
+		out0 = gh_null;
 		out1 = gh_null;
-		out2 = gh_null;
 	}
 	virtual ~hnode_1to2(){}
 	
 	void init_to_me(){
-		in1 = this;
+		in0 = this;
+		out0 = this;
 		out1 = this;
-		out2 = this;
 	}
 
 	virtual hg_hnode_kind_t
@@ -155,7 +160,7 @@ public:
 	
 	virtual bool
 	has_io(hnode** io){
-		return ((&in1 == io) || (&out1 == io) || (&out2 == io));
+		return ((&in0 == io) || (&out0 == io) || (&out1 == io));
 	}
 	
 	virtual void
@@ -165,25 +170,25 @@ public:
 
 class hnode_2to1 : public hnode {
 public:
-	long val_out1 = 0;
+	long val_out0 = 0;
 	
+	hnode* in0 = gh_null;
 	hnode* in1 = gh_null;
-	hnode* in2 = gh_null;
-	hnode* out1 = gh_null;
+	hnode* out0 = gh_null;
 
 	hnode_2to1(){
-		val_out1 = 0;
+		val_out0 = 0;
 	
+		in0 = gh_null;
 		in1 = gh_null;
-		in2 = gh_null;
-		out1 = gh_null;
+		out0 = gh_null;
 	}
 	virtual ~hnode_2to1(){}
 	
 	void init_to_me(){
+		in0 = this;
 		in1 = this;
-		in2 = this;
-		out1 = this;
+		out0 = this;
 	}
 	
 	virtual hg_hnode_kind_t
@@ -193,7 +198,7 @@ public:
 	
 	virtual bool
 	has_io(hnode** io){
-		return ((&in1 == io) || (&in2 == io) || (&out1 == io));
+		return ((&in0 == io) || (&in1 == io) || (&out0 == io));
 	}
 	
 	virtual void
@@ -284,35 +289,35 @@ public:
 	void connect_output_to_node_input(long out, hnode_2to1& nd, long in){
 		hnode* po = set_output(out, &nd);
 		if(in == 0){
+			GH_CK(nd.in0 == &nd);
+			nd.in0 = po;
+		} else {
 			GH_CK(nd.in1 == &nd);
 			nd.in1 = po;
-		} else {
-			GH_CK(nd.in2 == &nd);
-			nd.in2 = po;
 		}
 	}
 	
 	void connect_output_to_node(long out, hnode_1to2& nd){
 		hnode* po = set_output(out, &nd);
-		GH_CK(nd.in1 == &nd);
-		nd.in1 = po;
+		GH_CK(nd.in0 == &nd);
+		nd.in0 = po;
 	}
 	
 	void connect_node_output_to_input(hnode_1to2& nd, long out, long in){
 		hnode* pi = set_input(in, &nd);
 		if(out == 0){
+			GH_CK(nd.out0 == &nd);
+			nd.out0 = pi;
+		} else {
 			GH_CK(nd.out1 == &nd);
 			nd.out1 = pi;
-		} else {
-			GH_CK(nd.out2 == &nd);
-			nd.out2 = pi;
 		}
 	}
 	
 	void connect_node_to_input(hnode_2to1& nd, long in){
 		hnode* pi = set_input(in, &nd);
-		GH_CK(nd.out1 == &nd);
-		nd.out1 = pi;
+		GH_CK(nd.out0 == &nd);
+		nd.out0 = pi;
 	}
 
 	void connect_outputs_to_box_inputs(hnode_box& bx){
@@ -359,17 +364,10 @@ public:
 	}
 	
 	virtual ~htarget_box(){
-		release_nodes();
-		if(target != gh_null){
-			delete target;
-		}
-		target = gh_null;
-		lft_in.clear();
-		lft_out.clear();
-		rgt_in.clear();
-		rgt_out.clear();
+		del_htarget_box();
 	}
 	
+	void del_htarget_box();
 	bool ck_target_box(long lft_ht, long rgt_ht);
 
 	void 	join_outputs(hnode_box* rte_bx, hnode_box* spl_bx, long num_out, vector<hnode**>& all_out);
