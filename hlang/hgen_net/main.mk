@@ -19,12 +19,17 @@ HG_BASE_DIR := .
 
 TARGET := gennet.elf
 
+TGT_LDFLAGS := -rdynamic
+
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
 SRC_CFLAGS := ${BMETAL_CFLAGS} ${HG_DBG_FLAG} 
 SRC_CXXFLAGS := ${BMETAL_CXXFLAGS} ${HG_DBG_FLAG} 
 
+SRC_INCDIRS := ${HG_BASE_DIR}/gh_util
+
 SOURCES := \
+	${HG_BASE_DIR}/gh_util/gh_dbg_util.cpp \
 	${HG_BASE_DIR}/hgen_net.cpp \
 
 

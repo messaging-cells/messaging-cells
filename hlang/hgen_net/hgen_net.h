@@ -3,6 +3,7 @@
 #ifndef GEN_HNET_H
 #define GEN_HNET_H
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -11,14 +12,11 @@
 #include <vector>
 #include <iterator>
 
+#include "gh_dbg_util.h"
+
 using namespace std;
 
-#define GH_MARK_USED(X)  ((void)(&(X)))
-#define GH_CK(prm) assert(prm)
-
 #define GH_INVALID_IDX -1
-
-#define gh_null NULL
 
 enum hg_prt_mode_t {
 	hg_addr_prt,
