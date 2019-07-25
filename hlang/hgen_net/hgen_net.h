@@ -88,8 +88,27 @@ public:
 	virtual hnode* 	get_out0(){ return gh_null; }
 	virtual hnode* 	get_out1(){ return gh_null; }
 
+	virtual hnode** set_in0(hnode* nd){ return gh_null; }
+	virtual hnode** set_in1(hnode* nd){ return gh_null; }
+	virtual hnode** set_out0(hnode* nd){ return gh_null; }
+	virtual hnode** set_out1(hnode* nd){ return gh_null; }
+	
 	virtual void set_direct_idx(gh_io_kind_t kk, ppnode_vec_t& all_io, long idx){}
-
+	
+	hnode** re_link_in(hnode* old_nd, hnode* nw_nd){
+		if(get_in0() == old_nd){ return set_in0(nw_nd); }
+		if(get_in1() == old_nd){ return set_in1(nw_nd); }
+		GH_CK(false && "Bad_re_link_in");
+		return gh_null;
+	}
+	
+	hnode** re_link_out(hnode* old_nd, hnode* nw_nd){
+		if(get_out0() == old_nd){ return set_out0(nw_nd); }
+		if(get_out1() == old_nd){ return set_out1(nw_nd); }
+		GH_CK(false && "Bad_re_link_out");
+		return gh_null;
+	}
+	
 	bool ck_link(hnode* lnk, gh_io_kind_t kk);
 
 	void
@@ -129,6 +148,9 @@ public:
 	virtual hnode* 	get_in0(){ return in0; }
 	virtual hnode* 	get_out0(){ return out0; }
 
+	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
+	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
+	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
 		bool c2 = ck_link(out0, gh_out_kind);
@@ -158,17 +180,31 @@ public:
 	ppnode_vec_t* out_vec = gh_null;
 	long out_idx = GH_INVALID_IDX;
 
+	hnode_direct(){
+		init_hnode_direct();
+	}
+	
+	virtual ~hnode_direct(){
+		init_hnode_direct();
+	}
+	
+	void init_hnode_direct(){
+		in_vec = gh_null;
+		in_idx = GH_INVALID_IDX;
+		
+		out_vec = gh_null;
+		out_idx = GH_INVALID_IDX;
+	}
+	
 	virtual void 
 	set_direct_idx(gh_io_kind_t kk, ppnode_vec_t& all_io, long idx){
 		GH_CK(idx != GH_INVALID_IDX);
 		if(kk == gh_out_kind){
-			GH_CK(out_idx == GH_INVALID_IDX);
 			GH_CK(&out0 == all_io[idx]);
 			out_vec = &all_io;
 			out_idx = idx;
 		} else {
 			GH_CK(kk == gh_in_kind);
-			GH_CK(in_idx == GH_INVALID_IDX);
 			GH_CK(&in0 == all_io[idx]);
 			in_vec = &all_io;
 			in_idx = idx;
@@ -222,6 +258,10 @@ public:
 	virtual hnode* 	get_out0(){ return out0; }
 	virtual hnode* 	get_out1(){ return out1; }
 	
+	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
+	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
+	virtual hnode** set_out1(hnode* nd){ out1 = nd; return &out1; }
+	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
 		bool c2 = ck_link(out0, gh_out_kind);
@@ -270,6 +310,10 @@ public:
 	virtual hnode* 	get_in0(){ return in0; }
 	virtual hnode* 	get_in1(){ return in1; }
 	virtual hnode* 	get_out0(){ return out0; }
+	
+	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
+	virtual hnode** set_in1(hnode* nd){ in1 = nd; return &in1; }
+	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
 	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
