@@ -47,12 +47,27 @@ enum gh_io_kind_t {
 typedef long hg_target_addr_t;
 typedef long hg_addr_t;
 
+class hgen_globals;
 class hnode;
+class hlognet_box;
+class hnode_1to1;
+class hnode_direct;
+class hnode_target;
+class hnode_src;
+class hnode_snk;
+class hnode_1to2;
+class hnode_2to1;
+class hnode_box;
+class hroute_box;
+class htarget_box;
+class hlognet_box;
+
 
 typedef vector<hnode**> ppnode_vec_t;
 
 class hgen_globals {
 public:
+	long DBG_LV = 0;
 	hg_nk_lnk_mod_t CK_LINK_MODE = hg_soft_ck_mod;
 };
 
@@ -94,15 +109,21 @@ public:
 	virtual void set_direct_idx(gh_io_kind_t kk, ppnode_vec_t& all_io, long idx){}
 	
 	hnode** re_link_in(hnode* old_nd, hnode* nw_nd){
-		if(get_in0() == old_nd){ return set_in0(nw_nd); }
-		if(get_in1() == old_nd){ return set_in1(nw_nd); }
+		GH_CK(old_nd != this);
+		GH_CK(get_in0() != get_in1());
+		hnode** ppn = gh_null;
+		if(get_in0() == old_nd){ ppn = set_in0(nw_nd); GH_CK(get_in0() == nw_nd); return ppn; }
+		if(get_in1() == old_nd){ ppn = set_in1(nw_nd); GH_CK(get_in1() == nw_nd); return ppn; }
 		GH_CK(false && "Bad_re_link_in");
 		return gh_null;
 	}
 	
 	hnode** re_link_out(hnode* old_nd, hnode* nw_nd){
-		if(get_out0() == old_nd){ return set_out0(nw_nd); }
-		if(get_out1() == old_nd){ return set_out1(nw_nd); }
+		GH_CK(old_nd != this);
+		GH_CK(get_out0() != get_out1());
+		hnode** ppn = gh_null;
+		if(get_out0() == old_nd){ ppn = set_out0(nw_nd); GH_CK(get_out0() == nw_nd); return ppn; }
+		if(get_out1() == old_nd){ ppn = set_out1(nw_nd); GH_CK(get_out1() == nw_nd); return ppn; }
 		GH_CK(false && "Bad_re_link_out");
 		return gh_null;
 	}
@@ -382,6 +403,8 @@ public:
 	void 	init_all_direct();
 	void 	release_nodes();
 	
+	void 	fill_with_directs(ppnode_vec_t& all_in, ppnode_vec_t& all_out);
+	
 	virtual
 	void 	print_box(FILE* ff, hg_prt_mode_t md);
 	
@@ -457,6 +480,7 @@ public:
 	}
 	
 	void 	init_route_box(long num_in, long num_out);
+	bool 	ck_route_box(long num_in, long num_out, int dbg_case);
 	
 	void 	init_as_2to2_route_box();
 	void 	init_as_3to2_route_box();
@@ -485,13 +509,16 @@ public:
 		del_htarget_box();
 	}
 	
-	void del_htarget_box();
-	bool ck_target_box(long lft_ht, long rgt_ht);
+	void 	del_htarget_box();
 
 	void 	join_outputs(hnode_box* rte_bx, hnode_box* spl_bx, long num_out, ppnode_vec_t& all_out);
+	void 	resize_with_directs(long nw_side_sz);
 
 	void 	init_basic_target_box(long lft_ht, long rgt_ht);
 	void 	init_target_box(long lft_sz, long rgt_sz);
+	bool 	ck_target_box(long lft_ht, long rgt_ht);
+	
+	void 	move_target_to(hlognet_box& bx);
 
 	virtual
 	void 	print_box(FILE* ff, hg_prt_mode_t md);
@@ -522,6 +549,8 @@ public:
 
 	void 	init_length(long num_elems);
 	void 	init_lognet_box(long num_elems);
+	bool 	ck_lognet_box(long num_elems);
+	
 	void 	init_as_io();
 	
 	htarget_box* get_target_box(long idx);
