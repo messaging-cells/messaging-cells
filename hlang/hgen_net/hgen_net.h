@@ -17,6 +17,10 @@
 using namespace std;
 
 #define GH_INVALID_IDX -1
+#define GH_INVALID_ADDR -1
+
+#define gh_min(v1, v2) (((v1) < (v2))?(v1):(v2))
+#define gh_max(v1, v2) (((v1) > (v2))?(v1):(v2))
 
 enum hg_prt_mode_t {
 	hg_addr_prt,
@@ -63,6 +67,7 @@ class htarget_box;
 class hlognet_box;
 
 
+typedef hnode* pnode_t;
 typedef vector<hnode**> ppnode_vec_t;
 
 class hgen_globals {
@@ -73,9 +78,29 @@ public:
 
 extern hgen_globals GH_GLOBALS;
 
+class hrange {
+public:
+	hg_addr_t min = GH_INVALID_ADDR;
+	hg_addr_t max = GH_INVALID_ADDR;
+	
+	bool ck_range(){
+		GH_CK(0 <= min);
+		GH_CK(min <= max);
+		return true;
+	}
+};
+
+class hmessage {
+public:
+	long val = 0;
+	hg_addr_t src = GH_INVALID_ADDR;
+	hg_addr_t dst = GH_INVALID_ADDR;
+	hrange rng;
+};
+
 class hnode {
 public:
-	hg_addr_t addr = 0;
+	hg_addr_t addr = GH_INVALID_ADDR;
 	bool ready = false;
 	
 	hnode(){}
@@ -105,6 +130,9 @@ public:
 	virtual hnode** set_in1(hnode* nd){ return gh_null; }
 	virtual hnode** set_out0(hnode* nd){ return gh_null; }
 	virtual hnode** set_out1(hnode* nd){ return gh_null; }
+
+	virtual hrange* get_range0(){ return gh_null; }
+	virtual hrange* get_range1(){ return gh_null; }
 	
 	virtual void set_direct_idx(gh_io_kind_t kk, ppnode_vec_t& all_io, long idx){}
 	
@@ -127,33 +155,35 @@ public:
 		GH_CK(false && "Bad_re_link_out");
 		return gh_null;
 	}
+
+	void	get_joined_range(hrange& rng);
 	
 	bool ck_link(hnode* lnk, gh_io_kind_t kk);
+	
+	bool has_connected_in0(){
+		hnode* pi = get_in0();
+		bool hc = ((pi != gh_null) && (pi != this));
+		return hc;
+	}
 
+	bool has_connected_in1(){
+		hnode* pi = get_in1();
+		bool hc = ((pi != gh_null) && (pi != this));
+		return hc;
+	}
+	
 	void
 	print_addr(FILE* ff);
 };
 
-class test_cls {
-public:
-	long val;
-	
-	test_cls(){}
-	~test_cls(){
-		fprintf(stdout, "DESTROING test_cls obj %ld\n", val);
-	}
-};
-
 class hnode_1to1 : public hnode {
 public:
-	long val_out0 = 0;
+	hmessage msg0;
 	
 	hnode* in0 = gh_null;
 	hnode* out0 = gh_null;
 
 	hnode_1to1(){
-		val_out0 = 0;
-	
 		in0 = gh_null;
 		out0 = gh_null;
 	}
@@ -169,6 +199,8 @@ public:
 
 	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
 	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
+
+	virtual hrange* get_range0(){ return &(msg0.rng); }
 	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
@@ -250,17 +282,14 @@ public:
 
 class hnode_1to2 : public hnode {
 public:
-	long val_out0 = 0;
-	long val_out1 = 0;
+	hmessage msg0;
+	hmessage msg1;
 	
 	hnode* in0 = gh_null;
 	hnode* out0 = gh_null;
 	hnode* out1 = gh_null;
 
 	hnode_1to2(){
-		val_out0 = 0;
-		val_out1 = 0;
-	
 		in0 = gh_null;
 		out0 = gh_null;
 		out1 = gh_null;
@@ -280,6 +309,9 @@ public:
 	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
 	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
 	virtual hnode** set_out1(hnode* nd){ out1 = nd; return &out1; }
+	
+	virtual hrange* get_range0(){ return &(msg0.rng); }
+	virtual hrange* get_range1(){ return &(msg1.rng); }
 	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
@@ -305,15 +337,13 @@ public:
 
 class hnode_2to1 : public hnode {
 public:
-	long val_out0 = 0;
+	hmessage msg0;
 	
 	hnode* in0 = gh_null;
 	hnode* in1 = gh_null;
 	hnode* out0 = gh_null;
 
 	hnode_2to1(){
-		val_out0 = 0;
-	
 		in0 = gh_null;
 		in1 = gh_null;
 		out0 = gh_null;
@@ -333,6 +363,8 @@ public:
 	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
 	virtual hnode** set_in1(hnode* nd){ in1 = nd; return &in1; }
 	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
+	
+	virtual hrange* get_range0(){ return &(msg0.rng); }
 	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
@@ -368,11 +400,13 @@ hnode* 	gh_set_io(ppnode_vec_t& all_io, long idx_io, hnode* nd){
 	return po;
 }
 
+void gh_connect_node_out_to_node_in(hnode& nd_out, long out, hnode& nd_in, long in);
 void gh_connect_out_to_in(ppnode_vec_t& all_out, long out, ppnode_vec_t& all_in, long in);
 void gh_connect_outputs_to_inputs(ppnode_vec_t& out, ppnode_vec_t& in);
 bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
 void gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst);
 void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
+void gh_init_ranges(ppnode_vec_t& all_out);
 
 class hnode_box {
 public:
@@ -412,7 +446,7 @@ public:
 	hnode_2to1* add_2to1();
 	hnode_direct* add_direct();
 	
-	hnode_box* get_2to1_net_box();
+	hnode_box* convert_net_from_1to2_to_2to1();
 	
 	bool move_nodes_to(hnode_box& bx);
 	
@@ -464,6 +498,8 @@ public:
 
 	void remove_connected_directs();
 	void connect_outputs_to_box_inputs(hnode_box& bx);
+	
+	void init_ranges();
 };
 
 hnode_box*
@@ -559,40 +595,6 @@ public:
 	void 	print_box(FILE* ff, hg_prt_mode_t md);
 };
 	
-class hmultinode : public hnode {
-public:
-	vector<hnode*> inputs;
-	vector<hnode*> outputs;
-	
-	long mark;
-	//hnod_net*
-	
-	hmultinode(){}
-	virtual ~hmultinode(){}
-	
-	virtual void
-	print_node(FILE* ff, hg_prt_mode_t md);
-	
-	void reset_marks();
-	bool is_binnet();
-};
-
-class hnod_net {
-public:
-	vector<hnode*> all_to_bigger;
-	vector<hnode*> all_to_smaller;
-
-	void
-	init_nodes(long tot_nodes);
-	
-	bool
-	link_nodes(long step);
-	
-	void
-	print_nodes(FILE* ff, hg_prt_mode_t md);
-};
-
-
 
 #endif // GEN_HNET_H
 

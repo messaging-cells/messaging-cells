@@ -5,110 +5,6 @@ using namespace std;
 
 hgen_globals GH_GLOBALS;
 
-void // virtual
-hmultinode::print_node(FILE* ff, hg_prt_mode_t md){
-	if(md == hg_addr_prt){
-		print_addr(ff);
-		return;
-	}
-	
-	fprintf(ff, "[");
-	fprintf(ff, "%ld:", addr);
-	fprintf(ff, "i(");
-	for(long ii = 0; ii < (long)inputs.size(); ii++){
-		GH_CK(inputs[ii] != gh_null);
-		inputs[ii]->print_node(ff, hg_addr_prt);
-	}
-	fprintf(ff, ") o(");
-	for(long ii = 0; ii < (long)outputs.size(); ii++){
-		GH_CK(outputs[ii] != gh_null);
-		outputs[ii]->print_node(ff, hg_addr_prt);
-	}
-	fprintf(ff, ")");
-	fprintf(ff, "]");
-	fprintf(ff, "\n");
-	
-}
-
-void
-hnod_net::init_nodes(long tot_nodes){
-	all_to_bigger.resize(tot_nodes, gh_null);
-	all_to_smaller.resize(tot_nodes, gh_null);
-	for(long ii = 0; ii < (long)all_to_bigger.size(); ii++){
-		hmultinode* mn = gh_null;
-		
-		mn = new hmultinode;
-		all_to_bigger[ii] = mn;
-		mn->addr = ii;
-		mn->outputs.push_back(mn);
-		
-		mn = new hmultinode;
-		all_to_smaller[ii] = mn;
-		mn->addr = ii;
-		mn->outputs.push_back(mn);
-	}
-	
-	long step = 1;
-	bool go_on = true;
-	while(go_on){
-		go_on = link_nodes(step);
-		step *= 2;
-	}
-}
-
-void
-hnod_net::print_nodes(FILE* ff, hg_prt_mode_t md){
-	for(long ii = 0; ii < (long)all_to_bigger.size(); ii++){
-		all_to_bigger[ii]->print_node(ff, md);
-	}
-}
-
-void
-gen_hnet(long num_obj){
-	long lg = (long)log2(num_obj);
-	fprintf(stdout, "LOG %ld\n", lg);
-	
-	hnod_net the_net;
-	
-	the_net.init_nodes(num_obj);
-	the_net.print_nodes(stdout, hg_full_prt);
-}
-
-bool
-hnod_net::link_nodes(long step){
-	long num_jumps = 0;
-	long idx = 0;
-	while((idx + step) < (long)all_to_bigger.size()){
-		hmultinode* nd1 = (hmultinode*)(all_to_bigger[idx]);
-		hmultinode* nd2 = (hmultinode*)(all_to_bigger[idx + step]);
-		nd1->outputs.push_back(nd2);
-		nd2->inputs.push_back(nd1);
-
-		nd1 = (hmultinode*)(all_to_smaller[idx]);
-		nd2 = (hmultinode*)(all_to_smaller[idx + step]);
-		nd1->inputs.push_back(nd2);
-		nd2->outputs.push_back(nd1);
-		
-		num_jumps++;
-		idx += step;
-	}
-	return (num_jumps > 1);
-}
-
-void
-hmultinode::reset_marks(){
-}
-
-bool
-hmultinode::is_binnet(){
-	bool bn = false;
-	return bn;
-}
-
-// #######################################################################################################
-// #######################################################################################################
-// #######################################################################################################
-
 void
 print_pt_nods(FILE* ff, ppnode_vec_t& vec){
 	for(long ii = 0; ii < (long)vec.size(); ii++){
@@ -416,6 +312,8 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 	
 	bx->init_all_direct();
 	
+	//gh_init_ranges(bx->outputs);
+	
 	return bx;
 }
 
@@ -425,7 +323,7 @@ gh_get_binnet_bm_to_sm(long num_in, long num_out){
 	GH_CK(num_in > num_out);
 	
 	hnode_box* obx = gh_get_binnet_sm_to_bm(num_out, num_in);
-	hnode_box* cbx = obx->get_2to1_net_box();
+	hnode_box* cbx = obx->convert_net_from_1to2_to_2to1();
 	delete obx;
 	return cbx;
 }
@@ -572,7 +470,7 @@ htarget_box::del_htarget_box(){
 }
 
 hnode_box*
-hnode_box::get_2to1_net_box(){
+hnode_box::convert_net_from_1to2_to_2to1(){
 	// FROM 1to2 nets to 2to1 nets
 	
 	long i_sz = (long)inputs.size();
@@ -694,13 +592,15 @@ hroute_box::init_as_2to2_route_box(){
 	outputs[1] = (&(nd4->out0));
 	
 	nd1->out0 = nd3;
-	nd1->out1 = nd4;
-	nd2->out0 = nd3;
-	nd2->out1 = nd4;
-	
 	nd3->in0 = nd1;
-	nd3->in1 = nd2;
+	
+	nd1->out1 = nd4;
 	nd4->in0 = nd1;
+	
+	nd2->out0 = nd3;
+	nd3->in1 = nd2;
+	
+	nd2->out1 = nd4;
 	nd4->in1 = nd2;
 	
 	GH_CK(all_direct.empty());
@@ -845,6 +745,36 @@ hlognet_box::release_targets(){
 		all_targets[ii] = gh_null;
 	}
 	all_targets.clear();
+}
+
+void
+gh_connect_node_out_to_node_in(hnode& nd_out, long out, hnode& nd_in, long in){
+	GH_CK((out == 0) || (out == 1));
+	GH_CK((in == 0) || (in == 1));
+	hnode** ppo = gh_null;
+	hnode** ppi = gh_null;
+	if(out == 0){
+		if(in == 0){
+			ppo = nd_out.set_out0(&nd_in);
+			ppi = nd_in.set_in0(&nd_out);
+		} else {
+			GH_CK(in == 1);
+			ppo = nd_out.set_out0(&nd_in);
+			ppi = nd_in.set_in1(&nd_out);
+		}
+	} else {
+		GH_CK(out == 1);
+		if(in == 0){
+			ppo = nd_out.set_out1(&nd_in);
+			ppi = nd_in.set_in0(&nd_out);
+		} else {
+			GH_CK(in == 1);
+			ppo = nd_out.set_out1(&nd_in);
+			ppi = nd_in.set_in1(&nd_out);
+		}
+	}
+	GH_CK(ppo != gh_null);
+	GH_CK(ppi != gh_null);
 }
 
 void
@@ -1433,22 +1363,6 @@ test_bases(int argc, char *argv[]){
 }
 
 int
-test_vec_pts(int argc, char *argv[]){
-	vector<test_cls*> vv;
-	for(long aa = 0; aa < 10; aa++){
-		test_cls* oo = new test_cls;
-		oo->val = aa;
-		vv.push_back(oo);
-	}
-	for(long aa = 0; aa < 10; aa++){
-		fprintf(stdout, "obj = %ld\n", vv[aa]->val);
-	}
-	vv.clear();
-	fprintf(stdout, "SZ = %ld\n", (long)vv.size());
-	return 0;
-}
-
-int
 test_log(int argc, char *argv[]){
 	if(argc < 3){
 		printf("%s <base> <num>\n", argv[0]);
@@ -1528,7 +1442,6 @@ main(int argc, char *argv[]){
 	int resp = 0;
 	//resp = test_m_to_n(argc, argv);
 	//resp = test_bases(argc, argv);
-	//resp = test_vec_pts(argc, argv);
 	//resp = test_log(argc, argv);
 	//resp = test_mod(argc, argv);
 	//resp = test_num_io(argc, argv);
@@ -1666,4 +1579,104 @@ hroute_box::ck_route_box(long num_in, long num_out, int dbg_case){
 	GH_CK(all_direct.empty());
 	return true;
 }
+
+void
+gh_init_ranges(ppnode_vec_t& all_out){
+	
+	vector<hnode*> next_lv;
+	for(long aa = 0; aa < (long)all_out.size(); aa++){
+		hnode** ppo = all_out[aa];
+		GH_CK(ppo != gh_null);
+		GH_CK(gh_is_free_io(ppo));
+		
+		hnode* po = *ppo;
+		GH_CK(po != gh_null);
+		
+		hg_hnode_kind_t kk = po->get_kind();
+		GH_CK((kk == hg_1_to_1_nod) || (kk == hg_1_to_2_nod));
+		
+		if(kk == hg_1_to_2_nod){
+			hnode_1to2* nd = (hnode_1to2*)po;
+			if(&(nd->out0) == ppo){
+				nd->msg0.rng.min = aa;
+				nd->msg0.rng.max = aa;
+			} else {
+				GH_CK(&(nd->out1) == ppo);
+				nd->msg1.rng.min = aa;
+				nd->msg1.rng.max = aa;
+			}
+		} else {
+			hnode_1to1* nd = (hnode_1to1*)po;
+			GH_CK(&(nd->out0) == ppo);
+			nd->msg0.rng.min = aa;
+			nd->msg0.rng.max = aa;
+		}
+		
+		if(po->has_connected_in0()){
+			next_lv.push_back(po->get_in0());
+		}
+		if(po->has_connected_in1()){
+			next_lv.push_back(po->get_in1());
+		}
+	}
+
+	vector<hnode*> prv_lv;
+	while(! next_lv.empty()){
+		prv_lv.clear();
+		prv_lv = next_lv;
+		next_lv.clear();
+		for(long aa = 0; aa < (long)prv_lv.size(); aa++){
+			hnode* nd = prv_lv[aa];
+			GH_CK(nd != gh_null);
+			hnode* po0 = nd->get_out0();
+			hnode* po1 = nd->get_out1();
+
+			GH_CK(po0 != gh_null);
+			GH_CK(po0 != nd);
+			
+			hrange* rng0 = nd->get_range0();
+			GH_CK(rng0 != gh_null);
+			po0->get_joined_range(*rng0);
+			
+			if(po1 != gh_null){
+				GH_CK(po1 != nd);
+				hrange* rng1 = nd->get_range1();
+				GH_CK(rng1 != gh_null);
+				po1->get_joined_range(*rng1);
+			}
+			
+			if(nd->has_connected_in0()){
+				next_lv.push_back(nd->get_in0());
+			}
+			if(nd->has_connected_in1()){
+				next_lv.push_back(nd->get_in1());
+			}
+		}
+	}
+}
+
+void
+hnode_box::init_ranges(){
+	
+}
+
+void
+hnode::get_joined_range(hrange& rng){
+	hrange* rng0 = get_range0();
+	GH_CK(rng0 != gh_null);
+	GH_CK(rng0->ck_range());
+	
+	rng.min = rng0->min;
+	rng.max = rng0->max;
+
+	hrange* rng1 = get_range1();
+	if(rng1 != gh_null){
+		GH_CK(rng1->ck_range());
+		GH_CK((rng.max + 1) == rng1->min);
+		rng.max = rng1->max;
+		//rng.min = gh_min(rng.min, rng1->min);
+		//rng.max = gh_max(rng.max, rng1->max);
+	}
+}
+
 
