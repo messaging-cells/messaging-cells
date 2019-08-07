@@ -22,6 +22,24 @@ using namespace std;
 #define gh_min(v1, v2) (((v1) < (v2))?(v1):(v2))
 #define gh_max(v1, v2) (((v1) > (v2))?(v1):(v2))
 
+//======================================================================
+// bitarray
+
+// where 'a' is the byte stream pointer, and b is the bit number.
+
+#define gh_div8(b)	((b)>>3)
+#define gh_mod8(b)	((b)&7)
+
+#define gh_get_bit(a, b)		((((int8_t*)a)[gh_div8(b)] >> gh_mod8(b)) & 1)
+#define gh_set_bit(a, b)		(((int8_t*)a)[gh_div8(b)] |= (1 << gh_mod8(b)))
+#define gh_reset_bit(a, b) 		(((int8_t*)a)[gh_div8(b)] &= ~(1 << gh_mod8(b)))
+#define gh_toggle_bit(a, b) 	(((int8_t*)a)[gh_div8(b)] ^= (1 << gh_mod8(b)))
+
+#define gh_to_bytes(num_bits)	(gh_div8(num_bits) + (gh_mod8(num_bits) > 0))
+#define gh_to_bits(num_bytes)	(num_bytes * 8)
+
+//======================================================================
+
 enum hg_prt_mode_t {
 	hg_addr_prt,
 	hg_full_prt,
@@ -48,6 +66,8 @@ enum gh_io_kind_t {
 	gh_out_kind
 };
 
+typedef int hg_flag_idx_t;
+typedef char hg_flags_t;
 typedef long hg_target_addr_t;
 typedef long hg_addr_t;
 
@@ -78,6 +98,8 @@ public:
 
 extern hgen_globals GH_GLOBALS;
 
+hg_addr_t gh_recalc_range_val(hg_addr_t idx_ref, long base, hg_addr_t val);
+
 class hrange {
 public:
 	hg_addr_t min = GH_INVALID_ADDR;
@@ -88,6 +110,14 @@ public:
 		GH_CK(min <= max);
 		return true;
 	}
+	
+	void recalc(hg_addr_t idx_ref, long base){
+		min = gh_recalc_range_val(idx_ref, base, min);
+		max = gh_recalc_range_val(idx_ref, base, max);
+	}
+
+	void print_range(FILE* ff);
+	
 };
 
 class hmessage {
@@ -98,12 +128,44 @@ public:
 	hrange rng;
 };
 
+#define gh_is_red_bit 		1
+#define gh_is_black_bit 	2
+#define gh_to_range_bit 	3
+#define gh_has_range_bit 	4
+
+hg_flag_idx_t
+gh_get_opp_color_bit(hg_flag_idx_t col){
+	if(col == gh_is_red_bit){
+		return gh_is_black_bit;
+	}
+	return gh_is_red_bit;
+}
+
+char
+gh_get_col_chr(hg_flags_t flgs){
+	char cc = 'x';
+	if(gh_get_bit(&flgs, gh_is_red_bit)){
+		GH_CK(! gh_get_bit(&flgs, gh_is_black_bit));
+		return 'r';
+	}
+	if(gh_get_bit(&flgs, gh_is_black_bit)){
+		GH_CK(! gh_get_bit(&flgs, gh_is_red_bit));
+		return 'b';
+	}
+	return cc;
+}
+
 class hnode {
 public:
+	hg_flags_t node_flags = 0;
 	hg_addr_t addr = GH_INVALID_ADDR;
 	bool ready = false;
 	
-	hnode(){}
+	hnode(){
+		node_flags = 0;
+		addr = GH_INVALID_ADDR;
+		ready = false;
+	}
 	virtual ~hnode(){}
 	
 	virtual void
@@ -156,6 +218,20 @@ public:
 		return gh_null;
 	}
 
+	void set_flag(hg_flag_idx_t num_flg){
+		gh_set_bit(&node_flags, num_flg);
+	}
+
+	void reset_flag(hg_flag_idx_t num_flg){
+		gh_reset_bit(&node_flags, num_flg);
+	}
+
+	bool get_flag(hg_flag_idx_t num_flg){
+		return gh_get_bit(&node_flags, num_flg);
+	}
+	
+	void set_color_as_in(hnode_box& bx);
+	
 	void	get_joined_range(hrange& rng);
 	
 	bool ck_link(hnode* lnk, gh_io_kind_t kk);
@@ -406,10 +482,12 @@ void gh_connect_outputs_to_inputs(ppnode_vec_t& out, ppnode_vec_t& in);
 bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
 void gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst);
 void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
-void gh_init_ranges(ppnode_vec_t& all_out);
+void gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, hg_flag_idx_t lst_lv_flg, hnode_box* dbg_bx);
+void gh_recalc_ranges(vector<hnode*>& all_nod, hg_addr_t idx_ref, long base);
 
 class hnode_box {
 public:
+	hg_flags_t box_flags;
 	long base;
 	
 	vector<hnode*> all_direct;
@@ -418,6 +496,7 @@ public:
 	ppnode_vec_t outputs;
 	
 	hnode_box(){
+		box_flags = 0;
 		base = 0;
 	}
 	
@@ -442,11 +521,49 @@ public:
 	virtual
 	void 	print_box(FILE* ff, hg_prt_mode_t md);
 	
-	hnode_1to2* add_1to2();
+	hnode_1to2* add_1to2(bool ini_rngs = false);
 	hnode_2to1* add_2to1();
 	hnode_direct* add_direct();
 	
 	hnode_box* convert_net_from_1to2_to_2to1();
+	
+	void set_flag(hg_flag_idx_t num_flg){
+		gh_set_bit(&box_flags, num_flg);
+	}
+
+	void reset_flag(hg_flag_idx_t num_flg){
+		gh_reset_bit(&box_flags, num_flg);
+	}
+
+	bool get_flag(hg_flag_idx_t num_flg){
+		return gh_get_bit(&box_flags, num_flg);
+	}
+
+	void start_color(){
+		GH_CK(box_flags == 0);
+		set_flag(gh_is_red_bit);
+	}
+	
+	void switch_color(){
+		if(get_flag(gh_is_red_bit)){
+			GH_CK(! get_flag(gh_is_black_bit));
+			reset_flag(gh_is_red_bit);
+			set_flag(gh_is_black_bit);
+		} else {
+			GH_CK(get_flag(gh_is_black_bit));
+			GH_CK(! get_flag(gh_is_red_bit));
+			reset_flag(gh_is_black_bit);
+			set_flag(gh_is_red_bit);
+		}
+	}
+
+	hg_flag_idx_t get_last_color(){
+		GH_CK(get_flag(gh_is_red_bit) != get_flag(gh_is_black_bit));
+		if(get_flag(gh_is_red_bit)){
+			return gh_is_red_bit;
+		} 
+		return gh_is_black_bit;
+	}
 	
 	bool move_nodes_to(hnode_box& bx);
 	
@@ -499,7 +616,6 @@ public:
 	void remove_connected_directs();
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
-	void init_ranges();
 };
 
 hnode_box*
@@ -529,6 +645,7 @@ gh_print_io(FILE* ff, hg_prt_mode_t md, ppnode_vec_t& all_io);
 
 class htarget_box : public hnode_box {
 public:
+	hg_addr_t	idx_ref;
 	hnode_target* target = gh_null;
 	ppnode_vec_t lft_in;
 	ppnode_vec_t lft_out;
@@ -536,6 +653,7 @@ public:
 	ppnode_vec_t rgt_out;
 	
 	htarget_box(long bb){
+		idx_ref = GH_INVALID_IDX;
 		base = bb;
 		target = gh_null;
 		GH_CK(base > 1);

@@ -73,6 +73,11 @@ hnode_target::print_node(FILE* ff, hg_prt_mode_t md){
 	fflush(ff);
 }
 
+void
+hrange::print_range(FILE* ff){
+	fprintf(ff, "(%ld,%ld)", min, max);
+}
+
 void // virtual
 hnode_1to2::print_node(FILE* ff, hg_prt_mode_t md){
 	fflush(ff);
@@ -82,6 +87,7 @@ hnode_1to2::print_node(FILE* ff, hg_prt_mode_t md){
 	}
 	
 	fprintf(ff, "<");
+	fprintf(ff, "%c", gh_get_col_chr(node_flags));
 	if(md == hg_full_pt_prt){
 		fprintf(ff, "(%p)", this);
 		fprintf(ff, "i(%p -> %p)", &in0, in0);
@@ -97,6 +103,8 @@ hnode_1to2::print_node(FILE* ff, hg_prt_mode_t md){
 		out1->print_node(ff, hg_addr_prt);
 	}
 	fprintf(ff, ">");
+	msg0.rng.print_range(ff);
+	msg1.rng.print_range(ff);
 	fprintf(ff, "\n");
 	fflush(ff);
 	GH_CK(ck_connections());
@@ -241,6 +249,8 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 
 	bx->inputs.resize(num_in, gh_null);
 	
+	bx->start_color();
+	
 	ppnode_vec_t next_level;
 	
 	long out_idx = 0;
@@ -254,10 +264,13 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 			next_level.clear();
 			out_idx = 0;
 			out_sz = bx->outputs.size();
+			bx->switch_color();
 		}
 		
 		next_level.push_back(&(bnod->out0));
 		next_level.push_back(&(bnod->out1));
+		
+		bnod->set_color_as_in(*bx);
 		
 		/*fprintf(stdout, "=========================================\n");
 		fprintf(stdout, "ITER %ld\n", aa);
@@ -302,7 +315,7 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 	if(! bx->outputs.empty()){
 		bx->outputs.erase(bx->outputs.begin(), bx->outputs.begin() + out_idx);
 	}
-	bx->outputs.insert(bx->outputs.end(), next_level.begin(), next_level.end());
+	bx->outputs.insert(bx->outputs.begin(), next_level.begin(), next_level.end());
 	if((long)(bx->outputs.size()) < num_out){
 		GH_CK((num_in * 2) > num_out);
 		bx->outputs.resize(num_out, gh_null);
@@ -312,7 +325,7 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 	
 	bx->init_all_direct();
 	
-	//gh_init_ranges(bx->outputs);
+	gh_init_sm_to_bm_ranges(bx->outputs, bx->get_last_color(), bx);
 	
 	return bx;
 }
@@ -392,9 +405,16 @@ hnode_box::init_all_addr(){
 }
 
 hnode_1to2*
-hnode_box::add_1to2(){
+hnode_box::add_1to2(bool ini_rngs){
 	hnode_1to2* bnod = new hnode_1to2;
 	bnod->init_to_me();
+	
+	if(ini_rngs){
+		bnod->msg0.rng.min = 0;
+		bnod->msg0.rng.max = 0;
+		bnod->msg1.rng.min = 1;
+		bnod->msg1.rng.max = 1;
+	}
 	
 	all_nodes.push_back(bnod);
 	all_nodes.back()->addr = all_nodes.size() - 1;
@@ -1440,12 +1460,12 @@ test_get_target(int argc, char *argv[]){
 int
 main(int argc, char *argv[]){
 	int resp = 0;
-	//resp = test_m_to_n(argc, argv);
+	resp = test_m_to_n(argc, argv);
 	//resp = test_bases(argc, argv);
 	//resp = test_log(argc, argv);
 	//resp = test_mod(argc, argv);
 	//resp = test_num_io(argc, argv);
-	resp = test_get_target(argc, argv);
+	//resp = test_get_target(argc, argv);
 	
 	printf("ENDING_TESTS______________________\n");
 	return resp;
@@ -1581,9 +1601,10 @@ hroute_box::ck_route_box(long num_in, long num_out, int dbg_case){
 }
 
 void
-gh_init_ranges(ppnode_vec_t& all_out){
+gh_get_last_level(ppnode_vec_t& all_out, hg_flag_idx_t lv_col, vector<hnode*>& last_lv){
+	//GH_PRT("lv col=%d \n", lv_col);
 	
-	vector<hnode*> next_lv;
+	last_lv.clear();
 	for(long aa = 0; aa < (long)all_out.size(); aa++){
 		hnode** ppo = all_out[aa];
 		GH_CK(ppo != gh_null);
@@ -1597,67 +1618,101 @@ gh_init_ranges(ppnode_vec_t& all_out){
 		
 		if(kk == hg_1_to_2_nod){
 			hnode_1to2* nd = (hnode_1to2*)po;
-			if(&(nd->out0) == ppo){
-				nd->msg0.rng.min = aa;
-				nd->msg0.rng.max = aa;
-			} else {
-				GH_CK(&(nd->out1) == ppo);
-				nd->msg1.rng.min = aa;
-				nd->msg1.rng.max = aa;
+			if(nd->get_flag(lv_col)){
+				if(&(nd->out0) == ppo){
+					nd->msg0.rng.min = aa;
+					nd->msg0.rng.max = aa;
+				} else {
+					GH_CK(&(nd->out1) == ppo);
+					nd->msg1.rng.min = aa;
+					nd->msg1.rng.max = aa;
+				}
+				if(nd->has_connected_in0()){
+					hnode* in0 = po->get_in0();
+					if(! in0->get_flag(gh_to_range_bit)){
+						in0->set_flag(gh_to_range_bit);
+						last_lv.push_back(in0);
+						GH_PRT("%p added in0 %p of %p \n", (void*)ppo, (void*)in0, (void*)po);
+					}
+				}
 			}
 		} else {
 			hnode_1to1* nd = (hnode_1to1*)po;
 			GH_CK(&(nd->out0) == ppo);
-			nd->msg0.rng.min = aa;
-			nd->msg0.rng.max = aa;
+			GH_CK(! nd->has_connected_in0());
+			if(! nd->get_flag(gh_has_range_bit)){
+				nd->set_flag(gh_has_range_bit);
+				nd->msg0.rng.min = aa;
+				nd->msg0.rng.max = aa;
+			}
 		}
 		
-		if(po->has_connected_in0()){
-			next_lv.push_back(po->get_in0());
-		}
-		if(po->has_connected_in1()){
-			next_lv.push_back(po->get_in1());
-		}
 	}
+}
 
-	vector<hnode*> prv_lv;
-	while(! next_lv.empty()){
-		prv_lv.clear();
-		prv_lv = next_lv;
-		next_lv.clear();
-		for(long aa = 0; aa < (long)prv_lv.size(); aa++){
-			hnode* nd = prv_lv[aa];
-			GH_CK(nd != gh_null);
-			hnode* po0 = nd->get_out0();
-			hnode* po1 = nd->get_out1();
+void
+gh_init_level_ranges(vector<hnode*>& prv_lv, vector<hnode*>& next_lv, hg_flag_idx_t lv_col, char dbg_case){
+	for(long aa = 0; aa < (long)prv_lv.size(); aa++){
+		hnode* nd = prv_lv[aa];
+		GH_CK(nd != gh_null);
+		GH_CK(nd->get_kind() == hg_1_to_2_nod);
+		GH_CK_PRT((nd->get_flag(lv_col)), "%d (%p) col=%d %c \n", dbg_case, (void*)nd, lv_col, gh_get_col_chr(nd->node_flags));
+		
+		hnode* po0 = nd->get_out0();
+		hnode* po1 = nd->get_out1();
 
-			GH_CK(po0 != gh_null);
-			GH_CK(po0 != nd);
-			
+		GH_CK(po0 != gh_null);
+		GH_CK(po1 != gh_null);
+		
+		if(po0 != nd){
 			hrange* rng0 = nd->get_range0();
 			GH_CK(rng0 != gh_null);
 			po0->get_joined_range(*rng0);
-			
-			if(po1 != gh_null){
-				GH_CK(po1 != nd);
-				hrange* rng1 = nd->get_range1();
-				GH_CK(rng1 != gh_null);
-				po1->get_joined_range(*rng1);
-			}
-			
-			if(nd->has_connected_in0()){
-				next_lv.push_back(nd->get_in0());
-			}
-			if(nd->has_connected_in1()){
-				next_lv.push_back(nd->get_in1());
+		}
+
+		if(po1 != nd){
+			hrange* rng1 = nd->get_range1();
+			GH_CK(rng1 != gh_null);
+			po1->get_joined_range(*rng1);
+		}
+		
+		if(nd->has_connected_in0()){
+			hnode* in0 = nd->get_in0();
+			if(! in0->get_flag(gh_to_range_bit)){
+				in0->set_flag(gh_to_range_bit);
+				next_lv.push_back(in0);
+				GH_PRT("added in0 %p of %p \n", (void*)in0, (void*)nd);
 			}
 		}
 	}
 }
 
 void
-hnode_box::init_ranges(){
+gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, hg_flag_idx_t lst_col, hnode_box* dbg_bx){
+
+	//GH_DBG_CODE(if(dbg_bx != gh_null){ dbg_bx->print_box(stdout, hg_full_pt_prt); });
 	
+	vector<hnode*> last_lv;
+	gh_get_last_level(all_out, lst_col, last_lv);
+	
+	vector<hnode*> next_lv;
+	hg_flag_idx_t nxt_col = gh_get_opp_color_bit(lst_col);
+	gh_get_last_level(all_out, nxt_col, next_lv);
+	
+	//GH_DBG_CODE(long num_lv = 0);
+	gh_init_level_ranges(last_lv, next_lv, nxt_col, 1);
+
+	vector<hnode*> prv_lv;
+	while(! next_lv.empty()){
+		//GH_PRT("num_lv=%ld \n", num_lv++);
+		
+		prv_lv.clear();
+		prv_lv = next_lv;
+		next_lv.clear();
+		nxt_col = gh_get_opp_color_bit(nxt_col);
+		
+		gh_init_level_ranges(prv_lv, next_lv, nxt_col, 2);
+	}
 }
 
 void
@@ -1670,13 +1725,52 @@ hnode::get_joined_range(hrange& rng){
 	rng.max = rng0->max;
 
 	hrange* rng1 = get_range1();
-	if(rng1 != gh_null){
-		GH_CK(rng1->ck_range());
-		GH_CK((rng.max + 1) == rng1->min);
-		rng.max = rng1->max;
-		//rng.min = gh_min(rng.min, rng1->min);
-		//rng.max = gh_max(rng.max, rng1->max);
+	GH_CK(rng1 != gh_null);
+	GH_CK(rng1->ck_range());
+	
+	GH_CK_PRT(((rng.max + 1) == rng1->min), "(%p) ((%d + 1) == %d) " 
+		" 0(%d, %d) 1(%d, %d)\n", (void*)this, rng.max, rng1->min, rng0->min, rng0->max, rng1->min, rng1->max);
+	rng.max = rng1->max;
+	//rng.min = gh_min(rng.min, rng1->min);
+	//rng.max = gh_max(rng.max, rng1->max);
+}
+
+void
+hnode::set_color_as_in(hnode_box& bx){
+	GH_CK(node_flags == 0);
+	if(bx.get_flag(gh_is_red_bit)){
+		set_flag(gh_is_red_bit);
+	} else {
+		GH_CK(bx.get_flag(gh_is_black_bit));
+		set_flag(gh_is_black_bit);
 	}
+}
+
+void 
+gh_recalc_ranges(vector<hnode*>& all_nod, hg_addr_t idx_ref, long base){
+	for(long ii = 0; ii < (long)all_nod.size(); ii++){
+		hnode* nd = all_nod[ii];
+		if(nd == gh_null){
+			continue;
+		}
+		
+		hg_hnode_kind_t kk = nd->get_kind();
+		if(kk == hg_1_to_2_nod){
+			hnode_1to2* nod = (hnode_1to2*)nd;
+			nod->msg0.rng.recalc(idx_ref, base);
+			nod->msg1.rng.recalc(idx_ref, base);
+		}
+		if(kk == hg_1_to_1_nod){
+			hnode_1to1* nod = (hnode_1to1*)nd;
+			nod->msg0.rng.recalc(idx_ref, base);
+		}
+	}
+}
+
+hg_addr_t
+gh_recalc_range_val(hg_addr_t idx_ref, long base, hg_addr_t val){
+	double pp = idx_ref + pow(base, val);
+	return pp;
 }
 
 
