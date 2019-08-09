@@ -19,6 +19,8 @@ using namespace std;
 #define GH_INVALID_IDX -1
 #define GH_INVALID_ADDR -1
 
+#define GH_BASE_TWO 2
+
 #define gh_min(v1, v2) (((v1) < (v2))?(v1):(v2))
 #define gh_max(v1, v2) (((v1) > (v2))?(v1):(v2))
 
@@ -66,6 +68,11 @@ enum gh_io_kind_t {
 	gh_out_kind
 };
 
+enum gh_route_direction_t {
+	gh_left_dir,
+	gh_right_dir
+};
+
 typedef int hg_flag_idx_t;
 typedef char hg_flags_t;
 typedef long hg_target_addr_t;
@@ -98,7 +105,19 @@ public:
 
 extern hgen_globals GH_GLOBALS;
 
-hg_addr_t gh_recalc_range_val(hg_addr_t idx_ref, long base, hg_addr_t val);
+hg_addr_t
+gh_recalc_range_val(hg_addr_t idx_ref, long base, hg_addr_t val){
+	double pp = idx_ref + pow(base, val);
+	return pp;
+}
+
+class haddr_frame {
+public:
+	haddr_frame* parent_frame = gh_null;
+	long pow_base = 0;
+	long idx = GH_INVALID_IDX;
+	gh_route_direction_t dir = gh_right_dir;
+};
 
 class hrange {
 public:
@@ -483,12 +502,12 @@ bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
 void gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst);
 void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
 void gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, hg_flag_idx_t lst_lv_flg, hnode_box* dbg_bx);
-void gh_recalc_ranges(vector<hnode*>& all_nod, hg_addr_t idx_ref, long base);
+//void gh_recalc_ranges(vector<hnode*>& all_nod, hg_addr_t idx_ref, long base);
 
 class hnode_box {
 public:
 	hg_flags_t box_flags;
-	long base;
+	haddr_frame* parent_frm;
 	
 	vector<hnode*> all_direct;
 	vector<hnode*> all_nodes;
@@ -497,7 +516,7 @@ public:
 	
 	hnode_box(){
 		box_flags = 0;
-		base = 0;
+		parent_frm = gh_null;
 	}
 	
 	virtual ~hnode_box(){
@@ -623,9 +642,9 @@ gh_get_binnet_m_to_n(long num_in, long num_out);
 
 class hroute_box : public hnode_box {
 public:
-	hroute_box(long bb){
-		base = bb;
-		GH_CK(base > 1);
+	haddr_frame	frame;
+	hroute_box(haddr_frame* pnt_frm){
+		parent_frm = pnt_frm;
 	}
 	virtual ~hroute_box(){
 		release_nodes();
@@ -646,17 +665,21 @@ gh_print_io(FILE* ff, hg_prt_mode_t md, ppnode_vec_t& all_io);
 class htarget_box : public hnode_box {
 public:
 	hg_addr_t	idx_ref;
+	long tgt_base;
+	
 	hnode_target* target = gh_null;
 	ppnode_vec_t lft_in;
 	ppnode_vec_t lft_out;
 	ppnode_vec_t rgt_in;
 	ppnode_vec_t rgt_out;
 	
-	htarget_box(long bb){
+	htarget_box(haddr_frame* pnt_frm, long bb){
+		parent_frm = pnt_frm;
 		idx_ref = GH_INVALID_IDX;
-		base = bb;
+		tgt_base = bb;
+		
 		target = gh_null;
-		GH_CK(base > 1);
+		GH_CK(tgt_base > 1);
 	}
 	
 	virtual ~htarget_box(){
@@ -666,6 +689,7 @@ public:
 	void 	del_htarget_box();
 
 	void 	join_outputs(hnode_box* rte_bx, hnode_box* spl_bx, long num_out, ppnode_vec_t& all_out);
+	void 	join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnode_box* bx2, long num_idx, ppnode_vec_t& all_out);
 	void 	resize_with_directs(long nw_side_sz);
 
 	void 	init_basic_target_box(long lft_ht, long rgt_ht);
@@ -682,11 +706,13 @@ void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_o
 
 class hlognet_box : public hnode_box {
 public:
+	long base;
 	long height;
 	long length;
 	vector<hnode_target*> all_targets;
 	
-	hlognet_box(long bb){
+	hlognet_box(haddr_frame* pnt_frm, long bb){
+		parent_frm = pnt_frm;
 		base = bb;
 		height = 0;
 		length = 0;
