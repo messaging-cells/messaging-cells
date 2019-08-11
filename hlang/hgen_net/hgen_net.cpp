@@ -238,8 +238,8 @@ gh_get_first_null_idx(ppnode_vec_t& vec){
 }
 
 hnode_box*
-gh_get_binnet_sm_to_bm(long num_in, long num_out){
-	hnode_box* bx = new hnode_box;
+gh_get_binnet_sm_to_bm(haddr_frame& pnt_frm, long num_in, long num_out){
+	hnode_box* bx = new hnode_box(pnt_frm);
 	long dpth = 0;
 	GH_MARK_USED(dpth);
 	long nout = 0;
@@ -329,26 +329,26 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out){
 }
 
 hnode_box*
-gh_get_binnet_bm_to_sm(long num_in, long num_out){
+gh_get_binnet_bm_to_sm(haddr_frame& pnt_frm, long num_in, long num_out){
 	GH_CK(num_out > 0);
 	GH_CK(num_in > num_out);
 	
-	hnode_box* obx = gh_get_binnet_sm_to_bm(num_out, num_in);
+	hnode_box* obx = gh_get_binnet_sm_to_bm(pnt_frm, num_out, num_in);
 	hnode_box* cbx = obx->convert_net_from_1to2_to_2to1();
 	delete obx;
 	return cbx;
 }
 
 hnode_box*
-gh_get_binnet_m_to_n(long num_in, long num_out){
+gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out){
 	hnode_box* bx = gh_null;
 	
 	GH_CK(num_out > 0);
 	GH_CK(num_in != num_out);
 	if(num_in > num_out){
-		bx = gh_get_binnet_bm_to_sm(num_in, num_out);
+		bx = gh_get_binnet_bm_to_sm(pnt_frm, num_in, num_out);
 	} else {
-		bx = gh_get_binnet_sm_to_bm(num_in, num_out);
+		bx = gh_get_binnet_sm_to_bm(pnt_frm, num_in, num_out);
 		gh_init_sm_to_bm_ranges(bx->outputs, bx->get_last_color(), bx);
 	}
 	GH_CK(bx != gh_null);
@@ -498,7 +498,8 @@ hnode_box::convert_net_from_1to2_to_2to1(){
 	GH_CK(i_sz > 0);
 	GH_CK(i_sz < o_sz);
 	
-	hnode_box* bx = new hnode_box;
+	GH_CK(parent_frm != gh_null);
+	hnode_box* bx = new hnode_box(*parent_frm);
 	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
 		GH_CK(all_nodes[ii] != gh_null);
 		GH_CK(all_nodes[ii]->get_kind() == hg_1_to_2_nod);
@@ -627,8 +628,9 @@ hroute_box::init_as_2to2_route_box(){
 
 void
 hroute_box::init_as_2to3_route_box(){
-	hnode_box* bx1 = gh_get_binnet_m_to_n(1, 3);
-	hnode_box* bx2 = gh_get_binnet_m_to_n(1, 3);
+	GH_CK(parent_frm != gh_null);
+	hnode_box* bx1 = gh_get_binnet_m_to_n(*parent_frm, 1, 3);
+	hnode_box* bx2 = gh_get_binnet_m_to_n(*parent_frm, 1, 3);
 	hnode_2to1* nd1 = add_2to1();
 	hnode_2to1* nd2 = add_2to1();
 	hnode_2to1* nd3 = add_2to1();
@@ -673,8 +675,9 @@ hroute_box::init_as_2to3_route_box(){
 
 void
 hroute_box::init_as_3to2_route_box(){
-	hnode_box* bx1 = gh_get_binnet_m_to_n(3, 1);
-	hnode_box* bx2 = gh_get_binnet_m_to_n(3, 1);
+	GH_CK(parent_frm != gh_null);
+	hnode_box* bx1 = gh_get_binnet_m_to_n(*parent_frm, 3, 1);
+	hnode_box* bx2 = gh_get_binnet_m_to_n(*parent_frm, 3, 1);
 	hnode_1to2* nd1 = add_1to2();
 	hnode_1to2* nd2 = add_1to2();
 	hnode_1to2* nd3 = add_1to2();
@@ -830,10 +833,11 @@ void
 hroute_box::init_route_box(long num_in, long num_out){
 	GH_CK(num_in > 0);
 	GH_CK(num_out > 0);
+	GH_CK(parent_frm != gh_null);
 	if((num_in == 1) || (num_out == 1)){
 		GH_CK(num_in != num_out);
 		if(num_in != num_out){
-			hnode_box* bx = gh_get_binnet_m_to_n(num_in, num_out);
+			hnode_box* bx = gh_get_binnet_m_to_n(*parent_frm, num_in, num_out);
 			hnode_box& me = *this;
 			bool all = bx->move_nodes_to(me);
 			GH_MARK_USED(all);
@@ -863,7 +867,8 @@ hroute_box::init_route_box(long num_in, long num_out){
 		return;
 	}
 	
-	hlognet_box* bx1 = new hlognet_box(parent_frm, GH_BASE_TWO);
+	GH_CK(parent_frm != gh_null);
+	hlognet_box* bx1 = new hlognet_box(*parent_frm);
 	bx1->init_lognet_box(num_out);
 	bx1->init_as_io();
 	
@@ -872,7 +877,7 @@ hroute_box::init_route_box(long num_in, long num_out){
 	
 	hnode_box* bx2 = gh_null;
 	if(num_in != num_out){
-		bx2 = gh_get_binnet_m_to_n(num_in, num_out); // CAN_HAVE_DIRECT
+		bx2 = gh_get_binnet_m_to_n(*parent_frm, num_in, num_out); // CAN_HAVE_DIRECT
 		bx2->connect_outputs_to_box_inputs(*bx1);
 		GH_CK((long)bx2->inputs.size() == num_in);
 	}
@@ -932,7 +937,7 @@ htarget_box::join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnod
 
 void
 hlognet_box::init_length(long num_elems){
-	double lbb = log2(base);
+	double lbb = log2(get_base());
 	double lnn = log2(num_elems - 1);
 	height = (long)(lnn/lbb);
 	length = num_elems;
@@ -940,10 +945,11 @@ hlognet_box::init_length(long num_elems){
 
 htarget_box*
 hlognet_box::get_target_box(long idx){
-	htarget_box* bx = new htarget_box(parent_frm, base);
+	GH_CK(parent_frm != gh_null);
+	htarget_box* bx = new htarget_box(*parent_frm);
 	long nin = 0;
 	long nout = 0;
-	gh_calc_num_io(base, length, idx, nin, nout);
+	gh_calc_num_io(get_base(), length, idx, nin, nout);
 	GH_CK((idx == 0) || (nin >= nout));
 	bx->init_target_box(nin, nout);
 	return bx;
@@ -1008,8 +1014,11 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	
 	GH_CK(lft_ht > 1);
 	GH_CK(rgt_ht > 1);
-	hroute_box* lft = new hroute_box(parent_frm);
-	hroute_box* rgt = new hroute_box(parent_frm);
+	GH_CK(parent_frm != gh_null);
+	hroute_box* lft = new hroute_box(*parent_frm);
+	hroute_box* rgt = new hroute_box(*parent_frm);
+	lft->set_base(GH_BASE_TWO);
+	rgt->set_base(GH_BASE_TWO);
 	
 	hnode_2to1* tg_in = add_2to1();
 	hnode_1to2* tg_out = add_1to2();
@@ -1017,8 +1026,8 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	lft->init_route_box(lft_ht, rgt_ht + 1);
 	rgt->init_route_box(rgt_ht, lft_ht + 1);
 
-	hnode_box* spl_lft = gh_get_binnet_m_to_n(1, rgt_ht);
-	hnode_box* spl_rgt = gh_get_binnet_m_to_n(1, lft_ht);
+	hnode_box* spl_lft = gh_get_binnet_m_to_n(*parent_frm, 1, rgt_ht);
+	hnode_box* spl_rgt = gh_get_binnet_m_to_n(*parent_frm, 1, lft_ht);
 	
 	//join_outputs(lft, spl_lft, rgt_ht, lft_out);
 	//join_outputs(rgt, spl_rgt, lft_ht, rgt_out);
@@ -1137,6 +1146,7 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	GH_CK(lft_ht >= 0);
 	GH_CK(rgt_ht >= 0);
 	GH_CK((lft_ht <= 1) || (rgt_ht <= 1));
+	GH_CK(parent_frm != gh_null);
 	
 	hnode_box& dest = *this;
 	
@@ -1160,8 +1170,8 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		GH_CK((lft_ht > 1) || (rgt_ht > 1));
 		GH_CK(full_ht > 1);
 		
-		hnode_box* spl_in = gh_get_binnet_m_to_n(full_ht, 1);
-		hnode_box* spl_out = gh_get_binnet_m_to_n(1, full_ht);
+		hnode_box* spl_in = gh_get_binnet_m_to_n(*parent_frm, full_ht, 1);
+		hnode_box* spl_out = gh_get_binnet_m_to_n(*parent_frm, 1, full_ht);
 
 		GH_CK(spl_in->outputs.size() == 1);
 		hnode* nd_in = *(spl_in->outputs[0]);
@@ -1191,7 +1201,7 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	}
 	
 	if((lft_ht == 1) && (rgt_ht == 1)){
-		if(tgt_base == GH_BASE_TWO){
+		if(get_base() == GH_BASE_TWO){
 			hnode_2to1* tg_in = add_2to1();
 			hnode_1to2* tg_out = add_1to2();
 			
@@ -1264,12 +1274,13 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	GH_CK(bt1_ht > 1);
 	GH_CK((lft_ht == bt1_ht) || (rgt_ht == bt1_ht));
 	
-	hroute_box* rt_in_bx = new hroute_box(parent_frm);
+	GH_CK(parent_frm != gh_null);
+	hroute_box* rt_in_bx = new hroute_box(*parent_frm);
 	rt_in_bx->init_as_2to2_route_box();
 	
 	GH_CK(all_direct.empty());
 	if(bt1_ht > 2){
-		hnode_box* bn = gh_get_binnet_m_to_n(bt1_ht, 2); // CAN_HAVE_DIRECT
+		hnode_box* bn = gh_get_binnet_m_to_n(*parent_frm, bt1_ht, 2); // CAN_HAVE_DIRECT
 		if(rgt_ht == 1){
 			GH_CK(lft_ht > 1);
 			gh_move_io(gh_in_kind, bn->inputs, lft_in);
@@ -1293,8 +1304,8 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	}
 	GH_CK(all_direct.empty());
 	
-	hnode_box* spl_bx_in = gh_get_binnet_m_to_n(1, bt1_ht);
-	hnode_box* spl_bx_out = gh_get_binnet_m_to_n(1, bt1_ht);
+	hnode_box* spl_bx_in = gh_get_binnet_m_to_n(*parent_frm, 1, bt1_ht);
+	hnode_box* spl_bx_out = gh_get_binnet_m_to_n(*parent_frm, 1, bt1_ht);
 
 	hnode_1to2* bx_in = add_1to2();
 	hnode_2to1* bx_out = add_2to1();
@@ -1372,7 +1383,8 @@ test_m_to_n(int argc, char *argv[]){
 	long mm = atol(argv[1]);
 	long nn = atol(argv[2]);
 
-	hnode_box* bx = gh_get_binnet_m_to_n(mm, nn);
+	haddr_frame pnt_frm;
+	hnode_box* bx = gh_get_binnet_m_to_n(pnt_frm, mm, nn);
 	GH_MARK_USED(bx);
 	
 	bx->print_box(stdout, hg_full_prt);
@@ -1388,8 +1400,9 @@ test_bases(int argc, char *argv[]){
 	}
 	
 	long mm = atol(argv[1]);
-	
-	hroute_box* bx = new hroute_box(gh_null);
+
+	haddr_frame pnt_frm;
+	hroute_box* bx = new hroute_box(pnt_frm);
 	GH_MARK_USED(bx);
 	switch(mm){
 		case 0: 
@@ -1470,8 +1483,10 @@ test_get_target(int argc, char *argv[]){
 	long nin = atol(argv[2]);
 	long nout = atol(argv[3]);
 	fprintf(stdout, "base=%ld #in=%ld #out=%ld\n", bb, nin, nout);
-	
-	htarget_box* bx = new htarget_box(gh_null, bb);
+
+	haddr_frame	pnt_frm;
+	htarget_box* bx = new htarget_box(pnt_frm);
+	bx->set_base(bb);
 	bx->init_target_box(nin, nout);
 
 	fprintf(stdout, "\n\n\n===========\n");
