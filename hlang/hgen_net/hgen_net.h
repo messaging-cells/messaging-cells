@@ -105,19 +105,29 @@ public:
 
 extern hgen_globals GH_GLOBALS;
 
-hg_addr_t
-gh_recalc_range_val(hg_addr_t idx_ref, long base, hg_addr_t val){
-	double pp = idx_ref + pow(base, val);
-	return pp;
-}
-
 class haddr_frame {
 public:
 	haddr_frame* parent_frame = gh_null;
 	long pow_base = 0;
 	long idx = GH_INVALID_IDX;
 	gh_route_direction_t dir = gh_right_dir;
+	long offset = 0;
 };
+
+hg_addr_t
+gh_recalc_range_val(haddr_frame& frm, hg_addr_t val){
+	double pp = 0.0;
+	val += frm.offset;
+	if(val >= 0){
+		pp = pow(frm.pow_base, val);
+	}
+	if(frm.dir == gh_right_dir){
+		pp = frm.idx + pp;
+	} else {
+		pp = frm.idx - pp;
+	}
+	return pp;
+}
 
 class hrange {
 public:
@@ -130,11 +140,13 @@ public:
 		return true;
 	}
 	
-	void recalc(hg_addr_t idx_ref, long base){
-		min = gh_recalc_range_val(idx_ref, base, min);
-		max = gh_recalc_range_val(idx_ref, base, max);
+	void recalc(haddr_frame& frm){
+		min = gh_recalc_range_val(frm, min);
+		max = gh_recalc_range_val(frm, max);
 	}
 
+	void calc_addr(haddr_frame& frm);
+	
 	void print_range(FILE* ff);
 	
 };
@@ -553,11 +565,13 @@ public:
 	
 	void 	set_index(long ii){
 		GH_CK(parent_frm != gh_null);
+		GH_CK(ii >= 0);
 		parent_frm->idx = ii;
 	}
 	
 	long 	get_index(){
 		GH_CK(parent_frm != gh_null);
+		GH_CK(parent_frm->idx >= 0);
 		return parent_frm->idx;
 	}
 	
