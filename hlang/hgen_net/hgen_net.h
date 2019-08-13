@@ -73,12 +73,21 @@ enum gh_route_direction_t {
 	gh_right_dir
 };
 
+enum hg_frame_kind_t {
+	gh_invalid_frm,
+	gh_sm_to_bm_frm,
+	gh_route_frm,
+	gh_target_frm,
+	gh_lognet_frm
+};
+
 typedef int hg_flag_idx_t;
 typedef char hg_flags_t;
 typedef long hg_target_addr_t;
 typedef long hg_addr_t;
 
 class hgen_globals;
+class haddr_frame;
 class hnode;
 class hlognet_box;
 class hnode_1to1;
@@ -101,6 +110,14 @@ class hgen_globals {
 public:
 	long DBG_LV = 0;
 	hg_nk_lnk_mod_t CK_LINK_MODE = hg_soft_ck_mod;
+	vector<haddr_frame*> all_frames;
+
+	hgen_globals(){}
+	virtual ~hgen_globals(){
+		release_all_frames();
+	}
+	
+	void release_all_frames();
 };
 
 extern hgen_globals GH_GLOBALS;
@@ -108,26 +125,30 @@ extern hgen_globals GH_GLOBALS;
 class haddr_frame {
 public:
 	haddr_frame* parent_frame = gh_null;
+	
+	hg_frame_kind_t kind = gh_invalid_frm;
 	long pow_base = 0;
 	long idx = GH_INVALID_IDX;
+	long sz = GH_INVALID_ADDR;
 	gh_route_direction_t dir = gh_right_dir;
 	long offset = 0;
+	
+	hnode* dbg_nd = gh_null;
+
+	void print_frame(FILE* ff);
+	
+};
+
+const char*
+gh_dbg_get_dir_str(gh_route_direction_t dd){
+	if(dd == gh_right_dir){
+		return "rgt";
+	}
+	return "lft";
 };
 
 hg_addr_t
-gh_recalc_range_val(haddr_frame& frm, hg_addr_t val){
-	double pp = 0.0;
-	val += frm.offset;
-	if(val >= 0){
-		pp = pow(frm.pow_base, val);
-	}
-	if(frm.dir == gh_right_dir){
-		pp = frm.idx + pp;
-	} else {
-		pp = frm.idx - pp;
-	}
-	return pp;
-}
+gh_recalc_range_val(haddr_frame& frm, hg_addr_t val);
 
 class hrange {
 public:
@@ -145,7 +166,7 @@ public:
 		max = gh_recalc_range_val(frm, max);
 	}
 
-	void calc_addr(haddr_frame& frm);
+	void calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm);
 	
 	void print_range(FILE* ff);
 	
@@ -157,6 +178,12 @@ public:
 	hg_addr_t src = GH_INVALID_ADDR;
 	hg_addr_t dst = GH_INVALID_ADDR;
 	hrange rng;
+	hrange addr;
+	
+	void	calc_msg_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
+		addr = rng;
+		addr.calc_raddr(nd_frm, bx_frm);
+	}
 };
 
 #define gh_is_red_bit 		1
@@ -186,6 +213,10 @@ gh_get_col_chr(hg_flags_t flgs){
 	return cc;
 }
 
+bool gh_is_1to1(hg_hnode_kind_t kk){ return (kk == hg_1_to_1_nod); }
+bool gh_is_1to2(hg_hnode_kind_t kk){ return (kk == hg_1_to_2_nod); }
+bool gh_is_2to1(hg_hnode_kind_t kk){ return (kk == hg_2_to_1_nod); }
+
 class hnode {
 public:
 	hg_flags_t node_flags = 0;
@@ -208,6 +239,10 @@ public:
 	get_kind(){
 		return hg_invalid_nod;
 	}
+	
+	bool is_1to1(){ return (get_kind() == hg_1_to_1_nod); }
+	bool is_1to2(){ return (get_kind() == hg_1_to_2_nod); }
+	bool is_2to1(){ return (get_kind() == hg_2_to_1_nod); }
 	
 	virtual bool
 	has_io(hnode** io){
@@ -389,6 +424,8 @@ public:
 
 class hnode_1to2 : public hnode {
 public:
+	haddr_frame* node_frm;
+	
 	hmessage msg0;
 	hmessage msg1;
 	
@@ -396,7 +433,9 @@ public:
 	hnode* out0 = gh_null;
 	hnode* out1 = gh_null;
 
-	hnode_1to2(){
+	hnode_1to2(haddr_frame& frm){
+		node_frm = &frm;
+		
 		in0 = gh_null;
 		out0 = gh_null;
 		out1 = gh_null;
@@ -407,6 +446,16 @@ public:
 		in0 = this;
 		out0 = this;
 		out1 = this;
+	}
+	
+	haddr_frame&	get_frame(){
+		GH_CK(node_frm != gh_null);
+		return (*node_frm);
+	}
+	
+	void	calc_msgs_raddr(haddr_frame& frm){
+		msg0.calc_msg_raddr(get_frame(), frm);
+		msg1.calc_msg_raddr(get_frame(), frm);
 	}
 
 	virtual hnode* 	get_in0(){ return in0; }
@@ -518,7 +567,7 @@ void gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, hg_flag_idx_t lst_lv_flg, hn
 class hnode_box {
 public:
 	hg_flags_t box_flags;
-	haddr_frame* parent_frm;
+	haddr_frame* box_frm;
 	
 	vector<hnode*> all_direct;
 	vector<hnode*> all_nodes;
@@ -527,7 +576,11 @@ public:
 	
 	hnode_box(haddr_frame& pnt_frm){
 		box_flags = 0;
-		parent_frm = &pnt_frm;
+		//box_frm = &pnt_frm;
+		
+		box_frm = new haddr_frame;
+		GH_GLOBALS.all_frames.push_back(box_frm);
+		box_frm->parent_frame = &pnt_frm;
 	}
 	
 	virtual ~hnode_box(){
@@ -550,32 +603,33 @@ public:
 	
 	virtual
 	void 	print_box(FILE* ff, hg_prt_mode_t md);
+
+	haddr_frame&	get_frame(){
+		GH_CK(box_frm != gh_null);
+		return (*box_frm);
+	}
 	
 	void 	set_base(long bb){
-		GH_CK(parent_frm != gh_null);
 		GH_CK(bb > 1);
-		parent_frm->pow_base = bb;
+		get_frame().pow_base = bb;
 	}
 	
 	long	get_base(){
-		GH_CK(parent_frm != gh_null);
-		GH_CK(parent_frm->pow_base > 1);
-		return parent_frm->pow_base;
+		GH_CK(get_frame().pow_base > 1);
+		return get_frame().pow_base;
 	}
 	
 	void 	set_index(long ii){
-		GH_CK(parent_frm != gh_null);
 		GH_CK(ii >= 0);
-		parent_frm->idx = ii;
+		get_frame().idx = ii;
 	}
 	
 	long 	get_index(){
-		GH_CK(parent_frm != gh_null);
-		GH_CK(parent_frm->idx >= 0);
-		return parent_frm->idx;
+		GH_CK(get_frame().idx >= 0);
+		return get_frame().idx;
 	}
 	
-	hnode_1to2* add_1to2(bool ini_rngs = false);
+	hnode_1to2* add_1to2(haddr_frame& frm, bool ini_rngs = false);
 	hnode_2to1* add_2to1();
 	hnode_direct* add_direct();
 	
@@ -670,6 +724,7 @@ public:
 	void remove_connected_directs();
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
+	void calc_all_1to2_raddr();
 };
 
 hnode_box*
@@ -679,10 +734,14 @@ class hroute_box : public hnode_box {
 public:
 	haddr_frame	frame;
 	hroute_box(haddr_frame& pnt_frm) : hnode_box(pnt_frm) {
-		parent_frm = &frame;
+		set_base(pnt_frm.pow_base);
+		get_frame().kind = gh_route_frm;
+		/*
+		box_frm = &frame;
 		frame.parent_frame = &pnt_frm;
 		frame.idx = pnt_frm.idx;
 		frame.pow_base = pnt_frm.pow_base;
+		*/
 	}
 	virtual ~hroute_box(){
 		release_nodes();
@@ -709,7 +768,9 @@ public:
 	ppnode_vec_t rgt_out;
 	
 	htarget_box(haddr_frame& pnt_frm) : hnode_box(pnt_frm) {
-		parent_frm = &pnt_frm;
+		//box_frm = &pnt_frm;
+		set_base(pnt_frm.pow_base);
+		get_frame().kind = gh_target_frm;
 		
 		target = gh_null;
 	}
@@ -734,6 +795,7 @@ public:
 	void 	print_box(FILE* ff, hg_prt_mode_t md);
 };
 
+void 	gh_dbg_calc_idx_and_sz(long num_in, long num_out, haddr_frame& frm);
 void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_out);
 
 class hlognet_box : public hnode_box {
@@ -743,7 +805,10 @@ public:
 	vector<hnode_target*> all_targets;
 	
 	hlognet_box(haddr_frame& pnt_frm) : hnode_box(pnt_frm) {
-		parent_frm = &pnt_frm;
+		//box_frm = &pnt_frm;
+		set_base(pnt_frm.pow_base);
+		get_frame().kind = gh_lognet_frm;
+
 		height = 0;
 		length = 0;
 	}
