@@ -111,6 +111,7 @@ public:
 	long DBG_LV = 0;
 	hg_nk_lnk_mod_t CK_LINK_MODE = hg_soft_ck_mod;
 	vector<haddr_frame*> all_frames;
+	hnode_box* dbg_bx = gh_null;
 
 	hgen_globals(){}
 	virtual ~hgen_globals(){
@@ -190,6 +191,7 @@ public:
 #define gh_is_black_bit 	2
 #define gh_to_range_bit 	3
 #define gh_has_range_bit 	4
+#define gh_is_box_copy		5
 
 hg_flag_idx_t
 gh_get_opp_color_bit(hg_flag_idx_t col){
@@ -556,10 +558,13 @@ hnode* 	gh_set_io(ppnode_vec_t& all_io, long idx_io, hnode* nd){
 	return po;
 }
 
+void gh_dbg_init_watch_box(hnode_box& dbg_bx);
+
 void gh_connect_node_out_to_node_in(hnode& nd_out, long out, hnode& nd_in, long in);
 void gh_connect_out_to_in(ppnode_vec_t& all_out, long out, ppnode_vec_t& all_in, long in);
 void gh_connect_outputs_to_inputs(ppnode_vec_t& out, ppnode_vec_t& in);
 bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
+void gh_copy_nodes(vector<hnode*>& src, vector<hnode*>& dst, bool clr_src);
 void gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst);
 void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
 void gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, hg_flag_idx_t lst_lv_flg, hnode_box* dbg_bx);
@@ -576,15 +581,25 @@ public:
 	
 	hnode_box(haddr_frame& pnt_frm){
 		box_flags = 0;
-		//box_frm = &pnt_frm;
 		
 		box_frm = new haddr_frame;
 		GH_GLOBALS.all_frames.push_back(box_frm);
 		box_frm->parent_frame = &pnt_frm;
 	}
 	
+	hnode_box(hnode_box& orig, bool clr_orig){
+		box_flags = orig.box_flags;
+		set_flag(gh_is_box_copy);
+		
+		box_frm = orig.box_frm;
+		gh_copy_nodes(orig.all_nodes, all_nodes, false);
+	}
+	
 	virtual ~hnode_box(){
-		release_nodes();
+		if(! get_flag(gh_is_box_copy)){
+			release_nodes();
+		}
+		clear_box();
 	}
 
 	void 	clear_box(){
@@ -732,16 +747,9 @@ gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out);
 
 class hroute_box : public hnode_box {
 public:
-	haddr_frame	frame;
 	hroute_box(haddr_frame& pnt_frm) : hnode_box(pnt_frm) {
 		set_base(pnt_frm.pow_base);
 		get_frame().kind = gh_route_frm;
-		/*
-		box_frm = &frame;
-		frame.parent_frame = &pnt_frm;
-		frame.idx = pnt_frm.idx;
-		frame.pow_base = pnt_frm.pow_base;
-		*/
 	}
 	virtual ~hroute_box(){
 		release_nodes();
@@ -768,7 +776,6 @@ public:
 	ppnode_vec_t rgt_out;
 	
 	htarget_box(haddr_frame& pnt_frm) : hnode_box(pnt_frm) {
-		//box_frm = &pnt_frm;
 		set_base(pnt_frm.pow_base);
 		get_frame().kind = gh_target_frm;
 		
@@ -805,7 +812,6 @@ public:
 	vector<hnode_target*> all_targets;
 	
 	hlognet_box(haddr_frame& pnt_frm) : hnode_box(pnt_frm) {
-		//box_frm = &pnt_frm;
 		set_base(pnt_frm.pow_base);
 		get_frame().kind = gh_lognet_frm;
 
