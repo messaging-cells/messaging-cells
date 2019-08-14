@@ -116,7 +116,10 @@ hnode_1to2::print_node(FILE* ff, hg_prt_mode_t md){
 	}
 	fprintf(ff, ">");
 	msg0.rng.print_range(ff);
+	msg0.addr.print_range(ff);
+	fprintf(ff, ":");
 	msg1.rng.print_range(ff);
+	msg1.addr.print_range(ff);
 	fprintf(ff, "\n");
 	fflush(ff);
 	GH_CK(ck_connections());
@@ -363,6 +366,7 @@ gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out){
 		bx = gh_get_binnet_sm_to_bm(pnt_frm, num_in, num_out);
 		gh_init_sm_to_bm_ranges(bx->outputs, bx->get_last_color(), bx);
 		bx->get_frame().kind = gh_sm_to_bm_frm;
+		bx->set_base(pnt_frm.pow_base);
 	}
 	GH_CK(bx != gh_null);
 	return bx;
@@ -962,7 +966,6 @@ hlognet_box::init_length(long num_elems){
 	
 	GH_DBG_CODE(
 		get_frame().print_frame(stdout);
-		fprintf(stdout, "\n");
 	);
 }
 
@@ -1044,6 +1047,7 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 		GH_CK(ck_target_box(lft_ht, rgt_ht));
 		return;
 	}
+	hnode_box& dest = *this;
 	
 	GH_CK(lft_ht > 1);
 	GH_CK(rgt_ht > 1);
@@ -1064,10 +1068,14 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	lft->init_route_box(lft_ht, rgt_ht + 1);
 	rgt->init_route_box(rgt_ht, lft_ht + 1);
 	
-	GH_DBG_CODE(gh_dbg_init_watch_box(*rgt));
-
 	hnode_box* spl_lft = gh_get_binnet_m_to_n(get_frame(), 1, rgt_ht);
 	hnode_box* spl_rgt = gh_get_binnet_m_to_n(get_frame(), 1, lft_ht);
+
+	spl_lft->get_frame().dir = gh_right_dir;
+	spl_rgt->get_frame().dir = gh_left_dir;
+	
+	//GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, &dest));
+	GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, spl_rgt));
 	
 	//join_outputs(lft, spl_lft, rgt_ht, lft_out);
 	//join_outputs(rgt, spl_rgt, lft_ht, rgt_out);
@@ -1095,7 +1103,6 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	gh_move_io(gh_out_kind, spl_lft->outputs, lft_out);
 	gh_move_io(gh_out_kind, spl_rgt->outputs, rgt_out);
 	
-	hnode_box& dest = *this;
 	lft->move_nodes_to(dest);
 	rgt->move_nodes_to(dest);
 	spl_lft->move_nodes_to(dest);
@@ -1281,12 +1288,20 @@ test_num_io(int argc, char *argv[]){
 }
 
 void
-haddr_frame::print_frame(FILE* ff){
-	fprintf(ff, "[(%p), ", (void*)this);
+haddr_frame::print_frame(FILE* ff, const char* msg){
+	if(msg != gh_null){
+		fprintf(ff, "%s", msg);
+	}
+		
+	fprintf(ff, "[%s (%p), ", gh_dbg_get_frame_kind_str(kind), (void*)this);
 	fprintf(ff, "%p, %ld, %ld, %ld, %s, %ld", (void*)parent_frame, pow_base, idx, sz, 
 		gh_dbg_get_dir_str(dir), offset
 	);
-	fprintf(ff, "]");
+	if(dbg_nd != gh_null){ 
+		fprintf(ff, ", \n\t");
+		dbg_nd->print_node(stdout, hg_full_pt_prt); 
+	}
+	fprintf(ff, "]\n");
 }
 
 int
@@ -1308,7 +1323,6 @@ test_get_target(int argc, char *argv[]){
 	
 	gh_dbg_calc_idx_and_sz(nin, nout, bx->get_frame());
 	pnt_frm.print_frame(stdout);
-	fprintf(stdout, "\n");
 	
 	bx->init_target_box(nin, nout);
 
@@ -1317,9 +1331,10 @@ test_get_target(int argc, char *argv[]){
 	GH_GLOBALS.CK_LINK_MODE = hg_valid_self_ck_mod;
 	bx->print_box(stdout, hg_full_pt_prt);
 	
-	if(GH_GLOBALS.dbg_bx != gh_null){
-		GH_GLOBALS.dbg_bx->print_box(stdout, hg_full_pt_prt);
-		GH_GLOBALS.dbg_bx->calc_all_1to2_raddr();
+	if(GH_GLOBALS.watch_bx != gh_null){
+		GH_GLOBALS.watch_bx->print_box(stdout, hg_full_pt_prt);
+		GH_GLOBALS.watch_bx->calc_all_1to2_raddr(GH_GLOBALS.ref_frm);
+		GH_GLOBALS.watch_bx->print_box(stdout, hg_full_pt_prt);
 	}
 	
 	delete bx;
@@ -1617,16 +1632,6 @@ hnode::set_color_as_in(hnode_box& bx){
 }
 
 void
-hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
-	for(haddr_frame* pnt = &nd_frm; pnt != gh_null; pnt = pnt->parent_frame){
-		recalc(*pnt);
-		if(pnt == &bx_frm){
-			break;
-		}
-	}
-}
-
-void
 htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	GH_CK(lft_ht >= 0);
 	GH_CK(rgt_ht >= 0);
@@ -1866,8 +1871,12 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 } // end_of_init_basic_target_box
 
 void
-hnode_box::calc_all_1to2_raddr(){
-	haddr_frame& frm = get_frame();
+hnode_box::calc_all_1to2_raddr(haddr_frame* ref_frm){
+	if(ref_frm == gh_null){
+		haddr_frame& bx_frm = get_frame();
+		ref_frm = &bx_frm;
+	}
+	haddr_frame& frm = *ref_frm;
 	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
 		GH_CK(all_nodes[ii] != gh_null);
 		if(all_nodes[ii]->is_1to2()){
@@ -1879,42 +1888,107 @@ hnode_box::calc_all_1to2_raddr(){
 	GH_DBG_CODE(frm.dbg_nd = gh_null);
 }
 
+bool
+haddr_frame::ck_frame(){
+	bool ret = true;
+	bool base_ok = (pow_base > 1);
+	bool idx_ok = (idx >= 0);
+	bool sz_ok = ((sz == GH_INVALID_ADDR) || (idx < sz));
+	bool offset_ok = ((offset == 0) || (offset == -1));
+	switch(kind){
+		case gh_sm_to_bm_frm:{
+			ret = ret && base_ok;
+		} break;
+		case gh_route_frm:{
+			if(offset < 0){
+				ret = ret && base_ok;
+			}
+		}; break;
+		case gh_target_frm:{
+			ret = ret && idx_ok;
+		} break;
+		case gh_lognet_frm:{
+		} break;
+		
+		default:
+		break;
+	}
+	ret = ret && sz_ok;
+	ret = ret && offset_ok;
+	if(! ret){
+		print_frame(stdout, "CK_FRAME_FAILED \n"); 
+	} 
+	return ret;
+}
+
 hg_addr_t
-gh_recalc_range_val(haddr_frame& frm, hg_addr_t val){
-	GH_CK_PRT((val >= 0), "val = %ld\n", val);
-	GH_CK(frm.pow_base > 1);
-	GH_CK(frm.idx >= 0);
-	GH_CK((frm.sz == GH_INVALID_ADDR) || (frm.idx < frm.sz));
-	GH_CK((frm.offset == 0) || (frm.offset == -1));
+gh_recalc_range_val(haddr_frame& frm, hg_addr_t vin){
 	
-	double pp = 0.0;
-	val += frm.offset;
-	if(val >= 0){
-		pp = pow(frm.pow_base, val);
+	GH_CK(frm.ck_frame());
+	hg_addr_t vout = vin;
+	switch(frm.kind){
+		case gh_sm_to_bm_frm:{
+			double pp = pow(frm.pow_base, vout);
+			vout = (hg_addr_t)pp;
+			if(frm.dir == gh_left_dir){
+				vout = -vout;
+			} 
+		} break;
+		case gh_route_frm:{
+			if(frm.offset < 0){
+				if(vout >= frm.pow_base){
+					vout = vout / frm.pow_base;
+				} else {
+					GH_CK(vout == 1);
+					vout = 0;
+				}
+			}
+			if(frm.dir == gh_left_dir){
+				vout = -vout;
+			} 
+		}; break;
+		case gh_target_frm:{
+			vout = frm.idx + vout;
+		} break;
+		case gh_lognet_frm:{
+		} break;
+		
+		default:
+		break;
 	}
-	hg_addr_t pp2 = (hg_addr_t)pp;
-	GH_CK(pp2 >= 0);
-	hg_addr_t pp3 = pp2;
-	if(frm.dir == gh_right_dir){
-		pp3 = frm.idx + pp2;
-	} else {
-		pp3 = frm.idx - pp2;
-	}
-	GH_DBG_CODE(
-		if(pp3 < 0){ 
-			if(frm.dbg_nd != gh_null){ frm.dbg_nd->print_node(stdout, hg_full_pt_prt); } 
-			frm.print_frame(stdout); 
-			//fprintf(stdout, "val=%ld pp2 = %ld pp3 = %ld dir = %s pp = %f \n", 
-			//	val, pp2, pp3, gh_dbg_get_dir_str(frm.dir), pp);
-		}
-	);
-	GH_CK_PRT((pp3 >= 0), "val=%ld pp2 = %ld pp3 = %ld dir = %s pp = %f \n", val, pp2, pp3, gh_dbg_get_dir_str(frm.dir), pp);
-	return pp3;
+	return vout;
 }
 
 void
-gh_dbg_init_watch_box(hnode_box& w_bx){
-	if(GH_GLOBALS.dbg_bx == gh_null){
-		GH_GLOBALS.dbg_bx = new hnode_box(w_bx, true);
+gh_dbg_init_watch_box(hnode_box& w_bx, hnode_box* r_bx){
+	if(GH_GLOBALS.watch_bx == gh_null){
+		GH_GLOBALS.watch_bx = new hnode_box(w_bx, true);
+		if(r_bx != gh_null){
+			haddr_frame& r_frm = r_bx->get_frame();
+			GH_GLOBALS.ref_frm = &r_frm;
+		}
 	}
 }
+
+void
+gh_dbg_init_ref_box(hnode_box& r_bx){
+	if(GH_GLOBALS.ref_frm == gh_null){
+		haddr_frame& r_frm = r_bx.get_frame();
+		GH_GLOBALS.ref_frm = &r_frm;
+	}
+}
+
+void
+hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
+	bx_frm.print_frame(stdout, "++++++++++++++++++\nBOX_FRM \n"); 
+	
+	for(haddr_frame* pnt = &nd_frm; pnt != gh_null; pnt = pnt->parent_frame){
+		nd_frm.print_frame(stdout, "RECALC_ADDR \n"); 
+	
+		recalc(*pnt);
+		if(pnt == &bx_frm){
+			break;
+		}
+	}
+}
+

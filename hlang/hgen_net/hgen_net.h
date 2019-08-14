@@ -73,7 +73,7 @@ enum gh_route_direction_t {
 	gh_right_dir
 };
 
-enum hg_frame_kind_t {
+enum gh_frame_kind_t {
 	gh_invalid_frm,
 	gh_sm_to_bm_frm,
 	gh_route_frm,
@@ -111,7 +111,8 @@ public:
 	long DBG_LV = 0;
 	hg_nk_lnk_mod_t CK_LINK_MODE = hg_soft_ck_mod;
 	vector<haddr_frame*> all_frames;
-	hnode_box* dbg_bx = gh_null;
+	hnode_box* watch_bx = gh_null;
+	haddr_frame* ref_frm = gh_null;
 
 	hgen_globals(){}
 	virtual ~hgen_globals(){
@@ -127,7 +128,7 @@ class haddr_frame {
 public:
 	haddr_frame* parent_frame = gh_null;
 	
-	hg_frame_kind_t kind = gh_invalid_frm;
+	gh_frame_kind_t kind = gh_invalid_frm;
 	long pow_base = 0;
 	long idx = GH_INVALID_IDX;
 	long sz = GH_INVALID_ADDR;
@@ -136,8 +137,9 @@ public:
 	
 	hnode* dbg_nd = gh_null;
 
-	void print_frame(FILE* ff);
+	bool ck_frame();
 	
+	void print_frame(FILE* ff, const char* msg = gh_null);
 };
 
 const char*
@@ -146,6 +148,23 @@ gh_dbg_get_dir_str(gh_route_direction_t dd){
 		return "rgt";
 	}
 	return "lft";
+};
+
+const char*
+gh_dbg_get_frame_kind_str(gh_frame_kind_t kk){
+	switch(kk){
+		case gh_invalid_frm:
+			return "gh_invalid_frm";
+		case gh_sm_to_bm_frm:
+			return "gh_sm_to_bm_frm";
+		case gh_route_frm:
+			return "gh_route_frm";
+		case gh_target_frm:
+			return "gh_target_frm";
+		case gh_lognet_frm:
+			return "gh_lognet_frm";
+	}
+	return "gh_INVALID_frm";
 };
 
 hg_addr_t
@@ -558,7 +577,8 @@ hnode* 	gh_set_io(ppnode_vec_t& all_io, long idx_io, hnode* nd){
 	return po;
 }
 
-void gh_dbg_init_watch_box(hnode_box& dbg_bx);
+void gh_dbg_init_watch_box(hnode_box& w_bx, hnode_box* r_bx);
+void gh_dbg_init_ref_box(hnode_box& r_bx);
 
 void gh_connect_node_out_to_node_in(hnode& nd_out, long out, hnode& nd_in, long in);
 void gh_connect_out_to_in(ppnode_vec_t& all_out, long out, ppnode_vec_t& all_in, long in);
@@ -739,7 +759,7 @@ public:
 	void remove_connected_directs();
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
-	void calc_all_1to2_raddr();
+	void calc_all_1to2_raddr(haddr_frame* frm = gh_null);
 };
 
 hnode_box*
