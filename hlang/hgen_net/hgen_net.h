@@ -4,6 +4,7 @@
 #define GEN_HNET_H
 
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -42,25 +43,25 @@ using namespace std;
 
 //======================================================================
 
-enum hg_prt_mode_t {
-	hg_addr_prt,
-	hg_full_prt,
-	hg_full_pt_prt,
-	hg_info_prt
+enum gh_prt_mode_t {
+	gh_addr_prt,
+	gh_full_prt,
+	gh_full_pt_prt,
+	gh_info_prt
 };
 
-enum hg_hnode_kind_t {
-	hg_invalid_nod,
-	hg_1_to_1_nod,
-	hg_1_to_2_nod,
-	hg_2_to_1_nod
+enum gh_hnode_kind_t {
+	gh_invalid_nod,
+	gh_1_to_1_nod,
+	gh_1_to_2_nod,
+	gh_2_to_1_nod
 };
 
-enum hg_nk_lnk_mod_t {
-	hg_invalid_ck_mod,
-	hg_strict_ck_mod,
-	hg_valid_self_ck_mod,
-	hg_soft_ck_mod
+enum gh_nk_lnk_mod_t {
+	gh_invalid_ck_mod,
+	gh_strict_ck_mod,
+	gh_valid_self_ck_mod,
+	gh_soft_ck_mod
 };
 
 enum gh_io_kind_t {
@@ -68,9 +69,10 @@ enum gh_io_kind_t {
 	gh_out_kind
 };
 
-enum gh_route_direction_t {
-	gh_left_dir,
-	gh_right_dir
+enum gh_route_side_t {
+	gh_invalid_side,
+	gh_left_side,
+	gh_right_side
 };
 
 enum gh_frame_kind_t {
@@ -81,10 +83,10 @@ enum gh_frame_kind_t {
 	gh_lognet_frm
 };
 
-typedef int hg_flag_idx_t;
-typedef char hg_flags_t;
-typedef long hg_target_addr_t;
-typedef long hg_addr_t;
+typedef int gh_flag_idx_t;
+typedef char gh_flags_t;
+typedef long gh_target_addr_t;
+typedef long gh_addr_t;
 
 class hgen_globals;
 class haddr_frame;
@@ -109,7 +111,7 @@ typedef vector<hnode**> ppnode_vec_t;
 class hgen_globals {
 public:
 	long DBG_LV = 0;
-	hg_nk_lnk_mod_t CK_LINK_MODE = hg_soft_ck_mod;
+	gh_nk_lnk_mod_t CK_LINK_MODE = gh_soft_ck_mod;
 	vector<haddr_frame*> all_frames;
 	hnode_box* watch_bx = gh_null;
 	haddr_frame* ref_frm = gh_null;
@@ -124,6 +126,21 @@ public:
 
 extern hgen_globals GH_GLOBALS;
 
+gh_route_side_t
+gh_get_opp_side(gh_route_side_t rt_sd){
+	switch(rt_sd){
+		case gh_invalid_side: 
+			return gh_invalid_side;
+		case gh_left_side: 
+			return gh_right_side;
+		case gh_right_side: 
+			return gh_left_side;
+		default:
+			break;
+	}
+	return gh_invalid_side;
+}
+
 class haddr_frame {
 public:
 	haddr_frame* parent_frame = gh_null;
@@ -132,8 +149,8 @@ public:
 	long pow_base = 0;
 	long idx = GH_INVALID_IDX;
 	long sz = GH_INVALID_ADDR;
-	gh_route_direction_t dir = gh_right_dir;
-	long offset = 0;
+	gh_route_side_t src_side = gh_invalid_side;
+	bool has_zero = false;
 	
 	hnode* dbg_nd = gh_null;
 
@@ -143,11 +160,18 @@ public:
 };
 
 const char*
-gh_dbg_get_dir_str(gh_route_direction_t dd){
-	if(dd == gh_right_dir){
-		return "rgt";
+gh_dbg_get_side_str(gh_route_side_t dd){
+	switch(dd){
+		case gh_invalid_side: 
+			return "gh_invalid_side";
+		case gh_left_side: 
+			return "lft";
+		case gh_right_side: 
+			return "rgt";
+		default:
+			break;
 	}
-	return "lft";
+	return "GH_INVALID_SIDE";
 };
 
 const char*
@@ -167,13 +191,13 @@ gh_dbg_get_frame_kind_str(gh_frame_kind_t kk){
 	return "gh_INVALID_frm";
 };
 
-hg_addr_t
-gh_recalc_range_val(haddr_frame& frm, hg_addr_t val);
+gh_addr_t
+gh_recalc_range_val(haddr_frame& frm, gh_addr_t val);
 
 class hrange {
 public:
-	hg_addr_t min = GH_INVALID_ADDR;
-	hg_addr_t max = GH_INVALID_ADDR;
+	gh_addr_t min = GH_INVALID_ADDR;
+	gh_addr_t max = GH_INVALID_ADDR;
 	
 	bool ck_range(){
 		GH_CK(0 <= min);
@@ -195,8 +219,8 @@ public:
 class hmessage {
 public:
 	long val = 0;
-	hg_addr_t src = GH_INVALID_ADDR;
-	hg_addr_t dst = GH_INVALID_ADDR;
+	gh_addr_t src = GH_INVALID_ADDR;
+	gh_addr_t dst = GH_INVALID_ADDR;
 	hrange rng;
 	hrange addr;
 	
@@ -212,8 +236,8 @@ public:
 #define gh_has_range_bit 	4
 #define gh_is_box_copy		5
 
-hg_flag_idx_t
-gh_get_opp_color_bit(hg_flag_idx_t col){
+gh_flag_idx_t
+gh_get_opp_color_bit(gh_flag_idx_t col){
 	if(col == gh_is_red_bit){
 		return gh_is_black_bit;
 	}
@@ -221,7 +245,7 @@ gh_get_opp_color_bit(hg_flag_idx_t col){
 }
 
 char
-gh_get_col_chr(hg_flags_t flgs){
+gh_get_col_chr(gh_flags_t flgs){
 	char cc = 'x';
 	if(gh_get_bit(&flgs, gh_is_red_bit)){
 		GH_CK(! gh_get_bit(&flgs, gh_is_black_bit));
@@ -234,14 +258,14 @@ gh_get_col_chr(hg_flags_t flgs){
 	return cc;
 }
 
-bool gh_is_1to1(hg_hnode_kind_t kk){ return (kk == hg_1_to_1_nod); }
-bool gh_is_1to2(hg_hnode_kind_t kk){ return (kk == hg_1_to_2_nod); }
-bool gh_is_2to1(hg_hnode_kind_t kk){ return (kk == hg_2_to_1_nod); }
+bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
+bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
+bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
 
 class hnode {
 public:
-	hg_flags_t node_flags = 0;
-	hg_addr_t addr = GH_INVALID_ADDR;
+	gh_flags_t node_flags = 0;
+	gh_addr_t addr = GH_INVALID_ADDR;
 	bool ready = false;
 	
 	hnode(){
@@ -252,18 +276,18 @@ public:
 	virtual ~hnode(){}
 	
 	virtual void
-	print_node(FILE* ff, hg_prt_mode_t md);
+	print_node(FILE* ff, gh_prt_mode_t md);
 	
 	virtual bool 	ck_connections(){ return false; }
 	
-	virtual hg_hnode_kind_t
+	virtual gh_hnode_kind_t
 	get_kind(){
-		return hg_invalid_nod;
+		return gh_invalid_nod;
 	}
 	
-	bool is_1to1(){ return (get_kind() == hg_1_to_1_nod); }
-	bool is_1to2(){ return (get_kind() == hg_1_to_2_nod); }
-	bool is_2to1(){ return (get_kind() == hg_2_to_1_nod); }
+	bool is_1to1(){ return (get_kind() == gh_1_to_1_nod); }
+	bool is_1to2(){ return (get_kind() == gh_1_to_2_nod); }
+	bool is_2to1(){ return (get_kind() == gh_2_to_1_nod); }
 	
 	virtual bool
 	has_io(hnode** io){
@@ -305,15 +329,15 @@ public:
 		return gh_null;
 	}
 
-	void set_flag(hg_flag_idx_t num_flg){
+	void set_flag(gh_flag_idx_t num_flg){
 		gh_set_bit(&node_flags, num_flg);
 	}
 
-	void reset_flag(hg_flag_idx_t num_flg){
+	void reset_flag(gh_flag_idx_t num_flg){
 		gh_reset_bit(&node_flags, num_flg);
 	}
 
-	bool get_flag(hg_flag_idx_t num_flg){
+	bool get_flag(gh_flag_idx_t num_flg){
 		return gh_get_bit(&node_flags, num_flg);
 	}
 	
@@ -371,9 +395,9 @@ public:
 		return (c1 && c2);
 	}
 	
-	virtual hg_hnode_kind_t
+	virtual gh_hnode_kind_t
 	get_kind(){
-		return hg_1_to_1_nod;
+		return gh_1_to_1_nod;
 	}
 	
 	virtual bool
@@ -382,7 +406,7 @@ public:
 	}
 	
 	virtual void
-	print_node(FILE* ff, hg_prt_mode_t md);
+	print_node(FILE* ff, gh_prt_mode_t md);
 
 };
 
@@ -426,13 +450,15 @@ public:
 	}
 	
 	virtual void
-	print_node(FILE* ff, hg_prt_mode_t md);
+	print_node(FILE* ff, gh_prt_mode_t md);
 };
 
 class hnode_target : public hnode_1to1 {
 public:
+	long bx_idx = GH_INVALID_IDX;
+	
 	virtual void
-	print_node(FILE* ff, hg_prt_mode_t md);
+	print_node(FILE* ff, gh_prt_mode_t md);
 };
 
 class hnode_src : public hnode_1to1 {
@@ -468,6 +494,13 @@ public:
 		out0 = this;
 		out1 = this;
 	}
+
+	void init_simple_ranges(long rng0, long rng1){
+		msg0.rng.min = rng0;
+		msg0.rng.max = rng0;
+		msg1.rng.min = rng1;
+		msg1.rng.max = rng1;
+	}
 	
 	haddr_frame&	get_frame(){
 		GH_CK(node_frm != gh_null);
@@ -497,9 +530,9 @@ public:
 		return (c1 && c2 && c3);
 	}
 	
-	virtual hg_hnode_kind_t
+	virtual gh_hnode_kind_t
 	get_kind(){
-		return hg_1_to_2_nod;
+		return gh_1_to_2_nod;
 	}
 	
 	virtual bool
@@ -508,7 +541,7 @@ public:
 	}
 	
 	virtual void
-	print_node(FILE* ff, hg_prt_mode_t md);
+	print_node(FILE* ff, gh_prt_mode_t md);
 	
 };
 
@@ -550,9 +583,9 @@ public:
 		return (c1 && c2 && c3);
 	}
 	
-	virtual hg_hnode_kind_t
+	virtual gh_hnode_kind_t
 	get_kind(){
-		return hg_2_to_1_nod;
+		return gh_2_to_1_nod;
 	}
 	
 	virtual bool
@@ -561,7 +594,7 @@ public:
 	}
 	
 	virtual void
-	print_node(FILE* ff, hg_prt_mode_t md);
+	print_node(FILE* ff, gh_prt_mode_t md);
 	
 };
 
@@ -587,11 +620,11 @@ bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
 void gh_copy_nodes(vector<hnode*>& src, vector<hnode*>& dst, bool clr_src);
 void gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst);
 void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
-void gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, hg_flag_idx_t lst_lv_flg, hnode_box* dbg_bx);
+void gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, gh_flag_idx_t lst_lv_flg, hnode_box* dbg_bx);
 
 class hnode_box {
 public:
-	hg_flags_t box_flags;
+	gh_flags_t box_flags;
 	haddr_frame* box_frm;
 	
 	vector<hnode*> all_direct;
@@ -637,7 +670,7 @@ public:
 	void 	fill_with_directs(ppnode_vec_t& all_in, ppnode_vec_t& all_out);
 	
 	virtual
-	void 	print_box(FILE* ff, hg_prt_mode_t md);
+	void 	print_box(FILE* ff, gh_prt_mode_t md);
 
 	haddr_frame&	get_frame(){
 		GH_CK(box_frm != gh_null);
@@ -664,21 +697,21 @@ public:
 		return get_frame().idx;
 	}
 	
-	hnode_1to2* add_1to2(haddr_frame& frm, bool ini_rngs = false);
+	hnode_1to2* add_1to2(haddr_frame& frm);
 	hnode_2to1* add_2to1();
 	hnode_direct* add_direct();
 	
 	hnode_box* convert_net_from_1to2_to_2to1();
 	
-	void set_flag(hg_flag_idx_t num_flg){
+	void set_flag(gh_flag_idx_t num_flg){
 		gh_set_bit(&box_flags, num_flg);
 	}
 
-	void reset_flag(hg_flag_idx_t num_flg){
+	void reset_flag(gh_flag_idx_t num_flg){
 		gh_reset_bit(&box_flags, num_flg);
 	}
 
-	bool get_flag(hg_flag_idx_t num_flg){
+	bool get_flag(gh_flag_idx_t num_flg){
 		return gh_get_bit(&box_flags, num_flg);
 	}
 
@@ -700,7 +733,7 @@ public:
 		}
 	}
 
-	hg_flag_idx_t get_last_color(){
+	gh_flag_idx_t get_last_color(){
 		GH_CK(get_flag(gh_is_red_bit) != get_flag(gh_is_black_bit));
 		if(get_flag(gh_is_red_bit)){
 			return gh_is_red_bit;
@@ -785,7 +818,7 @@ public:
 };
 	
 void
-gh_print_io(FILE* ff, hg_prt_mode_t md, ppnode_vec_t& all_io);
+gh_print_io(FILE* ff, gh_prt_mode_t md, ppnode_vec_t& all_io);
 
 class htarget_box : public hnode_box {
 public:
@@ -813,13 +846,14 @@ public:
 	void 	resize_with_directs(long nw_side_sz);
 
 	void 	init_basic_target_box(long lft_ht, long rgt_ht);
+	void 	init_target_out_ranges(hnode_1to2& tgt_out);
 	void 	init_target_box(long lft_sz, long rgt_sz);
 	bool 	ck_target_box(long lft_ht, long rgt_ht);
 	
 	void 	move_target_to(hlognet_box& bx);
 
 	virtual
-	void 	print_box(FILE* ff, hg_prt_mode_t md);
+	void 	print_box(FILE* ff, gh_prt_mode_t md);
 };
 
 void 	gh_dbg_calc_idx_and_sz(long num_in, long num_out, haddr_frame& frm);
@@ -828,7 +862,6 @@ void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_o
 class hlognet_box : public hnode_box {
 public:
 	long height;
-	long length;
 	vector<hnode_target*> all_targets;
 	
 	hlognet_box(haddr_frame& pnt_frm) : hnode_box(pnt_frm) {
@@ -836,7 +869,6 @@ public:
 		get_frame().kind = gh_lognet_frm;
 
 		height = 0;
-		length = 0;
 	}
 	
 	virtual ~hlognet_box(){
@@ -851,14 +883,20 @@ public:
 	void 	init_lognet_box(long num_elems);
 	bool 	ck_lognet_box(long num_elems);
 	
+	long 	length(){
+		return get_frame().sz;
+	}
+	
 	void 	init_as_io();
 	
 	htarget_box* get_target_box(long idx);
 
 	virtual
-	void 	print_box(FILE* ff, hg_prt_mode_t md);
+	void 	print_box(FILE* ff, gh_prt_mode_t md);
 };
 	
+
+int test_get_target(int argc, char *argv[]);
 
 #endif // GEN_HNET_H
 
