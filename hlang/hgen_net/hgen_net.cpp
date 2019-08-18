@@ -366,7 +366,7 @@ gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out){
 		bx = gh_get_binnet_sm_to_bm(pnt_frm, num_in, num_out);
 		gh_init_sm_to_bm_ranges(bx->outputs, bx->get_last_color(), bx);
 		bx->get_frame().kind = gh_sm_to_bm_frm;
-		bx->get_frame().src_side = pnt_frm.src_side;
+		//bx->get_frame().src_side = pnt_frm.src_side;
 		bx->set_base(pnt_frm.pow_base);
 	}
 	GH_CK(bx != gh_null);
@@ -1309,10 +1309,11 @@ haddr_frame::print_frame(FILE* ff, const char* msg){
 	if(msg != gh_null){
 		fprintf(ff, "%s", msg);
 	}
+	const char* has_z = (has_zero)?("has_zero"):("");
 		
 	fprintf(ff, "[%s (%p), ", gh_dbg_get_frame_kind_str(kind), (void*)this);
-	fprintf(ff, "%p, %ld, %ld, %ld, %s, %d", (void*)parent_frame, pow_base, idx, sz, 
-		gh_dbg_get_side_str(src_side), has_zero
+	fprintf(ff, "%p, %ld, %ld, %ld, %s, %s", (void*)parent_frame, pow_base, idx, sz, 
+		gh_dbg_get_side_str(src_side), has_z
 	);
 	if(dbg_nd != gh_null){ 
 		fprintf(ff, ", \n\t");
@@ -1899,7 +1900,7 @@ haddr_frame::recalc_addr(gh_addr_t vin){
 			GH_CK(base_ok);
 			double pp = pow(pow_base, vout);
 			vout = (gh_addr_t)pp;
-			GH_CK(src_side != gh_invalid_side);
+			//GH_CK(src_side != gh_invalid_side);
 			if(src_side == gh_right_side){
 				GH_CK(vout >= 0);
 				vout = -vout;
@@ -1927,10 +1928,15 @@ haddr_frame::recalc_addr(gh_addr_t vin){
 			GH_CK(idx_ok);
 			GH_CK(sz_ok);
 			vout = idx + vout;
+			GH_CK(vout >= 0);
 		} break;
 		case gh_lognet_frm:{
 			GH_CK(vout >= 0);
 			GH_CK_PRT((vout < sz), "(%ld < %ld) \n", vout, sz);
+			GH_CK(base_ok);
+			double pp = pow(pow_base, vout);
+			vout = (gh_addr_t)pp;
+			GH_CK(vout >= 1);
 		} break;
 		
 		default:
@@ -1965,9 +1971,13 @@ hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
 	for(haddr_frame* pnt = &nd_frm; pnt != gh_null; pnt = pnt->parent_frame){
 		pnt->print_frame(stdout, "RECALC_ADDR \n"); 
 		print_range(stdout);
-		fprintf(stdout, "\n");
+		fprintf(stdout, " => ");
 	
 		recalc(*pnt);
+
+		print_range(stdout);
+		fprintf(stdout, "\n");
+		
 		if(pnt == &bx_frm){
 			break;
 		}
@@ -2003,7 +2013,7 @@ test_get_target(int argc, char *argv[]){
 	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
 	bx->print_box(stdout, gh_full_pt_prt);
 
-	//bx->calc_all_1to2_raddr(gh_null);
+	bx->calc_all_1to2_raddr(gh_null);
 	
 	if(GH_GLOBALS.watch_bx != gh_null){
 		fprintf(stdout, "\nBEFORE_CALC_ADDR---------------------------------\n");
