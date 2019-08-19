@@ -83,6 +83,22 @@ enum gh_frame_kind_t {
 	gh_lognet_frm
 };
 
+enum gh_1to2_kind_t {
+	gh_invalid_rou,
+	gh_sm_to_bm_rou,
+	gh_2to2_nd0_rou,
+	gh_2to2_nd1_rou,
+	gh_3to2_nd0_rou,
+	gh_3to2_nd1_rou,
+	gh_3to2_nd2_rou,
+	gh_lgnet_in_rou,
+	gh_tgt_out_rou,
+	gh_bs_tgt_out_rou,
+	gh_bs_tgt_lft_in_rou,
+	gh_bs_tgt_rgt_in_rou,
+	gh_bs_tgt_bx_in_rou
+};
+
 typedef int gh_flag_idx_t;
 typedef char gh_flags_t;
 typedef long gh_target_addr_t;
@@ -191,6 +207,41 @@ gh_dbg_get_frame_kind_str(gh_frame_kind_t kk){
 			return "gh_lognet_frm";
 	}
 	return "gh_INVALID_frm";
+};
+
+const char*
+gh_dbg_get_rou_kind_str(gh_1to2_kind_t kk){
+	switch(kk){
+		case gh_invalid_rou:
+			return "gh_invalid_rou";
+		case gh_sm_to_bm_rou:
+			return "sm_bm";
+		case gh_2to2_nd0_rou:
+			return "22_0";
+		case gh_2to2_nd1_rou:
+			return "22_1";
+		case gh_3to2_nd0_rou:
+			return "32_0";
+		case gh_3to2_nd1_rou:
+			return "32_1";
+		case gh_3to2_nd2_rou:
+			return "32_2";
+		case gh_lgnet_in_rou:
+			return "lgnet_in";
+		case gh_tgt_out_rou:
+			return "tgt_out";
+		case gh_bs_tgt_out_rou:
+			return "bt_out";
+		case gh_bs_tgt_lft_in_rou:
+			return "bt_lfi";
+		case gh_bs_tgt_rgt_in_rou:
+			return "bt_rgi";
+		case gh_bs_tgt_bx_in_rou:
+			return "bt_bxi";
+		default:
+			break;
+	}
+	return "GH_INVALID_ROU_KIND";
 };
 
 #define gh_skip_one_frame_bit 		1
@@ -491,6 +542,7 @@ public:
 
 class hnode_1to2 : public hnode {
 public:
+	gh_1to2_kind_t rou_kind;
 	haddr_frame* node_frm;
 	
 	hmessage* one_range = gh_null;
@@ -752,7 +804,7 @@ public:
 		return get_frame().idx;
 	}
 	
-	hnode_1to2* add_1to2(haddr_frame& frm);
+	hnode_1to2* add_1to2(haddr_frame& frm, gh_1to2_kind_t kk);
 	hnode_2to1* add_2to1();
 	hnode_direct* add_direct();
 	
