@@ -142,7 +142,7 @@ public:
 
 extern hgen_globals GH_GLOBALS;
 
-gh_route_side_t
+inline gh_route_side_t
 gh_get_opp_side(gh_route_side_t rt_sd){
 	switch(rt_sd){
 		case gh_invalid_side: 
@@ -177,7 +177,7 @@ public:
 	void print_frame(FILE* ff, const char* msg = gh_null);
 };
 
-const char*
+inline const char*
 gh_dbg_get_side_str(gh_route_side_t dd){
 	switch(dd){
 		case gh_invalid_side: 
@@ -192,7 +192,7 @@ gh_dbg_get_side_str(gh_route_side_t dd){
 	return "GH_INVALID_SIDE";
 };
 
-const char*
+inline const char*
 gh_dbg_get_frame_kind_str(gh_frame_kind_t kk){
 	switch(kk){
 		case gh_invalid_frm:
@@ -209,7 +209,7 @@ gh_dbg_get_frame_kind_str(gh_frame_kind_t kk){
 	return "gh_INVALID_frm";
 };
 
-const char*
+inline const char*
 gh_dbg_get_rou_kind_str(gh_1to2_kind_t kk){
 	switch(kk){
 		case gh_invalid_rou:
@@ -307,7 +307,7 @@ public:
 #define gh_is_box_copy		5
 #define gh_is_trichotomy	6
 
-gh_flag_idx_t
+inline gh_flag_idx_t
 gh_get_opp_color_bit(gh_flag_idx_t col){
 	if(col == gh_is_red_bit){
 		return gh_is_black_bit;
@@ -315,7 +315,7 @@ gh_get_opp_color_bit(gh_flag_idx_t col){
 	return gh_is_red_bit;
 }
 
-char
+inline char
 gh_get_col_chr(gh_flags_t flgs){
 	char cc = 'x';
 	if(gh_get_bit(&flgs, gh_is_red_bit)){
@@ -329,9 +329,9 @@ gh_get_col_chr(gh_flags_t flgs){
 	return cc;
 }
 
-bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
-bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
-bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
+inline bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
+inline bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
+inline bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
 
 class hnode {
 public:
@@ -708,7 +708,8 @@ public:
 long 	gh_get_first_null_idx(ppnode_vec_t& vec);
 bool 	gh_is_free_io(hnode** io);
 
-hnode* 	gh_set_io(ppnode_vec_t& all_io, long idx_io, hnode* nd){
+inline hnode* 	
+gh_set_io(ppnode_vec_t& all_io, long idx_io, hnode* nd){
 	GH_CK(idx_io < (long)all_io.size());
 	hnode** ppo = all_io[idx_io];
 	GH_CK(gh_is_free_io(ppo));

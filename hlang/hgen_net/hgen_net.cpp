@@ -30,6 +30,24 @@ print_pt_nods(FILE* ff, ppnode_vec_t& vec){
 }
 
 void
+haddr_frame::print_frame(FILE* ff, const char* msg){
+	if(msg != gh_null){
+		fprintf(ff, "%s", msg);
+	}
+	const char* has_z = (has_zero)?("has_zero"):("");
+		
+	fprintf(ff, "[%s (%p), ", gh_dbg_get_frame_kind_str(kind), (void*)this);
+	fprintf(ff, "%p, %ld, %ld, %ld, %s, %s", (void*)parent_frame, pow_base, idx, sz, 
+		gh_dbg_get_side_str(src_side), has_z
+	);
+	if(dbg_nd != gh_null){ 
+		fprintf(ff, ", \n\t");
+		dbg_nd->print_node(stdout, gh_full_pt_prt); 
+	}
+	fprintf(ff, "]\n");
+}
+
+void
 hnode::print_addr(FILE* ff){
 	fprintf(ff, "%ld", addr);
 	fflush(ff);
@@ -687,19 +705,6 @@ hroute_box::init_as_2to3_route_box(){
 	bx2->connect_output_to_node_input(1, *nd2, 1);
 	bx2->connect_output_to_node_input(2, *nd3, 1);
 
-	/*
-	fprintf(stdout, "BOX1\n");
-	bx1->print_box(stdout, gh_full_pt_prt);
-	fprintf(stdout, "BOX2\n");
-	bx2->print_box(stdout, gh_full_pt_prt);
-	fprintf(stdout, "nd1\n");
-	nd1->print_node(stdout, gh_full_pt_prt);
-	fprintf(stdout, "nd2\n");
-	nd2->print_node(stdout, gh_full_pt_prt);
-	fprintf(stdout, "nd3\n");
-	nd3->print_node(stdout, gh_full_pt_prt);
-	*/
-	
 	hnode_box& dest = *this;
 	bx1->move_nodes_to(dest);
 	bx2->move_nodes_to(dest);
@@ -946,22 +951,6 @@ hroute_box::init_route_box(long num_in, long num_out){
 	GH_CK(ck_route_box(num_in, num_out, 6));
 }
 
-/*
-void
-htarget_box::join_outputs(hnode_box* bx1, hnode_box* bx2, long num_out, ppnode_vec_t& all_out){
-	GH_CK(bx1 != gh_null);
-	GH_CK(bx2 != gh_null);
-	GH_CK(num_out <= (long)bx1->outputs.size());
-	GH_CK(num_out <= (long)bx2->outputs.size());
-	for(long aa = 0; aa < (long)num_out; aa++){
-		hnode_2to1* nd_out = add_2to1();
-		bx1->connect_output_to_node_input(aa, *nd_out, 0);
-		bx2->connect_output_to_node_input(aa, *nd_out, 1);
-
-		all_out.push_back(&(nd_out->out0));
-	}
-}*/
-
 void
 htarget_box::join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnode_box* bx2, long num_idx, 
 							  ppnode_vec_t& all_out)
@@ -988,9 +977,7 @@ hlognet_box::init_length(long num_elems){
 	height = (long)(lnn/lbb);
 	get_frame().sz = num_elems;
 	
-	/*GH_DBG_CODE(
-		get_frame().print_frame(stdout);
-	);*/
+	//GH_DBG_CODE(get_frame().print_frame(stdout));
 }
 
 htarget_box*
@@ -1107,11 +1094,9 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	spl_lft->get_frame().src_side = gh_left_side;
 	spl_rgt->get_frame().src_side = gh_right_side;
 	
-	GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, &dest));
+	//GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, &dest));
 	//GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, spl_rgt));
 	
-	//join_outputs(lft, spl_lft, rgt_ht, lft_out);
-	//join_outputs(rgt, spl_rgt, lft_ht, rgt_out);
 	join_box_outputs(1, lft, 0, spl_lft, rgt_ht, lft_out);
 	join_box_outputs(1, rgt, 0, spl_rgt, lft_ht, rgt_out);
 	
@@ -1123,10 +1108,6 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	target->out0 = tg_out;
 	tg_out->in0 = target;
 	
-	//long lft_lst = lft->outputs.size() - 1;
-	//long rgt_lst = rgt->outputs.size() - 1;
-	//lft->connect_output_to_node_input(lft_lst, *tg_in, 0);
-	//rgt->connect_output_to_node_input(rgt_lst, *tg_in, 1);
 	lft->connect_output_to_node_input(0, *tg_in, 0);
 	rgt->connect_output_to_node_input(0, *tg_in, 1);
 	
@@ -1221,137 +1202,6 @@ hnode_box::remove_connected_directs(){
 			delete nd;
 		}
 	}
-}
-
-int
-test_m_to_n(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <num_in> <num_out>\n", argv[0]);
-		return 1;
-	}
-	
-	long mm = atol(argv[1]);
-	long nn = atol(argv[2]);
-
-	haddr_frame pnt_frm;
-	hnode_box* bx = gh_get_binnet_m_to_n(pnt_frm, mm, nn);
-	GH_MARK_USED(bx);
-	
-	bx->print_box(stdout, gh_full_prt);
-	
-	return 0;
-}
-
-int
-test_bases(int argc, char *argv[]){
-	if(argc < 2){
-		printf("%s (0 | 1)\n", argv[0]);
-		return 1;
-	}
-	
-	long mm = atol(argv[1]);
-
-	haddr_frame pnt_frm;
-	hroute_box* bx = new hroute_box(pnt_frm);
-	GH_MARK_USED(bx);
-	switch(mm){
-		case 0: 
-			bx->init_as_2to3_route_box();
-			break;
-		case 1: 
-			bx->init_as_3to2_route_box();
-			break;
-		default: 
-			bx->init_as_2to2_route_box();
-			break;
-	}
-	
-	bx->print_box(stdout, gh_full_prt);
-	delete bx;
-	
-	return 0;
-}
-
-int
-test_log(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <base> <num>\n", argv[0]);
-		return 1;
-	}
-	
-	long bb = atol(argv[1]);
-	long nn = atol(argv[2]);
-	
-	double lbb = log2(bb);
-	long lg = (long)(log2(nn)/lbb);
-	fprintf(stdout, "LOG(%ld, %ld) = %ld\n", bb, nn, lg);
-	return 0;
-	
-}
-
-int
-test_mod(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <n1> <n2>\n", argv[0]);
-		return 1;
-	}
-	
-	long n1 = atol(argv[1]);
-	long n2 = atol(argv[2]);
-	long n3 = (n1 % n2);
-	
-	fprintf(stdout, "%ld mod %ld = %ld\n", n1, n2, n3);
-	return 0;
-}
-
-int
-test_num_io(int argc, char *argv[]){
-	if(argc < 4){
-		printf("%s <base> <length> <idx>\n", argv[0]);
-		return 1;
-	}
-	
-	long bb = atol(argv[1]);
-	long ll = atol(argv[2]);
-	long idx = atol(argv[3]);
-	long nin = 0;
-	long nout = 0;
-	
-	gh_calc_num_io(bb, ll, idx, nin, nout);
-	fprintf(stdout, "base=%ld length=%ld idx=%ld num_in=%ld num_out=%ld\n", bb, ll, idx, nin, nout);
-	return 0;
-}
-
-void
-haddr_frame::print_frame(FILE* ff, const char* msg){
-	if(msg != gh_null){
-		fprintf(ff, "%s", msg);
-	}
-	const char* has_z = (has_zero)?("has_zero"):("");
-		
-	fprintf(ff, "[%s (%p), ", gh_dbg_get_frame_kind_str(kind), (void*)this);
-	fprintf(ff, "%p, %ld, %ld, %ld, %s, %s", (void*)parent_frame, pow_base, idx, sz, 
-		gh_dbg_get_side_str(src_side), has_z
-	);
-	if(dbg_nd != gh_null){ 
-		fprintf(ff, ", \n\t");
-		dbg_nd->print_node(stdout, gh_full_pt_prt); 
-	}
-	fprintf(ff, "]\n");
-}
-
-int
-main(int argc, char *argv[]){
-	int resp = 0;
-	//resp = test_m_to_n(argc, argv);
-	//resp = test_bases(argc, argv);
-	//resp = test_log(argc, argv);
-	//resp = test_mod(argc, argv);
-	//resp = test_num_io(argc, argv);
-	resp = test_get_target(argc, argv);
-	
-	printf("ENDING_TESTS______________________\n");
-	return resp;
 }
 
 void
@@ -1614,8 +1464,9 @@ hnode::get_joined_range(hrange& rng){
 	GH_CK_PRT(((rng.max + 1) == rng1->min), "(%p) ((%d + 1) == %d) " 
 		" 0(%d, %d) 1(%d, %d)\n", (void*)this, rng.max, rng1->min, rng0->min, rng0->max, rng1->min, rng1->max);
 	rng.max = rng1->max;
-	//rng.min = gh_min(rng.min, rng1->min);
-	//rng.max = gh_max(rng.max, rng1->max);
+	
+	GH_CK(rng.min == gh_min(rng.min, rng1->min));
+	GH_CK(rng.max == gh_max(rng.max, rng1->max));
 }
 
 void
@@ -1692,7 +1543,6 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		return;
 	}
 
-	//long tg_idx = get_frame().idx;
 	hnode_2to1* tg_in = add_2to1();
 	hnode_1to2* tg_out = add_1to2(get_frame(), gh_bs_tgt_out_rou);
 	
@@ -1831,7 +1681,6 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		tg_out->out1 = bx_out;
 		bx_out->in0 = tg_out;
 		
-		//join_outputs(spl_bx_in, spl_bx_out, bt1_ht, lft_out);
 		join_box_outputs(0, spl_bx_in, 0, spl_bx_out, bt1_ht, lft_out);
 		
 		lft_in.push_back(&(bx_in->in0));
@@ -1854,7 +1703,6 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		tg_in->in1 = bx_in;
 		bx_in->out0 = tg_in;
 		
-		//join_outputs(spl_bx_in, spl_bx_out, bt1_ht, rgt_out);
 		join_box_outputs(0, spl_bx_in, 0, spl_bx_out, bt1_ht, rgt_out);
 
 		lft_out.push_back(&(bx_out->out0));
@@ -2008,6 +1856,105 @@ hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
 	}
 	//print_range(stdout);
 	//bx_frm.print_frame(stdout, "\nAFTER\n"); 
+}
+
+int
+test_m_to_n(int argc, char *argv[]){
+	if(argc < 3){
+		printf("%s <num_in> <num_out>\n", argv[0]);
+		return 1;
+	}
+	
+	long mm = atol(argv[1]);
+	long nn = atol(argv[2]);
+
+	haddr_frame pnt_frm;
+	hnode_box* bx = gh_get_binnet_m_to_n(pnt_frm, mm, nn);
+	GH_MARK_USED(bx);
+	
+	bx->print_box(stdout, gh_full_prt);
+	
+	return 0;
+}
+
+int
+test_bases(int argc, char *argv[]){
+	if(argc < 2){
+		printf("%s (0 | 1)\n", argv[0]);
+		return 1;
+	}
+	
+	long mm = atol(argv[1]);
+
+	haddr_frame pnt_frm;
+	hroute_box* bx = new hroute_box(pnt_frm);
+	GH_MARK_USED(bx);
+	switch(mm){
+		case 0: 
+			bx->init_as_2to3_route_box();
+			break;
+		case 1: 
+			bx->init_as_3to2_route_box();
+			break;
+		default: 
+			bx->init_as_2to2_route_box();
+			break;
+	}
+	
+	bx->print_box(stdout, gh_full_prt);
+	delete bx;
+	
+	return 0;
+}
+
+int
+test_log(int argc, char *argv[]){
+	if(argc < 3){
+		printf("%s <base> <num>\n", argv[0]);
+		return 1;
+	}
+	
+	long bb = atol(argv[1]);
+	long nn = atol(argv[2]);
+	
+	double lbb = log2(bb);
+	long lg = (long)(log2(nn)/lbb);
+	fprintf(stdout, "LOG(%ld, %ld) = %ld\n", bb, nn, lg);
+	return 0;
+	
+}
+
+int
+test_mod(int argc, char *argv[]){
+	if(argc < 3){
+		printf("%s <n1> <n2>\n", argv[0]);
+		return 1;
+	}
+	
+	long n1 = atol(argv[1]);
+	long n2 = atol(argv[2]);
+	long n3 = (n1 % n2);
+	
+	fprintf(stdout, "%ld mod %ld = %ld\n", n1, n2, n3);
+	return 0;
+}
+
+int
+test_num_io(int argc, char *argv[]){
+	if(argc < 4){
+		printf("%s <base> <length> <idx>\n", argv[0]);
+		return 1;
+	}
+	
+	long bb = atol(argv[1]);
+	long ll = atol(argv[2]);
+	long idx = atol(argv[3]);
+	long nin = 0;
+	long nout = 0;
+	
+	gh_calc_num_io(bb, ll, idx, nin, nout);
+	fprintf(stdout, "base=%ld length=%ld idx=%ld num_in=%ld num_out=%ld\n", bb, ll, idx, nin, nout);
+	return 0;
 }
 
 int

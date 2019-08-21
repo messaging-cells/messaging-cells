@@ -1,5 +1,5 @@
 
-BUILD_DIR := ./hg_build
+BUILD_DIR := ./gh_build
 TARGET_DIR := ./
 
 HL_CURR_DIR := $(shell pwd)
@@ -19,17 +19,18 @@ HG_BASE_DIR := .
 
 TARGET := gennet.elf
 
-TGT_LDFLAGS := -rdynamic
+TGT_LDFLAGS := -rdynamic -pthread
 
 TGT_POSTMAKE := printf "====================================\nFinished building "$(TARGET)"\n\n\n"
 
-SRC_CFLAGS := ${BMETAL_CFLAGS} ${HG_DBG_FLAG} 
-SRC_CXXFLAGS := ${BMETAL_CXXFLAGS} ${HG_DBG_FLAG} 
+SRC_CFLAGS := ${BMETAL_CFLAGS} ${HG_DBG_FLAG} -pthread
+SRC_CXXFLAGS := ${BMETAL_CXXFLAGS} ${HG_DBG_FLAG} -pthread
 
 SRC_INCDIRS := ${HG_BASE_DIR}/gh_util
 
 SOURCES := \
 	${HG_BASE_DIR}/gh_util/gh_dbg_util.cpp \
 	${HG_BASE_DIR}/hgen_net.cpp \
+	${HG_BASE_DIR}/simu_hnet.cpp \
 
 
