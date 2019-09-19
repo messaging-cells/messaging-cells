@@ -80,7 +80,8 @@ enum gh_frame_kind_t {
 	gh_sm_to_bm_frm,
 	gh_route_frm,
 	gh_target_frm,
-	gh_lognet_frm
+	gh_lognet_frm,
+	gh_top_lognet_frm,
 };
 
 enum gh_1to2_kind_t {
@@ -99,15 +100,22 @@ enum gh_1to2_kind_t {
 	gh_bs_tgt_bx_in_rou
 };
 
+enum gh_tgt_kind_t {
+	gh_invalid_tgt_kind,
+	gh_src_tgt_kind,
+	gh_snk_tgt_kind
+};
+
 typedef int gh_flag_idx_t;
 typedef char gh_flags_t;
 typedef long gh_target_addr_t;
 typedef long gh_addr_t;
 
+class thd_data;
+
 class hgen_globals;
 class haddr_frame;
 class hnode;
-class hlognet_box;
 class hnode_1to1;
 class hnode_direct;
 class hnode_target;
@@ -132,6 +140,11 @@ public:
 	hnode_box* watch_bx = gh_null;
 	haddr_frame* ref_frm = gh_null;
 
+	vector<thd_data*> all_thread_data_simu;
+	vector<hnode_target*> all_source_simu;
+	vector<hnode_target*> all_sink_simu;
+	long tot_tgt_simu = 0;
+	
 	hgen_globals(){}
 	virtual ~hgen_globals(){
 		release_all_frames();
@@ -205,6 +218,8 @@ gh_dbg_get_frame_kind_str(gh_frame_kind_t kk){
 			return "gh_target_frm";
 		case gh_lognet_frm:
 			return "gh_lognet_frm";
+		case gh_top_lognet_frm:
+			return "gh_top_lognet_frm";
 	}
 	return "gh_INVALID_frm";
 };
@@ -282,21 +297,37 @@ public:
 	
 	void calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm);
 	
+	bool in_range(gh_addr_t addr){
+		bool irng = (min <= addr) && (addr <= max);
+		return irng;
+	}
+	
 	void print_range(FILE* ff);
 	
 };
 
 class hmessage {
 public:
-	long val = 0;
-	gh_addr_t src = GH_INVALID_ADDR;
-	gh_addr_t dst = GH_INVALID_ADDR;
+	long mg_val = 0;
+	gh_addr_t mg_src = GH_INVALID_ADDR;
+	gh_addr_t mg_dst = GH_INVALID_ADDR;
+	
 	hrange rng;
 	hrange addr;
 	
 	void	calc_msg_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
 		addr = rng;
 		addr.calc_raddr(nd_frm, bx_frm);
+	}
+	
+	bool in_range(gh_addr_t addr){
+		return rng.in_range(addr);
+	}
+	
+	void copy_mg_to(hmessage& mg){
+		mg.mg_val = mg_val;
+		mg.mg_src = mg_src;
+		mg.mg_dst = mg_dst;
 	}
 };
 
@@ -335,14 +366,14 @@ inline bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
 
 class hnode {
 public:
+	void* 	simu_data;
 	gh_flags_t node_flags = 0;
 	gh_addr_t addr = GH_INVALID_ADDR;
-	bool ready = false;
 	
 	hnode(){
+		simu_data = gh_null;
 		node_flags = 0;
 		addr = GH_INVALID_ADDR;
-		ready = false;
 	}
 	virtual ~hnode(){}
 	
@@ -364,6 +395,11 @@ public:
 	has_io(hnode** io){
 		return false;
 	}
+
+	virtual bool 	get_ack0(){ GH_CK("get_ack0" && false); return false; }
+	virtual bool 	get_ack1(){ GH_CK("get_ack1" && false); return false; }
+	virtual bool 	get_req0(){ GH_CK("get_req0" && false); return false; }
+	virtual bool 	get_req1(){ GH_CK("get_req1" && false); return false; }
 	
 	virtual hnode* 	get_in0(){ return gh_null; }
 	virtual hnode* 	get_in1(){ return gh_null; }
@@ -375,10 +411,52 @@ public:
 	virtual hnode** set_out0(hnode* nd){ return gh_null; }
 	virtual hnode** set_out1(hnode* nd){ return gh_null; }
 
-	virtual hrange* get_range0(){ return gh_null; }
-	virtual hrange* get_range1(){ return gh_null; }
+	virtual hmessage* get_message0(){ return gh_null; }
+	virtual hmessage* get_message1(){ return gh_null; }
+	
+	hrange* get_rng(hmessage* mg){
+		if(mg != gh_null){
+			return &(mg->rng);
+		}
+		return gh_null;
+	}
+	
+	hrange* get_range0(){ return get_rng(get_message0()); }
+	hrange* get_range1(){ return get_rng(get_message1()); }
+	
+	bool 	ireq(hnode& in_nd){
+		if(in_nd.get_out0() == this){
+			return in_nd.get_req0();
+		}
+		if(in_nd.get_out1() == this){
+			return in_nd.get_req1();
+		}
+		GH_CK(false);
+		return false;
+	}
+	
+	bool 	oack(hnode& out_nd){
+		if(out_nd.get_in0() == this){
+			return out_nd.get_ack0();
+		}
+		if(out_nd.get_in1() == this){
+			return out_nd.get_ack1();
+		}
+		GH_CK(false);
+		return false;
+	}
 	
 	virtual void set_direct_idx(gh_io_kind_t kk, ppnode_vec_t& all_io, long idx){}
+	
+	hmessage*	get_message_of(hnode* out){
+		if(get_out0() == out){
+			return get_message0();
+		}
+		if(get_out1() == out){
+			return get_message1();
+		}
+		return gh_null;
+	}
 	
 	hnode** re_link_in(hnode* old_nd, hnode* nw_nd){
 		GH_CK(old_nd != this);
@@ -432,11 +510,16 @@ public:
 	
 	void
 	print_addr(FILE* ff);
+	
+	thd_data* create_thread_simu();
 };
 
 class hnode_1to1 : public hnode {
 public:
 	hmessage msg0;
+	
+	bool ack0 = false;
+	bool req0 = false;
 	
 	hnode* in0 = gh_null;
 	hnode* out0 = gh_null;
@@ -452,13 +535,16 @@ public:
 		out0 = this;
 	}
 
+	virtual bool 	get_ack0(){ return ack0; }
+	virtual bool 	get_req0(){ return req0; }
+	
 	virtual hnode* 	get_in0(){ return in0; }
 	virtual hnode* 	get_out0(){ return out0; }
 
 	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
 	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
 
-	virtual hrange* get_range0(){ return &(msg0.rng); }
+	virtual hmessage* get_message0(){ return &(msg0); }
 	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
@@ -479,6 +565,7 @@ public:
 	virtual void
 	print_node(FILE* ff, gh_prt_mode_t md);
 
+	void run_1to1_simu();
 };
 
 class hnode_direct : public hnode_1to1 {
@@ -528,6 +615,12 @@ class hnode_target : public hnode_1to1 {
 public:
 	long bx_idx = GH_INVALID_IDX;
 	
+	gh_tgt_kind_t kk = gh_invalid_tgt_kind;
+	
+	hnode_target* choose_target();
+	void run_source_simu();
+	void run_sink_simu();
+	
 	virtual void
 	print_node(FILE* ff, gh_prt_mode_t md);
 };
@@ -549,6 +642,10 @@ public:
 	
 	hmessage msg0;
 	hmessage msg1;
+
+	bool ack0 = false;
+	bool req0 = false;
+	bool req1 = false;
 	
 	hnode* in0 = gh_null;
 	hnode* out0 = gh_null;
@@ -619,6 +716,10 @@ public:
 		msg1.calc_msg_raddr(get_frame(), frm);
 	}
 
+	virtual bool 	get_ack0(){ return ack0; }
+	virtual bool 	get_req0(){ return req0; }
+	virtual bool 	get_req1(){ return req1; }
+	
 	virtual hnode* 	get_in0(){ return in0; }
 	virtual hnode* 	get_out0(){ return out0; }
 	virtual hnode* 	get_out1(){ return out1; }
@@ -627,8 +728,8 @@ public:
 	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
 	virtual hnode** set_out1(hnode* nd){ out1 = nd; return &out1; }
 	
-	virtual hrange* get_range0(){ return &(msg0.rng); }
-	virtual hrange* get_range1(){ return &(msg1.rng); }
+	virtual hmessage* get_message0(){ return &(msg0); }
+	virtual hmessage* get_message1(){ return &(msg1); }
 	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
@@ -650,21 +751,30 @@ public:
 	virtual void
 	print_node(FILE* ff, gh_prt_mode_t md);
 	
+	void run_1to2_simu();
 };
 
 class hnode_2to1 : public hnode {
 public:
 	hmessage msg0;
 	
+	bool choose0 = true;
+
+	bool ack0 = false;
+	bool ack1 = false;
+	bool req0 = false;
+	
 	hnode* in0 = gh_null;
 	hnode* in1 = gh_null;
 	hnode* out0 = gh_null;
 
 	hnode_2to1(){
+		choose0 = true;
 		in0 = gh_null;
 		in1 = gh_null;
 		out0 = gh_null;
 	}
+	
 	virtual ~hnode_2to1(){}
 	
 	void init_to_me(){
@@ -672,6 +782,10 @@ public:
 		in1 = this;
 		out0 = this;
 	}
+	
+	virtual bool 	get_ack0(){ return ack0; }
+	virtual bool 	get_ack1(){ return ack1; }
+	virtual bool 	get_req0(){ return req0; }
 	
 	virtual hnode* 	get_in0(){ return in0; }
 	virtual hnode* 	get_in1(){ return in1; }
@@ -681,7 +795,7 @@ public:
 	virtual hnode** set_in1(hnode* nd){ in1 = nd; return &in1; }
 	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
 	
-	virtual hrange* get_range0(){ return &(msg0.rng); }
+	virtual hmessage* get_message0(){ return &(msg0); }
 	
 	virtual bool 	ck_connections(){ 
 		bool c1 = ck_link(in0, gh_in_kind);
@@ -703,6 +817,7 @@ public:
 	virtual void
 	print_node(FILE* ff, gh_prt_mode_t md);
 	
+	void run_2to1_simu();
 };
 
 long 	gh_get_first_null_idx(ppnode_vec_t& vec);
@@ -1006,10 +1121,16 @@ public:
 
 	virtual
 	void 	print_box(FILE* ff, gh_prt_mode_t md);
+	
+	void 	wait_all_inited_simu();
+	void 	init_hlognet_simu();
 };
 	
 
+void* run_node_simu(void* pm);
+
 int test_get_target(int argc, char *argv[]);
+int test_hlognet(int argc, char *argv[]);
 
 #endif // GEN_HNET_H
 

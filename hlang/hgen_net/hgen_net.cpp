@@ -233,6 +233,8 @@ hnode_box::print_box(FILE* ff, gh_prt_mode_t md){
 			fprintf(ff, "%ld gh_null DIRECT\n", ii);
 		}
 	}
+	fprintf(ff, "TOTAL_NODES %ld\n", (long)all_nodes.size());
+	fprintf(ff, "TOTAL_DIRECT %ld\n", (long)all_direct.size());
 	fprintf(ff, "\n");
 	fflush(ff);
 }
@@ -263,6 +265,9 @@ hlognet_box::print_box(FILE* ff, gh_prt_mode_t md){
 		GH_CK(all_targets[ii] != gh_null);
 		all_targets[ii]->print_node(ff, md);
 	}
+	fprintf(ff, "TOTAL_NODES %ld\n", (long)all_nodes.size());
+	fprintf(ff, "TOTAL_TARGET %ld\n", (long)all_targets.size());
+	fprintf(ff, "height = %ld\n", height);
 	fflush(ff);
 	GH_COND_PRT((GH_GLOBALS.DBG_LV > 0), "flag1\n");
 }
@@ -972,11 +977,15 @@ htarget_box::join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnod
 
 void
 hlognet_box::init_length(long num_elems){
+	if(get_frame().sz == num_elems){
+		return;
+	}
+		
 	double lbb = log2(get_base());
 	double lnn = log2(num_elems - 1);
 	height = (long)(lnn/lbb);
+
 	get_frame().sz = num_elems;
-	
 	//GH_DBG_CODE(get_frame().print_frame(stdout));
 }
 
@@ -1805,10 +1814,13 @@ haddr_frame::recalc_addr(gh_addr_t vin){
 			GH_CK(base_ok);
 			double pp = pow(pow_base, vout);
 			if(pp > LONG_MAX){
-				gh_abort("**** power_too_big_case_2. choose less adress number **** \n");
+				gh_abort("**** power_too_big_case_2. pow(%ld, %ld) > LONG_MAX **** \n", pow_base, vout);
 			}
 			vout = (gh_addr_t)pp;
 			GH_CK(vout >= 1);
+		} break;
+		case gh_top_lognet_frm:{
+			GH_CK(base_ok);
 		} break;
 		
 		default:
@@ -1954,50 +1966,6 @@ test_num_io(int argc, char *argv[]){
 	
 	gh_calc_num_io(bb, ll, idx, nin, nout);
 	fprintf(stdout, "base=%ld length=%ld idx=%ld num_in=%ld num_out=%ld\n", bb, ll, idx, nin, nout);
-	return 0;
-}
-
-int
-test_get_target(int argc, char *argv[]){
-	if(argc < 4){
-		printf("%s <base> <#in> <#out>\n", argv[0]);
-		return 1;
-	}
-	
-	long bb = atol(argv[1]);
-	long nin = atol(argv[2]);
-	long nout = atol(argv[3]);
-	fprintf(stdout, "test_get_target base=%ld #in=%ld #out=%ld\n", bb, nin, nout);
-
-	haddr_frame	pnt_frm;
-	pnt_frm.pow_base = bb;
-	
-	htarget_box* bx = new htarget_box(pnt_frm);
-	
-	gh_dbg_calc_idx_and_sz(nin, nout, bx->get_frame());
-	bx->get_frame().print_frame(stdout);
-	
-	bx->init_target_box(nin, nout);
-
-	fprintf(stdout, "===========\n");
-	
-	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
-
-	bx->calc_all_1to2_raddr(gh_null);
-	bx->print_box(stdout, gh_full_pt_prt);
-	
-	/*if(GH_GLOBALS.watch_bx != gh_null){
-		fprintf(stdout, "\nBEFORE_CALC_ADDR---------------------------------\n");
-		GH_GLOBALS.watch_bx->print_box(stdout, gh_full_pt_prt);
-		
-		GH_GLOBALS.watch_bx->calc_all_1to2_raddr(GH_GLOBALS.ref_frm);
-		
-		fprintf(stdout, "\nAFTER_CALC_ADDR---------------------------------\n");
-		GH_GLOBALS.watch_bx->print_box(stdout, gh_full_pt_prt);
-	}*/
-	
-	delete bx;
-		
 	return 0;
 }
 
