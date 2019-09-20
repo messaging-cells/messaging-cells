@@ -43,6 +43,24 @@ using namespace std;
 
 //======================================================================
 
+enum gh_dbg_call_t {
+	gh_call_0,
+	gh_call_1,
+	gh_call_2,
+	gh_call_3,
+	gh_call_4,
+	gh_call_5,
+	gh_call_6,
+	gh_call_7,
+	gh_call_8,
+	gh_call_9,
+	gh_call_10,
+	gh_call_11,
+	gh_call_12,
+	gh_call_13,
+	gh_call_14
+};
+
 enum gh_prt_mode_t {
 	gh_addr_prt,
 	gh_full_prt,
@@ -55,6 +73,14 @@ enum gh_hnode_kind_t {
 	gh_1_to_1_nod,
 	gh_1_to_2_nod,
 	gh_2_to_1_nod
+};
+
+enum gh_1t1_kind_t {
+	gh_invalid_1t1,
+	gh_direct_1t1,
+	gh_target_1t1,
+	gh_source_1t1,
+	gh_sink_1t1
 };
 
 enum gh_nk_lnk_mod_t {
@@ -144,6 +170,7 @@ public:
 	vector<hnode_target*> all_source_simu;
 	vector<hnode_target*> all_sink_simu;
 	long tot_tgt_simu = 0;
+	long tot_src_msg = 0;
 	
 	hgen_globals(){}
 	virtual ~hgen_globals(){
@@ -274,6 +301,12 @@ public:
 		return true;
 	}
 	
+	bool is_virgin(){
+		bool v1 = (min == GH_INVALID_ADDR);
+		bool v2 = (max == GH_INVALID_ADDR);
+		return (v1 && v2);
+	}
+	
 	void recalc(haddr_frame& frm){
 		if(get_flag(gh_skip_one_frame_bit)){
 			reset_flag(gh_skip_one_frame_bit);
@@ -313,11 +346,12 @@ public:
 	gh_addr_t mg_dst = GH_INVALID_ADDR;
 	
 	hrange rng;
-	hrange addr;
+	hrange bak_rg;
 	
 	void	calc_msg_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
-		addr = rng;
-		addr.calc_raddr(nd_frm, bx_frm);
+		GH_CK(bak_rg.is_virgin());
+		bak_rg = rng;
+		rng.calc_raddr(nd_frm, bx_frm);
 	}
 	
 	bool in_range(gh_addr_t addr){
@@ -557,6 +591,11 @@ public:
 		return gh_1_to_1_nod;
 	}
 	
+	virtual gh_1t1_kind_t
+	get_1t1_kind(){
+		return gh_invalid_1t1;
+	}
+	
 	virtual bool
 	has_io(hnode** io){
 		return ((&in0 == io) || (&out0 == io));
@@ -607,6 +646,11 @@ public:
 		}
 	}
 	
+	virtual gh_1t1_kind_t
+	get_1t1_kind(){
+		return gh_direct_1t1;
+	}
+	
 	virtual void
 	print_node(FILE* ff, gh_prt_mode_t md);
 };
@@ -616,10 +660,17 @@ public:
 	long bx_idx = GH_INVALID_IDX;
 	
 	gh_tgt_kind_t kk = gh_invalid_tgt_kind;
+
+	long num_msg_proc = 0;
 	
 	hnode_target* choose_target();
 	void run_source_simu();
 	void run_sink_simu();
+	
+	virtual gh_1t1_kind_t
+	get_1t1_kind(){
+		return gh_target_1t1;
+	}
 	
 	virtual void
 	print_node(FILE* ff, gh_prt_mode_t md);
@@ -627,16 +678,27 @@ public:
 
 class hnode_src : public hnode_1to1 {
 public:
+	virtual gh_1t1_kind_t
+	get_1t1_kind(){
+		return gh_source_1t1;
+	}
+	
 };
 
 class hnode_snk : public hnode_1to1 {
 public:
+	virtual gh_1t1_kind_t
+	get_1t1_kind(){
+		return gh_sink_1t1;
+	}
+	
 };
 
 class hnode_1to2 : public hnode {
 public:
-	gh_1to2_kind_t rou_kind;
-	haddr_frame* node_frm;
+	gh_1to2_kind_t rou_kind = gh_invalid_rou;
+	gh_dbg_call_t dbg_kind = gh_call_0;
+	haddr_frame* node_frm = gh_null;
 	
 	hmessage* one_range = gh_null;
 	
@@ -752,6 +814,8 @@ public:
 	print_node(FILE* ff, gh_prt_mode_t md);
 	
 	void run_1to2_simu();
+	void run_one_range_simu();
+	void run_trichotomy_simu();
 };
 
 class hnode_2to1 : public hnode {
@@ -920,7 +984,7 @@ public:
 		return get_frame().idx;
 	}
 	
-	hnode_1to2* add_1to2(haddr_frame& frm, gh_1to2_kind_t kk);
+	hnode_1to2* add_1to2(haddr_frame& frm, gh_1to2_kind_t kk, gh_dbg_call_t dbg_case = gh_call_0);
 	hnode_2to1* add_2to1();
 	hnode_direct* add_direct();
 	
@@ -1019,7 +1083,7 @@ public:
 };
 
 hnode_box*
-gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out);
+gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out, gh_dbg_call_t dbg_case);
 
 class hroute_box : public hnode_box {
 public:
@@ -1123,7 +1187,8 @@ public:
 	void 	print_box(FILE* ff, gh_prt_mode_t md);
 	
 	void 	wait_all_inited_simu();
-	void 	init_hlognet_simu();
+	void 	wait_all_threads_ended_simu();
+	void 	run_hlognet_simu();
 };
 	
 

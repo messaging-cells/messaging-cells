@@ -264,7 +264,14 @@ run_node_simu(void* pm){
 	
 	if(the_nd->is_1to2()){
 		hnode_1to2* th_nd = (hnode_1to2*)the_nd;
-		th_nd->run_1to2_simu();
+		if(th_nd->get_flag(gh_is_trichotomy)){
+			th_nd->run_trichotomy_simu();
+		} else
+		if(th_nd->one_range != gh_null) {
+			th_nd->run_one_range_simu();
+		} else {
+			th_nd->run_1to2_simu();
+		}
 	} else 
 	if(the_nd->is_2to1()){
 		hnode_2to1* th_nd = (hnode_2to1*)the_nd;
@@ -272,7 +279,18 @@ run_node_simu(void* pm){
 	} else {
 		GH_CK(the_nd->is_1to1());
 		hnode_1to1* th_nd = (hnode_1to1*)the_nd;
-		th_nd->run_1to1_simu();
+		gh_1t1_kind_t k1t1 = th_nd->get_1t1_kind();
+		if(k1t1 == gh_target_1t1){
+			hnode_target* tg = (hnode_target*)the_nd;
+			if(tg->kk == gh_src_tgt_kind){
+				tg->run_source_simu();
+			} else {
+				GH_CK(tg->kk == gh_snk_tgt_kind);
+				tg->run_sink_simu();
+			}
+		} else {
+			th_nd->run_1to1_simu();
+		}
 	}
 	
 	return gh_null;
@@ -331,7 +349,8 @@ hnode_1to2::run_1to2_simu(){
 			gh_addr_t dst_addr = in_msg0->mg_dst;
 			bool in_rng0 = msg0.in_range(dst_addr);
 			bool in_rng1 = msg1.in_range(dst_addr);
-			GH_CK(in_rng0 != in_rng1);
+			GH_CK_PRT((in_rng0 != in_rng1), "%s (%p) %ld %d==(%ld,%ld) %d==(%ld,%ld) ", gh_dbg_get_rou_kind_str(rou_kind), 
+					  (void*)nod, dst_addr, in_rng0, msg0.rng.min, msg0.rng.max, in_rng1, msg1.rng.min, msg1.rng.max);
 			
 			if(in_rng0){
 				bool rdy_out0 = ((! req0) && (! oack(*out0)));
@@ -469,6 +488,9 @@ hnode_target::run_source_simu(){
 	GH_CK(simu_data != gh_null);
 	thd_data* dat = (thd_data*)(simu_data);
 	
+	GH_CK(GH_GLOBALS.tot_src_msg > 0);
+	GH_CK(msg0.mg_val == 0);
+	
 	for(;;){
 		if(dat->end_it){
 			break;
@@ -479,10 +501,18 @@ hnode_target::run_source_simu(){
 			hnode_target* tg = choose_target();
 			
 			msg0.mg_val++;
+			if(msg0.mg_val == GH_GLOBALS.tot_src_msg){
+				dat->end_it = true;
+				continue;
+			}
+				
 			msg0.mg_src = addr;
 			msg0.mg_dst = tg->addr;
 			
 			req0 = true;
+
+			fprintf(stdout, "%ld SND %ld -> %ld val=%ld \n", addr, msg0.mg_src, msg0.mg_dst, msg0.mg_val);
+			num_msg_proc++;
 		} 
 		
 		if(req0 && oack(*out0)){
@@ -495,9 +525,11 @@ hnode_target::run_source_simu(){
 
 void
 hnode_target::run_sink_simu(){
-	//hnode_target* nod = this;
 	GH_CK(simu_data != gh_null);
 	thd_data* dat = (thd_data*)(simu_data);
+	
+	hnode_target* nod = this;
+	hmessage* in_msg0 = in0->get_message_of(nod);
 	
 	for(;;){
 		if(dat->end_it){
@@ -505,6 +537,10 @@ hnode_target::run_sink_simu(){
 		}
 		
 		if(ireq(*in0) && (! ack0)){
+			GH_CK(addr == in_msg0->mg_dst);
+			fprintf(stdout, "%ld RCV %ld -> %ld val=%ld \n", addr, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val);
+			num_msg_proc++;
+			
 			ack0 = true;
 		} 
 		
@@ -523,13 +559,14 @@ hnode_target::choose_target(){
 	GH_CK(sz > 0);
 	hnode_target* tg = all_tg[sz - 1];
 	GH_CK(tg != gh_null);
-	GH_CK(tg->kk != gh_src_tgt_kind);
+	GH_CK(tg->kk == gh_snk_tgt_kind);
 	
 	return tg;
 }
 
 thd_data*
 hnode::create_thread_simu(){
+	hnode* the_nd = this;
 	thd_data* pt_dat = new thd_data;
 	GH_GLOBALS.all_thread_data_simu.push_back(pt_dat);
 	
@@ -539,7 +576,7 @@ hnode::create_thread_simu(){
 	pthread_attr_t* pt_att = &(pt_dat->attr);
 	
 	pthread_attr_init(pt_att);
-	pthread_create(pt_tid, pt_att, run_node_simu, pt_dat);
+	pthread_create(pt_tid, pt_att, run_node_simu, the_nd);
 	
 	return pt_dat;
 }
@@ -575,26 +612,104 @@ hlognet_box::wait_all_inited_simu(){
 		
 		pthread_yield();
 	}
-	fprintf(stdout, "ALL_NODE_THREADS_INITED \n");
+	
+	/*for(long aa = 0; aa < tot_child; aa++){
+		GH_CK(all_dat[aa] != gh_null);
+		thd_data& tdat = *(all_dat[aa]);
+		tdat.counted = false;
+	}*/
+
+	fprintf(stdout, "ALL_NODE_THREADS_INITED %ld \n", tot_child);
 }
 
 void
-hlognet_box::init_hlognet_simu(){
+hlognet_box::wait_all_threads_ended_simu(){
+	vector<hnode_target*>& all_src = GH_GLOBALS.all_source_simu;
+	vector<hnode_target*>& all_snk = GH_GLOBALS.all_sink_simu;
+
+	while(true){
+		long tot_end = 0;
+		for(long aa = 0; aa < (long)all_src.size(); aa++){
+			hnode_target* tg = all_src[aa];
+			thd_data* pt_dat = (thd_data*)(tg->simu_data);
+			if(pt_dat->end_it){
+				tot_end++;
+			}
+			pthread_yield();
+		}
+		if(tot_end == (long)all_src.size()){
+			break;
+		}
+		pthread_yield();
+	}
+	fprintf(stdout, "ALL_SOURCE_THREADS_FINISHED \n");
+	
+	long tot_msg_snd = 0;
+	for(long aa = 0; aa < (long)all_src.size(); aa++){
+		hnode_target* tg = all_src[aa];
+		tot_msg_snd += tg->num_msg_proc;
+	}
+	
+	long ck_tot_rcv = -1;
+	while(true){
+		long tot_msg_rcv = 0;
+		for(long aa = 0; aa < (long)all_snk.size(); aa++){
+			hnode_target* tg = all_snk[aa];
+			tot_msg_rcv += tg->num_msg_proc;
+			pthread_yield();
+		}
+		if(tot_msg_rcv > ck_tot_rcv){
+			fprintf(stdout, "GOT %ld of %ld \n", tot_msg_rcv, tot_msg_snd);
+			ck_tot_rcv = tot_msg_rcv;
+		}
+		if(tot_msg_rcv == tot_msg_snd){
+			break;
+		}
+		pthread_yield();
+	}
+	
+	vector<thd_data*>& all_dat = GH_GLOBALS.all_thread_data_simu;
+	for(long aa = 0; aa < (long)all_dat.size(); aa++){
+		thd_data* pt_dat = all_dat[aa];
+		if(! pt_dat->end_it){
+			pt_dat->end_it = true;
+			pthread_join(pt_dat->tid, NULL);
+		}
+	}
+}
+
+void
+hlognet_box::run_hlognet_simu(){
+	thd_data* pt_dat = gh_null;
 	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
 		hnode* nod = all_nodes[ii];
 		GH_CK(nod != gh_null);
 		
-		thd_data* pt_dat = nod->create_thread_simu();
+		pt_dat = nod->create_thread_simu();
 		pt_dat->idx = ii;
 	}
 	
 	long tot_tg = (long)all_targets.size();
-	for(long ii = 0; ii < (tot_tg - 1); ii++){
-		hnode* tgt = all_targets[ii];
+	long lst_tg = tot_tg - 1;
+	GH_CK(tot_tg > 0);
+
+	hnode_target* ltgt = all_targets[lst_tg];
+	pt_dat = ltgt->create_thread_simu();
+	pt_dat->idx = lst_tg;
+	ltgt->kk = gh_snk_tgt_kind;
+	GH_GLOBALS.all_sink_simu.push_back(ltgt);
+	
+	for(long ii = 0; ii < lst_tg; ii++){
+		hnode_target* tgt = all_targets[ii];
 		GH_CK(tgt != gh_null);
+		pt_dat = tgt->create_thread_simu();
+		pt_dat->idx = ii;
+		tgt->kk = gh_src_tgt_kind;
+		GH_GLOBALS.all_source_simu.push_back(tgt);
 	}
 	
 	wait_all_inited_simu();
+	wait_all_threads_ended_simu();
 }
 
 int
@@ -624,11 +739,139 @@ test_hlognet(int argc, char *argv[]){
 
 	bx->calc_all_1to2_raddr(gh_null);
 	bx->print_box(stdout, gh_full_pt_prt);
+	//bx->print_box(stdout, gh_full_prt);
+
+	fprintf(stdout, "=========== RUNNING_SIMU ===================\n");
 	
-	//init_hlognet_simu();
+	GH_GLOBALS.tot_src_msg = 3;
+	bx->run_hlognet_simu();
 
 	delete bx;
 		
 	return 0;
+}
+
+void
+hnode_1to2::run_one_range_simu(){
+	GH_CK(one_range != gh_null);
+	GH_CK((one_range == &(msg0)) || (one_range == &(msg1)));
+	GH_CK(simu_data != gh_null);
+	thd_data* dat = (thd_data*)(simu_data);
+	//long thd_idx = dat->idx;
+
+	bool is_rg0 = (one_range == &(msg0));
+	bool is_rg1 = (one_range == &(msg1));
+	
+	hnode_1to2* nod = this;
+	hmessage* in_msg0 = in0->get_message_of(nod);
+	GH_CK(in_msg0 != gh_null);
+	
+	for(;;){
+		if(dat->end_it){
+			break;
+		}
+		
+		if(ireq(*in0) && (! ack0)){
+			gh_addr_t dst_addr = in_msg0->mg_dst;
+			bool in_rng = one_range->in_range(dst_addr);
+			bool in_rng0 = ((is_rg0 && in_rng) || (! is_rg0 && ! in_rng));
+			bool in_rng1 = ((is_rg1 && in_rng) || (! is_rg1 && ! in_rng));
+			
+			GH_CK_PRT((in_rng0 != in_rng1), "(%p) %ld %d==(%ld,%ld) %d==(%ld,%ld) ", (void*)nod,
+					  dst_addr, in_rng0, msg0.rng.min, msg0.rng.max, in_rng1, msg1.rng.min, msg1.rng.max);
+			
+			if(in_rng0){
+				bool rdy_out0 = ((! req0) && (! oack(*out0)));
+				if(rdy_out0){
+					in_msg0->copy_mg_to(msg0);
+					req0 = true;
+					ack0 = true;
+				} 
+			} 
+			
+			if(in_rng1){
+				bool rdy_out1 = ((! req1) && (! oack(*out1)));
+				if(rdy_out1){
+					in_msg0->copy_mg_to(msg1);
+					req1 = true;
+					ack0 = true;
+				} 
+			} 
+		} 
+		
+		if((! ireq(*in0)) && ack0){
+			ack0 = false;
+		}
+		if(req0 && oack(*out0)){
+			req0 = false;
+		}
+		if(req1 && oack(*out1)){
+			req1 = false;
+		}
+		
+		pthread_yield();
+	}
+}
+
+void
+hnode_1to2::run_trichotomy_simu(){
+	GH_CK(get_flag(gh_is_trichotomy));
+	GH_CK(one_range == &(msg0));
+	GH_CK(simu_data != gh_null);
+	thd_data* dat = (thd_data*)(simu_data);
+	//long thd_idx = dat->idx;
+
+	GH_CK(msg0.rng.min == msg0.rng.max);
+	gh_addr_t tricho_val = msg0.rng.min;
+	
+	hnode_1to2* nod = this;
+	hmessage* in_msg0 = in0->get_message_of(nod);
+	GH_CK(in_msg0 != gh_null);
+	
+	for(;;){
+		if(dat->end_it){
+			break;
+		}
+		
+		if(ireq(*in0) && (! ack0)){
+			gh_addr_t dst_addr = in_msg0->mg_dst;
+			GH_CK(dst_addr != tricho_val);
+			bool in_rng0 = (dst_addr > tricho_val);
+			bool in_rng1 = (dst_addr < tricho_val);
+			
+			GH_CK_PRT((in_rng0 != in_rng1), "(%p) %ld %d==(%ld,%ld) %d==(%ld,%ld) ", (void*)nod,
+					  dst_addr, in_rng0, msg0.rng.min, msg0.rng.max, in_rng1, msg1.rng.min, msg1.rng.max);
+			
+			if(in_rng0){
+				bool rdy_out0 = ((! req0) && (! oack(*out0)));
+				if(rdy_out0){
+					in_msg0->copy_mg_to(msg0);
+					req0 = true;
+					ack0 = true;
+				} 
+			} 
+			
+			if(in_rng1){
+				bool rdy_out1 = ((! req1) && (! oack(*out1)));
+				if(rdy_out1){
+					in_msg0->copy_mg_to(msg1);
+					req1 = true;
+					ack0 = true;
+				} 
+			} 
+		} 
+		
+		if((! ireq(*in0)) && ack0){
+			ack0 = false;
+		}
+		if(req0 && oack(*out0)){
+			req0 = false;
+		}
+		if(req1 && oack(*out1)){
+			req1 = false;
+		}
+		
+		pthread_yield();
+	}
 }
 
