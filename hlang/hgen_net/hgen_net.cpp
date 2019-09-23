@@ -417,9 +417,8 @@ gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out, gh_dbg_cal
 		bx = gh_get_binnet_bm_to_sm(pnt_frm, num_in, num_out);
 	} else {
 		bx = gh_get_binnet_sm_to_bm(pnt_frm, num_in, num_out, dbg_case);
-		gh_init_sm_to_bm_ranges(bx->outputs, bx->get_last_color(), bx);
+		bx->init_sm_to_bm_ranges();
 		bx->get_frame().kind = gh_sm_to_bm_frm;
-		//bx->get_frame().src_side = pnt_frm.src_side;
 		bx->set_base(pnt_frm.pow_base);
 	}
 	GH_CK(bx != gh_null);
@@ -523,6 +522,8 @@ hnode_box::fill_with_directs(ppnode_vec_t& all_in, ppnode_vec_t& all_out){
 		dr->set_direct_idx(gh_in_kind, all_in, ii);
 		dr->set_direct_idx(gh_out_kind, all_out, oo);
 	}
+	GH_CK(ii == (long)all_in.size());
+	GH_CK(oo == (long)all_out.size());
 }
 
 void
@@ -1446,7 +1447,27 @@ gh_init_level_ranges(vector<hnode*>& prv_lv, vector<hnode*>& next_lv, gh_flag_id
 }
 
 void
-gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, gh_flag_idx_t lst_col, hnode_box* dbg_bx){
+hnode_box::set_limit_one_ranges(){
+	long max_idx = (long)outputs.size() - 1;
+	//fprintf(stdout, "MAX_IDX = %ld \n", max_idx); 
+	
+	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
+		GH_CK(all_nodes[ii] != gh_null);
+		if(all_nodes[ii]->is_1to2()){
+			hnode_1to2* nd = (hnode_1to2*)(all_nodes[ii]);
+			GH_CK(! nd->msg0.in_range(max_idx));
+			if(nd->msg1.in_range(max_idx)){
+				nd->one_range = &(nd->msg0);
+			}
+		}
+	}
+}
+
+void
+hnode_box::init_sm_to_bm_ranges(){
+	//gh_init_sm_to_bm_ranges(bx->outputs, bx->get_last_color(), bx);
+	ppnode_vec_t& all_out = outputs;
+	gh_flag_idx_t lst_col = get_last_color();
 
 	//GH_DBG_CODE(if(dbg_bx != gh_null){ dbg_bx->print_box(stdout, gh_full_pt_prt); });
 	
@@ -1471,6 +1492,8 @@ gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, gh_flag_idx_t lst_col, hnode_box*
 		
 		gh_init_level_ranges(prv_lv, next_lv, nxt_col, 2);
 	}
+	
+	set_limit_one_ranges();
 }
 
 void
@@ -1884,104 +1907,5 @@ hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
 	}
 	//print_range(stdout); // DBG_CALC 
 	//bx_frm.print_frame(stdout, "\nAFTER\n"); // DBG_CALC 
-}
-
-int
-test_m_to_n(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <num_in> <num_out>\n", argv[0]);
-		return 1;
-	}
-	
-	long mm = atol(argv[1]);
-	long nn = atol(argv[2]);
-
-	haddr_frame pnt_frm;
-	hnode_box* bx = gh_get_binnet_m_to_n(pnt_frm, mm, nn, gh_call_14);
-	GH_MARK_USED(bx);
-	
-	bx->print_box(stdout, gh_full_prt);
-	
-	return 0;
-}
-
-int
-test_bases(int argc, char *argv[]){
-	if(argc < 2){
-		printf("%s (0 | 1)\n", argv[0]);
-		return 1;
-	}
-	
-	long mm = atol(argv[1]);
-
-	haddr_frame pnt_frm;
-	hroute_box* bx = new hroute_box(pnt_frm);
-	GH_MARK_USED(bx);
-	switch(mm){
-		case 0: 
-			bx->init_as_2to3_route_box();
-			break;
-		case 1: 
-			bx->init_as_3to2_route_box();
-			break;
-		default: 
-			bx->init_as_2to2_route_box();
-			break;
-	}
-	
-	bx->print_box(stdout, gh_full_prt);
-	delete bx;
-	
-	return 0;
-}
-
-int
-test_log(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <base> <num>\n", argv[0]);
-		return 1;
-	}
-	
-	long bb = atol(argv[1]);
-	long nn = atol(argv[2]);
-	
-	double lbb = log2(bb);
-	long lg = (long)(log2(nn)/lbb);
-	fprintf(stdout, "LOG(%ld, %ld) = %ld\n", bb, nn, lg);
-	return 0;
-	
-}
-
-int
-test_mod(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <n1> <n2>\n", argv[0]);
-		return 1;
-	}
-	
-	long n1 = atol(argv[1]);
-	long n2 = atol(argv[2]);
-	long n3 = (n1 % n2);
-	
-	fprintf(stdout, "%ld mod %ld = %ld\n", n1, n2, n3);
-	return 0;
-}
-
-int
-test_num_io(int argc, char *argv[]){
-	if(argc < 4){
-		printf("%s <base> <length> <idx>\n", argv[0]);
-		return 1;
-	}
-	
-	long bb = atol(argv[1]);
-	long ll = atol(argv[2]);
-	long idx = atol(argv[3]);
-	long nin = 0;
-	long nout = 0;
-	
-	gh_calc_num_io(bb, ll, idx, nin, nout);
-	fprintf(stdout, "base=%ld length=%ld idx=%ld num_in=%ld num_out=%ld\n", bb, ll, idx, nin, nout);
-	return 0;
 }
 

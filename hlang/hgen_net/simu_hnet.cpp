@@ -194,6 +194,107 @@ test_pthread_simu(int argc, char *argv[]){
 }
 
 int
+test_m_to_n(int argc, char *argv[]){
+	if(argc < 3){
+		printf("%s <num_in> <num_out>\n", argv[0]);
+		return 1;
+	}
+	
+	long mm = atol(argv[1]);
+	long nn = atol(argv[2]);
+
+	haddr_frame pnt_frm;
+	pnt_frm.pow_base = 2;
+	
+	hnode_box* bx = gh_get_binnet_m_to_n(pnt_frm, mm, nn, gh_call_14);
+	GH_MARK_USED(bx);
+	
+	bx->print_box(stdout, gh_full_prt);
+	
+	return 0;
+}
+
+int
+test_bases(int argc, char *argv[]){
+	if(argc < 2){
+		printf("%s (0 | 1)\n", argv[0]);
+		return 1;
+	}
+	
+	long mm = atol(argv[1]);
+
+	haddr_frame pnt_frm;
+	hroute_box* bx = new hroute_box(pnt_frm);
+	GH_MARK_USED(bx);
+	switch(mm){
+		case 0: 
+			bx->init_as_2to3_route_box();
+			break;
+		case 1: 
+			bx->init_as_3to2_route_box();
+			break;
+		default: 
+			bx->init_as_2to2_route_box();
+			break;
+	}
+	
+	bx->print_box(stdout, gh_full_prt);
+	delete bx;
+	
+	return 0;
+}
+
+int
+test_log(int argc, char *argv[]){
+	if(argc < 3){
+		printf("%s <base> <num>\n", argv[0]);
+		return 1;
+	}
+	
+	long bb = atol(argv[1]);
+	long nn = atol(argv[2]);
+	
+	double lbb = log2(bb);
+	long lg = (long)(log2(nn)/lbb);
+	fprintf(stdout, "LOG(%ld, %ld) = %ld\n", bb, nn, lg);
+	return 0;
+	
+}
+
+int
+test_mod(int argc, char *argv[]){
+	if(argc < 3){
+		printf("%s <n1> <n2>\n", argv[0]);
+		return 1;
+	}
+	
+	long n1 = atol(argv[1]);
+	long n2 = atol(argv[2]);
+	long n3 = (n1 % n2);
+	
+	fprintf(stdout, "%ld mod %ld = %ld\n", n1, n2, n3);
+	return 0;
+}
+
+int
+test_num_io(int argc, char *argv[]){
+	if(argc < 4){
+		printf("%s <base> <length> <idx>\n", argv[0]);
+		return 1;
+	}
+	
+	long bb = atol(argv[1]);
+	long ll = atol(argv[2]);
+	long idx = atol(argv[3]);
+	long nin = 0;
+	long nout = 0;
+	
+	gh_calc_num_io(bb, ll, idx, nin, nout);
+	fprintf(stdout, "base=%ld length=%ld idx=%ld num_in=%ld num_out=%ld\n", bb, ll, idx, nin, nout);
+	return 0;
+}
+
+int
 test_get_target(int argc, char *argv[]){
 	if(argc < 4){
 		printf("%s <base> <#in> <#out>\n", argv[0]);

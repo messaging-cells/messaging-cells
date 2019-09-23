@@ -907,7 +907,7 @@ bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
 void gh_copy_nodes(vector<hnode*>& src, vector<hnode*>& dst, bool clr_src);
 void gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst);
 void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
-void gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, gh_flag_idx_t lst_lv_flg, hnode_box* dbg_bx);
+//void gh_init_sm_to_bm_ranges(ppnode_vec_t& all_out, gh_flag_idx_t lst_lv_flg, hnode_box* dbg_bx);
 
 class hnode_box {
 public:
@@ -1080,6 +1080,9 @@ public:
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
 	void calc_all_1to2_raddr(haddr_frame* frm = gh_null);
+	
+	void init_sm_to_bm_ranges();
+	void set_limit_one_ranges();
 };
 
 hnode_box*
