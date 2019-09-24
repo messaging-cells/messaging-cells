@@ -171,6 +171,8 @@ public:
 	vector<hnode_target*> all_sink_simu;
 	long tot_tgt_simu = 0;
 	long tot_src_msg = 0;
+
+	gh_addr_t dbg_src = GH_INVALID_ADDR;
 	
 	hgen_globals(){}
 	virtual ~hgen_globals(){
@@ -249,6 +251,19 @@ gh_dbg_get_frame_kind_str(gh_frame_kind_t kk){
 			return "gh_top_lognet_frm";
 	}
 	return "gh_INVALID_frm";
+};
+
+inline const char*
+gh_dbg_get_target_kind_str(gh_tgt_kind_t kk){
+	switch(kk){
+		case gh_invalid_tgt_kind:
+			return "gh_invalid_tgt_kind";
+		case gh_src_tgt_kind:
+			return "gh_src_tgt_kind";
+		case gh_snk_tgt_kind:
+			return "gh_snk_tgt_kind";
+	}
+	return "gh_INVALID_TARGET_KIND";
 };
 
 inline const char*
@@ -358,11 +373,13 @@ public:
 		return rng.in_range(addr);
 	}
 	
-	void copy_mg_to(hmessage& mg){
-		mg.mg_val = mg_val;
-		mg.mg_src = mg_src;
-		mg.mg_dst = mg_dst;
+	void copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod);
+	
+	void print_message(FILE* ff){
+		fprintf(ff, "(%ld -> %ld) %ld", mg_src, mg_dst, mg_val);
+		fflush(ff);
 	}
+	
 };
 
 #define gh_is_red_bit 		1
@@ -371,6 +388,7 @@ public:
 #define gh_has_range_bit 	4
 #define gh_is_box_copy		5
 #define gh_is_trichotomy	6
+#define gh_is_dichotomy 	7
 
 inline gh_flag_idx_t
 gh_get_opp_color_bit(gh_flag_idx_t col){
@@ -542,10 +560,9 @@ public:
 		return hc;
 	}
 	
-	void
-	print_addr(FILE* ff);
+	void print_addr(FILE* ff);
 	
-	thd_data* create_thread_simu();
+	void create_thread_simu(long idx);
 };
 
 class hnode_1to1 : public hnode {
@@ -735,10 +752,12 @@ public:
 		init_one_range0(0);
 	}
 
-	void init_one_range0(long val){
+	void init_one_range0(long val = GH_INVALID_ADDR){
 		one_range = &(msg0);
-		msg0.rng.min = val;
-		msg0.rng.max = val;
+		if(val != GH_INVALID_ADDR){
+			msg0.rng.min = val;
+			msg0.rng.max = val;
+		}
 	}
 	
 	void init_one_range1(long val){
@@ -816,6 +835,7 @@ public:
 	void run_1to2_simu();
 	void run_one_range_simu();
 	void run_trichotomy_simu();
+	void run_dichotomy_simu();
 };
 
 class hnode_2to1 : public hnode {

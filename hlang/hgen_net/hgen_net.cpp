@@ -98,9 +98,11 @@ void // virtual
 hnode_target::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	GH_CK(ck_connections());
-	fprintf(ff, "tg");
+	//fprintf(ff, "tg");
+	fprintf(ff, "%s", gh_dbg_get_target_kind_str(kk));
 	fprintf(ff, "[%ld]", addr);
 	hnode_1to1::print_node(ff, md);
+	
 	fflush(ff);
 }
 
@@ -788,9 +790,11 @@ hlognet_box::init_as_io(){
 	GH_CK(inputs.empty());
 	GH_CK(outputs.empty());
 	GH_CK(all_direct.empty());
-	GH_CK(length() == (long)all_targets.size());
 	
-	for(long aa = 0; aa < (long)all_targets.size(); aa++){
+	long tot_tgt = (long)all_targets.size();
+	GH_CK(length() == tot_tgt);
+	
+	for(long aa = 0; aa < tot_tgt; aa++){
 		hnode_target* tg = all_targets[aa];
 		all_targets[aa] = gh_null;
 		
@@ -800,6 +804,9 @@ hlognet_box::init_as_io(){
 		hnode_2to1* nd2 = add_2to1();
 
 		nd1->init_one_range0(aa);
+		if(aa == (tot_tgt - 1)){
+			nd1->set_flag(gh_is_dichotomy);
+		}
 		
 		inputs.push_back(&(nd1->in0));
 		outputs.push_back(&(nd2->out0));
@@ -1457,7 +1464,7 @@ hnode_box::set_limit_one_ranges(){
 			hnode_1to2* nd = (hnode_1to2*)(all_nodes[ii]);
 			GH_CK(! nd->msg0.in_range(max_idx));
 			if(nd->msg1.in_range(max_idx)){
-				nd->one_range = &(nd->msg0);
+				nd->init_one_range0();
 			}
 		}
 	}
