@@ -456,8 +456,11 @@ hnode_1to2::run_1to2_simu(){
 			gh_addr_t dst_addr = in_msg0->mg_dst;
 			bool in_rng0 = msg0.in_range(dst_addr);
 			bool in_rng1 = msg1.in_range(dst_addr);
-			GH_CK_PRT((in_rng0 != in_rng1), "%s (%p) %ld %d==(%ld,%ld) %d==(%ld,%ld) ", gh_dbg_get_rou_kind_str(rou_kind), 
-					  (void*)nod, dst_addr, in_rng0, msg0.rng.min, msg0.rng.max, in_rng1, msg1.rng.min, msg1.rng.max);
+			GH_CK_PRT((in_rng0 != in_rng1), "%s (%p -> %p) %ld %d==(%ld,%ld) %d==(%ld,%ld) [%ld -> %ld val=%ld]", 
+						gh_dbg_get_rou_kind_str(rou_kind), in0, nod, dst_addr, 
+						in_rng0, msg0.rng.min, msg0.rng.max, in_rng1, msg1.rng.min, msg1.rng.max,
+						in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val
+			);
 			
 			if(in_rng0){
 				bool rdy_out0 = ((! req0) && (! oack(*out0)));
@@ -729,12 +732,6 @@ hlognet_box::run_hlognet_simu(){
 	for(long ii = 0; ii < (long)all_targets.size(); ii++){
 		hnode_target* tgt = all_targets[ii];
 		GH_CK(tgt != gh_null);
-		if(tgt->kk == gh_src_tgt_kind){
-			GH_GLOBALS.all_source_simu.push_back(tgt);
-		} else {
-			GH_CK(tgt->kk == gh_snk_tgt_kind);
-			GH_GLOBALS.all_sink_simu.push_back(tgt);
-		}
 		
 		tgt->create_thread_simu(ii);
 	}
@@ -751,11 +748,13 @@ gh_dbg_init_sources_and_sinks(vector<hnode_target*> all_tgt){
 
 	hnode_target* ltgt = all_tgt[lst_tg];
 	ltgt->kk = gh_snk_tgt_kind;
+	GH_GLOBALS.all_sink_simu.push_back(ltgt);
 	
 	for(long ii = 0; ii < lst_tg; ii++){
 		hnode_target* tgt = all_tgt[ii];
 		GH_CK(tgt != gh_null);
 		tgt->kk = gh_src_tgt_kind;
+		GH_GLOBALS.all_source_simu.push_back(tgt);
 	}
 }
 
@@ -794,7 +793,7 @@ test_hlognet(int argc, char *argv[]){
 	fprintf(stdout, "=========== RUNNING_SIMU ===================\n");
 	
 	GH_GLOBALS.tot_src_msg = 3;
-	GH_GLOBALS.dbg_src = 0;
+	GH_GLOBALS.dbg_src = GH_INVALID_ADDR;
 	bx->run_hlognet_simu();
 
 	delete bx;
@@ -1008,13 +1007,14 @@ hnode_target::run_source_simu(){
 		
 		bool rdy_out0 = ((! req0) && (! oack(*out0)));
 		if(rdy_out0){
-			hnode_target* tg = choose_target();
-			
-			msg0.mg_val++;
-			if(msg0.mg_val == GH_GLOBALS.tot_src_msg){
+			if(msg0.mg_val >= GH_GLOBALS.tot_src_msg){
 				dat->sent_all = true;
 				continue;
 			}
+			
+			hnode_target* tg = choose_target();
+			
+			msg0.mg_val++;
 				
 			msg0.mg_src = addr;
 			msg0.mg_dst = tg->addr;

@@ -1454,23 +1454,6 @@ gh_init_level_ranges(vector<hnode*>& prv_lv, vector<hnode*>& next_lv, gh_flag_id
 }
 
 void
-hnode_box::set_limit_one_ranges(){
-	long max_idx = (long)outputs.size() - 1;
-	//fprintf(stdout, "MAX_IDX = %ld \n", max_idx); 
-	
-	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
-		GH_CK(all_nodes[ii] != gh_null);
-		if(all_nodes[ii]->is_1to2()){
-			hnode_1to2* nd = (hnode_1to2*)(all_nodes[ii]);
-			GH_CK(! nd->msg0.in_range(max_idx));
-			if(nd->msg1.in_range(max_idx)){
-				nd->init_one_range0();
-			}
-		}
-	}
-}
-
-void
 hnode_box::init_sm_to_bm_ranges(){
 	//gh_init_sm_to_bm_ranges(bx->outputs, bx->get_last_color(), bx);
 	ppnode_vec_t& all_out = outputs;
@@ -1914,5 +1897,22 @@ hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
 	}
 	//print_range(stdout); // DBG_CALC 
 	//bx_frm.print_frame(stdout, "\nAFTER\n"); // DBG_CALC 
+}
+
+void
+hnode_box::set_limit_one_ranges(){
+	long max_idx = (long)outputs.size() - 1;
+	//fprintf(stdout, "MAX_IDX = %ld \n", max_idx); 
+	
+	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
+		GH_CK(all_nodes[ii] != gh_null);
+		if(all_nodes[ii]->is_1to2()){
+			hnode_1to2* nd = (hnode_1to2*)(all_nodes[ii]);
+			GH_CK(! nd->msg0.in_range(max_idx));
+			//if(nd->msg1.in_range(max_idx)){
+				nd->init_one_range0();
+			//}
+		}
+	}
 }
 
