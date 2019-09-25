@@ -11,26 +11,7 @@
 
 #include "hgen_net.h"
 
-#define handle_error(msg) \
-	do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
-
-		
-#define GH_SG_REQ SIGRTMIN+1
-#define GH_SG_ACK SIGRTMIN+2
-#define GH_SG_END SIGRTMIN+3
-
-#define SIG_TEST_1 SIGRTMIN+4
-#define SIG_END_TEST SIGRTMIN+5
-
-#define NUM_PTH_TEST 3
-		
-#define NUM_CHILD 1000
-
-struct sig_dat_t {
-	long vv1 = 0;
-	long vv2 = 0;
-};
+void gh_dbg_init_sources_and_sinks(vector<hnode_target*>& all_tgt);
 
 struct thd_data {
 	pthread_t tid;
@@ -40,160 +21,7 @@ struct thd_data {
 	bool counted = false;
 	bool sent_all = false;
 	bool end_it = false;
-	sig_dat_t msg;
 };
-
-sig_dat_t comm_dat;
-
-void*
-thd_func(void* pm){
-	thd_data* dat = (thd_data*)pm;
-	sigset_t newmask, oldmask;
-	sigemptyset(&newmask);
-	//sigaddset(&newmask, SIGINT);
-	sigaddset(&newmask, SIG_TEST_1);
-	sigaddset(&newmask, SIG_END_TEST);
-	
-	if(sigprocmask(SIG_BLOCK, &newmask, &oldmask) == -1){
-		handle_error("sigprocmask");
-	}
-
-	int sfd;
-	struct signalfd_siginfo fdsi;
-	ssize_t ss;
-	
-	sfd = signalfd(-1, &newmask, 0);
-	if(sfd == -1){
-		handle_error("signalfd");
-	}
-	
-	long thd_idx = dat->idx;
-
-	GH_CK(! dat->inited);
-	dat->inited = true;
-	//fprintf(stdout, "%ld INITED \n", thd_idx);
-	
-	long num_tst = 0;
-	
-	for(;;){
-		ss = read(sfd, &fdsi, sizeof(struct signalfd_siginfo));
-		if(ss != sizeof(struct signalfd_siginfo)){
-			handle_error("read");
-		}
-
-		int32_t sg_id = (int32_t)fdsi.ssi_signo;
-		if(sg_id == SIG_TEST_1) {
-			num_tst++;
-			//fprintf(stdout, "%ld got SIG_TEST_1\n", thd_idx);
-			sig_dat_t* ptr_val = (sig_dat_t*)(fdsi.ssi_ptr);
-			
-			long rv1 = ptr_val->vv1 - 100;
-			long rv2 = ptr_val->vv2 - 300;
-			if(rv1 != thd_idx){
-				fprintf(stdout, "%ld ERROR_1 !\n", thd_idx);
-				exit(0);
-			}
-			if(rv2 != thd_idx){
-				fprintf(stdout, "%ld ERROR_2 !\n", thd_idx);
-				exit(0);
-			}
-			/*if(num_tst == 2){
-				sleep(1);
-			}
-			pthread_yield();*/
-			
-			//fprintf(stdout, "%ld {%ld %ld} \n", thd_idx, rv1, rv2);
-			
-		} else if(sg_id == SIG_END_TEST) {
-			if(num_tst != NUM_PTH_TEST){
-				fprintf(stdout, "%ld ERROR_3 !\n", thd_idx);
-				exit(0);
-			}
-			
-			fprintf(stdout, "%ld ENDING %ld \n", thd_idx, num_tst);
-			pthread_cancel(dat->tid);
-		} else {
-			fprintf(stdout, "%ld read unexpected signal\n", thd_idx);
-		}
-	}
-	return gh_null;
-}
-
-int
-test_pthread_simu(int argc, char *argv[]){
-
-	thd_data all_dat[NUM_CHILD];
-
-	for(long aa = 0; aa < NUM_CHILD; aa++){
-		thd_data* pt_dat = &(all_dat[aa]);
-		pthread_t* pt_tid = &(pt_dat->tid);
-		pthread_attr_t* pt_att = &(pt_dat->attr);
-		
-		pt_dat->idx = aa;
-		
-		pthread_attr_init(pt_att);
-		pthread_create(pt_tid, pt_att, thd_func, pt_dat);
-	}
-	
-	long num_inited = 0;
-	long fst_idx = 0;
-	long lst_idx = NUM_CHILD;
-	while(num_inited < NUM_CHILD){
-		long fst_not_counted = -1;
-		long lst_not_counted = fst_idx;
-		for(long aa = fst_idx; aa < lst_idx; aa++){
-			thd_data& tdat = all_dat[aa];
-			if(tdat.inited && ! tdat.counted){
-				tdat.counted = true;
-				num_inited++;
-			}
-			if(! tdat.counted){
-				if(fst_not_counted == -1){
-					fst_not_counted = aa;
-				}
-				lst_not_counted = aa;
-			}
-		}
-		if(fst_not_counted != -1){
-			fst_idx = fst_not_counted;
-		}
-		lst_idx = lst_not_counted + 1;
-		
-		pthread_yield();
-	}
-	fprintf(stdout, "ALL_INITED \n");
-
-	//for(long bb = 0; bb < NUM_PTH_TEST; bb++){
-		for(long aa = 0; aa < NUM_CHILD; aa++){
-			thd_data* pt_dat = &(all_dat[aa]);
-			sig_dat_t* pt_msg = &(pt_dat->msg);
-			pt_msg->vv1 = 100 + aa;
-			pt_msg->vv2 = 300 + aa;
-			
-			union sigval sval; 
-			sval.sival_ptr = pt_msg;
-			for(long cc = 0; cc < NUM_PTH_TEST; cc++){
-				pthread_sigqueue(pt_dat->tid, SIG_TEST_1, sval);
-			}
-			fprintf(stdout, "%ld all_sent \n", aa);
-		}
-	//}
-
-	for(long aa = 0; aa < NUM_CHILD; aa++){
-		thd_data* pt_dat = &(all_dat[aa]);
-		
-		union sigval sval; 
-		sval.sival_ptr = NULL;
-		pthread_sigqueue(pt_dat->tid, SIG_END_TEST, sval);
-	}
-	
-	for(long aa = 0; aa < NUM_CHILD; aa++){
-		thd_data* pt_dat = &(all_dat[aa]);
-		pthread_join(pt_dat->tid, NULL);
-	}
-	
-	return 0;
-}
 
 int
 test_m_to_n(int argc, char *argv[]){
@@ -349,7 +177,6 @@ main(int argc, char *argv[]){
 	//resp = test_mod(argc, argv);
 	//resp = test_num_io(argc, argv);
 	//resp = test_get_target(argc, argv);
-	//resp = test_pthread_simu(argc, argv);
 	resp = test_hlognet(argc, argv);
 	
 	printf("ENDING_TESTS______________________\n");
@@ -365,6 +192,10 @@ run_node_simu(void* pm){
 	
 	GH_CK(! dat->inited);
 	dat->inited = true;
+	
+	while(! GH_GLOBALS.all_thread_inited_simu){
+		pthread_yield();
+	}
 	
 	if(the_nd->is_1to2()){
 		hnode_1to2* th_nd = (hnode_1to2*)the_nd;
@@ -387,14 +218,10 @@ run_node_simu(void* pm){
 		GH_CK(the_nd->is_1to1());
 		hnode_1to1* th_nd = (hnode_1to1*)the_nd;
 		gh_1t1_kind_t k1t1 = th_nd->get_1t1_kind();
+		GH_CK(k1t1 == gh_target_1t1);
 		if(k1t1 == gh_target_1t1){
 			hnode_target* tg = (hnode_target*)the_nd;
-			if(tg->kk == gh_src_tgt_kind){
-				tg->run_source_simu();
-			} else {
-				GH_CK(tg->kk == gh_snk_tgt_kind);
-				tg->run_sink_simu();
-			}
+			tg->run_target_simu();
 		} else {
 			th_nd->run_1to1_simu();
 		}
@@ -554,57 +381,6 @@ hnode_2to1::run_2to1_simu(){
 	}
 }
 
-/* 
-SOURCE
-	begin
-		if((! r_req) && (! i_ack)) begin
-			if(r_addr == MAX_ADDR) begin
-				r_addr <= MIN_ADDR;
-				r_dat <= r_dat + 1;
-			end
-			else begin
-				r_addr <= r_addr + 1;
-			end
-			r_req <= `ON;
-		end 
-		else
-		if(r_req && i_ack) begin
-			r_req <= `OFF;
-		end
-	end
-	
-DEST
-	begin
-		if(i_addr == LOCAL_ADDR) begin
-			if(i_req && (! r_ack)) begin
-				if((i_dat > 0) && ((r_dat + 1) != i_dat)) begin
-					r_err <= `ON;
-				end
-				r_dat <= i_dat;
-				r_ack <= `ON;
-			end
-			else
-			if((! i_req) && r_ack) begin
-				r_ack <= `OFF;
-			end
-		end
-	end
-
-*/
-
-
-hnode_target* 
-hnode_target::choose_target(){
-	vector<hnode_target*>& all_tg = GH_GLOBALS.all_sink_simu;
-	long sz = (long)all_tg.size();
-	GH_CK(sz > 0);
-	hnode_target* tg = all_tg[sz - 1];
-	GH_CK(tg != gh_null);
-	GH_CK(tg->kk == gh_snk_tgt_kind);
-	
-	return tg;
-}
-
 void
 hnode::create_thread_simu(long idx){
 	hnode* the_nd = this;
@@ -619,8 +395,6 @@ hnode::create_thread_simu(long idx){
 	
 	pthread_attr_init(pt_att);
 	pthread_create(pt_tid, pt_att, run_node_simu, the_nd);
-	
-	//return pt_dat;
 }
 
 void
@@ -655,56 +429,58 @@ hlognet_box::wait_all_inited_simu(){
 		pthread_yield();
 	}
 	
-	/*for(long aa = 0; aa < tot_child; aa++){
-		GH_CK(all_dat[aa] != gh_null);
-		thd_data& tdat = *(all_dat[aa]);
-		tdat.counted = false;
-	}*/
-
+	GH_GLOBALS.all_thread_inited_simu = true;
+	
 	fprintf(stdout, "ALL_NODE_THREADS_INITED %ld \n", tot_child);
 }
 
 void
 hlognet_box::wait_all_threads_ended_simu(){
-	vector<hnode_target*>& all_src = GH_GLOBALS.all_source_simu;
-	vector<hnode_target*>& all_snk = GH_GLOBALS.all_sink_simu;
 
 	while(true){
+		long tot_src = 0;
 		long tot_ok = 0;
-		for(long aa = 0; aa < (long)all_src.size(); aa++){
-			hnode_target* tg = all_src[aa];
+		for(long aa = 0; aa < (long)all_targets.size(); aa++){
+			hnode_target* tg = all_targets[aa];
+			GH_CK(tg != gh_null);
+			
 			thd_data* pt_dat = (thd_data*)(tg->simu_data);
-			if(pt_dat->sent_all){
+			bool is_src = tg->is_source;
+			
+			if(is_src){
+				tot_src++;
+			}
+			if(is_src && pt_dat->sent_all){
 				tot_ok++;
 			}
 			pthread_yield();
 		}
-		if(tot_ok == (long)all_src.size()){
+		if(tot_ok == tot_src){
 			break;
 		}
 		pthread_yield();
 	}
 	fprintf(stdout, "ALL_SOURCE_THREADS_FINISHED \n");
 	
-	long tot_msg_snd = 0;
-	for(long aa = 0; aa < (long)all_src.size(); aa++){
-		hnode_target* tg = all_src[aa];
-		tot_msg_snd += tg->num_msg_proc;
+	long tot_msg_snt = 0;
+	for(long aa = 0; aa < (long)all_targets.size(); aa++){
+		hnode_target* tg = all_targets[aa];
+		tot_msg_snt += tg->num_msg_snt;
 	}
 	
 	long ck_tot_rcv = -1;
 	while(true){
 		long tot_msg_rcv = 0;
-		for(long aa = 0; aa < (long)all_snk.size(); aa++){
-			hnode_target* tg = all_snk[aa];
-			tot_msg_rcv += tg->num_msg_proc;
+		for(long aa = 0; aa < (long)all_targets.size(); aa++){
+			hnode_target* tg = all_targets[aa];
+			tot_msg_rcv += tg->num_msg_rcv;
 			pthread_yield();
 		}
 		if(tot_msg_rcv > ck_tot_rcv){
-			fprintf(stdout, "GOT %ld of %ld \n", tot_msg_rcv, tot_msg_snd);
+			fprintf(stdout, "GOT %ld of %ld \n", tot_msg_rcv, tot_msg_snt);
 			ck_tot_rcv = tot_msg_rcv;
 		}
-		if(tot_msg_rcv == tot_msg_snd){
+		if(tot_msg_rcv == tot_msg_snt){
 			break;
 		}
 		pthread_yield();
@@ -738,24 +514,6 @@ hlognet_box::run_hlognet_simu(){
 	
 	wait_all_inited_simu();
 	wait_all_threads_ended_simu();
-}
-
-void
-gh_dbg_init_sources_and_sinks(vector<hnode_target*> all_tgt){
-	long tot_tg = (long)all_tgt.size();
-	long lst_tg = tot_tg - 1;
-	GH_CK(tot_tg > 0);
-
-	hnode_target* ltgt = all_tgt[lst_tg];
-	ltgt->kk = gh_snk_tgt_kind;
-	GH_GLOBALS.all_sink_simu.push_back(ltgt);
-	
-	for(long ii = 0; ii < lst_tg; ii++){
-		hnode_target* tgt = all_tgt[ii];
-		GH_CK(tgt != gh_null);
-		tgt->kk = gh_src_tgt_kind;
-		GH_GLOBALS.all_source_simu.push_back(tgt);
-	}
 }
 
 int
@@ -792,8 +550,6 @@ test_hlognet(int argc, char *argv[]){
 
 	fprintf(stdout, "=========== RUNNING_SIMU ===================\n");
 	
-	GH_GLOBALS.tot_src_msg = 3;
-	GH_GLOBALS.dbg_src = GH_INVALID_ADDR;
 	bx->run_hlognet_simu();
 
 	delete bx;
@@ -986,12 +742,14 @@ hnode_1to2::run_dichotomy_simu(){
 }
 
 void
-hnode_target::run_source_simu(){
-	//hnode_target* nod = this;
+hnode_target::run_target_simu(){
 	GH_CK(simu_data != gh_null);
 	thd_data* dat = (thd_data*)(simu_data);
 	
-	GH_CK(GH_GLOBALS.tot_src_msg > 0);
+	hnode_target* nod = this;
+	hmessage* in_msg0 = in0->get_message_of(nod);
+	
+	GH_CK(GH_GLOBALS.tot_src_msg_simu > 0);
 	GH_CK(msg0.mg_val == 0);
 	
 	for(;;){
@@ -1000,14 +758,18 @@ hnode_target::run_source_simu(){
 		}
 		
 		if(ireq(*in0) && (! ack0)){
-			fprintf(stdout, "%ld SOURCE_RECEIVING_MESSAGES ! \n", addr);
-			fflush(stdout);
-			gh_abort("%ld SOURCE_RECEIVING_MESSAGES !!! \n", addr);
+			GH_CK(addr == in_msg0->mg_dst);
+			fprintf(stdout, "%ld RCV %ld -> %ld val=%ld i(%p) \n", addr, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val,
+				in0);
+			num_msg_rcv++;
+			
+			ack0 = true;
 		} 
 		
 		bool rdy_out0 = ((! req0) && (! oack(*out0)));
-		if(rdy_out0){
-			if(msg0.mg_val >= GH_GLOBALS.tot_src_msg){
+		if(is_source && rdy_out0 && ! dat->sent_all){
+			
+			if(msg0.mg_val >= GH_GLOBALS.tot_src_msg_simu){
 				dat->sent_all = true;
 				continue;
 			}
@@ -1021,11 +783,15 @@ hnode_target::run_source_simu(){
 			
 			fprintf(stdout, "%ld SND %ld -> %ld val=%ld o(%p) \n", addr, msg0.mg_src, msg0.mg_dst, msg0.mg_val, 
 					out0);
-			num_msg_proc++;
+			num_msg_snt++;
 			
 			req0 = true;
 		} 
 
+		if((! ireq(*in0)) && ack0){
+			ack0 = false;
+		}
+		
 		if(req0 && oack(*out0)){
 			req0 = false;
 		}
@@ -1035,39 +801,9 @@ hnode_target::run_source_simu(){
 }
 
 void
-hnode_target::run_sink_simu(){
-	GH_CK(simu_data != gh_null);
-	thd_data* dat = (thd_data*)(simu_data);
-	
-	hnode_target* nod = this;
-	hmessage* in_msg0 = in0->get_message_of(nod);
-	
-	for(;;){
-		if(dat->end_it){
-			break;
-		}
-		
-		if(ireq(*in0) && (! ack0)){
-			GH_CK(addr == in_msg0->mg_dst);
-			fprintf(stdout, "%ld RCV %ld -> %ld val=%ld i(%p) \n", addr, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val,
-				in0);
-			num_msg_proc++;
-			
-			ack0 = true;
-		} 
-		
-		if((! ireq(*in0)) && ack0){
-			ack0 = false;
-		}
-		
-		pthread_yield();
-	}
-}
-
-void
 hmessage::copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod){
 	GH_DBG_CODE(
-		if(GH_GLOBALS.dbg_src == mg_src){ 
+		if(GH_GLOBALS.dbg_src_simu == mg_src){ 
 			fprintf(stdout, "dbg ");
 			print_message(stdout);
 			fprintf(stdout, " (%p) -> (%p) ----\n", dbg_src_nod, dbg_dst_nod);
@@ -1080,5 +816,33 @@ hmessage::copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod){
 	mg.mg_val = mg_val;
 	mg.mg_src = mg_src;
 	mg.mg_dst = mg_dst;
+}
+
+hnode_target* 
+hnode_target::choose_target(){
+	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	long sz = (long)all_tg.size();
+	GH_CK(sz > 0);
+	hnode_target* tg = all_tg[sz - 1];
+	GH_CK(tg != gh_null);
+	
+	return tg;
+}
+
+void
+gh_dbg_init_sources_and_sinks(vector<hnode_target*>& all_tgt){
+	long tot_tg = (long)all_tgt.size();
+	long lst_tg = tot_tg - 1;
+	GH_CK(tot_tg > 0);
+
+	GH_GLOBALS.tot_src_msg_simu = 3;
+	GH_GLOBALS.dbg_src_simu = GH_INVALID_ADDR;
+	GH_GLOBALS.all_tgt_simu = &all_tgt;
+	
+	for(long ii = 0; ii < lst_tg; ii++){
+		hnode_target* tgt = all_tgt[ii];
+		GH_CK(tgt != gh_null);
+		tgt->is_source = true;
+	}
 }
 

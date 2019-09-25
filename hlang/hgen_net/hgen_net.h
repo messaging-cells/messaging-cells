@@ -126,12 +126,6 @@ enum gh_1to2_kind_t {
 	gh_bs_tgt_bx_in_rou
 };
 
-enum gh_tgt_kind_t {
-	gh_invalid_tgt_kind,
-	gh_src_tgt_kind,
-	gh_snk_tgt_kind
-};
-
 typedef int gh_flag_idx_t;
 typedef char gh_flags_t;
 typedef long gh_target_addr_t;
@@ -167,12 +161,11 @@ public:
 	haddr_frame* ref_frm = gh_null;
 
 	vector<thd_data*> all_thread_data_simu;
-	vector<hnode_target*> all_source_simu;
-	vector<hnode_target*> all_sink_simu;
+	vector<hnode_target*>* all_tgt_simu;
 	long tot_tgt_simu = 0;
-	long tot_src_msg = 0;
-
-	gh_addr_t dbg_src = GH_INVALID_ADDR;
+	long tot_src_msg_simu = 0;
+	bool all_thread_inited_simu = false;
+	gh_addr_t dbg_src_simu = GH_INVALID_ADDR;
 	
 	hgen_globals(){}
 	virtual ~hgen_globals(){
@@ -251,19 +244,6 @@ gh_dbg_get_frame_kind_str(gh_frame_kind_t kk){
 			return "gh_top_lognet_frm";
 	}
 	return "gh_INVALID_frm";
-};
-
-inline const char*
-gh_dbg_get_target_kind_str(gh_tgt_kind_t kk){
-	switch(kk){
-		case gh_invalid_tgt_kind:
-			return "gh_invalid_tgt_kind";
-		case gh_src_tgt_kind:
-			return "gh_src_tgt_kind";
-		case gh_snk_tgt_kind:
-			return "gh_snk_tgt_kind";
-	}
-	return "gh_INVALID_TARGET_KIND";
 };
 
 inline const char*
@@ -676,13 +656,13 @@ class hnode_target : public hnode_1to1 {
 public:
 	long bx_idx = GH_INVALID_IDX;
 	
-	gh_tgt_kind_t kk = gh_invalid_tgt_kind;
+	bool is_source = false;
 
-	long num_msg_proc = 0;
+	long num_msg_snt = 0;
+	long num_msg_rcv = 0;
 	
 	hnode_target* choose_target();
-	void run_source_simu();
-	void run_sink_simu();
+	void run_target_simu();
 	
 	virtual gh_1t1_kind_t
 	get_1t1_kind(){

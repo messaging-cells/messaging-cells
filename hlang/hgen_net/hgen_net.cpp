@@ -99,7 +99,9 @@ hnode_target::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	GH_CK(ck_connections());
 	//fprintf(ff, "tg");
-	fprintf(ff, "%s", gh_dbg_get_target_kind_str(kk));
+	if(is_source){
+		fprintf(ff, "s");
+	}
 	fprintf(ff, "[%ld]", addr);
 	hnode_1to1::print_node(ff, md);
 	
