@@ -53,6 +53,19 @@ hnode::print_addr(FILE* ff){
 	fflush(ff);
 }
 
+void
+hnode::print_dbg_tgt_addr(FILE* ff){
+	if(dbg_tgt_addr != GH_INVALID_ADDR){
+		fprintf(ff, "{");
+		fprintf(ff, "%ld", dbg_tgt_addr);
+		if(dbg_tgt_quarter != gh_null){
+			fprintf(ff, "_%s", dbg_tgt_quarter);
+		}
+		fprintf(ff, "}");
+		fflush(ff);
+	}
+}
+
 void // virtual
 hnode::print_node(FILE* ff, gh_prt_mode_t md){
 	print_addr(ff);
@@ -68,7 +81,10 @@ hnode_1to1::print_node(FILE* ff, gh_prt_mode_t md){
 		return;
 	}
 	
+	print_dbg_tgt_addr(ff);
+	
 	fprintf(ff, "[");
+	
 	if(md == gh_full_pt_prt){
 		fprintf(ff, "(%p)", this);
 		fprintf(ff, "i(%p -> %p)", &in0, in0);
@@ -99,10 +115,11 @@ hnode_target::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	GH_CK(ck_connections());
 	//fprintf(ff, "tg");
-	if(is_source){
+	if(is_source_simu){
 		fprintf(ff, "s");
 	}
 	fprintf(ff, "[%ld]", addr);
+	fprintf(ff, "<%ld, %ld, %ld, %ld>", dbg_lft_in_sz, dbg_lft_out_sz, dbg_rgt_in_sz, dbg_rgt_out_sz);
 	hnode_1to1::print_node(ff, md);
 	
 	fflush(ff);
@@ -121,12 +138,15 @@ hnode_1to2::print_node(FILE* ff, gh_prt_mode_t md){
 		return;
 	}
 
+	print_dbg_tgt_addr(ff);
+	
 	if(md == gh_full_pt_prt){
 		fprintf(ff, "%s", gh_dbg_get_rou_kind_str(rou_kind));
 		if(rou_kind == gh_sm_to_bm_rou){
 			fprintf(ff, "_%d", dbg_kind);
 		}
 	}
+	
 	fprintf(ff, "<");
 	fprintf(ff, "%c", gh_get_col_chr(node_flags));
 	if(md == gh_full_pt_prt){
@@ -144,6 +164,17 @@ hnode_1to2::print_node(FILE* ff, gh_prt_mode_t md){
 		out1->print_node(ff, gh_addr_prt);
 	}
 	fprintf(ff, ">");
+
+	if(get_flag(gh_is_inverted)){
+		fprintf(ff, "I");
+	}
+	if(get_flag(gh_is_dichotomy)){
+		fprintf(ff, "D ");
+	}
+	if(get_flag(gh_is_trichotomy)){
+		fprintf(ff, "T ");
+	}
+	
 	if(one_range == gh_null){
 		fprintf(ff, " r0");
 		msg0.rng.print_range(ff);
@@ -181,6 +212,8 @@ hnode_2to1::print_node(FILE* ff, gh_prt_mode_t md){
 		print_addr(ff);
 		return;
 	}
+	
+	print_dbg_tgt_addr(ff);
 	
 	if(md == gh_full_pt_prt){
 		fprintf(ff, "2to1");
@@ -310,8 +343,9 @@ gh_get_first_null_idx(ppnode_vec_t& vec){
 }
 
 hnode_box*
-gh_get_binnet_sm_to_bm(haddr_frame& pnt_frm, long num_in, long num_out, gh_dbg_call_t dbg_case){
+gh_get_binnet_sm_to_bm(haddr_frame& pnt_frm, long num_in, long num_out, const char* dbg_qrt, gh_dbg_call_t dbg_case){
 	hnode_box* bx = new hnode_box(pnt_frm);
+	//GH_CK(bx->get_frame().src_side == pnt_frm.src_side);
 	long dpth = 0;
 	GH_MARK_USED(dpth);
 	long nout = 0;
@@ -328,7 +362,7 @@ gh_get_binnet_sm_to_bm(haddr_frame& pnt_frm, long num_in, long num_out, gh_dbg_c
 	long out_idx = 0;
 	long out_sz = 0;
 	for(long aa = 0; aa < (num_out - num_in); aa++){
-		hnode_1to2* bnod = bx->add_1to2(bx->get_frame(), gh_sm_to_bm_rou, dbg_case);
+		hnode_1to2* bnod = bx->add_1to2(bx->get_frame(), gh_sm_to_bm_rou, dbg_qrt, dbg_case);
 		
 		bool in_fst_lv = (aa < num_in);
 		if(! in_fst_lv && (out_idx == out_sz)){
@@ -401,31 +435,32 @@ gh_get_binnet_sm_to_bm(haddr_frame& pnt_frm, long num_in, long num_out, gh_dbg_c
 }
 
 hnode_box*
-gh_get_binnet_bm_to_sm(haddr_frame& pnt_frm, long num_in, long num_out){
+gh_get_binnet_bm_to_sm(haddr_frame& pnt_frm, long num_in, long num_out, const char* dbg_qrt){
 	GH_CK(num_out > 0);
 	GH_CK(num_in > num_out);
 	
-	hnode_box* obx = gh_get_binnet_sm_to_bm(pnt_frm, num_out, num_in, gh_call_0);
+	hnode_box* obx = gh_get_binnet_sm_to_bm(pnt_frm, num_out, num_in, dbg_qrt, gh_call_0);
 	hnode_box* cbx = obx->convert_net_from_1to2_to_2to1();
 	delete obx;
 	return cbx;
 }
 
 hnode_box*
-gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out, gh_dbg_call_t dbg_case){
+gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out, const char* dbg_qrt, gh_dbg_call_t dbg_case){
 	hnode_box* bx = gh_null;
 	
 	GH_CK(num_out > 0);
 	GH_CK(num_in != num_out);
 	if(num_in > num_out){
-		bx = gh_get_binnet_bm_to_sm(pnt_frm, num_in, num_out);
+		bx = gh_get_binnet_bm_to_sm(pnt_frm, num_in, num_out, dbg_qrt);
 	} else {
-		bx = gh_get_binnet_sm_to_bm(pnt_frm, num_in, num_out, dbg_case);
+		bx = gh_get_binnet_sm_to_bm(pnt_frm, num_in, num_out, dbg_qrt, dbg_case);
 		bx->init_sm_to_bm_ranges();
 		bx->get_frame().kind = gh_sm_to_bm_frm;
 		bx->set_base(pnt_frm.pow_base);
 	}
 	GH_CK(bx != gh_null);
+	//GH_CK(bx->get_frame().src_side == pnt_frm.src_side);	
 	return bx;
 }
 
@@ -478,12 +513,16 @@ hnode_box::init_all_addr(){
 }
 
 hnode_1to2*
-hnode_box::add_1to2(haddr_frame& frm, gh_1to2_kind_t kk, gh_dbg_call_t dbg_case){
+hnode_box::add_1to2(haddr_frame& frm, gh_1to2_kind_t kk, const char* dbg_qrt, gh_dbg_call_t dbg_case){
 	hnode_1to2* bnod = new hnode_1to2(frm);
 	bnod->init_to_me();
 	
 	bnod->rou_kind = kk;
 	bnod->dbg_kind = dbg_case;
+	
+	if(bnod->dbg_tgt_quarter == gh_null){
+		bnod->dbg_tgt_quarter = dbg_qrt;
+	}
 
 	all_nodes.push_back(bnod);
 	all_nodes.back()->addr = all_nodes.size() - 1;
@@ -491,9 +530,13 @@ hnode_box::add_1to2(haddr_frame& frm, gh_1to2_kind_t kk, gh_dbg_call_t dbg_case)
 }
 
 hnode_2to1*
-hnode_box::add_2to1(){
+hnode_box::add_2to1(const char* dbg_qrt){
 	hnode_2to1* bnod = new hnode_2to1;
 	bnod->init_to_me();
+
+	if(bnod->dbg_tgt_quarter == gh_null){
+		bnod->dbg_tgt_quarter = dbg_qrt;
+	}
 	
 	all_nodes.push_back(bnod);
 	all_nodes.back()->addr = all_nodes.size() - 1;
@@ -572,10 +615,11 @@ hnode_box::convert_net_from_1to2_to_2to1(){
 	
 	hnode_box* bx = new hnode_box(get_frame());
 	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
-		GH_CK(all_nodes[ii] != gh_null);
-		GH_CK(all_nodes[ii]->is_1to2());
+		hnode* nd = all_nodes[ii];
+		GH_CK(nd != gh_null);
+		GH_CK(nd->is_1to2());
 		
-		bx->add_2to1();
+		bx->add_2to1(nd->dbg_tgt_quarter);
 	}
 	
 	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
@@ -678,11 +722,11 @@ hnode_box::move_nodes_to(hnode_box& bx){
 }
 
 void
-hroute_box::init_as_2to2_route_box(){
-	hnode_1to2* nd1 = add_1to2(get_frame(), gh_2to2_nd0_rou);
-	hnode_1to2* nd2 = add_1to2(get_frame(), gh_2to2_nd1_rou);
-	hnode_2to1* nd3 = add_2to1();
-	hnode_2to1* nd4 = add_2to1();
+hroute_box::init_as_2to2_route_box(const char* dbg_qrt){
+	hnode_1to2* nd1 = add_1to2(get_frame(), gh_2to2_nd0_rou, dbg_qrt);
+	hnode_1to2* nd2 = add_1to2(get_frame(), gh_2to2_nd1_rou, dbg_qrt);
+	hnode_2to1* nd3 = add_2to1(dbg_qrt);
+	hnode_2to1* nd4 = add_2to1(dbg_qrt);
 	
 	nd1->init_simple_ranges(0, 1);
 	nd2->init_simple_ranges(0, 1);
@@ -711,12 +755,12 @@ hroute_box::init_as_2to2_route_box(){
 }
 
 void
-hroute_box::init_as_2to3_route_box(){
-	hnode_box* bx1 = gh_get_binnet_m_to_n(get_frame(), 1, 3, gh_call_1);
-	hnode_box* bx2 = gh_get_binnet_m_to_n(get_frame(), 1, 3, gh_call_2);
-	hnode_2to1* nd1 = add_2to1();
-	hnode_2to1* nd2 = add_2to1();
-	hnode_2to1* nd3 = add_2to1();
+hroute_box::init_as_2to3_route_box(const char* dbg_qrt){
+	hnode_box* bx1 = gh_get_binnet_m_to_n(get_frame(), 1, 3, dbg_qrt, gh_call_1);
+	hnode_box* bx2 = gh_get_binnet_m_to_n(get_frame(), 1, 3, dbg_qrt, gh_call_2);
+	hnode_2to1* nd1 = add_2to1(dbg_qrt);
+	hnode_2to1* nd2 = add_2to1(dbg_qrt);
+	hnode_2to1* nd3 = add_2to1(dbg_qrt);
 
 	outputs.resize(3, gh_null);
 	outputs[0] = (&(nd1->out0));
@@ -744,12 +788,12 @@ hroute_box::init_as_2to3_route_box(){
 }
 
 void
-hroute_box::init_as_3to2_route_box(){
-	hnode_box* bx1 = gh_get_binnet_m_to_n(get_frame(), 3, 1, gh_call_3);
-	hnode_box* bx2 = gh_get_binnet_m_to_n(get_frame(), 3, 1, gh_call_4);
-	hnode_1to2* nd1 = add_1to2(get_frame(), gh_3to2_nd0_rou);
-	hnode_1to2* nd2 = add_1to2(get_frame(), gh_3to2_nd1_rou);
-	hnode_1to2* nd3 = add_1to2(get_frame(), gh_3to2_nd2_rou);
+hroute_box::init_as_3to2_route_box(const char* dbg_qrt){
+	hnode_box* bx1 = gh_get_binnet_m_to_n(get_frame(), 3, 1, dbg_qrt, gh_call_3);
+	hnode_box* bx2 = gh_get_binnet_m_to_n(get_frame(), 3, 1, dbg_qrt, gh_call_4);
+	hnode_1to2* nd1 = add_1to2(get_frame(), gh_3to2_nd0_rou, dbg_qrt);
+	hnode_1to2* nd2 = add_1to2(get_frame(), gh_3to2_nd1_rou, dbg_qrt);
+	hnode_1to2* nd3 = add_1to2(get_frame(), gh_3to2_nd2_rou, dbg_qrt);
 	
 	nd1->init_simple_ranges(0, 1);
 	nd2->init_simple_ranges(0, 1);
@@ -914,13 +958,13 @@ gh_connect_outputs_to_inputs(ppnode_vec_t& out, ppnode_vec_t& in){
 }
 
 void
-hroute_box::init_route_box(long num_in, long num_out){
+hroute_box::init_route_box(long num_in, long num_out, const char* dbg_qrt){
 	GH_CK(num_in > 0);
 	GH_CK(num_out > 0);
 	if((num_in == 1) || (num_out == 1)){
 		GH_CK(num_in != num_out);
 		if(num_in != num_out){
-			hnode_box* bx = gh_get_binnet_m_to_n(get_frame(), num_in, num_out, gh_call_5);
+			hnode_box* bx = gh_get_binnet_m_to_n(get_frame(), num_in, num_out, dbg_qrt, gh_call_5);
 			hnode_box& me = *this;
 			bool all = bx->move_nodes_to(me);
 			GH_MARK_USED(all);
@@ -935,23 +979,23 @@ hroute_box::init_route_box(long num_in, long num_out){
 		return;
 	}
 	if((num_in == 2) && (num_out == 2)){
-		init_as_2to2_route_box();
+		init_as_2to2_route_box(dbg_qrt);
 		GH_CK(ck_route_box(num_in, num_out, 3));
 		return;
 	}
 	if((num_in == 3) && (num_out == 2)){
-		init_as_3to2_route_box();
+		init_as_3to2_route_box(dbg_qrt);
 		GH_CK(ck_route_box(num_in, num_out, 4));
 		return;
 	}
 	if((num_in == 2) && (num_out == 3)){
-		init_as_2to3_route_box();
+		init_as_2to3_route_box(dbg_qrt);
 		GH_CK(ck_route_box(num_in, num_out, 5));
 		return;
 	}
 	
 	hlognet_box* bx1 = new hlognet_box(get_frame());
-	bx1->init_lognet_box(num_out);
+	bx1->init_lognet_box(num_out, dbg_qrt);
 	bx1->init_as_io();
 	
 	GH_CK((long)(bx1->inputs.size()) == num_out);
@@ -959,7 +1003,7 @@ hroute_box::init_route_box(long num_in, long num_out){
 	
 	hnode_box* bx2 = gh_null;
 	if(num_in != num_out){
-		bx2 = gh_get_binnet_m_to_n(get_frame(), num_in, num_out, gh_call_6); // CAN_HAVE_DIRECT
+		bx2 = gh_get_binnet_m_to_n(get_frame(), num_in, num_out, dbg_qrt, gh_call_6); // CAN_HAVE_DIRECT
 		bx2->connect_outputs_to_box_inputs(*bx1);
 		GH_CK((long)bx2->inputs.size() == num_in);
 	}
@@ -983,8 +1027,8 @@ hroute_box::init_route_box(long num_in, long num_out){
 }
 
 void
-htarget_box::join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnode_box* bx2, long num_idx, 
-							  ppnode_vec_t& all_out)
+htarget_box::join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnode_box* bx2, 
+							  long num_idx, ppnode_vec_t& all_out, const char* dbg_qrt)
 {
 	GH_CK(bx1 != gh_null);
 	GH_CK(bx2 != gh_null);
@@ -993,7 +1037,7 @@ htarget_box::join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnod
 	long idx1 = fst_idx1;
 	long idx2 = fst_idx2;
 	for(long aa = 0; aa < (long)num_idx; aa++, idx1++, idx2++){
-		hnode_2to1* nd_out = add_2to1();
+		hnode_2to1* nd_out = add_2to1(dbg_qrt);
 		bx1->connect_output_to_node_input(idx1, *nd_out, 0);
 		bx2->connect_output_to_node_input(idx2, *nd_out, 1);
 
@@ -1022,11 +1066,23 @@ hlognet_box::get_target_box(long idx){
 
 	bx->set_index(idx);
 	bx->get_frame().sz = length();
+	
+	bool was_top = (GH_GLOBALS.dbg_curr_tgt_addr == GH_INVALID_ADDR);
+	if(was_top){
+		GH_GLOBALS.dbg_curr_tgt_addr = idx;
+	}
+	
 	long nin = 0;
 	long nout = 0;
 	gh_calc_num_io(get_base(), length(), idx, nin, nout);
 	GH_CK((idx == 0) || (nin >= nout));
 	bx->init_target_box(nin, nout);
+	bx->dbg_init_tgt_szs();
+	
+	if(was_top){
+		GH_GLOBALS.dbg_curr_tgt_addr = GH_INVALID_ADDR;
+	}
+	
 	return bx;
 }
 
@@ -1120,11 +1176,11 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	
 	tg_out->init_as_target_out();
 	
-	lft->init_route_box(lft_ht, rgt_ht + 1);
-	rgt->init_route_box(rgt_ht, lft_ht + 1);
+	lft->init_route_box(lft_ht, rgt_ht + 1, GH_QRT(GH_LI));
+	rgt->init_route_box(rgt_ht, lft_ht + 1, GH_QRT(GH_RI));
 	
-	hnode_box* spl_lft = gh_get_binnet_m_to_n(get_frame(), 1, rgt_ht, gh_call_7);
-	hnode_box* spl_rgt = gh_get_binnet_m_to_n(get_frame(), 1, lft_ht, gh_call_8);
+	hnode_box* spl_lft = gh_get_binnet_m_to_n(get_frame(), 1, rgt_ht, GH_QRT(GH_LO), gh_call_7);
+	hnode_box* spl_rgt = gh_get_binnet_m_to_n(get_frame(), 1, lft_ht, GH_QRT(GH_RO), gh_call_8);
 
 	spl_lft->get_frame().src_side = gh_left_side;
 	spl_rgt->get_frame().src_side = gh_right_side;
@@ -1132,8 +1188,8 @@ htarget_box::init_target_box(long lft_ht, long rgt_ht){
 	//GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, &dest));
 	//GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, spl_rgt));
 	
-	join_box_outputs(1, lft, 0, spl_lft, rgt_ht, lft_out);
-	join_box_outputs(1, rgt, 0, spl_rgt, lft_ht, rgt_out);
+	join_box_outputs(1, lft, 0, spl_lft, rgt_ht, lft_out, GH_QRT(GH_LO));
+	join_box_outputs(1, rgt, 0, spl_rgt, lft_ht, rgt_out, GH_QRT(GH_RO));
 	
 	target = new hnode_target;
 	target->bx_idx = get_frame().idx;
@@ -1240,8 +1296,13 @@ hnode_box::remove_connected_directs(){
 }
 
 void
-hlognet_box::init_lognet_box(long num_elems){
+hlognet_box::init_lognet_box(long num_elems, const char* dbg_qrt){
 	GH_CK(num_elems > 1);
+	
+	bool was_top = (GH_GLOBALS.dbg_curr_tgt_quarter == gh_null);
+	if(was_top){
+		GH_GLOBALS.dbg_curr_tgt_quarter = dbg_qrt;
+	}
 	
 	init_length(num_elems);
 
@@ -1324,6 +1385,10 @@ hlognet_box::init_lognet_box(long num_elems){
 	
 	//fprintf(stdout, "LGNET_BOX %ld **********************************************\n", length());
 	//fflush(stdout);
+	
+	if(was_top){
+		GH_GLOBALS.dbg_curr_tgt_quarter = gh_null;
+	}
 }
 
 void
@@ -1551,8 +1616,8 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		
 		gh_route_side_t rou_side = (lft_ht == 0)?(gh_left_side):(gh_right_side);
 	
-		hnode_box* spl_in = gh_get_binnet_m_to_n(get_frame(), full_ht, 1, gh_call_9);
-		hnode_box* spl_out = gh_get_binnet_m_to_n(get_frame(), 1, full_ht, gh_call_10);
+		hnode_box* spl_in = gh_get_binnet_m_to_n(get_frame(), full_ht, 1, gh_null, gh_call_9);
+		hnode_box* spl_out = gh_get_binnet_m_to_n(get_frame(), 1, full_ht, gh_null, gh_call_10);
 		
 		spl_out->get_frame().src_side = rou_side;
 		
@@ -1654,7 +1719,7 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	hroute_box* rt_in_bx = new hroute_box(get_frame());
 	rt_in_bx->get_frame().src_side = gh_get_opp_side(rt_side);
 	
-	rt_in_bx->init_as_2to2_route_box();
+	rt_in_bx->init_as_2to2_route_box(gh_null);
 	hnode_1to2* rt_in_nd0 = rt_in_bx->get_1to2_node(0);
 	hnode_1to2* rt_in_nd1 = rt_in_bx->get_1to2_node(1);
 	
@@ -1670,7 +1735,7 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	
 	GH_CK(all_direct.empty());
 	if(bt1_ht > 2){
-		hnode_box* bn = gh_get_binnet_m_to_n(get_frame(), bt1_ht, 2, gh_call_11); // CAN_HAVE_DIRECT
+		hnode_box* bn = gh_get_binnet_m_to_n(get_frame(), bt1_ht, 2, gh_null, gh_call_11); // CAN_HAVE_DIRECT
 		if(rgt_ht == 1){
 			GH_CK(lft_ht > 1);
 			gh_move_io(gh_in_kind, bn->inputs, lft_in);
@@ -1694,8 +1759,8 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 	}
 	GH_CK(all_direct.empty());
 	
-	hnode_box* spl_bx_in = gh_get_binnet_m_to_n(get_frame(), 1, bt1_ht, gh_call_12);
-	hnode_box* spl_bx_out = gh_get_binnet_m_to_n(get_frame(), 1, bt1_ht, gh_call_13);
+	hnode_box* spl_bx_in = gh_get_binnet_m_to_n(get_frame(), 1, bt1_ht, gh_null, gh_call_12);
+	hnode_box* spl_bx_out = gh_get_binnet_m_to_n(get_frame(), 1, bt1_ht, gh_null, gh_call_13);
 
 	spl_bx_in->get_frame().src_side = rt_side;
 	spl_bx_out->get_frame().src_side = rt_side;
@@ -1721,7 +1786,7 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		tg_out->out1 = bx_out;
 		bx_out->in0 = tg_out;
 		
-		join_box_outputs(0, spl_bx_in, 0, spl_bx_out, bt1_ht, lft_out);
+		join_box_outputs(0, spl_bx_in, 0, spl_bx_out, bt1_ht, lft_out, GH_QRT(GH_LO));
 		
 		lft_in.push_back(&(bx_in->in0));
 		rgt_out.push_back(&(bx_out->out0));
@@ -1743,7 +1808,7 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 		tg_in->in1 = bx_in;
 		bx_in->out0 = tg_in;
 		
-		join_box_outputs(0, spl_bx_in, 0, spl_bx_out, bt1_ht, rgt_out);
+		join_box_outputs(0, spl_bx_in, 0, spl_bx_out, bt1_ht, rgt_out, GH_QRT(GH_RO));
 
 		lft_out.push_back(&(bx_out->out0));
 		rgt_in.push_back(&(bx_in->in0));
@@ -1793,7 +1858,7 @@ hnode_box::calc_all_1to2_raddr(haddr_frame* ref_frm){
 }
 
 gh_addr_t 
-haddr_frame::recalc_addr(gh_addr_t vin){ // called by hrange::recalc
+haddr_frame::recalc_addr(gh_addr_t vin, hnode* nd){ // called by hrange::recalc
 	GH_DBG_CODE(
 		bool base_ok = (pow_base > 1);
 		bool idx_ok = (idx >= 0);
@@ -1811,8 +1876,10 @@ haddr_frame::recalc_addr(gh_addr_t vin){ // called by hrange::recalc
 			vout = (gh_addr_t)pp;
 			//GH_CK(src_side != gh_invalid_side);
 			if(src_side == gh_right_side){
+				//GH_CK(false);
 				GH_CK(vout >= 0);
 				vout = -vout;
+				if(nd != gh_null){ nd->flip_inverted_flag(); }
 			} 
 		} break;
 		case gh_route_frm:{
@@ -1831,6 +1898,7 @@ haddr_frame::recalc_addr(gh_addr_t vin){ // called by hrange::recalc
 			if(src_side == gh_right_side){
 				GH_CK(vout >= 0);
 				vout = -vout;
+				if(nd != gh_null){ nd->flip_inverted_flag(); }
 			} 
 		}; break;
 		case gh_target_frm:{
@@ -1880,7 +1948,7 @@ gh_dbg_init_ref_box(hnode_box& r_bx){
 }
 
 void
-hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
+hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm, hnode* nd){
 	//bx_frm.print_frame(stdout, "++++++++++++++++++\nBOX_FRM_BEFORE \n"); // DBG_CALC 
 	
 	for(haddr_frame* pnt = &nd_frm; pnt != gh_null; pnt = pnt->parent_frame){
@@ -1888,7 +1956,7 @@ hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm){
 		//print_range(stdout); // DBG_CALC 
 		//fprintf(stdout, " => "); // DBG_CALC 
 	
-		recalc(*pnt);
+		recalc(*pnt, nd);
 
 		//print_range(stdout); // DBG_CALC 
 		//fprintf(stdout, "\n"); // DBG_CALC 
@@ -1916,5 +1984,15 @@ hnode_box::set_limit_one_ranges(){
 			//}
 		}
 	}
+}
+
+void
+htarget_box::dbg_init_tgt_szs(){
+	hnode_target* tgt = target;
+	GH_CK(tgt != gh_null);
+	tgt->dbg_lft_in_sz = (long)(lft_in.size());
+	tgt->dbg_lft_out_sz = (long)(lft_out.size());
+	tgt->dbg_rgt_in_sz = (long)(rgt_in.size());
+	tgt->dbg_rgt_out_sz = (long)(rgt_out.size());
 }
 
