@@ -347,7 +347,8 @@ public:
 	void calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm, hnode* nd);
 	
 	bool in_range(gh_addr_t addr){
-		bool irng = (min <= addr) && (addr <= max);
+		//bool irng = (min <= addr) && (addr <= max);
+		bool irng = (min <= addr) && (addr < max);
 		return irng;
 	}
 	
@@ -718,6 +719,8 @@ public:
 	hnode_target* dbg_choose_target_simu();
 	hnode_target* test0_choose_tgt_simu();
 	hnode_target* test1_choose_tgt_simu();
+	hnode_target* test2_choose_tgt_simu();
+	hnode_target* test3_choose_tgt_simu();
 	
 	void run_target_simu();
 	
@@ -793,22 +796,25 @@ public:
 	void init_one_range0(long val = GH_INVALID_ADDR){
 		one_range = &(msg0);
 		if(val != GH_INVALID_ADDR){
-			msg0.rng.min = val;
-			msg0.rng.max = val;
+			//msg0.rng.min = val;
+			//msg0.rng.max = val;
+			init_simple_ranges(val, val);
 		}
 	}
 	
 	void init_one_range1(long val){
 		one_range = &(msg1);
-		msg1.rng.min = val;
-		msg1.rng.max = val;
+		//msg1.rng.min = val;
+		//msg1.rng.max = val;
+		init_simple_ranges(val, val);
 	}
 	
-	void init_simple_ranges(long rng0, long rng1){
-		msg0.rng.min = rng0;
-		msg0.rng.max = rng0;
-		msg1.rng.min = rng1;
-		msg1.rng.max = rng1;
+	void init_simple_ranges(long val0, long val1){
+		GH_CK((val0 == val1) || ((val0 + 1) == val1));
+		msg0.rng.min = val0;
+		msg0.rng.max = val0 + 1;
+		msg1.rng.min = val1;
+		msg1.rng.max = val1 + 1;
 	}
 	
 	void set_skip_one_frame(){
@@ -821,20 +827,7 @@ public:
 		return (*node_frm);
 	}
 	
-	void	calc_msgs_raddr(haddr_frame& frm){
-		hnode* nd = this;
-		if(one_range == gh_null){
-			msg0.calc_msg_raddr(get_frame(), frm, nd);
-			msg1.calc_msg_raddr(get_frame(), frm, nd);
-			return;
-		}
-		if(one_range == &msg0){
-			msg0.calc_msg_raddr(get_frame(), frm, nd);
-			return;
-		}
-		GH_CK(one_range == &msg1);
-		msg1.calc_msg_raddr(get_frame(), frm, nd);
-	}
+	void	calc_msgs_raddr(haddr_frame& frm);
 	
 	//void	calc_inverted();
 
