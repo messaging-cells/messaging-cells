@@ -530,7 +530,7 @@ test_hlognet(int argc, char *argv[]){
 		GH_GLOBALS.idx_test_simu = atol(argv[3]);
 	}
 
-	fprintf(stdout, "test_hlognet base=%ld #ntg=%ld \n", bb, ntg);
+	fprintf(stdout, "test_hlognet TEST=%ld base=%ld #ntg=%ld \n", GH_GLOBALS.idx_test_simu, bb, ntg);
 	
 	haddr_frame	pnt_frm;
 	pnt_frm.pow_base = bb;
@@ -640,7 +640,8 @@ hnode_1to2::run_trichotomy_simu(){
 	GH_CK(get_flag(gh_is_trichotomy));
 	GH_CK(! get_flag(gh_is_dichotomy));
 	
-	bool is_inv = get_flag(gh_is_inverted);
+	//bool is_inv = get_flag(gh_is_inverted);
+	bool is_inv = (msg0.rng.min > msg0.rng.max);
 	
 	//GH_CK(msg0.rng.min == msg0.rng.max);
 	gh_addr_t tricho_val = msg0.rng.min;
@@ -863,6 +864,10 @@ hnode_target::dbg_choose_target_simu(){
 			return test2_choose_tgt_simu();
 		case 3:
 			return test3_choose_tgt_simu();
+		case 4:
+			return test4_choose_tgt_simu();
+		case 5:
+			return test5_choose_tgt_simu();
 	}
 	GH_CK(false);
 	return gh_null;
@@ -872,6 +877,8 @@ void gh_dbg_init_test0_simu();
 void gh_dbg_init_test1_simu();
 void gh_dbg_init_test2_simu();
 void gh_dbg_init_test3_simu();
+void gh_dbg_init_test4_simu();
+void gh_dbg_init_test5_simu();
 
 void
 gh_dbg_init_simu(){
@@ -888,6 +895,12 @@ gh_dbg_init_simu(){
 			return;
 		case 3:
 			gh_dbg_init_test3_simu();
+			return;
+		case 4:
+			gh_dbg_init_test4_simu();
+			return;
+		case 5:
+			gh_dbg_init_test5_simu();
 			return;
 	}
 	GH_CK(false);
@@ -953,7 +966,8 @@ gh_dbg_init_test1_simu(){
 	GH_CK(tot_tg > 0);
 
 	GH_GLOBALS.tot_src_msg_simu = 4;
-	GH_GLOBALS.dbg_src_simu = GH_INVALID_ADDR;
+	//GH_GLOBALS.dbg_src_simu = GH_INVALID_ADDR;
+	GH_GLOBALS.dbg_src_simu = 5;
 	
 	for(long ii = 1; ii < tot_tg; ii++){
 		hnode_target* tgt = all_tgt[ii];
@@ -1018,35 +1032,7 @@ gh_dbg_init_test2_simu(){
 
 hnode_target* 
 hnode_target::test3_choose_tgt_simu(){
-	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
-	
-	if(curr_dest_simu == GH_INVALID_ADDR){
-		curr_dest_simu = 0;
-	} else {
-		curr_dest_simu++;
-	}
-	GH_CK(curr_dest_simu >= 0);
-	
-	long all_sz = (long)all_tg.size();
-	GH_CK(all_sz > 0);
-	if(curr_dest_simu == all_sz){
-		return gh_null;
-	}
-	
-	GH_CK(curr_dest_simu < all_sz);
-	if(all_tg[curr_dest_simu] == this){
-		curr_dest_simu++;
-		if(curr_dest_simu == all_sz){
-			return gh_null;
-		}
-	}
-	GH_CK(curr_dest_simu < all_sz);
-	
-	hnode_target* tg = all_tg[curr_dest_simu];
-	GH_CK(tg != gh_null);
-	
-	return tg;
+	return test2_choose_tgt_simu();
 }
 
 void
@@ -1056,16 +1042,84 @@ gh_dbg_init_test3_simu(){
 	
 	long tot_tg = (long)all_tgt.size();
 	GH_CK(tot_tg > 0);
+	
+	long lst_tg = tot_tg - 1;
 
 	GH_GLOBALS.tot_src_msg_simu = tot_tg;
 	//GH_GLOBALS.dbg_src_simu = GH_INVALID_ADDR;
-	GH_GLOBALS.dbg_src_simu = 0;
+	GH_GLOBALS.dbg_src_simu = lst_tg;
+	
+	hnode_target* tgt = all_tgt[lst_tg];
+	GH_CK(tgt != gh_null);
+	tgt->is_source_simu = true;
+	
+	/*for(long ii = 0; ii < tot_tg; ii++){
+		hnode_target* tgt = all_tgt[ii];
+		GH_CK(tgt != gh_null);
+		tgt->is_source_simu = true;
+	}*/
+}
+
+// TEST4
+
+hnode_target* 
+hnode_target::test4_choose_tgt_simu(){
+	return test2_choose_tgt_simu();
+}
+
+void
+gh_dbg_init_test4_simu(){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
+	
+	long tot_tg = (long)all_tgt.size();
+	GH_CK(tot_tg > 0);
+	
+	GH_GLOBALS.tot_src_msg_simu = tot_tg;
+	GH_GLOBALS.dbg_src_simu = GH_INVALID_ADDR;
 	
 	for(long ii = 0; ii < tot_tg; ii++){
 		hnode_target* tgt = all_tgt[ii];
 		GH_CK(tgt != gh_null);
 		tgt->is_source_simu = true;
 	}
+}
+
+// TEST5
+
+hnode_target* 
+hnode_target::test5_choose_tgt_simu(){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+
+	long idx = 5;	// ONE_TARGET
+	
+	long sz = (long)all_tg.size();
+	GH_CK(sz > 0);
+	GH_CK(idx < sz);
+	hnode_target* tg = all_tg[idx];
+	GH_CK(tg != gh_null);
+	
+	return tg;
+}
+
+void
+gh_dbg_init_test5_simu(){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
+
+	long idx = 10;	// ONE_SOURCE
+	
+	long tot_tg = (long)all_tgt.size();
+	GH_CK(tot_tg > 0);
+	GH_CK(idx < tot_tg);
+	
+	GH_GLOBALS.tot_src_msg_simu = 1;
+	GH_GLOBALS.dbg_src_simu = idx;
+
+	hnode_target* tgt = all_tgt[idx];
+	GH_CK(tgt != gh_null);
+	tgt->is_source_simu = true;
 }
 
 

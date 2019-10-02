@@ -867,7 +867,7 @@ hlognet_box::init_as_io(){
 
 		nd1->init_one_range0(aa);
 		if(aa == (tot_tgt - 1)){
-			nd1->set_flag(gh_is_dichotomy);
+			//nd1->set_flag(gh_is_dichotomy);
 		}
 		
 		inputs.push_back(&(nd1->in0));
@@ -1867,6 +1867,7 @@ hnode_box::calc_all_1to2_raddr(haddr_frame* ref_frm){
 		if(all_nodes[ii]->is_1to2()){
 			hnode_1to2* nd = (hnode_1to2*)(all_nodes[ii]);
 			GH_DBG_CODE(frm.dbg_nd = nd);
+			GH_CK(nd->one_range != gh_null);
 			nd->calc_msgs_raddr(frm);
 		}
 	}
@@ -2001,7 +2002,7 @@ void
 hnode_1to2::calc_msgs_raddr(haddr_frame& frm){
 	hnode* nd = this;
 	msg0.calc_msg_raddr(get_frame(), frm, nd);
-	msg1.calc_msg_raddr(get_frame(), frm, nd);
+	msg1.calc_msg_raddr(get_frame(), frm, gh_null);
 }
 
 void
@@ -2027,3 +2028,14 @@ hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm, hnode* nd){
 	//bx_frm.print_frame(stdout, "\nAFTER\n"); // DBG_CALC 
 }
 
+bool
+hrange::in_range(gh_addr_t addr){
+	//bool irng = (min <= addr) && (addr <= max);
+	bool irng = false;
+	if(min < max){
+		irng = (min <= addr) && (addr < max);
+	} else {
+		irng = (min >= addr) && (addr > max);
+	}
+	return irng;
+}

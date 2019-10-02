@@ -346,11 +346,7 @@ public:
 	
 	void calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm, hnode* nd);
 	
-	bool in_range(gh_addr_t addr){
-		//bool irng = (min <= addr) && (addr <= max);
-		bool irng = (min <= addr) && (addr < max);
-		return irng;
-	}
+	bool in_range(gh_addr_t addr);
 	
 	void print_range(FILE* ff);
 	
@@ -721,6 +717,8 @@ public:
 	hnode_target* test1_choose_tgt_simu();
 	hnode_target* test2_choose_tgt_simu();
 	hnode_target* test3_choose_tgt_simu();
+	hnode_target* test4_choose_tgt_simu();
+	hnode_target* test5_choose_tgt_simu();
 	
 	void run_target_simu();
 	
