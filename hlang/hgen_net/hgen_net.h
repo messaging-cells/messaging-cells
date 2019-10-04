@@ -323,6 +323,11 @@ public:
 		return (v1 && v2);
 	}
 	
+	bool is_inverted(){
+		bool is_inv = (min > max);
+		return is_inv;
+	}
+	
 	void recalc(haddr_frame& frm, hnode* nd){
 		if(get_flag(gh_skip_one_frame_bit)){
 			reset_flag(gh_skip_one_frame_bit);
@@ -374,7 +379,7 @@ public:
 	void copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod);
 	
 	void print_message(FILE* ff){
-		fprintf(ff, "(%ld -> %ld) %ld", mg_src, mg_dst, mg_val);
+		fprintf(ff, "{(%ld -> %ld) val=%ld}", mg_src, mg_dst, mg_val);
 		fflush(ff);
 	}
 	
@@ -386,8 +391,7 @@ public:
 #define gh_has_range_bit 	4
 #define gh_is_box_copy		5
 #define gh_is_trichotomy	6
-#define gh_is_dichotomy 	7
-#define gh_is_inverted 		8
+#define gh_is_lognet_io 	7
 
 inline gh_flag_idx_t
 gh_get_opp_color_bit(gh_flag_idx_t col){
@@ -547,23 +551,6 @@ public:
 
 	bool get_flag(gh_flag_idx_t num_flg){
 		return gh_get_bit(&node_flags, num_flg);
-	}
-	
-	bool can_invert(){
-		bool is_dicho = get_flag(gh_is_dichotomy);
-		bool is_tricho = get_flag(gh_is_trichotomy);
-		return (is_dicho || is_tricho);
-	}
-	
-	void flip_inverted_flag(){
-		if(! can_invert()){
-			return;
-		}
-		if(! get_flag(gh_is_inverted)){
-			set_flag(gh_is_inverted);
-		} else {
-			reset_flag(gh_is_inverted);
-		}
 	}
 	
 	void set_color_as_in(hnode_box& bx);
@@ -827,8 +814,6 @@ public:
 	
 	void	calc_msgs_raddr(haddr_frame& frm);
 	
-	//void	calc_inverted();
-
 	virtual bool 	get_ack0(){ return ack0; }
 	virtual bool 	get_req0(){ return req0; }
 	virtual bool 	get_req1(){ return req1; }
@@ -934,6 +919,8 @@ public:
 	
 	virtual void
 	print_node(FILE* ff, gh_prt_mode_t md);
+	
+	bool ck_out_range();
 	
 	void run_2to1_simu();
 };
@@ -1224,7 +1211,7 @@ public:
 	hlognet_box(haddr_frame& pnt_frm) : hnode_box(pnt_frm) {
 		set_base(pnt_frm.pow_base);
 		get_frame().kind = gh_lognet_frm;
-		//get_frame().src_side = pnt_frm.src_side; // DBG_TEST1
+		get_frame().src_side = pnt_frm.src_side; // DBG_TEST1
 
 		height = 0;
 	}

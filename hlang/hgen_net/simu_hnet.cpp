@@ -202,9 +202,6 @@ run_node_simu(void* pm){
 		if(th_nd->get_flag(gh_is_trichotomy)){
 			th_nd->run_trichotomy_simu();
 		} else
-		if(th_nd->get_flag(gh_is_dichotomy)){
-			th_nd->run_dichotomy_simu();
-		} else
 		if(th_nd->one_range != gh_null) {
 			th_nd->run_one_range_simu();
 		} else {
@@ -322,6 +319,21 @@ hnode_1to2::run_1to2_simu(){
 	}
 }
 
+bool
+hnode_2to1::ck_out_range(){
+	if(! get_flag(gh_is_lognet_io)){ return true; }
+	if(! msg0.rng.in_range(msg0.mg_dst)){
+		fprintf(stdout, "BAD_RANGE with mg_dst=%ld\n", msg0.mg_dst);
+		fprintf(stdout, "\t");
+		print_node(stdout, gh_full_pt_prt);
+		fprintf(stdout, "\t");
+		msg0.print_message(stdout);
+		fprintf(stdout, "\n");
+		//return false;
+	}
+	return true;
+}
+
 void
 hnode_2to1::run_2to1_simu(){
 	GH_CK(simu_data != gh_null);
@@ -346,22 +358,30 @@ hnode_2to1::run_2to1_simu(){
 				if(choose0){
 					choose0 = false;
 					in_msg0->copy_mg_to(msg0, in0, nod);
+					GH_CK(ck_out_range());
+					
 					req0 = true;
 					ack0 = true;
 				} else {
 					choose0 = true;
 					in_msg1->copy_mg_to(msg0, in1, nod);
+					GH_CK(ck_out_range());
+					
 					req0 = true;
 					ack1 = true;
 				}
 			}
 			if(in0_rq && ! in1_rq){
 				in_msg0->copy_mg_to(msg0, in0, nod);
+				GH_CK(ck_out_range());
+					
 				req0 = true;
 				ack0 = true;
 			} 
 			if(! in0_rq && in1_rq){
 				in_msg1->copy_mg_to(msg0, in1, nod);
+				GH_CK(ck_out_range());
+					
 				req0 = true;
 				ack1 = true;
 			} 
@@ -638,12 +658,10 @@ hnode_1to2::run_trichotomy_simu(){
 	//long thd_idx = dat->idx;
 
 	GH_CK(get_flag(gh_is_trichotomy));
-	GH_CK(! get_flag(gh_is_dichotomy));
 	
-	//bool is_inv = get_flag(gh_is_inverted);
-	bool is_inv = (msg0.rng.min > msg0.rng.max);
+	//bool is_inv = (msg0.rng.min > msg0.rng.max);
+	bool is_inv = msg0.rng.is_inverted();
 	
-	//GH_CK(msg0.rng.min == msg0.rng.max);
 	gh_addr_t tricho_val = msg0.rng.min;
 	
 	hnode_1to2* nod = this;
@@ -664,74 +682,6 @@ hnode_1to2::run_trichotomy_simu(){
 				in_rng0 = (dst_addr < tricho_val);
 			}
 			bool in_rng1 = ! in_rng0;
-			
-			if(in_rng0){
-				bool rdy_out0 = ((! req0) && (! oack(*out0)));
-				if(rdy_out0){
-					in_msg0->copy_mg_to(msg0, in0, nod);
-					req0 = true;
-					ack0 = true;
-				} 
-			} 
-			
-			if(in_rng1){
-				bool rdy_out1 = ((! req1) && (! oack(*out1)));
-				if(rdy_out1){
-					in_msg0->copy_mg_to(msg1, in0, nod);
-					req1 = true;
-					ack0 = true;
-				} 
-			} 
-		} 
-		
-		if((! ireq(*in0)) && ack0){
-			ack0 = false;
-		}
-		if(req0 && oack(*out0)){
-			req0 = false;
-		}
-		if(req1 && oack(*out1)){
-			req1 = false;
-		}
-		
-		pthread_yield();
-	}
-}
-
-void
-hnode_1to2::run_dichotomy_simu(){
-	GH_CK(one_range == &(msg0));
-	GH_CK(simu_data != gh_null);
-	thd_data* dat = (thd_data*)(simu_data);
-	
-	GH_CK(get_flag(gh_is_dichotomy));
-	GH_CK(! get_flag(gh_is_trichotomy));
-	
-	bool is_inv = get_flag(gh_is_inverted);
-
-	//GH_CK(msg0.rng.min == msg0.rng.max);
-	gh_addr_t dicho_val = msg0.rng.min;
-	
-	hnode_1to2* nod = this;
-	hmessage* in_msg0 = in0->get_message_of(nod);
-	GH_CK(in_msg0 != gh_null);
-	
-	for(;;){
-		if(dat->end_it){
-			break;
-		}
-		
-		if(ireq(*in0) && (! ack0)){
-			gh_addr_t dst_addr = in_msg0->mg_dst;
-			bool in_rng0 = (dst_addr >= dicho_val);
-			if(is_inv){
-				//GH_CK(false);
-				in_rng0 = (dst_addr <= dicho_val);
-			}
-			bool in_rng1 = ! in_rng0;
-			
-			GH_CK_PRT((in_rng0 != in_rng1), "(%p) %ld %d==(%ld,%ld) %d==(%ld,%ld) ", (void*)nod,
-					  dst_addr, in_rng0, msg0.rng.min, msg0.rng.max, in_rng1, msg1.rng.min, msg1.rng.max);
 			
 			if(in_rng0){
 				bool rdy_out0 = ((! req0) && (! oack(*out0)));
