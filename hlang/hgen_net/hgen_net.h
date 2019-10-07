@@ -126,6 +126,13 @@ enum gh_1to2_kind_t {
 	gh_bs_tgt_bx_in_rou
 };
 
+enum gh_rng_st_t {
+	gh_min_min_rng_st,
+	gh_min_max_rng_st,
+	gh_max_min_rng_st,
+	gh_max_max_rng_st
+};
+
 typedef int gh_flag_idx_t;
 typedef uint16_t gh_flags_t;
 typedef long gh_target_addr_t;
@@ -226,11 +233,22 @@ public:
 	
 	hnode* dbg_nd = gh_null;
 
+	void 
+	init_with(haddr_frame& frm){
+		GH_CK(parent_frame == gh_null);
+		
+		GH_GLOBALS.all_frames.push_back(this);
+		parent_frame = &frm;
+		pow_base = frm.pow_base;
+	}
+	
 	bool ck_frame();
 	
 	gh_addr_t recalc_addr(gh_addr_t vin, hnode* nd);
 	
 	void print_frame(FILE* ff, const char* msg = gh_null);
+	
+	void print_all_frames(FILE* ff, const char* msg = gh_null);
 };
 
 inline const char*
@@ -310,6 +328,11 @@ public:
 
 	gh_addr_t min = GH_INVALID_ADDR;
 	gh_addr_t max = GH_INVALID_ADDR;
+
+	void init_range(long the_min, long the_max){
+		min = the_min;
+		max = the_max;
+	}
 	
 	bool ck_range(){
 		GH_CK_PRT((0 <= min), "%ld \n", min);
@@ -334,7 +357,7 @@ public:
 			return;
 		}
 		min = frm.recalc_addr(min, nd);
-		max = frm.recalc_addr(max, gh_null);
+		max = frm.recalc_addr(max, nd);
 	}
 
 	void set_flag(gh_flag_idx_t num_flg){
@@ -352,9 +375,31 @@ public:
 	void calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm, hnode* nd);
 	
 	bool in_range(gh_addr_t addr);
+
+	gh_addr_t get_diff_simu(){
+		if(min < max){ return (max - min); } 
+		return (min - max);
+	}
+	
+	gh_addr_t get_min_simu(){
+		gh_addr_t rr = GH_INVALID_ADDR;
+		if(min < max){ rr = min; } 
+		else { rr = max; }
+		
+		if(rr != GH_INVALID_ADDR){ return rr; }
+		return rr + 1;
+	}
+	
+	gh_addr_t get_max_simu(){
+		gh_addr_t rr = GH_INVALID_ADDR;
+		if(min < max){ rr = (max - 1); } 
+		else { rr = (min - 1); }
+		
+		if(rr != GH_INVALID_ADDR){ return rr; }
+		return rr - 1;
+	}
 	
 	void print_range(FILE* ff);
-	
 };
 
 class hmessage {
@@ -575,6 +620,7 @@ public:
 	void print_dbg_tgt_addr(FILE* ff);
 	
 	void create_thread_simu(long idx);
+	
 };
 
 class hnode_1to1 : public hnode {
@@ -690,6 +736,7 @@ public:
 	
 	bool is_source_simu = false;
 	gh_addr_t curr_dest_simu = GH_INVALID_ADDR;
+	gh_rng_st_t curr_st_simu = gh_min_min_rng_st;
 
 	long num_msg_snt_simu = 0;
 	long num_msg_rcv_simu = 0;
@@ -698,6 +745,28 @@ public:
 	long dbg_lft_out_sz = 0;
 	long dbg_rgt_in_sz = 0;
 	long dbg_rgt_out_sz = 0;
+
+	haddr_frame* tgt_frm = gh_null;
+	
+	hnode_target(haddr_frame& frm){
+		tgt_frm = &frm;
+	}
+	virtual ~hnode_target(){}
+	
+	haddr_frame&	get_frame(){
+		GH_CK(tgt_frm != gh_null);
+		return (*tgt_frm);
+	}
+	
+	void init_tgt_rng(){
+		GH_CK(bx_idx != GH_INVALID_ADDR);
+		msg0.rng.init_range(bx_idx, bx_idx + 1);
+	}
+	
+	void calc_msgs_raddr(haddr_frame& frm);
+	
+	bool ck_one_src_one_dst();
+	bool inc_st_simu();
 	
 	hnode_target* dbg_choose_target_simu();
 	hnode_target* test0_choose_tgt_simu();
@@ -706,6 +775,14 @@ public:
 	hnode_target* test3_choose_tgt_simu();
 	hnode_target* test4_choose_tgt_simu();
 	hnode_target* test5_choose_tgt_simu();
+
+	void dbg_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	void test0_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	void test1_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	void test2_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	void test3_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	void test4_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	void test5_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
 	
 	void run_target_simu();
 	
@@ -781,25 +858,27 @@ public:
 	void init_one_range0(long val = GH_INVALID_ADDR){
 		one_range = &(msg0);
 		if(val != GH_INVALID_ADDR){
-			//msg0.rng.min = val;
-			//msg0.rng.max = val;
 			init_simple_ranges(val, val);
 		}
 	}
 	
-	void init_one_range1(long val){
+	void init_one_range1(long val = GH_INVALID_ADDR){
 		one_range = &(msg1);
-		//msg1.rng.min = val;
-		//msg1.rng.max = val;
-		init_simple_ranges(val, val);
+		if(val != GH_INVALID_ADDR){
+			init_simple_ranges(val, val);
+		}
 	}
 	
 	void init_simple_ranges(long val0, long val1){
 		GH_CK((val0 == val1) || ((val0 + 1) == val1));
+		msg0.rng.init_range(val0, val0 + 1);
+		msg1.rng.init_range(val1, val1 + 1);
+		/*
 		msg0.rng.min = val0;
 		msg0.rng.max = val0 + 1;
 		msg1.rng.min = val1;
 		msg1.rng.max = val1 + 1;
+		*/
 	}
 	
 	void set_skip_one_frame(){
@@ -1238,6 +1317,8 @@ public:
 
 	virtual
 	void 	print_box(FILE* ff, gh_prt_mode_t md);
+
+	void 	calc_all_targets_raddr(haddr_frame* frm = gh_null);
 	
 	void 	wait_all_inited_simu();
 	void 	wait_all_threads_ended_simu();

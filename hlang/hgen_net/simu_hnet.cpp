@@ -205,6 +205,7 @@ run_node_simu(void* pm){
 		if(th_nd->one_range != gh_null) {
 			th_nd->run_one_range_simu();
 		} else {
+			GH_CK(false);
 			th_nd->run_1to2_simu();
 		}
 	} else 
@@ -536,6 +537,9 @@ hlognet_box::run_hlognet_simu(){
 	wait_all_threads_ended_simu();
 }
 
+haddr_frame& gh_dbg_init_out_frames(haddr_frame& frm, long bb, long ntg);
+void gh_dbg_post_test_prints(hlognet_box* bx);
+
 int
 test_hlognet(int argc, char *argv[]){
 	if(argc < 3){
@@ -554,8 +558,11 @@ test_hlognet(int argc, char *argv[]){
 	
 	haddr_frame	pnt_frm;
 	pnt_frm.pow_base = bb;
+
+	haddr_frame& out_frm = pnt_frm;
+	//haddr_frame& out_frm = gh_dbg_init_out_frames(pnt_frm, bb, ntg);
 	
-	hlognet_box* bx = new hlognet_box(pnt_frm);
+	hlognet_box* bx = new hlognet_box(out_frm);
 	bx->get_frame().kind = gh_top_lognet_frm;
 	bx->init_length(ntg);
 	bx->get_frame().print_frame(stdout);
@@ -569,6 +576,7 @@ test_hlognet(int argc, char *argv[]){
 	fprintf(stdout, "=========== CALC_RANGES ===================\n");
 	
 	bx->calc_all_1to2_raddr(gh_null);
+	bx->calc_all_targets_raddr(gh_null);
 	
 	GH_GLOBALS.all_tgt_simu = &(bx->all_targets);
 	
@@ -582,6 +590,8 @@ test_hlognet(int argc, char *argv[]){
 	fprintf(stdout, "=========== RUNNING_SIMU ===================\n");
 	
 	bx->run_hlognet_simu();
+	
+	gh_dbg_post_test_prints(bx);
 
 	delete bx;
 		
@@ -659,7 +669,6 @@ hnode_1to2::run_trichotomy_simu(){
 
 	GH_CK(get_flag(gh_is_trichotomy));
 	
-	//bool is_inv = (msg0.rng.min > msg0.rng.max);
 	bool is_inv = msg0.rng.is_inverted();
 	
 	gh_addr_t tricho_val = msg0.rng.min;
@@ -751,16 +760,31 @@ hnode_target::run_target_simu(){
 				continue;
 			}
 			
+			gh_addr_t src_adr = GH_INVALID_ADDR;
+			gh_addr_t dst_adr = GH_INVALID_ADDR;
+			
+			dbg_choose_msg_src_dst_simu(src_adr, dst_adr);
+			if(src_adr == GH_INVALID_ADDR){
+				GH_CK(dst_adr == GH_INVALID_ADDR);
+				dat->sent_all = true;
+				continue;
+			}
+			msg0.mg_val++;
+				
+			msg0.mg_src = src_adr;
+			msg0.mg_dst = dst_adr;
+			
+			/*
 			hnode_target* tg = dbg_choose_target_simu();
 			if(tg == gh_null){
 				dat->sent_all = true;
 				continue;
-			}
-			
+			}			
 			msg0.mg_val++;
 				
 			msg0.mg_src = addr;
 			msg0.mg_dst = tg->addr;
+			*/
 			
 			fprintf(stdout, "%ld SND %ld -> %ld val=%ld o(%p) \n", addr, msg0.mg_src, msg0.mg_dst, msg0.mg_val, 
 					out0);
@@ -936,6 +960,7 @@ hnode_target::test2_choose_tgt_simu(){
 	if(curr_dest_simu == GH_INVALID_ADDR){
 		curr_dest_simu = 0;
 	} else {
+		GH_CK(ck_one_src_one_dst());
 		curr_dest_simu++;
 	}
 	GH_CK(curr_dest_simu >= 0);
@@ -1058,7 +1083,7 @@ gh_dbg_init_test5_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
 	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
 
-	long idx = 10;	// ONE_SOURCE
+	long idx = 10;	// SOURCE ONE_PAIR
 	
 	long tot_tg = (long)all_tgt.size();
 	GH_CK(tot_tg > 0);
@@ -1072,5 +1097,296 @@ gh_dbg_init_test5_simu(){
 	tgt->is_source_simu = true;
 }
 
+void
+gh_dbg_post_test_prints(hlognet_box* bx){
+	fprintf(stdout, "=========== POST_PRINTS ===================\n");
+	
+	GH_CK(bx != gh_null);
+	vector<hnode*>& nods = bx->all_nodes;
+	
+	gh_addr_t sz = nods.size();
+	gh_addr_t adr = 168;
+	
+	if(sz > (long)adr){
+		hnode* nd = nods[adr];
+		if(nd->is_1to2()){
+			hnode_1to2& nd2 = *((hnode_1to2*)nd);
+			if(nd2.node_frm != gh_null){
+				fprintf(stdout, "%ld:", nd2.addr);
+				nd2.print_node(stdout, gh_full_pt_prt);
+				nd2.node_frm->print_all_frames(stdout);
+			}
+		}
+	}
+	
+	haddr_frame	pnt_frm;
+	pnt_frm.pow_base = 2;
 
+	haddr_frame& out_frm = gh_dbg_init_out_frames(pnt_frm, 2, 11);
+
+	fprintf(stdout, "=========== DBG_FRAMES ===================\n");
+	out_frm.print_all_frames(stdout);
+	
+}
+
+haddr_frame&
+gh_dbg_init_out_frames(haddr_frame& frm, long bb, long ntg){
+	
+	haddr_frame* nx_frm = &frm;
+	haddr_frame* pr_frm = &frm;
+	
+	// ---------------
+	pr_frm = nx_frm;
+	nx_frm = new haddr_frame;
+	nx_frm->init_with(*pr_frm);
+
+	nx_frm->kind = gh_top_lognet_frm;
+	nx_frm->sz = 11;
+
+	// ---------------
+	pr_frm = nx_frm;
+	nx_frm = new haddr_frame;
+	nx_frm->init_with(*pr_frm);
+
+	nx_frm->kind = gh_target_frm;
+	nx_frm->idx = 8;
+	nx_frm->sz = 11;
+
+	// ---------------
+	pr_frm = nx_frm;
+	nx_frm = new haddr_frame;
+	nx_frm->init_with(*pr_frm);
+
+	nx_frm->kind = gh_route_frm;
+	nx_frm->src_side = gh_right_side;
+	nx_frm->has_zero = true;
+	
+	
+	// ---------------
+	GH_CK(nx_frm != gh_null);
+	
+	return *nx_frm;
+}
+
+void
+hnode_target::dbg_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
+	GH_CK(GH_GLOBALS.idx_test_simu >= 0);
+	switch(GH_GLOBALS.idx_test_simu){
+		case 0:
+			test0_choose_msg_src_dst_simu(src, dst);
+			break;
+		case 1:
+			test1_choose_msg_src_dst_simu(src, dst);
+			break;
+		case 2:
+			test2_choose_msg_src_dst_simu(src, dst);
+			break;
+		case 3:
+			test3_choose_msg_src_dst_simu(src, dst);
+			break;
+		case 4:
+			test4_choose_msg_src_dst_simu(src, dst);
+			break;
+		case 5:
+			test5_choose_msg_src_dst_simu(src, dst);
+			break;
+	}
+}
+
+void
+hnode_target::test0_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	
+	long sz = (long)all_tg.size();
+	GH_CK(sz > 0);
+	hnode_target* tg = all_tg[sz - 1];
+	GH_CK(tg != gh_null);
+
+	src = msg0.rng.min;
+	dst = tg->msg0.rng.min;
+	
+	GH_CK(src != GH_INVALID_ADDR);
+	GH_CK(dst != GH_INVALID_ADDR);
+}
+
+void
+hnode_target::test1_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	
+	long sz = (long)all_tg.size();
+	GH_CK(sz > 0);
+	hnode_target* tg = all_tg[0];
+	GH_CK(tg != gh_null);
+	
+	src = msg0.rng.min;
+	dst = tg->msg0.rng.min;
+	
+	GH_CK(src != GH_INVALID_ADDR);
+	GH_CK(dst != GH_INVALID_ADDR);
+}
+
+bool
+hnode_target::ck_one_src_one_dst(){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	GH_CK(curr_dest_simu >= 0);
+	GH_CK(curr_dest_simu < (long)all_tg.size());
+	hnode_target* tg = all_tg[curr_dest_simu];
+	
+	bool one_src = (msg0.rng.get_diff_simu() <= 1);
+	bool one_dst = (tg->msg0.rng.get_diff_simu() <= 1);
+	
+	GH_CK(one_src);
+	GH_CK(one_dst);
+	return (one_src && one_dst);
+}
+
+bool
+hnode_target::inc_st_simu(){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	GH_CK(curr_dest_simu >= 0);
+	GH_CK(curr_dest_simu < (long)all_tg.size());
+	hnode_target* tg = all_tg[curr_dest_simu];
+	
+	bool one_src = (msg0.rng.get_diff_simu() <= 1);
+	bool one_dst = (tg->msg0.rng.get_diff_simu() <= 1);
+	
+	if(one_src && one_dst){
+		return true;
+	}
+	bool inc_tg = false;
+	if(one_src && ! one_dst){
+		switch(curr_st_simu){
+			case gh_min_min_rng_st:
+				curr_st_simu = gh_min_max_rng_st;
+				break;
+			case gh_min_max_rng_st:
+				curr_st_simu = gh_min_min_rng_st;
+				inc_tg = true;
+				break;
+			default:
+				GH_CK(false);
+				break;
+		}
+		return inc_tg;
+	}
+	if(! one_src && one_dst){
+		switch(curr_st_simu){
+			case gh_min_min_rng_st:
+				curr_st_simu = gh_max_min_rng_st;
+				break;
+			case gh_max_min_rng_st:
+				curr_st_simu = gh_min_min_rng_st;
+				inc_tg = true;
+				break;
+			default:
+				GH_CK(false);
+				break;
+		}
+		return inc_tg;
+	}
+	GH_CK(! one_src && ! one_dst);
+	
+	if(curr_st_simu == gh_max_max_rng_st){
+		curr_st_simu = gh_min_min_rng_st;
+		return true;
+	}
+	int vv = (int)curr_st_simu;
+	vv++;
+	curr_st_simu = (gh_rng_st_t)vv;
+	return false;
+}
+
+void
+hnode_target::test2_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	
+	if(curr_dest_simu == GH_INVALID_ADDR){
+		curr_dest_simu = 0;
+	} else {
+		if(inc_st_simu()){
+			curr_dest_simu++;
+		}
+	}
+	GH_CK(curr_dest_simu >= 0);
+	
+	long all_sz = (long)all_tg.size();
+	GH_CK(all_sz > 0);
+	if(curr_dest_simu == all_sz){
+		src = GH_INVALID_ADDR;
+		dst = GH_INVALID_ADDR;
+		return;
+	}
+	
+	GH_CK(curr_dest_simu < all_sz);
+	if(all_tg[curr_dest_simu] == this){
+		curr_dest_simu++;
+		curr_st_simu = gh_min_min_rng_st;
+		if(curr_dest_simu == all_sz){
+			src = GH_INVALID_ADDR;
+			dst = GH_INVALID_ADDR;
+			return;
+		}
+	}
+	GH_CK(curr_dest_simu < all_sz);
+	
+	hnode_target* tg = all_tg[curr_dest_simu];
+	GH_CK(tg != gh_null);
+
+	switch(curr_st_simu){
+		case gh_min_min_rng_st:
+			src = msg0.rng.get_min_simu();
+			dst = tg->msg0.rng.get_min_simu();
+			break;
+		case gh_min_max_rng_st:
+			src = msg0.rng.get_min_simu();
+			dst = tg->msg0.rng.get_max_simu();
+			break;
+		case gh_max_min_rng_st:
+			src = msg0.rng.get_max_simu();
+			dst = tg->msg0.rng.get_min_simu();
+			break;
+		case gh_max_max_rng_st:
+			src = msg0.rng.get_max_simu();
+			dst = tg->msg0.rng.get_max_simu();
+			break;
+	}
+	
+	GH_CK(src != GH_INVALID_ADDR);
+	GH_CK(dst != GH_INVALID_ADDR);
+}
+
+void
+hnode_target::test3_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
+	test2_choose_msg_src_dst_simu(src, dst);
+}
+
+void
+hnode_target::test4_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
+	test2_choose_msg_src_dst_simu(src, dst);
+}
+
+void
+hnode_target::test5_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
+	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
+	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+
+	long idx = 5;	// TARGET ONE_PAIR
+	
+	long sz = (long)all_tg.size();
+	GH_CK(sz > 0);
+	GH_CK(idx < sz);
+	hnode_target* tg = all_tg[idx];
+	GH_CK(tg != gh_null);
+	
+	src = msg0.rng.min;
+	dst = tg->msg0.rng.min;
+	
+	GH_CK(src != GH_INVALID_ADDR);
+	GH_CK(dst != GH_INVALID_ADDR);
+}
 
