@@ -142,6 +142,7 @@ class thd_data;
 
 class hgen_globals;
 class haddr_frame;
+class hmessage;
 class hnode;
 class hnode_1to1;
 class hnode_direct;
@@ -187,6 +188,16 @@ public:
 
 	gh_addr_t dbg_curr_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_curr_tgt_quarter = gh_null;
+
+	bool 		do_run_simu = true;
+	bool 		pretty_prt_simu = false;
+	bool 		add_frms_simu = false;
+	long 		frms_idx_simu = 0;
+	long 		base_simu = 2;
+	gh_addr_t	num_target_simu = 3;
+	
+	vector<gh_addr_t> dbg_nodes_prt_simu;
+	long dbg_prt_disp_all_addr_simu = 0;
 	
 	hgen_globals(){}
 	
@@ -195,6 +206,10 @@ public:
 	}
 	
 	void release_all_frames();
+	
+	bool get_args(int argc, char** argv);
+	
+	void print_help(const char* prg);
 };
 
 extern hgen_globals GH_GLOBALS;
@@ -320,14 +335,16 @@ gh_dbg_get_rou_kind_str(gh_1to2_kind_t kk){
 	return "GH_INVALID_ROU_KIND";
 };
 
-#define gh_skip_one_frame_bit 		1
-
 class hrange {
 public:
-	gh_flags_t range_flags = 0;
-
 	gh_addr_t min = GH_INVALID_ADDR;
 	gh_addr_t max = GH_INVALID_ADDR;
+	
+	bool is_eq(hrange& rng2){
+		bool c1 = (min == rng2.min);
+		bool c2 = (max == rng2.max);
+		return (c1 && c2);
+	}
 
 	void init_range(long the_min, long the_max){
 		min = the_min;
@@ -352,27 +369,11 @@ public:
 	}
 	
 	void recalc(haddr_frame& frm, hnode* nd){
-		if(get_flag(gh_skip_one_frame_bit)){
-			reset_flag(gh_skip_one_frame_bit);
-			return;
-		}
 		min = frm.recalc_addr(min, nd);
 		max = frm.recalc_addr(max, nd);
 	}
 
-	void set_flag(gh_flag_idx_t num_flg){
-		gh_set_bit(&range_flags, num_flg);
-	}
-
-	void reset_flag(gh_flag_idx_t num_flg){
-		gh_reset_bit(&range_flags, num_flg);
-	}
-
-	bool get_flag(gh_flag_idx_t num_flg){
-		return gh_get_bit(&range_flags, num_flg);
-	}
-	
-	void calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm, hnode* nd);
+	void calc_raddr(haddr_frame& nd_frm, haddr_frame* bx_frm, hmessage& msg, hnode* nd, bool dbg_prt);
 	
 	bool in_range(gh_addr_t addr);
 
@@ -411,10 +412,12 @@ public:
 	hrange rng;
 	hrange bak_rg;
 	
-	void	calc_msg_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm, hnode* nd){
+	void	calc_msg_raddr(haddr_frame& nd_frm, haddr_frame* bx_frm, hnode* nd, bool dbg_prt){
 		GH_CK(bak_rg.is_virgin());
+		hmessage& mg = *this;
+		
 		bak_rg = rng;
-		rng.calc_raddr(nd_frm, bx_frm, nd);
+		rng.calc_raddr(nd_frm, bx_frm, mg, nd, dbg_prt);
 	}
 	
 	bool in_range(gh_addr_t addr){
@@ -422,6 +425,11 @@ public:
 	}
 	
 	void copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod);
+	
+	void reset_range(){
+		GH_CK(! bak_rg.is_virgin());
+		rng = bak_rg;
+	}
 	
 	void print_message(FILE* ff){
 		fprintf(ff, "{(%ld -> %ld) val=%ld}", mg_src, mg_dst, mg_val);
@@ -763,7 +771,7 @@ public:
 		msg0.rng.init_range(bx_idx, bx_idx + 1);
 	}
 	
-	void calc_msgs_raddr(haddr_frame& frm);
+	void calc_msgs_raddr(haddr_frame* frm, bool dbg_prt = false);
 	
 	bool ck_one_src_one_dst();
 	bool inc_st_simu();
@@ -873,17 +881,6 @@ public:
 		GH_CK((val0 == val1) || ((val0 + 1) == val1));
 		msg0.rng.init_range(val0, val0 + 1);
 		msg1.rng.init_range(val1, val1 + 1);
-		/*
-		msg0.rng.min = val0;
-		msg0.rng.max = val0 + 1;
-		msg1.rng.min = val1;
-		msg1.rng.max = val1 + 1;
-		*/
-	}
-	
-	void set_skip_one_frame(){
-		msg0.rng.set_flag(gh_skip_one_frame_bit);
-		msg1.rng.set_flag(gh_skip_one_frame_bit);
 	}
 	
 	haddr_frame&	get_frame(){
@@ -891,7 +888,7 @@ public:
 		return (*node_frm);
 	}
 	
-	void	calc_msgs_raddr(haddr_frame& frm);
+	void	calc_msgs_raddr(haddr_frame* frm, bool dbg_prt = false);
 	
 	virtual bool 	get_ack0(){ return ack0; }
 	virtual bool 	get_req0(){ return req0; }
@@ -1325,7 +1322,6 @@ public:
 	void 	run_hlognet_simu();
 };
 	
-
 void* run_node_simu(void* pm);
 
 int test_get_target(int argc, char *argv[]);

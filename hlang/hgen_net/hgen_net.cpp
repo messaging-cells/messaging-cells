@@ -49,7 +49,7 @@ haddr_frame::print_frame(FILE* ff, const char* msg){
 
 void
 hnode::print_addr(FILE* ff){
-	fprintf(ff, "(%ld)", addr);
+	fprintf(ff, "(%ld)", addr + GH_GLOBALS.dbg_prt_disp_all_addr_simu);
 	fflush(ff);
 }
 
@@ -303,8 +303,8 @@ hnode_box::print_box(FILE* ff, gh_prt_mode_t md){
 	gh_print_io(ff, md, outputs);
 	fprintf(ff, "ALL_NODES %ld\n", (long)all_nodes.size());
 	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
-		fprintf(ff, "%ld:", all_nodes[ii]->addr);
 		if(all_nodes[ii] != gh_null){
+			all_nodes[ii]->print_addr(ff);
 			all_nodes[ii]->print_node(ff, md);
 		} else {
 			fprintf(ff, "gh_null NODE\n");
@@ -1891,19 +1891,18 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht){
 
 void
 hnode_box::calc_all_1to2_raddr(haddr_frame* ref_frm){
-	if(ref_frm == gh_null){
+	/*if(ref_frm == gh_null){
 		haddr_frame& bx_frm = get_frame();
 		ref_frm = &bx_frm;
-	}
-	haddr_frame& frm = *ref_frm;
+	}*/
 	for(long ii = 0; ii < (long)all_nodes.size(); ii++){
 		hnode* nod = all_nodes[ii];
 		GH_CK(nod != gh_null);
 		if(nod->is_1to2()){
 			hnode_1to2* nd = (hnode_1to2*)(nod);
-			GH_DBG_CODE(frm.dbg_nd = nd);
+			GH_DBG_CODE(if(ref_frm != gh_null){ ref_frm->dbg_nd = nd; });
 			//GH_CK(nd->one_range != gh_null);
-			nd->calc_msgs_raddr(frm);
+			nd->calc_msgs_raddr(ref_frm);
 		} else 
 		if(nod->is_2to1() && nod->get_flag(gh_is_lognet_io)){
 			hnode_2to1* nd_io = (hnode_2to1*)(nod);
@@ -1919,22 +1918,20 @@ hnode_box::calc_all_1to2_raddr(haddr_frame* ref_frm){
 		}
 	}
 	//set_limit_one_ranges();
-
 	
-	GH_DBG_CODE(frm.dbg_nd = gh_null);
+	GH_DBG_CODE(if(ref_frm != gh_null){ ref_frm->dbg_nd = gh_null; });
 }
 
 void 
 hlognet_box::calc_all_targets_raddr(haddr_frame* ref_frm){
-	if(ref_frm == gh_null){
+	/*if(ref_frm == gh_null){
 		haddr_frame& bx_frm = get_frame();
 		ref_frm = &bx_frm;
-	}
-	haddr_frame& frm = *ref_frm;
+	}*/
 	for(long ii = 0; ii < (long)all_targets.size(); ii++){
 		hnode_target* tg = (hnode_target*)(all_targets[ii]);
 		GH_CK(tg != gh_null);
-		tg->calc_msgs_raddr(frm);
+		tg->calc_msgs_raddr(ref_frm);
 	}
 }
 
@@ -2050,39 +2047,48 @@ htarget_box::dbg_init_tgt_szs(){
 }
 
 void
-hnode_target::calc_msgs_raddr(haddr_frame& frm){
+hnode_target::calc_msgs_raddr(haddr_frame* frm, bool dbg_prt){
 	hnode* nd = this;
-	msg0.calc_msg_raddr(get_frame(), frm, nd);
+	msg0.calc_msg_raddr(get_frame(), frm, nd, dbg_prt);
 }
 
 void
-hnode_1to2::calc_msgs_raddr(haddr_frame& frm){
+hnode_1to2::calc_msgs_raddr(haddr_frame* frm, bool dbg_prt){
 	hnode* nd = this;
-	msg0.calc_msg_raddr(get_frame(), frm, nd);
-	msg1.calc_msg_raddr(get_frame(), frm, nd);
+	msg0.calc_msg_raddr(get_frame(), frm, nd, dbg_prt);
+	msg1.calc_msg_raddr(get_frame(), frm, nd, dbg_prt);
 }
 
 void
-hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame& bx_frm, hnode* nd){
-	//bx_frm.print_frame(stdout, "++++++++++++++++++\nBOX_FRM_BEFORE \n"); // DBG_CALC 
+hrange::calc_raddr(haddr_frame& nd_frm, haddr_frame* bx_frm, hmessage& msg, hnode* nd, bool dbg_prt){
+	
+	GH_DBG_CODE(if(dbg_prt && (bx_frm != gh_null)){ bx_frm->print_frame(stdout, "++++++++++++++++++\nBOX_FRM_BEFORE \n"); });
+	
+	GH_CK(msg.bak_rg.is_eq(msg.rng));
 	
 	for(haddr_frame* pnt = &nd_frm; pnt != gh_null; pnt = pnt->parent_frame){
-		//pnt->print_frame(stdout, "RECALC_ADDR \n"); // DBG_CALC 
-		//print_range(stdout); // DBG_CALC 
-		//fprintf(stdout, " => "); // DBG_CALC 
+		GH_DBG_CODE(if(dbg_prt){ 
+			pnt->print_frame(stdout, "RECALC_ADDR \n"); // DBG_CALC 
+			print_range(stdout); // DBG_CALC 
+			fprintf(stdout, " => "); // DBG_CALC 
+		});
 	
 		recalc(*pnt, nd);
 
-		//print_range(stdout); // DBG_CALC 
-		//fprintf(stdout, "\n"); // DBG_CALC 
-		//fflush(stdout); // DBG_CALC 
+		GH_DBG_CODE(if(dbg_prt){ 
+			print_range(stdout); // DBG_CALC 
+			fprintf(stdout, "\n"); // DBG_CALC 
+			fflush(stdout); // DBG_CALC 
+		});
 		
-		if(pnt == &bx_frm){
+		if(pnt == bx_frm){
 			break;
 		}
 	}
-	//print_range(stdout); // DBG_CALC 
-	//bx_frm.print_frame(stdout, "\nAFTER\n"); // DBG_CALC 
+	GH_DBG_CODE(if(dbg_prt){ 
+		print_range(stdout); // DBG_CALC 
+		if(bx_frm != gh_null){ bx_frm->print_frame(stdout, "\nAFTER\n"); }// DBG_CALC 
+	});
 }
 
 bool

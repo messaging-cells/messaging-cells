@@ -542,26 +542,22 @@ void gh_dbg_post_test_prints(hlognet_box* bx);
 
 int
 test_hlognet(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <base> <#tgt> [<num_test>]\n", argv[0]);
-		return 1;
-	}
-	long bb = atol(argv[1]);
-	long ntg = atol(argv[2]);
 	
-	GH_GLOBALS.idx_test_simu = 0;
+	bool go_on = GH_GLOBALS.get_args(argc, argv);
 	
-	if(argc > 3){
-		GH_GLOBALS.idx_test_simu = atol(argv[3]);
+	if(! go_on){
+		return 0;
 	}
 	
-	bool add_frms = (argc > 4);
-	long frms_idx = 0;
-	if(add_frms){
-		frms_idx = atol(argv[4]);
-	}
+	long bb = GH_GLOBALS.base_simu;
+	long ntg = GH_GLOBALS.num_target_simu;	
+	bool add_frms = GH_GLOBALS.add_frms_simu;
+	long frms_idx = GH_GLOBALS.frms_idx_simu;
 	
-	fprintf(stdout, "test_hlognet TEST=%ld base=%ld #ntg=%ld \n", GH_GLOBALS.idx_test_simu, bb, ntg);
+	const char* add_str = (add_frms)?("ADD"):("");
+	
+	fprintf(stdout, "test_hlognet base=%ld #ntg=%ld TEST=%ld frms=%ld %s \n", 
+			bb, ntg, GH_GLOBALS.idx_test_simu, frms_idx, add_str);
 	
 	haddr_frame	pnt_frm;
 	pnt_frm.pow_base = bb;
@@ -588,24 +584,26 @@ test_hlognet(int argc, char *argv[]){
 
 	fprintf(stdout, "=========== CALC_RANGES ===================\n");
 	
-	bx->calc_all_1to2_raddr(gh_null);
+	bx->calc_all_1to2_raddr(gh_null); // find &bx_frm
 	bx->calc_all_targets_raddr(gh_null);
 	
 	GH_GLOBALS.all_tgt_simu = &(bx->all_targets);
 	
 	gh_dbg_init_simu();
 
-	fprintf(stdout, "=========== PRINTING_FULL_NET ===================\n");
-	
-	if(! add_frms){
-		bx->print_box(stdout, gh_full_pt_prt);
-	} else {
+	if(GH_GLOBALS.pretty_prt_simu){ 
+		fprintf(stdout, "=========== PRETTY_PRINTING ===================\n");
 		bx->print_box(stdout, gh_full_prt);
+	} else {
+		fprintf(stdout, "=========== PRINTING_FULL_NET ===================\n");
+		bx->print_box(stdout, gh_full_pt_prt);
 	}
 
 	fprintf(stdout, "=========== RUNNING_SIMU ===================\n");
 	
-	bx->run_hlognet_simu();
+	if(GH_GLOBALS.do_run_simu){
+		bx->run_hlognet_simu();
+	}
 	
 	gh_dbg_post_test_prints(bx);
 
@@ -1107,11 +1105,14 @@ gh_dbg_prt_node(hlognet_box* bx, gh_addr_t adr){
 
 void
 gh_dbg_post_test_prints(hlognet_box* bx){
+	vector<gh_addr_t>& dbg_nods = GH_GLOBALS.dbg_nodes_prt_simu;
+	
 	fprintf(stdout, "=========== POST_PRINTS ===================\n");
 	
-	gh_dbg_prt_node(bx, 27);
-	gh_dbg_prt_node(bx, 168);
-		
+	for(long aa = 0; aa < (long)dbg_nods.size(); aa++){
+		gh_addr_t idx = dbg_nods[aa];
+		gh_dbg_prt_node(bx, idx);
+	}
 	
 	fprintf(stdout, "=========== DBG_FRAMES ===================\n");
 	haddr_frame& out_frm = gh_dbg_init_out_frames(1, 2, 11);
@@ -1302,3 +1303,68 @@ gh_dbg_init_out_frames(long frms_idx, long bb, long ntg){
 	return *nx_frm;
 }
 
+void
+hgen_globals::print_help(const char* prg){
+	fprintf(stdout, "%s <base> <#target> [-pp] [-no_run] [-t <test_id>] [-f <add_frames_id>] ", prg);
+	fprintf(stdout, "{[-n <prt_nod_adr>]}* [-disp <ptr_adr_disp>] ");
+	fprintf(stdout, "\n");
+}
+
+bool
+hgen_globals::get_args(int argc, char** argv){
+	
+	const char* prg_nm = argv[0];
+	
+	if(argc < 3){
+		print_help(prg_nm);
+		return false;
+	}
+	
+	base_simu = atol(argv[1]);
+	num_target_simu = atol(argv[2]);
+	
+	idx_test_simu = 0;
+	frms_idx_simu = 0;
+	
+	bool prt_help = false;
+	
+	for(long ii = 1; ii < argc; ii++){
+		std::string the_arg = argv[ii];
+		if(the_arg == "-h"){
+			prt_help = true;
+		} else if(the_arg == "-pp"){
+			pretty_prt_simu = true;
+		} else if(the_arg == "-no_run"){
+			do_run_simu = false;
+		} else if((the_arg == "-t") && ((ii + 1) < argc)){
+			int kk_idx = ii + 1;
+			ii++;
+
+			idx_test_simu = atol(argv[kk_idx]);
+		} else if((the_arg == "-f") && ((ii + 1) < argc)){
+			int kk_idx = ii + 1;
+			ii++;
+
+			add_frms_simu = true;
+			frms_idx_simu = atol(argv[kk_idx]);
+		} else if((the_arg == "-n") && ((ii + 1) < argc)){
+			int kk_idx = ii + 1;
+			ii++;
+
+			gh_addr_t adr = atol(argv[kk_idx]);
+			dbg_nodes_prt_simu.push_back(adr);			
+		} else if((the_arg == "-disp") && ((ii + 1) < argc)){
+			int kk_idx = ii + 1;
+			ii++;
+
+			dbg_prt_disp_all_addr_simu = atol(argv[kk_idx]);
+		} 
+	}
+	
+	if(prt_help){
+		print_help(prg_nm);
+		return false;
+	}
+
+	return true;
+}
