@@ -171,6 +171,7 @@ public:
 	haddr_frame* ref_frm = gh_null;
 
 	long idx_test_simu = 0;
+	long idx_added_frames = 0;
 	
 	vector<thd_data*> all_thread_data_simu;
 	vector<hnode_target*>* all_tgt_simu = gh_null;
@@ -232,12 +233,11 @@ public:
 	bool has_zero = false;
 	
 	hnode* dbg_nd = gh_null;
-
+	
 	void 
 	init_with(haddr_frame& frm){
 		GH_CK(parent_frame == gh_null);
 		
-		GH_GLOBALS.all_frames.push_back(this);
 		parent_frame = &frm;
 		pow_base = frm.pow_base;
 	}
@@ -617,7 +617,7 @@ public:
 	}
 	
 	void print_addr(FILE* ff);
-	void print_dbg_tgt_addr(FILE* ff);
+	void print_dbg_tgt_addr(FILE* ff, gh_prt_mode_t md);
 	
 	void create_thread_simu(long idx);
 	

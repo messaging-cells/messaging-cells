@@ -49,13 +49,13 @@ haddr_frame::print_frame(FILE* ff, const char* msg){
 
 void
 hnode::print_addr(FILE* ff){
-	fprintf(ff, "%ld", addr);
+	fprintf(ff, "(%ld)", addr);
 	fflush(ff);
 }
 
 void
-hnode::print_dbg_tgt_addr(FILE* ff){
-	if(dbg_tgt_addr != GH_INVALID_ADDR){
+hnode::print_dbg_tgt_addr(FILE* ff, gh_prt_mode_t md){
+	if((dbg_tgt_addr != GH_INVALID_ADDR) && (md == gh_full_pt_prt)){
 		fprintf(ff, "{");
 		fprintf(ff, "%ld", dbg_tgt_addr);
 		if(dbg_tgt_quarter != gh_null){
@@ -81,7 +81,7 @@ hnode_1to1::print_node(FILE* ff, gh_prt_mode_t md){
 		return;
 	}
 	
-	print_dbg_tgt_addr(ff);
+	print_dbg_tgt_addr(ff, md);
 	
 	fprintf(ff, "[");
 	
@@ -113,6 +113,11 @@ void // virtual
 hnode_direct::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	GH_CK(ck_connections());
+	if(md == gh_addr_prt){
+		print_addr(ff);
+		return;
+	}
+	
 	fprintf(ff, "dr");
 	hnode_1to1::print_node(ff, md);
 	fflush(ff);
@@ -122,6 +127,11 @@ void // virtual
 hnode_target::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	GH_CK(ck_connections());
+	if(md == gh_addr_prt){
+		print_addr(ff);
+		return;
+	}
+	
 	//fprintf(ff, "tg");
 	if(is_source_simu){
 		fprintf(ff, "s");
@@ -146,13 +156,11 @@ hnode_1to2::print_node(FILE* ff, gh_prt_mode_t md){
 		return;
 	}
 
-	print_dbg_tgt_addr(ff);
+	print_dbg_tgt_addr(ff, md);
 	
-	if(md == gh_full_pt_prt){
-		fprintf(ff, "%s", gh_dbg_get_rou_kind_str(rou_kind));
-		if(rou_kind == gh_sm_to_bm_rou){
-			fprintf(ff, "_%d", dbg_kind);
-		}
+	fprintf(ff, "%s", gh_dbg_get_rou_kind_str(rou_kind));
+	if(rou_kind == gh_sm_to_bm_rou){
+		fprintf(ff, "_%d", dbg_kind);
 	}
 	
 	fprintf(ff, "<");
@@ -163,12 +171,12 @@ hnode_1to2::print_node(FILE* ff, gh_prt_mode_t md){
 		fprintf(ff, "o(%p -> %p)", &out0, out0);
 		fprintf(ff, "o(%p -> %p)", &out1, out1);
 	} else {
-		print_addr(ff);
-		fprintf(ff, "i");
+		//print_addr(ff);
+		fprintf(ff, " i");
 		in0->print_node(ff, gh_addr_prt);
-		fprintf(ff, "o");
+		fprintf(ff, " o");
 		out0->print_node(ff, gh_addr_prt);
-		fprintf(ff, "o");
+		fprintf(ff, " o");
 		out1->print_node(ff, gh_addr_prt);
 	}
 	fprintf(ff, ">");
@@ -233,11 +241,10 @@ hnode_2to1::print_node(FILE* ff, gh_prt_mode_t md){
 		return;
 	}
 	
-	print_dbg_tgt_addr(ff);
+	print_dbg_tgt_addr(ff, md);
 	
-	if(md == gh_full_pt_prt){
-		fprintf(ff, "2to1");
-	}
+	fprintf(ff, "2to1");
+
 	fprintf(ff, "<");
 	if(md == gh_full_pt_prt){
 		fprintf(ff, "(%p)", this);
@@ -245,12 +252,12 @@ hnode_2to1::print_node(FILE* ff, gh_prt_mode_t md){
 		fprintf(ff, "i(%p -> %p)", &in1, in1);
 		fprintf(ff, "o(%p -> %p)", &out0, out0);
 	} else {
-		print_addr(ff);
-		fprintf(ff, "i");
+		//print_addr(ff);
+		fprintf(ff, " i");
 		in0->print_node(ff, gh_addr_prt);
-		fprintf(ff, "i");
+		fprintf(ff, " i");
 		in1->print_node(ff, gh_addr_prt);
-		fprintf(ff, "o");
+		fprintf(ff, " o");
 		out0->print_node(ff, gh_addr_prt);
 	}
 	fprintf(ff, ">");
