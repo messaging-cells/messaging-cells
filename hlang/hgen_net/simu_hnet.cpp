@@ -281,10 +281,10 @@ hnode_1to2::run_1to2_simu(){
 			gh_addr_t dst_addr = in_msg0->mg_dst;
 			bool in_rng0 = msg0.in_range(dst_addr);
 			bool in_rng1 = msg1.in_range(dst_addr);
-			GH_CK_PRT((in_rng0 != in_rng1), "%s (%p -> %p) %ld %d==(%ld,%ld) %d==(%ld,%ld) [%ld -> %ld val=%ld]", 
+			GH_CK_PRT((in_rng0 != in_rng1), "%s (%p -> %p) %ld %d==(%ld,%ld) %d==(%ld,%ld) ((<%ld>%ld -> %ld) val=%ld) \n", 
 						gh_dbg_get_rou_kind_str(rou_kind), in0, nod, dst_addr, 
 						in_rng0, msg0.rng.min, msg0.rng.max, in_rng1, msg1.rng.min, msg1.rng.max,
-						in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val
+						in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val
 			);
 			
 			if(in_rng0){
@@ -758,11 +758,11 @@ hnode_target::run_target_simu(){
 		if(ireq(*in0) && (! ack0)){
 			//bool dst_ok = (addr == in_msg0->mg_dst);
 			bool dst_ok = msg0.in_range(in_msg0->mg_dst);
-			GH_CK_PRT(dst_ok, "ERROR: %ld RCV %ld -> %ld val=%ld i(%p) \n",
-				addr, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0
+			GH_CK_PRT(dst_ok, "ERROR: %ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) \n",
+				addr, msg0.rng.min, msg0.rng.max, in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0
 			);
-			fprintf(stdout, "%ld[%ld,%ld] RCV %ld -> %ld val=%ld i(%p) \n", addr, msg0.rng.min, msg0.rng.max, 
-					in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0);
+			fprintf(stdout, "%ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) \n", addr, msg0.rng.min, msg0.rng.max, 
+					in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0);
 			num_msg_rcv_simu++;
 			
 			ack0 = true;
@@ -787,11 +787,12 @@ hnode_target::run_target_simu(){
 			}
 			msg0.mg_val++;
 				
+			msg0.mg_sra = addr;
 			msg0.mg_src = src_adr;
 			msg0.mg_dst = dst_adr;
 			
-			fprintf(stdout, "%ld[%ld,%ld] SND %ld -> %ld val=%ld o(%p) \n", addr, msg0.rng.min, msg0.rng.max, 
-					msg0.mg_src, msg0.mg_dst, msg0.mg_val, out0);
+			fprintf(stdout, "%ld[%ld,%ld] SND <%ld>%ld -> %ld val=%ld o(%p) \n", addr, msg0.rng.min, msg0.rng.max, 
+					msg0.mg_sra, msg0.mg_src, msg0.mg_dst, msg0.mg_val, out0);
 			num_msg_snt_simu++;
 			
 			req0 = true;
@@ -812,7 +813,7 @@ hnode_target::run_target_simu(){
 void
 hmessage::copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod){
 	GH_DBG_CODE(
-		if(GH_GLOBALS.dbg_src_simu == mg_src){ 
+		if((GH_GLOBALS.dbg_one_sra_simu == mg_sra) && (GH_GLOBALS.dbg_one_src_simu == mg_src)){ 
 			fprintf(stdout, "dbg ");
 			print_message(stdout);
 			fprintf(stdout, " (%p) -> (%p) ----\n", dbg_src_nod, dbg_dst_nod);
@@ -823,6 +824,7 @@ hmessage::copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod){
 		}
 	);
 	mg.mg_val = mg_val;
+	mg.mg_sra = mg_sra;
 	mg.mg_src = mg_src;
 	mg.mg_dst = mg_dst;
 }
@@ -1142,8 +1144,8 @@ gh_dbg_init_test4_simu(){
 
 void
 hnode_target::test5_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
-	src = GH_GLOBALS.dbg_one_src_adr_simu;
-	dst = GH_GLOBALS.dbg_one_dst_adr_simu;
+	src = GH_GLOBALS.dbg_one_src_simu;
+	dst = GH_GLOBALS.dbg_one_dst_simu;
 	
 	GH_CK(src != GH_INVALID_ADDR);
 	GH_CK(dst != GH_INVALID_ADDR);
@@ -1154,25 +1156,24 @@ gh_dbg_init_test5_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
 	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
 	
-	if(GH_GLOBALS.dbg_one_src_adr_simu == GH_INVALID_ADDR){
+	if(GH_GLOBALS.dbg_one_src_simu == GH_INVALID_ADDR){
 		fprintf(stdout, "\n\n\n\n\n\n\n\nMUST use -os option for test 5 to work !!!! \n\n\n\n\n\n\n\n");
 		GH_GLOBALS.do_run_simu = false;
 		return;
 	}
-	if(GH_GLOBALS.dbg_one_dst_adr_simu == GH_INVALID_ADDR){
+	if(GH_GLOBALS.dbg_one_dst_simu == GH_INVALID_ADDR){
 		fprintf(stdout, "\n\n\n\n\n\n\n\nMUST use -od option for test 5 to work !!!! \n\n\n\n\n\n\n\n");
 		GH_GLOBALS.do_run_simu = false;
 		return;
 	}
 
-	long idx = GH_GLOBALS.dbg_one_src_nod_simu;	// SOURCE ONE_PAIR
+	long idx = GH_GLOBALS.dbg_one_sra_simu;	// SOURCE ONE_PAIR
 	
 	long tot_tg = (long)all_tgt.size();
 	GH_CK(tot_tg > 0);
 	GH_CK(idx < tot_tg);
 	
 	GH_GLOBALS.tot_src_msg_simu = 1;
-	GH_GLOBALS.dbg_src_simu = idx;
 
 	hnode_target* tgt = all_tgt[idx];
 	GH_CK(tgt != gh_null);
@@ -1340,9 +1341,9 @@ gh_dbg_init_out_frames(long frms_idx, long bb, long ntg){
 
 void
 hgen_globals::print_help(const char* prg){
-	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-t <test_id>] [-f <add_frames_id>] ", prg);
+	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-t <test_id>] [-fr <add_frames_id>] ", prg);
 	fprintf(stdout, "{[-n <prt_nod_adr>]}* [-disp <ptr_adr_disp>] [-oa <one_adr>] [-os <one_src>] [-od <one_dst>] ");
-	fprintf(stdout, "[-dn <dbg_nod>] ");
+	//fprintf(stdout, "[-dn <dbg_nod>] ");
 	fprintf(stdout, "\n");
 }
 
@@ -1359,12 +1360,14 @@ hgen_globals::get_args(int argc, char** argv){
 	base_simu = atol(argv[1]);
 	num_target_simu = atol(argv[2]);
 	
+	long first_pm = 3;
+	
 	idx_test_simu = 0;
 	frms_idx_simu = 0;
 	
 	bool prt_help = false;
 	
-	for(long ii = 1; ii < argc; ii++){
+	for(long ii = first_pm; ii < argc; ii++){
 		std::string the_arg = argv[ii];
 		if(the_arg == "-h"){
 			prt_help = true;
@@ -1379,7 +1382,7 @@ hgen_globals::get_args(int argc, char** argv){
 			ii++;
 
 			idx_test_simu = atol(argv[kk_idx]);
-		} else if((the_arg == "-f") && ((ii + 1) < argc)){
+		} else if((the_arg == "-fr") && ((ii + 1) < argc)){
 			int kk_idx = ii + 1;
 			ii++;
 
@@ -1400,23 +1403,22 @@ hgen_globals::get_args(int argc, char** argv){
 			int kk_idx = ii + 1;
 			ii++;
 
-			dbg_one_src_nod_simu = atol(argv[kk_idx]);
+			dbg_one_sra_simu = atol(argv[kk_idx]);
 		} else if((the_arg == "-os") && ((ii + 1) < argc)){
 			int kk_idx = ii + 1;
 			ii++;
 
-			dbg_one_src_adr_simu = atol(argv[kk_idx]);
+			dbg_one_src_simu = atol(argv[kk_idx]);
 		} else if((the_arg == "-od") && ((ii + 1) < argc)){
 			int kk_idx = ii + 1;
 			ii++;
 
-			dbg_one_dst_adr_simu = atol(argv[kk_idx]);
-		} else if((the_arg == "-dn") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			dbg_src_simu = atol(argv[kk_idx]);
-		} 
+			dbg_one_dst_simu = atol(argv[kk_idx]);
+		} else {
+			fprintf(stdout, "Unknown option %s \n", the_arg.c_str());
+			
+			prt_help = true;
+		}
 	}
 	
 	if(prt_help){

@@ -179,8 +179,7 @@ public:
 	long tot_tgt_simu = 0;
 	long tot_src_msg_simu = 0;
 	bool all_thread_inited_simu = false;
-	gh_addr_t dbg_src_simu = GH_INVALID_ADDR;
-
+	
 	const char* dbg_LI_quarter = "LI";
 	const char* dbg_LO_quarter = "LO";
 	const char* dbg_RI_quarter = "RI";
@@ -189,9 +188,9 @@ public:
 	gh_addr_t dbg_curr_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_curr_tgt_quarter = gh_null;
 
-	gh_addr_t dbg_one_src_nod_simu = 0;
-	gh_addr_t dbg_one_src_adr_simu = GH_INVALID_ADDR;
-	gh_addr_t dbg_one_dst_adr_simu = GH_INVALID_ADDR;
+	gh_addr_t dbg_one_sra_simu = 0;
+	gh_addr_t dbg_one_src_simu = GH_INVALID_ADDR;
+	gh_addr_t dbg_one_dst_simu = GH_INVALID_ADDR;
 
 	bool prt_choo_simu = false;
 	
@@ -429,6 +428,7 @@ public:
 class hmessage {
 public:
 	long mg_val = 0;
+	gh_addr_t mg_sra = GH_INVALID_ADDR;
 	gh_addr_t mg_src = GH_INVALID_ADDR;
 	gh_addr_t mg_dst = GH_INVALID_ADDR;
 	
@@ -455,7 +455,7 @@ public:
 	}
 	
 	void print_message(FILE* ff){
-		fprintf(ff, "{(%ld -> %ld) val=%ld}", mg_src, mg_dst, mg_val);
+		fprintf(ff, "{(<%ld>%ld -> %ld) val=%ld}", mg_sra, mg_src, mg_dst, mg_val);
 		fflush(ff);
 	}
 	
