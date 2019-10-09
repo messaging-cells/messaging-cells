@@ -66,19 +66,20 @@ hnode::print_dbg_tgt_addr(FILE* ff, gh_prt_mode_t md){
 	}
 }
 
-void // virtual
+int // virtual
 hnode::print_node(FILE* ff, gh_prt_mode_t md){
 	print_addr(ff);
 	fflush(ff);
+	return 0;
 }
 
-void // virtual
+int // virtual
 hnode_1to1::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	GH_CK(ck_connections());
 	if(md == gh_addr_prt){
 		print_addr(ff);
-		return;
+		return 0;
 	}
 	
 	print_dbg_tgt_addr(ff, md);
@@ -107,29 +108,31 @@ hnode_1to1::print_node(FILE* ff, gh_prt_mode_t md){
 	
 	fprintf(ff, "\n");
 	fflush(ff);
+	return 0;
 }
 
-void // virtual
+int // virtual
 hnode_direct::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	GH_CK(ck_connections());
 	if(md == gh_addr_prt){
 		print_addr(ff);
-		return;
+		return 0;
 	}
 	
 	fprintf(ff, "dr");
 	hnode_1to1::print_node(ff, md);
 	fflush(ff);
+	return 0;
 }
 
-void // virtual
+int // virtual
 hnode_target::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	GH_CK(ck_connections());
 	if(md == gh_addr_prt){
 		print_addr(ff);
-		return;
+		return 0;
 	}
 	
 	//fprintf(ff, "tg");
@@ -141,6 +144,7 @@ hnode_target::print_node(FILE* ff, gh_prt_mode_t md){
 	hnode_1to1::print_node(ff, md);
 
 	fflush(ff);
+	return 0;
 }
 
 void
@@ -148,12 +152,12 @@ hrange::print_range(FILE* ff){
 	fprintf(ff, "(%ld,%ld)", min, max);
 }
 
-void // virtual
+int // virtual
 hnode_1to2::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	if(md == gh_addr_prt){
 		print_addr(ff);
-		return;
+		return 0;
 	}
 
 	print_dbg_tgt_addr(ff, md);
@@ -231,14 +235,15 @@ hnode_1to2::print_node(FILE* ff, gh_prt_mode_t md){
 	fprintf(ff, "\n");
 	fflush(ff);
 	GH_CK(ck_connections());
+	return 0;
 }
 
-void // virtual
+int // virtual
 hnode_2to1::print_node(FILE* ff, gh_prt_mode_t md){
 	fflush(ff);
 	if(md == gh_addr_prt){
 		print_addr(ff);
-		return;
+		return 0;
 	}
 	
 	print_dbg_tgt_addr(ff, md);
@@ -270,6 +275,7 @@ hnode_2to1::print_node(FILE* ff, gh_prt_mode_t md){
 	fprintf(ff, "\n");
 	fflush(ff);
 	GH_CK(ck_connections());
+	return 0;
 }
 
 void

@@ -189,6 +189,12 @@ public:
 	gh_addr_t dbg_curr_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_curr_tgt_quarter = gh_null;
 
+	gh_addr_t dbg_one_src_nod_simu = 0;
+	gh_addr_t dbg_one_src_adr_simu = GH_INVALID_ADDR;
+	gh_addr_t dbg_one_dst_adr_simu = GH_INVALID_ADDR;
+
+	bool prt_choo_simu = false;
+	
 	bool 		do_run_simu = true;
 	bool 		pretty_prt_simu = false;
 	bool 		add_frms_simu = false;
@@ -335,6 +341,21 @@ gh_dbg_get_rou_kind_str(gh_1to2_kind_t kk){
 	return "GH_INVALID_ROU_KIND";
 };
 
+inline const char*
+gh_dbg_rng_case_str(gh_rng_st_t kk){
+	switch(kk){
+		case gh_min_min_rng_st:
+			return "mm";
+		case gh_min_max_rng_st:
+			return "mM";
+		case gh_max_min_rng_st:
+			return "Mm";
+		case gh_max_max_rng_st:
+			return "MM";
+	}
+	return "gh_INVALID_RNG_CASE";
+};
+
 class hrange {
 public:
 	gh_addr_t min = GH_INVALID_ADDR;
@@ -385,8 +406,9 @@ public:
 	gh_addr_t get_min_simu(){
 		gh_addr_t rr = GH_INVALID_ADDR;
 		if(min < max){ rr = min; } 
-		else { rr = max; }
+		else { rr = max + 1; }
 		
+		GH_CK(rr != GH_INVALID_ADDR);
 		if(rr != GH_INVALID_ADDR){ return rr; }
 		return rr + 1;
 	}
@@ -394,8 +416,9 @@ public:
 	gh_addr_t get_max_simu(){
 		gh_addr_t rr = GH_INVALID_ADDR;
 		if(min < max){ rr = (max - 1); } 
-		else { rr = (min - 1); }
+		else { rr = min; }
 		
+		GH_CK(rr != GH_INVALID_ADDR);
 		if(rr != GH_INVALID_ADDR){ return rr; }
 		return rr - 1;
 	}
@@ -491,7 +514,7 @@ public:
 	}
 	virtual ~hnode(){}
 	
-	virtual void
+	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
 	
 	virtual bool 	ck_connections(){ return false; }
@@ -684,7 +707,7 @@ public:
 		return ((&in0 == io) || (&out0 == io));
 	}
 	
-	virtual void
+	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
 
 	void run_1to1_simu();
@@ -734,7 +757,7 @@ public:
 		return gh_direct_1t1;
 	}
 	
-	virtual void
+	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
 };
 
@@ -785,6 +808,10 @@ public:
 	hnode_target* test5_choose_tgt_simu();
 
 	void dbg_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	bool dbg_inc_tgt_simu();
+	void dbg_nxt_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	void dbg_calc_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
+	
 	void test0_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
 	void test1_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
 	void test2_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst);
@@ -799,7 +826,7 @@ public:
 		return gh_target_1t1;
 	}
 	
-	virtual void
+	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
 };
 
@@ -924,7 +951,7 @@ public:
 		return ((&in0 == io) || (&out0 == io) || (&out1 == io));
 	}
 	
-	virtual void
+	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
 	
 	void run_1to2_simu();
@@ -993,7 +1020,7 @@ public:
 		return ((&in0 == io) || (&in1 == io) || (&out0 == io));
 	}
 	
-	virtual void
+	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
 	
 	bool ck_out_range();
