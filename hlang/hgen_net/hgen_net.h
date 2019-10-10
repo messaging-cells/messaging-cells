@@ -201,6 +201,8 @@ public:
 	long 		base_simu = 2;
 	gh_addr_t	num_target_simu = 3;
 	
+	haddr_frame* added_frames_simu = gh_null;
+	
 	vector<gh_addr_t> dbg_nodes_prt_simu;
 	long dbg_prt_disp_all_addr_simu = 0;
 	
@@ -369,6 +371,11 @@ public:
 	void init_range(long the_min, long the_max){
 		min = the_min;
 		max = the_max;
+	}
+
+	void copy_range(hrange& rng){
+		min = rng.min;
+		max = rng.max;
 	}
 	
 	bool ck_range(){

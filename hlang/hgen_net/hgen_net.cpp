@@ -1502,13 +1502,9 @@ gh_get_last_level(ppnode_vec_t& all_out, gh_flag_idx_t lv_col, vector<hnode*>& l
 			if(nd->get_flag(lv_col)){
 				if(&(nd->out0) == ppo){
 					nd->msg0.rng.init_range(aa, aa + 1);
-					//nd->msg0.rng.min = aa;
-					//nd->msg0.rng.max = aa + 1;
 				} else {
 					GH_CK(&(nd->out1) == ppo);
 					nd->msg1.rng.init_range(aa, aa + 1);
-					//nd->msg1.rng.min = aa;
-					//nd->msg1.rng.max = aa + 1;
 				}
 				if(nd->has_connected_in0()){
 					hnode* in0 = po->get_in0();
@@ -1527,8 +1523,6 @@ gh_get_last_level(ppnode_vec_t& all_out, gh_flag_idx_t lv_col, vector<hnode*>& l
 				nd->set_flag(gh_has_range_bit);
 				
 				nd->msg0.rng.init_range(aa, aa + 1);
-				//nd->msg0.rng.min = aa;
-				//nd->msg0.rng.max = aa + 1;
 			}
 		}
 		
@@ -1611,9 +1605,8 @@ hnode::get_joined_range(hrange& rng){
 	GH_CK(rng0 != gh_null);
 	GH_CK(rng0->ck_range());
 	
-	rng.init_range(rng0->min, rng0->max);
-	//rng.min = rng0->min;
-	//rng.max = rng0->max;
+	rng.copy_range(*rng0);
+	//rng.init_range(rng0->min, rng0->max);
 
 	hrange* rng1 = get_range1();
 	GH_CK(rng1 != gh_null);
@@ -1919,8 +1912,13 @@ hnode_box::calc_all_1to2_raddr(haddr_frame* ref_frm){
 			hrange* rng_b = nd_io->in1->get_range0();
 			GH_CK(rng_b != gh_null);
 
-			rng_a->min = rng_b->min;
-			rng_a->max = rng_b->max;
+			rng_a->copy_range(*rng_b);
+			//rng_a->init_range(rng_b->min, rng_b->max);
+			//rng_a->min = rng_b->min;
+			//rng_a->max = rng_b->max;
+			
+			GH_CK(rng_a->min == rng_b->min);
+			GH_CK(rng_a->max == rng_b->max);
 		}
 	}
 	//set_limit_one_ranges();

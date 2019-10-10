@@ -565,6 +565,7 @@ test_hlognet(int argc, char *argv[]){
 	haddr_frame* out_frm = &pnt_frm;
 	if(add_frms){
 		haddr_frame& frm2 = gh_dbg_init_out_frames(frms_idx, bb, ntg);
+		GH_GLOBALS.added_frames_simu = &frm2;
 		out_frm = &frm2;
 	}
 	
@@ -1213,9 +1214,10 @@ gh_dbg_post_test_prints(hlognet_box* bx){
 		gh_dbg_prt_node(bx, idx);
 	}
 	
-	fprintf(stdout, "=========== DBG_FRAMES ===================\n");
-	haddr_frame& out_frm = gh_dbg_init_out_frames(1, 2, 11);
-	out_frm.print_all_frames(stdout);
+	if(GH_GLOBALS.added_frames_simu != gh_null){
+		fprintf(stdout, "=========== ADDED_FRAMES ===================\n");
+		GH_GLOBALS.added_frames_simu->print_all_frames(stdout);
+	}
 	
 }
 
@@ -1297,46 +1299,47 @@ gh_dbg_init_out_frames(long frms_idx, long bb, long ntg){
 	haddr_frame* nx_frm = gh_null;
 	haddr_frame* pr_frm = gh_null;
 	
-	if(frms_idx == 0){
+	if(frms_idx == 1){
+		// ---------------
+		pr_frm = gh_null;
 		nx_frm = new haddr_frame;
 		GH_GLOBALS.all_frames.push_back(nx_frm);
-		
+
+		nx_frm->kind = gh_top_lognet_frm;
 		nx_frm->pow_base = bb;
+		nx_frm->sz = 11;
+
+		// ---------------
+		pr_frm = nx_frm;
+		nx_frm = new haddr_frame;
+		nx_frm->init_with(*pr_frm);
+
+		nx_frm->kind = gh_target_frm;
+		nx_frm->idx = 8;
+		nx_frm->sz = 11;
+
+		// ---------------
+		pr_frm = nx_frm;
+		nx_frm = new haddr_frame;
+		nx_frm->init_with(*pr_frm);
+
+		nx_frm->kind = gh_route_frm;
+		nx_frm->src_side = gh_right_side;
+		nx_frm->has_zero = true;
+		
+		
+		// ---------------
+		GH_CK(nx_frm != gh_null);
+		
 		return *nx_frm;
 	}
 	
-	// ---------------
-	pr_frm = gh_null;
 	nx_frm = new haddr_frame;
 	GH_GLOBALS.all_frames.push_back(nx_frm);
-
-	nx_frm->kind = gh_top_lognet_frm;
+	
 	nx_frm->pow_base = bb;
-	nx_frm->sz = 11;
-
-	// ---------------
-	pr_frm = nx_frm;
-	nx_frm = new haddr_frame;
-	nx_frm->init_with(*pr_frm);
-
-	nx_frm->kind = gh_target_frm;
-	nx_frm->idx = 8;
-	nx_frm->sz = 11;
-
-	// ---------------
-	pr_frm = nx_frm;
-	nx_frm = new haddr_frame;
-	nx_frm->init_with(*pr_frm);
-
-	nx_frm->kind = gh_route_frm;
-	nx_frm->src_side = gh_right_side;
-	nx_frm->has_zero = true;
-	
-	
-	// ---------------
-	GH_CK(nx_frm != gh_null);
-	
 	return *nx_frm;
+	
 }
 
 void
