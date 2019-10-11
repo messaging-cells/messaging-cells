@@ -357,6 +357,10 @@ gh_dbg_rng_case_str(gh_rng_st_t kk){
 	return "gh_INVALID_RNG_CASE";
 };
 
+gh_addr_t gh_calc_power(long base, gh_addr_t adr);
+gh_addr_t gh_calc_side(gh_route_side_t sd, gh_addr_t adr);
+gh_addr_t gh_dec_power(long base, gh_addr_t adr);
+
 class hrange {
 public:
 	gh_addr_t min = GH_INVALID_ADDR;

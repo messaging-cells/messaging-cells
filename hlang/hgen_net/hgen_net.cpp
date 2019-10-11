@@ -1939,6 +1939,39 @@ hlognet_box::calc_all_targets_raddr(haddr_frame* ref_frm){
 	}
 }
 
+gh_addr_t
+gh_calc_power(long base, gh_addr_t adr){
+	GH_CK(base > 1);
+	bool was_neg = (adr < 0);
+	double pp = pow(base, labs(adr));
+	if(pp > LONG_MAX){
+		gh_abort("**** power_too_big_case_2. pow(%ld, %ld) > LONG_MAX **** \n", base, adr);
+	}
+	gh_addr_t vout = (gh_addr_t)pp;
+	if(was_neg){
+		vout = -vout;
+	}
+	return vout;
+}
+
+gh_addr_t
+gh_calc_side(gh_route_side_t sd, gh_addr_t adr){
+	GH_CK(sd != gh_invalid_side);
+	if(sd == gh_right_side){ return -adr; } 
+	return adr;
+}
+
+gh_addr_t
+gh_dec_power(long base, gh_addr_t adr){
+	GH_CK(base > 1);
+	gh_addr_t vout = 0;
+	if(labs(adr) >= base){
+		GH_CK((adr % base) == 0);
+		vout = adr / base;
+	} 
+	return vout;
+}
+
 gh_addr_t 
 haddr_frame::recalc_addr(gh_addr_t vin, hnode* nd){ // called by hrange::recalc
 	GH_CK(nd != gh_null);
@@ -1946,49 +1979,20 @@ haddr_frame::recalc_addr(gh_addr_t vin, hnode* nd){ // called by hrange::recalc
 		bool base_ok = (pow_base > 1);
 		bool idx_ok = (idx >= 0);
 		bool sz_ok = (idx < sz);
-		bool nat_vin_ok = (vin >= 0);
 	);
 	
 	gh_addr_t vout = vin;
 	switch(kind){
 		case gh_sm_to_bm_frm:{
-			GH_CK(base_ok);
-			GH_CK_PRT(nat_vin_ok, "vin=%ld\n", vin);
-			double pp = pow(pow_base, vout);
-			if(pp > LONG_MAX){
-				gh_abort("**** power_too_big_case_1. choose less adress number **** \n");
-			}
-			vout = (gh_addr_t)pp;
-			GH_CK(src_side != gh_invalid_side);
-			if(src_side == gh_right_side){
-				GH_CK(vout >= 0);
-				vout = -vout;
-			} 
+			vout = gh_calc_power(pow_base, vout);
+			vout = gh_calc_side(src_side, vout);
 		} break;
 		case gh_route_frm:{
 			GH_CK(base_ok);
 			if(has_zero){
-				if(labs(vout) >= pow_base){
-					GH_CK((vout % pow_base) == 0);
-					vout = vout / pow_base;
-				} else {
-					vout = 0;
-				}
+				vout = gh_dec_power(pow_base, vout);
 			}
-			GH_CK(src_side != gh_invalid_side);
-			if(src_side == gh_right_side){
-				GH_DBG_CODE(
-					if(vin < 0){
-						fprintf(stdout, "NEGATIVE_vin=%ld\n", vin);
-						if(nd != gh_null){ nd->print_node(stdout, gh_full_pt_prt); }
-						else {
-							fprintf(stdout, "NULL_NODE\n");
-						}
-					}
-				);
-				//GH_CK(vout >= 0);
-				vout = -vout;
-			} 
+			vout = gh_calc_side(src_side, vout);
 		}; break;
 		case gh_target_frm:{
 			GH_CK(src_side == gh_invalid_side);
@@ -1997,17 +2001,7 @@ haddr_frame::recalc_addr(gh_addr_t vin, hnode* nd){ // called by hrange::recalc
 			vout = idx + vout;
 		} break;
 		case gh_lognet_frm:{
-			GH_CK(base_ok);
-			//GH_CK_PRT(nat_vin_ok, "vin=%ld\n", vin);
-			bool was_neg = (vout < 0);
-			double pp = pow(pow_base, labs(vout));
-			if(pp > LONG_MAX){
-				gh_abort("**** power_too_big_case_2. pow(%ld, %ld) > LONG_MAX **** \n", pow_base, vout);
-			}
-			vout = (gh_addr_t)pp;
-			if(was_neg){
-				vout = -vout;
-			}
+			vout = gh_calc_power(pow_base, vout);
 		} break;
 		case gh_top_lognet_frm:{
 			GH_CK(src_side == gh_invalid_side);
