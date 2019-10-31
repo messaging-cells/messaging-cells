@@ -11,6 +11,9 @@
 
 #include "hgen_net.h"
 
+int test_m_to_n(int argc, char *argv[]);
+
+
 void gh_dbg_init_simu();
 
 struct thd_data {
@@ -22,27 +25,6 @@ struct thd_data {
 	bool sent_all = false;
 	bool end_it = false;
 };
-
-int
-test_m_to_n(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <num_in> <num_out>\n", argv[0]);
-		return 1;
-	}
-	
-	long mm = atol(argv[1]);
-	long nn = atol(argv[2]);
-
-	haddr_frame pnt_frm;
-	pnt_frm.pow_base = 2;
-	
-	hnode_box* bx = gh_get_binnet_m_to_n(pnt_frm, mm, nn, gh_null, gh_call_14);
-	GH_MARK_USED(bx);
-	
-	bx->print_box(stdout, gh_full_prt);
-	
-	return 0;
-}
 
 int
 test_bases(int argc, char *argv[]){
@@ -58,13 +40,13 @@ test_bases(int argc, char *argv[]){
 	GH_MARK_USED(bx);
 	switch(mm){
 		case 0: 
-			bx->init_as_2to3_route_box(gh_null);
+			bx->init_as_2to3_route_box(GH_NULL_OUT_ADDR, gh_null);
 			break;
 		case 1: 
-			bx->init_as_3to2_route_box(gh_null);
+			bx->init_as_3to2_route_box(GH_NULL_OUT_ADDR, gh_null);
 			break;
 		default: 
-			bx->init_as_2to2_route_box(gh_null);
+			bx->init_as_2to2_route_box(GH_NULL_OUT_ADDR, gh_null);
 			break;
 	}
 	
@@ -144,13 +126,14 @@ test_get_target(int argc, char *argv[]){
 	gh_dbg_calc_idx_and_sz(nin, nout, bx->get_frame());
 	bx->get_frame().print_frame(stdout);
 	
-	bx->init_target_box(nin, nout);
+	addr_vec_t all_addr;
+	bx->init_target_box(nin, nout, all_addr);
 
 	fprintf(stdout, "===========\n");
 	
 	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
 
-	bx->calc_all_1to2_raddr(gh_null);
+	//bx->calc_all_1to2_raddr(gh_null);
 	bx->print_box(stdout, gh_full_pt_prt);
 	
 	/*if(GH_GLOBALS.watch_bx != gh_null){
@@ -579,7 +562,8 @@ test_hlognet(int argc, char *argv[]){
 	fprintf(stdout, "height=%ld \n", bx->height);
 	fprintf(stdout, "===========\n");
 	
-	bx->init_lognet_box(ntg);
+	addr_vec_t out_addr;
+	bx->init_lognet_box(ntg, out_addr);
 	
 	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
 
@@ -1431,3 +1415,34 @@ hgen_globals::get_args(int argc, char** argv){
 
 	return true;
 }
+
+int
+test_m_to_n(int argc, char *argv[]){
+	if(argc < 3){
+		printf("%s <num_in> <num_out>\n", argv[0]);
+		return 1;
+	}
+	
+	long mm = atol(argv[1]);
+	long nn = atol(argv[2]);
+
+	haddr_frame pnt_frm;
+	pnt_frm.pow_base = 2;
+	
+	addr_vec_t tgt_addrs;
+	addr_vec_t all_addrs;
+	gh_init_addr_vec(0, tgt_addrs, all_addrs, nn, 
+					 GH_BASE_TWO, gh_left_side, false, "all_addrs");
+	
+	fprintf(stdout, "all_addrs=\n"); 
+	for(long aa = 0; aa < (long)all_addrs.size(); aa++){ fprintf(stdout, " %ld", all_addrs[aa]); }
+	fprintf(stdout, "\n\n ===================\n");
+	
+	hnode_box* bx = gh_get_binnet_m_to_n(pnt_frm, mm, nn, &all_addrs, gh_null, gh_call_14);
+	GH_MARK_USED(bx);
+	
+	bx->print_box(stdout, gh_full_prt);
+	
+	return 0;
+}
+

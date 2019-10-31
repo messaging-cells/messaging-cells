@@ -22,6 +22,10 @@ using namespace std;
 
 #define GH_BASE_TWO 2
 
+#define GH_MAX_OUTS 64
+
+#define GH_NULL_OUT_ADDR gh_null
+
 #define gh_min(v1, v2) (((v1) < (v2))?(v1):(v2))
 #define gh_max(v1, v2) (((v1) > (v2))?(v1):(v2))
 
@@ -160,6 +164,21 @@ class hlognet_box;
 typedef hnode* pnode_t;
 typedef vector<hnode**> ppnode_vec_t;
 
+typedef vector<gh_addr_t> addr_vec_t;
+
+void gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_t sd, bool has_z);
+
+void gh_pos_to_addr(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs, 
+					addr_vec_t& all_rel_pos, addr_vec_t& all_addrs);
+
+void gh_prt_addr_vec(addr_vec_t& tgt_addrs, const char* pfx);
+
+void gh_prt_addr_vec_with(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs, addr_vec_t& all_addrs,
+					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
+
+void gh_init_addr_vec(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs, addr_vec_t& all_addrs,
+					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
+
 //typedef hnode_target* (hnode_target::*gh_choose_tgt_simu_fn)();
 //typedef void (*gh_init_simu_fn)();
 
@@ -242,6 +261,8 @@ gh_get_opp_side(gh_route_side_t rt_sd){
 	}
 	return gh_invalid_side;
 }
+
+//class haddr_context {
 
 class haddr_frame {
 public:
@@ -479,6 +500,7 @@ public:
 #define gh_is_box_copy		5
 #define gh_is_trichotomy	6
 #define gh_is_lognet_io 	7
+#define gh_is_rgt_io 		8
 
 inline gh_flag_idx_t
 gh_get_opp_color_bit(gh_flag_idx_t col){
@@ -658,7 +680,7 @@ public:
 		return hc;
 	}
 	
-	void print_addr(FILE* ff);
+	void print_addr(FILE* ff, char pfx = '#');
 	void print_dbg_tgt_addr(FILE* ff, gh_prt_mode_t md);
 	
 	void create_thread_simu(long idx);
@@ -776,6 +798,11 @@ class hnode_target : public hnode_1to1 {
 public:
 	long bx_idx = GH_INVALID_IDX;
 	
+	bool dbg_io_has_lim = false;
+	gh_addr_t dbg_io_lim_addr = GH_INVALID_ADDR;
+	gh_addr_t dbg_io_addr = GH_INVALID_ADDR;
+	
+	
 	bool is_source_simu = false;
 	gh_addr_t curr_dest_simu = GH_INVALID_ADDR;
 	gh_rng_st_t curr_st_simu = gh_min_min_rng_st;
@@ -839,6 +866,9 @@ public:
 	
 	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
+
+	void
+	print_filter_info(FILE* ff);
 };
 
 class hnode_src : public hnode_1to1 {
@@ -868,8 +898,15 @@ public:
 	hmessage* one_range = gh_null;
 	
 	hmessage msg0;
-	hmessage msg1;
+	hmessage msg1; 
+	
+	long o_idx0 = GH_INVALID_IDX;
+	long o_idx1 = GH_INVALID_IDX;
 
+	bool filter_has_lim = false;
+	gh_addr_t filter_lim_addr = GH_INVALID_ADDR;
+	gh_addr_t filter_addr = GH_INVALID_ADDR;
+	
 	bool ack0 = false;
 	bool req0 = false;
 	bool req1 = false;
@@ -928,6 +965,47 @@ public:
 	
 	void	calc_msgs_raddr(haddr_frame* frm, bool dbg_prt = false);
 	
+	bool is_out0(hnode** ppo){
+		return (&out0 == ppo);
+	}
+	
+	bool is_out1(hnode** ppo){
+		return (&out1 == ppo);
+	}
+	
+	void	set_outs_idx();
+	long	get_smallest_idx();
+	long	get_out1_smallest_idx(){
+		GH_CK(out1 != gh_null);
+		GH_CK(out1->is_1to2());
+		if(out1 == this){
+			GH_CK(o_idx1 != GH_INVALID_IDX);
+			return o_idx1;
+		}
+		hnode_1to2* oo = (hnode_1to2*)out1;
+		return oo->get_smallest_idx();
+	}
+	
+	hnode_1to2* get_1to2_out0(){
+		GH_CK(out0 != gh_null);
+		GH_CK(out0->is_1to2());
+		return (hnode_1to2*)out0;
+	}
+	
+	hnode_1to2* get_1to2_out1(){
+		GH_CK(out1 != gh_null);
+		GH_CK(out1->is_1to2());
+		return (hnode_1to2*)out1;
+	}
+	
+	void set_filter_addr(long tgt_idx, addr_vec_t& tgt_addrs){
+		filter_addr = tgt_idx;
+		if(! tgt_addrs.empty()){
+			GH_CK(tgt_idx < (long)tgt_addrs.size());
+			filter_addr = tgt_addrs[tgt_idx];
+		}
+	}
+	
 	virtual bool 	get_ack0(){ return ack0; }
 	virtual bool 	get_req0(){ return req0; }
 	virtual bool 	get_req1(){ return req1; }
@@ -969,6 +1047,7 @@ public:
 	void run_one_range_simu();
 	void run_trichotomy_simu();
 	void run_dichotomy_simu();
+	
 };
 
 class hnode_2to1 : public hnode {
@@ -985,6 +1064,10 @@ public:
 	hnode* in1 = gh_null;
 	hnode* out0 = gh_null;
 
+	bool dbg_io_has_lim = false;
+	gh_addr_t dbg_io_lim_addr = GH_INVALID_ADDR;
+	gh_addr_t dbg_io_addr = GH_INVALID_ADDR;
+	
 	hnode_2to1(){
 		choose0 = true;
 		in0 = gh_null;
@@ -1239,10 +1322,13 @@ public:
 	
 	void init_sm_to_bm_ranges();
 	void set_limit_one_ranges();
+
+	void init_sm_to_bm_filters(addr_vec_t* out_addrs);
 };
 
 hnode_box*
-gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out, const char* dbg_qrt, gh_dbg_call_t dbg_case);
+gh_get_binnet_m_to_n(haddr_frame& pnt_frm, long num_in, long num_out, addr_vec_t* out_addr, 
+					 const char* dbg_qrt, gh_dbg_call_t dbg_case);
 
 class hroute_box : public hnode_box {
 public:
@@ -1255,12 +1341,12 @@ public:
 		release_nodes();
 	}
 	
-	void 	init_route_box(long num_in, long num_out, const char* dbg_qrt);
+	void 	init_route_box(long num_in, long num_out, addr_vec_t& out_addr, const char* dbg_qrt);
 	bool 	ck_route_box(long num_in, long num_out, int dbg_case);
 	
-	void 	init_as_2to2_route_box(const char* dbg_qrt);
-	void 	init_as_3to2_route_box(const char* dbg_qrt);
-	void 	init_as_2to3_route_box(const char* dbg_qrt);
+	void 	init_as_2to2_route_box(addr_vec_t* out_addr, const char* dbg_qrt);
+	void 	init_as_3to2_route_box(addr_vec_t* out_addr, const char* dbg_qrt);
+	void 	init_as_2to3_route_box(addr_vec_t* out_addr, const char* dbg_qrt);
 
 	hnode_1to2*	get_1to2_node(long idx){
 		GH_CK(idx < (long)all_nodes.size());
@@ -1302,8 +1388,8 @@ public:
 							 long num_idx, ppnode_vec_t& all_out, const char* dbg_qrt);
 	void 	resize_with_directs(long nw_side_sz);
 
-	void 	init_basic_target_box(long lft_ht, long rgt_ht);
-	void 	init_target_box(long lft_sz, long rgt_sz);
+	void 	init_basic_target_box(long lft_ht, long rgt_ht, addr_vec_t& out_addr);
+	void 	init_target_box(long lft_sz, long rgt_sz, addr_vec_t& out_addr);
 	bool 	ck_target_box(long lft_ht, long rgt_ht);
 	
 	void 	move_target_to(hlognet_box& bx);
@@ -1339,16 +1425,16 @@ public:
 	void 	init_all_target_addr();
 
 	void 	init_length(long num_elems);
-	void 	init_lognet_box(long num_elems, const char* dbg_qrt = gh_null);
+	void 	init_lognet_box(long num_elems, addr_vec_t& out_addr, const char* dbg_qrt = gh_null);
 	bool 	ck_lognet_box(long num_elems);
 	
 	long 	length(){
 		return get_frame().sz;
 	}
 	
-	void 	init_as_io();
+	void 	init_as_io(addr_vec_t& tgt_addrs);
 	
-	htarget_box* get_target_box(long idx);
+	htarget_box* get_target_box(long idx, addr_vec_t& out_addr);
 
 	virtual
 	void 	print_box(FILE* ff, gh_prt_mode_t md);
