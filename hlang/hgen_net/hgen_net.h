@@ -501,6 +501,8 @@ public:
 #define gh_is_trichotomy	6
 #define gh_is_lognet_io 	7
 #define gh_is_rgt_io 		8
+#define gh_is_interval 		9
+#define gh_has_limit 		10
 
 inline gh_flag_idx_t
 gh_get_opp_color_bit(gh_flag_idx_t col){
@@ -536,6 +538,9 @@ public:
 	
 	gh_addr_t dbg_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_tgt_quarter = gh_null;
+
+	gh_addr_t filter_lim_addr = GH_INVALID_ADDR;
+	gh_addr_t filter_addr = GH_INVALID_ADDR;
 	
 	hnode(){
 		simu_data = gh_null;
@@ -546,6 +551,9 @@ public:
 		dbg_tgt_quarter = GH_GLOBALS.dbg_curr_tgt_quarter;
 	}
 	virtual ~hnode(){}
+
+	void set_filter_addr(long tgt_idx, addr_vec_t& tgt_addrs, bool is_interval);
+	void print_filter_info(FILE* ff);
 	
 	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
@@ -798,11 +806,6 @@ class hnode_target : public hnode_1to1 {
 public:
 	long bx_idx = GH_INVALID_IDX;
 	
-	bool dbg_io_has_lim = false;
-	gh_addr_t dbg_io_lim_addr = GH_INVALID_ADDR;
-	gh_addr_t dbg_io_addr = GH_INVALID_ADDR;
-	
-	
 	bool is_source_simu = false;
 	gh_addr_t curr_dest_simu = GH_INVALID_ADDR;
 	gh_rng_st_t curr_st_simu = gh_min_min_rng_st;
@@ -866,9 +869,6 @@ public:
 	
 	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
-
-	void
-	print_filter_info(FILE* ff);
 };
 
 class hnode_src : public hnode_1to1 {
@@ -889,6 +889,17 @@ public:
 	
 };
 
+
+inline gh_addr_t 
+gh_get_addr(long tgt_idx, addr_vec_t& tgt_addrs){
+	gh_addr_t addr = tgt_idx;
+	if(! tgt_addrs.empty()){
+		GH_CK(tgt_idx < (long)tgt_addrs.size());
+		addr = tgt_addrs[tgt_idx];
+	}
+	return addr;
+}
+
 class hnode_1to2 : public hnode {
 public:
 	gh_1to2_kind_t rou_kind = gh_invalid_rou;
@@ -903,10 +914,6 @@ public:
 	long o_idx0 = GH_INVALID_IDX;
 	long o_idx1 = GH_INVALID_IDX;
 
-	bool filter_has_lim = false;
-	gh_addr_t filter_lim_addr = GH_INVALID_ADDR;
-	gh_addr_t filter_addr = GH_INVALID_ADDR;
-	
 	bool ack0 = false;
 	bool req0 = false;
 	bool req1 = false;
@@ -998,14 +1005,6 @@ public:
 		return (hnode_1to2*)out1;
 	}
 	
-	void set_filter_addr(long tgt_idx, addr_vec_t& tgt_addrs){
-		filter_addr = tgt_idx;
-		if(! tgt_addrs.empty()){
-			GH_CK(tgt_idx < (long)tgt_addrs.size());
-			filter_addr = tgt_addrs[tgt_idx];
-		}
-	}
-	
 	virtual bool 	get_ack0(){ return ack0; }
 	virtual bool 	get_req0(){ return req0; }
 	virtual bool 	get_req1(){ return req1; }
@@ -1064,10 +1063,6 @@ public:
 	hnode* in1 = gh_null;
 	hnode* out0 = gh_null;
 
-	bool dbg_io_has_lim = false;
-	gh_addr_t dbg_io_lim_addr = GH_INVALID_ADDR;
-	gh_addr_t dbg_io_addr = GH_INVALID_ADDR;
-	
 	hnode_2to1(){
 		choose0 = true;
 		in0 = gh_null;
