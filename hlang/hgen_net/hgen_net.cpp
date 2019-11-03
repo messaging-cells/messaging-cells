@@ -150,14 +150,14 @@ hnode::print_filter_info(FILE* ff){
 	bool has_lm = get_flag(gh_has_limit);
 	if(has_lm){
 		fprintf(ff, "[");
-		fprintf(ff, "%ld,", filter_lim_addr);
 	}
 	
 	char itch = (get_flag(gh_is_interval))?('I'):(' ');
 	char fch = (get_flag(gh_is_rgt_io))?('>'):('<');
-	fprintf(ff, "flt%c%c%ld", itch, fch, filter_addr);
+	fprintf(ff, " %c%c%ld", itch, fch, filter_addr);
+	
 	if(has_lm){
-		fprintf(ff, "]");
+		fprintf(ff, ", %ld]", filter_lim_addr);
 	}
 }
 	
@@ -1626,8 +1626,8 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht, addr_vec_t& tgt_add
 			hnode_1to2* r_in = add_1to2(get_frame(), gh_bs_tgt_rgt_in_rou);
 			hnode_2to1* r_out = add_2to1();
 			
-			if(is_rgt){ r_in->set_flag(gh_is_rgt_io); }
-			else{ l_in->set_flag(gh_is_rgt_io); }
+			//if(is_rgt){ r_in->set_flag(gh_is_rgt_io); }
+			//else{ l_in->set_flag(gh_is_rgt_io); }
 			
 			l_in->set_filter_addr(tgt_idx, tgt_addrs, true);
 			r_in->set_filter_addr(tgt_idx, tgt_addrs, true);
@@ -1727,9 +1727,11 @@ htarget_box::init_basic_target_box(long lft_ht, long rgt_ht, addr_vec_t& tgt_add
 	hnode_1to2* bx_in = add_1to2(get_frame(), gh_bs_tgt_bx_in_rou); // ERROR_tg3
 	hnode_2to1* bx_out = add_2to1();
 	
+	/*
 	bool bx_rgt = is_rgt;
 	if(rt_side == gh_right_side){ bx_rgt = ! bx_rgt; }
-	if(bx_rgt){ bx_in->set_flag(gh_is_rgt_io); }	
+	if(bx_rgt){ bx_in->set_flag(gh_is_rgt_io); }
+	*/
 	
 	bx_in->set_filter_addr(tgt_idx, tgt_addrs, true);
 	
@@ -1937,7 +1939,7 @@ gh_init_addr_vec(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs, addr_vec_t& all_addrs
 	gh_init_rel_pos(all_rel_pos, sz, pw_b, sd, has_z);
 	gh_pos_to_addr(tgt_idx, tgt_addrs, all_rel_pos, all_addrs);
 	
-	GH_DBG_CODE(gh_prt_addr_vec_with(tgt_idx, tgt_addrs, all_addrs, sz, pw_b, sd, has_z, dbg_str));
+	//GH_DBG_CODE(gh_prt_addr_vec_with(tgt_idx, tgt_addrs, all_addrs, sz, pw_b, sd, has_z, dbg_str));
 }
 
 void
@@ -2060,6 +2062,8 @@ hnode::set_filter_addr(long tgt_idx, addr_vec_t& tgt_addrs, bool is_interval){
 	gh_addr_t tg_addr = tgt_idx;
 	gh_addr_t nx_tg_addr = tgt_idx + 1;
 
+	//GH_DBG_CODE(gh_prt_addr_vec(tgt_addrs, "set_filter_addr.tgt_addrs="));
+	
 	bool is_rgt = false;
 	
 	if(is_interval){
