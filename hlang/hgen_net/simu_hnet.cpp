@@ -35,8 +35,7 @@ test_bases(int argc, char *argv[]){
 	
 	long mm = atol(argv[1]);
 
-	haddr_frame pnt_frm;
-	hroute_box* bx = new hroute_box(pnt_frm);
+	hroute_box* bx = new hroute_box(GH_BASE_TWO);
 	GH_MARK_USED(bx);
 	switch(mm){
 		case 0: 
@@ -106,6 +105,23 @@ test_num_io(int argc, char *argv[]){
 	return 0;
 }
 
+void 
+gh_dbg_calc_idx_and_sz(long num_in, long num_out, long bs, long& tg_idx, long& tgs_sz){
+	GH_CK(bs > 1);
+	long mx = gh_max(num_in, num_out);
+	GH_CK(mx > 0);
+	double pp = pow(bs, mx);
+	if((pp + 1) > LONG_MAX){
+		gh_abort("**** power too big 1. choose less inputs or less outputs **** \n");
+	}
+	tg_idx = pp + 1;
+	if((tg_idx + pp + 1) > LONG_MAX){
+		gh_abort("**** power too big 2. choose less inputs or less outputs **** \n");
+	}
+	tgs_sz = tg_idx + pp + 1;
+	GH_CK_PRT((tg_idx >= 0), "%ld %ld %ld \n", bs, mx, tg_idx);
+}
+
 int
 test_get_target(int argc, char *argv[]){
 	if(argc < 4){
@@ -118,16 +134,15 @@ test_get_target(int argc, char *argv[]){
 	long nout = atol(argv[3]);
 	fprintf(stdout, "test_get_target base=%ld #in=%ld #out=%ld\n", bb, nin, nout);
 
-	haddr_frame	pnt_frm;
-	pnt_frm.pow_base = bb;
+	htarget_box* bx = new htarget_box(bb);
 	
-	htarget_box* bx = new htarget_box(pnt_frm);
-	
-	gh_dbg_calc_idx_and_sz(nin, nout, bx->get_frame());
-	bx->get_frame().print_frame(stdout);
+	long tg_idx = 0;
+	long tgs_sz = 0;
+	gh_dbg_calc_idx_and_sz(nin, nout, bb, tg_idx, tgs_sz);
+	//bx->get_frame().print_frame(stdout);
 	
 	addr_vec_t all_addr;
-	bx->init_target_box(nin, nout, all_addr);
+	bx->init_target_box(tg_idx, nin, nout, all_addr);
 
 	fprintf(stdout, "===========\n");
 	
@@ -139,8 +154,6 @@ test_get_target(int argc, char *argv[]){
 	/*if(GH_GLOBALS.watch_bx != gh_null){
 		fprintf(stdout, "\nBEFORE_CALC_ADDR---------------------------------\n");
 		GH_GLOBALS.watch_bx->print_box(stdout, gh_full_pt_prt);
-		
-		GH_GLOBALS.watch_bx->calc_all_1to2_raddr(GH_GLOBALS.ref_frm);
 		
 		fprintf(stdout, "\nAFTER_CALC_ADDR---------------------------------\n");
 		GH_GLOBALS.watch_bx->print_box(stdout, gh_full_pt_prt);
@@ -287,10 +300,10 @@ hnode_1to2::run_1to2_simu(){
 }
 
 bool
-hnode_2to1::ck_out_interval(){
+hnode_2to1::ck_out_interval(char dbg_in){
 	if(! get_flag(gh_is_lognet_io)){ return true; }
 	if(! in_interval(msg0.mg_dst)){
-		fprintf(stdout, "BAD_RANGE with mg_dst=%ld\n", msg0.mg_dst);
+		fprintf(stdout, "BAD_RANGE with mg_dst=%ld in=%c\n", msg0.mg_dst, dbg_in);
 		fprintf(stdout, "\t");
 		print_node(stdout, gh_full_pt_prt);
 		fprintf(stdout, "\t");
@@ -325,14 +338,14 @@ hnode_2to1::run_2to1_simu(){
 				if(choose0){
 					choose0 = false;
 					in_msg0->copy_mg_to(msg0, in0, nod);
-					GH_CK(ck_out_interval());
+					GH_CK(ck_out_interval('0'));
 					
 					req0 = true;
 					ack0 = true;
 				} else {
 					choose0 = true;
 					in_msg1->copy_mg_to(msg0, in1, nod);
-					GH_CK(ck_out_interval());
+					GH_CK(ck_out_interval('1'));
 					
 					req0 = true;
 					ack1 = true;
@@ -340,14 +353,14 @@ hnode_2to1::run_2to1_simu(){
 			}
 			if(in0_rq && ! in1_rq){
 				in_msg0->copy_mg_to(msg0, in0, nod);
-				GH_CK(ck_out_interval());
+				GH_CK(ck_out_interval('0'));
 					
 				req0 = true;
 				ack0 = true;
 			} 
 			if(! in0_rq && in1_rq){
 				in_msg1->copy_mg_to(msg0, in1, nod);
-				GH_CK(ck_out_interval());
+				GH_CK(ck_out_interval('1'));
 					
 				req0 = true;
 				ack1 = true;
@@ -503,7 +516,6 @@ hlognet_box::run_hlognet_simu(){
 	wait_all_threads_ended_simu();
 }
 
-haddr_frame& gh_dbg_init_out_frames(long frms_idx, long bb, long ntg);
 void gh_dbg_post_test_prints(hlognet_box* bx);
 
 int
@@ -525,23 +537,12 @@ test_hlognet(int argc, char *argv[]){
 	fprintf(stdout, "test_hlognet base=%ld #ntg=%ld TEST=%ld frms=%ld %s \n", 
 			bb, ntg, GH_GLOBALS.idx_test_simu, frms_idx, add_str);
 	
-	haddr_frame	pnt_frm;
-	pnt_frm.pow_base = bb;
-
-	haddr_frame* out_frm = &pnt_frm;
-	if(add_frms){
-		haddr_frame& frm2 = gh_dbg_init_out_frames(frms_idx, bb, ntg);
-		GH_GLOBALS.added_frames_simu = &frm2;
-		out_frm = &frm2;
-	}
-	
-	GH_CK(out_frm != gh_null);
-	hlognet_box* bx = new hlognet_box(*out_frm);
+	hlognet_box* bx = new hlognet_box(bb);
 	if(! add_frms || (frms_idx == 0)){
-		bx->get_frame().kind = gh_top_lognet_frm;
+		//bx->get_frame().kind = gh_top_lognet_frm;
 	}
 	bx->init_length(ntg);
-	bx->get_frame().print_frame(stdout);
+	//bx->get_frame().print_frame(stdout);
 	fprintf(stdout, "height=%ld \n", bx->height);
 	fprintf(stdout, "===========\n");
 	
@@ -604,8 +605,11 @@ hnode_target::run_target_simu(){
 			GH_CK_PRT(dst_ok, "ERROR: %ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) \n",
 				addr, filter_addr, filter_lim_addr, in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0
 			);
-			fprintf(stdout, "%ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) \n", addr, filter_addr, filter_lim_addr, 
+			fprintf(stdout, "%ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) ", addr, filter_addr, filter_lim_addr, 
 					in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0);
+			print_filter_info(stdout);
+			fprintf(stdout, "\n");
+			
 			num_msg_rcv_simu++;
 			
 			ack0 = true;
@@ -1009,11 +1013,8 @@ gh_dbg_prt_node(hlognet_box* bx, gh_addr_t adr){
 		hnode* nd = nods[adr];
 		if(nd->is_1to2()){
 			hnode_1to2& nd2 = *((hnode_1to2*)nd);
-			if(nd2.node_frm != gh_null){
-				fprintf(stdout, "%ld:", nd2.addr);
-				nd2.print_node(stdout, gh_full_pt_prt);
-				nd2.node_frm->print_all_frames(stdout);
-			}
+			fprintf(stdout, "%ld:", nd2.addr);
+			nd2.print_node(stdout, gh_full_pt_prt);
 		}
 	}
 }
@@ -1027,11 +1028,6 @@ gh_dbg_post_test_prints(hlognet_box* bx){
 	for(long aa = 0; aa < (long)dbg_nods.size(); aa++){
 		gh_addr_t idx = dbg_nods[aa];
 		gh_dbg_prt_node(bx, idx);
-	}
-	
-	if(GH_GLOBALS.added_frames_simu != gh_null){
-		fprintf(stdout, "=========== ADDED_FRAMES ===================\n");
-		GH_GLOBALS.added_frames_simu->print_all_frames(stdout);
 	}
 	
 }
@@ -1091,54 +1087,6 @@ hnode_target::inc_st_simu(){
 	vv++;
 	curr_st_simu = (gh_dbg_st_t)vv;
 	return false;
-}
-
-haddr_frame&
-gh_dbg_init_out_frames(long frms_idx, long bb, long ntg){
-	haddr_frame* nx_frm = gh_null;
-	haddr_frame* pr_frm = gh_null;
-	
-	if(frms_idx == 1){
-		// ---------------
-		pr_frm = gh_null;
-		nx_frm = new haddr_frame;
-		GH_GLOBALS.all_frames.push_back(nx_frm);
-
-		nx_frm->kind = gh_top_lognet_frm;
-		nx_frm->pow_base = bb;
-		nx_frm->sz = 11;
-
-		// ---------------
-		pr_frm = nx_frm;
-		nx_frm = new haddr_frame;
-		nx_frm->init_with(*pr_frm);
-
-		nx_frm->kind = gh_target_frm;
-		nx_frm->idx = 8;
-		nx_frm->sz = 11;
-
-		// ---------------
-		pr_frm = nx_frm;
-		nx_frm = new haddr_frame;
-		nx_frm->init_with(*pr_frm);
-
-		nx_frm->kind = gh_route_frm;
-		nx_frm->src_side = gh_right_side;
-		nx_frm->has_zero = true;
-		
-		
-		// ---------------
-		GH_CK(nx_frm != gh_null);
-		
-		return *nx_frm;
-	}
-	
-	nx_frm = new haddr_frame;
-	GH_GLOBALS.all_frames.push_back(nx_frm);
-	
-	nx_frm->pow_base = bb;
-	return *nx_frm;
-	
 }
 
 void
@@ -1241,9 +1189,6 @@ test_m_to_n(int argc, char *argv[]){
 	long mm = atol(argv[1]);
 	long nn = atol(argv[2]);
 
-	haddr_frame pnt_frm;
-	pnt_frm.pow_base = 2;
-	
 	addr_vec_t tgt_addrs;
 	addr_vec_t all_addrs;
 	gh_init_addr_vec(0, tgt_addrs, all_addrs, nn, 
@@ -1253,7 +1198,7 @@ test_m_to_n(int argc, char *argv[]){
 	for(long aa = 0; aa < (long)all_addrs.size(); aa++){ fprintf(stdout, " %ld", all_addrs[aa]); }
 	fprintf(stdout, "\n\n ===================\n");
 	
-	hnode_box* bx = gh_get_binnet_m_to_n(pnt_frm, mm, nn, &all_addrs, gh_null, gh_call_14);
+	hnode_box* bx = gh_get_binnet_m_to_n(mm, nn, &all_addrs, gh_null, gh_call_14);
 	GH_MARK_USED(bx);
 	
 	bx->print_box(stdout, gh_full_prt);
