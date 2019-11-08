@@ -105,6 +105,12 @@ enum gh_route_side_t {
 	gh_right_side
 };
 
+enum gh_slice_type_t {
+	gh_invalid_slc,
+	gh_inc_slc,
+	gh_dec_slc
+};
+
 enum gh_1to2_kind_t {
 	gh_invalid_rou,
 	gh_sm_to_bm_rou,
@@ -156,6 +162,52 @@ typedef vector<hnode**> ppnode_vec_t;
 
 typedef vector<gh_addr_t> addr_vec_t;
 
+class slice_set {
+public:
+	addr_vec_t slc_all;
+	gh_slice_type_t slc_orig = gh_invalid_slc;
+	
+	void init_slice_set(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
+					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
+
+	
+	void init_orig(slice_set& pnt){
+		if(pnt.empty()){
+			slc_orig = gh_inc_slc;
+			if(is_dec()){
+				slc_orig = gh_dec_slc;
+			} 
+			return;
+		}
+		slc_orig = pnt.slc_orig;
+	}
+	
+	bool is_dec(){
+		if((long)slc_all.size() < 2){
+			return false;
+		}
+		if(slc_all[0] > slc_all[1]){
+			return true;
+		}
+		return false;
+	}
+	
+	gh_addr_t& get_addr(long idx){
+		GH_CK(idx >= 0);
+		GH_CK(idx < (long)slc_all.size());
+		return slc_all[idx];
+	}
+	
+	long size(){
+		return (long)slc_all.size();
+	}
+
+	bool empty(){
+		return slc_all.empty();
+	}
+	
+};
+
 void gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_t sd, bool has_z);
 
 void gh_pos_to_addr(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs, 
@@ -163,10 +215,7 @@ void gh_pos_to_addr(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs,
 
 void gh_prt_addr_vec(addr_vec_t& tgt_addrs, const char* pfx);
 
-void gh_prt_addr_vec_with(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs, addr_vec_t& all_addrs,
-					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
-
-void gh_init_addr_vec(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs, addr_vec_t& all_addrs,
+void gh_prt_addr_vec_with(gh_addr_t tgt_idx, slice_set& tgt_addrs, slice_set& all_addrs,
 					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
 
 //typedef hnode_target* (hnode_target::*gh_choose_tgt_simu_fn)();
@@ -203,8 +252,8 @@ public:
 	
 	bool 		do_run_simu = true;
 	bool 		pretty_prt_simu = false;
-	bool 		add_frms_simu = false;
-	long 		frms_idx_simu = 0;
+	bool 		add_ctx_simu = false;
+	long 		context_idx_simu = 0;
 	long 		base_simu = 2;
 	gh_addr_t	num_target_simu = 3;
 	
@@ -366,7 +415,7 @@ public:
 	}
 	virtual ~hnode(){}
 
-	void set_filter_addr(long tgt_idx, addr_vec_t& tgt_addrs, bool is_interval, long tot_elems = 0);
+	void set_filter_addr(long tgt_idx, slice_set& tgt_addrs, bool is_interval, long tot_elems = 0);
 	void print_filter_info(FILE* ff);
 	
 	bool in_interval(gh_addr_t addr);
@@ -677,11 +726,12 @@ public:
 
 
 inline gh_addr_t 
-gh_get_addr(long tgt_idx, addr_vec_t& tgt_addrs){
+gh_get_addr(long tgt_idx, slice_set& tgt_addrs){ 
+	addr_vec_t& all_tgt = tgt_addrs.slc_all;
 	gh_addr_t addr = tgt_idx;
-	if(! tgt_addrs.empty()){
-		GH_CK(tgt_idx < (long)tgt_addrs.size());
-		addr = tgt_addrs[tgt_idx];
+	if(! all_tgt.empty()){
+		GH_CK(tgt_idx < (long)all_tgt.size());
+		addr = all_tgt[tgt_idx];
 	}
 	return addr;
 }
@@ -726,8 +776,22 @@ public:
 		return (&out1 == ppo);
 	}
 	
-	void	set_outs_idx();
+	void	set_outs_smallest_idx();
 	long	get_smallest_idx();
+	void	set_outs_biggest_idx();
+	long	get_biggest_idx();
+
+	long	get_out0_biggest_idx(){
+		GH_CK(out0 != gh_null);
+		GH_CK(out0->is_1to2());
+		if(out0 == this){
+			GH_CK(o_idx0 != GH_INVALID_IDX);
+			return o_idx0;
+		}
+		hnode_1to2* oo = (hnode_1to2*)out0;
+		return oo->get_biggest_idx();
+	}
+	
 	long	get_out1_smallest_idx(){
 		GH_CK(out1 != gh_null);
 		GH_CK(out1->is_1to2());
@@ -1002,11 +1066,11 @@ public:
 	void remove_connected_directs();
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
-	void init_sm_to_bm_filters(addr_vec_t* out_addrs);
+	void init_sm_to_bm_filters(slice_set* out_addrs);
 };
 
 hnode_box*
-gh_get_binnet_m_to_n(long num_in, long num_out, addr_vec_t* out_addr, 
+gh_get_binnet_m_to_n(long num_in, long num_out, slice_set* out_addr, 
 					 const char* dbg_qrt, gh_dbg_call_t dbg_case);
 
 class hroute_box : public hnode_box {
@@ -1019,12 +1083,12 @@ public:
 		release_nodes();
 	}
 	
-	void 	init_route_box(long num_in, long num_out, addr_vec_t& out_addr, const char* dbg_qrt);
+	void 	init_route_box(long num_in, long num_out, slice_set& out_addr, const char* dbg_qrt);
 	bool 	ck_route_box(long num_in, long num_out, int dbg_case);
 	
-	void 	init_as_2to2_route_box(addr_vec_t* out_addr, const char* dbg_qrt);
-	void 	init_as_3to2_route_box(addr_vec_t* out_addr, const char* dbg_qrt);
-	void 	init_as_2to3_route_box(addr_vec_t* out_addr, const char* dbg_qrt);
+	void 	init_as_2to2_route_box(slice_set* out_addr, const char* dbg_qrt);
+	void 	init_as_3to2_route_box(slice_set* out_addr, const char* dbg_qrt);
+	void 	init_as_2to3_route_box(slice_set* out_addr, const char* dbg_qrt);
 
 	hnode_1to2*	get_1to2_node(long idx){
 		GH_CK(idx < (long)all_nodes.size());
@@ -1065,8 +1129,8 @@ public:
 							 long num_idx, ppnode_vec_t& all_out, const char* dbg_qrt);
 	void 	resize_with_directs(long nw_side_sz);
 
-	void 	init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, addr_vec_t& tgt_addrs);
-	void 	init_target_box(long tgt_idx, long lft_sz, long rgt_sz, addr_vec_t& tgt_addrs);
+	void 	init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& tgt_addrs);
+	void 	init_target_box(long tgt_idx, long lft_sz, long rgt_sz, slice_set& tgt_addrs);
 	bool 	ck_target_box(long lft_ht, long rgt_ht);
 	
 	void 	move_target_to(hlognet_box& bx);
@@ -1101,12 +1165,12 @@ public:
 	void 	init_all_target_addr();
 
 	void 	init_length(long num_elems);
-	void 	init_lognet_box(long num_elems, addr_vec_t& out_addr, const char* dbg_qrt = gh_null);
+	void 	init_lognet_box(long num_elems, slice_set& out_addr, const char* dbg_qrt = gh_null);
 	bool 	ck_lognet_box(long num_elems);
 	
-	void 	init_as_io(addr_vec_t& tgt_addrs);
+	void 	init_as_io(slice_set& tgt_addrs);
 	
-	htarget_box* get_target_box(long idx, addr_vec_t& out_addr);
+	htarget_box* get_target_box(long idx, slice_set& out_addr);
 
 	virtual
 	void 	print_box(FILE* ff, gh_prt_mode_t md);
