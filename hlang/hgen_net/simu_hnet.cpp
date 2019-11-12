@@ -142,7 +142,7 @@ test_get_target(int argc, char *argv[]){
 	//bx->get_frame().print_frame(stdout);
 	
 	slice_set all_addr;
-	bx->init_target_box(tg_idx, nin, nout, all_addr);
+	bx->init_target_box(tg_idx, nin, nout, all_addr, tgs_sz);
 
 	fprintf(stdout, "===========\n");
 	
@@ -742,7 +742,7 @@ hnode_target::dbg_nxt_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 			break;
 	}
 
-	GH_CK_PRT((in_interval(src)), "%d src=%ld %s \n", print_node(stdout, gh_full_pt_prt), src,
+	GH_CK_PRT((in_interval(src)), "%d src=%ld %s \n", print_node(stdout, gh_full_prt), src,
 		gh_dbg_st_case_str(curr_st_simu)
 	);
 	GH_CK(tg->in_interval(dst)); 
@@ -1186,9 +1186,9 @@ gh_addr_t
 hnode::get_diff_simu(){
 	GH_CK(get_flag(gh_is_interval));
 	bool hs_lm = get_flag(gh_has_limit);
-	bool is_rgt = get_flag(gh_is_rgt_io);
+	bool is_gt = get_flag(gh_is_bt_cmp);
 	GH_MARK_USED(hs_lm);
-	GH_MARK_USED(is_rgt);
+	GH_MARK_USED(is_gt);
 	
 	if(! hs_lm){
 		return 0;
@@ -1204,69 +1204,38 @@ hnode::get_diff_simu(){
 gh_addr_t
 hnode::get_min_simu(){
 	GH_CK(get_flag(gh_is_interval));
-	bool hs_lm = get_flag(gh_has_limit);
-	bool is_rgt = get_flag(gh_is_rgt_io);
-	GH_MARK_USED(hs_lm);
-	GH_MARK_USED(is_rgt);
+	bool is_gt = get_flag(gh_is_bt_cmp);
+	bool is_eq = get_flag(gh_is_eq_cmp);
 	
-	gh_addr_t min = filter_addr;
-	gh_addr_t max = filter_lim_addr;	
-	
-	gh_addr_t rr = GH_INVALID_ADDR;
-	if(min < max){ rr = min; } 
-	else { rr = max + 1; }
-	
-	GH_CK(rr != GH_INVALID_ADDR);
-	if(rr != GH_INVALID_ADDR){ return rr; }
-	return rr + 1;
+	gh_addr_t adr = filter_addr;
+	if(is_eq){
+		return adr;
+	} 
+	if(is_gt){
+		return adr + 1;
+	}
+	return adr - 1;
 }
 
 gh_addr_t
 hnode::get_max_simu(){
 	GH_CK(get_flag(gh_is_interval));
-	bool hs_lm = get_flag(gh_has_limit);
-	bool is_rgt = get_flag(gh_is_rgt_io);
-	GH_MARK_USED(hs_lm);
-	GH_MARK_USED(is_rgt);
+	bool has_lim = get_flag(gh_has_limit);
+	bool is_gt = get_flag(gh_is_bt_cmp);
+	bool is_eq = get_flag(gh_is_eq_cmp);
 	
-	gh_addr_t min = filter_addr;
-	gh_addr_t max = filter_lim_addr;	
-	
-	gh_addr_t rr = GH_INVALID_ADDR;
-	if(min < max){ rr = (max - 1); } 
-	else { rr = min; }
-	
-	GH_CK(rr != GH_INVALID_ADDR);
-	if(rr != GH_INVALID_ADDR){ return rr; }
-	return rr - 1;
-}
-
-bool
-hnode::in_interval(gh_addr_t addr){
-	bool is_itv = get_flag(gh_is_interval);
-	bool is_rgt = get_flag(gh_is_rgt_io);
-	
-	if(! is_itv){
-		if(! is_rgt){
-			return (addr < filter_addr);
-		} 
-		return (addr > filter_addr);
+	if(! has_lim){
+		return get_min_simu();
 	}
 	
-	GH_CK(is_itv);
-	bool hs_lm = get_flag(gh_has_limit);
-	
-	if(! hs_lm){
-		if(! is_rgt){
-			return (addr >= filter_addr);
-		} else {
-			return (addr <= filter_addr);
-		}
+	gh_addr_t adr = filter_lim_addr;
+	if(! is_eq){
+		return adr;
+	} 
+	if(is_gt){
+		return adr - 1;
 	}
-	if(! is_rgt){
-		return ((addr >= filter_addr) && (addr < filter_lim_addr));
-	}
-	return ((addr <= filter_addr) && (addr > filter_lim_addr));
+	return adr + 1;
 }
 
 void
@@ -1307,5 +1276,39 @@ test_m_to_n(int argc, char *argv[]){
 	bx->print_box(stdout, gh_full_prt);
 	
 	return 0;
+}
+
+bool
+hnode::in_interval(gh_addr_t addr){
+	bool is_itv = get_flag(gh_is_interval);
+	bool is_gt = get_flag(gh_is_bt_cmp);
+	bool is_eq = get_flag(gh_is_eq_cmp);
+	bool hs_lm = get_flag(gh_has_limit);
+	
+	if(! is_itv || ! hs_lm){
+		if(is_gt){
+			if(is_eq){
+				return (addr >= filter_addr);
+			}
+			return (addr > filter_addr);
+		} 
+		if(is_eq){
+			return (addr <= filter_addr);
+		}
+		return (addr < filter_addr);
+	}
+	
+	GH_CK(is_itv);
+	
+	if(is_gt){
+		if(is_eq){
+			return ((addr >= filter_addr) && (addr < filter_lim_addr));
+		}
+		return ((addr > filter_addr) && (addr <= filter_lim_addr));
+	}
+	if(is_eq){
+		return ((addr <= filter_addr) && (addr > filter_lim_addr));
+	}
+	return ((addr < filter_addr) && (addr >= filter_lim_addr));
 }
 

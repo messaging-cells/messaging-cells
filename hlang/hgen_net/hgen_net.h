@@ -192,6 +192,17 @@ public:
 		return false;
 	}
 	
+	bool is_orig_dec(){
+		GH_CK(slc_orig != gh_invalid_slc);
+		return (slc_orig == gh_dec_slc);
+	}
+	
+	bool is_pre_sliced(){
+		GH_CK(size() > 1);
+		bool is_pr = (is_orig_dec() != is_dec());
+		return is_pr;
+	}
+	
 	gh_addr_t& get_addr(long idx){
 		GH_CK(idx >= 0);
 		GH_CK(idx < (long)slc_all.size());
@@ -385,9 +396,10 @@ public:
 
 #define gh_is_box_copy		1
 #define gh_is_lognet_io 	2
-#define gh_is_rgt_io 		3
-#define gh_is_interval 		4
-#define gh_has_limit 		5
+#define gh_is_bt_cmp		3
+#define gh_is_eq_cmp		4
+#define gh_is_interval 		5
+#define gh_has_limit 		6
 
 inline bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
 inline bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
@@ -415,7 +427,8 @@ public:
 	}
 	virtual ~hnode(){}
 
-	void set_filter_addr(long tgt_idx, slice_set& tgt_addrs, bool is_interval, long tot_elems = 0);
+	void set_filter_interval(long tgt_idx, slice_set& tgt_addrs, long tot_elems);
+	void set_filter_addr(long tgt_idx, slice_set& tgt_addrs);
 	void print_filter_info(FILE* ff);
 	
 	bool in_interval(gh_addr_t addr);
@@ -1129,8 +1142,8 @@ public:
 							 long num_idx, ppnode_vec_t& all_out, const char* dbg_qrt);
 	void 	resize_with_directs(long nw_side_sz);
 
-	void 	init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& tgt_addrs);
-	void 	init_target_box(long tgt_idx, long lft_sz, long rgt_sz, slice_set& tgt_addrs);
+	void 	init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& tgt_addrs, long tot_tgt);
+	void 	init_target_box(long tgt_idx, long lft_sz, long rgt_sz, slice_set& tgt_addrs, long tot_tgt);
 	bool 	ck_target_box(long lft_ht, long rgt_ht);
 	
 	void 	move_target_to(hlognet_box& bx);

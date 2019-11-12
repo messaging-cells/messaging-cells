@@ -122,15 +122,19 @@ hnode::print_filter_info(FILE* ff){
 		fprintf(ff, "[");
 	}
 	
-	bool is_itv = get_flag(gh_is_interval);
-	bool is_rgt = get_flag(gh_is_rgt_io);
+	bool is_gt = get_flag(gh_is_bt_cmp);
+	bool is_eq = get_flag(gh_is_eq_cmp);
 
 	const char* cmstr = "?";
-	if(! is_itv){ if(! is_rgt){ cmstr = "<"; } else { cmstr = ">"; } }
-	else { if(! is_rgt){ cmstr = ">="; } else { cmstr = "<="; } }
+	if(is_gt){ 
+		if(is_eq){ cmstr = ">="; } else { cmstr = ">"; }
+		
+	} else { 
+		if(is_eq){ cmstr = "<="; } else { cmstr = "<"; }
+	}
 	
 	char itch = (get_flag(gh_is_interval))?('I'):(' ');
-	//char fch = (get_flag(gh_is_rgt_io))?('>'):('<');
+	
 	fprintf(ff, " %c%s%ld", itch, cmstr, filter_addr);
 	
 	if(has_lm){
@@ -721,22 +725,26 @@ hroute_box::init_as_2to2_route_box(slice_set* pt_out_addrs, const char* dbg_qrt)
 	slice_set& out_addrs = *pt_out_addrs;
 	GH_CK(out_addrs.size() == 2);
 	
-	bool is_rgt = false;
-	if(out_addrs.is_dec()){
-		is_rgt = true;
-	}
+	bool is_dec_itv = out_addrs.is_dec();
+	bool is_pre_itv = out_addrs.is_pre_sliced();
 	
 	hnode_1to2* nd0 = add_1to2(gh_2to2_nd0_rou, dbg_qrt);
 	hnode_1to2* nd1 = add_1to2(gh_2to2_nd1_rou, dbg_qrt);
 	hnode_2to1* nd2 = add_2to1(dbg_qrt);
 	hnode_2to1* nd3 = add_2to1(dbg_qrt);
 	
-	if(is_rgt){ 
-		nd0->set_flag(gh_is_rgt_io); 
-		nd1->set_flag(gh_is_rgt_io); 
+	if(is_dec_itv){ 
+		nd0->set_flag(gh_is_bt_cmp); 
+		nd1->set_flag(gh_is_bt_cmp); 
+	}
+	long idx_flt = 1;
+	if(is_pre_itv){ 
+		idx_flt = 0;
+		nd0->set_flag(gh_is_eq_cmp); 
+		nd1->set_flag(gh_is_eq_cmp); 
 	}
 	
-	gh_addr_t flt_addr = out_addrs.get_addr(1);
+	gh_addr_t flt_addr = out_addrs.get_addr(idx_flt);
 	nd0->filter_addr = flt_addr;
 	nd1->filter_addr = flt_addr;
 	
@@ -805,10 +813,8 @@ hroute_box::init_as_3to2_route_box(slice_set* pt_out_addrs, const char* dbg_qrt)
 	slice_set& out_addrs = *pt_out_addrs;
 	GH_CK(out_addrs.size() == 2);
 
-	bool is_rgt = false;
-	if(out_addrs.is_dec()){
-		is_rgt = true;
-	}
+	bool is_dec_itv = out_addrs.is_dec();
+	bool is_pre_itv = out_addrs.is_pre_sliced();
 	
 	hnode_box* bx1 = gh_get_binnet_m_to_n(3, 1, GH_NULL_OUT_ADDR, dbg_qrt, gh_call_3);
 	hnode_box* bx2 = gh_get_binnet_m_to_n(3, 1, GH_NULL_OUT_ADDR, dbg_qrt, gh_call_4);
@@ -816,13 +822,20 @@ hroute_box::init_as_3to2_route_box(slice_set* pt_out_addrs, const char* dbg_qrt)
 	hnode_1to2* nd2 = add_1to2(gh_3to2_nd1_rou, dbg_qrt);
 	hnode_1to2* nd3 = add_1to2(gh_3to2_nd2_rou, dbg_qrt);
 
-	if(is_rgt){ 
-		nd1->set_flag(gh_is_rgt_io); 
-		nd2->set_flag(gh_is_rgt_io); 
-		nd3->set_flag(gh_is_rgt_io); 
+	if(is_dec_itv){ 
+		nd1->set_flag(gh_is_bt_cmp); 
+		nd2->set_flag(gh_is_bt_cmp); 
+		nd3->set_flag(gh_is_bt_cmp); 
+	}
+	long idx_flt = 1;
+	if(is_pre_itv){ 
+		idx_flt = 0;
+		nd1->set_flag(gh_is_eq_cmp); 
+		nd2->set_flag(gh_is_eq_cmp); 
+		nd3->set_flag(gh_is_eq_cmp); 
 	}
 	
-	gh_addr_t flt_addr = out_addrs.get_addr(1);
+	gh_addr_t flt_addr = out_addrs.get_addr(idx_flt);
 	nd1->filter_addr = flt_addr;
 	nd2->filter_addr = flt_addr;
 	nd3->filter_addr = flt_addr;
@@ -881,8 +894,8 @@ hlognet_box::init_as_io(slice_set& tgt_addrs){
 		hnode_1to2* nd1 = add_1to2(gh_lgnet_in_rou);
 		hnode_2to1* nd2 = add_2to1();
 		
-		nd1->set_filter_addr(aa, tgt_addrs, true);
-		nd2->set_filter_addr(aa, tgt_addrs, true);
+		nd1->set_filter_interval(aa, tgt_addrs, tot_tgt);
+		nd2->set_filter_interval(aa, tgt_addrs, tot_tgt);
 		
 		nd2->set_flag(gh_is_lognet_io);
 		
@@ -1106,7 +1119,7 @@ hlognet_box::get_target_box(long idx, slice_set& tgt_addrs){
 	long nout = 0;
 	gh_calc_num_io(get_base(), the_sz, idx, nin, nout);
 	GH_CK((idx == 0) || (nin >= nout));
-	bx->init_target_box(idx, nin, nout, tgt_addrs);
+	bx->init_target_box(idx, nin, nout, tgt_addrs, the_sz);
 	bx->dbg_init_tgt_szs();
 	
 	if(was_top){
@@ -1166,10 +1179,10 @@ htarget_box::ck_target_box(long lft_ht, long rgt_ht){
 }
 
 void
-htarget_box::init_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& tgt_addrs){
+htarget_box::init_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& tgt_addrs, long tot_tgt){
 	GH_CK(tgt_idx >= 0);
 	if((lft_ht <= 1) || (rgt_ht <= 1)){
-		init_basic_target_box(tgt_idx, lft_ht, rgt_ht, tgt_addrs);
+		init_basic_target_box(tgt_idx, lft_ht, rgt_ht, tgt_addrs, tot_tgt);
 		GH_CK(ck_target_box(lft_ht, rgt_ht));
 		return;
 	}
@@ -1183,7 +1196,7 @@ htarget_box::init_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& 
 	hnode_2to1* tg_in = add_2to1();
 	hnode_1to2* tg_out = add_1to2(gh_tgt_out_rou);
 	
-	tg_out->set_filter_addr(tgt_idx, tgt_addrs, false);
+	tg_out->set_filter_addr(tgt_idx, tgt_addrs);
 	
 	slice_set lft_addrs;
 	lft_addrs.init_slice_set(tgt_idx, tgt_addrs, rgt_ht + 1, 
@@ -1343,7 +1356,7 @@ hlognet_box::init_lognet_box(long num_elems, slice_set& tgt_addrs, const char* d
 		GH_CK(bx->target != gh_null);
 		hnode_target& tgt = *(bx->target);
 		
-		tgt.set_filter_addr(aa, tgt_addrs, true, num_elems);
+		tgt.set_filter_interval(aa, tgt_addrs, num_elems);
 		
 		if(prv_bx != gh_null){
 			GH_CK((aa < 2) || (prv_bx->lft_in.size() >= prv_bx->lft_out.size()));
@@ -1459,16 +1472,13 @@ hroute_box::ck_route_box(long num_in, long num_out, int dbg_case){
 }
 
 void
-htarget_box::init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& tgt_addrs){
+htarget_box::init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& tgt_addrs, long tot_tgt){
 	GH_CK(tgt_idx >= 0);
 	GH_CK(lft_ht >= 0);
 	GH_CK(rgt_ht >= 0);
 	GH_CK((lft_ht <= 1) || (rgt_ht <= 1));
 	
-	bool is_rgt = false;
-	if(tgt_addrs.is_dec()){
-		is_rgt = true;
-	}
+	bool is_dec_itv = tgt_addrs.is_dec();
 	
 	hnode_box& dest = *this;
 	
@@ -1533,7 +1543,7 @@ htarget_box::init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice
 	hnode_2to1* tg_in = add_2to1();
 	hnode_1to2* tg_out = add_1to2(gh_bs_tgt_out_rou);
 	
-	tg_out->set_filter_addr(tgt_idx, tgt_addrs, false);
+	tg_out->set_filter_addr(tgt_idx, tgt_addrs);
 	
 	target->in0 = tg_in;
 	tg_in->out0 = target;
@@ -1558,11 +1568,8 @@ htarget_box::init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice
 			hnode_1to2* r_in = add_1to2(gh_bs_tgt_rgt_in_rou);
 			hnode_2to1* r_out = add_2to1();
 			
-			//if(is_rgt){ r_in->set_flag(gh_is_rgt_io); }
-			//else{ l_in->set_flag(gh_is_rgt_io); }
-			
-			l_in->set_filter_addr(tgt_idx, tgt_addrs, true);
-			r_in->set_filter_addr(tgt_idx, tgt_addrs, true);
+			l_in->set_filter_interval(tgt_idx, tgt_addrs, tot_tgt);
+			r_in->set_filter_interval(tgt_idx, tgt_addrs, tot_tgt);
 			
 			l_in->out1 = l_out;
 			l_out->in0 = l_in;
@@ -1605,7 +1612,7 @@ htarget_box::init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice
 	hroute_box* rt_in_bx = new hroute_box(pw_base);
 	
 	gh_route_side_t rt_in_bx_sd = gh_get_opp_side(rt_side);
-	if(is_rgt){
+	if(is_dec_itv){
 		//rt_in_bx_sd = gh_get_opp_side(rt_in_bx_sd);
 	}
 	
@@ -1655,13 +1662,7 @@ htarget_box::init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice
 	hnode_1to2* bx_in = add_1to2(gh_bs_tgt_bx_in_rou); // ERROR_tg3
 	hnode_2to1* bx_out = add_2to1();
 	
-	/*
-	bool bx_rgt = is_rgt;
-	if(rt_side == gh_right_side){ bx_rgt = ! bx_rgt; }
-	if(bx_rgt){ bx_in->set_flag(gh_is_rgt_io); }
-	*/
-	
-	bx_in->set_filter_addr(tgt_idx, tgt_addrs, true);
+	bx_in->set_filter_interval(tgt_idx, tgt_addrs, tot_tgt);
 	
 	if(lft1){
 		GH_CK(lft_ht == 1);
@@ -1939,53 +1940,15 @@ gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_t sd,
 }
 
 void
-hnode::set_filter_addr(long tgt_idx, slice_set& tgt_addrs, bool is_interval, long tot_elems){
-	gh_addr_t tg_addr = tgt_idx;
-	gh_addr_t nx_tg_addr = tgt_idx + 1;
-
-	//GH_DBG_CODE(gh_prt_addr_vec(tgt_addrs, "set_filter_addr.tgt_addrs="));
-	
-	bool is_rgt = false;
-	long the_sz = (long)tgt_addrs.size();
-	if(tgt_addrs.empty()){
-		the_sz = tot_elems;
-	}
-	bool hs_lm = ((tgt_idx + 1) < the_sz);
-	
-	if(is_interval){
-		set_flag(gh_is_interval);
-	}
-	if(! tgt_addrs.empty()){
-		GH_CK(the_sz > 1);
-		if(tgt_addrs.is_dec()){
-			is_rgt = true;
-		}
-		GH_CK(tgt_idx < the_sz);
-		tg_addr = tgt_addrs.get_addr(tgt_idx);
-		if(hs_lm){
-			nx_tg_addr = tgt_addrs.get_addr(tgt_idx + 1);
-		}
-	}	
-	if(hs_lm){
-		set_flag(gh_has_limit);
-	}
-	
-	filter_addr = tg_addr;
-	filter_lim_addr = nx_tg_addr;
-	if(is_rgt){ set_flag(gh_is_rgt_io); }
-}
-
-void
 hnode_box::init_sm_to_bm_filters(slice_set* pt_out_addrs){
 	GH_CK(pt_out_addrs != gh_null);
 	slice_set& out_addrs = *pt_out_addrs;
 	
+	
 	GH_CK(out_addrs.slc_orig != gh_invalid_slc);
 	GH_CK((long)out_addrs.size() > 1);
-	bool is_rgt = false;
-	if(out_addrs.is_dec()){
-		is_rgt = true;
-	}
+	bool is_dec_itv = out_addrs.is_dec();
+	bool is_pre_itv = out_addrs.is_pre_sliced();
 	
 	ppnode_vec_t& all_out = outputs;
 	for(long aa = 0; aa < (long)all_out.size(); aa++){
@@ -2006,7 +1969,8 @@ hnode_box::init_sm_to_bm_filters(slice_set* pt_out_addrs){
 				GH_CK(nd->is_out1(ppo));
 				nd->o_idx1 = out_addrs.get_addr(aa);
 			}
-			if(is_rgt){ nd->set_flag(gh_is_rgt_io); }
+			if(is_dec_itv){ nd->set_flag(gh_is_bt_cmp); }
+			if(is_pre_itv){ nd->set_flag(gh_is_eq_cmp); }
 		}
 	}
 
@@ -2028,11 +1992,114 @@ hnode_box::init_sm_to_bm_filters(slice_set* pt_out_addrs){
 		
 		if(gh_is_1to2(kk)){
 			hnode_1to2* nd = (hnode_1to2*)pi;
-			nd->set_outs_smallest_idx();
-			long o_idx = nd->get_out1_smallest_idx();
+			long o_idx = GH_INVALID_IDX;
+			
+			if(is_pre_itv){
+				nd->set_outs_biggest_idx();
+				o_idx = nd->get_out0_biggest_idx();
+			} else {
+				nd->set_outs_smallest_idx();
+				o_idx = nd->get_out1_smallest_idx();
+			}
+			
+			GH_CK(o_idx != GH_INVALID_IDX);
 			nd->filter_addr = o_idx;
-			if(is_rgt){ nd->set_flag(gh_is_rgt_io); }
+			if(is_dec_itv){ nd->set_flag(gh_is_bt_cmp); }
+			if(is_pre_itv){ nd->set_flag(gh_is_eq_cmp); }
 		}
 	}
+}
+
+void
+hnode::set_filter_interval(long tgt_idx, slice_set& tgt_addrs, long tot_tgt){
+	GH_CK(tgt_idx >= 0);
+	GH_CK(tgt_idx < tot_tgt);
+	GH_CK(tot_tgt > 1);
+
+	gh_addr_t nx_tg_idx = tgt_idx + 1;
+	
+	set_flag(gh_is_interval);
+	if(tgt_addrs.empty()){
+		if(nx_tg_idx >= tot_tgt){
+			filter_addr = tgt_idx;
+			set_flag(gh_is_bt_cmp);
+			set_flag(gh_is_eq_cmp);
+			return;
+		}
+		if(tgt_idx > 0){
+			set_flag(gh_has_limit);
+		}
+		filter_addr = nx_tg_idx;
+		filter_lim_addr = tgt_idx;
+		return;
+	}
+	
+	GH_CK(tot_tgt == (long)tgt_addrs.size());
+	bool is_dec_itv = tgt_addrs.is_dec();
+	bool is_pre_itv = tgt_addrs.is_pre_sliced();
+	bool has_lim = (tgt_idx > 0) && (tgt_idx < (tot_tgt - 1));
+	
+	if(is_pre_itv || (tgt_idx == (tot_tgt - 1))){
+		set_flag(gh_is_eq_cmp);
+	}
+	if(has_lim){
+		set_flag(gh_has_limit);
+	}
+	if(is_dec_itv){
+		set_flag(gh_is_bt_cmp);
+	}
+	
+	gh_addr_t tg_addr = tgt_addrs.get_addr(tgt_idx);
+	gh_addr_t nx_tg_addr = GH_INVALID_ADDR;
+	gh_addr_t pr_tg_addr = GH_INVALID_ADDR;
+	if(tgt_idx < (tot_tgt - 1)){
+		GH_CK((tgt_idx <= 0) || has_lim);
+		nx_tg_addr = tgt_addrs.get_addr(tgt_idx + 1);
+	}
+	if(tgt_idx > 0){
+		GH_CK((tgt_idx >= (tot_tgt - 1)) || has_lim);
+		pr_tg_addr = tgt_addrs.get_addr(tgt_idx - 1);
+	}
+
+	if(! is_pre_itv && (tgt_idx == (tot_tgt - 1))){
+		GH_CK(! get_flag(gh_has_limit));
+		reset_flag(gh_is_bt_cmp);
+		if(! is_dec_itv){
+			set_flag(gh_is_bt_cmp);
+		} 
+		filter_addr = tg_addr;
+		return;
+	}
+	
+	if(is_pre_itv){
+		filter_addr = tg_addr;
+		filter_lim_addr = pr_tg_addr;
+	} else {
+		filter_addr = nx_tg_addr;
+		filter_lim_addr = tg_addr;
+	}
+}
+
+void
+hnode::set_filter_addr(long tgt_idx, slice_set& tgt_addrs){
+	gh_addr_t tg_addr = tgt_idx;
+
+	//GH_DBG_CODE(gh_prt_addr_vec(tgt_addrs, "set_filter_addr.tgt_addrs="));
+	
+	bool is_pre_itv = false;
+	bool is_dec_itv = false;
+	
+	if(! tgt_addrs.empty()){
+		long the_sz = (long)tgt_addrs.size();
+		GH_CK(the_sz > 1);
+		
+		is_dec_itv = tgt_addrs.is_dec();
+		is_pre_itv = tgt_addrs.is_pre_sliced();
+		tg_addr = tgt_addrs.get_addr(tgt_idx);
+	}	
+	
+	filter_addr = tg_addr;
+	if(is_dec_itv){ set_flag(gh_is_bt_cmp); }
+	if(is_pre_itv){ set_flag(gh_is_eq_cmp); }
 }
 
