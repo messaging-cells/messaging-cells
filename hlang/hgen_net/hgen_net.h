@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <iterator>
+#include <sstream>
 
 #include "gh_dbg_util.h"
 
@@ -48,16 +49,16 @@ using namespace std;
 //======================================================================
 
 enum gh_dbg_call_t {
-	gh_call_0,
-	gh_call_1,
-	gh_call_2,
-	gh_call_3,
-	gh_call_4,
-	gh_call_5,
-	gh_call_6,
-	gh_call_7,
-	gh_call_8,
-	gh_call_9,
+	gh_invalid_call,
+	gh_call_01,
+	gh_call_02,
+	gh_call_03,
+	gh_call_04,
+	gh_call_05,
+	gh_call_06,
+	gh_call_07,
+	gh_call_08,
+	gh_call_09,
 	gh_call_10,
 	gh_call_11,
 	gh_call_12,
@@ -162,6 +163,10 @@ typedef vector<hnode**> ppnode_vec_t;
 
 typedef vector<gh_addr_t> addr_vec_t;
 
+class slice {
+public:
+};
+
 class slice_set {
 public:
 	addr_vec_t slc_all;
@@ -219,12 +224,12 @@ public:
 	
 };
 
-void gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_t sd, bool has_z);
+void gh_init_rel_pos(slice_set& all_rel_pos, long sz, long pw_b, gh_route_side_t sd, bool has_z);
 
-void gh_pos_to_addr(gh_addr_t tgt_idx, addr_vec_t& tgt_addrs, 
-					addr_vec_t& all_rel_pos, addr_vec_t& all_addrs);
+void gh_pos_to_addr(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
+					slice_set& all_rel_pos, slice_set& all_addrs);
 
-void gh_prt_addr_vec(addr_vec_t& tgt_addrs, const char* pfx);
+void gh_prt_addr_vec(slice_set& tgt_addrs, const char* pfx);
 
 void gh_prt_addr_vec_with(gh_addr_t tgt_idx, slice_set& tgt_addrs, slice_set& all_addrs,
 					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
@@ -261,6 +266,7 @@ public:
 
 	bool prt_choo_simu = false;
 	
+	bool 		prt_tgt_info = false;
 	bool 		do_run_simu = true;
 	bool 		pretty_prt_simu = false;
 	bool 		add_ctx_simu = false;
@@ -318,6 +324,21 @@ gh_dbg_get_side_str(gh_route_side_t dd){
 			return "lft";
 		case gh_right_side: 
 			return "rgt";
+		default:
+			break;
+	}
+	return "GH_INVALID_SIDE";
+};
+
+inline const char*
+gh_dbg_get_slice_tp_str(gh_slice_type_t dd){
+	switch(dd){
+		case gh_invalid_slc: 
+			return "gh_invalid_slc";
+		case gh_inc_slc: 
+			return "inc";
+		case gh_dec_slc: 
+			return "dec";
 		default:
 			break;
 	}
@@ -394,12 +415,11 @@ public:
 	
 };
 
-#define gh_is_box_copy		1
+#define gh_is_gt_cmp		0
+#define gh_is_eq_cmp		1
 #define gh_is_lognet_io 	2
-#define gh_is_bt_cmp		3
-#define gh_is_eq_cmp		4
-#define gh_is_interval 		5
-#define gh_has_limit 		6
+#define gh_is_interval 		3
+#define gh_has_limit 		4
 
 inline bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
 inline bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
@@ -430,6 +450,8 @@ public:
 	void set_filter_interval(long tgt_idx, slice_set& tgt_addrs, long tot_elems);
 	void set_filter_addr(long tgt_idx, slice_set& tgt_addrs);
 	void print_filter_info(FILE* ff);
+	
+	std::string get_filter_str();
 	
 	bool in_interval(gh_addr_t addr);
 	gh_addr_t get_diff_simu();
@@ -752,7 +774,7 @@ gh_get_addr(long tgt_idx, slice_set& tgt_addrs){
 class hnode_1to2 : public hnode {
 public:
 	gh_1to2_kind_t rou_kind = gh_invalid_rou;
-	gh_dbg_call_t dbg_kind = gh_call_0;
+	gh_dbg_call_t dbg_kind = gh_invalid_call;
 	
 	hmessage msg0;
 	hmessage msg1; 
@@ -866,6 +888,8 @@ public:
 	void run_1to2_simu();
 	void run_dichotomy_simu();
 	
+	const char* dbg_kind_to_str(gh_dbg_call_t cll);
+	
 };
 
 class hnode_2to1 : public hnode {
@@ -974,17 +998,8 @@ public:
 		box_flags = 0;
 	}
 	
-	hnode_box(hnode_box& orig, bool clr_orig){
-		box_flags = orig.box_flags;
-		set_flag(gh_is_box_copy);
-		
-		gh_copy_nodes(orig.all_nodes, all_nodes, false);
-	}
-	
 	virtual ~hnode_box(){
-		if(! get_flag(gh_is_box_copy)){
-			release_nodes();
-		}
+		release_nodes();
 		clear_box();
 	}
 
@@ -1010,7 +1025,7 @@ public:
 		return pw_base;
 	}
 	
-	hnode_1to2* add_1to2(gh_1to2_kind_t kk, const char* dbg_qrt = gh_null, gh_dbg_call_t dbg_case = gh_call_0);
+	hnode_1to2* add_1to2(gh_1to2_kind_t kk, const char* dbg_qrt = gh_null, gh_dbg_call_t dbg_case = gh_invalid_call);
 	hnode_2to1* add_2to1(const char* dbg_qrt = gh_null);
 	hnode_direct* add_direct();
 	
@@ -1082,6 +1097,9 @@ public:
 	void init_sm_to_bm_filters(slice_set* out_addrs);
 };
 
+hnode_box*
+gh_get_binnet_sm_to_bm(long num_in, long num_out, const char* dbg_qrt, gh_dbg_call_t dbg_case);
+	
 hnode_box*
 gh_get_binnet_m_to_n(long num_in, long num_out, slice_set* out_addr, 
 					 const char* dbg_qrt, gh_dbg_call_t dbg_case);
@@ -1191,6 +1209,9 @@ public:
 	void 	wait_all_inited_simu();
 	void 	wait_all_threads_ended_simu();
 	void 	run_hlognet_simu();
+
+	void 	print_targets(FILE* ff, gh_prt_mode_t md);
+	
 };
 	
 void* run_node_simu(void* pm);

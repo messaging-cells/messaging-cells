@@ -534,7 +534,7 @@ test_hlognet(int argc, char *argv[]){
 	if(add_ctx){
 		gh_dbg_init_context(out_addr);
 		if(! out_addr.empty()){
-			gh_prt_addr_vec(out_addr.slc_all, "CONTEXT=");
+			gh_prt_addr_vec(out_addr, "CONTEXT=");
 			GH_GLOBALS.num_target_simu = (long)out_addr.size();
 		}
 	}
@@ -550,7 +550,7 @@ test_hlognet(int argc, char *argv[]){
 	
 	hlognet_box* bx = new hlognet_box(bb);
 	bx->init_length(ntg);
-	fprintf(stdout, "height=%ld \n", bx->height);
+	fprintf(stdout, "max_lgnet_height=%ld \n", bx->height + 1);
 	fprintf(stdout, "===========\n");
 	
 	bx->init_lognet_box(ntg, out_addr);
@@ -605,8 +605,9 @@ hnode_target::run_target_simu(){
 		if(ireq(*in0) && (! ack0)){
 			//bool dst_ok = (addr == in_msg0->mg_dst);
 			bool dst_ok = in_interval(in_msg0->mg_dst);
-			GH_CK_PRT(dst_ok, "ERROR: %ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) \n",
-				addr, filter_addr, filter_lim_addr, in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0
+			GH_CK_PRT(dst_ok, "ERROR: %ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) %s \n",
+				addr, filter_addr, filter_lim_addr, in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0,
+				get_filter_str().c_str()
 			);
 			fprintf(stdout, "%ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) ", addr, filter_addr, filter_lim_addr, 
 					in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0);
@@ -1094,7 +1095,7 @@ hnode_target::inc_st_simu(){
 
 void
 hgen_globals::print_help(const char* prg){
-	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-t <test_id>] [-ctx <context_id>] ", prg);
+	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-prt_tgt] [-t <test_id>] [-ctx <context_id>] ", prg);
 	fprintf(stdout, "{[-n <prt_nod_adr>]}* [-disp <ptr_adr_disp>] [-oa <one_adr>] [-os <one_src>] [-od <one_dst>] ");
 	//fprintf(stdout, "[-dn <dbg_nod>] ");
 	fprintf(stdout, "\n");
@@ -1128,6 +1129,8 @@ hgen_globals::get_args(int argc, char** argv){
 			pretty_prt_simu = true;
 		} else if(the_arg == "-no_run"){
 			do_run_simu = false;
+		} else if(the_arg == "-prt_tgt"){
+			prt_tgt_info = true;
 		} else if(the_arg == "-cho"){
 			prt_choo_simu = true;
 		} else if((the_arg == "-t") && ((ii + 1) < argc)){
@@ -1186,7 +1189,7 @@ gh_addr_t
 hnode::get_diff_simu(){
 	GH_CK(get_flag(gh_is_interval));
 	bool hs_lm = get_flag(gh_has_limit);
-	bool is_gt = get_flag(gh_is_bt_cmp);
+	bool is_gt = get_flag(gh_is_gt_cmp);
 	GH_MARK_USED(hs_lm);
 	GH_MARK_USED(is_gt);
 	
@@ -1204,7 +1207,7 @@ hnode::get_diff_simu(){
 gh_addr_t
 hnode::get_min_simu(){
 	GH_CK(get_flag(gh_is_interval));
-	bool is_gt = get_flag(gh_is_bt_cmp);
+	bool is_gt = get_flag(gh_is_gt_cmp);
 	bool is_eq = get_flag(gh_is_eq_cmp);
 	
 	gh_addr_t adr = filter_addr;
@@ -1221,7 +1224,7 @@ gh_addr_t
 hnode::get_max_simu(){
 	GH_CK(get_flag(gh_is_interval));
 	bool has_lim = get_flag(gh_has_limit);
-	bool is_gt = get_flag(gh_is_bt_cmp);
+	bool is_gt = get_flag(gh_is_gt_cmp);
 	bool is_eq = get_flag(gh_is_eq_cmp);
 	
 	if(! has_lim){
@@ -1236,14 +1239,6 @@ hnode::get_max_simu(){
 		return adr - 1;
 	}
 	return adr + 1;
-}
-
-void
-gh_dbg_init_context(slice_set& ctx_addrs){
-	long ctx_idx = GH_GLOBALS.context_idx_simu;
-	if(ctx_idx == 1){
-		ctx_addrs.slc_all = {8, 7, 6, 4, 0};
-	}
 }
 
 int
@@ -1281,7 +1276,7 @@ test_m_to_n(int argc, char *argv[]){
 bool
 hnode::in_interval(gh_addr_t addr){
 	bool is_itv = get_flag(gh_is_interval);
-	bool is_gt = get_flag(gh_is_bt_cmp);
+	bool is_gt = get_flag(gh_is_gt_cmp);
 	bool is_eq = get_flag(gh_is_eq_cmp);
 	bool hs_lm = get_flag(gh_has_limit);
 	
@@ -1310,5 +1305,18 @@ hnode::in_interval(gh_addr_t addr){
 		return ((addr <= filter_addr) && (addr > filter_lim_addr));
 	}
 	return ((addr < filter_addr) && (addr >= filter_lim_addr));
+}
+
+void
+gh_dbg_init_context(slice_set& ctx_addrs){
+	long ctx_idx = GH_GLOBALS.context_idx_simu;
+	if(ctx_idx == 1){
+		ctx_addrs.slc_orig = gh_inc_slc;
+		ctx_addrs.slc_all = {8, 7, 6, 4, 0};
+	}
+	if(ctx_idx == 2){
+		ctx_addrs.slc_orig = gh_dec_slc;
+		ctx_addrs.slc_all = {8, 7, 6, 4, 0};
+	}
 }
 
