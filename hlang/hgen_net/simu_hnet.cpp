@@ -1311,12 +1311,12 @@ void
 gh_dbg_init_context(slice_set& ctx_addrs){
 	long ctx_idx = GH_GLOBALS.context_idx_simu;
 	if(ctx_idx == 1){
-		ctx_addrs.slc_orig = gh_inc_slc;
-		ctx_addrs.slc_all = {8, 7, 6, 4, 0};
+		ctx_addrs.sls_orig = gh_inc_slc;
+		//ctx_addrs.sls_all = {8, 7, 6, 4, 0};
 	}
 	if(ctx_idx == 2){
-		ctx_addrs.slc_orig = gh_dec_slc;
-		ctx_addrs.slc_all = {8, 7, 6, 4, 0};
+		ctx_addrs.sls_orig = gh_dec_slc;
+		//ctx_addrs.sls_all = {8, 7, 6, 4, 0};
 	}
 }
 

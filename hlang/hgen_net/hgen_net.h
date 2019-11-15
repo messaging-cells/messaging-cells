@@ -136,7 +136,7 @@ enum gh_dbg_st_t {
 };
 
 typedef int gh_flag_idx_t;
-typedef uint16_t gh_flags_t;
+typedef uint8_t gh_flags_t;
 typedef long gh_target_addr_t;
 typedef long gh_addr_t;
 
@@ -158,48 +158,115 @@ class htarget_box;
 class hlognet_box;
 
 
+#define gh_is_gt_cmp		0
+#define gh_is_eq_cmp		1
+#define gh_is_undef			2
+#define gh_is_lognet_io 	3
+#define gh_is_interval 		4
+#define gh_has_limit 		5
+#define gh_last_flg 		6
+
+
 typedef hnode* pnode_t;
 typedef vector<hnode**> ppnode_vec_t;
 
 typedef vector<gh_addr_t> addr_vec_t;
 
-class slice {
+class edge {
 public:
-};
-
-class slice_set {
-public:
-	addr_vec_t slc_all;
-	gh_slice_type_t slc_orig = gh_invalid_slc;
+	gh_flags_t slc_flg = 0;
+	gh_addr_t slc_edge = 0;
 	
-	void init_slice_set(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
-					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
+	edge(){
+		slc_flg = 0;
+		slc_edge = 0;
+		set_flag(gh_is_eq_cmp);
+	}
 
-	
-	void init_orig(slice_set& pnt){
-		if(pnt.empty()){
-			slc_orig = gh_inc_slc;
-			if(is_dec()){
-				slc_orig = gh_dec_slc;
-			} 
-			return;
-		}
-		slc_orig = pnt.slc_orig;
+	void set_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
+		gh_set_bit(&slc_flg, num_flg);
+	}
+
+	void reset_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
+		gh_reset_bit(&slc_flg, num_flg);
+	}
+
+	bool get_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
+		return gh_get_bit(&slc_flg, num_flg);
 	}
 	
+	bool is_undef(){
+		bool udf = get_flag(gh_is_undef);
+		GH_CK(! udf || (slc_edge == 0));
+		return udf;
+	}
+
+	bool is_eq(){
+		return get_flag(gh_is_eq_cmp);
+	}
+
+	bool is_gt(){
+		return get_flag(gh_is_gt_cmp);
+	}
+	
+	edge get_compl();
+};
+
+class interval {
+public:
+	edge lft;
+	edge rgt;
+};
+
+class slice_vec : public vector<edge> {
+public:
+
 	bool is_dec(){
-		if((long)slc_all.size() < 2){
+		if((long)size() < 2){
 			return false;
 		}
-		if(slc_all[0] > slc_all[1]){
+		if(front().slc_edge > back().slc_edge){
 			return true;
 		}
 		return false;
 	}
 	
+	interval get_first_interval(long idx, long prv, bool is_lst);
+	interval get_interval(long idx);
+};
+	
+class slice_set {
+public:
+	slice_vec sls_all;
+	gh_slice_type_t sls_orig = gh_invalid_slc;
+	
+	void init_slice_set(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
+					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
+
+	void init_orig(slice_set& pnt){
+		if(pnt.empty()){
+			sls_orig = gh_inc_slc;
+			if(is_dec()){
+				sls_orig = gh_dec_slc;
+			} 
+			return;
+		}
+		sls_orig = pnt.sls_orig;
+	}
+	
+	bool is_dec(){
+		return sls_all.is_dec();
+	}
+	
 	bool is_orig_dec(){
-		GH_CK(slc_orig != gh_invalid_slc);
-		return (slc_orig == gh_dec_slc);
+		GH_CK(sls_orig != gh_invalid_slc);
+		return (sls_orig == gh_dec_slc);
 	}
 	
 	bool is_pre_sliced(){
@@ -210,29 +277,39 @@ public:
 	
 	gh_addr_t& get_addr(long idx){
 		GH_CK(idx >= 0);
-		GH_CK(idx < (long)slc_all.size());
-		return slc_all[idx];
+		GH_CK(idx < (long)sls_all.size());
+		return sls_all[idx].slc_edge;
+	}
+	
+	void push_addr(gh_addr_t adr){
+		edge slc;
+		slc.slc_edge = adr;
+		sls_all.push_back(slc);
 	}
 	
 	long size(){
-		return (long)slc_all.size();
+		return (long)sls_all.size();
 	}
 
 	bool empty(){
-		return slc_all.empty();
+		return sls_all.empty();
 	}
 	
 };
 
-void gh_init_rel_pos(slice_set& all_rel_pos, long sz, long pw_b, gh_route_side_t sd, bool has_z);
+void gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_t sd, bool has_z);
 
 void gh_pos_to_addr(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
-					slice_set& all_rel_pos, slice_set& all_addrs);
+					addr_vec_t& all_rel_pos, slice_set& all_addrs);
 
 void gh_prt_addr_vec(slice_set& tgt_addrs, const char* pfx);
 
 void gh_prt_addr_vec_with(gh_addr_t tgt_idx, slice_set& tgt_addrs, slice_set& all_addrs,
 					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
+
+void gh_get_sub_slices(gh_addr_t slc_idx, slice_set& all_slices, 
+					addr_vec_t& all_rel_pos, slice_set& sub_slices);
+
 
 //typedef hnode_target* (hnode_target::*gh_choose_tgt_simu_fn)();
 //typedef void (*gh_init_simu_fn)();
@@ -415,12 +492,6 @@ public:
 	
 };
 
-#define gh_is_gt_cmp		0
-#define gh_is_eq_cmp		1
-#define gh_is_lognet_io 	2
-#define gh_is_interval 		3
-#define gh_has_limit 		4
-
 inline bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
 inline bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
 inline bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
@@ -550,14 +621,20 @@ public:
 	}
 
 	void set_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
 		gh_set_bit(&node_flags, num_flg);
 	}
 
 	void reset_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
 		gh_reset_bit(&node_flags, num_flg);
 	}
 
 	bool get_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
 		return gh_get_bit(&node_flags, num_flg);
 	}
 	
@@ -758,18 +835,6 @@ public:
 	}
 	
 };
-
-
-inline gh_addr_t 
-gh_get_addr(long tgt_idx, slice_set& tgt_addrs){ 
-	addr_vec_t& all_tgt = tgt_addrs.slc_all;
-	gh_addr_t addr = tgt_idx;
-	if(! all_tgt.empty()){
-		GH_CK(tgt_idx < (long)all_tgt.size());
-		addr = all_tgt[tgt_idx];
-	}
-	return addr;
-}
 
 class hnode_1to2 : public hnode {
 public:
@@ -985,8 +1050,6 @@ void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
 
 class hnode_box {
 public:
-	gh_flags_t box_flags;
-	
 	long pw_base = 0;
 	
 	vector<hnode*> all_direct;
@@ -995,7 +1058,6 @@ public:
 	ppnode_vec_t outputs;
 	
 	hnode_box(){
-		box_flags = 0;
 	}
 	
 	virtual ~hnode_box(){
@@ -1031,18 +1093,6 @@ public:
 	
 	hnode_box* convert_net_from_1to2_to_2to1();
 	
-	void set_flag(gh_flag_idx_t num_flg){
-		gh_set_bit(&box_flags, num_flg);
-	}
-
-	void reset_flag(gh_flag_idx_t num_flg){
-		gh_reset_bit(&box_flags, num_flg);
-	}
-
-	bool get_flag(gh_flag_idx_t num_flg){
-		return gh_get_bit(&box_flags, num_flg);
-	}
-
 	bool move_nodes_to(hnode_box& bx);
 	
 	hnode* set_output(long out, hnode* nd){
