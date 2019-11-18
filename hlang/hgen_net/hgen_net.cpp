@@ -2239,12 +2239,14 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out, const char* dbg_qrt, gh_dbg_ca
 edge
 edge::get_compl(){
 	edge co;
+	GH_CK(! co.is_eq());
+	GH_CK(! co.is_gt());
 	if(is_undef()){
 		set_flag(gh_is_undef);
 		return co;
 	}
-	if(is_eq()){
-		co.reset_flag(gh_is_eq_cmp);
+	if(! is_eq()){
+		co.set_flag(gh_is_eq_cmp);
 	}
 	if(! is_gt()){
 		co.set_flag(gh_is_gt_cmp);
@@ -2253,32 +2255,18 @@ edge::get_compl(){
 	return co;
 }
 
-interval 
-slice_vec::get_first_interval(long idx, long prv, bool is_lst){
-	GH_CK(idx >= 0);
-	GH_CK(empty());
-	
-	interval itv;
-
-	if(idx == 0){
-		GH_CK(! is_lst);
-		itv.lft.set_flag(gh_is_undef);
-		itv.rgt.slc_edge = idx;	
-		return itv;
+void
+slice_vec::print_slice_vec(FILE* ff){
+	fprintf(ff, "{");
+	for(long aa = 0; aa < (long)size(); aa++){
+		if(aa != 0){
+			fprintf(ff, " ");
+		}
+		edge& eg = at(aa);
+		eg.print_edge(ff);
 	}
-	
-	GH_CK(prv > 0);
-	
-	itv.lft.slc_edge = prv;
-	itv.lft = itv.lft.get_compl();
-	
-	if(is_lst){
-		itv.rgt.set_flag(gh_is_undef);
-		return itv;
-	}
-	
-	itv.rgt.slc_edge = idx;	
-	return itv;
+	fprintf(ff, "}\n");
+	fflush(ff);
 }
 
 interval
@@ -2300,53 +2288,112 @@ slice_vec::get_interval(long idx){
 		return itv;
 	}
 	
-	if(is_dec()){
-		itv.lft = at(idx);
-		itv.rgt = at(idx + 1).get_compl();
-		return itv;
-	}
-	
 	itv.lft = at(idx - 1).get_compl();
 	itv.rgt = at(idx);	
 	return itv;
 }
 
+void
+slice_vec::print_all_intervals(FILE* ff){
+	fprintf(ff, "{");
+	for(long aa = 0; aa < (long)size(); aa++){
+		if(aa != 0){
+			fprintf(ff, " ");
+		}
+		interval itv = get_interval(aa);
+		itv.print_interval(ff);
+	}
+	fprintf(ff, "}\n");
+	fflush(ff);
+}
+
+void
+slice_vec::init_slice_vec_with(gh_addr_t slc_idx, addr_vec_t& all_rel_pos){
+	GH_CK(all_rel_pos.size() < GH_MAX_OUTS);
+	GH_CK(slc_idx >= 0);
+	GH_CK(empty());
+	GH_CK(all_rel_pos.size() > 1);
+	
+	bool r_dec = (all_rel_pos.back() < 0);
+	long pos = 0;
+	
+	for(long aa = 1; aa < (long)all_rel_pos.size(); aa++){
+		pos = slc_idx + all_rel_pos[aa];
+		GH_CK(pos >= 0);
+		
+		edge eg;
+		if(r_dec){
+			eg.set_flag(gh_is_gt_cmp);
+		} 
+		eg.slc_edge = pos;
+		
+		GH_CK(! eg.is_undef());
+		push_back(eg);
+	}
+	
+	edge lst;
+	lst.set_flag(gh_is_eq_cmp);
+	if(! r_dec){
+		lst.set_flag(gh_is_gt_cmp);
+	} 
+	lst.slc_edge = pos;
+	
+	GH_CK(! lst.is_undef());
+	push_back(lst);
+	
+	GH_CK(size() == all_rel_pos.size());
+}
+
 void 
-gh_get_sub_slices(gh_addr_t slc_idx, slice_vec& all_slices, 
-					addr_vec_t& all_rel_pos, slice_vec& sub_slices)
+slice_vec::init_sub_slices_with(gh_addr_t slc_idx, slice_vec& all_slices, addr_vec_t& all_rel_pos)
 {
 	GH_CK(all_slices.size() < GH_MAX_OUTS);
 	GH_CK(all_rel_pos.size() < GH_MAX_OUTS);
-	GH_CK(sub_slices.size() == 0);
+	GH_CK(size() == 0);
 	GH_CK(slc_idx >= 0);
 	GH_CK(all_slices.empty() || (slc_idx < (long)all_slices.size()));
 	GH_CK(all_rel_pos.size() > 1);
+	
+	if(all_slices.empty()){
+		init_slice_vec_with(slc_idx, all_rel_pos);
+		return;
+	}
 	
 	bool o_dec = all_slices.is_dec();
 	bool r_dec = (all_rel_pos.back() < 0);
 	GH_MARK_USED(o_dec);
 	GH_MARK_USED(r_dec);
 	
-	long lst_idx = (long)(all_rel_pos.size() - 1);
 	long pos = 0;
-	long prv = pos;
+	interval nxt_itv;
 	
-	for(long aa = 0; aa < (long)all_rel_pos.size(); aa++){
-		prv = pos;
+	for(long aa = 1; aa < (long)all_rel_pos.size(); aa++){
 		pos = slc_idx + all_rel_pos[aa];
 		GH_CK(pos >= 0);
-		GH_CK(all_slices.empty() || (pos < (long)all_slices.size()));
+		GH_CK(pos < (long)all_slices.size());
 		
-		interval nxt_itv;
-		if(all_slices.empty()){
-			nxt_itv = all_slices.get_first_interval(pos, prv, (aa == lst_idx));
+		nxt_itv = all_slices.get_interval(pos);
+		
+		edge eg;
+		if(r_dec){
+			eg = nxt_itv.rgt.get_compl();
 		} else {
-			nxt_itv = all_slices.get_interval(pos);
+			eg = nxt_itv.lft.get_compl();
 		}
 		
-		//sub_slices.push_back(nxt_itv);
+		GH_CK(! eg.is_undef());
+		push_back(eg);
 	}
 	
-	GH_CK(sub_slices.size() == all_rel_pos.size());
+	edge lst;
+	if(r_dec){
+		lst = nxt_itv.rgt;
+	} else {
+		lst = nxt_itv.lft;
+	}
+	GH_CK(! lst.is_undef());
+	push_back(lst);
+	
+	GH_CK(size() == all_rel_pos.size());
 }
 

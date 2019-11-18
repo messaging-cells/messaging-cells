@@ -528,6 +528,30 @@ test_hlognet(int argc, char *argv[]){
 		return 0;
 	}
 	
+	if(GH_GLOBALS.run_m2n){
+		gh_run_m_to_n(GH_GLOBALS.dag_mm, GH_GLOBALS.dag_nn, GH_GLOBALS.dbg_has_zr);
+		return 0;
+	}
+	
+	if(GH_GLOBALS.run_ini_slices){
+		addr_vec_t all_rel_pos;
+		
+		all_rel_pos.resize(0);
+		slice_vec sub_slices;
+		gh_init_rel_pos(all_rel_pos, GH_GLOBALS.dbg_slices_sz, GH_BASE_TWO, GH_GLOBALS.dbg_slices_sd, GH_GLOBALS.dbg_has_zr);
+		sub_slices.init_slice_vec_with(GH_GLOBALS.dbg_slices_idx, all_rel_pos);
+		sub_slices.print_slice_vec(stdout);
+		sub_slices.print_all_intervals(stdout);
+
+		all_rel_pos.resize(0);
+		slice_vec sub_2_slices;
+		gh_init_rel_pos(all_rel_pos, 3, GH_BASE_TWO, gh_right_side, false);
+		sub_2_slices.init_sub_slices_with(4, sub_slices, all_rel_pos);
+		sub_2_slices.print_slice_vec(stdout);
+		sub_2_slices.print_all_intervals(stdout);
+		return 0;
+	}
+	
 	bool add_ctx = GH_GLOBALS.add_ctx_simu;
 	
 	slice_set out_addr;
@@ -1097,6 +1121,7 @@ void
 hgen_globals::print_help(const char* prg){
 	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-prt_tgt] [-t <test_id>] [-ctx <context_id>] ", prg);
 	fprintf(stdout, "{[-n <prt_nod_adr>]}* [-disp <ptr_adr_disp>] [-oa <one_adr>] [-os <one_src>] [-od <one_dst>] ");
+	fprintf(stdout, "[-m2n] [-ini_slices] [-zr] [-rgt]");
 	//fprintf(stdout, "[-dn <dbg_nod>] ");
 	fprintf(stdout, "\n");
 }
@@ -1133,6 +1158,18 @@ hgen_globals::get_args(int argc, char** argv){
 			prt_tgt_info = true;
 		} else if(the_arg == "-cho"){
 			prt_choo_simu = true;
+		} else if(the_arg == "-zr"){
+			dbg_has_zr = true;
+		} else if(the_arg == "-rgt"){
+			dbg_slices_sd = gh_right_side;
+		} else if(the_arg == "-m2n"){
+			run_m2n = true;
+			dag_mm = base_simu;
+			dag_nn = num_target_simu;
+		} else if(the_arg == "-ini_slices"){
+			run_ini_slices = true;
+			dbg_slices_sz = base_simu;
+			dbg_slices_idx = num_target_simu;
 		} else if((the_arg == "-t") && ((ii + 1) < argc)){
 			int kk_idx = ii + 1;
 			ii++;
@@ -1241,6 +1278,23 @@ hnode::get_max_simu(){
 	return adr + 1;
 }
 
+void
+gh_run_m_to_n(long mm, long nn, bool has_zr){
+	slice_set tgt_addrs;
+	slice_set all_addrs;
+	all_addrs.init_slice_set(0, tgt_addrs, nn, 
+					 GH_BASE_TWO, gh_left_side, has_zr, "all_addrs");
+	
+	fprintf(stdout, "all_addrs=\n"); 
+	for(long aa = 0; aa < (long)all_addrs.size(); aa++){ fprintf(stdout, " %ld", all_addrs.get_addr(aa)); }
+	fprintf(stdout, "\n\n ===================\n");
+	
+	hnode_box* bx = gh_get_binnet_m_to_n(mm, nn, &all_addrs, gh_null, gh_call_14);
+	GH_MARK_USED(bx);
+	
+	bx->print_box(stdout, gh_full_prt);
+}
+
 int
 test_m_to_n(int argc, char *argv[]){
 	if(argc < 3){
@@ -1255,7 +1309,10 @@ test_m_to_n(int argc, char *argv[]){
 	if(argc > 3){
 		has_zr = true;
 	}
+	
+	gh_run_m_to_n(mm, nn, has_zr);
 
+	/*
 	slice_set tgt_addrs;
 	slice_set all_addrs;
 	all_addrs.init_slice_set(0, tgt_addrs, nn, 
@@ -1269,6 +1326,7 @@ test_m_to_n(int argc, char *argv[]){
 	GH_MARK_USED(bx);
 	
 	bx->print_box(stdout, gh_full_prt);
+	*/
 	
 	return 0;
 }

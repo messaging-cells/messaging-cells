@@ -180,7 +180,6 @@ public:
 	edge(){
 		slc_flg = 0;
 		slc_edge = 0;
-		set_flag(gh_is_eq_cmp);
 	}
 
 	void set_flag(gh_flag_idx_t num_flg){
@@ -216,12 +215,34 @@ public:
 	}
 	
 	edge get_compl();
+
+	void print_edge(FILE* ff){
+		if(is_undef()){
+			fprintf(ff, "udf");
+			fflush(ff);
+			return;
+		}
+		const char* eq_str = (is_eq())?("="):("");
+		const char* cmp_str = (is_gt())?(">"):("<");
+		fprintf(ff, "%s%s%ld", cmp_str, eq_str, slc_edge);
+		fflush(ff);
+	}
+	
 };
 
 class interval {
 public:
 	edge lft;
 	edge rgt;
+	
+	void print_interval(FILE* ff){
+		fprintf(ff, "[");
+		lft.print_edge(ff);
+		fprintf(ff, ", ");
+		rgt.print_edge(ff);
+		fprintf(ff, "]");
+		fflush(ff);
+	}
 };
 
 class slice_vec : public vector<edge> {
@@ -237,8 +258,14 @@ public:
 		return false;
 	}
 	
-	interval get_first_interval(long idx, long prv, bool is_lst);
+	void init_slice_vec_with(gh_addr_t slc_idx, addr_vec_t& all_rel_pos);
+	void init_sub_slices_with(gh_addr_t slc_idx, slice_vec& all_slices, addr_vec_t& all_rel_pos);
+	
 	interval get_interval(long idx);
+
+	void print_slice_vec(FILE* ff);
+	void print_all_intervals(FILE* ff);
+	
 };
 	
 class slice_set {
@@ -307,9 +334,7 @@ void gh_prt_addr_vec(slice_set& tgt_addrs, const char* pfx);
 void gh_prt_addr_vec_with(gh_addr_t tgt_idx, slice_set& tgt_addrs, slice_set& all_addrs,
 					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
 
-void gh_get_sub_slices(gh_addr_t slc_idx, slice_set& all_slices, 
-					addr_vec_t& all_rel_pos, slice_set& sub_slices);
-
+void gh_run_m_to_n(long mm, long nn, bool has_zr);
 
 //typedef hnode_target* (hnode_target::*gh_choose_tgt_simu_fn)();
 //typedef void (*gh_init_simu_fn)();
@@ -342,6 +367,17 @@ public:
 	gh_addr_t dbg_one_dst_simu = GH_INVALID_ADDR;
 
 	bool prt_choo_simu = false;
+
+	bool 		run_m2n = false;
+	long 		dag_mm = 0;
+	long 		dag_nn = 0;
+	
+	bool		dbg_has_zr = false;
+
+	bool 		run_ini_slices = false;
+	long 		dbg_slices_sz = 0;
+	long 		dbg_slices_idx = 0;
+	gh_route_side_t	dbg_slices_sd = gh_left_side;
 	
 	bool 		prt_tgt_info = false;
 	bool 		do_run_simu = true;
