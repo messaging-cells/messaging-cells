@@ -214,17 +214,16 @@ public:
 		return get_flag(gh_is_gt_cmp);
 	}
 	
+	gh_addr_t get_first_addr_in();
+	
 	edge get_compl();
+	
+	bool in_edge(gh_addr_t addr);
 
+	std::string get_print_str();
+	
 	void print_edge(FILE* ff){
-		if(is_undef()){
-			fprintf(ff, "udf");
-			fflush(ff);
-			return;
-		}
-		const char* eq_str = (is_eq())?("="):("");
-		const char* cmp_str = (is_gt())?(">"):("<");
-		fprintf(ff, "%s%s%ld", cmp_str, eq_str, slc_edge);
+		fprintf(ff, "%s", get_print_str().c_str());
 		fflush(ff);
 	}
 	
@@ -235,12 +234,16 @@ public:
 	edge lft;
 	edge rgt;
 	
+	std::string get_print_str();
+	
+	long dbg_get_num_test_in();
+	gh_addr_t dbg_get_min_in();
+	gh_addr_t dbg_get_max_in();
+	
+	bool in_interval(gh_addr_t addr);
+	
 	void print_interval(FILE* ff){
-		fprintf(ff, "[");
-		lft.print_edge(ff);
-		fprintf(ff, ", ");
-		rgt.print_edge(ff);
-		fprintf(ff, "]");
+		fprintf(ff, "%s", get_print_str().c_str());
 		fflush(ff);
 	}
 };
@@ -261,11 +264,18 @@ public:
 	void init_slice_vec_with(gh_addr_t slc_idx, addr_vec_t& all_rel_pos);
 	void init_sub_slices_with(gh_addr_t slc_idx, slice_vec& all_slices, addr_vec_t& all_rel_pos);
 	
+	interval get_top_interval(long idx, long tot_elems);
 	interval get_interval(long idx);
 
-	void print_slice_vec(FILE* ff);
+	void init_slice_vec(gh_addr_t slc_idx, slice_vec& all_slices, 
+					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
+
+	
+	void print_slice_vec(FILE* ff, const char* dbg_nm = gh_null);
 	void print_all_intervals(FILE* ff);
 	
+	void print_dbg_info_slice_vec(FILE* ff, gh_addr_t slc_idx, slice_vec& all_slices, 
+					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
 };
 	
 class slice_set {
@@ -541,8 +551,10 @@ public:
 	gh_addr_t dbg_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_tgt_quarter = gh_null;
 
-	gh_addr_t filter_lim_addr = GH_INVALID_ADDR;
-	gh_addr_t filter_addr = GH_INVALID_ADDR;
+	//gh_addr_t filter_lim_addr = GH_INVALID_ADDR;
+	//gh_addr_t filter_addr = GH_INVALID_ADDR;
+	
+	interval selector;
 	
 	hnode(){
 		simu_data = gh_null;
@@ -554,8 +566,8 @@ public:
 	}
 	virtual ~hnode(){}
 
-	void set_filter_interval(long tgt_idx, slice_set& tgt_addrs, long tot_elems);
-	void set_filter_addr(long tgt_idx, slice_set& tgt_addrs);
+	void set_selector_interval(long tgt_idx, slice_vec& tgt_addrs, long tot_elems);
+	void set_selector_edge(long tgt_idx, slice_vec& tgt_addrs);
 	void print_filter_info(FILE* ff);
 	
 	std::string get_filter_str();
@@ -880,9 +892,12 @@ public:
 	hmessage msg0;
 	hmessage msg1; 
 	
-	long o_idx0 = GH_INVALID_IDX;
-	long o_idx1 = GH_INVALID_IDX;
+	//long o_idx0 = GH_INVALID_IDX;
+	//long o_idx1 = GH_INVALID_IDX;
 
+	edge o_eg0;
+	edge o_eg1;
+	
 	bool ack0 = false;
 	bool req0 = false;
 	bool req1 = false;
@@ -912,31 +927,17 @@ public:
 		return (&out1 == ppo);
 	}
 	
-	void	set_outs_smallest_idx();
-	long	get_smallest_idx();
 	void	set_outs_biggest_idx();
-	long	get_biggest_idx();
+	edge	get_biggest_idx();
 
-	long	get_out0_biggest_idx(){
+	edge	get_out0_biggest_idx(){
 		GH_CK(out0 != gh_null);
 		GH_CK(out0->is_1to2());
 		if(out0 == this){
-			GH_CK(o_idx0 != GH_INVALID_IDX);
-			return o_idx0;
+			return o_eg0;
 		}
 		hnode_1to2* oo = (hnode_1to2*)out0;
 		return oo->get_biggest_idx();
-	}
-	
-	long	get_out1_smallest_idx(){
-		GH_CK(out1 != gh_null);
-		GH_CK(out1->is_1to2());
-		if(out1 == this){
-			GH_CK(o_idx1 != GH_INVALID_IDX);
-			return o_idx1;
-		}
-		hnode_1to2* oo = (hnode_1to2*)out1;
-		return oo->get_smallest_idx();
 	}
 	
 	hnode_1to2* get_1to2_out0(){
@@ -1181,13 +1182,14 @@ public:
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
 	void init_sm_to_bm_filters(slice_set* out_addrs);
+	void init_sm_to_bm_edges(slice_vec* out_addrs);
 };
 
 hnode_box*
 gh_get_binnet_sm_to_bm(long num_in, long num_out, const char* dbg_qrt, gh_dbg_call_t dbg_case);
 	
 hnode_box*
-gh_get_binnet_m_to_n(long num_in, long num_out, slice_set* out_addr, 
+gh_get_binnet_m_to_n(long num_in, long num_out, slice_vec* out_addr, 
 					 const char* dbg_qrt, gh_dbg_call_t dbg_case);
 
 class hroute_box : public hnode_box {
@@ -1200,12 +1202,12 @@ public:
 		release_nodes();
 	}
 	
-	void 	init_route_box(long num_in, long num_out, slice_set& out_addr, const char* dbg_qrt);
+	void 	init_route_box(long num_in, long num_out, slice_vec& out_addr, const char* dbg_qrt);
 	bool 	ck_route_box(long num_in, long num_out, int dbg_case);
 	
-	void 	init_as_2to2_route_box(slice_set* out_addr, const char* dbg_qrt);
-	void 	init_as_3to2_route_box(slice_set* out_addr, const char* dbg_qrt);
-	void 	init_as_2to3_route_box(slice_set* out_addr, const char* dbg_qrt);
+	void 	init_as_2to2_route_box(slice_vec* out_addr, const char* dbg_qrt);
+	void 	init_as_3to2_route_box(slice_vec* out_addr, const char* dbg_qrt);
+	void 	init_as_2to3_route_box(slice_vec* out_addr, const char* dbg_qrt);
 
 	hnode_1to2*	get_1to2_node(long idx){
 		GH_CK(idx < (long)all_nodes.size());
@@ -1246,8 +1248,8 @@ public:
 							 long num_idx, ppnode_vec_t& all_out, const char* dbg_qrt);
 	void 	resize_with_directs(long nw_side_sz);
 
-	void 	init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_set& tgt_addrs, long tot_tgt);
-	void 	init_target_box(long tgt_idx, long lft_sz, long rgt_sz, slice_set& tgt_addrs, long tot_tgt);
+	void 	init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_vec& tgt_addrs, long tot_tgt);
+	void 	init_target_box(long tgt_idx, long lft_sz, long rgt_sz, slice_vec& tgt_addrs, long tot_tgt);
 	bool 	ck_target_box(long lft_ht, long rgt_ht);
 	
 	void 	move_target_to(hlognet_box& bx);
@@ -1282,12 +1284,12 @@ public:
 	void 	init_all_target_addr();
 
 	void 	init_length(long num_elems);
-	void 	init_lognet_box(long num_elems, slice_set& out_addr, const char* dbg_qrt = gh_null);
+	void 	init_lognet_box(long num_elems, slice_vec& out_addr, const char* dbg_qrt = gh_null);
 	bool 	ck_lognet_box(long num_elems);
 	
-	void 	init_as_io(slice_set& tgt_addrs);
+	void 	init_as_io(slice_vec& tgt_addrs);
 	
-	htarget_box* get_target_box(long idx, slice_set& out_addr);
+	htarget_box* get_target_box(long idx, slice_vec& out_addr);
 
 	virtual
 	void 	print_box(FILE* ff, gh_prt_mode_t md);

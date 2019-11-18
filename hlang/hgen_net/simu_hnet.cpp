@@ -141,7 +141,7 @@ test_get_target(int argc, char *argv[]){
 	gh_dbg_calc_idx_and_sz(nin, nout, bb, tg_idx, tgs_sz);
 	//bx->get_frame().print_frame(stdout);
 	
-	slice_set all_addr;
+	slice_vec all_addr;
 	bx->init_target_box(tg_idx, nin, nout, all_addr, tgs_sz);
 
 	fprintf(stdout, "===========\n");
@@ -516,7 +516,7 @@ hlognet_box::run_hlognet_simu(){
 	wait_all_threads_ended_simu();
 }
 
-void gh_dbg_init_context(slice_set& ctx_addrs);
+void gh_dbg_init_context(slice_vec& ctx_addrs);
 void gh_dbg_post_test_prints(hlognet_box* bx);
 
 int
@@ -554,11 +554,11 @@ test_hlognet(int argc, char *argv[]){
 	
 	bool add_ctx = GH_GLOBALS.add_ctx_simu;
 	
-	slice_set out_addr;
+	slice_vec out_addr;
 	if(add_ctx){
 		gh_dbg_init_context(out_addr);
 		if(! out_addr.empty()){
-			gh_prt_addr_vec(out_addr, "CONTEXT=");
+			out_addr.print_slice_vec(stdout, "CONTEXT=");
 			GH_GLOBALS.num_target_simu = (long)out_addr.size();
 		}
 	}
@@ -629,11 +629,11 @@ hnode_target::run_target_simu(){
 		if(ireq(*in0) && (! ack0)){
 			//bool dst_ok = (addr == in_msg0->mg_dst);
 			bool dst_ok = in_interval(in_msg0->mg_dst);
-			GH_CK_PRT(dst_ok, "ERROR: %ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) %s \n",
-				addr, filter_addr, filter_lim_addr, in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0,
+			GH_CK_PRT(dst_ok, "ERROR: %ld.%s RCV <%ld>%ld -> %ld val=%ld i(%p) %s \n",
+				addr, get_filter_str().c_str(), in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0,
 				get_filter_str().c_str()
 			);
-			fprintf(stdout, "%ld[%ld,%ld] RCV <%ld>%ld -> %ld val=%ld i(%p) ", addr, filter_addr, filter_lim_addr, 
+			fprintf(stdout, "%ld.%s RCV <%ld>%ld -> %ld val=%ld i(%p) ", addr, get_filter_str().c_str(), 
 					in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0);
 			print_filter_info(stdout);
 			fprintf(stdout, "\n");
@@ -666,7 +666,7 @@ hnode_target::run_target_simu(){
 			msg0.mg_src = src_adr;
 			msg0.mg_dst = dst_adr;
 			
-			fprintf(stdout, "%ld[%ld,%ld] SND <%ld>%ld -> %ld val=%ld o(%p) \n", addr, filter_addr, filter_lim_addr, 
+			fprintf(stdout, "%ld.%s SND <%ld>%ld -> %ld val=%ld o(%p) \n", addr, get_filter_str().c_str(), 
 					msg0.mg_sra, msg0.mg_src, msg0.mg_dst, msg0.mg_val, out0);
 			num_msg_snt_simu++;
 			
@@ -773,7 +773,7 @@ hnode_target::dbg_nxt_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 	GH_CK(tg->in_interval(dst)); 
 	
 	if(GH_GLOBALS.prt_choo_simu){
-		fprintf(stdout, "%ld[%ld,%ld] CHOO %ld -> %ld %s \n", addr, filter_addr, filter_lim_addr, 
+		fprintf(stdout, "%ld.%s CHOO %ld -> %ld %s \n", addr, get_filter_str().c_str(), 
 			src, dst, gh_dbg_st_case_str(curr_st_simu));
 	}
 	
@@ -1225,68 +1225,29 @@ hgen_globals::get_args(int argc, char** argv){
 gh_addr_t
 hnode::get_diff_simu(){
 	GH_CK(get_flag(gh_is_interval));
-	bool hs_lm = get_flag(gh_has_limit);
-	bool is_gt = get_flag(gh_is_gt_cmp);
-	GH_MARK_USED(hs_lm);
-	GH_MARK_USED(is_gt);
-	
-	if(! hs_lm){
-		return 0;
-	}
-	
-	gh_addr_t min = filter_addr;
-	gh_addr_t max = filter_lim_addr;	
-	
-	if(min < max){ return (max - min); } 
-	return (min - max);
+	return selector.dbg_get_num_test_in();
 }
 
 gh_addr_t
 hnode::get_min_simu(){
 	GH_CK(get_flag(gh_is_interval));
-	bool is_gt = get_flag(gh_is_gt_cmp);
-	bool is_eq = get_flag(gh_is_eq_cmp);
-	
-	gh_addr_t adr = filter_addr;
-	if(is_eq){
-		return adr;
-	} 
-	if(is_gt){
-		return adr + 1;
-	}
-	return adr - 1;
+	return selector.dbg_get_min_in();
 }
 
 gh_addr_t
 hnode::get_max_simu(){
 	GH_CK(get_flag(gh_is_interval));
-	bool has_lim = get_flag(gh_has_limit);
-	bool is_gt = get_flag(gh_is_gt_cmp);
-	bool is_eq = get_flag(gh_is_eq_cmp);
-	
-	if(! has_lim){
-		return get_min_simu();
-	}
-	
-	gh_addr_t adr = filter_lim_addr;
-	if(! is_eq){
-		return adr;
-	} 
-	if(is_gt){
-		return adr - 1;
-	}
-	return adr + 1;
+	return selector.dbg_get_max_in();
 }
 
 void
 gh_run_m_to_n(long mm, long nn, bool has_zr){
-	slice_set tgt_addrs;
-	slice_set all_addrs;
-	all_addrs.init_slice_set(0, tgt_addrs, nn, 
+	slice_vec tgt_addrs;
+	slice_vec all_addrs;
+	all_addrs.init_slice_vec(0, tgt_addrs, nn, 
 					 GH_BASE_TWO, gh_left_side, has_zr, "all_addrs");
 	
-	fprintf(stdout, "all_addrs=\n"); 
-	for(long aa = 0; aa < (long)all_addrs.size(); aa++){ fprintf(stdout, " %ld", all_addrs.get_addr(aa)); }
+	all_addrs.print_slice_vec(stdout, "all_addrs=\n");
 	fprintf(stdout, "\n\n ===================\n");
 	
 	hnode_box* bx = gh_get_binnet_m_to_n(mm, nn, &all_addrs, gh_null, gh_call_14);
@@ -1331,50 +1292,103 @@ test_m_to_n(int argc, char *argv[]){
 	return 0;
 }
 
-bool
-hnode::in_interval(gh_addr_t addr){
-	bool is_itv = get_flag(gh_is_interval);
-	bool is_gt = get_flag(gh_is_gt_cmp);
-	bool is_eq = get_flag(gh_is_eq_cmp);
-	bool hs_lm = get_flag(gh_has_limit);
-	
-	if(! is_itv || ! hs_lm){
-		if(is_gt){
-			if(is_eq){
-				return (addr >= filter_addr);
-			}
-			return (addr > filter_addr);
-		} 
-		if(is_eq){
-			return (addr <= filter_addr);
-		}
-		return (addr < filter_addr);
-	}
-	
-	GH_CK(is_itv);
-	
-	if(is_gt){
-		if(is_eq){
-			return ((addr >= filter_addr) && (addr < filter_lim_addr));
-		}
-		return ((addr > filter_addr) && (addr <= filter_lim_addr));
-	}
-	if(is_eq){
-		return ((addr <= filter_addr) && (addr > filter_lim_addr));
-	}
-	return ((addr < filter_addr) && (addr >= filter_lim_addr));
-}
-
 void
-gh_dbg_init_context(slice_set& ctx_addrs){
+gh_dbg_init_context(slice_vec& ctx_addrs){
 	long ctx_idx = GH_GLOBALS.context_idx_simu;
 	if(ctx_idx == 1){
-		ctx_addrs.sls_orig = gh_inc_slc;
+		//ctx_addrs.sls_orig = gh_inc_slc;
 		//ctx_addrs.sls_all = {8, 7, 6, 4, 0};
 	}
 	if(ctx_idx == 2){
-		ctx_addrs.sls_orig = gh_dec_slc;
+		//ctx_addrs.sls_orig = gh_dec_slc;
 		//ctx_addrs.sls_all = {8, 7, 6, 4, 0};
 	}
 }
+
+gh_addr_t
+edge::get_first_addr_in(){
+	GH_CK(! is_undef());
+	if(is_eq()){
+		return slc_edge;
+	}
+	if(is_gt()){
+		return slc_edge + 1;
+	}
+	return slc_edge - 1;
+}
+
+long
+interval::dbg_get_num_test_in(){
+	if(lft.is_undef()){
+		return 1;
+	}
+	if(rgt.is_undef()){
+		return 1;
+	}
+	gh_addr_t lin = lft.get_first_addr_in();
+	gh_addr_t rin = rgt.get_first_addr_in();
+	
+	if(lin < rin){ return (rin - lin); } 
+	return (lin - rin);
+}
+
+gh_addr_t
+interval::dbg_get_min_in(){
+	if(lft.is_undef()){
+		GH_CK(! rgt.is_undef());
+		return rgt.get_first_addr_in();
+	}
+	if(rgt.is_undef()){
+		GH_CK(! lft.is_undef());
+		return lft.get_first_addr_in();
+	}
+	gh_addr_t lin = lft.get_first_addr_in();
+	return lin;
+}
+
+gh_addr_t
+interval::dbg_get_max_in(){
+	if(lft.is_undef()){
+		GH_CK(! rgt.is_undef());
+		return rgt.get_first_addr_in();
+	}
+	if(rgt.is_undef()){
+		GH_CK(! lft.is_undef());
+		return lft.get_first_addr_in();
+	}
+	gh_addr_t rin = rgt.get_first_addr_in();
+	return rin;
+}
+
+bool
+hnode::in_interval(gh_addr_t addr){
+	bool is_itv = get_flag(gh_is_interval);
+	if(! is_itv){
+		return selector.lft.in_edge(addr);
+	}
+	return selector.in_interval(addr);
+}
+
+bool
+interval::in_interval(gh_addr_t addr){
+	bool in_l = lft.in_edge(addr);
+	bool in_r = rgt.in_edge(addr);
+	return (in_l && in_r);
+}
+
+bool
+edge::in_edge(gh_addr_t addr){
+	GH_CK(! is_undef());
+	if(is_gt()){
+		if(is_eq()){
+			return (addr >= slc_edge);
+		}
+		return (addr > slc_edge);
+	}
+	if(is_eq()){
+		return (addr <= slc_edge);
+	}
+	return (addr < slc_edge);
+}
+
 
