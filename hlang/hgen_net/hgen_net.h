@@ -372,9 +372,13 @@ public:
 	gh_addr_t dbg_curr_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_curr_tgt_quarter = gh_null;
 
-	gh_addr_t dbg_one_sra_simu = 0;
-	gh_addr_t dbg_one_src_simu = GH_INVALID_ADDR;
-	gh_addr_t dbg_one_dst_simu = GH_INVALID_ADDR;
+	bool	dbg_ck_path_simu = false;
+	bool	dbg_ck_all_path_from_simu = false;
+	bool	dbg_ck_all_path_simu = false;
+	
+	gh_addr_t dbg_src_idx_simu = 0;
+	gh_addr_t dbg_src_addr_simu = GH_INVALID_ADDR;
+	gh_addr_t dbg_dst_addr_simu = GH_INVALID_ADDR;
 
 	bool prt_choo_simu = false;
 
@@ -1288,6 +1292,10 @@ public:
 	bool 	ck_lognet_box(long num_elems);
 	
 	void 	init_as_io(slice_vec& tgt_addrs);
+
+	bool 	ck_lognet_path(gh_addr_t src, gh_addr_t dst, bool dbg_prt);
+	bool 	ck_lognet_all_paths_from(gh_addr_t src_addr, bool dbg_prt);
+	bool 	ck_lognet_all_paths(bool dbg_prt);
 	
 	htarget_box* get_target_box(long idx, slice_vec& out_addr);
 

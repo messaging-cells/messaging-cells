@@ -232,19 +232,16 @@ hnode_1to2::print_node(FILE* ff, gh_prt_mode_t md){
 		fprintf(ff, " o");
 		out1->print_node(ff, gh_addr_prt);
 	}
-	fprintf(ff, ">");
+	fprintf(ff, ">.");
+	print_filter_info(ff);
 
 	bool h0 = (out0 == this);
 	bool h1 = (out1 == this);
-	bool hout = (h0 || h1);
-	
-	print_filter_info(ff);
-	
-	if(hout){ 
-		fprintf(ff, "{");
-		//if(h0){ fprintf(ff, "%ld", o_idx0); }
+	if(h0 || h1){ 
+		fprintf(ff, " {");
+		o_eg0.print_edge(ff);
 		fprintf(ff, ", ");
-		//if(h1){ fprintf(ff, "%ld", o_idx1); }
+		o_eg1.print_edge(ff);
 		fprintf(ff, "}"); 
 	}
 	
