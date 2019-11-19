@@ -1364,6 +1364,7 @@ bool
 hnode::in_interval(gh_addr_t addr){
 	bool is_itv = get_flag(gh_is_interval);
 	if(! is_itv){
+		GH_CK(! selector.lft.is_undef());
 		return selector.lft.in_edge(addr);
 	}
 	return selector.in_interval(addr);
@@ -1371,6 +1372,7 @@ hnode::in_interval(gh_addr_t addr){
 
 bool
 interval::in_interval(gh_addr_t addr){
+	GH_CK(! lft.is_undef() || ! rgt.is_undef());
 	bool in_l = lft.in_edge(addr);
 	bool in_r = rgt.in_edge(addr);
 	return (in_l && in_r);
@@ -1378,7 +1380,9 @@ interval::in_interval(gh_addr_t addr){
 
 bool
 edge::in_edge(gh_addr_t addr){
-	GH_CK(! is_undef());
+	if(is_undef()){
+		return true;
+	}
 	if(is_gt()){
 		if(is_eq()){
 			return (addr >= slc_edge);

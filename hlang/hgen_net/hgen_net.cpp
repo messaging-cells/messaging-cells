@@ -1148,7 +1148,7 @@ htarget_box::init_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_vec& 
 	hnode_2to1* tg_in = add_2to1();
 	hnode_1to2* tg_out = add_1to2(gh_tgt_out_rou);
 	
-	tg_out->set_selector_edge(tgt_idx, tgt_addrs);
+	tg_out->set_selector_edge(tgt_idx, tgt_addrs, tot_tgt);
 	
 	slice_vec lft_addrs;
 	lft_addrs.init_slice_vec(tgt_idx, tgt_addrs, rgt_ht + 1, 
@@ -1499,7 +1499,7 @@ htarget_box::init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice
 	hnode_2to1* tg_in = add_2to1();
 	hnode_1to2* tg_out = add_1to2(gh_bs_tgt_out_rou);
 	
-	tg_out->set_selector_edge(tgt_idx, tgt_addrs);
+	tg_out->set_selector_edge(tgt_idx, tgt_addrs, tot_tgt);
 	
 	target->in0 = tg_in;
 	tg_in->out0 = target;
@@ -2219,8 +2219,15 @@ hnode::set_selector_interval(long tgt_idx, slice_vec& tgt_addrs, long tot_tgt){
 }
 
 void
-hnode::set_selector_edge(long tgt_idx, slice_vec& tgt_addrs){
-	interval itv = tgt_addrs.get_interval(tgt_idx);
+hnode::set_selector_edge(long tgt_idx, slice_vec& tgt_addrs, long tot_tgt){
+	interval itv;
+	if(tgt_addrs.empty()){
+		itv = tgt_addrs.get_top_interval(tgt_idx, tot_tgt);
+		selector.lft = itv.lft.get_compl();
+		return;
+	} 
+	
+	itv = tgt_addrs.get_interval(tgt_idx);
 	selector.lft = itv.lft.get_compl();
 	//filter_addr = 
 }

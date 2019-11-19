@@ -567,7 +567,7 @@ public:
 	virtual ~hnode(){}
 
 	void set_selector_interval(long tgt_idx, slice_vec& tgt_addrs, long tot_elems);
-	void set_selector_edge(long tgt_idx, slice_vec& tgt_addrs);
+	void set_selector_edge(long tgt_idx, slice_vec& tgt_addrs, long tot_tgt);
 	void print_filter_info(FILE* ff);
 	
 	std::string get_filter_str();
