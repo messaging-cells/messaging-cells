@@ -281,77 +281,10 @@ public:
 	void print_dbg_info_slice_vec(FILE* ff, gh_addr_t slc_idx, slice_vec& all_slices, 
 					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
 };
-	
-class slice_set {
-public:
-	slice_vec sls_all;
-	gh_slice_type_t sls_orig = gh_invalid_slc;
-	
-	void init_slice_set(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
-					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
-
-	void init_orig(slice_set& pnt){
-		if(pnt.empty()){
-			sls_orig = gh_inc_slc;
-			if(is_dec()){
-				sls_orig = gh_dec_slc;
-			} 
-			return;
-		}
-		sls_orig = pnt.sls_orig;
-	}
-	
-	bool is_dec(){
-		return sls_all.is_dec();
-	}
-	
-	bool is_orig_dec(){
-		GH_CK(sls_orig != gh_invalid_slc);
-		return (sls_orig == gh_dec_slc);
-	}
-	
-	bool is_pre_sliced(){
-		GH_CK(size() > 1);
-		bool is_pr = (is_orig_dec() != is_dec());
-		return is_pr;
-	}
-	
-	gh_addr_t& get_addr(long idx){
-		GH_CK(idx >= 0);
-		GH_CK(idx < (long)sls_all.size());
-		return sls_all[idx].slc_edge;
-	}
-	
-	void push_addr(gh_addr_t adr){
-		edge slc;
-		slc.slc_edge = adr;
-		sls_all.push_back(slc);
-	}
-	
-	long size(){
-		return (long)sls_all.size();
-	}
-
-	bool empty(){
-		return sls_all.empty();
-	}
-	
-};
 
 void gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_t sd, bool has_z);
 
-void gh_pos_to_addr(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
-					addr_vec_t& all_rel_pos, slice_set& all_addrs);
-
-void gh_prt_addr_vec(slice_set& tgt_addrs, const char* pfx);
-
-void gh_prt_addr_vec_with(gh_addr_t tgt_idx, slice_set& tgt_addrs, slice_set& all_addrs,
-					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str);
-
 void gh_run_m_to_n(long mm, long nn, bool has_zr);
-
-//typedef hnode_target* (hnode_target::*gh_choose_tgt_simu_fn)();
-//typedef void (*gh_init_simu_fn)();
 
 class hgen_globals {
 public:
@@ -396,10 +329,13 @@ public:
 	long 		dbg_slices_sz = 0;
 	long 		dbg_slices_idx = 0;
 	gh_route_side_t	dbg_slices_sd = gh_left_side;
+
+	bool 		dbg_box_prt = true;
+	bool		dbg_prt_gen_info = false;
 	
 	bool 		prt_tgt_info = false;
 	bool 		do_run_simu = true;
-	bool 		pretty_prt_simu = false;
+	bool 		pointer_prt_simu = false;
 	bool 		add_ctx_simu = false;
 	long 		context_idx_simu = 0;
 	long 		base_simu = 2;
@@ -1186,7 +1122,7 @@ public:
 	void remove_connected_directs();
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
-	void init_sm_to_bm_filters(slice_set* out_addrs);
+	//void init_sm_to_bm_filters(slice_set* out_addrs);
 	void init_sm_to_bm_edges(slice_vec* out_addrs);
 };
 

@@ -612,12 +612,14 @@ test_hlognet(int argc, char *argv[]){
 	
 	gh_dbg_init_simu();
 
-	if(GH_GLOBALS.pretty_prt_simu){ 
-		fprintf(stdout, "=========== PRETTY_PRINTING ===================\n");
-		bx->print_box(stdout, gh_full_prt);
-	} else {
-		fprintf(stdout, "=========== PRINTING_FULL_NET ===================\n");
-		bx->print_box(stdout, gh_full_pt_prt);
+	if(GH_GLOBALS.dbg_box_prt){
+		if(GH_GLOBALS.pointer_prt_simu){ 
+			fprintf(stdout, "=========== PRINTING_NET_WITH_POINTERS ===================\n");
+			bx->print_box(stdout, gh_full_pt_prt);
+		} else {
+			fprintf(stdout, "=========== PRETTY_PRINTING ===================\n");
+			bx->print_box(stdout, gh_full_prt);
+		}
 	}
 
 	fprintf(stdout, "=========== RUNNING_SIMU ===================\n");
@@ -1153,9 +1155,9 @@ hnode_target::inc_st_simu(){
 
 void
 hgen_globals::print_help(const char* prg){
-	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-prt_tgt] [-t <test_id>] [-ctx <context_id>] ", prg);
-	fprintf(stdout, "{[-n <prt_nod_adr>]}* [-disp <ptr_adr_disp>] [-idx <src_idx>] [-src <src_addr>] [-dst <dst_addr>] ");
-	fprintf(stdout, "[-m2n] [-ini_slices] [-zr] [-rgt] [-ck_pth] [-ck_all_pth_from] [-ck_all_pth]");
+	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-no_prt] [-prt_tgt] [-t <test_id>] [-ctx <context_id>] ", prg);
+	fprintf(stdout, "[-dbg_prt] {[-n <dbg_nod_adr>]}* [-idx <src_idx>] [-src <src_addr>] [-dst <dst_addr>] ");
+	fprintf(stdout, "[-disp <ptr_adr_disp>] [-m2n] [-ini_slices] [-zr] [-rgt] [-ck_pth] [-ck_all_pth_from] [-ck_all_pth]");
 	//fprintf(stdout, "[-dn <dbg_nod>] ");
 	fprintf(stdout, "\n");
 }
@@ -1185,11 +1187,15 @@ hgen_globals::get_args(int argc, char** argv){
 		if(the_arg == "-h"){
 			prt_help = true;
 		} else if(the_arg == "-pp"){
-			pretty_prt_simu = true;
+			pointer_prt_simu = true;
 		} else if(the_arg == "-no_run"){
 			do_run_simu = false;
+		} else if(the_arg == "-no_prt"){
+			dbg_box_prt = false;
 		} else if(the_arg == "-prt_tgt"){
 			prt_tgt_info = true;
+		} else if(the_arg == "-dbg_prt"){
+			dbg_prt_gen_info = true;
 		} else if(the_arg == "-cho"){
 			prt_choo_simu = true;
 		} else if(the_arg == "-zr"){

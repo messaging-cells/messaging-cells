@@ -1142,7 +1142,7 @@ htarget_box::ck_target_box(long lft_ht, long rgt_ht){
 void
 htarget_box::init_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_vec& tgt_addrs, long tot_tgt){
 	GH_DBG_CODE(
-		if(tgt_addrs.empty()){
+		if(GH_GLOBALS.dbg_prt_gen_info && tgt_addrs.empty()){
 			fprintf(stdout, "================ INIT_TARGET %ld =======================\n", tgt_idx);
 		}
 	);
@@ -1187,9 +1187,6 @@ htarget_box::init_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_vec& 
 	hnode_box* spl_lft = gh_get_binnet_m_to_n(1, rgt_ht, &spl_lft_addrs, GH_QRT(GH_LO), gh_call_07);
 	hnode_box* spl_rgt = gh_get_binnet_m_to_n(1, lft_ht, &spl_rgt_addrs, GH_QRT(GH_RO), gh_call_08);
 
-	//GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, &dest));
-	//GH_DBG_CODE(gh_dbg_init_watch_box(*spl_rgt, spl_rgt));
-	
 	join_box_outputs(1, lft, 0, spl_lft, rgt_ht, lft_out, GH_QRT(GH_LO));
 	join_box_outputs(1, rgt, 0, spl_rgt, lft_ht, rgt_out, GH_QRT(GH_RO));
 	
@@ -1302,7 +1299,7 @@ hlognet_box::init_lognet_box(long num_elems, slice_vec& tgt_addrs, const char* d
 	GH_CK(tgt_addrs.empty() || ((long)tgt_addrs.size() == num_elems));
 	GH_CK(num_elems > 1);
 	
-	GH_DBG_CODE(tgt_addrs.print_slice_vec(stdout, "\nlgnetbox="));
+	GH_DBG_CODE(if(GH_GLOBALS.dbg_prt_gen_info){ tgt_addrs.print_slice_vec(stdout, "\nlgnetbox="); });
 	
 	bool was_top = (GH_GLOBALS.dbg_curr_tgt_quarter == gh_null);
 	if(was_top){
@@ -1387,17 +1384,11 @@ hlognet_box::init_lognet_box(long num_elems, slice_vec& tgt_addrs, const char* d
 
 	GH_CK(ck_lognet_box(num_elems));
 	
-	//GH_DBG_CODE(GH_GLOBALS.DBG_LV = 1);
-	//print_box(stdout, gh_full_pt_prt);
-	
-	//fprintf(stdout, "LGNET_BOX %ld **********************************************\n", length());
-	//fflush(stdout);
-	
 	if(was_top){
 		GH_GLOBALS.dbg_curr_tgt_quarter = gh_null;
 	}
 	
-	GH_DBG_CODE(print_targets(stdout, gh_full_prt));
+	GH_DBG_CODE(if(GH_GLOBALS.dbg_prt_gen_info){ print_targets(stdout, gh_full_prt); });
 }
 
 void
@@ -1743,77 +1734,6 @@ htarget_box::dbg_init_tgt_szs(){
 	tgt->dbg_rgt_out_sz = (long)(rgt_out.size());
 }
 
-void
-gh_pos_to_addr(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
-					addr_vec_t& all_rel_pos, slice_set& all_addrs)
-{
-	GH_CK(tgt_addrs.size() < GH_MAX_OUTS);
-	GH_CK(all_rel_pos.size() < GH_MAX_OUTS);
-	GH_CK(all_addrs.size() == 0);
-	GH_CK(tgt_idx >= 0);
-	GH_CK(tgt_addrs.empty() || (tgt_idx < (gh_addr_t)tgt_addrs.size()));
-	GH_CK(all_rel_pos.size() > 1);
-	
-	//bool pos_is_addr = tgt_addrs.empty();
-
-	for(long aa = 0; aa < (long)all_rel_pos.size(); aa++){
-		gh_addr_t pos = tgt_idx + all_rel_pos[aa];
-		GH_DBG_CODE(
-			if(pos < 0){
-				fprintf(stdout, "errdata---------------\n");
-				gh_prt_addr_vec(tgt_addrs, "tgt_addrs");
-				gh_prt_addr_vec(all_addrs, "all_addrs");
-			}
-		);
-		GH_CK_PRT((pos >= 0), "tgt_idx=%ld, rel_pos=%ld \n", tgt_idx, all_rel_pos[aa]);
-		GH_CK(tgt_addrs.empty() || (pos < (gh_addr_t)tgt_addrs.size()));
-		gh_addr_t addr = pos;
-		if(! tgt_addrs.empty()){
-			addr = tgt_addrs.get_addr(pos);
-		}
-		GH_CK(addr >= 0);
-		all_addrs.push_addr(addr);
-	}
-	
-	GH_CK(all_addrs.size() == (long)all_rel_pos.size());
-}
-
-void 
-gh_prt_addr_vec(slice_set& tgt_addrs, const char* pfx)
-{
-	if(pfx != gh_null){
-		fprintf(stdout, "%s ", pfx);
-	}
-	fprintf(stdout, "<%s>[", gh_dbg_get_slice_tp_str(tgt_addrs.sls_orig));
-	for(long aa = 0; aa < (long)tgt_addrs.size(); aa++){
-		fprintf(stdout, " %ld", tgt_addrs.get_addr(aa));
-	}
-	fprintf(stdout, "]\n");
-}
-
-void 
-gh_prt_addr_vec_with(gh_addr_t tgt_idx, slice_set& tgt_addrs, slice_set& all_addrs,
-					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str)
-{
-	fprintf(stdout, "%s_addr_vec.tg_idx=%ld.sz=%ld,bs=%ld,sd=%s,zr=%s\n", dbg_str, tgt_idx, sz, pw_b, 
-			gh_dbg_get_side_str(sd), (has_z)?("true"):("false"));
-	gh_prt_addr_vec(tgt_addrs, "tgt_addrs");
-	gh_prt_addr_vec(all_addrs, dbg_str);
-}
-
-void 
-slice_set::init_slice_set(gh_addr_t tgt_idx, slice_set& tgt_addrs, 
-					  long sz, long pw_b, gh_route_side_t sd, bool has_z, const char* dbg_str)
-{
-	slice_set& all_addrs = *this;
-	addr_vec_t all_rel_pos;
-	gh_init_rel_pos(all_rel_pos, sz, pw_b, sd, has_z);
-	gh_pos_to_addr(tgt_idx, tgt_addrs, all_rel_pos, all_addrs);
-	init_orig(tgt_addrs);
-	
-	GH_DBG_CODE(gh_prt_addr_vec_with(tgt_idx, tgt_addrs, all_addrs, sz, pw_b, sd, has_z, dbg_str));
-}
-
 edge
 hnode_1to2::get_biggest_idx(){
 	GH_CK(out1 != gh_null);
@@ -2153,7 +2073,11 @@ slice_vec::init_slice_vec(gh_addr_t slc_idx, slice_vec& all_slices,
 	gh_init_rel_pos(all_rel_pos, sz, pw_b, sd, has_z);
 	init_sub_slices_with(slc_idx, all_slices, all_rel_pos);
 	
-	GH_DBG_CODE(print_dbg_info_slice_vec(stdout, slc_idx, all_slices, sz, pw_b, sd, has_z, dbg_str));
+	GH_DBG_CODE(
+		if(GH_GLOBALS.dbg_prt_gen_info){
+			print_dbg_info_slice_vec(stdout, slc_idx, all_slices, sz, pw_b, sd, has_z, dbg_str);
+		}
+	);
 }
 
 void
