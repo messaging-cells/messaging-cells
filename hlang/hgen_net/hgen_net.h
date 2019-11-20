@@ -163,7 +163,7 @@ class hlognet_box;
 #define gh_is_undef			2
 #define gh_is_lognet_io 	3
 #define gh_is_interval 		4
-#define gh_has_limit 		5
+#define gh_is_sm2bm_out		5
 #define gh_last_flg 		6
 
 
@@ -214,6 +214,10 @@ public:
 		return get_flag(gh_is_gt_cmp);
 	}
 	
+	bool is_out(){
+		return get_flag(gh_is_sm2bm_out);
+	}
+
 	gh_addr_t get_first_addr_in();
 	
 	edge get_compl();
@@ -555,8 +559,8 @@ public:
 	gh_addr_t dbg_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_tgt_quarter = gh_null;
 
-	//gh_addr_t filter_lim_addr = GH_INVALID_ADDR;
-	//gh_addr_t filter_addr = GH_INVALID_ADDR;
+	long dbg_idx = GH_INVALID_IDX;
+	long dbg_tot = GH_INVALID_IDX;
 	
 	interval selector;
 	
@@ -896,9 +900,6 @@ public:
 	hmessage msg0;
 	hmessage msg1; 
 	
-	//long o_idx0 = GH_INVALID_IDX;
-	//long o_idx1 = GH_INVALID_IDX;
-
 	edge o_eg0;
 	edge o_eg1;
 	

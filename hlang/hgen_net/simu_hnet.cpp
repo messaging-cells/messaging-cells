@@ -164,9 +164,34 @@ test_get_target(int argc, char *argv[]){
 	return 0;
 }
 
+void
+prt_int_vec(vector<int>& vc){
+	fprintf(stdout, "{");
+	for(long aa = 0; aa < (long)vc.size(); aa++){
+		fprintf(stdout, "%d ", vc[aa]);
+	}
+	fprintf(stdout, "}\n");
+}
+
+int
+test_copy_arr(int argc, char *argv[]){
+	
+	vector<int> v1 = { 1, 2, 3 ,4 , 5, 6};
+	vector<int> v2 = v1;
+	v2.back() = 20;
+	v1[2] = 321;
+	v1.resize(30, 0);
+	v1.insert(v1.begin(), v2.begin(), v2.end());
+	
+	prt_int_vec(v1);
+	prt_int_vec(v2);
+	return 0;
+}
+
 int
 main(int argc, char *argv[]){
 	int resp = 0;
+	//resp = test_copy_arr(argc, argv);
 	//resp = test_m_to_n(argc, argv);
 	//resp = test_bases(argc, argv);
 	//resp = test_log(argc, argv);
@@ -1447,15 +1472,21 @@ hlognet_box::ck_lognet_path(gh_addr_t src_addr, gh_addr_t dst_addr, bool dbg_prt
 		} else {
 			GH_CK(curr_nd->is_2to1());
 			hnode_2to1* th_nd = (hnode_2to1*)curr_nd;
+			if(th_nd->get_flag(gh_is_lognet_io)){
+				GH_CK(th_nd->in_interval(dst_addr));
+			}
 			curr_nd = th_nd->out0;
 		}
 		GH_CK(curr_nd != gh_null);
 	}
+	if(dbg_prt){
+		curr_nd->print_node(stdout, gh_full_prt);
+	}
+	
 	GH_CK_PRT((curr_nd == all_targets[dst_addr]), "%ld -> %ld FAILED !!!\n", src_addr, dst_addr);
 	GH_CK(all_targets[dst_addr]->bx_idx == dst_addr);
 
 	if(dbg_prt){
-		curr_nd->print_node(stdout, gh_full_prt);
 		fprintf(stdout, "PATH_OK.\n");
 	}
 	

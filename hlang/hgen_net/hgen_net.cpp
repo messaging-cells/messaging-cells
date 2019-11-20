@@ -139,7 +139,8 @@ edge::get_print_str(){
 	
 	const char* eq_str = (is_eq())?("="):("");
 	const char* cmp_str = (is_gt())?(">"):("<");
-	tmp_ss << cmp_str << eq_str << slc_edge;
+	const char* out_str = (is_out())?("_"):("");
+	tmp_ss << cmp_str << eq_str << slc_edge << out_str;
 	
 	return tmp_ss.str();
 }
@@ -213,8 +214,18 @@ hnode_1to2::print_node(FILE* ff, gh_prt_mode_t md){
 	
 	if(rou_kind == gh_sm_to_bm_rou){
 		fprintf(ff, "_%s", dbg_kind_to_str(dbg_kind));
+		if(get_flag(gh_is_sm2bm_out)){
+			fprintf(ff, "(");
+			o_eg0.print_edge(ff);
+			fprintf(ff, ",");
+			o_eg1.print_edge(ff);
+			fprintf(ff, ")");
+		}
 	} else {
 		fprintf(ff, "%s", gh_dbg_get_rou_kind_str(rou_kind));
+		if(rou_kind == gh_lgnet_in_rou){
+			fprintf(ff, "(%ld/%ld)", dbg_idx, dbg_tot);
+		}
 	}
 	
 	fprintf(ff, "<");
@@ -263,6 +274,9 @@ hnode_2to1::print_node(FILE* ff, gh_prt_mode_t md){
 	print_dbg_tgt_addr(ff, md);
 	
 	fprintf(ff, "2to1");
+	if(get_flag(gh_is_lognet_io)){
+		fprintf(ff, "(%ld/%ld)", dbg_idx, dbg_tot);
+	}
 
 	fprintf(ff, "<");
 	if(md == gh_full_pt_prt){
@@ -706,9 +720,6 @@ hroute_box::init_as_2to2_route_box(slice_vec* pt_out_addrs, const char* dbg_qrt)
 	nd0->selector.lft = sel;
 	nd1->selector.lft = sel;
 	
-	//nd0->filter_addr = flt_addr;
-	//nd1->filter_addr = flt_addr;
-	
 	inputs.resize(2, gh_null);
 	inputs[0] = (&(nd0->in0));
 	inputs[1] = (&(nd1->in0));
@@ -785,10 +796,6 @@ hroute_box::init_as_3to2_route_box(slice_vec* pt_out_addrs, const char* dbg_qrt)
 	nd2->selector.lft = sel;
 	nd3->selector.lft = sel;
 	
-	//nd1->filter_addr = flt_addr;
-	//nd2->filter_addr = flt_addr;
-	//nd3->filter_addr = flt_addr;
-	
 	inputs.resize(3, gh_null);
 	inputs[0] = (&(nd1->in0));
 	inputs[1] = (&(nd2->in0));
@@ -842,6 +849,11 @@ hlognet_box::init_as_io(slice_vec& tgt_addrs){
 		
 		hnode_1to2* nd1 = add_1to2(gh_lgnet_in_rou);
 		hnode_2to1* nd2 = add_2to1();
+		
+		nd1->dbg_idx = aa;
+		nd1->dbg_tot = tot_tgt;
+		nd2->dbg_idx = aa;
+		nd2->dbg_tot = tot_tgt;
 		
 		nd1->set_selector_interval(aa, tgt_addrs, tot_tgt);
 		nd2->set_selector_interval(aa, tgt_addrs, tot_tgt);
@@ -1129,6 +1141,12 @@ htarget_box::ck_target_box(long lft_ht, long rgt_ht){
 
 void
 htarget_box::init_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_vec& tgt_addrs, long tot_tgt){
+	GH_DBG_CODE(
+		if(tgt_addrs.empty()){
+			fprintf(stdout, "================ INIT_TARGET %ld =======================\n", tgt_idx);
+		}
+	);
+	
 	GH_CK(tgt_idx >= 0);
 	if((lft_ht <= 1) || (rgt_ht <= 1)){
 		init_basic_target_box(tgt_idx, lft_ht, rgt_ht, tgt_addrs, tot_tgt);
@@ -1816,15 +1834,13 @@ hnode_1to2::set_outs_biggest_idx(){
 	hnode_1to2* oo1 = get_1to2_out1();
 
 	if(oo0 != this){
-		o_eg0 = oo0->get_out0_biggest_idx();
-		//oo0->filter_addr = o_eg0;
-		oo0->selector.lft = o_eg0;
+		edge tmp_eg = oo0->get_out0_biggest_idx();
+		oo0->selector.lft = tmp_eg;
 		oo0->set_outs_biggest_idx();
 	}
 	if(oo1 != this){
-		o_eg1 = oo1->get_out0_biggest_idx();
-		//oo1->filter_addr = o_eg1;
-		oo1->selector.lft = o_eg1;
+		edge tmp_eg = oo1->get_out0_biggest_idx();
+		oo1->selector.lft = tmp_eg;
 		oo1->set_outs_biggest_idx();
 	}
 }
@@ -1902,7 +1918,8 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out, const char* dbg_qrt, gh_dbg_ca
 		} else {
 			GH_CK(! bx->outputs.empty());
 			
-			hnode** old_pt_out = bx->outputs.back();
+			//hnode** old_pt_out = bx->outputs.back();
+			hnode** old_pt_out = bx->outputs.front();
 
 			hnode* old_nd = *(old_pt_out);
 			hnode_1to2* old_out = (hnode_1to2*)old_nd;
@@ -1912,11 +1929,13 @@ gh_get_binnet_sm_to_bm(long num_in, long num_out, const char* dbg_qrt, gh_dbg_ca
 			bnod->in0 = old_out;
 			*old_pt_out = bnod;
 			
-			bx->outputs.pop_back();
+			//bx->outputs.pop_back();
+			bx->outputs.erase(bx->outputs.begin());
 		}
 	}
 	
-	bx->outputs.insert(bx->outputs.end(), next_level.begin(), next_level.end());
+	//bx->outputs.insert(bx->outputs.end(), next_level.begin(), next_level.end());
+	bx->outputs.insert(bx->outputs.begin(), next_level.begin(), next_level.end());
 	if((long)(bx->outputs.size()) < num_out){
 		GH_CK((num_in * 2) > num_out);
 		bx->outputs.resize(num_out, gh_null);
@@ -2170,11 +2189,14 @@ hnode_box::init_sm_to_bm_edges(slice_vec* pt_out_addrs){
 		
 		if(gh_is_1to2(kk)){
 			hnode_1to2* nd = (hnode_1to2*)po;
+			nd->set_flag(gh_is_sm2bm_out);
 			if(nd->is_out0(ppo)){
 				nd->o_eg0 = out_addrs[aa];
+				nd->o_eg0.set_flag(gh_is_sm2bm_out);
 			} else {
 				GH_CK(nd->is_out1(ppo));
 				nd->o_eg1 = out_addrs[aa];
+				nd->o_eg1.set_flag(gh_is_sm2bm_out);
 			}
 		}
 	}
@@ -2199,7 +2221,6 @@ hnode_box::init_sm_to_bm_edges(slice_vec* pt_out_addrs){
 			sel = nd->get_out0_biggest_idx();
 			
 			nd->selector.lft = sel;
-			//nd->filter_addr = o_idx;
 		}
 	}
 }
@@ -2212,7 +2233,6 @@ hnode::set_selector_interval(long tgt_idx, slice_vec& tgt_addrs, long tot_tgt){
 		return;
 	} 
 	selector = tgt_addrs.get_interval(tgt_idx);
-	//filter_addr = 
 }
 
 void
@@ -2226,6 +2246,5 @@ hnode::set_selector_edge(long tgt_idx, slice_vec& tgt_addrs, long tot_tgt){
 	
 	itv = tgt_addrs.get_interval(tgt_idx);
 	selector.lft = itv.lft.get_compl();
-	//filter_addr = 
 }
 
