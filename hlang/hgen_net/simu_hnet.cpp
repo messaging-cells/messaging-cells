@@ -139,7 +139,6 @@ test_get_target(int argc, char *argv[]){
 	long tg_idx = 0;
 	long tgs_sz = 0;
 	gh_dbg_calc_idx_and_sz(nin, nout, bb, tg_idx, tgs_sz);
-	//bx->get_frame().print_frame(stdout);
 	
 	slice_vec all_addr;
 	bx->init_target_box(tg_idx, nin, nout, all_addr, tgs_sz);
@@ -148,16 +147,7 @@ test_get_target(int argc, char *argv[]){
 	
 	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
 
-	//bx->calc_all_1to2_raddr(gh_null);
 	bx->print_box(stdout, gh_full_pt_prt);
-	
-	/*if(GH_GLOBALS.watch_bx != gh_null){
-		fprintf(stdout, "\nBEFORE_CALC_ADDR---------------------------------\n");
-		GH_GLOBALS.watch_bx->print_box(stdout, gh_full_pt_prt);
-		
-		fprintf(stdout, "\nAFTER_CALC_ADDR---------------------------------\n");
-		GH_GLOBALS.watch_bx->print_box(stdout, gh_full_pt_prt);
-	}*/
 	
 	delete bx;
 		
@@ -553,12 +543,12 @@ test_hlognet(int argc, char *argv[]){
 		return 0;
 	}
 	
-	if(GH_GLOBALS.run_m2n){
-		gh_run_m_to_n(GH_GLOBALS.dag_mm, GH_GLOBALS.dag_nn, GH_GLOBALS.dbg_has_zr);
+	if(GH_GLOBALS.dbg_run_m2n){
+		gh_run_m_to_n(GH_GLOBALS.dbg_dag_mm, GH_GLOBALS.dbg_dag_nn, GH_GLOBALS.dbg_has_zr);
 		return 0;
 	}
 	
-	if(GH_GLOBALS.run_ini_slices){
+	if(GH_GLOBALS.dbg_run_ini_slices){
 		addr_vec_t all_rel_pos;
 		
 		all_rel_pos.resize(0);
@@ -666,12 +656,12 @@ hnode_target::run_target_simu(){
 			//bool dst_ok = (addr == in_msg0->mg_dst);
 			bool dst_ok = in_interval(in_msg0->mg_dst);
 			GH_CK_PRT(dst_ok, "ERROR: %ld.%s RCV <%ld>%ld -> %ld val=%ld i(%p) %s \n",
-				addr, get_filter_str().c_str(), in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0,
-				get_filter_str().c_str()
+				addr, get_selector_str().c_str(), in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0,
+				get_selector_str().c_str()
 			);
-			fprintf(stdout, "%ld.%s RCV <%ld>%ld -> %ld val=%ld i(%p) ", addr, get_filter_str().c_str(), 
+			fprintf(stdout, "%ld.%s RCV <%ld>%ld -> %ld val=%ld i(%p) ", addr, get_selector_str().c_str(), 
 					in_msg0->mg_sra, in_msg0->mg_src, in_msg0->mg_dst, in_msg0->mg_val, in0);
-			print_filter_info(stdout);
+			print_selector_info(stdout);
 			fprintf(stdout, "\n");
 			
 			num_msg_rcv_simu++;
@@ -702,7 +692,7 @@ hnode_target::run_target_simu(){
 			msg0.mg_src = src_adr;
 			msg0.mg_dst = dst_adr;
 			
-			fprintf(stdout, "%ld.%s SND <%ld>%ld -> %ld val=%ld o(%p) \n", addr, get_filter_str().c_str(), 
+			fprintf(stdout, "%ld.%s SND <%ld>%ld -> %ld val=%ld o(%p) \n", addr, get_selector_str().c_str(), 
 					msg0.mg_sra, msg0.mg_src, msg0.mg_dst, msg0.mg_val, out0);
 			num_msg_snt_simu++;
 			
@@ -808,8 +798,8 @@ hnode_target::dbg_nxt_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 	);
 	GH_CK(tg->in_interval(dst)); 
 	
-	if(GH_GLOBALS.prt_choo_simu){
-		fprintf(stdout, "%ld.%s CHOO %ld -> %ld %s \n", addr, get_filter_str().c_str(), 
+	if(GH_GLOBALS.dbg_prt_choo_simu){
+		fprintf(stdout, "%ld.%s CHOO %ld -> %ld %s \n", addr, get_selector_str().c_str(), 
 			src, dst, gh_dbg_st_case_str(curr_st_simu));
 	}
 	
@@ -1197,7 +1187,7 @@ hgen_globals::get_args(int argc, char** argv){
 		} else if(the_arg == "-dbg_prt"){
 			dbg_prt_gen_info = true;
 		} else if(the_arg == "-cho"){
-			prt_choo_simu = true;
+			dbg_prt_choo_simu = true;
 		} else if(the_arg == "-zr"){
 			dbg_has_zr = true;
 		} else if(the_arg == "-rgt"){
@@ -1209,11 +1199,11 @@ hgen_globals::get_args(int argc, char** argv){
 		} else if(the_arg == "-ck_all_pth"){
 			dbg_ck_all_path_simu = true;
 		} else if(the_arg == "-m2n"){
-			run_m2n = true;
-			dag_mm = base_simu;
-			dag_nn = num_target_simu;
+			dbg_run_m2n = true;
+			dbg_dag_mm = base_simu;
+			dbg_dag_nn = num_target_simu;
 		} else if(the_arg == "-ini_slices"){
-			run_ini_slices = true;
+			dbg_run_ini_slices = true;
 			dbg_slices_sz = base_simu;
 			dbg_slices_idx = num_target_simu;
 		} else if((the_arg == "-t") && ((ii + 1) < argc)){

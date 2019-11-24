@@ -290,10 +290,8 @@ class hgen_globals {
 public:
 	long DBG_LV = 0;
 	gh_nk_lnk_mod_t CK_LINK_MODE = gh_soft_ck_mod;
-	hnode_box* watch_bx = gh_null;
 
 	long idx_test_simu = 0;
-	long idx_added_frames = 0;
 	
 	vector<thd_data*> all_thread_data_simu;
 	vector<hnode_target*>* all_tgt_simu = gh_null;
@@ -306,7 +304,6 @@ public:
 	const char* dbg_RI_quarter = "RI";
 	const char* dbg_RO_quarter = "RO";
 
-	gh_addr_t dbg_curr_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_curr_tgt_quarter = gh_null;
 
 	bool	dbg_ck_path_simu = false;
@@ -317,15 +314,15 @@ public:
 	gh_addr_t dbg_src_addr_simu = GH_INVALID_ADDR;
 	gh_addr_t dbg_dst_addr_simu = GH_INVALID_ADDR;
 
-	bool prt_choo_simu = false;
+	bool dbg_prt_choo_simu = false;
 
-	bool 		run_m2n = false;
-	long 		dag_mm = 0;
-	long 		dag_nn = 0;
+	bool 		dbg_run_m2n = false;
+	long 		dbg_dag_mm = 0;
+	long 		dbg_dag_nn = 0;
 	
 	bool		dbg_has_zr = false;
 
-	bool 		run_ini_slices = false;
+	bool 		dbg_run_ini_slices = false;
 	long 		dbg_slices_sz = 0;
 	long 		dbg_slices_idx = 0;
 	gh_route_side_t	dbg_slices_sd = gh_left_side;
@@ -348,10 +345,7 @@ public:
 	hgen_globals(){}
 	
 	virtual ~hgen_globals(){
-		//release_all_frames();
 	}
-	
-	//void release_all_frames();
 	
 	bool get_args(int argc, char** argv);
 	
@@ -463,8 +457,6 @@ gh_dbg_st_case_str(gh_dbg_st_t kk){
 };
 
 gh_addr_t gh_calc_power(long base, gh_addr_t adr);
-gh_addr_t gh_calc_side(gh_route_side_t sd, gh_addr_t adr);
-gh_addr_t gh_dec_power(long base, gh_addr_t adr);
 
 class hmessage {
 public:
@@ -492,7 +484,6 @@ public:
 	gh_flags_t node_flags = 0;
 	gh_addr_t addr = GH_INVALID_ADDR;
 	
-	gh_addr_t dbg_tgt_addr = GH_INVALID_ADDR;
 	const char* dbg_tgt_quarter = gh_null;
 
 	long dbg_idx = GH_INVALID_IDX;
@@ -505,16 +496,16 @@ public:
 		node_flags = 0;
 		addr = GH_INVALID_ADDR;
 		
-		dbg_tgt_addr = GH_GLOBALS.dbg_curr_tgt_addr;
+		//dbg_tgt_addr = GH_GLOBALS.dbg_curr_tgt_addr;
 		dbg_tgt_quarter = GH_GLOBALS.dbg_curr_tgt_quarter;
 	}
 	virtual ~hnode(){}
 
 	void set_selector_interval(long tgt_idx, slice_vec& tgt_addrs, long tot_elems);
 	void set_selector_edge(long tgt_idx, slice_vec& tgt_addrs, long tot_tgt);
-	void print_filter_info(FILE* ff);
+	void print_selector_info(FILE* ff);
 	
-	std::string get_filter_str();
+	std::string get_selector_str();
 	
 	bool in_interval(gh_addr_t addr);
 	gh_addr_t get_diff_simu();
@@ -632,20 +623,7 @@ public:
 	
 	bool ck_link(hnode* lnk, gh_io_kind_t kk);
 	
-	bool has_connected_in0(){
-		hnode* pi = get_in0();
-		bool hc = ((pi != gh_null) && (pi != this));
-		return hc;
-	}
-
-	bool has_connected_in1(){
-		hnode* pi = get_in1();
-		bool hc = ((pi != gh_null) && (pi != this));
-		return hc;
-	}
-	
 	void print_addr(FILE* ff, char pfx = '#');
-	void print_dbg_tgt_addr(FILE* ff, gh_prt_mode_t md);
 	
 	void create_thread_simu(long idx);
 	
@@ -929,7 +907,6 @@ public:
 	print_node(FILE* ff, gh_prt_mode_t md);
 	
 	void run_1to2_simu();
-	void run_dichotomy_simu();
 	
 	const char* dbg_kind_to_str(gh_dbg_call_t cll);
 	
@@ -1016,9 +993,6 @@ gh_set_io(ppnode_vec_t& all_io, long idx_io, hnode* nd){
 	return po;
 }
 
-void gh_dbg_init_watch_box(hnode_box& w_bx, hnode_box* r_bx);
-
-void gh_connect_node_out_to_node_in(hnode& nd_out, long out, hnode& nd_in, long in);
 void gh_connect_out_to_in(ppnode_vec_t& all_out, long out, ppnode_vec_t& all_in, long in);
 void gh_connect_outputs_to_inputs(ppnode_vec_t& out, ppnode_vec_t& in);
 bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
@@ -1081,10 +1055,6 @@ public:
 		return gh_set_io(inputs, in, nd);
 	}
 
-	void connect_output_to_box_input(long out, long in, hnode_box& bx){
-		gh_connect_out_to_in(outputs, out, bx.inputs, in);
-	}
-	
 	void connect_output_to_node_input(long out, hnode_2to1& nd, long in){
 		hnode* po = set_output(out, &nd);
 		if(in == 0){
@@ -1094,12 +1064,6 @@ public:
 			GH_CK(nd.in1 == &nd);
 			nd.in1 = po;
 		}
-	}
-	
-	void connect_output_to_node(long out, hnode_1to2& nd){
-		hnode* po = set_output(out, &nd);
-		GH_CK(nd.in0 == &nd);
-		nd.in0 = po;
 	}
 	
 	void connect_node_output_to_input(hnode_1to2& nd, long out, long in){
@@ -1113,16 +1077,9 @@ public:
 		}
 	}
 	
-	void connect_node_to_input(hnode_2to1& nd, long in){
-		hnode* pi = set_input(in, &nd);
-		GH_CK(nd.out0 == &nd);
-		nd.out0 = pi;
-	}
-
 	void remove_connected_directs();
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
-	//void init_sm_to_bm_filters(slice_set* out_addrs);
 	void init_sm_to_bm_edges(slice_vec* out_addrs);
 };
 
@@ -1184,7 +1141,6 @@ public:
 	
 	void 	del_htarget_box();
 
-	void 	join_outputs(hnode_box* rte_bx, hnode_box* spl_bx, long num_out, ppnode_vec_t& all_out);
 	void 	join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnode_box* bx2, 
 							 long num_idx, ppnode_vec_t& all_out, const char* dbg_qrt);
 	void 	resize_with_directs(long nw_side_sz);
