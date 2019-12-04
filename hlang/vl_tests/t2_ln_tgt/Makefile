@@ -11,13 +11,13 @@ ICEPACK_EXE = icepack
 ICEPROG_EXE = iceprog
 
 RTL_DIR = rtl
-CHECK_DIR = ck_src_snk
+CHECK_DIR = ck_ln_tgt
 
 RTL_FILES = \
 	${RTL_DIR}/bin_to_disp.v \
 	${RTL_DIR}/debouncer.v \
-	${RTL_DIR}/hnet_src.v \
-	${RTL_DIR}/hnet_snk.v \
+	${RTL_DIR}/hglobal.v \
+	${RTL_DIR}/ln_tgt.v \
 	${RTL_DIR}/${PRJ_NM}.v \
 	
 export BUILD_DIR
@@ -35,12 +35,12 @@ ${PRJ_PREFIX}.asc : ${PRJ_PREFIX}.json
 
 
 ${PRJ_PREFIX}.json : ${RTL_FILES}
-	mkdir -p ${BUILD_DIR}; cd ${RTL_DIR}; \
+	mkdir -p ${BUILD_DIR}; rm ${PRJ_PREFIX}.json; rm ${PRJ_PREFIX}.blif; cd ${RTL_DIR}; \
 	${YOSYS_EXE} -q synth.tcl -l ../${BUILD_DIR}/synth.log
 
 .PHONY: prog
 prog:
-	sudo ${ICEPROG_EXE} ${PRJ_PREFIX}.bin
+	sudo ${ICEPROG_EXE} -b ${PRJ_PREFIX}.bin
 	
 
 .PHONY: check

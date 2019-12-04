@@ -32,5 +32,6 @@ SOURCES := \
 	${HG_BASE_DIR}/gh_util/gh_dbg_util.cpp \
 	${HG_BASE_DIR}/hgen_net.cpp \
 	${HG_BASE_DIR}/simu_hnet.cpp \
+	${HG_BASE_DIR}/vlg_hnet.cpp \
 
 

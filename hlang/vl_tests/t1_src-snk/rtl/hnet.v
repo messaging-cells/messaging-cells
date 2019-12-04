@@ -37,7 +37,7 @@ module hnet_top (
 	reg clk_snk = `OFF;
 	
 	reg [`DATA_SIZE-1:0] disp_i_data = 1;
-	reg [`DATA_SIZE-1:0] disp_o_data = 2;
+	reg [`DATA_SIZE-1:0] disp_o_data = 1;
 	
 	reg r_LED_1 = `OFF;
 	reg r_LED_2 = `OFF;
