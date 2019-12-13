@@ -155,7 +155,7 @@ test_get_target(int argc, char *argv[]){
 }
 
 void
-prt_int_vec(vector<int>& vc){
+prt_int_vec(int_vec_t& vc){
 	fprintf(stdout, "{");
 	for(long aa = 0; aa < (long)vc.size(); aa++){
 		fprintf(stdout, "%d ", vc[aa]);
@@ -166,8 +166,8 @@ prt_int_vec(vector<int>& vc){
 int
 test_copy_arr(int argc, char *argv[]){
 	
-	vector<int> v1 = { 1, 2, 3 ,4 , 5, 6};
-	vector<int> v2 = v1;
+	int_vec_t v1 = { 1, 2, 3 ,4 , 5, 6};
+	int_vec_t v2 = v1;
 	v2.back() = 20;
 	v1[2] = 321;
 	v1.resize(30, 0);
@@ -414,7 +414,7 @@ hnode::create_thread_simu(long idx){
 
 void
 hlognet_box::wait_all_inited_simu(){
-	vector<thd_data*>& all_dat = GH_GLOBALS.all_thread_data_simu;
+	pthread_data_vec_t& all_dat = GH_GLOBALS.all_thread_data_simu;
 	long tot_child = GH_GLOBALS.all_thread_data_simu.size();
 	long num_inited = 0;
 	long fst_idx = 0;
@@ -501,7 +501,7 @@ hlognet_box::wait_all_threads_ended_simu(){
 		pthread_yield();
 	}
 	
-	vector<thd_data*>& all_dat = GH_GLOBALS.all_thread_data_simu;
+	pthread_data_vec_t& all_dat = GH_GLOBALS.all_thread_data_simu;
 	for(long aa = 0; aa < (long)all_dat.size(); aa++){
 		thd_data* pt_dat = all_dat[aa];
 		if(! pt_dat->end_it){
@@ -736,7 +736,7 @@ hmessage::copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod){
 bool
 hnode_target::dbg_inc_tgt_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tg = *GH_GLOBALS.all_tgt_simu;
 	
 	if(curr_dest_simu == GH_INVALID_ADDR){
 		curr_dest_simu = 0;
@@ -768,7 +768,7 @@ hnode_target::dbg_inc_tgt_simu(){
 void
 hnode_target::dbg_nxt_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tg = *GH_GLOBALS.all_tgt_simu;
 	
 	GH_CK(curr_dest_simu < (long)all_tg.size());
 	hnode_target* tg = all_tg[curr_dest_simu];
@@ -883,7 +883,7 @@ gh_dbg_init_simu(){
 void
 hnode_target::test0_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tg = *GH_GLOBALS.all_tgt_simu;
 	
 	long sz = (long)all_tg.size();
 	GH_CK(sz > 0);
@@ -896,7 +896,7 @@ hnode_target::test0_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 void
 gh_dbg_init_test0_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tgt = *GH_GLOBALS.all_tgt_simu;
 	
 	long tot_tg = (long)all_tgt.size();
 	long lst_tg = tot_tg - 1;
@@ -924,7 +924,7 @@ hnode_target::test1_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 void
 gh_dbg_init_test1_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tgt = *GH_GLOBALS.all_tgt_simu;
 	
 	long tot_tg = (long)all_tgt.size();
 	GH_CK(tot_tg > 0);
@@ -948,7 +948,7 @@ hnode_target::test2_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 void
 gh_dbg_init_test2_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tgt = *GH_GLOBALS.all_tgt_simu;
 	
 	long tot_tg = (long)all_tgt.size();
 	GH_CK(tot_tg > 0);
@@ -970,7 +970,7 @@ hnode_target::test3_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 void
 gh_dbg_init_test3_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tgt = *GH_GLOBALS.all_tgt_simu;
 	
 	long tot_tg = (long)all_tgt.size();
 	GH_CK(tot_tg > 0);
@@ -1000,7 +1000,7 @@ hnode_target::test4_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 void
 gh_dbg_init_test4_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tgt = *GH_GLOBALS.all_tgt_simu;
 	
 	long tot_tg = (long)all_tgt.size();
 	GH_CK(tot_tg > 0);
@@ -1028,7 +1028,7 @@ hnode_target::test5_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 void
 gh_dbg_init_test5_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tgt = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tgt = *GH_GLOBALS.all_tgt_simu;
 	
 	if(GH_GLOBALS.dbg_src_addr_simu == GH_INVALID_ADDR){
 		fprintf(stdout, "\n\n\n\n\n\n\n\nMUST use -src option for test 5 to work !!!! \n\n\n\n\n\n\n\n");
@@ -1059,7 +1059,7 @@ gh_dbg_init_test5_simu(){
 void
 gh_dbg_prt_node(hlognet_box* bx, gh_addr_t adr){
 	GH_CK(bx != gh_null);
-	vector<hnode*>& nods = bx->all_nodes;
+	pnode_vec_t& nods = bx->all_nodes;
 	
 	gh_addr_t sz = nods.size();
 	
@@ -1075,7 +1075,7 @@ gh_dbg_prt_node(hlognet_box* bx, gh_addr_t adr){
 
 void
 gh_dbg_post_test_prints(hlognet_box* bx){
-	vector<gh_addr_t>& dbg_nods = GH_GLOBALS.dbg_nodes_prt_simu;
+	addr_vec_t& dbg_nods = GH_GLOBALS.dbg_nodes_prt_simu;
 	
 	fprintf(stdout, "=========== POST_PRINTS ===================\n");
 	
@@ -1089,7 +1089,7 @@ gh_dbg_post_test_prints(hlognet_box* bx){
 bool
 hnode_target::inc_st_simu(){
 	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	vector<hnode_target*>& all_tg = *GH_GLOBALS.all_tgt_simu;
+	ptarget_vec_t& all_tg = *GH_GLOBALS.all_tgt_simu;
 	GH_CK(curr_dest_simu >= 0);
 	GH_CK(curr_dest_simu < (long)all_tg.size());
 	hnode_target* tg = all_tg[curr_dest_simu];

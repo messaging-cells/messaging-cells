@@ -16,7 +16,10 @@
 
 #include "gh_dbg_util.h"
 
-using namespace std;
+//using namespace std;
+
+#define gh_vector_t std::vector 
+#define gh_string_t std::string
 
 #define GH_INVALID_IDX -1
 #define GH_INVALID_ADDR -1
@@ -166,12 +169,6 @@ class hlognet_box;
 #define gh_is_sm2bm_out		5
 #define gh_last_flg 		6
 
-
-typedef hnode* pnode_t;
-typedef vector<hnode**> ppnode_vec_t;
-
-typedef vector<gh_addr_t> addr_vec_t;
-
 class edge {
 public:
 	gh_flags_t slc_flg = 0;
@@ -224,7 +221,7 @@ public:
 	
 	bool in_edge(gh_addr_t addr);
 
-	std::string get_print_str();
+	gh_string_t get_print_str();
 	
 	void print_edge(FILE* ff){
 		fprintf(ff, "%s", get_print_str().c_str());
@@ -233,12 +230,22 @@ public:
 	
 };
 
+
+typedef hnode* pnode_t;
+typedef gh_vector_t<int> int_vec_t;
+typedef gh_vector_t<pnode_t> pnode_vec_t;
+typedef gh_vector_t<pnode_t*> ppnode_vec_t;
+typedef gh_vector_t<gh_addr_t> addr_vec_t;
+typedef gh_vector_t<hnode_target*> ptarget_vec_t;
+typedef gh_vector_t<edge> edge_vec_t;
+typedef gh_vector_t<thd_data*> pthread_data_vec_t;
+
 class interval {
 public:
 	edge lft;
 	edge rgt;
 	
-	std::string get_print_str();
+	gh_string_t get_print_str();
 	
 	long dbg_get_num_test_in();
 	gh_addr_t dbg_get_min_in();
@@ -252,7 +259,7 @@ public:
 	}
 };
 
-class slice_vec : public vector<edge> {
+class slice_vec : public edge_vec_t {
 public:
 
 	bool is_dec(){
@@ -293,8 +300,8 @@ public:
 
 	long idx_test_simu = 0;
 	
-	vector<thd_data*> all_thread_data_simu;
-	vector<hnode_target*>* all_tgt_simu = gh_null;
+	pthread_data_vec_t all_thread_data_simu;
+	ptarget_vec_t* all_tgt_simu = gh_null;
 	long tot_tgt_simu = 0;
 	long tot_src_msg_simu = 0;
 	bool all_thread_inited_simu = false;
@@ -339,7 +346,7 @@ public:
 	gh_addr_t	num_target_simu = 3;
 	
 	
-	vector<gh_addr_t> dbg_nodes_prt_simu;
+	addr_vec_t dbg_nodes_prt_simu;
 	long dbg_prt_disp_all_addr_simu = 0;
 	
 	hgen_globals(){}
@@ -505,7 +512,7 @@ public:
 	void set_selector_edge(long tgt_idx, slice_vec& tgt_addrs, long tot_tgt);
 	void print_selector_info(FILE* ff);
 	
-	std::string get_selector_str();
+	gh_string_t get_selector_str();
 	
 	bool in_interval(gh_addr_t addr);
 	gh_addr_t get_diff_simu();
@@ -626,7 +633,42 @@ public:
 	void print_addr(FILE* ff, char pfx = '#');
 	
 	void create_thread_simu(long idx);
+
+	gh_string_t get_verilog_id(){
+		gh_string_t o_str = "invalid_id";
+		if(is_1to1()){
+			o_str = "tg_" + addr;
+		} else {
+			o_str = "nd_" + addr;
+		}
+		return o_str;
+	}
 	
+	gh_string_t get_verilog_send_interface_prefix(int num_itf);
+	gh_string_t get_verilog_receive_interface_prefix(int num_itf);
+	gh_string_t get_verilog_send_node_interface_prefix(hnode* out);
+	gh_string_t get_verilog_receive_node_interface_prefix(hnode* in);
+	
+	gh_string_t get_verilog_snd_src(int num_itf, bool rg = true);
+	gh_string_t get_verilog_snd_dst(int num_itf, bool rg = true);
+	gh_string_t get_verilog_snd_dat(int num_itf, bool rg = true);
+	gh_string_t get_verilog_snd_req(int num_itf, bool rg = true);
+	gh_string_t get_verilog_snd_ack(int num_itf);
+	
+	gh_string_t get_verilog_rcv_src(int num_itf);
+	gh_string_t get_verilog_rcv_dst(int num_itf);
+	gh_string_t get_verilog_rcv_dat(int num_itf);
+	gh_string_t get_verilog_rcv_req(int num_itf);
+	gh_string_t get_verilog_rcv_ack(int num_itf, bool rg = true);
+	
+	void print_verilog_send_interface(FILE* ff, int num_itf);
+	void print_verilog_receive_interface(FILE* ff, int num_itf);
+	
+	void print_verilog_send_registers(FILE* ff, int num_itf);
+	void print_verilog_receive_registers(FILE* ff, int num_itf);
+	
+	void print_verilog_send_node_interface(FILE* ff, hnode* out);
+	void print_verilog_receive_node_interface(FILE* ff, hnode* out);
 };
 
 class hnode_1to1 : public hnode {
@@ -786,24 +828,6 @@ public:
 	
 	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
-};
-
-class hnode_src : public hnode_1to1 {
-public:
-	virtual gh_1t1_kind_t
-	get_1t1_kind(){
-		return gh_source_1t1;
-	}
-	
-};
-
-class hnode_snk : public hnode_1to1 {
-public:
-	virtual gh_1t1_kind_t
-	get_1t1_kind(){
-		return gh_sink_1t1;
-	}
-	
 };
 
 class hnode_1to2 : public hnode {
@@ -996,16 +1020,16 @@ gh_set_io(ppnode_vec_t& all_io, long idx_io, hnode* nd){
 void gh_connect_out_to_in(ppnode_vec_t& all_out, long out, ppnode_vec_t& all_in, long in);
 void gh_connect_outputs_to_inputs(ppnode_vec_t& out, ppnode_vec_t& in);
 bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
-void gh_copy_nodes(vector<hnode*>& src, vector<hnode*>& dst, bool clr_src);
-void gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst);
-void gh_init_all_addr(vector<hnode*>& all_nd, long fst);
+void gh_copy_nodes(pnode_vec_t& src, pnode_vec_t& dst, bool clr_src);
+void gh_move_nodes(pnode_vec_t& src, pnode_vec_t& dst);
+void gh_init_all_addr(pnode_vec_t& all_nd, long fst);
 
 class hnode_box {
 public:
 	long pw_base = 0;
 	
-	vector<hnode*> all_direct;
-	vector<hnode*> all_nodes;
+	pnode_vec_t all_direct;
+	pnode_vec_t all_nodes;
 	ppnode_vec_t inputs;
 	ppnode_vec_t outputs;
 	
@@ -1163,7 +1187,7 @@ class hlognet_box : public hnode_box {
 public:
 	long tot_targets;
 	long height;
-	vector<hnode_target*> all_targets;
+	ptarget_vec_t all_targets;
 	
 	hlognet_box(long pnt_base) {
 		pw_base = pnt_base;

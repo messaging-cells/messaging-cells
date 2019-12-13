@@ -110,10 +110,10 @@ hnode::print_selector_info(FILE* ff){
 	fprintf(ff, "%s", get_selector_str().c_str());
 }
 
-std::string
+gh_string_t
 edge::get_print_str(){
 	if(is_undef()){
-		std::string uu = "udf";
+		gh_string_t uu = "udf";
 		return uu;
 	}
 	std::ostringstream tmp_ss;
@@ -126,7 +126,7 @@ edge::get_print_str(){
 	return tmp_ss.str();
 }
 
-std::string
+gh_string_t
 interval::get_print_str(){
 	std::ostringstream tmp_ss;
 	tmp_ss << "[";
@@ -137,7 +137,7 @@ interval::get_print_str(){
 	return tmp_ss.str();
 }
 
-std::string
+gh_string_t
 hnode::get_selector_str(){
 	bool is_itv = get_flag(gh_is_interval);
 	if(is_itv){
@@ -461,7 +461,7 @@ hnode::ck_link(hnode* lnk, gh_io_kind_t kk){
 	return is_nd;
 }
 
-void gh_init_all_addr(vector<hnode*>& all_nd, long fst){
+void gh_init_all_addr(pnode_vec_t& all_nd, long fst){
 	for(long ii = 0; ii < (long)all_nd.size(); ii++){
 		if(all_nd[ii] != gh_null){
 			all_nd[ii]->addr = fst + ii;
@@ -652,7 +652,7 @@ gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst){
 }
 
 void
-gh_copy_nodes(vector<hnode*>& src, vector<hnode*>& dst, bool clr_src){
+gh_copy_nodes(pnode_vec_t& src, pnode_vec_t& dst, bool clr_src){
 	for(long ii = 0; ii < (long)src.size(); ii++){
 		if(src[ii] == gh_null){
 			continue;
@@ -669,7 +669,7 @@ gh_copy_nodes(vector<hnode*>& src, vector<hnode*>& dst, bool clr_src){
 }
 
 void
-gh_move_nodes(vector<hnode*>& src, vector<hnode*>& dst){
+gh_move_nodes(pnode_vec_t& src, pnode_vec_t& dst){
 	gh_copy_nodes(src, dst, true);
 }
 
