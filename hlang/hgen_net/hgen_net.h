@@ -10,6 +10,7 @@
 #include <math.h>
 #include <assert.h>
 
+#include <set>
 #include <vector>
 #include <iterator>
 #include <sstream>
@@ -32,6 +33,19 @@
 
 #define gh_min(v1, v2) (((v1) < (v2))?(v1):(v2))
 #define gh_max(v1, v2) (((v1) > (v2))?(v1):(v2))
+
+typedef const char* gh_c_str_t;
+
+#define gh_vl_sep "_"
+#define gh_vl_snd "snd_"
+#define gh_vl_rcv "rcv_"
+#define gh_vl_src "src"
+#define gh_vl_dst "dst"
+#define gh_vl_dat "dat"
+#define gh_vl_req "req"
+#define gh_vl_ack "ack"
+#define gh_vl_in "in"
+#define gh_vl_out "out"
 
 //======================================================================
 // bitarray
@@ -228,6 +242,8 @@ public:
 		fflush(ff);
 	}
 	
+	gh_string_t get_verilog_oper();
+	gh_string_t get_verilog_ref_val();
 };
 
 
@@ -293,6 +309,30 @@ void gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_
 
 void gh_run_m_to_n(long mm, long nn, bool has_zr);
 
+
+class verilog_interface {
+public:
+	gh_string_t nam;
+	
+	gh_string_t src;
+	gh_string_t dst;
+	gh_string_t dat;
+	gh_string_t req;
+	gh_string_t ack;
+
+	void init_verilog_interface(gh_string_t itf_nm){
+		nam = itf_nm;
+		gh_string_t pfx = nam + gh_vl_sep;
+		gh_string_t src = pfx + gh_vl_src;
+		gh_string_t dst = pfx + gh_vl_dst;
+		gh_string_t dat = pfx + gh_vl_dat;
+		gh_string_t req = pfx + gh_vl_req;
+		gh_string_t ack = pfx + gh_vl_ack;
+	}
+};
+
+typedef std::set<gh_string_t> gh_str_set_t;
+
 class hgen_globals {
 public:
 	long DBG_LV = 0;
@@ -305,6 +345,8 @@ public:
 	long tot_tgt_simu = 0;
 	long tot_src_msg_simu = 0;
 	bool all_thread_inited_simu = false;
+	
+	gh_str_set_t all_verilog_declared_interfaces;
 	
 	const char* dbg_LI_quarter = "LI";
 	const char* dbg_LO_quarter = "LO";
@@ -481,6 +523,12 @@ public:
 	
 };
 
+inline gh_string_t 
+long_to_string(long num){
+	gh_string_t ss = "" + num;
+	return ss;
+}
+
 inline bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
 inline bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
 inline bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
@@ -643,32 +691,12 @@ public:
 		}
 		return o_str;
 	}
+
+	gh_string_t get_verilog_send_node_interface_name(hnode* out);
+	gh_string_t get_verilog_receive_node_interface_name(hnode* in);
 	
-	gh_string_t get_verilog_send_interface_prefix(int num_itf);
-	gh_string_t get_verilog_receive_interface_prefix(int num_itf);
-	gh_string_t get_verilog_send_node_interface_prefix(hnode* out);
-	gh_string_t get_verilog_receive_node_interface_prefix(hnode* in);
+	void print_verilog_declare_link_interface(FILE* ff, gh_string_t itf_nm);
 	
-	gh_string_t get_verilog_snd_src(int num_itf, bool rg = true);
-	gh_string_t get_verilog_snd_dst(int num_itf, bool rg = true);
-	gh_string_t get_verilog_snd_dat(int num_itf, bool rg = true);
-	gh_string_t get_verilog_snd_req(int num_itf, bool rg = true);
-	gh_string_t get_verilog_snd_ack(int num_itf);
-	
-	gh_string_t get_verilog_rcv_src(int num_itf);
-	gh_string_t get_verilog_rcv_dst(int num_itf);
-	gh_string_t get_verilog_rcv_dat(int num_itf);
-	gh_string_t get_verilog_rcv_req(int num_itf);
-	gh_string_t get_verilog_rcv_ack(int num_itf, bool rg = true);
-	
-	void print_verilog_send_interface(FILE* ff, int num_itf);
-	void print_verilog_receive_interface(FILE* ff, int num_itf);
-	
-	void print_verilog_send_registers(FILE* ff, int num_itf);
-	void print_verilog_receive_registers(FILE* ff, int num_itf);
-	
-	void print_verilog_send_node_interface(FILE* ff, hnode* out);
-	void print_verilog_receive_node_interface(FILE* ff, hnode* out);
 };
 
 class hnode_1to1 : public hnode {
@@ -934,6 +962,13 @@ public:
 	
 	const char* dbg_kind_to_str(gh_dbg_call_t cll);
 	
+	gh_string_t get_verilog_oper_1();
+	gh_string_t get_verilog_ref_val_1();
+	gh_string_t get_verilog_is_range();
+	gh_string_t get_verilog_oper_2();
+	gh_string_t get_verilog_ref_val_2();
+	
+	void print_verilog_1to2_instance(FILE* ff);
 };
 
 class hnode_2to1 : public hnode {
@@ -1002,6 +1037,9 @@ public:
 	bool ck_out_interval(char dbg_in);
 	
 	void run_2to1_simu();
+
+	void print_verilog_2to1_instance(FILE* ff);
+	
 };
 
 long 	gh_get_first_null_idx(ppnode_vec_t& vec);
@@ -1105,6 +1143,10 @@ public:
 	void connect_outputs_to_box_inputs(hnode_box& bx);
 	
 	void init_sm_to_bm_edges(slice_vec* out_addrs);
+	
+	void print_verilog_send_interface(FILE* ff, gh_string_t itf_nm);
+	void print_verilog_receive_interface(FILE* ff, gh_string_t itf_nm);
+	
 };
 
 hnode_box*

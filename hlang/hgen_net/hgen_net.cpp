@@ -1019,12 +1019,16 @@ hlognet_box::get_target_box(long idx, slice_vec& tgt_addrs){
 	GH_CK(idx < the_sz);
 	htarget_box* bx = new htarget_box(pw_base);
 
-	long nin = 0;
-	long nout = 0;
-	gh_calc_num_io(get_base(), the_sz, idx, nin, nout);
-	GH_CK((idx == 0) || (nin >= nout));
-	bx->init_target_box(idx, nin, nout, tgt_addrs, the_sz);
+	long lft_ht = 0;
+	long rgt_ht = 0;
+	gh_calc_num_io(get_base(), the_sz, idx, lft_ht, rgt_ht);
+	GH_CK((idx == 0) || (lft_ht >= rgt_ht));
+	bx->init_target_box(idx, lft_ht, rgt_ht, tgt_addrs, the_sz);
 	bx->dbg_init_tgt_szs();
+	
+	GH_CK(bx->target != gh_null);
+	hnode_target& tgt = *(bx->target);
+	tgt.set_selector_interval(idx, tgt_addrs, the_sz);
 	
 	return bx;
 }
@@ -1258,10 +1262,9 @@ hlognet_box::init_lognet_box(long num_elems, slice_vec& tgt_addrs, const char* d
 		
 		htarget_box* bx = get_target_box(aa, tgt_addrs);
 		
-		GH_CK(bx->target != gh_null);
-		hnode_target& tgt = *(bx->target);
-		
-		tgt.set_selector_interval(aa, tgt_addrs, num_elems);
+		//GH_CK(bx->target != gh_null);
+		//hnode_target& tgt = *(bx->target);		
+		//tgt.set_selector_interval(aa, tgt_addrs, num_elems);
 
 		if(prv_bx != gh_null){
 			GH_CK((aa < 2) || (prv_bx->lft_in.size() >= prv_bx->lft_out.size()));
