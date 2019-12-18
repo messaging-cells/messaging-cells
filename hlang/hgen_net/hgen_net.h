@@ -37,15 +37,25 @@
 typedef const char* gh_c_str_t;
 
 #define gh_vl_sep "_"
-#define gh_vl_snd "snd_"
-#define gh_vl_rcv "rcv_"
+#define gh_vl_snd "snd"
+#define gh_vl_rcv "rcv"
 #define gh_vl_src "src"
 #define gh_vl_dst "dst"
 #define gh_vl_dat "dat"
 #define gh_vl_req "req"
 #define gh_vl_ack "ack"
-#define gh_vl_in "in"
-#define gh_vl_out "out"
+#define gh_vl_in0 "in0_"
+#define gh_vl_in1 "in1_"
+#define gh_vl_out0 "_out0"
+#define gh_vl_out1 "_out1"
+#define gh_vl_tgt "tg_"
+#define gh_vl_nod "nd_"
+#define gh_vl_tg_mod "target_module_"
+
+#define gh_vl_snd0 "snd0_" // must match 1to2 and 2to1 modules interfaces
+#define gh_vl_snd1 "snd1_" // must match 1to2 and 2to1 modules interfaces
+#define gh_vl_rcv0 "rcv0_" // must match 1to2 and 2to1 modules interfaces
+#define gh_vl_rcv1 "rcv1_" // must match 1to2 and 2to1 modules interfaces
 
 //======================================================================
 // bitarray
@@ -529,6 +539,32 @@ long_to_string(long num){
 	return ss;
 }
 
+inline gh_string_t 
+get_verilog_side(gh_route_side_t sd){
+	gh_string_t sd_nm = "lft";
+	if(sd == gh_right_side){
+		sd_nm = "rgt";
+	} 
+	return sd_nm;
+}
+
+inline gh_string_t 
+get_verilog_io_kind(gh_io_kind_t iok){
+	gh_string_t iok_nm = gh_vl_rcv;
+	if(iok == gh_out_kind){
+		iok_nm = gh_vl_snd;
+	} 
+	return iok_nm;
+}
+
+inline gh_string_t 
+get_verilog_io_name(long num, gh_route_side_t sd, gh_io_kind_t iok){
+	gh_string_t iok_nm = get_verilog_io_kind(iok);
+	gh_string_t sd_nm = get_verilog_side(sd);
+	gh_string_t ss = iok_nm + gh_vl_sep + sd_nm + long_to_string(num);
+	return ss;
+}
+
 inline bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
 inline bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
 inline bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
@@ -580,6 +616,8 @@ public:
 	bool is_1to1(){ return (get_kind() == gh_1_to_1_nod); }
 	bool is_1to2(){ return (get_kind() == gh_1_to_2_nod); }
 	bool is_2to1(){ return (get_kind() == gh_2_to_1_nod); }
+	
+	hnode_target* as_target();
 	
 	virtual bool
 	has_io(hnode** io){
@@ -683,21 +721,23 @@ public:
 	void create_thread_simu(long idx);
 
 	gh_string_t get_verilog_id(){
-		gh_string_t o_str = "invalid_id";
+		gh_string_t o_str = "gh_invalid_verilog_id";
 		if(is_1to1()){
-			o_str = "tg_" + addr;
+			o_str = gh_vl_tgt + addr;
 		} else {
-			o_str = "nd_" + addr;
+			o_str = gh_vl_nod + addr;
 		}
 		return o_str;
 	}
 
-	gh_string_t get_verilog_send_node_interface_name(hnode* out);
-	gh_string_t get_verilog_receive_node_interface_name(hnode* in);
-	
-	void print_verilog_declare_link_interface(FILE* ff, gh_string_t itf_nm);
+	gh_string_t get_verilog_send_node_interface_name(hnode** ppout);
+	gh_string_t get_verilog_receive_node_interface_name(hnode** ppin);
 	
 };
+
+void gh_print_verilog_declare_link_interface(FILE* ff, gh_string_t itf_nm);
+void gh_print_verilog_assign_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2);
+void gh_print_verilog_instance_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma = true);
 
 class hnode_1to1 : public hnode {
 public:
@@ -1144,10 +1184,10 @@ public:
 	
 	void init_sm_to_bm_edges(slice_vec* out_addrs);
 	
-	void print_verilog_send_interface(FILE* ff, gh_string_t itf_nm);
-	void print_verilog_receive_interface(FILE* ff, gh_string_t itf_nm);
-	
 };
+
+void gh_print_verilog_send_interface(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_receive_interface(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
 
 hnode_box*
 gh_get_binnet_sm_to_bm(long num_in, long num_out, const char* dbg_qrt, gh_dbg_call_t dbg_case);
@@ -1187,6 +1227,15 @@ gh_print_io(FILE* ff, gh_prt_mode_t md, ppnode_vec_t& all_io);
 void
 gh_init_quarter(ppnode_vec_t qrt, gh_addr_t tg_addr, char* qrt_nm);
 
+void
+gh_print_verilog_assigns_for_ios(FILE* ff, ppnode_vec_t& all_io, gh_route_side_t sd, gh_io_kind_t iot);
+
+void
+gh_print_verilog_params_for_ios(FILE* ff, ppnode_vec_t& all_io, gh_route_side_t sd, gh_io_kind_t iot);
+
+void
+gh_print_verilog_code_for_nodes(FILE* ff, pnode_vec_t& all_nd);
+
 class htarget_box : public hnode_box {
 public:
 	hnode_target* target = gh_null;
@@ -1221,6 +1270,13 @@ public:
 
 	virtual
 	void 	print_box(FILE* ff, gh_prt_mode_t md);
+	
+	gh_string_t get_verilog_module_name();
+	gh_string_t get_verilog_target_param_name(gh_io_kind_t iok);
+
+	void 	print_verilog_target_param(FILE* ff);
+	void 	print_verilog_target_assign(FILE* ff);
+	void 	print_verilog_base_code(FILE* ff);
 };
 
 void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_out);

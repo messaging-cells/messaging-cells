@@ -2091,3 +2091,16 @@ hnode::set_selector_edge(long tgt_idx, slice_vec& tgt_addrs, long tot_tgt){
 	selector.lft = itv.lft.get_compl();
 }
 
+hnode_target*
+hnode::as_target(){
+	if(! is_1to1()){
+		return gh_null;
+	}
+	hnode_1to1* nd = (hnode_1to1*)this;
+	if(nd->get_1t1_kind() != gh_target_1t1){
+		return gh_null;
+	}
+	hnode_target* tg = (hnode_target*)this;
+	return tg;
+}
+
