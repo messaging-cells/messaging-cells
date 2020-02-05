@@ -3,6 +3,110 @@
 
 using namespace std;
 
+void 
+gh_verilog_write_module_lognet_2to1_node(FILE* ff){
+	fprintf(ff, R"base(
+
+`include "hglobal.v"
+
+`default_nettype	none
+
+module lognet_2to1_node
+#(parameter ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
+(
+	input wire i_clk,
+	
+	// out
+	output wire [ASZ-1:0] snd0_dst,
+	output wire [DSZ-1:0] snd0_dat,
+	output wire snd0_req,
+	input wire snd0_ack,
+	
+	// in_0
+	input wire [ASZ-1:0] rcv0_dst,
+	input wire [DSZ-1:0] rcv0_dat,
+	input wire rcv0_req,
+	output wire rcv0_ack,
+	
+	// in_1
+	input wire [ASZ-1:0] rcv1_dst,
+	input wire [DSZ-1:0] rcv1_dat,
+	input wire rcv1_req,
+	output wire rcv1_ack
+	
+);
+ 
+	// out regs
+	reg [ASZ-1:0] r_addr = 0;
+	reg [DSZ-1:0] r_dat = 0;
+	reg [0:0] r_req = `OFF;
+
+	// in_0 regs
+	reg [0:0] r_0_ack = `OFF;
+	
+	// in_1 regs
+	reg [0:0] r_1_ack = `OFF;
+	
+	reg [0:0] choose_0 = `TRUE;
+	
+	wire in0_rq = (rcv0_req && ! r_0_ack);
+	wire in1_rq = (rcv1_req && ! r_1_ack);
+	
+	//out
+	always @(posedge i_clk)
+	begin
+		if((! r_req) && (! snd0_ack)) begin
+			if(in0_rq && in1_rq) begin
+				if(choose_0) begin
+					choose_0 <= `FALSE;
+					`COPY_MSG(rcv0_dst, rcv0_dat, r_addr, r_dat)
+					r_req <= `ON;
+					r_0_ack <= `ON;
+				end else begin
+					choose_0 <= `TRUE;
+					`COPY_MSG(rcv1_dst, rcv1_dat, r_addr, r_dat)
+					r_req <= `ON;
+					r_1_ack <= `ON;
+				end
+			end
+			if(in0_rq && ! in1_rq) begin
+				`COPY_MSG(rcv0_dst, rcv0_dat, r_addr, r_dat)
+				r_req <= `ON;
+				r_0_ack <= `ON;
+			end
+			if(! in0_rq && in1_rq) begin
+				`COPY_MSG(rcv1_dst, rcv1_dat, r_addr, r_dat)
+				r_req <= `ON;
+				r_1_ack <= `ON;
+			end
+		end 
+		
+		if((! rcv0_req) && r_0_ack) begin
+			r_0_ack <= `OFF;
+		end
+		if((! rcv1_req) && r_1_ack) begin
+			r_1_ack <= `OFF;
+		end
+		if(r_req && snd0_ack) begin
+			r_req <= `OFF;
+		end
+	end
+		
+	//out
+	assign snd0_dst = r_addr;
+	assign snd0_dat = r_dat;
+	assign snd0_req = r_req;
+
+	//in_0
+	assign rcv0_ack = r_0_ack;
+	
+	//in_1
+	assign rcv1_ack = r_1_ack;
+	
+endmodule
+		
+)base");
+}
 
 void 
 gh_verilog_write_module_lognet_1to2_node(FILE* ff){
@@ -243,7 +347,7 @@ hnode_2to1::print_verilog_2to1_instance(FILE* ff){
 	gh_print_verilog_declare_link_interface(ff, i1_itf_nm);
 	gh_print_verilog_declare_link_interface(ff, o0_itf_nm);
 
-	fprintf(ff, "ln_2to1 \n gt2to1 (\n\t .i_clk(i_clk), \n");
+	fprintf(ff, "lognet_2to1_node \n gt2to1 (\n\t .i_clk(i_clk), \n");
 	
 	gh_print_verilog_instance_interface(ff, gh_vl_snd0, o0_itf_nm);
 	gh_print_verilog_instance_interface(ff, gh_vl_rcv0, i0_itf_nm);
@@ -334,7 +438,7 @@ hnode_1to2::print_verilog_1to2_instance(FILE* ff){
 	gh_string_t val2 = get_verilog_ref_val_2();
 	
 	fprintf(ff, R"base(
-	ln_1to2 #(.OPER_1(`%s), .REF_VAL_1(%s), .IS_RANGE(`%s), .OPER_2(`%s), .REF_VAL_2(%s))
+	lognet_1to2_node #(.OPER_1(`%s), .REF_VAL_1(%s), .IS_RANGE(`%s), .OPER_2(`%s), .REF_VAL_2(%s))
 	gt1to2 (
 		.i_clk(i_clk),
 )base", 
@@ -448,22 +552,40 @@ htarget_box::print_verilog_target_assign(FILE* ff){
 }
 
 void
-htarget_box::print_verilog_base_code(FILE* ff){
+htarget_box::print_verilog_module_lognet_target_box(FILE* ff){
 	
 	fprintf(ff, R"base(
 `include "hglobal.v"
 
 `default_nettype	none
 
-module lognet_1to2_node
+module lognet_target_box_%ld
 #(parameter ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
 (
 	input wire i_clk,
+)base", target->bx_idx);
+
+	gh_print_verilog_params_for_ios(ff, lft_in, gh_left_side, gh_in_kind);
+	gh_print_verilog_params_for_ios(ff, lft_out, gh_left_side, gh_out_kind);
+	gh_print_verilog_params_for_ios(ff, rgt_in, gh_right_side, gh_in_kind);
+	gh_print_verilog_params_for_ios(ff, rgt_out, gh_right_side, gh_out_kind);
 	
+	print_verilog_target_param(ff);
+
+	fprintf(ff, ");\n");
+
+	gh_print_verilog_assigns_for_ios(ff, lft_in, gh_left_side, gh_in_kind);
+	gh_print_verilog_assigns_for_ios(ff, lft_out, gh_left_side, gh_out_kind);
+	gh_print_verilog_assigns_for_ios(ff, rgt_in, gh_right_side, gh_in_kind);
+	gh_print_verilog_assigns_for_ios(ff, rgt_out, gh_right_side, gh_out_kind);
 	
-);
+	gh_print_verilog_code_for_nodes(ff, all_nodes);
+	
+	print_verilog_target_assign(ff);
+	
+	fprintf(ff, R"base(
+
  
-	
 endmodule
 
 )base");

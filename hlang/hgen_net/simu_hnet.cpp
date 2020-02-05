@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "hgen_net.h"
+#include "tak_mak.hh"
 
 int test_m_to_n(int argc, char *argv[]);
 
@@ -228,6 +229,7 @@ run_node_simu(void* pm){
 	return gh_null;
 }
 
+/*
 void
 hnode_1to1::run_1to1_simu(){
 	GH_CK(simu_data != gh_null);
@@ -261,6 +263,7 @@ hnode_1to1::run_1to1_simu(){
 		pthread_yield();
 	}
 }
+*/
 
 void
 hnode_1to2::run_1to2_simu(){
@@ -714,7 +717,9 @@ hnode_target::run_target_simu(){
 void
 hmessage::copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod){
 	GH_DBG_CODE(
-		if((GH_GLOBALS.dbg_src_idx_simu == mg_sra) && (GH_GLOBALS.dbg_src_addr_simu == mg_src)){ 
+		if(		(dbg_src_nod != gh_null) && (dbg_dst_nod != gh_null) && 
+				(GH_GLOBALS.dbg_src_idx_simu == mg_sra) && (GH_GLOBALS.dbg_src_addr_simu == mg_src)	)
+		{ 
 			fprintf(stdout, "dbg ");
 			print_message(stdout);
 			fprintf(stdout, " (%p) -> (%p) ----\n", dbg_src_nod, dbg_dst_nod);
@@ -1148,7 +1153,7 @@ hgen_globals::print_help(const char* prg){
 	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-no_prt] [-prt_tgt] [-t <test_id>] [-ctx <context_id>] ", prg);
 	fprintf(stdout, "[-dbg_prt] {[-n <dbg_nod_adr>]}* [-idx <src_idx>] [-src <src_addr>] [-dst <dst_addr>] ");
 	fprintf(stdout, "[-disp <ptr_adr_disp>] [-m2n] [-ini_slices] [-zr] [-rgt] [-ck_pth] [-ck_all_pth_from] [-ck_all_pth]");
-	//fprintf(stdout, "[-dn <dbg_nod>] ");
+	fprintf(stdout, "[-bf_sz <nod_buff_sz>] ");
 	fprintf(stdout, "\n");
 }
 
@@ -1243,6 +1248,11 @@ hgen_globals::get_args(int argc, char** argv){
 			ii++;
 
 			dbg_dst_addr_simu = atol(argv[kk_idx]);
+		} else if((the_arg == "-bf_sz") && ((ii + 1) < argc)){
+			int kk_idx = ii + 1;
+			ii++;
+
+			node_buff_sz_simu = atol(argv[kk_idx]);
 		} else {
 			fprintf(stdout, "Unknown option %s \n", the_arg.c_str());
 			
@@ -1527,3 +1537,139 @@ hlognet_box::ck_lognet_all_paths(bool dbg_prt){
 	}
 	return true;
 }
+
+void
+hnode::run_head_queue_simu(hmsg_queue& qq, hmessage& mg_in, bool& the_ack)
+{
+	hmessage& mg_bf = qq.get_head();
+	bool is_bs = mg_bf.get_flag(gh_is_msg_busy);
+	if(! is_bs){ 
+		mg_bf.set_flag(gh_is_msg_busy);
+		qq.inc_head();
+		
+		mg_in.copy_mg_to(mg_bf, gh_null, gh_null);
+		the_ack = true;
+	}
+}
+
+void
+hnode::run_tail_queue_simu(hmsg_queue& qq, hmessage& mg_out, hnode& the_out, bool& the_req)
+{
+	hmessage& mg_bf = qq.get_tail();
+	bool is_bs = mg_bf.get_flag(gh_is_msg_busy);
+	if(is_bs){ 
+		bool rdy_out = ((! the_req) && (! oack(the_out)));
+		if(rdy_out){
+			mg_bf.reset_flag(gh_is_msg_busy);
+			qq.inc_tail();
+			
+			mg_bf.copy_mg_to(mg_out, gh_null, gh_null);
+			the_req = true;
+		}
+	}
+}
+
+void
+hnode_1to2::run_1to2_buff_simu(){
+	GH_CK(simu_data != gh_null);
+	thd_data* dat = (thd_data*)(simu_data);
+	//long thd_idx = dat->idx; 
+	
+	//bool is_itv = get_flag(gh_is_interval);
+	GH_CK(in0 != gh_null);
+	GH_CK(out0 != gh_null);
+	GH_CK(out1 != gh_null);
+	
+	hnode_1to2* nod = this;
+	hmessage* in_msg0 = in0->get_message_of(nod);
+	GH_CK(in_msg0 != gh_null);
+	
+	for(;;){
+		if(dat->end_it){
+			break;
+		}
+		
+		if(ireq(*in0) && (! ack0)){
+			gh_addr_t dst_addr = in_msg0->mg_dst;
+			bool go_down = in_interval(dst_addr);
+			
+			if(go_down){
+				run_head_queue_simu(buff0, *in_msg0, ack0);
+			} else {
+				run_head_queue_simu(buff1, *in_msg0, ack0);
+			} 
+		} 
+		
+		run_tail_queue_simu(buff0, msg0, *out0, req0);
+		run_tail_queue_simu(buff1, msg1, *out1, req1);
+		
+		if((! ireq(*in0)) && ack0){
+			ack0 = false;
+		}
+		if(req0 && oack(*out0)){
+			req0 = false;
+		}
+		if(req1 && oack(*out1)){
+			req1 = false;
+		}
+		
+		pthread_yield();
+	}
+}
+
+void
+hnode_2to1::run_2to1_buff_simu(){
+	GH_CK(simu_data != gh_null);
+	thd_data* dat = (thd_data*)(simu_data);
+	//long thd_idx = dat->idx;
+
+	GH_CK(in0 != gh_null);
+	GH_CK(in1 != gh_null);
+	GH_CK(out0 != gh_null);
+	
+	hnode_2to1* nod = this;
+	hmessage* in_msg0 = in0->get_message_of(nod);
+	hmessage* in_msg1 = in1->get_message_of(nod);
+	GH_CK(in_msg0 != gh_null);
+	GH_CK(in_msg1 != gh_null);
+	
+	for(;;){
+		if(dat->end_it){
+			break;
+		}
+		
+		bool in0_rq = (ireq(*in0) && (! ack0));
+		bool in1_rq = (ireq(*in1) && (! ack1));
+		if(in0_rq && in1_rq){
+			if(choose0){
+				choose0 = false;
+				run_head_queue_simu(buff0, *in_msg0, ack0);
+			} else {
+				choose0 = true;
+				run_head_queue_simu(buff0, *in_msg1, ack1);
+			}
+		}
+		if(in0_rq && ! in1_rq){
+			run_head_queue_simu(buff0, *in_msg0, ack0);
+		} 
+		if(! in0_rq && in1_rq){
+			run_head_queue_simu(buff0, *in_msg1, ack1);
+		} 
+		
+		run_tail_queue_simu(buff0, msg0, *out0, req0);
+		
+		if((! ireq(*in0)) && ack0){
+			ack0 = false;
+		}
+		if((! ireq(*in1)) && ack1){
+			ack1 = false;
+		}
+		if(req0 && oack(*out0)){
+			req0 = false;
+		}
+		
+		pthread_yield();
+	}
+}
+
+

@@ -29,6 +29,9 @@
 
 #define GH_MAX_OUTS 64
 
+#define GH_BUFF_SIMU_SZ GH_GLOBALS.node_buff_sz_simu
+
+
 #define GH_NULL_OUT_ADDR gh_null
 
 #define gh_min(v1, v2) (((v1) < (v2))?(v1):(v2))
@@ -397,7 +400,8 @@ public:
 	long 		base_simu = 2;
 	gh_addr_t	num_target_simu = 3;
 	
-	
+	long 		node_buff_sz_simu = 3;
+
 	addr_vec_t dbg_nodes_prt_simu;
 	long dbg_prt_disp_all_addr_simu = 0;
 	
@@ -517,8 +521,14 @@ gh_dbg_st_case_str(gh_dbg_st_t kk){
 
 gh_addr_t gh_calc_power(long base, gh_addr_t adr);
 
+#define gh_is_msg_busy		0
+#define gh_is_msg_head		1
+#define gh_is_msg_tail		2
+
 class hmessage {
 public:
+	gh_flags_t mg_flg = 0;
+	
 	long mg_val = 0;
 	gh_addr_t mg_sra = GH_INVALID_ADDR;
 	gh_addr_t mg_src = GH_INVALID_ADDR;
@@ -526,10 +536,69 @@ public:
 	
 	void copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod);
 	
+	void set_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
+		gh_set_bit(&mg_flg, num_flg);
+	}
+
+	void reset_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
+		gh_reset_bit(&mg_flg, num_flg);
+	}
+
+	bool get_flag(gh_flag_idx_t num_flg){
+		GH_CK(num_flg >= 0);
+		GH_CK(num_flg < gh_last_flg);
+		return gh_get_bit(&mg_flg, num_flg);
+	}
+	
+	void init_as_empty_buff(){
+		mg_flg = 0;
+		set_flag(gh_is_msg_head);
+		set_flag(gh_is_msg_tail);
+	}
+	
 	void print_message(FILE* ff){
 		fprintf(ff, "{(<%ld>%ld -> %ld) val=%ld}", mg_sra, mg_src, mg_dst, mg_val);
 		fflush(ff);
 	}
+	
+};
+
+typedef gh_vector_t<hmessage> msg_vec_t;
+
+class hmsg_queue : public msg_vec_t {
+public:
+	long hd_idx = 0;
+	long tl_idx = 0;
+	
+	long nxt_pos(long pos){
+		pos++;
+		if(pos == (long)size()){
+			return 0;
+		}
+		return pos;
+	}
+	
+	hmessage& get_head(){
+		return at(hd_idx);
+	}
+	
+	void inc_head(){
+		hd_idx = nxt_pos(hd_idx);
+	}
+	
+	hmessage& get_tail(){
+		return at(tl_idx);
+	}
+	
+	void inc_tail(){
+		tl_idx = nxt_pos(tl_idx);
+	}
+	
+	//void run_idx_simu(long& mg_bf_idx, hmessage& mg_in, hmessage& mg_out, hnode& the_in, hnode& the_out, bool& the_req, bool& the_ack);
 	
 };
 
@@ -714,6 +783,9 @@ public:
 		return gh_get_bit(&node_flags, num_flg);
 	}
 	
+	void run_head_queue_simu(hmsg_queue& qq, hmessage& mg_in, bool& the_ack);
+	void run_tail_queue_simu(hmsg_queue& qq, hmessage& mg_out, hnode& the_out, bool& the_req);
+
 	bool ck_link(hnode* lnk, gh_io_kind_t kk);
 	
 	void print_addr(FILE* ff, char pfx = '#');
@@ -743,6 +815,8 @@ class hnode_1to1 : public hnode {
 public:
 	hmessage msg0;
 	
+	hmsg_queue buff0;
+	
 	bool ack0 = false;
 	bool req0 = false;
 	
@@ -750,6 +824,9 @@ public:
 	hnode* out0 = gh_null;
 
 	hnode_1to1(){
+		buff0.resize(GH_BUFF_SIMU_SZ);
+		buff0.front().init_as_empty_buff();
+		
 		in0 = gh_null;
 		out0 = gh_null;
 	}
@@ -795,7 +872,7 @@ public:
 	virtual int
 	print_node(FILE* ff, gh_prt_mode_t md);
 
-	void run_1to1_simu();
+	//void run_1to1_simu();
 };
 
 class hnode_direct : public hnode_1to1 {
@@ -906,6 +983,9 @@ public:
 	hmessage msg0;
 	hmessage msg1; 
 	
+	hmsg_queue buff0;
+	hmsg_queue buff1;
+	
 	edge o_eg0;
 	edge o_eg1;
 	
@@ -918,6 +998,11 @@ public:
 	hnode* out1 = gh_null;
 
 	hnode_1to2(){
+		buff0.resize(GH_BUFF_SIMU_SZ);
+		buff0.front().init_as_empty_buff();
+		buff1.resize(GH_BUFF_SIMU_SZ);
+		buff1.front().init_as_empty_buff();
+		
 		in0 = gh_null;
 		out0 = gh_null;
 		out1 = gh_null;
@@ -999,6 +1084,7 @@ public:
 	print_node(FILE* ff, gh_prt_mode_t md);
 	
 	void run_1to2_simu();
+	void run_1to2_buff_simu();
 	
 	const char* dbg_kind_to_str(gh_dbg_call_t cll);
 	
@@ -1015,6 +1101,8 @@ class hnode_2to1 : public hnode {
 public:
 	hmessage msg0;
 	
+	hmsg_queue buff0;
+	
 	bool choose0 = true;
 
 	bool ack0 = false;
@@ -1026,6 +1114,9 @@ public:
 	hnode* out0 = gh_null;
 
 	hnode_2to1(){
+		buff0.resize(GH_BUFF_SIMU_SZ);
+		buff0.front().init_as_empty_buff();
+		
 		choose0 = true;
 		in0 = gh_null;
 		in1 = gh_null;
@@ -1077,10 +1168,14 @@ public:
 	bool ck_out_interval(char dbg_in);
 	
 	void run_2to1_simu();
+	void run_2to1_buff_simu();
 
 	void print_verilog_2to1_instance(FILE* ff);
 	
 };
+
+void gh_verilog_write_module_lognet_1to2_node(FILE* ff);
+void gh_verilog_write_module_lognet_2to1_node(FILE* ff);
 
 long 	gh_get_first_null_idx(ppnode_vec_t& vec);
 bool 	gh_is_free_io(hnode** io);
@@ -1276,7 +1371,7 @@ public:
 
 	void 	print_verilog_target_param(FILE* ff);
 	void 	print_verilog_target_assign(FILE* ff);
-	void 	print_verilog_base_code(FILE* ff);
+	void 	print_verilog_module_lognet_target_box(FILE* ff);
 };
 
 void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_out);
