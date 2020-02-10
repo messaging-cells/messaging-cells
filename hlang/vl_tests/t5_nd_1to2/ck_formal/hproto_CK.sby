@@ -9,11 +9,11 @@ prf: depth 20
 smtbmc
 
 [script]
-read -formal ln_1to2.v
+read -formal nd_1to2.v
 read -formal hproto_CK.v
 prep -top formal_top
 
 [files]
-../rtl/ln_1to2.v
+../rtl/nd_1to2.v
 ../rtl/hglobal.v
 ./hproto_CK.v

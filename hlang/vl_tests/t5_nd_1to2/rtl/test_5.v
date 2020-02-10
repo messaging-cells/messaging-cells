@@ -3,7 +3,7 @@
 
 `default_nettype	none
 
-module test_3_top 
+module test_5_top 
 #(parameter ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
 (
 	input  i_clk,      // Main Clock (25 MHz)
@@ -50,24 +50,15 @@ module test_3_top
 	wire err_1;
 	
 	// LNK_0
-	wire [ASZ-1:0] lnk_0_addr;
-	wire [DSZ-1:0] lnk_0_dat;
-	wire lnk_0_req;
-	wire lnk_0_ack;
+	`DECLARE_LINK(lnk_0)
 	wire [DSZ-1:0] lnk_0_ck_dat;
 	
 	// LNK_1_
-	wire [ASZ-1:0] lnk_1_addr;
-	wire [DSZ-1:0] lnk_1_dat;
-	wire lnk_1_req;
-	wire lnk_1_ack;
+	`DECLARE_LINK(lnk_1)
 	wire [DSZ-1:0] lnk_1_ck_dat;
   
 	// LNK_2
-	wire [ASZ-1:0] lnk_2_addr;
-	wire [DSZ-1:0] lnk_2_dat;
-	wire lnk_2_req;
-	wire lnk_2_ack;
+	`DECLARE_LINK(lnk_2)
 	//wire [DSZ-1:0] lnk_2_ck_dat;
   
 	wire w_Segment1_A;
@@ -104,25 +95,16 @@ module test_3_top
 		end
 	end
 	
-	ln_1to2 #(.OPER_1(`GT_OP), .REF_VAL_1(3))
+	nd_1to2 #(.OPER_1(`GT_OP), .REF_VAL_1(3))
 	gt1to2 (
 		.i_clk(clk_src),
 		//.i_clk(i_clk),
 		// out0
-		.o_0_addr(lnk_0_addr),
-		.o_0_dat(lnk_0_dat),
-		.o_0_req(lnk_0_req),
-		.i_0_ack(lnk_0_ack),
+		`INSTA_CHNL(snd0, lnk_0)
 		// out1
-		.o_1_addr(lnk_1_addr),
-		.o_1_dat(lnk_1_dat),
-		.o_1_req(lnk_1_req),
-		.i_1_ack(lnk_1_ack),
+		`INSTA_CHNL(snd1, lnk_1)
 		// in
-		.i_addr(lnk_2_addr),
-		.i_dat(lnk_2_dat),
-		.i_req(lnk_2_req),
-		.o_ack(lnk_2_ack),
+		`INSTA_CHNL(rcv0, lnk_2)
 	);
 
 	io_1to2 #(.MIN_ADDR(0), .MAX_ADDR(5), .OPER_1(`GT_OP), .REF_VAL_1(3))
@@ -130,22 +112,13 @@ module test_3_top
 		.i_clk(clk_snk),
 		//.i_clk(i_clk),
 		// SRC
-		.o_addr(lnk_2_addr),
-		.o_dat(lnk_2_dat),
-		.o_req(lnk_2_req),
-		.i_ack(lnk_2_ack),
+		`INSTA_CHNL(o0, lnk_2)
 		// SNK0
-		.i_0_addr(lnk_0_addr),
-		.i_0_dat(lnk_0_dat),
-		.i_0_req(lnk_0_req),
-		.o_0_ack(lnk_0_ack),
+		`INSTA_CHNL(i0, lnk_0)
 		.o_0_ck_dat(lnk_0_ck_dat),
 		.o_0_err(err_0),
 		// SNK1
-		.i_1_addr(lnk_1_addr),
-		.i_1_dat(lnk_1_dat),
-		.i_1_req(lnk_1_req),
-		.o_1_ack(lnk_1_ack),
+		`INSTA_CHNL(i1, lnk_1)
 		.o_1_ck_dat(lnk_1_ck_dat),
 		.o_1_err(err_1)
 	);

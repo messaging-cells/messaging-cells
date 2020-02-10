@@ -209,13 +209,23 @@ run_node_simu(void* pm){
 		pthread_yield();
 	}
 	
+	bool buffed = GH_GLOBALS.buffed_nodes_simu;
+	
 	if(the_nd->is_1to2()){
 		hnode_1to2* th_nd = (hnode_1to2*)the_nd;
-		th_nd->run_1to2_simu();
+		if(buffed){
+			th_nd->run_1to2_buff_simu();
+		} else {
+			th_nd->run_1to2_simu();
+		}
 	} else 
 	if(the_nd->is_2to1()){
 		hnode_2to1* th_nd = (hnode_2to1*)the_nd;
-		th_nd->run_2to1_simu();
+		if(buffed){
+			th_nd->run_2to1_buff_simu();
+		} else {
+			th_nd->run_2to1_simu();
+		}
 	} else {
 		GH_CK(the_nd->is_1to1());
 		hnode_1to1* th_nd = (hnode_1to1*)the_nd;
@@ -228,42 +238,6 @@ run_node_simu(void* pm){
 	
 	return gh_null;
 }
-
-/*
-void
-hnode_1to1::run_1to1_simu(){
-	GH_CK(simu_data != gh_null);
-	thd_data* dat = (thd_data*)(simu_data);
-	
-	hnode_1to1* nod = this;
-	hmessage* in_msg0 = in0->get_message_of(nod);
-	GH_CK(in_msg0 != gh_null);
-	
-	for(;;){
-		if(dat->end_it){
-			break;
-		}
-		
-		if(ireq(*in0) && (! ack0)){
-			bool rdy_out0 = ((! req0) && (! oack(*out0)));
-			if(rdy_out0){
-				in_msg0->copy_mg_to(msg0, in0, nod);
-				req0 = true;
-				ack0 = true;
-			} 
-		} 
-		
-		if((! ireq(*in0)) && ack0){
-			ack0 = false;
-		}
-		if(req0 && oack(*out0)){
-			req0 = false;
-		}
-		
-		pthread_yield();
-	}
-}
-*/
 
 void
 hnode_1to2::run_1to2_simu(){
@@ -615,19 +589,30 @@ test_hlognet(int argc, char *argv[]){
 		}
 	}
 
-	fprintf(stdout, "=========== RUNNING_SIMU ===================\n");
 	
 	if(GH_GLOBALS.dbg_ck_path_simu){
+		fprintf(stdout, "=========== RUNNING_PATH ===================\n");
 		bx->ck_lognet_path(GH_GLOBALS.dbg_src_addr_simu, GH_GLOBALS.dbg_dst_addr_simu, true);
+		fprintf(stdout, "=========== RUNNED_PATH ===================\n");
 	} else 
 	if(GH_GLOBALS.dbg_ck_all_path_from_simu){
+		fprintf(stdout, "=========== RUNNING_ALL_PATHS_FROM ===================\n");
 		bx->ck_lognet_all_paths_from(GH_GLOBALS.dbg_src_addr_simu, true);
+		fprintf(stdout, "=========== RUNNED_ALL_PATHS_FROM ===================\n");
 	} else 
 	if(GH_GLOBALS.dbg_ck_all_path_simu){
+		fprintf(stdout, "=========== RUNNING_ALL_PATHS ===================\n");
 		bx->ck_lognet_all_paths(true);
+		fprintf(stdout, "=========== RUNNED_ALL_PATHS ===================\n");
 	} else 
 	if(GH_GLOBALS.do_run_simu){
+		const char* bfd_str = "";
+		if(GH_GLOBALS.buffed_nodes_simu){
+			bfd_str = "BUFFER";
+		}
+		fprintf(stdout, "=========== RUNNING_%s_SIMU ===================\n", bfd_str);
 		bx->run_hlognet_simu();
+		fprintf(stdout, "=========== RUNNED_%s_SIMU ===================\n", bfd_str);
 	}
 	
 	gh_dbg_post_test_prints(bx);
@@ -1152,8 +1137,8 @@ void
 hgen_globals::print_help(const char* prg){
 	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-no_prt] [-prt_tgt] [-t <test_id>] [-ctx <context_id>] ", prg);
 	fprintf(stdout, "[-dbg_prt] {[-n <dbg_nod_adr>]}* [-idx <src_idx>] [-src <src_addr>] [-dst <dst_addr>] ");
-	fprintf(stdout, "[-disp <ptr_adr_disp>] [-m2n] [-ini_slices] [-zr] [-rgt] [-ck_pth] [-ck_all_pth_from] [-ck_all_pth]");
-	fprintf(stdout, "[-bf_sz <nod_buff_sz>] ");
+	fprintf(stdout, "[-disp <ptr_adr_disp>] [-m2n] [-ini_slices] [-zr] [-rgt] [-ck_pth] [-ck_all_pth_from] [-ck_all_pth] ");
+	fprintf(stdout, "[-bf_sz <nod_buff_sz>] [-no_buff]");
 	fprintf(stdout, "\n");
 }
 
@@ -1185,6 +1170,8 @@ hgen_globals::get_args(int argc, char** argv){
 			pointer_prt_simu = true;
 		} else if(the_arg == "-no_run"){
 			do_run_simu = false;
+		} else if(the_arg == "-no_buff"){
+			buffed_nodes_simu = false;
 		} else if(the_arg == "-no_prt"){
 			dbg_box_prt = false;
 		} else if(the_arg == "-prt_tgt"){

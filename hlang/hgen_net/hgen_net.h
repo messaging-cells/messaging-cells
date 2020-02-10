@@ -396,6 +396,7 @@ public:
 	bool 		do_run_simu = true;
 	bool 		pointer_prt_simu = false;
 	bool 		add_ctx_simu = false;
+	bool 		buffed_nodes_simu = true;
 	long 		context_idx_simu = 0;
 	long 		base_simu = 2;
 	gh_addr_t	num_target_simu = 3;

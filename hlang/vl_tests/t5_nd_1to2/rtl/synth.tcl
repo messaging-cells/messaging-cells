@@ -2,8 +2,8 @@
 yosys -import
 read_verilog bin_to_disp.v; 
 read_verilog debouncer.v; 
-read_verilog ln_1to2.v; 
+read_verilog nd_1to2.v; 
 read_verilog io_1to2.v; 
-read_verilog test_3.v;
-synth_ice40 -blif ../$::env(BUILD_DIR)/test_3.blif;
-synth_ice40 -json ../$::env(BUILD_DIR)/test_3.json;
+read_verilog test_5.v;
+synth_ice40 -blif ../$::env(BUILD_DIR)/test_5.blif;
+synth_ice40 -json ../$::env(BUILD_DIR)/test_5.json;

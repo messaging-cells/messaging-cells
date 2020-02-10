@@ -1,6 +1,6 @@
 
 
-PRJ_NM = test_3
+PRJ_NM = test_5
 
 BUILD_DIR = build
 PRJ_PREFIX = ${BUILD_DIR}/${PRJ_NM}
@@ -17,7 +17,7 @@ RTL_FILES = \
 	${RTL_DIR}/bin_to_disp.v \
 	${RTL_DIR}/debouncer.v \
 	${RTL_DIR}/hglobal.v \
-	${RTL_DIR}/ln_1to2.v \
+	${RTL_DIR}/nd_1to2.v \
 	${RTL_DIR}/io_1to2.v \
 	${RTL_DIR}/${PRJ_NM}.v \
 	

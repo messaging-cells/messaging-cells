@@ -45,10 +45,55 @@
 	(is_dbl == `TRUE)?(`CMP_OP(op1, pm1, pm2) && `CMP_OP(op2, pm3, pm4)):(`CMP_OP(op1, pm1, pm2)) )
 
 	
-`define COPY_MSG(addr_src, data_src, addr_dst, data_dst) \
-	addr_dst <= addr_src; \
-	data_dst <= data_src; 
+`define DECLARE_REG_MSG(mg) \
+	reg [ASZ-1:0] mg``_src = 0; \
+	reg [ASZ-1:0] mg``_dst = 0; \
+	reg [DSZ-1:0] mg``_dat = 0; \
+	
+	
+`define COPY_MSG(src_mg, dst_mg) \
+	dst_mg``_src <= src_mg``_src; \
+	dst_mg``_dst <= src_mg``_dst; \
+	dst_mg``_dat<= src_mg``_dat; \
 
+	
+`define ASSING_OUT_MSG(ou, mg) \
+	assign ou``_src = mg``_src; \
+	assign ou``_dst = mg``_dst; \
+	assign ou``_dat = mg``_dat; \
+
+	
+`define DECLARE_OUT_CHNL(nam) \
+	output wire [ASZ-1:0] nam``_src, \
+	output wire [ASZ-1:0] nam``_dst, \
+	output wire [DSZ-1:0] nam``_dat, \
+	output wire nam``_req, \
+	input wire nam``_ack, \
+
+	
+`define DECLARE_IN_CHNL(nam) \
+	input wire [ASZ-1:0] nam``_src, \
+	input wire [ASZ-1:0] nam``_dst, \
+	input wire [DSZ-1:0] nam``_dat, \
+	input wire nam``_req, \
+	output wire nam``_ack, \
+
+
+`define DECLARE_LINK(lnk) \
+	wire [ASZ-1:0] lnk``_src; \
+	wire [ASZ-1:0] lnk``_dst; \
+	wire [DSZ-1:0] lnk``_dat; \
+	wire lnk``_req; \
+	wire lnk``_ack; \
+
+	
+`define INSTA_CHNL(chn, lnk) \
+	.chn``_src(lnk``_src), \
+	.chn``_dst(lnk``_dst), \
+	.chn``_dat(lnk``_dat), \
+	.chn``_req(lnk``_req), \
+	.chn``_ack(lnk``_ack), \
+	
 	
 //--------------------------------------------
 `endif // HGLOBAL_V_FILE
