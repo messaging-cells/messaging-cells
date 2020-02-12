@@ -5,68 +5,68 @@
 
 module nd_1to2
 #(parameter 
-	OPER_1=`GT_OP, REF_VAL_1=0, IS_RANGE=`FALSE, 
-	OPER_2=`GT_OP, REF_VAL_2=0, ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
+	OPER_1=`NS_GT_OP, REF_VAL_1=0, IS_RANGE=`NS_FALSE, 
+	OPER_2=`NS_GT_OP, REF_VAL_2=0, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
 (
 	input wire i_clk,	// Main Clock (25 MHz)
 	
-	`DECLARE_OUT_CHNL(snd0)
-	`DECLARE_OUT_CHNL(snd1)
-	`DECLARE_IN_CHNL(rcv0)
+	`NS_DECLARE_OUT_CHNL(snd0)
+	`NS_DECLARE_OUT_CHNL(snd1)
+	`NS_DECLARE_IN_CHNL(rcv0)
 	
 );
  
 	// out1 regs
-	`DECLARE_REG_MSG(rgo0)
-	reg [0:0] rgo0_req = `OFF;
+	`NS_DECLARE_REG_MSG(rgo0)
+	reg [0:0] rgo0_req = `NS_OFF;
 
 	// out2 regs
-	`DECLARE_REG_MSG(rgo1)
-	reg [0:0] rgo1_req = `OFF;
+	`NS_DECLARE_REG_MSG(rgo1)
+	reg [0:0] rgo1_req = `NS_OFF;
 
 	// inp regs
-	reg [0:0] rgi0_ack = `OFF;
+	reg [0:0] rgi0_ack = `NS_OFF;
 
 	// fifos
-	`DECLARE_FIFO(bf0)
-	`DECLARE_FIFO(bf1)
+	`NS_DECLARE_FIFO(bf0)
+	`NS_DECLARE_FIFO(bf1)
 	
 	always @(posedge i_clk)
 	begin
 		if(rcv0_req && (! rgi0_ack)) begin
-			if(`RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, rcv0_dst, OPER_2, REF_VAL_2, rcv0_dst)) begin
-				`TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
+			if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, rcv0_dst, OPER_2, REF_VAL_2, rcv0_dst)) begin
+				`NS_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
 				//run_head_queue_simu(buff0, *in_msg0, ack0);
 			end else begin
-				`TRY_INC_HEAD(bf1, rcv0, rgi0_ack);
+				`NS_TRY_INC_HEAD(bf1, rcv0, rgi0_ack);
 				//run_head_queue_simu(buff1, *in_msg0, ack0);
 			end
 		end
 		
-		`TRY_INC_TAIL(bf0, rgo0, snd0_ack, rgo0_req);
-		`TRY_INC_TAIL(bf1, rgo1, snd1_ack, rgo1_req);
+		`NS_TRY_INC_TAIL(bf0, rgo0, snd0_ack, rgo0_req);
+		`NS_TRY_INC_TAIL(bf1, rgo1, snd1_ack, rgo1_req);
 		//run_tail_queue_simu(buff0, msg0, *out0, req0);
 		//run_tail_queue_simu(buff1, msg1, *out1, req1);
 		
 		if((! rcv0_req) && rgi0_ack) begin
-			rgi0_ack <= `OFF;
+			rgi0_ack <= `NS_OFF;
 		end
 		if(rgo0_req && snd0_ack) begin
-			rgo0_req <= `OFF;
+			rgo0_req <= `NS_OFF;
 		end
 		if(rgo1_req && snd1_ack) begin
-			rgo1_req <= `OFF;
+			rgo1_req <= `NS_OFF;
 		end
 	end
 
 	//out1
-	`ASSIGN_OUT_MSG(snd0, rgo0)
+	`NS_ASSIGN_OUT_MSG(snd0, rgo0)
 	//assign snd0_dst = rgo0_dst;
 	//assign snd0_dat = rgo0_dat;
 	assign snd0_req = rgo0_req;
 
 	//out2
-	`ASSIGN_OUT_MSG(snd1, rgo1)
+	`NS_ASSIGN_OUT_MSG(snd1, rgo1)
 	//assign snd1_dst = rgo1_dst;
 	//assign snd1_dat = rgo1_dat;
 	assign snd1_req = rgo1_req;

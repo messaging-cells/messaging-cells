@@ -33,16 +33,16 @@ module formal_top ();
 	);
 
 	`ifdef	FORMAL
-		initial assert(cn_req == `OFF);
-		initial assert(cn_ack == `OFF);
-		initial assert(cn_err == `OFF);
+		initial assert(cn_req == `NS_OFF);
+		initial assert(cn_ack == `NS_OFF);
+		initial assert(cn_err == `NS_OFF);
 		initial assert(cn_data == 0);
 		initial assert(cn_o_data == 0);
 		
 		reg	f_past_valid;
-		initial	f_past_valid = `OFF;
+		initial	f_past_valid = `NS_OFF;
 		always @(posedge cn_clk) begin
-			f_past_valid <= `ON;
+			f_past_valid <= `NS_ON;
 		end
 		
 		always @(posedge cn_clk) begin

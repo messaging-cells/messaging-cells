@@ -4,7 +4,7 @@
 `default_nettype	none
 
 module test_5_top 
-#(parameter ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
+#(parameter ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
 (
 	input  i_clk,      // Main Clock (25 MHz)
 	input  i_Switch_3, 
@@ -30,35 +30,35 @@ module test_5_top
 	);
  
 	wire w_Switch_1;
-	reg  r_Switch_1 = `OFF;
+	reg  r_Switch_1 = `NS_OFF;
 
 	reg [2:0] c_src = 0;
 	reg [6:0] c_snk = 0;
 	
-	reg clk_src = `OFF;
-	reg clk_snk = `OFF;
+	reg clk_src = `NS_OFF;
+	reg clk_snk = `NS_OFF;
 	
 	reg [DSZ-1:0] disp_i_data = 3;
 	reg [DSZ-1:0] disp_o_data = 3;
 	
-	//reg r_LED_1 = `OFF;
-	//reg r_LED_2 = `OFF;
-	reg r_LED_3 = `OFF;
-	reg r_LED_4 = `OFF;
+	//reg r_LED_1 = `NS_OFF;
+	//reg r_LED_2 = `NS_OFF;
+	reg r_LED_3 = `NS_OFF;
+	reg r_LED_4 = `NS_OFF;
   
 	wire err_0;
 	wire err_1;
 	
 	// LNK_0
-	`DECLARE_LINK(lnk_0)
+	`NS_DECLARE_LINK(lnk_0)
 	wire [DSZ-1:0] lnk_0_ck_dat;
 	
 	// LNK_1_
-	`DECLARE_LINK(lnk_1)
+	`NS_DECLARE_LINK(lnk_1)
 	wire [DSZ-1:0] lnk_1_ck_dat;
   
 	// LNK_2
-	`DECLARE_LINK(lnk_2)
+	`NS_DECLARE_LINK(lnk_2)
 	//wire [DSZ-1:0] lnk_2_ck_dat;
   
 	wire w_Segment1_A;
@@ -81,44 +81,44 @@ module test_5_top
 	begin
 		if(c_src == 0) begin
 			c_src <= 1;
-			`bit_toggle(clk_src);
+			`ns_bit_toggle(clk_src);
 		end
 		else  begin
 			c_src <= (c_src << 1);
 		end
 		if(c_snk == 0) begin
 			c_snk <= 1;
-			`bit_toggle(clk_snk);
+			`ns_bit_toggle(clk_snk);
 		end
 		else  begin
 			c_snk <= (c_snk << 1);
 		end
 	end
 	
-	nd_1to2 #(.OPER_1(`GT_OP), .REF_VAL_1(3))
+	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(3))
 	gt1to2 (
 		.i_clk(clk_src),
 		//.i_clk(i_clk),
 		// out0
-		`INSTA_CHNL(snd0, lnk_0)
+		`NS_INSTA_CHNL(snd0, lnk_0)
 		// out1
-		`INSTA_CHNL(snd1, lnk_1)
+		`NS_INSTA_CHNL(snd1, lnk_1)
 		// in
-		`INSTA_CHNL(rcv0, lnk_2)
+		`NS_INSTA_CHNL(rcv0, lnk_2)
 	);
 
-	io_1to2 #(.MIN_ADDR(0), .MAX_ADDR(5), .OPER_1(`GT_OP), .REF_VAL_1(3))
+	io_1to2 #(.MIN_ADDR(0), .MAX_ADDR(5), .OPER_1(`NS_GT_OP), .REF_VAL_1(3))
 	io_t3 (
 		.i_clk(clk_snk),
 		//.i_clk(i_clk),
 		// SRC
-		`INSTA_CHNL(o0, lnk_2)
+		`NS_INSTA_CHNL(o0, lnk_2)
 		// SNK0
-		`INSTA_CHNL(i0, lnk_0)
+		`NS_INSTA_CHNL(i0, lnk_0)
 		.o_0_ck_dat(lnk_0_ck_dat),
 		.o_0_err(err_0),
 		// SNK1
-		`INSTA_CHNL(i1, lnk_1)
+		`NS_INSTA_CHNL(i1, lnk_1)
 		.o_1_ck_dat(lnk_1_ck_dat),
 		.o_1_err(err_1)
 	);
@@ -135,7 +135,7 @@ module test_5_top
 	begin
 		r_Switch_1 <= w_Switch_1;
 		
-		if((w_Switch_1 == `ON) && (r_Switch_1 == `OFF))
+		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
 		begin
 			disp_i_data <= lnk_0_dat;
 			disp_o_data <= lnk_0_ck_dat;

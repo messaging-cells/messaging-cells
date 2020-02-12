@@ -5,21 +5,21 @@
 
 module io_1to2
 #(parameter MIN_ADDR=1, MAX_ADDR=1, 
-	OPER_1=`GT_OP, REF_VAL_1=0, IS_RANGE=`FALSE, 
-	OPER_2=`GT_OP, REF_VAL_2=0, ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
+	OPER_1=`NS_GT_OP, REF_VAL_1=0, IS_RANGE=`NS_FALSE, 
+	OPER_2=`NS_GT_OP, REF_VAL_2=0, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
 (
 	input wire i_clk,	// Main Clock (25 MHz)
 	
 	// SRC
-	`DECLARE_OUT_CHNL(o0)
+	`NS_DECLARE_OUT_CHNL(o0)
 	
 	// SNK_0
-	`DECLARE_IN_CHNL(i0)
+	`NS_DECLARE_IN_CHNL(i0)
 	output wire [DSZ-1:0] o_0_ck_dat,
 	output wire o_0_err,
 	
 	// SNK_1
-	`DECLARE_IN_CHNL(i1)
+	`NS_DECLARE_IN_CHNL(i1)
 	output wire [DSZ-1:0] o_1_ck_dat,
 	output wire o_1_err
 );
@@ -28,17 +28,17 @@ module io_1to2
 	reg [ASZ-1:0] r_src = 0;
 	reg [ASZ-1:0] r_dst = MIN_ADDR;
 	reg [DSZ-1:0] r_dat = 0;
-	reg [0:0] r_req = `OFF;
+	reg [0:0] r_req = `NS_OFF;
 
 	// SNK_0 regs
-	reg [0:0] r_0_ack = `OFF;
+	reg [0:0] r_0_ack = `NS_OFF;
 	reg [DSZ-1:0] r_0_ck_dat = 0;
-	reg [0:0] r_0_err = `OFF;
+	reg [0:0] r_0_err = `NS_OFF;
 	
 	// SNK_1 regs
-	reg [0:0] r_1_ack = `OFF;
+	reg [0:0] r_1_ack = `NS_OFF;
 	reg [DSZ-1:0] r_1_ck_dat = 0;
-	reg [0:0] r_1_err = `OFF;
+	reg [0:0] r_1_err = `NS_OFF;
 
 	reg r_curr_src = 0;
 	
@@ -52,10 +52,10 @@ module io_1to2
 				r_dst <= r_dst + 1;
 			end
 			r_dat <= r_dat + 1;
-			r_req <= `ON;
+			r_req <= `NS_ON;
 		end else 
 		if(r_req && o0_ack) begin
-			r_req <= `OFF;
+			r_req <= `NS_OFF;
 		end
 	end
 		
@@ -63,18 +63,18 @@ module io_1to2
 	always @(posedge i_clk)
 	begin
 		if(i0_req && (! r_0_ack)) begin
-			if(! `RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, i0_dst, OPER_2, REF_VAL_2, i0_dst)) begin
-				r_0_err <= `ON;
+			if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, i0_dst, OPER_2, REF_VAL_2, i0_dst)) begin
+				r_0_err <= `NS_ON;
 			//end else if((i0_dat > 0) && ((r_0_ck_dat + 2) != i0_dat)) begin
-			//	r_0_err <= `ON;
+			//	r_0_err <= `NS_ON;
 			end else begin
 				r_0_ck_dat <= i0_dat;
-				r_0_ack <= `ON;
+				r_0_ack <= `NS_ON;
 			end
 		end
 		else
 		if((! i0_req) && r_0_ack) begin
-			r_0_ack <= `OFF;
+			r_0_ack <= `NS_OFF;
 		end
 	end
 	
@@ -82,23 +82,23 @@ module io_1to2
 	always @(posedge i_clk)
 	begin
 		if(i1_req && (! r_1_ack)) begin
-			if(`RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, i1_dst, OPER_2, REF_VAL_2, i1_dst)) begin
-				r_1_err <= `ON;
+			if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, i1_dst, OPER_2, REF_VAL_2, i1_dst)) begin
+				r_1_err <= `NS_ON;
 			//end else if((i1_dat > 0) && ((r_1_ck_dat + 2) != i1_dat)) begin
-			//	r_1_err <= `ON;
+			//	r_1_err <= `NS_ON;
 			end else begin
 				r_1_ck_dat <= i1_dat;
-				r_1_ack <= `ON;
+				r_1_ack <= `NS_ON;
 			end
 		end
 		else
 		if((! i1_req) && r_1_ack) begin
-			r_1_ack <= `OFF;
+			r_1_ack <= `NS_OFF;
 		end
 	end
 	
 	//SRC
-	`ASSIGN_OUT_MSG(o0, r)
+	`NS_ASSIGN_OUT_MSG(o0, r)
 	assign o0_req = r_req;
 
 	//SNK_0
