@@ -98,7 +98,7 @@ module io_1to2
 	end
 	
 	//SRC
-	`ASSING_OUT_MSG(o0, r)
+	`ASSIGN_OUT_MSG(o0, r)
 	assign o0_req = r_req;
 
 	//SNK_0
