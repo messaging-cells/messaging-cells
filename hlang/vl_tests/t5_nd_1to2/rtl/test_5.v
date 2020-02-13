@@ -28,7 +28,10 @@ module test_5_top
 	output o_LED_3,
 	output o_LED_4
 	);
- 
+
+	reg [0:0] the_reset = 0;
+	wire the_all_ready;
+	
 	wire w_Switch_1;
 	reg  r_Switch_1 = `NS_OFF;
 
@@ -38,8 +41,8 @@ module test_5_top
 	reg clk_src = `NS_OFF;
 	reg clk_snk = `NS_OFF;
 	
-	reg [DSZ-1:0] disp_i_data = 3;
-	reg [DSZ-1:0] disp_o_data = 3;
+	reg [DSZ-1:0] disp_i_data = 5;
+	reg [DSZ-1:0] disp_o_data = 5;
 	
 	//reg r_LED_1 = `NS_OFF;
 	//reg r_LED_2 = `NS_OFF;
@@ -98,6 +101,9 @@ module test_5_top
 	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(3))
 	gt1to2 (
 		.i_clk(clk_src),
+		.reset(the_reset),
+		.ready(the_all_ready),
+		
 		//.i_clk(i_clk),
 		// out0
 		`NS_INSTA_CHNL(snd0, lnk_0)

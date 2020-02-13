@@ -95,16 +95,34 @@
 	.chn``_ack(lnk``_ack), 
 
 	
+`define NS_REG_MSG_INIT(mg) \
+	mg``_src <= 0; \
+	mg``_dst <= 0; \
+	mg``_dat <= 0; \
+
+
 // ASZ + ASZ + DSZ
 `define NS_MG_SRC_SECTION  ((ASZ + ASZ + DSZ)-1):(ASZ + DSZ)
 `define NS_MG_DST_SECTION  ((ASZ + DSZ)-1):DSZ
 `define NS_MG_DAT_SECTION  (DSZ-1):0
 
 `define NS_DECLARE_FIFO(fif) \
+	integer fif``ii=0; \
 	reg [0:0] fif``_busy [`NS_MSG_FIFO_SZ-1:0]; \
 	reg [`NS_FULL_MSG_SZ-1:0] fif``_data[`NS_MSG_FIFO_SZ-1:0]; \
 	reg [`NS_MSG_FIFO_IDX_SZ-1:0] fif``_hd_idx = 0; \
 	reg [`NS_MSG_FIFO_IDX_SZ-1:0] fif``_tl_idx = 0;
+
+
+`define NS_FIFO_INIT(fif) \
+	for(fif``ii = 0; fif``ii < `NS_MSG_FIFO_SZ; fif``ii = fif``ii+1) begin \
+		fif``_busy[fif``ii] <= `NS_OFF; \
+	end \
+	for(fif``ii = 0; fif``ii < `NS_MSG_FIFO_SZ; fif``ii = fif``ii+1) begin \
+		fif``_data[fif``ii] <= 0; \
+	end \
+	fif``_hd_idx <= 0; \
+	fif``_tl_idx <= 0;
 
 
 `define NS_FIFO_SET_IDX(chn, fif, idx) fif``_data[idx] <= {chn``_src, chn``_dst, chn``_dat};
