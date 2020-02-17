@@ -41,7 +41,7 @@ module io_1to2
 	
 	// SRC regs
 	reg [ASZ-1:0] r_src = 0;
-	reg [DSZ-1:0] r_dat = 10;
+	reg [DSZ-1:0] r_dat = 0;
 	reg [ASZ-1:0] r_dst = MIN_ADDR;
 	reg [0:0] r_req = `NS_OFF;
 
@@ -60,12 +60,12 @@ module io_1to2
 	reg r_curr_src = 0;
 
 	reg [0:0] r_fst_err_0_flg = `NS_OFF;
-	reg [DSZ-1:0] r_fst_err_0_inp = 3;
-	reg [DSZ-1:0] r_fst_err_0_dat = 4;
+	reg [DSZ-1:0] r_fst_err_0_inp = 0;
+	reg [DSZ-1:0] r_fst_err_0_dat = 0;
 	
 	reg [0:0] r_fst_err_1_flg = `NS_OFF;
-	reg [DSZ-1:0] r_fst_err_1_inp = 5;
-	reg [DSZ-1:0] r_fst_err_1_dat = 6;
+	reg [DSZ-1:0] r_fst_err_1_inp = 0;
+	reg [DSZ-1:0] r_fst_err_1_dat = 0;
 	
 	//SRC
 	always @(posedge i_clk)
@@ -112,8 +112,9 @@ module io_1to2
 					r_fst_err_0_inp <= i0_dat;
 					r_fst_err_0_dat <= r_0_ck_dat;
 				end
-			end 
-			r_0_ck_dat <= i0_dat;
+			end else begin 
+				r_0_ck_dat <= i0_dat;
+			end
 			r_0_ack <= `NS_ON;
 		end
 		else
@@ -142,8 +143,9 @@ module io_1to2
 					r_fst_err_1_inp <= i1_dat;
 					r_fst_err_1_dat <= r_1_ck_dat;
 				end
-			end 
-			r_1_ck_dat <= i1_dat;
+			end else begin
+				r_1_ck_dat <= i1_dat;
+			end
 			r_1_ack <= `NS_ON;
 		end
 		else
