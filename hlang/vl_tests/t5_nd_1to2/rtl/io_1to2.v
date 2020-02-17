@@ -3,6 +3,9 @@
 
 `default_nettype	none
 
+`define NS_DBG_NXT_ADDR(adr)  ((adr >= MAX_ADDR)?(MIN_ADDR):(adr + 1))
+
+
 module io_1to2
 #(parameter MIN_ADDR=1, MAX_ADDR=1, 
 	OPER_1=`NS_GT_OP, REF_VAL_1=0, IS_RANGE=`NS_FALSE, 
@@ -12,6 +15,7 @@ module io_1to2
 	
 	// SRC
 	`NS_DECLARE_OUT_CHNL(o0)
+	output wire o0_err,
 	
 	// SNK_0
 	`NS_DECLARE_IN_CHNL(i0)
@@ -21,37 +25,66 @@ module io_1to2
 	// SNK_1
 	`NS_DECLARE_IN_CHNL(i1)
 	output wire [DSZ-1:0] o_1_ck_dat,
-	output wire o_1_err
+	output wire o_1_err,
 );
  
+	reg [3:0] cnt_0 = 0;
+	reg [3:0] cnt_1 = 0;
+
+	reg [DSZ-1:0] r_dat1 = 0;
+	
 	// SRC regs
 	reg [ASZ-1:0] r_src = 0;
-	reg [ASZ-1:0] r_dst = MIN_ADDR;
 	reg [DSZ-1:0] r_dat = 0;
+	reg [ASZ-1:0] r_dst = MIN_ADDR;
 	reg [0:0] r_req = `NS_OFF;
 
+	reg [0:0] r_err = `NS_OFF;
+	
 	// SNK_0 regs
 	reg [0:0] r_0_ack = `NS_OFF;
-	reg [DSZ-1:0] r_0_ck_dat = 0;
+	reg [DSZ-1:0] r_0_ck_dat = 4'b1111;
 	reg [0:0] r_0_err = `NS_OFF;
 	
 	// SNK_1 regs
 	reg [0:0] r_1_ack = `NS_OFF;
-	reg [DSZ-1:0] r_1_ck_dat = 0;
+	reg [DSZ-1:0] r_1_ck_dat = 4'b1111;
 	reg [0:0] r_1_err = `NS_OFF;
 
 	reg r_curr_src = 0;
-	
+
 	//SRC
+	always @(negedge i_clk)
+	begin
+		if((! r_req) && (! o0_ack)) begin
+			r_dst <= `NS_DBG_NXT_ADDR(r_dst);
+		end 
+	end 
+	
 	always @(posedge i_clk)
 	begin
 		if((! r_req) && (! o0_ack)) begin
-			if(r_dst >= MAX_ADDR) begin
-				r_dst <= MIN_ADDR;
-			end else begin
-				r_dst <= r_dst + 1;
+			if(r_dat > 15) begin
+				r_err <= `NS_ON;
 			end
-			r_dat <= r_dat + 1;
+			if(r_dat < 0) begin
+				r_err <= `NS_ON;
+			end
+			/*r_dst <= `NS_DBG_NXT_ADDR(r_dst);
+			if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, `NS_DBG_NXT_ADDR(r_dst), OPER_2, REF_VAL_2, `NS_DBG_NXT_ADDR(r_dst))) begin
+				r_dat[3:0] <= cnt_0;
+				cnt_0 <= cnt_0 + 1;
+			end else begin
+				r_dat[3:0] <= cnt_1;
+				cnt_1 <= cnt_1 + 1;
+			end*/
+			if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, r_dst, OPER_2, REF_VAL_2, r_dst)) begin
+				r_dat[3:0] <= cnt_0;
+				cnt_0 <= cnt_0 + 1;
+			end else begin
+				r_dat[3:0] <= cnt_1;
+				cnt_1 <= cnt_1 + 1;
+			end
 			r_req <= `NS_ON;
 		end else 
 		if(r_req && o0_ack) begin
@@ -65,12 +98,18 @@ module io_1to2
 		if(i0_req && (! r_0_ack)) begin
 			if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, i0_dst, OPER_2, REF_VAL_2, i0_dst)) begin
 				r_0_err <= `NS_ON;
-			//end else if((i0_dat > 0) && ((r_0_ck_dat + 2) != i0_dat)) begin
-			//	r_0_err <= `NS_ON;
-			end else begin
-				r_0_ck_dat <= i0_dat;
-				r_0_ack <= `NS_ON;
+			end 
+			if(i0_dat > 15) begin
+				r_0_err <= `NS_ON;
 			end
+			if(i0_dat < 0) begin
+				r_0_err <= `NS_ON;
+			end
+			if((r_0_ck_dat <= 14) && ((r_0_ck_dat + 1) != i0_dat)) begin
+				r_0_err <= `NS_ON;
+			end 
+			r_0_ck_dat <= i0_dat;
+			r_0_ack <= `NS_ON;
 		end
 		else
 		if((! i0_req) && r_0_ack) begin
@@ -84,12 +123,18 @@ module io_1to2
 		if(i1_req && (! r_1_ack)) begin
 			if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, i1_dst, OPER_2, REF_VAL_2, i1_dst)) begin
 				r_1_err <= `NS_ON;
-			//end else if((i1_dat > 0) && ((r_1_ck_dat + 2) != i1_dat)) begin
-			//	r_1_err <= `NS_ON;
-			end else begin
-				r_1_ck_dat <= i1_dat;
-				r_1_ack <= `NS_ON;
+			end 
+			if(i1_dat > 15) begin
+				r_1_err <= `NS_ON;
 			end
+			if(i1_dat < 0) begin
+				r_1_err <= `NS_ON;
+			end
+			if((r_1_ck_dat <= 14) && ((r_1_ck_dat + 1) != i1_dat)) begin
+				r_1_err <= `NS_ON;
+			end 
+			r_1_ck_dat <= i1_dat;
+			r_1_ack <= `NS_ON;
 		end
 		else
 		if((! i1_req) && r_1_ack) begin
@@ -100,6 +145,7 @@ module io_1to2
 	//SRC
 	`NS_ASSIGN_OUT_MSG(o0, r)
 	assign o0_req = r_req;
+	assign o0_err = r_err;
 
 	//SNK_0
 	assign i0_ack = r_0_ack;
@@ -110,5 +156,5 @@ module io_1to2
 	assign i1_ack = r_1_ack;
 	assign o_1_ck_dat = r_1_ck_dat;
 	assign o_1_err = r_1_err;
-	
+
 endmodule

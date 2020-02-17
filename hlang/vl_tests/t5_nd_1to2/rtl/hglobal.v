@@ -168,6 +168,26 @@
 		end \
 	end 
 
+/*
+`define NS_TRY_MOV_TAIL_2(fif, mg_out, the_out_ack, the_req) \
+	if(fif``_busy[fif``_tl_idx] && ! out_busy) begin \
+		if(! the_req && ! the_out_ack) begin \
+			out_busy <= `NS_ON; \
+			`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
+		end \
+	end 
+
+	
+`define NS_TRY_INC_TAIL_2(fif, mg_out, the_out_ack, the_req) \
+	if(fif``_busy[fif``_tl_idx]) begin \
+		if(! the_req && ! the_out_ack) begin \
+			fif``_busy[fif``_tl_idx] <= `NS_OFF; \
+			`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
+			`NS_INC_IDX(fif``_tl_idx); \
+			the_req <= `NS_ON; \
+		end \
+	end 
+*/
 	
 //--------------------------------------------
 `endif // HGLOBAL_V_FILE

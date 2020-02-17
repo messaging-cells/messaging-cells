@@ -7,7 +7,9 @@ module test_5_top
 #(parameter ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
 (
 	input  i_clk,      // Main Clock (25 MHz)
-	input  i_Switch_3, 
+	input  i_Switch_1, 
+	input  i_Switch_2, 
+	
 	output o_Segment1_A,
 	output o_Segment1_B,
 	output o_Segment1_C,
@@ -35,22 +37,26 @@ module test_5_top
 	wire w_Switch_1;
 	reg  r_Switch_1 = `NS_OFF;
 
+	wire w_Switch_2;
+	reg  r_Switch_2 = `NS_OFF;
+	
 	reg [2:0] c_src = 0;
 	reg [6:0] c_snk = 0;
 	
 	reg clk_src = `NS_OFF;
 	reg clk_snk = `NS_OFF;
 	
-	reg [DSZ-1:0] disp_i_data = 5;
-	reg [DSZ-1:0] disp_o_data = 5;
+	reg [DSZ-1:0] disp_i_data = 3;
+	reg [DSZ-1:0] disp_o_data = 3;
 	
 	//reg r_LED_1 = `NS_OFF;
-	//reg r_LED_2 = `NS_OFF;
+	reg r_LED_2 = `NS_OFF;
 	reg r_LED_3 = `NS_OFF;
 	reg r_LED_4 = `NS_OFF;
   
 	wire err_0;
 	wire err_1;
+	wire err_2;
 	
 	// LNK_0
 	`NS_DECLARE_LINK(lnk_0)
@@ -63,7 +69,7 @@ module test_5_top
 	// LNK_2
 	`NS_DECLARE_LINK(lnk_2)
 	//wire [DSZ-1:0] lnk_2_ck_dat;
-  
+
 	wire w_Segment1_A;
 	wire w_Segment1_B;
 	wire w_Segment1_C;
@@ -100,6 +106,7 @@ module test_5_top
 	
 	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(3))
 	gt1to2 (
+		//.i_clk(i_clk),
 		.i_clk(clk_src),
 		.reset(the_reset),
 		.ready(the_all_ready),
@@ -115,10 +122,11 @@ module test_5_top
 
 	io_1to2 #(.MIN_ADDR(0), .MAX_ADDR(5), .OPER_1(`NS_GT_OP), .REF_VAL_1(3))
 	io_t3 (
-		.i_clk(clk_snk),
 		//.i_clk(i_clk),
+		.i_clk(clk_snk),
 		// SRC
 		`NS_INSTA_CHNL(o0, lnk_2)
+		.o0_err(err_2),
 		// SNK0
 		`NS_INSTA_CHNL(i0, lnk_0)
 		.o_0_ck_dat(lnk_0_ck_dat),
@@ -126,14 +134,19 @@ module test_5_top
 		// SNK1
 		`NS_INSTA_CHNL(i1, lnk_1)
 		.o_1_ck_dat(lnk_1_ck_dat),
-		.o_1_err(err_1)
+		.o_1_err(err_1),
 	);
 	
 	// Instantiate Debounce Filter
-	debounce Debounce_Switch_Inst(
+	debounce sw1_inst(
 		.i_Clk(i_clk),
-		.i_Switch(i_Switch_3),
+		.i_Switch(i_Switch_1),
 		.o_Switch(w_Switch_1)
+	);
+	debounce sw2_inst(
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_2),
+		.o_Switch(w_Switch_2)
 	);
 		
 	// Purpose: When Switch is pressed, update display i_data and o_data
@@ -143,8 +156,20 @@ module test_5_top
 		
 		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
 		begin
-			disp_i_data <= lnk_0_dat;
-			disp_o_data <= lnk_0_ck_dat;
+			if(! err_0) begin
+				disp_i_data <= lnk_0_dat;
+				disp_o_data <= lnk_0_ck_dat;
+			end 
+		end
+		
+		r_Switch_2 <= w_Switch_2;
+		
+		if((w_Switch_2 == `NS_ON) && (r_Switch_2 == `NS_OFF))
+		begin
+			if(! err_1) begin
+				disp_i_data <= lnk_1_dat;
+				disp_o_data <= lnk_1_ck_dat;
+			end 
 		end
 	end
 
@@ -191,7 +216,7 @@ module test_5_top
 
 	assign o_LED_1 = err_0;
 	assign o_LED_2 = err_1;
-	assign o_LED_3 = r_LED_3;
+	assign o_LED_3 = err_2;
 	assign o_LED_4 = r_LED_4;
 
 endmodule

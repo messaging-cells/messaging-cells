@@ -2,6 +2,7 @@
 yosys -import
 read_verilog bin_to_disp.v; 
 read_verilog debouncer.v; 
+read_verilog inc_4.v; 
 read_verilog nd_1to2.v; 
 read_verilog io_1to2.v; 
 read_verilog test_5.v;
