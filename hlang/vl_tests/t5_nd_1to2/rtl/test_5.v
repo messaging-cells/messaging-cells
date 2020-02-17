@@ -3,6 +3,11 @@
 
 `default_nettype	none
 
+`define NS_NUM_TEST 5
+`define NS_TEST_MIN_ADDR 0
+`define NS_TEST_MAX_ADDR 55
+`define NS_TEST_REF_ADDR 23
+
 module test_5_top 
 #(parameter ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
 (
@@ -46,8 +51,8 @@ module test_5_top
 	reg clk_src = `NS_OFF;
 	reg clk_snk = `NS_OFF;
 	
-	reg [DSZ-1:0] disp_i_data = 3;
-	reg [DSZ-1:0] disp_o_data = 3;
+	reg [DSZ-1:0] disp_i_data = `NS_NUM_TEST;
+	reg [DSZ-1:0] disp_o_data = `NS_NUM_TEST;
 	
 	//reg r_LED_1 = `NS_OFF;
 	reg r_LED_2 = `NS_OFF;
@@ -57,6 +62,11 @@ module test_5_top
 	wire err_0;
 	wire err_1;
 	wire err_2;
+
+	wire [DSZ-1:0] fst_err_0_inp;
+	wire [DSZ-1:0] fst_err_0_dat;
+	wire [DSZ-1:0] fst_err_1_inp;
+	wire [DSZ-1:0] fst_err_1_dat;
 	
 	// LNK_0
 	`NS_DECLARE_LINK(lnk_0)
@@ -104,10 +114,12 @@ module test_5_top
 		end
 	end
 	
-	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(3))
+	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	gt1to2 (
 		//.i_clk(i_clk),
 		.i_clk(clk_src),
+		//.i_clk(clk_snk),
+		
 		.reset(the_reset),
 		.ready(the_all_ready),
 		
@@ -120,10 +132,12 @@ module test_5_top
 		`NS_INSTA_CHNL(rcv0, lnk_2)
 	);
 
-	io_1to2 #(.MIN_ADDR(0), .MAX_ADDR(5), .OPER_1(`NS_GT_OP), .REF_VAL_1(3))
+	io_1to2 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR), .OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	io_t3 (
 		//.i_clk(i_clk),
+		//.i_clk(clk_src),
 		.i_clk(clk_snk),
+		
 		// SRC
 		`NS_INSTA_CHNL(o0, lnk_2)
 		.o0_err(err_2),
@@ -135,6 +149,11 @@ module test_5_top
 		`NS_INSTA_CHNL(i1, lnk_1)
 		.o_1_ck_dat(lnk_1_ck_dat),
 		.o_1_err(err_1),
+
+		.fst_err_0_inp(fst_err_0_inp),
+		.fst_err_0_dat(fst_err_0_dat),
+		.fst_err_1_inp(fst_err_1_inp),
+		.fst_err_1_dat(fst_err_1_dat),
 	);
 	
 	// Instantiate Debounce Filter
@@ -159,7 +178,10 @@ module test_5_top
 			if(! err_0) begin
 				disp_i_data <= lnk_0_dat;
 				disp_o_data <= lnk_0_ck_dat;
-			end 
+			end else begin
+				disp_i_data <= fst_err_0_inp;
+				disp_o_data <= fst_err_0_dat;
+			end
 		end
 		
 		r_Switch_2 <= w_Switch_2;
@@ -169,7 +191,10 @@ module test_5_top
 			if(! err_1) begin
 				disp_i_data <= lnk_1_dat;
 				disp_o_data <= lnk_1_ck_dat;
-			end 
+			end else begin
+				disp_i_data <= fst_err_1_inp;
+				disp_o_data <= fst_err_1_dat;
+			end
 		end
 	end
 

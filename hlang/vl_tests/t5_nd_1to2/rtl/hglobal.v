@@ -19,7 +19,7 @@
 `define NS_ADDRESS_SIZE 6
 `define NS_DATA_SIZE 4
 
-`define NS_MESSAGE_FIFO_SIZE 1  // 1, 2 or 4 ***ONLY***
+`define NS_MESSAGE_FIFO_SIZE 4  // 1, 2 or 4 ***ONLY***
 
 `define NS_GT_OP 1
 `define NS_GTE_OP 2

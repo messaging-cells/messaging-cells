@@ -26,6 +26,12 @@ module io_1to2
 	`NS_DECLARE_IN_CHNL(i1)
 	output wire [DSZ-1:0] o_1_ck_dat,
 	output wire o_1_err,
+	
+	output wire [DSZ-1:0] fst_err_0_inp,
+	output wire [DSZ-1:0] fst_err_0_dat,
+	output wire [DSZ-1:0] fst_err_1_inp,
+	output wire [DSZ-1:0] fst_err_1_dat,
+	
 );
  
 	reg [3:0] cnt_0 = 0;
@@ -35,7 +41,7 @@ module io_1to2
 	
 	// SRC regs
 	reg [ASZ-1:0] r_src = 0;
-	reg [DSZ-1:0] r_dat = 0;
+	reg [DSZ-1:0] r_dat = 10;
 	reg [ASZ-1:0] r_dst = MIN_ADDR;
 	reg [0:0] r_req = `NS_OFF;
 
@@ -43,16 +49,24 @@ module io_1to2
 	
 	// SNK_0 regs
 	reg [0:0] r_0_ack = `NS_OFF;
-	reg [DSZ-1:0] r_0_ck_dat = 4'b1111;
+	reg [DSZ-1:0] r_0_ck_dat = 15;
 	reg [0:0] r_0_err = `NS_OFF;
 	
 	// SNK_1 regs
 	reg [0:0] r_1_ack = `NS_OFF;
-	reg [DSZ-1:0] r_1_ck_dat = 4'b1111;
+	reg [DSZ-1:0] r_1_ck_dat = 15;
 	reg [0:0] r_1_err = `NS_OFF;
 
 	reg r_curr_src = 0;
 
+	reg [0:0] r_fst_err_0_flg = `NS_OFF;
+	reg [DSZ-1:0] r_fst_err_0_inp = 3;
+	reg [DSZ-1:0] r_fst_err_0_dat = 4;
+	
+	reg [0:0] r_fst_err_1_flg = `NS_OFF;
+	reg [DSZ-1:0] r_fst_err_1_inp = 5;
+	reg [DSZ-1:0] r_fst_err_1_dat = 6;
+	
 	//SRC
 	always @(posedge i_clk)
 	begin
@@ -93,6 +107,11 @@ module io_1to2
 			end
 			if((r_0_ck_dat <= 14) && ((r_0_ck_dat + 1) != i0_dat)) begin
 				r_0_err <= `NS_ON;
+				if(! r_fst_err_0_flg) begin
+					r_fst_err_0_flg <= `NS_ON;
+					r_fst_err_0_inp <= i0_dat;
+					r_fst_err_0_dat <= r_0_ck_dat;
+				end
 			end 
 			r_0_ck_dat <= i0_dat;
 			r_0_ack <= `NS_ON;
@@ -118,6 +137,11 @@ module io_1to2
 			end
 			if((r_1_ck_dat <= 14) && ((r_1_ck_dat + 1) != i1_dat)) begin
 				r_1_err <= `NS_ON;
+				if(! r_fst_err_1_flg) begin
+					r_fst_err_1_flg <= `NS_ON;
+					r_fst_err_1_inp <= i1_dat;
+					r_fst_err_1_dat <= r_1_ck_dat;
+				end
 			end 
 			r_1_ck_dat <= i1_dat;
 			r_1_ack <= `NS_ON;
@@ -143,4 +167,9 @@ module io_1to2
 	assign o_1_ck_dat = r_1_ck_dat;
 	assign o_1_err = r_1_err;
 
+	assign fst_err_0_inp = r_fst_err_0_inp;
+	assign fst_err_0_dat = r_fst_err_0_dat;
+	assign fst_err_1_inp = r_fst_err_1_inp;
+	assign fst_err_1_dat = r_fst_err_1_dat;
+	
 endmodule
