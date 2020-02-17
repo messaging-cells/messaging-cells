@@ -6,7 +6,7 @@
 module nd_1to2
 #(parameter 
 	OPER_1=`NS_GT_OP, REF_VAL_1=0, IS_RANGE=`NS_FALSE, 
-	OPER_2=`NS_GT_OP, REF_VAL_2=0, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
+	OPER_2=`NS_GT_OP, REF_VAL_2=0, FSZ=`NS_MESSAGE_FIFO_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
 (
 	input wire i_clk,	// Main Clock (25 MHz)
 	input wire reset,	// Main Clock (25 MHz)

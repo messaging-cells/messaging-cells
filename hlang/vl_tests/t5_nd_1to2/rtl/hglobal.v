@@ -19,6 +19,8 @@
 `define NS_ADDRESS_SIZE 6
 `define NS_DATA_SIZE 4
 
+`define NS_MESSAGE_FIFO_SIZE 1  // 1, 2 or 4 ***ONLY***
+
 `define NS_GT_OP 1
 `define NS_GTE_OP 2
 `define NS_LT_OP 3
@@ -43,10 +45,8 @@
 	(is_dbl == `NS_TRUE)?(`NS_CMP_OP(op1, pm1, pm2) && `NS_CMP_OP(op2, pm3, pm4)):(`NS_CMP_OP(op1, pm1, pm2)) )
 	
 
-// 1, 2 or 4
-`define NS_MSG_FIFO_SZ  1
 
-`define NS_MSG_FIFO_IDX_SZ ((`NS_MSG_FIFO_SZ == 4)?(2):(1))
+`define NS_MSG_FIFO_IDX_SZ ((FSZ == 4)?(2):(1))
 
 
 `define NS_FULL_MSG_SZ  (ASZ + ASZ + DSZ)
@@ -108,17 +108,17 @@
 
 `define NS_DECLARE_FIFO(fif) \
 	integer fif``ii=0; \
-	reg [0:0] fif``_busy [`NS_MSG_FIFO_SZ-1:0]; \
-	reg [`NS_FULL_MSG_SZ-1:0] fif``_data[`NS_MSG_FIFO_SZ-1:0]; \
+	reg [0:0] fif``_busy [FSZ-1:0]; \
+	reg [`NS_FULL_MSG_SZ-1:0] fif``_data[FSZ-1:0]; \
 	reg [`NS_MSG_FIFO_IDX_SZ-1:0] fif``_hd_idx = 0; \
 	reg [`NS_MSG_FIFO_IDX_SZ-1:0] fif``_tl_idx = 0;
 
 
 `define NS_FIFO_INIT(fif) \
-	for(fif``ii = 0; fif``ii < `NS_MSG_FIFO_SZ; fif``ii = fif``ii+1) begin \
+	for(fif``ii = 0; fif``ii < FSZ; fif``ii = fif``ii+1) begin \
 		fif``_busy[fif``ii] <= `NS_OFF; \
 	end \
-	for(fif``ii = 0; fif``ii < `NS_MSG_FIFO_SZ; fif``ii = fif``ii+1) begin \
+	for(fif``ii = 0; fif``ii < FSZ; fif``ii = fif``ii+1) begin \
 		fif``_data[fif``ii] <= 0; \
 	end \
 	fif``_hd_idx <= 0; \
@@ -142,7 +142,7 @@
 	
 
 `define NS_INC_IDX(idx) \
-	if(idx == (`NS_MSG_FIFO_SZ-1)) begin \
+	if(idx == (FSZ-1)) begin \
 		idx <= 0; \
 	end else begin \
 		idx <= idx + 1; \
@@ -168,25 +168,27 @@
 		end \
 	end 
 
+
 /*
-`define NS_TRY_MOV_TAIL_2(fif, mg_out, the_out_ack, the_req) \
-	if(fif``_busy[fif``_tl_idx] && ! out_busy) begin \
-		if(! the_req && ! the_out_ack) begin \
-			out_busy <= `NS_ON; \
-			`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
-		end \
+`define NS_TRY_SET_OUT(fif, mg_out, out_is_busy) \
+	if(fif``_busy[fif``_tl_idx] && ! out_is_busy) begin \
+		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
+		out_is_busy <= `NS_ON; \
+		`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
+		`NS_INC_IDX(fif``_tl_idx); \
 	end 
 
-	
-`define NS_TRY_INC_TAIL_2(fif, mg_out, the_out_ack, the_req) \
-	if(fif``_busy[fif``_tl_idx]) begin \
-		if(! the_req && ! the_out_ack) begin \
-			fif``_busy[fif``_tl_idx] <= `NS_OFF; \
-			`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
-			`NS_INC_IDX(fif``_tl_idx); \
-			the_req <= `NS_ON; \
+
+`define NS_TRY_SEND_OUT(out_is_busy, the_out_ack, the_req) \
+	if(! the_req && ! the_out_ack && out_is_busy) begin \
+		the_req <= `NS_ON; \
+	end \
+	if(the_req && the_out_ack) begin \
+		if(out_is_busy) begin \
+			out_is_busy <= `NS_OFF; \
 		end \
-	end 
+		the_req <= `NS_OFF; \
+	end
 */
 	
 //--------------------------------------------

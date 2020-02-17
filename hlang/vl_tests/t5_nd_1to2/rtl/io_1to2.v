@@ -54,13 +54,6 @@ module io_1to2
 	reg r_curr_src = 0;
 
 	//SRC
-	always @(negedge i_clk)
-	begin
-		if((! r_req) && (! o0_ack)) begin
-			r_dst <= `NS_DBG_NXT_ADDR(r_dst);
-		end 
-	end 
-	
 	always @(posedge i_clk)
 	begin
 		if((! r_req) && (! o0_ack)) begin
@@ -70,14 +63,6 @@ module io_1to2
 			if(r_dat < 0) begin
 				r_err <= `NS_ON;
 			end
-			/*r_dst <= `NS_DBG_NXT_ADDR(r_dst);
-			if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, `NS_DBG_NXT_ADDR(r_dst), OPER_2, REF_VAL_2, `NS_DBG_NXT_ADDR(r_dst))) begin
-				r_dat[3:0] <= cnt_0;
-				cnt_0 <= cnt_0 + 1;
-			end else begin
-				r_dat[3:0] <= cnt_1;
-				cnt_1 <= cnt_1 + 1;
-			end*/
 			if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, r_dst, OPER_2, REF_VAL_2, r_dst)) begin
 				r_dat[3:0] <= cnt_0;
 				cnt_0 <= cnt_0 + 1;
@@ -88,6 +73,7 @@ module io_1to2
 			r_req <= `NS_ON;
 		end else 
 		if(r_req && o0_ack) begin
+			r_dst <= `NS_DBG_NXT_ADDR(r_dst);
 			r_req <= `NS_OFF;
 		end
 	end
