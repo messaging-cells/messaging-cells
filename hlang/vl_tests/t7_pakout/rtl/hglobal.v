@@ -16,6 +16,7 @@
 `define ns_f_2HZ 6250000
 `define ns_f_1HZ 12500000
 	
+`define NS_PACKET_SIZE 3
 `define NS_ADDRESS_SIZE 6
 `define NS_DATA_SIZE 4
 
@@ -50,7 +51,8 @@
 
 
 `define NS_FULL_MSG_SZ  (ASZ + ASZ + DSZ)
-	
+
+
 `define NS_DECLARE_REG_MSG(mg) \
 	reg [ASZ-1:0] mg``_src = 0; \
 	reg [ASZ-1:0] mg``_dst = 0; \
@@ -141,8 +143,8 @@
 	chn``_dat <= fif``_data[idx][`NS_MG_DAT_SECTION]; 
 	
 
-`define NS_INC_IDX(idx) \
-	if(idx == (FSZ-1)) begin \
+`define NS_INC_IDX(idx, the_sz) \
+	if(idx == (the_sz-1)) begin \
 		idx <= 0; \
 	end else begin \
 		idx <= idx + 1; \
@@ -153,7 +155,7 @@
 	if(! fif``_busy[fif``_hd_idx]) begin \
 		fif``_busy[fif``_hd_idx] <= `NS_ON; \
 		`NS_FIFO_SET_IDX(mg_in, fif, fif``_hd_idx); \
-		`NS_INC_IDX(fif``_hd_idx); \
+		`NS_INC_IDX(fif``_hd_idx, FSZ); \
 		the_ack <= `NS_ON; \
 	end 
 
@@ -163,7 +165,7 @@
 		if(! the_req && ! the_out_ack) begin \
 			fif``_busy[fif``_tl_idx] <= `NS_OFF; \
 			`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
-			`NS_INC_IDX(fif``_tl_idx); \
+			`NS_INC_IDX(fif``_tl_idx, FSZ); \
 			the_req <= `NS_ON; \
 		end \
 	end 
@@ -175,7 +177,7 @@
 		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
 		out_is_busy <= `NS_ON; \
 		`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
-		`NS_INC_IDX(fif``_tl_idx); \
+		`NS_INC_IDX(fif``_tl_idx, FSZ); \
 	end 
 
 
@@ -190,6 +192,101 @@
 		the_req <= `NS_OFF; \
 	end
 */
+
+`define NS_TOT_PACKETS ((`NS_FULL_MSG_SZ / PSZ) + 1)
+
+`define NS_DECLARE_REG_PAKOUT(pks) \
+	integer pks``ii=0; \
+	reg [0:0] pks``_busy = 0; \
+	reg [PSZ-1:0] pks``_packets[`NS_TOT_PACKETS-1:0]; \
+	reg [$clog2(`NS_TOT_PACKETS):0] pks``_pks_idx = 0; \
+	reg [0:0] pks``_out_busy = 0; \
+	reg [PSZ-1:0] pks``_out_pak = 0;
+
+
+`define NS_DECLARE_PAKOUT_CHNL(nam) \
+	output wire [PSZ-1:0] nam``_out_pak, \
+	output wire nam``_req, \
+	input wire nam``_ack, 
+
+
+`define NS_DECLARE_PAKIN_CHNL(nam) \
+	input wire [PSZ-1:0] nam``_out_pak, \
+	input wire nam``_req, \
+	output wire nam``_ack, 
+
+
+`define NS_DECLARE_PKA_LINK(lnk) \
+	wire [PSZ-1:0] lnk``_out_pak; \
+	wire lnk``_req; \
+	wire lnk``_ack; 
+
+
+`define NS_INSTA_PAK_CHNL(chn, lnk) \
+	.chn``_out_pak(lnk``_out_pak), \
+	.chn``_req(lnk``_req), \
+	.chn``_ack(lnk``_ack), 
+
+
+`define NS_PACKETS_INIT(pks) \
+	pks``_busy = 0; \
+	for(pks``ii = 0; pks``ii < `NS_TOT_PACKETS; pks``ii = pks``ii+1) begin \
+		pks``_packets[pks``ii] <= 0; \
+	end \
+	pks``_pks_idx <= 0; \
+	pks``_out_busy = 0; \
+	pks``_out_pak <= 0;
+
+
+`define NS_MG_PAK(ii) (((ii+1)*PSZ)-1):(ii*PSZ)
+
+`define NS_MG_LST_PAK (`NS_FULL_MSG_SZ-1):((`NS_TOT_PACKETS-1)*PSZ)
+
+`define NS_FIFO_GET_IDX_PAKS(pks, fif, idx) \
+	for(pks``ii = 0; pks``ii < `NS_TOT_PACKETS-1; pks``ii = pks``ii+1) begin \
+		pks``_packets[pks``ii] <= fif``_data[idx][`NS_MG_PAK(pks``ii)]; \
+	end \
+	pks``_packets[pks``ii][(`NS_FULL_MSG_SZ % PSZ):0] <= fif``_data[idx][`NS_MG_LST_PAK];
+
+
+`define NS_FIFO_SET_IDX_PAKS(in, fif, idx) \
+	for(in``ii = 0; in``ii < `NS_TOT_PACKETS-1; in``ii = in``ii+1) begin \
+		fif``_data[idx][`NS_MG_PAK(in``ii)] <= in``_packets[in``ii]; \
+	end \
+	fif``_data[idx][`NS_MG_LST_PAK] <= in``_packets[in``ii][(`NS_FULL_MSG_SZ % PSZ):0];
+
+
+`define NS_FIFO_TRY_INC_TAIL_PAKS(fif, pks) \
+	if(fif``_busy[fif``_tl_idx] && ! pks``_busy) begin \
+		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
+		`NS_FIFO_GET_IDX_PAKS(pks, fif, fif``_tl_idx); \
+		`NS_INC_IDX(fif``_tl_idx, FSZ); \
+		pks``_busy <= `NS_ON; \
+	end 
+
+
+`define NS_PACKETS_TRY_INC_TAIL(pks, the_out_ack, the_req) \
+	if(pks``_busy) begin \
+		if(! pks``_out_busy) begin \
+			pks``_out_busy <= `NS_ON; \
+			pks``_out_pak <= pks``_packets[pks``_pks_idx]; \
+			`NS_INC_IDX(pks``_pks_idx, `NS_TOT_PACKETS); \
+		end \
+		if(! the_req && ! the_out_ack && pks``_out_busy) begin \
+			the_req <= `NS_ON; \
+		end \
+		if(the_req && the_out_ack) begin \
+			if(pks``_out_busy) begin \
+				pks``_out_busy <= `NS_OFF; \
+			end \
+			if(pks``_pks_idx == (`NS_TOT_PACKETS-1)) begin \
+				pks``_busy <= `NS_OFF; \
+			end \
+			the_req <= `NS_OFF; \
+		end \
+	end 
+
+
 	
 //--------------------------------------------
 `endif // HGLOBAL_V_FILE

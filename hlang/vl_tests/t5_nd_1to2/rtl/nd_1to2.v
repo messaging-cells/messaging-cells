@@ -35,14 +35,6 @@ module nd_1to2
 	`NS_DECLARE_FIFO(bf0)
 	`NS_DECLARE_FIFO(bf1)
 
-	//reg [0:0] out_busy = `NS_OFF;
-	
-	always @(negedge i_clk)
-	begin
-		if(! reset && rg_rdy) begin
-		end
-	end
-	
 	always @(posedge i_clk)
 	begin
 		if(reset) begin
