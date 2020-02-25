@@ -160,28 +160,26 @@
 	end 
 
 
+/*
 `define NS_TRY_INC_TAIL(fif, mg_out, the_out_ack, the_req) \
 	if(fif``_busy[fif``_tl_idx]) begin \
 		if(! the_req && ! the_out_ack) begin \
 			fif``_busy[fif``_tl_idx] <= `NS_OFF; \
 			`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
-			`NS_INC_IDX(fif``_tl_idx, FSZ); \
+			`NS_INC_IDX(fif``_tl_idx); \
 			the_req <= `NS_ON; \
 		end \
 	end 
+*/
 
 
-/*
-`define NS_TRY_SET_OUT(fif, mg_out, out_is_busy) \
+`define NS_TRY_SET_OUT(fif, mg_out, the_out_ack, the_req, out_is_busy) \
 	if(fif``_busy[fif``_tl_idx] && ! out_is_busy) begin \
 		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
 		out_is_busy <= `NS_ON; \
 		`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
-		`NS_INC_IDX(fif``_tl_idx, FSZ); \
-	end 
-
-
-`define NS_TRY_SEND_OUT(out_is_busy, the_out_ack, the_req) \
+		`NS_INC_IDX(fif``_tl_idx); \
+	end \
 	if(! the_req && ! the_out_ack && out_is_busy) begin \
 		the_req <= `NS_ON; \
 	end \
@@ -191,7 +189,7 @@
 		end \
 		the_req <= `NS_OFF; \
 	end
-*/
+
 
 `define NS_TOT_PACKETS ((`NS_FULL_MSG_SZ / PSZ) + 1)
 
@@ -278,9 +276,9 @@
 		if(the_req && the_out_ack) begin \
 			if(pks``_out_busy) begin \
 				pks``_out_busy <= `NS_OFF; \
-			end \
-			if(pks``_pks_idx == (`NS_TOT_PACKETS-1)) begin \
-				pks``_busy <= `NS_OFF; \
+				if(pks``_pks_idx == 0) begin \
+					pks``_busy <= `NS_OFF; \
+				end \
 			end \
 			the_req <= `NS_OFF; \
 		end \

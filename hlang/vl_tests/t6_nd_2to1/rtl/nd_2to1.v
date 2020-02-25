@@ -7,9 +7,9 @@
 module nd_2to1
 #(parameter FSZ=`NS_MESSAGE_FIFO_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
 (
-	input wire i_clk,	// Main Clock (25 MHz)
-	input wire reset,	// Main Clock (25 MHz)
-	output wire ready,	// Main Clock (25 MHz)
+	input wire i_clk,
+	input wire reset,
+	output wire ready,
 	
 	`NS_DECLARE_OUT_CHNL(snd0)
 	`NS_DECLARE_IN_CHNL(rcv0)
@@ -22,6 +22,7 @@ module nd_2to1
 	// out0 regs
 	`NS_DECLARE_REG_MSG(rgo0)
 	reg [0:0] rgo0_req = `NS_OFF;
+	reg [0:0] rgo0_busy = `NS_OFF;
 
 	// inp0 regs
 	reg [0:0] rgi0_ack = `NS_OFF;
@@ -69,23 +70,23 @@ module nd_2to1
 			end
 			if(in0_rq && ! in1_rq) begin
 				`NS_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
-				//run_head_queue_simu(buff0, *in_msg0, ack0);
 			end
 			if(! in0_rq && in1_rq) begin
 				`NS_TRY_INC_HEAD(bf0, rcv1, rgi1_ack);
-				//run_head_queue_simu(buff0, *in_msg1, ack1);
 			end
 			
-			`NS_TRY_INC_TAIL(bf0, rgo0, snd0_ack, rgo0_req);
+			/*`NS_TRY_INC_TAIL(bf0, rgo0, snd0_ack, rgo0_req);
+			if(rgo0_req && snd0_ack) begin
+				rgo0_req <= `NS_OFF;
+			end*/
+			
+			`NS_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
 			
 			if((! rcv0_req) && rgi0_ack) begin
 				rgi0_ack <= `NS_OFF;
 			end
 			if((! rcv1_req) && rgi1_ack) begin
 				rgi1_ack <= `NS_OFF;
-			end
-			if(rgo0_req && snd0_ack) begin
-				rgo0_req <= `NS_OFF;
 			end
 		end
 	end

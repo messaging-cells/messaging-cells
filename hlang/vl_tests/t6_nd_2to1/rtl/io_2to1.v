@@ -21,8 +21,8 @@ module io_2to1
 	
 	// SNK_0
 	`NS_DECLARE_IN_CHNL(i0)
-	output wire [DSZ-1:0] o_0_ck_dat,
-	output wire o_0_err,
+	output wire [DSZ-1:0] i0_ck_dat, // i0_ck_dat
+	output wire i0_err, // i0_err
 	
 	output wire [DSZ-1:0] fst_err_0_inp,
 	output wire [DSZ-1:0] fst_err_0_dat,
@@ -46,7 +46,10 @@ module io_2to1
 	reg [0:0] ro1_err = `NS_OFF;
 	
 	// SNK_0 regs
-	reg [0:0] r_0_ack = `NS_OFF;
+	reg [0:0] ri0_ack = `NS_OFF; // ri0_ack
+	reg [DSZ-1:0] ri0_ck_dat = 0;
+	
+	// CHECK regs
 	reg [DSZ-1:0] r_0_ck_dat = 15;
 	reg [DSZ-1:0] r_1_ck_dat = 15;
 	reg [0:0] r_0_err = `NS_OFF;
@@ -104,7 +107,7 @@ module io_2to1
 	//SNK_0
 	always @(posedge i_clk)
 	begin
-		if(i0_req && (! r_0_ack)) begin
+		if(i0_req && (! ri0_ack)) begin
 			if(i0_dat > 15) begin
 				r_2_err <= `NS_ON;
 			end
@@ -134,11 +137,12 @@ module io_2to1
 					r_1_ck_dat <= i0_dat;
 				end
 			end
-			r_0_ack <= `NS_ON;
+			ri0_ack <= `NS_ON;
+			ri0_ck_dat <= i0_dat;
 		end
 		else
-		if((! i0_req) && r_0_ack) begin
-			r_0_ack <= `NS_OFF;
+		if((! i0_req) && ri0_ack) begin
+			ri0_ack <= `NS_OFF;
 		end
 	end
 	
@@ -153,9 +157,9 @@ module io_2to1
 	assign o1_err = r_1_err;
 
 	//SNK_0
-	assign i0_ack = r_0_ack;
-	assign o_0_ck_dat = r_0_ck_dat;
-	assign o_0_err = (ro0_err || ro1_err || r_2_err);
+	assign i0_ack = ri0_ack;
+	assign i0_ck_dat = ri0_ck_dat;
+	assign i0_err = (ro0_err || ro1_err || r_2_err);
 	
 	assign fst_err_0_inp = r_fst_err_0_inp;
 	assign fst_err_0_dat = r_fst_err_0_dat;

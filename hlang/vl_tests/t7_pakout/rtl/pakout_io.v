@@ -94,3 +94,10 @@ module pakout_io
 	assign fst_err_0_dat = r_fst_err_0_dat;
 	
 endmodule
+
+
+/*
+
+Which CRC? (Width matters) It's basically a glorified shift-register, just feed back the last register and XOR with the right taps, and you're done. Wire up the registers to I/O pins and wire the debounced switch to the clock signal on your shift-register. Voila.
+
+*/

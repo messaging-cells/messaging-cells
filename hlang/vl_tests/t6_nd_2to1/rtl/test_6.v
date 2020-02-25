@@ -143,8 +143,8 @@ module test_5_top
 		.o1_err(err_1),
 		// SNK0
 		`NS_INSTA_CHNL(i0, lnk_0)
-		.o_0_ck_dat(lnk_0_ck_dat),
-		.o_0_err(err_2),
+		.i0_ck_dat(lnk_0_ck_dat),
+		.i0_err(err_2),
 
 		.fst_err_0_inp(fst_err_0_inp),
 		.fst_err_0_dat(fst_err_0_dat),

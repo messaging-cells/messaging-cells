@@ -3,7 +3,7 @@
 
 `default_nettype	none
 
-`define NS_NUM_TEST 6
+`define NS_NUM_TEST 7
 `define NS_TEST_MIN_ADDR 0
 `define NS_TEST_MAX_ADDR 55
 `define NS_TEST_REF_ADDR 23

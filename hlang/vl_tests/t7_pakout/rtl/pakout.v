@@ -45,20 +45,10 @@ module pakout
 			`NS_FIFO_INIT(bf0);
 		end
 		if(! reset && rg_rdy) begin
-			/*
-			if(in0_rq && in1_rq) begin
+			if(in0_rq) begin
 				`NS_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
-				//run_head_queue_simu(buff0, *in_msg0, ack0);
-			end
-			if(in0_rq && ! in1_rq) begin
-				`NS_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
-				//run_head_queue_simu(buff0, *in_msg0, ack0);
 			end
 			
-			`NS_TRY_INC_TAIL(bf0, rgo0, snd0_ack, rgo0_req);
-			*/
-			//`NS_FIFO_GET_IDX_PAKS(rgo0, bf0, rgo0_pks_idx);
-			//`NS_FIFO_SET_IDX_PAKS(rgo0, bf0, rgo0_pks_idx);
 			`NS_FIFO_TRY_INC_TAIL_PAKS(bf0, rgo0);
 
 			`NS_PACKETS_TRY_INC_TAIL(rgo0, snd0_ack, rgo0_req);

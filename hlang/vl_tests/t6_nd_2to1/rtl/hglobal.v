@@ -19,7 +19,7 @@
 `define NS_ADDRESS_SIZE 6
 `define NS_DATA_SIZE 4
 
-`define NS_MESSAGE_FIFO_SIZE 2  // 1, 2 or 4 ***ONLY***
+`define NS_MESSAGE_FIFO_SIZE 4  // 1, 2 or 4 ***ONLY***
 
 `define NS_GT_OP 1
 `define NS_GTE_OP 2
@@ -158,6 +158,7 @@
 	end 
 
 
+/*
 `define NS_TRY_INC_TAIL(fif, mg_out, the_out_ack, the_req) \
 	if(fif``_busy[fif``_tl_idx]) begin \
 		if(! the_req && ! the_out_ack) begin \
@@ -167,19 +168,16 @@
 			the_req <= `NS_ON; \
 		end \
 	end 
+*/
 
 
-/*
-`define NS_TRY_SET_OUT(fif, mg_out, out_is_busy) \
+`define NS_TRY_SET_OUT(fif, mg_out, the_out_ack, the_req, out_is_busy) \
 	if(fif``_busy[fif``_tl_idx] && ! out_is_busy) begin \
 		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
 		out_is_busy <= `NS_ON; \
 		`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
 		`NS_INC_IDX(fif``_tl_idx); \
-	end 
-
-
-`define NS_TRY_SEND_OUT(out_is_busy, the_out_ack, the_req) \
+	end \
 	if(! the_req && ! the_out_ack && out_is_busy) begin \
 		the_req <= `NS_ON; \
 	end \
@@ -189,7 +187,7 @@
 		end \
 		the_req <= `NS_OFF; \
 	end
-*/
-	
+
+
 //--------------------------------------------
 `endif // HGLOBAL_V_FILE
