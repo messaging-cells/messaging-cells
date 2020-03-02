@@ -16,9 +16,11 @@
 `define ns_f_2HZ 6250000
 `define ns_f_1HZ 12500000
 	
-`define NS_PACKET_SIZE 3
 `define NS_ADDRESS_SIZE 6
 `define NS_DATA_SIZE 4
+`define NS_REDUN_SIZE 3 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
+
+`define NS_PACKET_SIZE 3 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
 
 `define NS_MESSAGE_FIFO_SIZE 2  // 1, 2 or 4 ***ONLY***
 
@@ -59,6 +61,18 @@
 	reg [DSZ-1:0] mg``_dat = 0; \
 
 
+`define NS_DECLARE_IN_MSG(mg) \
+	input wire [ASZ-1:0] mg``_src, \
+	input wire [ASZ-1:0] mg``_dst, \
+	input wire [DSZ-1:0] mg``_dat, \
+
+
+`define NS_DECLARE_OUT_MSG(mg) \
+	output wire [ASZ-1:0] mg``_src, \
+	output wire [ASZ-1:0] mg``_dst, \
+	output wire [DSZ-1:0] mg``_dat, \
+
+
 `define NS_ASSIGN_OUT_MSG(ou, mg) \
 	assign ou``_src = mg``_src; \
 	assign ou``_dst = mg``_dst; \
@@ -66,17 +80,13 @@
 
 
 `define NS_DECLARE_OUT_CHNL(nam) \
-	output wire [ASZ-1:0] nam``_src, \
-	output wire [ASZ-1:0] nam``_dst, \
-	output wire [DSZ-1:0] nam``_dat, \
+	`NS_DECLARE_OUT_MSG(nam) \
 	output wire nam``_req, \
 	input wire nam``_ack, 
 
 
 `define NS_DECLARE_IN_CHNL(nam) \
-	input wire [ASZ-1:0] nam``_src, \
-	input wire [ASZ-1:0] nam``_dst, \
-	input wire [DSZ-1:0] nam``_dat, \
+	`NS_DECLARE_IN_MSG(nam) \
 	input wire nam``_req, \
 	output wire nam``_ack, 
 
@@ -127,7 +137,11 @@
 	fif``_tl_idx <= 0;
 
 
-`define NS_FIFO_SET_IDX(chn, fif, idx) fif``_data[idx] <= {chn``_src, chn``_dst, chn``_dat};
+
+`define NS_GET_SEQ_MSG(chn) {chn``_src, chn``_dst, chn``_dat}
+
+
+`define NS_FIFO_SET_IDX(chn, fif, idx) fif``_data[idx] <= `NS_GET_SEQ_MSG(chn);
 
 /*
 `define NS_FIFO_SET_IDX(chn, fif, idx) \
@@ -193,6 +207,7 @@
 
 `define NS_TOT_PACKETS ((`NS_FULL_MSG_SZ / PSZ) + 1)
 
+
 `define NS_DECLARE_REG_PAKOUT(pks) \
 	integer pks``ii=0; \
 	reg [0:0] pks``_busy = 0; \
@@ -244,14 +259,20 @@
 	for(pks``ii = 0; pks``ii < `NS_TOT_PACKETS-1; pks``ii = pks``ii+1) begin \
 		pks``_packets[pks``ii] <= fif``_data[idx][`NS_MG_PAK(pks``ii)]; \
 	end \
-	pks``_packets[pks``ii][(`NS_FULL_MSG_SZ % PSZ):0] <= fif``_data[idx][`NS_MG_LST_PAK];
+	if((`NS_FULL_MSG_SZ % PSZ) > 0) begin \
+		pks``_packets[`NS_TOT_PACKETS-1][(`NS_FULL_MSG_SZ % PSZ)-1:0] <= fif``_data[idx][`NS_MG_LST_PAK]; \
+	end else begin \
+		pks``_packets[`NS_TOT_PACKETS-1] <= 0; \
+	end
 
 
 `define NS_FIFO_SET_IDX_PAKS(in, fif, idx) \
 	for(in``ii = 0; in``ii < `NS_TOT_PACKETS-1; in``ii = in``ii+1) begin \
 		fif``_data[idx][`NS_MG_PAK(in``ii)] <= in``_packets[in``ii]; \
 	end \
-	fif``_data[idx][`NS_MG_LST_PAK] <= in``_packets[in``ii][(`NS_FULL_MSG_SZ % PSZ):0];
+	if((`NS_FULL_MSG_SZ % PSZ) > 0) begin \
+		fif``_data[idx][`NS_MG_LST_PAK] <= in``_packets[`NS_TOT_PACKETS-1][(`NS_FULL_MSG_SZ % PSZ)-1:0]; \
+	end
 
 
 `define NS_FIFO_TRY_INC_TAIL_PAKS(fif, pks) \
@@ -284,7 +305,18 @@
 		end \
 	end 
 
+/*
+`define NS_TOT_CHECK_PARTS ((`NS_FULL_MSG_SZ / CKSZ) + 1)
 
-	
+`define NS_MG_CHECK_PART(ii) (((ii+1)*CKSZ)-1):(ii*CKSZ)
+
+`define NS_CALC_CHECK_BITS(mg, fif, idx) \
+	for(pks``ii = 0; pks``ii < `NS_TOT_PACKETS-1; pks``ii = pks``ii+1) begin \
+		pks``_packets[pks``ii] <= fif``_data[idx][`NS_MG_PAK(pks``ii)]; \
+	end \
+	pks``_packets[pks``ii][(`NS_FULL_MSG_SZ % CKSZ):0] <= fif``_data[idx][`NS_MG_LST_PAK];
+*/
+
+
 //--------------------------------------------
 `endif // HGLOBAL_V_FILE
