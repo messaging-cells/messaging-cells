@@ -7,7 +7,7 @@
 
 
 module io_2to1
-#(parameter MIN_ADDR=1, MAX_ADDR=1, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
+#(parameter MIN_ADDR=1, MAX_ADDR=1, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
 (
 	input wire i_clk,	// Main Clock (25 MHz)
 	
@@ -35,6 +35,7 @@ module io_2to1
 	reg [ASZ-1:0] ro0_src = 0;
 	reg [ASZ-1:0] ro0_dst = MIN_ADDR;
 	reg [DSZ-1:0] ro0_dat = 0;
+	reg [RSZ-1:0] ro0_red = 0;
 	reg [0:0] ro0_req = `NS_OFF;
 	reg [0:0] ro0_err = `NS_OFF;
 	
@@ -42,6 +43,7 @@ module io_2to1
 	reg [ASZ-1:0] ro1_src = 1;
 	reg [ASZ-1:0] ro1_dst = MIN_ADDR;
 	reg [DSZ-1:0] ro1_dat = 0;
+	reg [RSZ-1:0] ro1_red = 0;
 	reg [0:0] ro1_req = `NS_OFF;
 	reg [0:0] ro1_err = `NS_OFF;
 	

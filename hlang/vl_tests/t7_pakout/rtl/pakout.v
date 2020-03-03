@@ -5,7 +5,7 @@
 
 
 module pakout
-#(parameter PSZ=`NS_PACKET_SIZE, FSZ=`NS_MESSAGE_FIFO_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
+#(parameter PSZ=`NS_PACKET_SIZE, FSZ=`NS_MESSAGE_FIFO_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
 (
 	input wire i_clk,	// Main Clock (25 MHz)
 	input wire reset,	// Main Clock (25 MHz)

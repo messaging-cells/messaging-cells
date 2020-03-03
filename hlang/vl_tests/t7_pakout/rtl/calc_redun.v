@@ -5,25 +5,26 @@
 
 
 module calc_redun
-#(parameter RSZ=`NS_REDUN_SIZE , ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
+#(parameter ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
 (
-	`NS_DECLARE_IN_MSG(rcv0)
+	input wire [ASZ-1:0] mg_src,
+	input wire [ASZ-1:0] mg_dst,
+	input wire [DSZ-1:0] mg_dat,
 	output wire [RSZ-1:0] redun, 
 	
 );
 
-	parameter MSZ = `NS_FULL_MSG_SZ;
+	parameter MSZ = (ASZ + ASZ + DSZ);
 	parameter PART_SZ = (MSZ / RSZ);
 	parameter REST_SZ = (MSZ % RSZ) + PART_SZ;
 	
 	wire [MSZ-1:0] full_msg; 
 
-	assign full_msg = `NS_GET_SEQ_MSG(rcv0);
+	assign full_msg = {mg_src, mg_dst, mg_dat};
 
 	genvar ii;
 	
 	for(ii = 0; ii < RSZ-1; ii = ii+1) begin
-		// NS_MG_PAK(ii) (((ii+1)*PSZ)-1):(ii*PSZ)
 		localparam hi_lim = (((ii+1)*PART_SZ)-1);
 		localparam low_lim = (ii*PART_SZ);
 		tree_nand #(.WIDTH(PART_SZ)) 

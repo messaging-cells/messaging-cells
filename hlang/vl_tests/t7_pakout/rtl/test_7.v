@@ -9,7 +9,7 @@
 `define NS_TEST_REF_ADDR 23
 
 module test_7_top 
-#(parameter PSZ=`NS_PACKET_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE)
+#(parameter PSZ=`NS_PACKET_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
 (
 	input  i_clk,      // Main Clock (25 MHz)
 	input  i_Switch_1, 
