@@ -14,6 +14,7 @@ RTL_DIR = rtl
 CHECK_DIR = ck_formal
 
 RTL_FILES = \
+	${RTL_DIR}/synth.tcl \
 	${RTL_DIR}/bin_to_disp.v \
 	${RTL_DIR}/debouncer.v \
 	${RTL_DIR}/hglobal.v \

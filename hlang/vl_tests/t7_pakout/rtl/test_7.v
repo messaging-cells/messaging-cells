@@ -8,7 +8,7 @@
 `define NS_TEST_MAX_ADDR 55
 `define NS_TEST_REF_ADDR 23
 
-module test_7_top 
+module test_top 
 #(parameter PSZ=`NS_PACKET_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
 (
 	input  i_clk,      // Main Clock (25 MHz)
@@ -66,7 +66,7 @@ module test_7_top
 	wire [DSZ-1:0] fst_err_1_dat;
 	
 	// LNK_0
-	`NS_DECLARE_PKA_LINK(lnk_0)
+	`NS_DECLARE_PAKIO_LINK(lnk_0)
 	wire [DSZ-1:0] lnk_0_ck_dat;
 	
 	// LNK_1_
@@ -122,7 +122,7 @@ module test_7_top
 		
 		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_PAK_CHNL(snd0, lnk_0)
+		`NS_INSTA_PAKIO_CHNL(snd0, lnk_0)
 		// in0
 		`NS_INSTA_CHNL(rcv0, lnk_1)
 	);
@@ -137,7 +137,7 @@ module test_7_top
 		`NS_INSTA_CHNL(o0, lnk_1)
 		.o0_err(err_0),
 		// SNK0
-		`NS_INSTA_PAK_CHNL(i0, lnk_0)
+		`NS_INSTA_PAKIO_CHNL(i0, lnk_0)
 		.o_0_ck_dat(lnk_0_ck_dat),
 		.o_0_err(err_2),
 

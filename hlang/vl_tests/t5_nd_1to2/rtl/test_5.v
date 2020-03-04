@@ -8,7 +8,7 @@
 `define NS_TEST_MAX_ADDR 55
 `define NS_TEST_REF_ADDR 23
 
-module test_5_top 
+module test_top 
 #(parameter ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
 (
 	input  i_clk,      // Main Clock (25 MHz)
