@@ -57,9 +57,9 @@ module nd_1to2
 		if(! reset && rg_rdy) begin
 			if(rcv0_req && (! rgi0_ack)) begin
 				if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, rcv0_dst, OPER_2, REF_VAL_2, rcv0_dst)) begin
-					`NS_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
+					`NS_FIFO_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
 				end else begin
-					`NS_TRY_INC_HEAD(bf1, rcv0, rgi0_ack);
+					`NS_FIFO_TRY_INC_HEAD(bf1, rcv0, rgi0_ack);
 				end
 			end
 			
@@ -73,8 +73,8 @@ module nd_1to2
 			end*/
 			
 			
-			`NS_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
-			`NS_TRY_SET_OUT(bf1, rgo1, snd1_ack, rgo1_req, rgo1_busy);
+			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
+			`NS_FIFO_TRY_SET_OUT(bf1, rgo1, snd1_ack, rgo1_req, rgo1_busy);
 			
 			
 			if((! rcv0_req) && rgi0_ack) begin

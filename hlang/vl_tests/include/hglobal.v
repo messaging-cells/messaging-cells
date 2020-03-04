@@ -174,35 +174,26 @@
 	end 
 
 
-`define NS_TRY_INC_HEAD(fif, mg_in, the_ack) \
+`define NS_FIFO_TRY_INC_HEAD(fif, mg_in, the_ack) \
 	if(! fif``_busy[fif``_hd_idx]) begin \
 		fif``_busy[fif``_hd_idx] <= `NS_ON; \
 		`NS_FIFO_SET_IDX(mg_in, fif, fif``_hd_idx); \
 		`NS_INC_IDX(fif``_hd_idx, FSZ); \
 		the_ack <= `NS_ON; \
-	end 
+	end
 
 
-/*
-`define NS_TRY_INC_TAIL(fif, mg_out, the_out_ack, the_req) \
-	if(fif``_busy[fif``_tl_idx]) begin \
-		if(! the_req && ! the_out_ack) begin \
-			fif``_busy[fif``_tl_idx] <= `NS_OFF; \
-			`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
-			`NS_INC_IDX(fif``_tl_idx); \
-			the_req <= `NS_ON; \
-		end \
-	end 
-*/
-
-
-`define NS_TRY_SET_OUT(fif, mg_out, the_out_ack, the_req, out_is_busy) \
+`define NS_FIFO_TRY_INC_TAIL(fif, mg_out, out_is_busy) \
 	if(fif``_busy[fif``_tl_idx] && ! out_is_busy) begin \
 		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
 		out_is_busy <= `NS_ON; \
 		`NS_FIFO_GET_IDX(mg_out, fif, fif``_tl_idx); \
 		`NS_INC_IDX(fif``_tl_idx); \
-	end \
+	end
+
+
+`define NS_FIFO_TRY_SET_OUT(fif, mg_out, the_out_ack, the_req, out_is_busy) \
+	`NS_FIFO_TRY_INC_TAIL(fif, mg_out, out_is_busy) \
 	if(! the_req && ! the_out_ack && out_is_busy) begin \
 		the_req <= `NS_ON; \
 	end \
@@ -230,10 +221,16 @@
 	reg [PSZ-1:0] pks``_pakio = 0;
 
 
-`define NS_DECLARE_PAKIO_CHNL(nam) \
+`define NS_DECLARE_PAKOUT_CHNL(nam) \
 	output wire [PSZ-1:0] nam``_pakio, \
 	output wire nam``_req, \
 	input wire nam``_ack, 
+
+
+`define NS_DECLARE_PAKIN_CHNL(nam) \
+	input wire [PSZ-1:0] nam``_pakio, \
+	input wire nam``_req, \
+	output wire nam``_ack, 
 
 
 `define NS_DECLARE_PAKIO_LINK(lnk) \

@@ -16,7 +16,7 @@ module pakout_io
 	output wire o0_err,
 	
 	// SNK_0
-	`NS_DECLARE_PAKIO_CHNL(i0)
+	`NS_DECLARE_PAKIN_CHNL(i0)
 	output wire [DSZ-1:0] o_0_ck_dat,
 	output wire o_0_err,
 	

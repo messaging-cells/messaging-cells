@@ -11,7 +11,7 @@ module pakout
 	input wire reset,	// Main Clock (25 MHz)
 	output wire ready,	// Main Clock (25 MHz)
 	
-	`NS_DECLARE_PAKIO_CHNL(snd0)
+	`NS_DECLARE_PAKOUT_CHNL(snd0)
 	`NS_DECLARE_IN_CHNL(rcv0)
 	
 );
@@ -46,7 +46,7 @@ module pakout
 		end
 		if(! reset && rg_rdy) begin
 			if(in0_rq) begin
-				`NS_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
+				`NS_FIFO_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
 			end
 			
 			`NS_FIFO_TRY_INC_TAIL_PAKS(bf0, rgo0);

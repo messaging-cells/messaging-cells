@@ -60,19 +60,19 @@ module nd_2to1
 			if(in0_rq && in1_rq) begin
 				if(choose_0) begin
 					choose_0 = `NS_FALSE;
-					`NS_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
+					`NS_FIFO_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
 					//run_head_queue_simu(buff0, *in_msg0, ack0);
 				end else begin
 					choose_0 = `NS_TRUE;
-					`NS_TRY_INC_HEAD(bf0, rcv1, rgi1_ack);
+					`NS_FIFO_TRY_INC_HEAD(bf0, rcv1, rgi1_ack);
 					//run_head_queue_simu(buff0, *in_msg1, ack1);
 				end
 			end
 			if(in0_rq && ! in1_rq) begin
-				`NS_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
+				`NS_FIFO_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
 			end
 			if(! in0_rq && in1_rq) begin
-				`NS_TRY_INC_HEAD(bf0, rcv1, rgi1_ack);
+				`NS_FIFO_TRY_INC_HEAD(bf0, rcv1, rgi1_ack);
 			end
 			
 			/*`NS_TRY_INC_TAIL(bf0, rgo0, snd0_ack, rgo0_req);
@@ -80,7 +80,7 @@ module nd_2to1
 				rgo0_req <= `NS_OFF;
 			end*/
 			
-			`NS_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
+			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
 			
 			if((! rcv0_req) && rgi0_ack) begin
 				rgi0_ack <= `NS_OFF;
