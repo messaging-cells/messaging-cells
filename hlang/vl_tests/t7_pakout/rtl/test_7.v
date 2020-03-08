@@ -4,9 +4,12 @@
 `default_nettype	none
 
 `define NS_NUM_TEST 7
-`define NS_TEST_MIN_ADDR 0
-`define NS_TEST_MAX_ADDR 55
+`define NS_TEST_MIN_ADDR 1
+`define NS_TEST_MAX_ADDR 14
 `define NS_TEST_REF_ADDR 23
+
+`define NS_NUM_DBG_CASES 12
+
 
 module test_top 
 #(parameter PSZ=`NS_PACKET_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
@@ -14,6 +17,8 @@ module test_top
 	input  i_clk,      // Main Clock (25 MHz)
 	input  i_Switch_1, 
 	input  i_Switch_2, 
+	input  i_Switch_3, 
+	input  i_Switch_4, 
 	
 	output o_Segment1_A,
 	output o_Segment1_B,
@@ -41,42 +46,37 @@ module test_top
 	
 	wire w_Switch_1;
 	reg  r_Switch_1 = `NS_OFF;
+	wire w_Switch_2;
+	reg  r_Switch_2 = `NS_OFF;
+	wire w_Switch_3;
+	reg  r_Switch_3 = `NS_OFF;
+	wire w_Switch_4;
+	reg  r_Switch_4 = `NS_OFF;
 
-	reg [2:0] c_src = 0;
-	reg [6:0] c_snk = 0;
+	debounce but1_fixed(
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_1),
+		.o_Switch(w_Switch_1)
+	);
 	
-	reg clk_src = `NS_OFF;
-	reg clk_snk = `NS_OFF;
+	debounce but2_fixed(
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_2),
+		.o_Switch(w_Switch_2)
+	);
 	
-	reg [DSZ-1:0] disp_i_data = `NS_NUM_TEST;
-	reg [DSZ-1:0] disp_o_data = `NS_NUM_TEST;
+	debounce but3_fixed(
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_3),
+		.o_Switch(w_Switch_3)
+	);
 	
-	//reg r_LED_1 = `NS_OFF;
-	reg r_LED_2 = `NS_OFF;
-	reg r_LED_3 = `NS_OFF;
-	reg r_LED_4 = `NS_OFF;
-  
-	wire err_0;
-	wire err_1;
-	wire err_2;
-
-	wire [DSZ-1:0] fst_err_0_inp;
-	wire [DSZ-1:0] fst_err_0_dat;
-	wire [DSZ-1:0] fst_err_1_inp;
-	wire [DSZ-1:0] fst_err_1_dat;
+	debounce but4_fixed(
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_4),
+		.o_Switch(w_Switch_4)
+	);
 	
-	// LNK_0
-	`NS_DECLARE_PAKIO_LINK(lnk_0)
-	wire [DSZ-1:0] lnk_0_ck_dat;
-	
-	// LNK_1_
-	`NS_DECLARE_LINK(lnk_1)
-	wire [DSZ-1:0] lnk_1_ck_dat;
-  
-	// LNK_2
-	`NS_DECLARE_LINK(lnk_2)
-	//wire [DSZ-1:0] lnk_2_ck_dat;
-
 	wire w_Segment1_A;
 	wire w_Segment1_B;
 	wire w_Segment1_C;
@@ -93,29 +93,62 @@ module test_top
 	wire w_Segment2_F;
 	wire w_Segment2_G;
 
+	reg [2:0] clk_0_cnt = 0;
+	reg [6:0] clk_1_cnt = 0;
+	
+	reg clk0 = `NS_OFF;
+	reg clk1 = `NS_OFF;
+	reg clk2 = `NS_OFF;
+	
+	reg [3:0] leds = 0;
+	reg [3:0] dis0 = `NS_NUM_TEST;
+	reg [3:0] dis1 = `NS_NUM_TEST;
+	
+	//reg r_LED_1 = `NS_OFF;
+  
+	reg dbg_selecting_case = `NS_OFF;
+	reg  [3:0] dbg_case_hi = 0;
+	reg  [3:0] dbg_case_lo = 0;
+	wire [7:0] dbg_case = {dbg_case_hi, dbg_case_lo};
+	//reg [7:0] dbg_case = 0;
+	
+	wire [3:0] dbg_leds;
+	wire [3:0] dbg_disp0;
+	wire [3:0] dbg_disp1;
+	
+	// LNK_0
+	`NS_DECLARE_PAKIO_LINK(lnk_0)
+	
+	// LNK_1_
+	`NS_DECLARE_LINK(lnk_1)
+  
+	// LNK_2
+	`NS_DECLARE_LINK(lnk_2)
+
 	always @(posedge i_clk)
 	begin
-		if(c_src == 0) begin
-			c_src <= 1;
-			`ns_bit_toggle(clk_src);
+		if(clk_0_cnt == 0) begin
+			clk_0_cnt <= 1;
+			`ns_bit_toggle(clk0);
 		end
 		else  begin
-			c_src <= (c_src << 1);
+			clk_0_cnt <= (clk_0_cnt << 1);
 		end
-		if(c_snk == 0) begin
-			c_snk <= 1;
-			`ns_bit_toggle(clk_snk);
+		
+		if(clk_1_cnt == 0) begin
+			clk_1_cnt <= 1;
+			`ns_bit_toggle(clk1);
 		end
 		else  begin
-			c_snk <= (c_snk << 1);
+			clk_1_cnt <= (clk_1_cnt << 1);
 		end
+		
 	end
 	
 	pakout 
 	gt_01 (
-		//.i_clk(i_clk),
-		.i_clk(clk_src),
-		//.i_clk(clk_snk),
+		.i_clk(i_clk),
+		//.i_clk(clk0),
 		
 		.reset(the_reset),
 		.ready(the_all_ready),
@@ -129,49 +162,109 @@ module test_top
 
 	pakout_io #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
 	gt_02 (
-		//.i_clk(i_clk),
-		//.i_clk(clk_src),
-		.i_clk(clk_snk),
+		.i_clk(i_clk),
+		.src_clk(clk1),
+		.snk_clk(clk1),
 		
 		// SRC0
 		`NS_INSTA_CHNL(o0, lnk_1)
-		.o0_err(err_0),
+		
 		// SNK0
 		`NS_INSTA_PAKIO_CHNL(i0, lnk_0)
-		.o_0_ck_dat(lnk_0_ck_dat),
-		.o_0_err(err_2),
 
-		.fst_err_0_inp(fst_err_0_inp),
-		.fst_err_0_dat(fst_err_0_dat),
+		.dbg_case(dbg_case),
+		.dbg_leds(dbg_leds),
+		.dbg_disp0(dbg_disp0),
+		.dbg_disp1(dbg_disp1),
+		
 	);
-	
-	// Instantiate Debounce Filter
-	debounce sw1_inst(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_1),
-		.o_Switch(w_Switch_1)
-	);
-	
-	// Purpose: When Switch is pressed, update display i_data and o_data
+
+	/*
 	always @(posedge i_clk)
 	begin
 		r_Switch_1 <= w_Switch_1;
 		
 		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
 		begin
-			if(! err_0) begin
-				//disp_i_data <= lnk_0_dat;
-				disp_o_data <= lnk_0_ck_dat;
-			end else begin
-				disp_i_data <= fst_err_0_inp;
-				disp_o_data <= fst_err_0_dat;
-			end
+			`ns_bit_toggle(clk1);
 		end		
 	end
 
-	bin_to_disp disp_1(
+	always @(posedge i_clk)
+	begin
+		r_Switch_2 <= w_Switch_2;
+		
+		if((w_Switch_2 == `NS_ON) && (r_Switch_2 == `NS_OFF))
+		begin
+			`ns_bit_toggle(clk2);
+		end		
+	end
+	*/
+
+	wire sw3_ON = ((w_Switch_3 == `NS_ON) && (r_Switch_3 == `NS_OFF));
+	wire sw4_ON = ((w_Switch_4 == `NS_ON) && (r_Switch_4 == `NS_OFF));
+	wire sw3_OFF = ((w_Switch_3 == `NS_OFF) && (r_Switch_3 == `NS_ON));
+	wire sw4_OFF = ((w_Switch_4 == `NS_OFF) && (r_Switch_4 == `NS_ON));
+	
+	reg selecting = `NS_OFF;
+	reg was_both_on = `NS_OFF;
+	reg updating = `NS_OFF;
+	
+	always @(posedge i_clk)
+	begin
+		r_Switch_3 <= w_Switch_3;
+		r_Switch_4 <= w_Switch_4;
+		
+		if(sw3_OFF && ! r_Switch_4)
+		begin
+			if(was_both_on) begin
+				was_both_on <= `NS_OFF;
+			end else begin
+				selecting <= `NS_ON;
+				`NS_INC_IDX(dbg_case_hi, 16);
+			end
+		end
+		else
+		if(sw4_OFF && ! r_Switch_3)
+		begin
+			if(was_both_on) begin
+				was_both_on <= `NS_OFF;
+			end else begin
+				selecting <= `NS_ON;
+				`NS_INC_IDX(dbg_case_lo, 16);
+			end
+		end
+		else 
+		if((sw3_OFF && r_Switch_4) || (sw4_OFF && r_Switch_3) || (sw3_OFF && sw4_OFF))
+		begin
+			was_both_on <= `NS_ON;
+			selecting <= `NS_OFF;
+			updating = `NS_ON;
+		end
+		
+		if(selecting)
+		begin
+			leds <= 0;
+			dis0 <= dbg_case_hi;
+			dis1 <= dbg_case_lo;
+		end
+		if(updating)
+		begin
+			updating <= `NS_OFF;
+			if((leds == 0) && (dis0 == dbg_case_hi) && (dis1 == dbg_case_lo))
+			begin
+				leds <= dbg_leds;
+				dis0 <= dbg_disp0;
+				dis1 <= dbg_disp1;
+			end else begin
+				selecting <= `NS_ON;
+			end
+		end
+	end
+
+	bin_to_disp disp_0(
 	.i_Clk(i_clk),
-	.i_Binary_Num(disp_i_data),
+	.i_Binary_Num(dis0),
 	.o_Segment_A(w_Segment1_A),
 	.o_Segment_B(w_Segment1_B),
 	.o_Segment_C(w_Segment1_C),
@@ -182,9 +275,9 @@ module test_top
 	);
 	
 	// Instantiate Binary to 7-Segment Converter
-	bin_to_disp disp2(
+	bin_to_disp disp1(
 	.i_Clk(i_clk),
-	.i_Binary_Num(disp_o_data),
+	.i_Binary_Num(dis1),
 	.o_Segment_A(w_Segment2_A),
 	.o_Segment_B(w_Segment2_B),
 	.o_Segment_C(w_Segment2_C),
@@ -210,9 +303,9 @@ module test_top
 	assign o_Segment2_F = ~w_Segment2_F;
 	assign o_Segment2_G = ~w_Segment2_G;
 
-	assign o_LED_1 = err_0;
-	assign o_LED_2 = err_1;
-	assign o_LED_3 = err_2;
-	assign o_LED_4 = r_LED_4;
+	assign o_LED_1 = leds[0:0];
+	assign o_LED_2 = leds[1:1];
+	assign o_LED_3 = leds[2:2];
+	assign o_LED_4 = leds[3:3];
 
 endmodule

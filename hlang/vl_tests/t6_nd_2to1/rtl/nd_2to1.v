@@ -75,11 +75,6 @@ module nd_2to1
 				`NS_FIFO_TRY_INC_HEAD(bf0, rcv1, rgi1_ack);
 			end
 			
-			/*`NS_TRY_INC_TAIL(bf0, rgo0, snd0_ack, rgo0_req);
-			if(rgo0_req && snd0_ack) begin
-				rgo0_req <= `NS_OFF;
-			end*/
-			
 			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
 			
 			if((! rcv0_req) && rgi0_ack) begin

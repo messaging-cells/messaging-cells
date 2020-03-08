@@ -63,19 +63,8 @@ module nd_1to2
 				end
 			end
 			
-			/*`NS_TRY_INC_TAIL(bf0, rgo0, snd0_ack, rgo0_req);
-			`NS_TRY_INC_TAIL(bf1, rgo1, snd1_ack, rgo1_req);
-			if(rgo0_req && snd0_ack) begin
-				rgo0_req <= `NS_OFF;
-			end
-			if(rgo1_req && snd1_ack) begin
-				rgo1_req <= `NS_OFF;
-			end*/
-			
-			
 			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
 			`NS_FIFO_TRY_SET_OUT(bf1, rgo1, snd1_ack, rgo1_req, rgo1_busy);
-			
 			
 			if((! rcv0_req) && rgi0_ack) begin
 				rgi0_ack <= `NS_OFF;

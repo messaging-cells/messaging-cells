@@ -15,10 +15,10 @@
 `define ns_f_5HZ 2500000
 `define ns_f_2HZ 6250000
 `define ns_f_1HZ 12500000
-	
+
 `define NS_ADDRESS_SIZE 6
 `define NS_DATA_SIZE 4
-`define NS_REDUN_SIZE 3 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
+`define NS_REDUN_SIZE 4 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
 
 `define NS_PACKET_SIZE 3 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
 
@@ -120,12 +120,6 @@
 	mg``_red <= 0; \
 
 
-// ASZ + ASZ + DSZ
-`define NS_MG_SRC_SECTION  ((ASZ + ASZ + DSZ + RSZ)-1):(ASZ + DSZ + RSZ)
-`define NS_MG_DST_SECTION  ((ASZ + DSZ + RSZ)-1):(DSZ + RSZ)
-`define NS_MG_DAT_SECTION  ((DSZ + RSZ)-1):RSZ
-`define NS_MG_RED_SECTION  (RSZ-1):0
-
 `define NS_DECLARE_FIFO(fif) \
 	integer fif``ii=0; \
 	reg [0:0] fif``_busy [FSZ-1:0]; \
@@ -150,6 +144,13 @@
 
 
 `define NS_FIFO_SET_IDX(chn, fif, idx) fif``_data[idx] <= `NS_GET_SEQ_MSG(chn);
+
+// ASZ + ASZ + DSZ + RSZ
+`define NS_MG_SRC_SECTION  ((ASZ + ASZ + DSZ + RSZ)-1):(ASZ + DSZ + RSZ)
+`define NS_MG_DST_SECTION  ((ASZ + DSZ + RSZ)-1):(DSZ + RSZ)
+`define NS_MG_DAT_SECTION  ((DSZ + RSZ)-1):RSZ
+`define NS_MG_RED_SECTION  (RSZ-1):0
+
 
 /*
 `define NS_FIFO_SET_IDX(chn, fif, idx) \
@@ -205,14 +206,12 @@
 	end
 
 
-`define NS_TOT_PACKETS ((`NS_FULL_MSG_SZ / PSZ) + 1)
-
-
 `define NS_DECLARE_REG_PACKETS(pks) \
+	localparam TOT_PKS = ((`NS_FULL_MSG_SZ / PSZ) + 1); \
 	integer pks``ii=0; \
 	reg [0:0] pks``_busy = 0; \
-	reg [PSZ-1:0] pks``_packets[`NS_TOT_PACKETS-1:0]; \
-	reg [$clog2(`NS_TOT_PACKETS):0] pks``_pks_idx = 0; 
+	reg [PSZ-1:0] pks``_packets[TOT_PKS-1:0]; \
+	reg [$clog2(TOT_PKS):0] pks``_pks_idx = 0; 
 
 
 `define NS_DECLARE_REG_PAKOUT(pks) \
@@ -245,42 +244,46 @@
 	.chn``_ack(lnk``_ack), 
 
 
-`define NS_PACKETS_INIT(pks) \
-	pks``_busy = 0; \
-	for(pks``ii = 0; pks``ii < `NS_TOT_PACKETS; pks``ii = pks``ii+1) begin \
+`define NS_PACKETS_INIT(pks, busy_init) \
+	pks``_busy <= busy_init; \
+	for(pks``ii = 0; pks``ii < TOT_PKS; pks``ii = pks``ii+1) begin \
 		pks``_packets[pks``ii] <= 0; \
 	end \
-	pks``_pks_idx <= 0; \
-	pks``_pkio_busy = 0; \
+	pks``_pks_idx <= 0;
+
+
+`define NS_PACKOUT_INIT(pks) \
+	`NS_PACKETS_INIT(pks, `NS_OFF) \
+	pks``_pkio_busy <= 0; \
 	pks``_pakio <= 0;
 
 
 `define NS_MG_PAK(ii) (((ii+1)*PSZ)-1):(ii*PSZ)
 
-`define NS_MG_LST_PAK (`NS_FULL_MSG_SZ-1):((`NS_TOT_PACKETS-1)*PSZ)
+`define NS_MG_LST_PAK (`NS_FULL_MSG_SZ-1):((TOT_PKS-1)*PSZ)
 
 `define NS_FIFO_GET_IDX_PAKS(pks, fif, idx) \
-	for(pks``ii = 0; pks``ii < `NS_TOT_PACKETS-1; pks``ii = pks``ii+1) begin \
+	for(pks``ii = 0; pks``ii < TOT_PKS-1; pks``ii = pks``ii+1) begin \
 		pks``_packets[pks``ii] <= fif``_data[idx][`NS_MG_PAK(pks``ii)]; \
 	end \
 	if((`NS_FULL_MSG_SZ % PSZ) > 0) begin \
-		pks``_packets[`NS_TOT_PACKETS-1][(`NS_FULL_MSG_SZ % PSZ)-1:0] <= fif``_data[idx][`NS_MG_LST_PAK]; \
+		pks``_packets[TOT_PKS-1][(`NS_FULL_MSG_SZ % PSZ)-1:0] <= fif``_data[idx][`NS_MG_LST_PAK]; \
 	end else begin \
-		pks``_packets[`NS_TOT_PACKETS-1] <= 0; \
+		pks``_packets[TOT_PKS-1] <= 0; \
 	end
 
 
 `define NS_FIFO_SET_IDX_PAKS(pks, fif, idx) \
-	for(pks``ii = 0; pks``ii < `NS_TOT_PACKETS-1; pks``ii = pks``ii+1) begin \
+	for(pks``ii = 0; pks``ii < TOT_PKS-1; pks``ii = pks``ii+1) begin \
 		fif``_data[idx][`NS_MG_PAK(pks``ii)] <= pks``_packets[pks``ii]; \
 	end \
 	if((`NS_FULL_MSG_SZ % PSZ) > 0) begin \
-		fif``_data[idx][`NS_MG_LST_PAK] <= pks``_packets[`NS_TOT_PACKETS-1][(`NS_FULL_MSG_SZ % PSZ)-1:0]; \
+		fif``_data[idx][`NS_MG_LST_PAK] <= pks``_packets[TOT_PKS-1][(`NS_FULL_MSG_SZ % PSZ)-1:0]; \
 	end
 
 
 `define NS_FIFO_TRY_INC_TAIL_PAKS(fif, pks) \
-	if(fif``_busy[fif``_tl_idx] && ! pks``_busy) begin \
+	if(! pks``_busy && fif``_busy[fif``_tl_idx]) begin \
 		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
 		`NS_FIFO_GET_IDX_PAKS(pks, fif, fif``_tl_idx); \
 		`NS_INC_IDX(fif``_tl_idx, FSZ); \
@@ -293,11 +296,13 @@
 		if(! pks``_pkio_busy) begin \
 			pks``_pkio_busy <= `NS_ON; \
 			pks``_pakio <= pks``_packets[pks``_pks_idx]; \
-			`NS_INC_IDX(pks``_pks_idx, `NS_TOT_PACKETS); \
+			`NS_INC_IDX(pks``_pks_idx, TOT_PKS); \
 		end \
+		else \
 		if(! the_req && ! the_out_ack && pks``_pkio_busy) begin \
 			the_req <= `NS_ON; \
 		end \
+		else \
 		if(the_req && the_out_ack) begin \
 			if(pks``_pkio_busy) begin \
 				pks``_pkio_busy <= `NS_OFF; \
@@ -311,38 +316,31 @@
 
 
 `define NS_PACKIN_TRY_INC(pks, pk_in, fif, the_ack) \
-	if(pk_in``_req && (! the_ack)) begin \
-		pks``_packets[pks``_pks_idx] <= pk_in``_pakio; \
-		`NS_INC_IDX(pks``_pks_idx, `NS_TOT_PACKETS); \
-		the_ack <= `NS_ON; \
-	end \
-	else \
-	if((! pk_in``_req) && the_ack) begin \
-		if(pks``_pks_idx == 0) begin \
-			if(! fif``_busy[fif``_hd_idx]) begin \
-				fif``_busy[fif``_hd_idx] <= `NS_ON; \
-				`NS_FIFO_SET_IDX_PAKS(pks, fif, fif``_hd_idx); \
-				`NS_INC_IDX(fif``_hd_idx, FSZ); \
-				the_ack <= `NS_OFF; \
-			end \
+	if(pks``_busy) begin \
+		if(pk_in``_req && (! the_ack)) begin \
+			pks``_packets[pks``_pks_idx] <= pk_in``_pakio; \
+			`NS_INC_IDX(pks``_pks_idx, TOT_PKS); \
+			the_ack <= `NS_ON; \
 		end \
-		else begin \
+		else \
+		if((! pk_in``_req) && the_ack) begin \
+			if(pks``_pks_idx == 0) begin \
+				pks``_busy <= `NS_OFF; \
+			end \
 			the_ack <= `NS_OFF; \
 		end \
 	end \
+	else \
+	begin \
+		if(! fif``_busy[fif``_hd_idx]) begin \
+			fif``_busy[fif``_hd_idx] <= `NS_ON; \
+			`NS_FIFO_SET_IDX_PAKS(pks, fif, fif``_hd_idx); \
+			`NS_INC_IDX(fif``_hd_idx, FSZ); \
+			pks``_busy <= `NS_ON; \
+		end \
+	end 
 
 
-/*
-`define NS_TOT_CHECK_PARTS ((`NS_FULL_MSG_SZ / CKSZ) + 1)
-
-`define NS_MG_CHECK_PART(ii) (((ii+1)*CKSZ)-1):(ii*CKSZ)
-
-`define NS_CALC_CHECK_BITS(mg, fif, idx) \
-	for(pks``ii = 0; pks``ii < `NS_TOT_PACKETS-1; pks``ii = pks``ii+1) begin \
-		pks``_packets[pks``ii] <= fif``_data[idx][`NS_MG_PAK(pks``ii)]; \
-	end \
-	pks``_packets[pks``ii][(`NS_FULL_MSG_SZ % CKSZ):0] <= fif``_data[idx][`NS_MG_LST_PAK];
-*/
 
 
 //--------------------------------------------

@@ -27,8 +27,6 @@ module pakout
 	// fifos
 	`NS_DECLARE_FIFO(bf0)
 	
-	wire in0_rq = (rcv0_req && (! rgi0_ack));
-
 	always @(posedge i_clk)
 	begin
 		if(reset) begin
@@ -37,7 +35,7 @@ module pakout
 		if(! reset && ! rg_rdy) begin
 			rg_rdy <= `NS_ON;
 			
-			`NS_PACKETS_INIT(rgo0)
+			`NS_PACKOUT_INIT(rgo0)
 			rgo0_req <= `NS_OFF;
 			
 			rgi0_ack <= `NS_OFF;
@@ -45,20 +43,16 @@ module pakout
 			`NS_FIFO_INIT(bf0);
 		end
 		if(! reset && rg_rdy) begin
-			if(in0_rq) begin
+			if(rcv0_req && (! rgi0_ack)) begin
 				`NS_FIFO_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
+			end
+			if((! rcv0_req) && rgi0_ack) begin
+				rgi0_ack <= `NS_OFF;
 			end
 			
 			`NS_FIFO_TRY_INC_TAIL_PAKS(bf0, rgo0);
 
 			`NS_PACKOUT_TRY_INC(rgo0, snd0_ack, rgo0_req);
-			
-			if((! rcv0_req) && rgi0_ack) begin
-				rgi0_ack <= `NS_OFF;
-			end
-			if(rgo0_req && snd0_ack) begin
-				rgo0_req <= `NS_OFF;
-			end
 		end
 	end
 
