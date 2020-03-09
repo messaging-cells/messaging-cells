@@ -3,6 +3,29 @@
 
 `default_nettype	none
 
+`define NS_DBG_MSG_CASES(num, mg) \
+	8'h``num``1 : \
+	begin \
+		rg_dbg_disp0 <= mg``_src[ASZ-1:4]; \
+		rg_dbg_disp1 <= mg``_src[3:0]; \
+	end \
+	8'h``num``2 : \
+	begin \
+		rg_dbg_disp0 <= mg``_dst[ASZ-1:4]; \
+		rg_dbg_disp1 <= mg``_dst[3:0]; \
+	end \
+	8'h``num``3 : \
+	begin \
+		rg_dbg_disp0 <= 0; \
+		rg_dbg_disp1 <= mg``_dat[3:0]; \
+	end \
+	8'h``num``4 : \
+	begin \
+		rg_dbg_disp0 <= mg``_redun; \
+		rg_dbg_disp1 <= mg``_red; \
+	end \
+
+
 
 module pakout
 #(parameter 
@@ -22,7 +45,6 @@ module pakout
 	`NS_DECLARE_DBG_CHNL(dbg)
 );
 	`NS_DECLARE_REG_DBG(rg_dbg)
-	`NS_ASSIGN_OUT_DBG(dbg, rg_dbg)
 	
 	reg [0:0] rg_rdy = `NS_OFF;
 	
@@ -59,7 +81,7 @@ module pakout
 				rgi0_ack <= `NS_OFF;
 			end
 			
-			`NS_FIFO_TRY_INC_TAIL_PAKS(bf0, rgo0)
+			`NS_FIFO_TO_PAKS_TRY_INC_TAIL(bf0, rgo0)
 			else
 			`NS_PACKOUT_TRY_INC(rgo0, snd0_ack, rgo0_req)
 		end
@@ -67,7 +89,16 @@ module pakout
 	
 	
 	`NS_DECLARE_REG_MSG(dbg_fif)
+	wire [RSZ-1:0] dbg_fif_calc_redun;
+	reg [RSZ-1:0] dbg_fif_redun = 0;
 
+	calc_redun #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ)) 
+		obj1 (dbg_fif_src, dbg_fif_dst, dbg_fif_dat, dbg_fif_calc_redun);
+
+	wire [RSZ-1:0] rcv0_redun;
+	calc_redun #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ)) 
+		obj2 (rcv0_src, rcv0_dst, rcv0_dat, rcv0_redun);
+		
 	always @(posedge dbg_clk)
 	begin
 		/*
@@ -75,51 +106,36 @@ module pakout
 		end
 		*/
 		case(dbg_case)
-			8'h31 :
+			8'h20 :
 			begin
 				`NS_FIFO_GET_IDX(dbg_fif, bf0, 0)
+				dbg_fif_redun <= dbg_fif_calc_redun;
+				rg_dbg_disp0 <= 0; \
+				rg_dbg_disp1 <= 0; \
 			end
-			8'h32 :
+			8'h21 :
 			begin
-				rg_dbg_disp0 <= dbg_fif_src[ASZ-1:4];
-				rg_dbg_disp1 <= dbg_fif_src[3:0];
+				rg_dbg_disp0 <= bf0_hd_idx;
+				rg_dbg_disp1 <= bf0_tl_idx;
 			end
-			8'h33 :
+			8'h22 :
 			begin
-				rg_dbg_disp0 <= dbg_fif_dst[ASZ-1:4];
-				rg_dbg_disp1 <= dbg_fif_dst[3:0];
+				rg_dbg_disp0 <= 0;
+				rg_dbg_disp1 <= FSZ;
 			end
-			8'h34 :
+			8'h23 :
 			begin
-				//rg_dbg_disp0 <= dbg_fif_dat[DSZ-1:4];
-				rg_dbg_disp1 <= dbg_fif_dat[3:0];
+				rg_dbg_disp0 <= bf0_busy[bf0_hd_idx];
+				rg_dbg_disp1 <= bf0_busy[bf0_tl_idx];
 			end
-			8'h35 :
+			`NS_DBG_MSG_CASES(3, dbg_fif) 
+			`NS_DBG_MSG_CASES(4, rcv0) 
+			/*8'h51 :
 			begin
-				//rg_dbg_disp0 <= dbg_fif_dat[DSZ-1:4];
-				rg_dbg_disp1 <= dbg_fif_red;
-			end
+				rg_dbg_disp0 <= 0;
+				rg_dbg_disp1[PSZ-1:0] <= snd0_pakio;
+			end*/
 			
-			8'h42 :
-			begin
-				rg_dbg_disp0 <= rcv0_src[ASZ-1:4];
-				rg_dbg_disp1 <= rcv0_src[3:0];
-			end
-			8'h43 :
-			begin
-				rg_dbg_disp0 <= rcv0_dst[ASZ-1:4];
-				rg_dbg_disp1 <= rcv0_dst[3:0];
-			end
-			8'h44 :
-			begin
-				//rg_dbg_disp0 <= rcv0_dat[DSZ-1:4];
-				rg_dbg_disp1 <= rcv0_dat[3:0];
-			end
-			8'h45 :
-			begin
-				//rg_dbg_disp0 <= rcv0_dat[DSZ-1:4];
-				rg_dbg_disp1 <= rcv0_red;
-			end
 		endcase
 		rg_dbg_leds[0:0] <= rg_rdy;
 		rg_dbg_leds[1:1] <= ! rg_rdy;
@@ -135,6 +151,8 @@ module pakout
 
 	//inp0
 	assign rcv0_ack = rgi0_ack;
+
+	`NS_ASSIGN_OUT_DBG(dbg, rg_dbg)
 	
 endmodule
 

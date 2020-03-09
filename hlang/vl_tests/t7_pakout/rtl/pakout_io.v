@@ -145,7 +145,7 @@ module pakout_io
 						inp0_err_0 <= `NS_ON;
 					end
 				end
-				
+				else
 				if(! inp0_err_1) begin 
 					if((inp0_bak_dat <= 14) && ((inp0_bak_dat + 1) != inp0_dat)) begin
 						inp0_err_1 <= `NS_ON;
@@ -154,7 +154,7 @@ module pakout_io
 						inp0_bak_dat <= inp0_dat;
 					end
 				end
-
+				else
 				if(! inp0_err_2) begin
 					if(inp0_red != `NS_DBG_INIT_RED) begin
 						inp0_err_2 <= `NS_ON;

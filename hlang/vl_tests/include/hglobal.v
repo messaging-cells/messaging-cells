@@ -335,7 +335,7 @@
 	end
 
 
-`define NS_FIFO_TRY_INC_TAIL_PAKS(fif, pks) \
+`define NS_FIFO_TO_PAKS_TRY_INC_TAIL(fif, pks) \
 	if(! pks``_busy && fif``_busy[fif``_tl_idx]) begin \
 		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
 		`NS_MOV_FIFO_IDX_TO_PAKS(pks, fif, fif``_tl_idx); \
