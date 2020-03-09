@@ -18,11 +18,11 @@ module pakout_io
 	MIN_ADDR=1, 
 	MAX_ADDR=1, 
 	PSZ=`NS_PACKET_SIZE, 
-	FSZ=`NS_MESSAGE_FIFO_SIZE, 
+	FSZ=`NS_PACKIN_FSZ, 
 	ASZ=`NS_ADDRESS_SIZE, 
 	DSZ=`NS_DATA_SIZE, 
-	RSZ=`NS_REDUN_SIZE)
-(
+	RSZ=`NS_REDUN_SIZE,
+)(
 	input wire i_clk,
 	input wire src_clk,
 	input wire snk_clk,
@@ -31,11 +31,8 @@ module pakout_io
 	`NS_DECLARE_OUT_CHNL(o0)
 	// SNK_0
 	`NS_DECLARE_PAKIN_CHNL(i0)
-	
-	input wire [7:0] dbg_case,
-	output wire [3:0] dbg_leds,
-	output wire [3:0] dbg_disp0,
-	output wire [3:0] dbg_disp1,	
+
+	`NS_DECLARE_DBG_CHNL(dbg)
 );
  
 	reg [3:0] cnt_0 = 0;
@@ -71,17 +68,9 @@ module pakout_io
 	reg [ASZ-1:0] rg_info_0 = `NS_DBG_INIT_CK;
 	reg [ASZ-1:0] rg_info_1 = `NS_DBG_INIT_CK;
 
-	reg [3:0] rg0_leds = 0;
-	reg [3:0] rg0_disp0 = 0;
-	reg [3:0] rg0_disp1 = 0;	
-	
-	reg [3:0] rg1_leds = 0;
-	reg [3:0] rg1_disp0 = 0;
-	reg [3:0] rg1_disp1 = 0;	
-	
-	reg [3:0] rg_dbg_leds = 0;
-	reg [3:0] rg_dbg_disp0 = 0;
-	reg [3:0] rg_dbg_disp1 = 0;	
+	`NS_DECLARE_REG_DBG(rg0)
+	`NS_DECLARE_REG_DBG(rg1)
+	`NS_DECLARE_REG_DBG(rg_dbg)
 	
 	/*
 	wire [RSZ-1:0] redun_out;
@@ -105,12 +94,14 @@ module pakout_io
 			cnt_0 <= cnt_0 + 1;
 			
 		end
+		else
 		if((! ro0_req) && (! o0_ack) && ro0_busy) begin
 			//ro0_red <= redun_out;
 			ro0_red <= `NS_DBG_INIT_RED;
 			
 			ro0_req <= `NS_ON;
-		end else 
+		end 
+		else 
 		if(ro0_req && o0_ack) begin
 			if(ro0_busy) begin
 				ro0_busy <= `NS_OFF;
@@ -203,10 +194,8 @@ module pakout_io
 
 	//SNK_0
 	assign i0_ack = rgi0_ack;
-	
-	assign dbg_leds = rg_dbg_leds;
-	assign dbg_disp0 = rg_dbg_disp0;
-	assign dbg_disp1 = rg_dbg_disp1;
+
+	`NS_ASSIGN_OUT_DBG(dbg, rg_dbg)
 	
 endmodule
 

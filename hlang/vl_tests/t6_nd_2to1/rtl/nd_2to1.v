@@ -5,7 +5,11 @@
 
 
 module nd_2to1
-#(parameter FSZ=`NS_MESSAGE_FIFO_SIZE, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
+#(parameter 
+	FSZ=`NS_2to1_FSZ, 
+	ASZ=`NS_ADDRESS_SIZE, 
+	DSZ=`NS_DATA_SIZE, 
+	RSZ=`NS_REDUN_SIZE)
 (
 	input wire i_clk,
 	input wire reset,

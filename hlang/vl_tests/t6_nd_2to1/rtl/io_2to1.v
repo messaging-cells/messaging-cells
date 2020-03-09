@@ -7,8 +7,13 @@
 
 
 module io_2to1
-#(parameter MIN_ADDR=1, MAX_ADDR=1, ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
-(
+#(parameter 
+	MIN_ADDR=1, 
+	MAX_ADDR=1, 
+	ASZ=`NS_ADDRESS_SIZE, 
+	DSZ=`NS_DATA_SIZE, 
+	RSZ=`NS_REDUN_SIZE
+)(
 	input wire i_clk,	// Main Clock (25 MHz)
 	
 	// SRC_0

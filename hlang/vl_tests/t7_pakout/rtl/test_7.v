@@ -99,22 +99,23 @@ module test_top
 	reg clk0 = `NS_OFF;
 	reg clk1 = `NS_OFF;
 	reg clk2 = `NS_OFF;
+	reg clk3 = `NS_OFF;
 	
-	reg [3:0] leds = 0;
-	reg [3:0] dis0 = `NS_NUM_TEST;
-	reg [3:0] dis1 = `NS_NUM_TEST;
+	reg [3:0] io_leds = 0;
+	reg [3:0] io_disp0 = `NS_NUM_TEST;
+	reg [3:0] io_disp1 = `NS_NUM_TEST;
 	
 	//reg r_LED_1 = `NS_OFF;
   
 	reg dbg_selecting_case = `NS_OFF;
 	reg  [3:0] dbg_case_hi = 0;
 	reg  [3:0] dbg_case_lo = 0;
-	wire [7:0] dbg_case = {dbg_case_hi, dbg_case_lo};
-	//reg [7:0] dbg_case = 0;
 	
-	wire [3:0] dbg_leds;
-	wire [3:0] dbg_disp0;
-	wire [3:0] dbg_disp1;
+	`NS_DECLARE_DBG_LINK(dbg0)
+	`NS_DECLARE_DBG_LINK(dbg1)
+	
+	assign dbg0_case = {dbg_case_hi, dbg_case_lo};
+	assign dbg1_case = {dbg_case_hi, dbg_case_lo};
 	
 	// LNK_0
 	`NS_DECLARE_PAKIO_LINK(lnk_0)
@@ -147,8 +148,8 @@ module test_top
 	
 	pakout 
 	gt_01 (
-		.i_clk(i_clk),
-		//.i_clk(clk0),
+		//.i_clk(i_clk),
+		.i_clk(clk2),
 		
 		.reset(the_reset),
 		.ready(the_all_ready),
@@ -158,6 +159,8 @@ module test_top
 		`NS_INSTA_PAKIO_CHNL(snd0, lnk_0)
 		// in0
 		`NS_INSTA_CHNL(rcv0, lnk_1)
+		
+		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
 	);
 
 	pakout_io #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
@@ -172,38 +175,47 @@ module test_top
 		// SNK0
 		`NS_INSTA_PAKIO_CHNL(i0, lnk_0)
 
-		.dbg_case(dbg_case),
-		.dbg_leds(dbg_leds),
-		.dbg_disp0(dbg_disp0),
-		.dbg_disp1(dbg_disp1),
+		`NS_INSTA_DBG_CHNL(dbg, dbg1, i_clk)
 		
 	);
 
-	/*
+	wire sw1_ON = ((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF));
+	wire sw1_OFF = ((w_Switch_1 == `NS_OFF) && (r_Switch_1 == `NS_ON));
 	always @(posedge i_clk)
 	begin
 		r_Switch_1 <= w_Switch_1;
 		
-		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
+		if(sw1_ON)
 		begin
-			`ns_bit_toggle(clk1);
-		end		
+			`ns_bit_toggle(clk2);
+		end
+		else 
+		if(sw1_OFF)
+		begin
+			`ns_bit_toggle(clk2);
+		end
 	end
 
+	wire sw2_ON = ((w_Switch_2 == `NS_ON) && (r_Switch_2 == `NS_OFF));
+	wire sw2_OFF = ((w_Switch_2 == `NS_OFF) && (r_Switch_2 == `NS_ON));
 	always @(posedge i_clk)
 	begin
 		r_Switch_2 <= w_Switch_2;
 		
-		if((w_Switch_2 == `NS_ON) && (r_Switch_2 == `NS_OFF))
+		if(sw2_ON)
 		begin
-			`ns_bit_toggle(clk2);
-		end		
+			`ns_bit_toggle(clk3);
+		end
+		if(sw2_OFF)
+		begin
+			`ns_bit_toggle(clk3);
+		end
 	end
-	*/
 
 	wire sw3_ON = ((w_Switch_3 == `NS_ON) && (r_Switch_3 == `NS_OFF));
-	wire sw4_ON = ((w_Switch_4 == `NS_ON) && (r_Switch_4 == `NS_OFF));
 	wire sw3_OFF = ((w_Switch_3 == `NS_OFF) && (r_Switch_3 == `NS_ON));
+	
+	wire sw4_ON = ((w_Switch_4 == `NS_ON) && (r_Switch_4 == `NS_OFF));
 	wire sw4_OFF = ((w_Switch_4 == `NS_OFF) && (r_Switch_4 == `NS_ON));
 	
 	reg selecting = `NS_OFF;
@@ -244,18 +256,17 @@ module test_top
 		
 		if(selecting)
 		begin
-			leds <= 0;
-			dis0 <= dbg_case_hi;
-			dis1 <= dbg_case_lo;
+			io_leds <= 0;
+			io_disp0 <= dbg_case_hi;
+			io_disp1 <= dbg_case_lo;
 		end
 		if(updating)
 		begin
 			updating <= `NS_OFF;
-			if((leds == 0) && (dis0 == dbg_case_hi) && (dis1 == dbg_case_lo))
+			if((io_leds == 0) && (io_disp0 == dbg_case_hi) && (io_disp1 == dbg_case_lo))
 			begin
-				leds <= dbg_leds;
-				dis0 <= dbg_disp0;
-				dis1 <= dbg_disp1;
+				`NS_MOV_REG_DBG(io, dbg0)
+				//`NS_MOV_REG_DBG(io, dbg1)
 			end else begin
 				selecting <= `NS_ON;
 			end
@@ -264,7 +275,7 @@ module test_top
 
 	bin_to_disp disp_0(
 	.i_Clk(i_clk),
-	.i_Binary_Num(dis0),
+	.i_Binary_Num(io_disp0),
 	.o_Segment_A(w_Segment1_A),
 	.o_Segment_B(w_Segment1_B),
 	.o_Segment_C(w_Segment1_C),
@@ -277,7 +288,7 @@ module test_top
 	// Instantiate Binary to 7-Segment Converter
 	bin_to_disp disp1(
 	.i_Clk(i_clk),
-	.i_Binary_Num(dis1),
+	.i_Binary_Num(io_disp1),
 	.o_Segment_A(w_Segment2_A),
 	.o_Segment_B(w_Segment2_B),
 	.o_Segment_C(w_Segment2_C),
@@ -303,9 +314,9 @@ module test_top
 	assign o_Segment2_F = ~w_Segment2_F;
 	assign o_Segment2_G = ~w_Segment2_G;
 
-	assign o_LED_1 = leds[0:0];
-	assign o_LED_2 = leds[1:1];
-	assign o_LED_3 = leds[2:2];
-	assign o_LED_4 = leds[3:3];
+	assign o_LED_1 = io_leds[0:0];
+	assign o_LED_2 = io_leds[1:1];
+	assign o_LED_3 = io_leds[2:2];
+	assign o_LED_4 = io_leds[3:3];
 
 endmodule
