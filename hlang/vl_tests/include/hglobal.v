@@ -24,8 +24,8 @@
 
 `define NS_1to2_FSZ 1  // 1, 2 or 4 ***ONLY***
 `define NS_2to1_FSZ 2  // 1, 2 or 4 ***ONLY***
-`define NS_PACKOUT_FSZ 1  // 1, 2 or 4 ***ONLY***
-`define NS_PACKIN_FSZ 1  // 1, 2 or 4 ***ONLY***
+`define NS_PACKOUT_FSZ 4  // 1, 2 or 4 ***ONLY***
+`define NS_PACKIN_FSZ 4  // 1, 2 or 4 ***ONLY***
 
 `define NS_GT_OP 1
 `define NS_GTE_OP 2
@@ -53,6 +53,7 @@
 
 `define NS_DECLARE_DBG_CHNL(dbg) \
 	input wire dbg``_clk, \
+	input wire dbg``_doit, \
 	input wire [7:0] dbg``_case, \
 	output wire [3:0] dbg``_leds, \
 	output wire [3:0] dbg``_disp0, \
@@ -60,6 +61,7 @@
 
 
 `define NS_DECLARE_DBG_LINK(lnk) \
+	wire [0:0] lnk``_doit; \
 	wire [7:0] lnk``_case; \
 	wire [3:0] lnk``_leds; \
 	wire [3:0] lnk``_disp0; \
@@ -68,6 +70,7 @@
 
 `define NS_INSTA_DBG_CHNL(chn, lnk, the_clk) \
 	.chn``_clk(the_clk), \
+	.chn``_doit(lnk``_doit), \
 	.chn``_case(lnk``_case), \
 	.chn``_leds(lnk``_leds), \
 	.chn``_disp0(lnk``_disp0), \
@@ -134,6 +137,10 @@
 
 
 `define NS_REG_MSG_EQ(mg, eq_src, eq_dst, eq_dat) ((mg``_src == eq_src) && (mg``_dst == eq_dst) && (mg``_dat == eq_dat))
+
+
+`define NS_REG_MSG_RED_EQ(mg, eq_src, eq_dst, eq_dat, eq_red) ((mg``_src == eq_src) && \
+	(mg``_dst == eq_dst) && (mg``_dat == eq_dat) && (mg``_red == eq_red))
 
 
 `define NS_DECLARE_OUT_CHNL(nam) \
@@ -205,19 +212,38 @@
 `define NS_MG_RED_SECTION  (RSZ-1):0
 
 
+`define NS_SEQ_SET(seq, chn) \
+	seq``[`NS_MG_SRC_SECTION] <= chn``_src; \
+	seq``[`NS_MG_DST_SECTION] <= chn``_dst; \
+	seq``[`NS_MG_DAT_SECTION] <= chn``_dat; \
+	seq``[`NS_MG_RED_SECTION] <= chn``_red;
+
+
+`define NS_SEQ_GET(seq, chn) \
+	chn``_src <= seq``[`NS_MG_SRC_SECTION]; \
+	chn``_dst <= seq``[`NS_MG_DST_SECTION]; \
+	chn``_dat <= seq``[`NS_MG_DAT_SECTION]; \
+	chn``_red <= seq``[`NS_MG_RED_SECTION]; 
+
+
+//`define NS_FIFO_SET_IDX(chn, fif, idx) `NS_SEQ_SET(fif``_data[idx], chn)
+
+//`define NS_FIFO_GET_IDX(chn, fif, idx) `NS_SEQ_GET(fif``_data[idx], chn)
+
 /*
 `define NS_FIFO_SET_IDX(chn, fif, idx) \
 	fif``_data[idx][`NS_MG_SRC_SECTION] <= chn``_src; \
 	fif``_data[idx][`NS_MG_DST_SECTION] <= chn``_dst; \
 	fif``_data[idx][`NS_MG_DAT_SECTION] <= chn``_dat; \
-
+	fif``_data[idx][`NS_MG_RED_SECTION] <= chn``_red; 
 */
+
 
 `define NS_FIFO_GET_IDX(chn, fif, idx) \
 	chn``_src <= fif``_data[idx][`NS_MG_SRC_SECTION]; \
 	chn``_dst <= fif``_data[idx][`NS_MG_DST_SECTION]; \
 	chn``_dat <= fif``_data[idx][`NS_MG_DAT_SECTION]; \
-	chn``_red <= fif``_data[idx][`NS_MG_RED_SECTION]; \
+	chn``_red <= fif``_data[idx][`NS_MG_RED_SECTION];
 	
 
 `define NS_INC_IDX(idx, the_sz) \
@@ -237,6 +263,22 @@
 	end
 
 
+`define NS_FIFO_TRY_ADD_HEAD(fif, mg_in, has_added_hd) \
+	if(! fif``_busy[fif``_hd_idx] && ! has_added_hd) begin \
+		fif``_busy[fif``_hd_idx] <= `NS_ON; \
+		`NS_FIFO_SET_IDX(mg_in, fif, fif``_hd_idx); \
+		has_added_hd <= `NS_ON; \
+	end
+
+
+`define NS_FIFO_ACK_ADDED_HEAD(fif, the_ack, has_added_hd) \
+	if(fif``_busy[fif``_hd_idx] && has_added_hd) begin \
+		has_added_hd <= `NS_OFF; \
+		`NS_INC_IDX(fif``_hd_idx, FSZ); \
+		the_ack <= `NS_ON; \
+	end
+
+
 `define NS_FIFO_TRY_INC_TAIL(fif, mg_out, out_is_busy) \
 	if(fif``_busy[fif``_tl_idx] && ! out_is_busy) begin \
 		fif``_busy[fif``_tl_idx] <= `NS_OFF; \
@@ -245,6 +287,7 @@
 		`NS_INC_IDX(fif``_tl_idx); \
 	end
 
+// DO NOT ADD else TO NS_FIFO_TRY_SET_OUT (because it breaks t5)
 
 `define NS_FIFO_TRY_SET_OUT(fif, mg_out, the_out_ack, the_req, out_is_busy) \
 	`NS_FIFO_TRY_INC_TAIL(fif, mg_out, out_is_busy) \

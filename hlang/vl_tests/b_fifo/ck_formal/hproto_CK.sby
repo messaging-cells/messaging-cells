@@ -1,0 +1,19 @@
+[tasks]
+prf
+
+[options]
+prf: mode prove
+prf: depth 20
+
+[engines]
+smtbmc
+
+[script]
+read -formal nd_1to2.v
+read -formal hproto_CK.v
+prep -top formal_top
+
+[files]
+../rtl/nd_1to2.v
+../rtl/hglobal.v
+./hproto_CK.v

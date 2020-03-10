@@ -96,7 +96,7 @@ module test_top
 	wire w_Segment2_E;
 	wire w_Segment2_F;
 	wire w_Segment2_G;
-
+	
 	reg [2:0] clk_0_cnt = 0;
 	reg [6:0] clk_1_cnt = 0;
 	
@@ -129,9 +129,18 @@ module test_top
 	
 	// LNK_0
 	`NS_DECLARE_PAKIO_LINK(lnk_0)
+	assign lnk_0_pakio = 0;
+	assign lnk_0_req = 0;
 	
 	// LNK_1_
 	`NS_DECLARE_LINK(lnk_1)
+	/*
+	assign lnk_1_src = 3;
+	assign lnk_1_dst = 2;
+	assign lnk_1_dat = 5;
+	assign lnk_1_red = 15;
+	assign lnk_1_req = 1;
+	*/
   
 	// LNK_2
 	`NS_DECLARE_LINK(lnk_2)
@@ -161,12 +170,6 @@ module test_top
 		//.i_clk(i_clk),
 		.i_clk(clk2),
 		
-		.reset(the_reset),
-		.ready(the_all_ready),
-		
-		//.i_clk(i_clk),
-		// out0
-		`NS_INSTA_PAKIO_CHNL(snd0, lnk_0)
 		// in0
 		`NS_INSTA_CHNL(rcv0, lnk_1)
 		
@@ -181,102 +184,11 @@ module test_top
 		
 		// SRC0
 		`NS_INSTA_CHNL(o0, lnk_1)
-		
-		// SNK0
-		`NS_INSTA_PAKIO_CHNL(i0, lnk_0)
-
-		`NS_INSTA_DBG_CHNL(dbg, dbg1, i_clk)
-		
 	);
-
-	wire sw1_ON = ((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF));
-	wire sw1_OFF = ((w_Switch_1 == `NS_OFF) && (r_Switch_1 == `NS_ON));
-	always @(posedge i_clk)
-	begin
-		r_Switch_1 <= w_Switch_1;
-		
-		if(sw1_ON)
-		begin
-			`ns_bit_toggle(clk2);
-		end
-		else 
-		if(sw1_OFF)
-		begin
-			`ns_bit_toggle(clk2);
-		end
-	end
-
-	wire sw2_ON = ((w_Switch_2 == `NS_ON) && (r_Switch_2 == `NS_OFF));
-	wire sw2_OFF = ((w_Switch_2 == `NS_OFF) && (r_Switch_2 == `NS_ON));
-	always @(posedge i_clk)
-	begin
-		r_Switch_2 <= w_Switch_2;
-		
-		if(sw2_ON)
-		begin
-			`ns_bit_toggle(clk3);
-		end
-		if(sw2_OFF)
-		begin
-			`ns_bit_toggle(clk3);
-		end
-	end
-
-	wire sw3_ON = ((w_Switch_3 == `NS_ON) && (r_Switch_3 == `NS_OFF));
-	wire sw3_OFF = ((w_Switch_3 == `NS_OFF) && (r_Switch_3 == `NS_ON));
-	
-	wire sw4_ON = ((w_Switch_4 == `NS_ON) && (r_Switch_4 == `NS_OFF));
-	wire sw4_OFF = ((w_Switch_4 == `NS_OFF) && (r_Switch_4 == `NS_ON));
 	
 	always @(posedge i_clk)
 	begin
-		r_Switch_3 <= w_Switch_3;
-		r_Switch_4 <= w_Switch_4;
-		
-		if(sw3_OFF && ! r_Switch_4)
-		begin
-			if(was_both_on) begin
-				was_both_on <= `NS_OFF;
-			end else begin
-				selecting <= `NS_ON;
-				`NS_INC_IDX(dbg_case_hi, 16);
-			end
-		end
-		else
-		if(sw4_OFF && ! r_Switch_3)
-		begin
-			if(was_both_on) begin
-				was_both_on <= `NS_OFF;
-			end else begin
-				selecting <= `NS_ON;
-				`NS_INC_IDX(dbg_case_lo, 16);
-			end
-		end
-		else 
-		if((sw3_OFF && r_Switch_4) || (sw4_OFF && r_Switch_3) || (sw3_OFF && sw4_OFF))
-		begin
-			was_both_on <= `NS_ON;
-			selecting <= `NS_OFF;
-			updating = `NS_ON;
-		end
-		
-		if(selecting)
-		begin
-			io_leds <= 0;
-			io_disp0 <= dbg_case_hi;
-			io_disp1 <= dbg_case_lo;
-		end
-		if(updating)
-		begin
-			updating <= `NS_OFF;
-			if((io_leds == 0) && (io_disp0 == dbg_case_hi) && (io_disp1 == dbg_case_lo))
-			begin
-				`NS_MOV_REG_DBG(io, dbg0)
-				//`NS_MOV_REG_DBG(io, dbg1)
-			end else begin
-				selecting <= `NS_ON;
-			end
-		end
+		`NS_MOV_REG_DBG(io, dbg0)
 	end
 
 	bin_to_disp disp_0(

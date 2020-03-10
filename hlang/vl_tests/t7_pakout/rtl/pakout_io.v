@@ -9,6 +9,8 @@
 
 `define NS_DBG_INIT_CK 14
 
+`define NS_DBG_INIT_DAT 5
+
 `define NS_DBG_INIT_RED 15
 
 `define NS_DBG_MAX_SRC_CASE 4
@@ -35,14 +37,14 @@ module pakout_io
 	`NS_DECLARE_DBG_CHNL(dbg)
 );
  
-	reg [3:0] cnt_0 = 0;
-	reg [3:0] cnt_1 = 0;
+	reg [3:0] cnt_0 = `NS_DBG_INIT_DAT;
+	//reg [3:0] cnt_1 = `NS_DBG_INIT_DAT;
 
 	// SRC regs
 	reg [0:0] ro0_busy = `NS_OFF;
 	reg [ASZ-1:0] ro0_src = `NS_DBG_SRC_ADDR;
 	reg [ASZ-1:0] ro0_dst = MIN_ADDR;
-	reg [DSZ-1:0] ro0_dat = 0;
+	reg [DSZ-1:0] ro0_dat = `NS_DBG_INIT_DAT;
 	reg [RSZ-1:0] ro0_red = `NS_DBG_INIT_RED;
 	reg [0:0] ro0_req = `NS_OFF;
 	
