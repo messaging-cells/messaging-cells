@@ -16,7 +16,6 @@ CHECK_DIR = ck_formal
 RTL_FILES = \
 	GO_BOARD.pcf \
 	${RTL_DIR}/synth.tcl \
-	${RTL_DIR}/bin_to_disp.v \
 	${RTL_DIR}/hglobal.v \
 	${RTL_DIR}/pakout.v \
 	${RTL_DIR}/pakout_io.v \

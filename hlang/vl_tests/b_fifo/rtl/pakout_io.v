@@ -26,11 +26,11 @@ module pakout_io
 	RSZ=`NS_REDUN_SIZE,
 )(
 	input wire i_clk,
-	input wire src_clk,
-	input wire snk_clk,
 	
 	// SRC_0
 	`NS_DECLARE_OUT_CHNL(o0)
+
+	output wire dbg_busy,
 );
  
 	reg [3:0] cnt_0 = `NS_DBG_INIT_DAT;
@@ -39,14 +39,20 @@ module pakout_io
 	reg [0:0] ro0_busy = `NS_OFF;
 	reg [ASZ-1:0] ro0_src = `NS_DBG_SRC_ADDR;
 	reg [ASZ-1:0] ro0_dst = MIN_ADDR;
+	//reg [ASZ-1:0] ro0_dst = 2;
 	reg [DSZ-1:0] ro0_dat = `NS_DBG_INIT_DAT;
 	reg [RSZ-1:0] ro0_red = `NS_DBG_INIT_RED;
 	reg [0:0] ro0_req = `NS_OFF;
 	
-	`NS_DECLARE_REG_DBG(rg0)
-		
+	/*
+	always @(posedge i_clk)
+	begin
+		ro0_req <= `NS_ON;
+	end
+	*/
+	
 	//SRC_0
-	always @(posedge src_clk)
+	always @(posedge i_clk)
 	begin
 		if(! ro0_busy) begin
 			ro0_busy <= `NS_ON;
@@ -58,7 +64,6 @@ module pakout_io
 		end
 		else
 		if((! ro0_req) && (! o0_ack) && ro0_busy) begin
-			//ro0_red <= redun_out;
 			ro0_red <= `NS_DBG_INIT_RED;
 			
 			ro0_req <= `NS_ON;
@@ -70,14 +75,14 @@ module pakout_io
 			end
 			ro0_req <= `NS_OFF;
 		end
-		rg0_leds <= 3;
-		rg0_disp0 = 4;
-		rg0_disp1 = 5;
 	end
+	
 	
 	//SRC_0
 	`NS_ASSIGN_OUT_MSG(o0, ro0)
 	assign o0_req = ro0_req;
+	
+	assign dbg_busy = ro0_busy;
 
 endmodule
 

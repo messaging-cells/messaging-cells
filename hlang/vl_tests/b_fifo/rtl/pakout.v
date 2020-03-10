@@ -3,6 +3,7 @@
 
 `default_nettype	none
 
+`define NS_SHOW_ERR 1
 
 module pakout
 #(parameter 
@@ -13,31 +14,16 @@ module pakout
 	RSZ=`NS_REDUN_SIZE,
 )(
 	input wire i_clk,
-	/*
-	input wire reset,
-	output wire ready,
 	
-	`NS_DECLARE_PAKOUT_CHNL(snd0)
-	*/
 	`NS_DECLARE_IN_CHNL(rcv0)
-	
-	`NS_DECLARE_DBG_CHNL(dbg)
-);
-	`NS_DECLARE_REG_DBG(rg_dbg)
-	
-	reg [0:0] rg_rdy = `NS_OFF;
-	
-	// out0 regs
-	`NS_DECLARE_REG_PAKOUT(rgo0)
-	reg [0:0] rgo0_req = `NS_OFF;
 
+	input wire has_err
+);
 	// inp0 regs
 	reg [0:0] rgi0_ack = `NS_OFF;
 
 	// fifos
 	`NS_DECLARE_FIFO(bf0)
-	
-	//reg [0:0] added_hd = `NS_OFF;
 	
 	`NS_DECLARE_REG_MSG(dbg_fif)
 	`NS_DECLARE_REG_MSG(mg_aux1)
@@ -54,21 +40,13 @@ module pakout
 	reg [7:0] all_err = 0;
 	reg [7:0] curr_state = ST_INI;
 		
-	always @(posedge dbg_clk)
+	always @(posedge i_clk)
 	begin
-		/*
-		if(! reset && rg_rdy) begin
-		end
-		*/
 		if(rcv0_req) begin
-		//if(dbg_doit) begin
 			case(curr_state)
-			//case(dbg_case)
 				ST_INI :
 				begin
-					`NS_FIFO_INIT(bf0);
-					rg_dbg_disp0 <= 7;
-					rg_dbg_disp1 <= 1;
+					`NS_FIFO_INIT(bf0)
 					curr_state <= ST_SET;
 				end
 				ST_SET :
@@ -76,8 +54,6 @@ module pakout
 					`NS_FIFO_SET_IDX(rcv0, bf0, 1)
 					`NS_MOV_REG_MSG(mg_aux1, rcv0)
 					`NS_SEQ_SET(mg_data, rcv0)
-					rg_dbg_disp0 <= 7;
-					rg_dbg_disp1 <= 2;
 					curr_state <= ST_GET;
 				end
 				ST_GET :
@@ -85,50 +61,41 @@ module pakout
 					`NS_FIFO_GET_IDX(dbg_fif, bf0, 1)
 					`NS_MOV_REG_MSG(mg_aux2, mg_aux1)
 					`NS_SEQ_GET(mg_data, mg_aux3)
-					rg_dbg_disp0 <= 7;
-					rg_dbg_disp1 <= 3;
 					curr_state <= ST_CHK;
 				end
 				ST_CHK:
 				begin
-					if(! `NS_REG_MSG_RED_EQ(dbg_fif, 3, 2, 5, 15)) begin
+					if(! `NS_REG_MSG_RED_EQ(rcv0, 3, 2, 5, 15)) begin
 						all_err[0:0] <= `NS_ON;
 					end
-					if(! `NS_REG_MSG_RED_EQ(rcv0, 3, 2, 5, 15)) begin
+					else
+					if(! `NS_REG_MSG_RED_EQ(mg_aux1, 3, 2, 5, 15)) begin
 						all_err[1:1] <= `NS_ON;
 					end
-					if(! `NS_REG_MSG_RED_EQ(mg_aux1, 3, 2, 5, 15)) begin
+					else
+					if(! `NS_REG_MSG_RED_EQ(mg_aux2, 3, 2, 5, 15)) begin
 						all_err[2:2] <= `NS_ON;
 					end
-					if(! `NS_REG_MSG_RED_EQ(mg_aux2, 3, 2, 5, 15)) begin
+					else
+					if(! `NS_REG_MSG_RED_EQ(mg_aux3, 3, 2, 5, 15)) begin
 						all_err[3:3] <= `NS_ON;
 					end
-					if(! `NS_REG_MSG_RED_EQ(mg_aux3, 3, 2, 5, 15)) begin
-						all_err[4:4] <= `NS_ON;
+					else
+					if(! `NS_REG_MSG_RED_EQ(dbg_fif, 3, 2, 5, 15)) begin
+						if(`NS_SHOW_ERR) begin
+							all_err[4:4] <= `NS_ON;
+						end
 					end
-					rg_dbg_disp0 <= 7;
-					rg_dbg_disp1 <= 4;
 				end
 
 			endcase
-			rg_dbg_leds[0:0] <= 0;
-			rg_dbg_leds[1:1] <= 0;
-			rg_dbg_leds[2:2] <= rcv0_req;
-			rg_dbg_leds[3:3] <= (|  all_err);;
-		//end
 		end
 	end
 	
-	//assign ready = rg_rdy;
-	
-	//out1
-	//assign snd0_pakio = rgo0_pakio;
-	//assign snd0_req = rgo0_req;
-
 	//inp0
 	assign rcv0_ack = rgi0_ack;
 
-	`NS_ASSIGN_OUT_DBG(dbg, rg_dbg)
+	assign has_err = (|  all_err);
 	
 endmodule
 
