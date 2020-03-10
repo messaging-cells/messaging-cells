@@ -18,7 +18,8 @@
 module pakout_io
 #(parameter 
 	MIN_ADDR=1, 
-	MAX_ADDR=1, 
+	//MAX_ADDR=1, 
+	MAX_ADDR=3, 
 	PSZ=`NS_PACKET_SIZE, 
 	FSZ=`NS_PACKIN_FSZ, 
 	ASZ=`NS_ADDRESS_SIZE, 
