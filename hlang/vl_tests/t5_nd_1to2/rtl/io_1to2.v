@@ -46,7 +46,9 @@ module io_1to2
 	DSZ=`NS_DATA_SIZE, 
 	RSZ=`NS_REDUN_SIZE
 )(
-	input wire i_clk,	// Main Clock (25 MHz)
+	input wire src0_clk,
+	input wire snk0_clk,
+	input wire snk1_clk,
 	
 	// SRC
 	`NS_DECLARE_OUT_CHNL(o0)
@@ -113,7 +115,7 @@ module io_1to2
 		r3 (i1_src, i1_dst, i1_dat, i1_redun);
 	
 	//SRC
-	always @(posedge i_clk)
+	always @(posedge src0_clk)
 	begin
 		if(! ro0_busy) begin
 			ro0_busy <= `NS_ON;
@@ -156,7 +158,7 @@ module io_1to2
 	end
 		
 	//SNK_0
-	always @(posedge i_clk)
+	always @(posedge snk0_clk)
 	begin
 		if(i0_req && (! r_0_ack)) begin
 			if(! i0_has_redun) begin
@@ -217,7 +219,7 @@ module io_1to2
 	end
 	
 	//SNK_1
-	always @(posedge i_clk)
+	always @(posedge snk1_clk)
 	begin
 		if(i1_req && (! r_1_ack)) begin
 			if(! i1_has_redun) begin
@@ -280,29 +282,6 @@ module io_1to2
 			end
 			`NS_DBG_MSG_CASES(3, err_mg)
 			`NS_DBG_MSG_CASES(4, bak_src_mg)
-			/*
-			8'h31 :
-			begin
-				rg_dbg_disp0 <= err_mg_src[ASZ-1:4];
-				rg_dbg_disp1 <= err_mg_src[3:0];
-			end
-			8'h32 :
-			begin
-				rg_dbg_disp0 <= err_mg_dst[ASZ-1:4];
-				rg_dbg_disp1 <= err_mg_dst[3:0];
-			end
-			8'h33 :
-			begin
-				//rg_dbg_disp0 <= err_mg_dat[DSZ-1:4];
-				rg_dbg_disp0 <= 0;
-				rg_dbg_disp1 <= err_mg_dat[3:0];
-			end
-			8'h34 :
-			begin
-				rg_dbg_disp0 <= err_mg_redun;
-				rg_dbg_disp1 <= err_mg_red;
-			end
-			*/
 		endcase
 	end
 	

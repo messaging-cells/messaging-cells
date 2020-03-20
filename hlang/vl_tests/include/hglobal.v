@@ -255,7 +255,7 @@
 
 
 `define NS_FIFO_TRY_INC_HEAD(fif, mg_in, the_ack) \
-	if(! fif``_busy[fif``_hd_idx]) begin \
+	if((! the_ack) && (! fif``_busy[fif``_hd_idx])) begin \
 		fif``_busy[fif``_hd_idx] <= `NS_ON; \
 		`NS_FIFO_SET_IDX(mg_in, fif, fif``_hd_idx); \
 		`NS_INC_IDX(fif``_hd_idx, FSZ); \
@@ -264,7 +264,7 @@
 
 
 `define NS_FIFO_TRY_ADD_HEAD(fif, mg_in, has_added_hd) \
-	if(! fif``_busy[fif``_hd_idx] && ! has_added_hd) begin \
+	if((! fif``_busy[fif``_hd_idx]) && (! has_added_hd)) begin \
 		fif``_busy[fif``_hd_idx] <= `NS_ON; \
 		`NS_FIFO_SET_IDX(mg_in, fif, fif``_hd_idx); \
 		has_added_hd <= `NS_ON; \

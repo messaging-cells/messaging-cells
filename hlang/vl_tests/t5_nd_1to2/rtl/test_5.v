@@ -74,13 +74,17 @@ module test_top
 		.i_Switch(i_Switch_4),
 		.o_Switch(w_Switch_4)
 	);
-	
-	reg [2:0] c_src = 0;
-	reg [6:0] c_snk = 0;
-	
-	reg clk_src = `NS_OFF;
-	reg clk_snk = `NS_OFF;
 
+	reg [2:0] cnt_clk0 = 0;
+	reg [3:0] cnt_clk1 = 0;
+	reg [5:0] cnt_clk2 = 0;
+	reg [7:0] cnt_clk3 = 0;
+	
+	reg clk_0 = `NS_OFF;
+	reg clk_1 = `NS_OFF;
+	reg clk_2 = `NS_OFF;
+	reg clk_3 = `NS_OFF;
+	
 	reg clk0 = `NS_OFF;
 	reg clk1 = `NS_OFF;
 	reg clk2 = `NS_OFF;
@@ -130,19 +134,37 @@ module test_top
 
 	always @(posedge i_clk)
 	begin
-		if(c_src == 0) begin
-			c_src <= 1;
-			`ns_bit_toggle(clk_src);
+		// clk_0
+		if(cnt_clk0 == 0) begin
+			cnt_clk0 <= 1;
+			`ns_bit_toggle(clk_0);
 		end
 		else  begin
-			c_src <= (c_src << 1);
+			cnt_clk0 <= (cnt_clk0 << 1);
 		end
-		if(c_snk == 0) begin
-			c_snk <= 1;
-			`ns_bit_toggle(clk_snk);
+		// clk_1
+		if(cnt_clk1 == 0) begin
+			cnt_clk1 <= 1;
+			`ns_bit_toggle(clk_1);
 		end
 		else  begin
-			c_snk <= (c_snk << 1);
+			cnt_clk1 <= (cnt_clk1 << 1);
+		end
+		// clk_2
+		if(cnt_clk2 == 0) begin
+			cnt_clk2 <= 1;
+			`ns_bit_toggle(clk_2);
+		end
+		else  begin
+			cnt_clk2 <= (cnt_clk2 << 1);
+		end
+		// clk_3
+		if(cnt_clk3 == 0) begin
+			cnt_clk3 <= 1;
+			`ns_bit_toggle(clk_3);
+		end
+		else  begin
+			cnt_clk3 <= (cnt_clk3 << 1);
 		end
 	end
 	
@@ -165,9 +187,10 @@ module test_top
 
 	io_1to2 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR), .OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	io_t3 (
-		//.i_clk(i_clk),
-		//.i_clk(clk_src),
-		.i_clk(clk_snk),
+		.src0_clk(clk_3),
+		.snk0_clk(clk_0),
+		.snk1_clk(clk_0),
+		//i_clk, clk_0, clk_1
 		
 		// SRC
 		`NS_INSTA_CHNL(o0, lnk_2)

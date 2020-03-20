@@ -3,7 +3,7 @@
 
 `default_nettype	none
 
-`define NS_NUM_TEST 6
+`define NS_NUM_TEST 0
 `define NS_TEST_MIN_ADDR 0
 `define NS_TEST_MAX_ADDR 55
 `define NS_TEST_REF_ADDR 23
@@ -77,10 +77,6 @@ module test_top
 	`NS_DECLARE_LINK(lnk_1)
 	wire [DSZ-1:0] lnk_1_ck_dat;
   
-	// LNK_2
-	`NS_DECLARE_LINK(lnk_2)
-	//wire [DSZ-1:0] lnk_2_ck_dat;
-
 	wire w_Segment1_A;
 	wire w_Segment1_B;
 	wire w_Segment1_C;
@@ -133,9 +129,9 @@ module test_top
 		end
 	end
 	
-	nd_2to1 
-	gt1to2 (
-		.i_clk(i_clk),
+	nd_fifo
+	gtfifo (
+		.i_clk(clk_2),
 		//i_clk, clk_0, clk_1
 		
 		.reset(the_reset),
@@ -146,32 +142,25 @@ module test_top
 		`NS_INSTA_CHNL(snd0, lnk_0)
 		// in0
 		`NS_INSTA_CHNL(rcv0, lnk_1)
-		// in1
-		`NS_INSTA_CHNL(rcv1, lnk_2)
 	);
 
-	io_2to1 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
-	io_t6 (
-		.src0_clk(clk_2),
-		.src1_clk(clk_2),
-		.snk0_clk(clk_3),
+	io_fifo #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
+	io_t0 (
+		.src_clk(clk_3),
+		.snk_clk(clk_1),
 		//i_clk, clk_0, clk_1
-		// 0,1,2 fails
-		// 0,1,2 fails
 		
 		// SRC0
 		`NS_INSTA_CHNL(o0, lnk_1)
-		.o0_err(err_0),
-		// SRC1
-		`NS_INSTA_CHNL(o1, lnk_2)
-		.o1_err(err_1),
 		// SNK0
 		`NS_INSTA_CHNL(i0, lnk_0)
+		
+		.err_0(err_0),
+		.err_1(err_1),
+		
 		.i0_ck_dat(lnk_0_ck_dat),
-		.i0_err(err_2),
-
-		.fst_err_0_inp(fst_err_0_inp),
-		.fst_err_0_dat(fst_err_0_dat),
+		.fst_err0_inp(fst_err_0_inp),
+		.fst_err0_dat(fst_err_0_dat),
 	);
 	
 	// Instantiate Debounce Filter
@@ -188,14 +177,14 @@ module test_top
 		
 		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
 		begin
-			if(err_0 || err_1 || err_2) begin
+			if(err_0 || err_1) begin
 				disp_i_data <= fst_err_0_inp;
 				disp_o_data <= fst_err_0_dat;
 			end else begin
 				disp_i_data <= lnk_0_dat;
 				disp_o_data <= lnk_0_ck_dat;
 			end
-		end		
+		end
 	end
 
 	bin_to_disp disp_1(
@@ -241,7 +230,7 @@ module test_top
 
 	assign o_LED_1 = err_0;
 	assign o_LED_2 = err_1;
-	assign o_LED_3 = err_2;
-	assign o_LED_4 = r_LED_4;
+	assign o_LED_3 = 0;
+	assign o_LED_4 = 0;
 
 endmodule
