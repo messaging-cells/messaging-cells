@@ -287,18 +287,17 @@
 		`NS_INC_IDX(fif``_tl_idx); \
 	end
 
-// DO NOT ADD else TO NS_FIFO_TRY_SET_OUT (because it breaks t5)
 
 `define NS_FIFO_TRY_SET_OUT(fif, mg_out, the_out_ack, the_req, out_is_busy) \
 	`NS_FIFO_TRY_INC_TAIL(fif, mg_out, out_is_busy) \
-	if(! the_req && ! the_out_ack && out_is_busy) begin \
-		the_req <= `NS_ON; \
-	end \
-	if(the_req && the_out_ack) begin \
-		if(out_is_busy) begin \
-			out_is_busy <= `NS_OFF; \
+	if(out_is_busy) begin \
+		if(! the_req && ! the_out_ack) begin \
+			the_req <= `NS_ON; \
 		end \
-		the_req <= `NS_OFF; \
+		if(the_req && the_out_ack) begin \
+			out_is_busy <= `NS_OFF; \
+			the_req <= `NS_OFF; \
+		end \
 	end
 
 

@@ -37,23 +37,36 @@ module io_2to1
 	reg [3:0] cnt_1 = 0;
 
 	// SRC regs
+	reg [0:0] ro0_busy = `NS_OFF;	
 	reg [ASZ-1:0] ro0_src = 0;
 	reg [ASZ-1:0] ro0_dst = MIN_ADDR;
 	reg [DSZ-1:0] ro0_dat = 0;
 	reg [RSZ-1:0] ro0_red = 0;
 	reg [0:0] ro0_req = `NS_OFF;
 	reg [0:0] ro0_err = `NS_OFF;
+	wire [RSZ-1:0] ro0_redun;
+	
+	calc_redun #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ)) 
+		ro0_c_red (ro0_src, ro0_dst, ro0_dat, ro0_redun);
+	
 	
 	// SRC regs
+	reg [0:0] ro1_busy = `NS_OFF;	
 	reg [ASZ-1:0] ro1_src = 1;
 	reg [ASZ-1:0] ro1_dst = MIN_ADDR;
 	reg [DSZ-1:0] ro1_dat = 0;
 	reg [RSZ-1:0] ro1_red = 0;
 	reg [0:0] ro1_req = `NS_OFF;
 	reg [0:0] ro1_err = `NS_OFF;
+	wire [RSZ-1:0] ro1_redun;
+
+	calc_redun #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ)) 
+		ro1_c_red (ro1_src, ro1_dst, ro1_dat, ro1_redun);
+	
 	
 	// SNK_0 regs
-	reg [0:0] ri0_ack = `NS_OFF; // ri0_ack
+	reg [0:0] ri0_cks_done = `NS_OFF;
+	reg [0:0] ri0_ack = `NS_OFF;
 	reg [DSZ-1:0] ri0_ck_dat = 0;
 	
 	// CHECK regs
@@ -63,91 +76,119 @@ module io_2to1
 	reg [0:0] r_1_err = `NS_OFF;
 	reg [0:0] r_2_err = `NS_OFF;
 	
-	reg [0:0] r_fst_err_0_flg = `NS_OFF;
 	reg [DSZ-1:0] r_fst_err_0_inp = 0;
 	reg [DSZ-1:0] r_fst_err_0_dat = 0;
+	
+	//reg [0:0] i0_has_redun = `NS_OFF;
+	//reg [RSZ-1:0] ri0_redun = 0;
+	
+	wire [RSZ-1:0] i0_redun;
+	calc_redun #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ)) 
+		ri0_c_red (i0_src, i0_dst, i0_dat, i0_redun);
 	
 	//SRC_0
 	always @(posedge i_clk)
 	begin
-		if((! ro0_req) && (! o0_ack)) begin
+		if(! ro0_busy) begin
+			ro0_busy <= `NS_ON;
+
 			if(ro0_dat > 15) begin
 				ro0_err <= `NS_ON;
 			end
 			if(ro0_dat < 0) begin
 				ro0_err <= `NS_ON;
 			end
-			
 			ro0_dat[3:0] <= cnt_0;
 			cnt_0 <= cnt_0 + 1;
-			
-			ro0_req <= `NS_ON;
-		end else 
-		if(ro0_req && o0_ack) begin
-			ro0_dst <= `NS_DBG_NXT_ADDR(ro0_dst);
-			ro0_req <= `NS_OFF;
+		end
+		if(ro0_busy) begin
+			if((! ro0_req) && (! o0_ack)) begin
+				ro0_red <= ro0_redun;
+				ro0_req <= `NS_ON;
+			end 
+			if(ro0_req && o0_ack) begin
+				ro0_dst <= `NS_DBG_NXT_ADDR(ro0_dst);
+				
+				ro0_busy <= `NS_OFF;
+				ro0_req <= `NS_OFF;
+			end
 		end
 	end
 		
 	//SRC_1
 	always @(posedge i_clk)
 	begin
-		if((! ro1_req) && (! o1_ack)) begin
+		if(! ro1_busy) begin
+			ro1_busy <= `NS_ON;
+
 			if(ro1_dat > 15) begin
 				ro1_err <= `NS_ON;
 			end
 			if(ro1_dat < 0) begin
 				ro1_err <= `NS_ON;
 			end
-			
 			ro1_dat[3:0] <= cnt_1;
 			cnt_1 <= cnt_1 + 1;
-			
-			ro1_req <= `NS_ON;
-		end else 
-		if(ro1_req && o1_ack) begin
-			ro1_dst <= `NS_DBG_NXT_ADDR(ro1_dst);
-			ro1_req <= `NS_OFF;
+		end
+		if(ro0_busy) begin
+			if((! ro1_req) && (! o0_ack)) begin
+				ro1_red <= ro1_redun;
+				ro1_req <= `NS_ON;
+			end 
+			if(ro1_req && o0_ack) begin
+				ro1_dst <= `NS_DBG_NXT_ADDR(ro1_dst);
+				
+				ro1_busy <= `NS_OFF;
+				ro1_req <= `NS_OFF;
+			end
 		end
 	end
-		
+	
 	//SNK_0
 	always @(posedge i_clk)
 	begin
-		if(i0_req && (! ri0_ack)) begin
-			if(i0_dat > 15) begin
-				r_2_err <= `NS_ON;
+		if(! ri0_cks_done && i0_req && (! ri0_ack)) begin
+			if(! r_2_err) begin
+				if(i0_dat > 15) begin
+					r_2_err <= `NS_ON;
+				end
+				if(i0_dat < 0) begin
+					r_2_err <= `NS_ON;
+				end
 			end
-			if(i0_dat < 0) begin
-				r_2_err <= `NS_ON;
-			end
-			if(i0_src == 0) begin
+			if(! r_0_err && (i0_src == 0)) begin
+				if(i0_red != i0_redun) begin
+					r_0_err <= `NS_ON;
+				end
+				else
 				if((r_0_ck_dat <= 14) && ((r_0_ck_dat + 1) != i0_dat)) begin
 					r_0_err <= `NS_ON;
-					if(! r_fst_err_0_flg) begin
-						r_fst_err_0_flg <= `NS_ON;
-						r_fst_err_0_inp <= i0_dat;
-						r_fst_err_0_dat <= r_0_ck_dat;
-					end
+					r_fst_err_0_inp <= i0_dat;
+					r_fst_err_0_dat <= r_0_ck_dat;
 				end else begin 
 					r_0_ck_dat <= i0_dat;
 				end
-			end else begin
+			end
+			if(! r_1_err && (i0_src == 1)) begin
+				if(i0_red != i0_redun) begin
+					r_1_err <= `NS_ON;
+				end
+				else
 				if((r_1_ck_dat <= 14) && ((r_1_ck_dat + 1) != i0_dat)) begin
 					r_1_err <= `NS_ON;
-					if(! r_fst_err_0_flg) begin
-						r_fst_err_0_flg <= `NS_ON;
-						r_fst_err_0_inp <= i0_dat;
-						r_fst_err_0_dat <= r_0_ck_dat;
-					end
+					r_fst_err_0_inp <= i0_dat;
+					r_fst_err_0_dat <= r_1_ck_dat;
 				end else begin 
 					r_1_ck_dat <= i0_dat;
 				end
 			end
-			ri0_ack <= `NS_ON;
+			ri0_cks_done <= `NS_ON;
 			ri0_ck_dat <= i0_dat;
 		end
-		else
+		if(ri0_cks_done && i0_req && (! ri0_ack)) begin
+			ri0_cks_done <= `NS_OFF;
+			ri0_ack <= `NS_ON;
+		end
 		if((! i0_req) && ri0_ack) begin
 			ri0_ack <= `NS_OFF;
 		end

@@ -131,7 +131,6 @@ module pakout_io
 			
 			`NS_FIFO_TRY_INC_TAIL(bf0, inp0, inp0_busy)
 			else if(inp0_busy) begin
-				inp0_busy <= `NS_OFF;
 				
 				if(! inp0_err_0) begin
 					if(inp0_src != `NS_DBG_SRC_ADDR) begin
@@ -162,6 +161,10 @@ module pakout_io
 						inp0_err_2 <= `NS_ON;
 						//rg_info_0 <= inp0_red;
 					end
+				end
+				else
+				begin
+					inp0_busy <= `NS_OFF;
 				end
 				
 				inp0_err_3 <= `NS_ON;

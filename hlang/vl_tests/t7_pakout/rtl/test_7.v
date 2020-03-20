@@ -18,7 +18,7 @@ module test_top
 	DSZ=`NS_DATA_SIZE, 
 	RSZ=`NS_REDUN_SIZE
 )(
-	input  i_clk,      // Main Clock (25 MHz)
+	input  i_clk,      
 	input  i_Switch_1, 
 	input  i_Switch_2, 
 	input  i_Switch_3, 
@@ -158,8 +158,8 @@ module test_top
 	
 	pakout 
 	gt_01 (
-		//.i_clk(i_clk),
-		.i_clk(clk2),
+		.i_clk(i_clk),
+		//.i_clk(clk2),
 		
 		.reset(the_reset),
 		.ready(the_all_ready),
@@ -271,7 +271,7 @@ module test_top
 			updating <= `NS_OFF;
 			if((io_leds == 0) && (io_disp0 == dbg_case_hi) && (io_disp1 == dbg_case_lo))
 			begin
-				`NS_MOV_REG_DBG(io, dbg0)
+				//`NS_MOV_REG_DBG(io, dbg0)
 				//`NS_MOV_REG_DBG(io, dbg1)
 			end else begin
 				selecting <= `NS_ON;
@@ -281,7 +281,7 @@ module test_top
 
 	bin_to_disp disp_0(
 	.i_Clk(i_clk),
-	.i_Binary_Num(io_disp0),
+	.i_Binary_Num(dbg1_disp0),
 	.o_Segment_A(w_Segment1_A),
 	.o_Segment_B(w_Segment1_B),
 	.o_Segment_C(w_Segment1_C),
@@ -294,7 +294,7 @@ module test_top
 	// Instantiate Binary to 7-Segment Converter
 	bin_to_disp disp1(
 	.i_Clk(i_clk),
-	.i_Binary_Num(io_disp1),
+	.i_Binary_Num(dbg1_disp1),
 	.o_Segment_A(w_Segment2_A),
 	.o_Segment_B(w_Segment2_B),
 	.o_Segment_C(w_Segment2_C),
@@ -320,9 +320,9 @@ module test_top
 	assign o_Segment2_F = ~w_Segment2_F;
 	assign o_Segment2_G = ~w_Segment2_G;
 
-	assign o_LED_1 = io_leds[0:0];
-	assign o_LED_2 = io_leds[1:1];
-	assign o_LED_3 = io_leds[2:2];
-	assign o_LED_4 = io_leds[3:3];
+	assign o_LED_1 = dbg1_leds[0:0];
+	assign o_LED_2 = dbg1_leds[1:1];
+	assign o_LED_3 = dbg1_leds[2:2];
+	assign o_LED_4 = dbg1_leds[3:3];
 
 endmodule

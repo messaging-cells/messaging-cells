@@ -148,8 +148,8 @@ module test_top
 	
 	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	gt1to2 (
-		//.i_clk(i_clk),
-		.i_clk(clk_src),
+		.i_clk(i_clk),
+		//.i_clk(clk_src),
 		
 		.reset(the_reset),
 		.ready(the_all_ready),
@@ -166,6 +166,7 @@ module test_top
 	io_1to2 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR), .OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	io_t3 (
 		//.i_clk(i_clk),
+		//.i_clk(clk_src),
 		.i_clk(clk_snk),
 		
 		// SRC

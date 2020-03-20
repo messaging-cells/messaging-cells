@@ -74,16 +74,13 @@ module io_1to2
 	reg [DSZ-1:0] r_dat1 = 0;
 	
 	// SRC regs
-	reg [0:0] ro0_busy = `NS_OFF;
-	
+	reg [0:0] ro0_busy = `NS_OFF;	
 	reg [ASZ-1:0] ro0_src = `NS_DBG_SRC;
 	reg [DSZ-1:0] ro0_dat = 0;
 	reg [ASZ-1:0] ro0_dst = MIN_ADDR;
 	reg [RSZ-1:0] ro0_red = 0;
-	
 	reg [0:0] ro0_req = `NS_OFF;
-
-	reg [0:0] r_err = `NS_OFF;
+	reg [0:0] ro0_err = `NS_OFF;
 	
 	// SNK_0 regs
 	reg [0:0] r_0_ack = `NS_OFF;
@@ -122,10 +119,10 @@ module io_1to2
 			ro0_busy <= `NS_ON;
 
 			if(ro0_dat > 15) begin
-				r_err <= `NS_ON;
+				ro0_err <= `NS_ON;
 			end
 			if(ro0_dat < 0) begin
-				r_err <= `NS_ON;
+				ro0_err <= `NS_ON;
 			end
 			if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, ro0_dst, OPER_2, REF_VAL_2, ro0_dst)) begin
 				ro0_dat[3:0] <= cnt_0;
@@ -273,7 +270,7 @@ module io_1to2
 	end
 	
 	//DBG
-	always @(posedge i_clk)
+	always @(posedge dbg_clk)
 	begin
 		case(dbg_case)
 			8'h30 :
@@ -322,7 +319,7 @@ module io_1to2
 	//`NS_ASSIGN_OUT_DBG(dbg, rg_dbg)
 	assign dbg_leds[0:0] = r_0_err;
 	assign dbg_leds[1:1] = r_1_err;
-	assign dbg_leds[2:2] = r_err;
+	assign dbg_leds[2:2] = ro0_err;
 	assign dbg_leds[3:3] = 0;
 	assign dbg_disp0 = rg_dbg_disp0;
 	assign dbg_disp1 = rg_dbg_disp1;

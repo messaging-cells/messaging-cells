@@ -114,8 +114,8 @@ module test_top
 	nd_2to1 
 	gt1to2 (
 		//.i_clk(i_clk),
-		.i_clk(clk_src),
-		//.i_clk(clk_snk),
+		//.i_clk(clk_src),
+		.i_clk(clk_snk),
 		
 		.reset(the_reset),
 		.ready(the_all_ready),
@@ -131,9 +131,9 @@ module test_top
 
 	io_2to1 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
 	io_t6 (
-		//.i_clk(i_clk),
+		.i_clk(i_clk),
 		//.i_clk(clk_src),
-		.i_clk(clk_snk),
+		//.i_clk(clk_snk),
 		
 		// SRC0
 		`NS_INSTA_CHNL(o0, lnk_1)
@@ -164,12 +164,12 @@ module test_top
 		
 		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
 		begin
-			if(! err_0) begin
-				disp_i_data <= lnk_0_dat;
-				disp_o_data <= lnk_0_ck_dat;
-			end else begin
+			if(err_0 || err_1 || err_2) begin
 				disp_i_data <= fst_err_0_inp;
 				disp_o_data <= fst_err_0_dat;
+			end else begin
+				disp_i_data <= lnk_0_dat;
+				disp_o_data <= lnk_0_ck_dat;
 			end
 		end		
 	end

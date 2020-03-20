@@ -61,22 +61,21 @@ module nd_2to1
 			choose_0 = `NS_TRUE;
 		end
 		if(! reset && rg_rdy) begin
-			if(in0_rq && in1_rq) begin
-				if(choose_0) begin
-					choose_0 = `NS_FALSE;
+			if(in0_rq) begin
+				if((! in1_rq) || (in1_rq && choose_0)) begin
 					`NS_FIFO_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
-					//run_head_queue_simu(buff0, *in_msg0, ack0);
-				end else begin
-					choose_0 = `NS_TRUE;
+					if(in1_rq) begin
+						choose_0 = `NS_FALSE;
+					end
+				end 
+			end
+			if(in1_rq) begin
+				if((! in0_rq) || (in0_rq && ! choose_0)) begin
 					`NS_FIFO_TRY_INC_HEAD(bf0, rcv1, rgi1_ack);
-					//run_head_queue_simu(buff0, *in_msg1, ack1);
-				end
-			end
-			if(in0_rq && ! in1_rq) begin
-				`NS_FIFO_TRY_INC_HEAD(bf0, rcv0, rgi0_ack);
-			end
-			if(! in0_rq && in1_rq) begin
-				`NS_FIFO_TRY_INC_HEAD(bf0, rcv1, rgi1_ack);
+					if(in0_rq) begin
+						choose_0 = `NS_TRUE;
+					end
+				end 
 			end
 			
 			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);

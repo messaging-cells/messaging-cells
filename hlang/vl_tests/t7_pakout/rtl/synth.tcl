@@ -7,5 +7,5 @@ read_verilog calc_redun.v;
 read_verilog pakout.v; 
 read_verilog pakout_io.v; 
 read_verilog test_7.v;
-synth_ice40 -top test_top -blif ../$::env(BUILD_DIR)/test_7.blif;
+# synth_ice40 -top test_top -blif ../$::env(BUILD_DIR)/test_7.blif;
 synth_ice40 -top test_top -json ../$::env(BUILD_DIR)/test_7.json;
