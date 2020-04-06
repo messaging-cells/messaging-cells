@@ -50,26 +50,31 @@ module test_top
 	wire w_Switch_4;
 	reg  r_Switch_4 = `NS_OFF;
 
+	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
 	
-	debounce but1_fixed(
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but1_fixed (
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_1),
 		.o_Switch(w_Switch_1)
 	);
 	
-	debounce but2_fixed(
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but2_fixed(
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_2),
 		.o_Switch(w_Switch_2)
 	);
 	
-	debounce but3_fixed(
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but3_fixed(
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_3),
 		.o_Switch(w_Switch_3)
 	);
 	
-	debounce but4_fixed(
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but4_fixed(
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_4),
 		.o_Switch(w_Switch_4)
@@ -79,11 +84,14 @@ module test_top
 	reg [3:0] cnt_clk1 = 0;
 	reg [5:0] cnt_clk2 = 0;
 	reg [7:0] cnt_clk3 = 0;
+	//reg [11:0] cnt_clk4 = 0;  //Uncomment to make it work !
+	//reg [1:0] QUIT_ERROR = 0;  // 1, 2 ,7 fails
 	
 	reg clk_0 = `NS_OFF;
 	reg clk_1 = `NS_OFF;
 	reg clk_2 = `NS_OFF;
 	reg clk_3 = `NS_OFF;
+	//reg clk_4 = `NS_OFF;
 	
 	reg clk0 = `NS_OFF;
 	reg clk1 = `NS_OFF;
@@ -137,6 +145,7 @@ module test_top
 		// clk_0
 		if(cnt_clk0 == 0) begin
 			cnt_clk0 <= 1;
+			//clk_0 = ~clk_0;
 			`ns_bit_toggle(clk_0);
 		end
 		else  begin
@@ -161,46 +170,66 @@ module test_top
 		// clk_3
 		if(cnt_clk3 == 0) begin
 			cnt_clk3 <= 1;
+			//clk_3 = ~clk_3;
 			`ns_bit_toggle(clk_3);
 		end
 		else  begin
 			cnt_clk3 <= (cnt_clk3 << 1);
 		end
+		// clk_4
+		/*if(cnt_clk4 == 0) begin
+			cnt_clk4 <= 1;
+			`ns_bit_toggle(clk_4);
+		end
+		else  begin
+			cnt_clk4 <= (cnt_clk4 << 1);
+		end*/
 	end
 	
 	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	gt1to2 (
 		.i_clk(i_clk),
-		//.i_clk(clk_src),
+		// i_clk clk_0
 		
 		.reset(the_reset),
 		.ready(the_all_ready),
 		
 		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_CHNL(snd0, lnk_0)
+		`NS_INSTA_CHNL(snd0, lnk_0),
 		// out1
-		`NS_INSTA_CHNL(snd1, lnk_1)
+		`NS_INSTA_CHNL(snd1, lnk_1),
 		// in
 		`NS_INSTA_CHNL(rcv0, lnk_2)
 	);
 
 	io_1to2 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR), .OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	io_t3 (
-		.src0_clk(clk_3),
-		.snk0_clk(clk_0),
-		.snk1_clk(clk_0),
+		.src0_clk(i_clk),
+		.snk0_clk(i_clk),
+		.snk1_clk(i_clk),
 		//i_clk, clk_0, clk_1
+		// clk 0, 1, 1 fails
+		// clk 0, 2, 2 fails
 		
 		// SRC
-		`NS_INSTA_CHNL(o0, lnk_2)
+		`NS_INSTA_CHNL(o0, lnk_2),
 		// SNK0
-		`NS_INSTA_CHNL(i0, lnk_0)
+		`NS_INSTA_CHNL(i0, lnk_0),
 		// SNK1
-		`NS_INSTA_CHNL(i1, lnk_1)
+		`NS_INSTA_CHNL(i1, lnk_1),
 		
 		`NS_INSTA_DBG_CHNL(dbg, dbg1, i_clk)
 	);
+
+	/*
+	always @(posedge i_clk)
+	begin
+		//`NS_MOV_REG_DBG(io, dbg1)
+		io_disp0 <= dbg1_disp0;
+		io_disp1 <= dbg1_disp1;
+	end
+	*/
 	
 	wire sw1_ON = ((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF));
 	wire sw1_OFF = ((w_Switch_1 == `NS_OFF) && (r_Switch_1 == `NS_ON));
@@ -245,6 +274,8 @@ module test_top
 	reg was_both_on = `NS_OFF;
 	reg updating = `NS_OFF;
 	
+	parameter MAX_CASES_IDX = 15;
+	
 	always @(posedge i_clk)
 	begin
 		r_Switch_3 <= w_Switch_3;
@@ -256,7 +287,7 @@ module test_top
 				was_both_on <= `NS_OFF;
 			end else begin
 				selecting <= `NS_ON;
-				`NS_INC_IDX(dbg_case_hi, 16);
+				`NS_INC_IDX(dbg_case_hi, MAX_CASES_IDX);
 			end
 		end
 		else
@@ -266,7 +297,7 @@ module test_top
 				was_both_on <= `NS_OFF;
 			end else begin
 				selecting <= `NS_ON;
-				`NS_INC_IDX(dbg_case_lo, 16);
+				`NS_INC_IDX(dbg_case_lo, MAX_CASES_IDX);
 			end
 		end
 		else 
@@ -298,7 +329,8 @@ module test_top
 
 	bin_to_disp Id0(
 	.i_Clk(i_clk),
-	.i_Binary_Num(io_disp0),
+	//.i_Binary_Num(io_disp0),
+	.i_Binary_Num(dbg1_disp0),
 	.o_Segment_A(w_Segment1_A),
 	.o_Segment_B(w_Segment1_B),
 	.o_Segment_C(w_Segment1_C),
@@ -311,7 +343,8 @@ module test_top
 	// Instantiate Binary to 7-Segment Converter
 	bin_to_disp Id1(
 	.i_Clk(i_clk),
-	.i_Binary_Num(io_disp1),
+	//.i_Binary_Num(io_disp1),
+	.i_Binary_Num(dbg1_disp1),
 	.o_Segment_A(w_Segment2_A),
 	.o_Segment_B(w_Segment2_B),
 	.o_Segment_C(w_Segment2_C),

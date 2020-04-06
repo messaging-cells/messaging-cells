@@ -23,19 +23,22 @@ module pakout_io
 	FSZ=`NS_PACKIN_FSZ, 
 	ASZ=`NS_ADDRESS_SIZE, 
 	DSZ=`NS_DATA_SIZE, 
-	RSZ=`NS_REDUN_SIZE,
+	RSZ=`NS_REDUN_SIZE
 )(
 	input wire i_clk,
 	input wire src_clk,
 	input wire snk_clk,
 	
 	// SRC_0
-	`NS_DECLARE_OUT_CHNL(o0)
+	`NS_DECLARE_OUT_CHNL(o0),
 	// SNK_0
-	`NS_DECLARE_PAKIN_CHNL(i0)
+	`NS_DECLARE_PAKIN_CHNL(i0),
 
 	`NS_DECLARE_DBG_CHNL(dbg)
 );
+	localparam TOT_PKS = ((`NS_FULL_MSG_SZ / PSZ) + 1);
+	localparam FIFO_IDX_WIDTH = ((($clog2(FSZ)-1) >= 0)?($clog2(FSZ)-1):(0));
+	localparam PACKETS_IDX_WIDTH = ((($clog2(TOT_PKS)-1) >= 0)?($clog2(TOT_PKS)-1):(0));
  
 	reg [3:0] cnt_0 = `NS_DBG_INIT_DAT;
 	//reg [3:0] cnt_1 = `NS_DBG_INIT_DAT;
@@ -63,6 +66,7 @@ module pakout_io
 	`NS_DECLARE_REG_MSG(inp0)
 	`NS_DECLARE_FIFO(bf0)
 	`NS_DECLARE_REG_PACKETS(rgi0)
+	
 	reg [0:0] rgi0_ack = `NS_OFF;
 
 	reg [DSZ-1:0] inp0_bak_dat = 15;
@@ -137,20 +141,20 @@ module pakout_io
 						inp0_err_0 <= `NS_ON;
 						rg_info_0 <= inp0_src;
 					end
-					else
+					/*else
 					if(inp0_dat > 15) begin
 						inp0_err_0 <= `NS_ON;
 					end
 					else
 					if(inp0_dat < 0) begin
 						inp0_err_0 <= `NS_ON;
-					end
+					end*/
 				end
 				else
 				if(! inp0_err_1) begin 
 					if((inp0_bak_dat <= 14) && ((inp0_bak_dat + 1) != inp0_dat)) begin
 						inp0_err_1 <= `NS_ON;
-						rg_info_1 <= inp0_dst[DSZ-1:0];
+						rg_info_1 <= inp0_dst;
 					end else begin 
 						inp0_bak_dat <= inp0_dat;
 					end

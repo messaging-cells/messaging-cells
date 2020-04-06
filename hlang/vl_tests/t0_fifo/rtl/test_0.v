@@ -3,7 +3,7 @@
 
 `default_nettype	none
 
-`define NS_NUM_TEST 0
+`define NS_NUM_TEST 4'b1010
 `define NS_TEST_MIN_ADDR 0
 `define NS_TEST_MAX_ADDR 55
 `define NS_TEST_REF_ADDR 23
@@ -46,11 +46,16 @@ module test_top
 	reg [3:0] cnt_clk1 = 0;
 	reg [5:0] cnt_clk2 = 0;
 	reg [7:0] cnt_clk3 = 0;
+	reg [11:0] cnt_clk4 = 0;
 	
 	reg clk_0 = `NS_OFF;
 	reg clk_1 = `NS_OFF;
 	reg clk_2 = `NS_OFF;
 	reg clk_3 = `NS_OFF;
+	reg clk_4 = `NS_OFF;
+
+	`NS_DECLARE_DBG_LINK(dbg0)
+	`NS_DECLARE_DBG_LINK(dbg1)
 	
 	reg [DSZ-1:0] disp_i_data = `NS_NUM_TEST;
 	reg [DSZ-1:0] disp_o_data = `NS_NUM_TEST;
@@ -59,7 +64,8 @@ module test_top
 	reg r_LED_2 = `NS_OFF;
 	reg r_LED_3 = `NS_OFF;
 	reg r_LED_4 = `NS_OFF;
-  
+
+	/*
 	wire err_0;
 	wire err_1;
 	wire err_2;
@@ -68,6 +74,7 @@ module test_top
 	wire [DSZ-1:0] fst_err_0_dat;
 	wire [DSZ-1:0] fst_err_1_inp;
 	wire [DSZ-1:0] fst_err_1_dat;
+	*/
 	
 	// LNK_0
 	`NS_DECLARE_LINK(lnk_0)
@@ -127,11 +134,19 @@ module test_top
 		else  begin
 			cnt_clk3 <= (cnt_clk3 << 1);
 		end
+		// clk_4
+		if(cnt_clk4 == 0) begin
+			cnt_clk4 <= 1;
+			`ns_bit_toggle(clk_4);
+		end
+		else  begin
+			cnt_clk4 <= (cnt_clk4 << 1);
+		end
 	end
 	
 	nd_fifo
 	gtfifo (
-		.i_clk(clk_2),
+		.i_clk(clk_4),
 		//i_clk, clk_0, clk_1
 		
 		.reset(the_reset),
@@ -146,23 +161,19 @@ module test_top
 
 	io_fifo #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
 	io_t0 (
-		.src_clk(clk_3),
-		.snk_clk(clk_1),
+		.src_clk(clk_2),
+		.snk_clk(clk_2),
 		//i_clk, clk_0, clk_1
 		
 		// SRC0
 		`NS_INSTA_CHNL(o0, lnk_1)
 		// SNK0
 		`NS_INSTA_CHNL(i0, lnk_0)
-		
-		.err_0(err_0),
-		.err_1(err_1),
-		
-		.i0_ck_dat(lnk_0_ck_dat),
-		.fst_err0_inp(fst_err_0_inp),
-		.fst_err0_dat(fst_err_0_dat),
+
+		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
 	);
 	
+	/*
 	// Instantiate Debounce Filter
 	debounce sw1_inst(
 		.i_Clk(i_clk),
@@ -177,19 +188,13 @@ module test_top
 		
 		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
 		begin
-			if(err_0 || err_1) begin
-				disp_i_data <= fst_err_0_inp;
-				disp_o_data <= fst_err_0_dat;
-			end else begin
-				disp_i_data <= lnk_0_dat;
-				disp_o_data <= lnk_0_ck_dat;
-			end
 		end
 	end
+	*/
 
 	bin_to_disp disp_1(
 	.i_Clk(i_clk),
-	.i_Binary_Num(disp_i_data),
+	.i_Binary_Num((dbg0_leds != 0)?(dbg0_disp0):(`NS_NUM_TEST)),
 	.o_Segment_A(w_Segment1_A),
 	.o_Segment_B(w_Segment1_B),
 	.o_Segment_C(w_Segment1_C),
@@ -202,7 +207,7 @@ module test_top
 	// Instantiate Binary to 7-Segment Converter
 	bin_to_disp disp2(
 	.i_Clk(i_clk),
-	.i_Binary_Num(disp_o_data),
+	.i_Binary_Num((dbg0_leds != 0)?(dbg0_disp1):(`NS_NUM_TEST)),
 	.o_Segment_A(w_Segment2_A),
 	.o_Segment_B(w_Segment2_B),
 	.o_Segment_C(w_Segment2_C),
@@ -228,9 +233,9 @@ module test_top
 	assign o_Segment2_F = ~w_Segment2_F;
 	assign o_Segment2_G = ~w_Segment2_G;
 
-	assign o_LED_1 = err_0;
-	assign o_LED_2 = err_1;
-	assign o_LED_3 = 0;
-	assign o_LED_4 = 0;
+	assign o_LED_1 = dbg0_leds[0:0];
+	assign o_LED_2 = dbg0_leds[1:1];
+	assign o_LED_3 = dbg0_leds[2:2];
+	assign o_LED_4 = dbg0_leds[3:3];
 
 endmodule

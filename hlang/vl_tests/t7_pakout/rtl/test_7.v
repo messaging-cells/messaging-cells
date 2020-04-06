@@ -57,25 +57,31 @@ module test_top
 	wire w_Switch_4;
 	reg  r_Switch_4 = `NS_OFF;
 
-	debounce but1_fixed(
+	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
+	
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but1_fixed(
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_1),
 		.o_Switch(w_Switch_1)
 	);
 	
-	debounce but2_fixed(
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but2_fixed(
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_2),
 		.o_Switch(w_Switch_2)
 	);
 	
-	debounce but3_fixed(
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but3_fixed(
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_3),
 		.o_Switch(w_Switch_3)
 	);
 	
-	debounce but4_fixed(
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but4_fixed(
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_4),
 		.o_Switch(w_Switch_4)
@@ -166,9 +172,9 @@ module test_top
 		
 		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_PAKIO_CHNL(snd0, lnk_0)
+		`NS_INSTA_PAKIO_CHNL(snd0, lnk_0),
 		// in0
-		`NS_INSTA_CHNL(rcv0, lnk_1)
+		`NS_INSTA_CHNL(rcv0, lnk_1),
 		
 		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
 	);
@@ -180,10 +186,10 @@ module test_top
 		.snk_clk(clk1),
 		
 		// SRC0
-		`NS_INSTA_CHNL(o0, lnk_1)
+		`NS_INSTA_CHNL(o0, lnk_1),
 		
 		// SNK0
-		`NS_INSTA_PAKIO_CHNL(i0, lnk_0)
+		`NS_INSTA_PAKIO_CHNL(i0, lnk_0),
 
 		`NS_INSTA_DBG_CHNL(dbg, dbg1, i_clk)
 		
@@ -257,7 +263,7 @@ module test_top
 		begin
 			was_both_on <= `NS_ON;
 			selecting <= `NS_OFF;
-			updating = `NS_ON;
+			updating <= `NS_ON;
 		end
 		
 		if(selecting)

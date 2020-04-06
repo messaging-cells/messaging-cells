@@ -19,20 +19,20 @@ module io_2to1
 	input wire snk0_clk,
 	
 	// SRC_0
-	`NS_DECLARE_OUT_CHNL(o0)
+	`NS_DECLARE_OUT_CHNL(o0),
 	output wire o0_err,
 	
 	// SRC_1
-	`NS_DECLARE_OUT_CHNL(o1)
+	`NS_DECLARE_OUT_CHNL(o1),
 	output wire o1_err,
 	
 	// SNK_0
-	`NS_DECLARE_IN_CHNL(i0)
+	`NS_DECLARE_IN_CHNL(i0),
 	output wire [DSZ-1:0] i0_ck_dat, // i0_ck_dat
 	output wire i0_err, // i0_err
 	
 	output wire [DSZ-1:0] fst_err_0_inp,
-	output wire [DSZ-1:0] fst_err_0_dat,
+	output wire [DSZ-1:0] fst_err_0_dat
 );
  
 	reg [3:0] cnt_0 = 0;
@@ -97,9 +97,9 @@ module io_2to1
 			if(ro0_dat > 15) begin
 				ro0_err <= `NS_ON;
 			end
-			if(ro0_dat < 0) begin
+			/*if(ro0_dat < 0) begin
 				ro0_err <= `NS_ON;
-			end
+			end*/
 			ro0_dat[3:0] <= cnt_0;
 			cnt_0 <= cnt_0 + 1;
 		end
@@ -126,9 +126,9 @@ module io_2to1
 			if(ro1_dat > 15) begin
 				ro1_err <= `NS_ON;
 			end
-			if(ro1_dat < 0) begin
+			/*if(ro1_dat < 0) begin
 				ro1_err <= `NS_ON;
-			end
+			end*/
 			ro1_dat[3:0] <= cnt_1;
 			cnt_1 <= cnt_1 + 1;
 		end
@@ -154,9 +154,9 @@ module io_2to1
 				if(i0_dat > 15) begin
 					r_2_err <= `NS_ON;
 				end
-				if(i0_dat < 0) begin
+				/*if(i0_dat < 0) begin
 					r_2_err <= `NS_ON;
-				end
+				end*/
 			end
 			if(! r_0_err && (i0_src == 0)) begin
 				if(i0_red != i0_redun) begin

@@ -15,11 +15,12 @@ module nd_2to1
 	input wire reset,
 	output wire ready,
 	
-	`NS_DECLARE_OUT_CHNL(snd0)
-	`NS_DECLARE_IN_CHNL(rcv0)
+	`NS_DECLARE_OUT_CHNL(snd0),
+	`NS_DECLARE_IN_CHNL(rcv0),
 	`NS_DECLARE_IN_CHNL(rcv1)
 	
 );
+	localparam FIFO_IDX_WIDTH = ((($clog2(FSZ)-1) >= 0)?($clog2(FSZ)-1):(0));
  
 	reg [0:0] rg_rdy = `NS_OFF;
 	
@@ -54,13 +55,17 @@ module nd_2to1
 			
 			`NS_REG_MSG_INIT(rgo0)
 			rgo0_req <= `NS_OFF;
+			rgo0_busy <= `NS_OFF;
 			
 			rgi0_ack <= `NS_OFF;
+			rgi0_added_hd <= `NS_OFF;
+			
 			rgi1_ack <= `NS_OFF;
+			rgi1_added_hd <= `NS_OFF;
 			
 			`NS_FIFO_INIT(bf0);
 			
-			choose_0 = `NS_TRUE;
+			choose_0 <= `NS_TRUE;
 		end
 		if(! reset && rg_rdy) begin
 			if(in0_rq && ((! in1_rq) || (in1_rq && choose_0))) begin

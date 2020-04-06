@@ -6,6 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "Cleaning" $(basename $SCRIPT_DIR)
 
 cd $SCRIPT_DIR
+bug_arrays/clean.sh
 t0_fifo/clean.sh
 t1_src-snk/clean.sh
 t2_ln_tgt/clean.sh

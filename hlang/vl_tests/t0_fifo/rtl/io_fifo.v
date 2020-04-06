@@ -22,14 +22,19 @@ module io_fifo
 	
 	// SNK_0
 	`NS_DECLARE_IN_CHNL(i0)
+
+	`NS_DECLARE_DBG_CHNL(dbg)
 	
+	/*
 	output wire err_0,
 	output wire err_1, 
 	
 	output wire [DSZ-1:0] i0_ck_dat,
 	output wire [DSZ-1:0] fst_err0_inp,
 	output wire [DSZ-1:0] fst_err0_dat,
+	*/
 );
+	`NS_DECLARE_REG_DBG(rg_dbg)
  
 	reg [3:0] cnt_0 = 0;
 	reg [3:0] cnt_1 = 0;
@@ -56,15 +61,6 @@ module io_fifo
 	// CHECK regs
 	reg [DSZ-1:0] r_0_ck_dat = 15;
 	reg [DSZ-1:0] r_1_ck_dat = 15;
-	reg [0:0] r_0_err = `NS_OFF;
-	reg [0:0] r_1_err = `NS_OFF;
-	reg [0:0] r_2_err = `NS_OFF;
-	
-	reg [DSZ-1:0] r_fst_err0_inp = 0;
-	reg [DSZ-1:0] r_fst_err0_dat = 0;
-	
-	//reg [0:0] i0_has_redun = `NS_OFF;
-	//reg [RSZ-1:0] ri0_redun = 0;
 	
 	wire [RSZ-1:0] i0_redun;
 	calc_redun #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ)) 
@@ -102,37 +98,38 @@ module io_fifo
 	//SNK_0
 	always @(posedge snk_clk)
 	begin
+		//rg_dbg_leds[3:3] <= 1;
 		if(! ri0_cks_done && i0_req && (! ri0_ack)) begin
-			if(! r_2_err) begin
+			if(! rg_dbg_leds[2:2]) begin
 				if(i0_dat > 15) begin
-					r_2_err <= `NS_ON;
+					rg_dbg_leds[2:2] <= `NS_ON;
 				end
 				if(i0_dat < 0) begin
-					r_2_err <= `NS_ON;
+					rg_dbg_leds[2:2] <= `NS_ON;
 				end
 			end
-			if(! r_0_err && (i0_src == 0)) begin
+			if(! rg_dbg_leds[0:0] && (i0_src == 0)) begin
 				if(i0_red != i0_redun) begin
-					r_0_err <= `NS_ON;
+					rg_dbg_leds[0:0] <= `NS_ON;
 				end
 				else
 				if((r_0_ck_dat <= 14) && ((r_0_ck_dat + 1) != i0_dat)) begin
-					r_0_err <= `NS_ON;
-					r_fst_err0_inp <= i0_dat;
-					r_fst_err0_dat <= r_0_ck_dat;
+					rg_dbg_leds[0:0] <= `NS_ON;
+					rg_dbg_disp0 <= i0_dat[3:0];
+					rg_dbg_disp1 <= r_0_ck_dat[3:0];
 				end else begin 
 					r_0_ck_dat <= i0_dat;
 				end
 			end
-			if(! r_1_err && (i0_src == 1)) begin
+			if(! rg_dbg_leds[1:1] && (i0_src == 1)) begin
 				if(i0_red != i0_redun) begin
-					r_1_err <= `NS_ON;
+					rg_dbg_leds[1:1] <= `NS_ON;
 				end
 				else
 				if((r_1_ck_dat <= 14) && ((r_1_ck_dat + 1) != i0_dat)) begin
-					r_1_err <= `NS_ON;
-					r_fst_err0_inp <= i0_dat;
-					r_fst_err0_dat <= r_1_ck_dat;
+					rg_dbg_leds[1:1] <= `NS_ON;
+					rg_dbg_disp0 <= i0_dat[3:0];
+					rg_dbg_disp1 <= r_1_ck_dat[3:0];
 				end else begin 
 					r_1_ck_dat <= i0_dat;
 				end
@@ -155,12 +152,7 @@ module io_fifo
 
 	//SNK_0
 	assign i0_ack = ri0_ack;
-	
-	assign err_0 = r_0_err;
-	assign err_1 = (ro0_err || r_2_err);
-	
-	assign i0_ck_dat = ri0_ck_dat;
-	assign fst_err0_inp = r_fst_err0_inp;
-	assign fst_err0_dat = r_fst_err0_dat;
+
+	`NS_ASSIGN_OUT_DBG(dbg, rg_dbg)
 	
 endmodule

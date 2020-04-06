@@ -143,39 +143,42 @@ module test_top
 		
 		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_CHNL(snd0, lnk_0)
+		`NS_INSTA_CHNL(snd0, lnk_0),
 		// in0
-		`NS_INSTA_CHNL(rcv0, lnk_1)
+		`NS_INSTA_CHNL(rcv0, lnk_1),
 		// in1
 		`NS_INSTA_CHNL(rcv1, lnk_2)
 	);
 
 	io_2to1 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
 	io_t6 (
-		.src0_clk(clk_2),
-		.src1_clk(clk_2),
-		.snk0_clk(clk_3),
+		.src0_clk(i_clk),
+		.src1_clk(i_clk),
+		.snk0_clk(i_clk),
 		//i_clk, clk_0, clk_1
-		// 0,1,2 fails
+		// 1,1,0 fails
 		// 0,1,2 fails
 		
 		// SRC0
-		`NS_INSTA_CHNL(o0, lnk_1)
+		`NS_INSTA_CHNL(o0, lnk_1),
 		.o0_err(err_0),
 		// SRC1
-		`NS_INSTA_CHNL(o1, lnk_2)
+		`NS_INSTA_CHNL(o1, lnk_2),
 		.o1_err(err_1),
 		// SNK0
-		`NS_INSTA_CHNL(i0, lnk_0)
+		`NS_INSTA_CHNL(i0, lnk_0),
 		.i0_ck_dat(lnk_0_ck_dat),
 		.i0_err(err_2),
 
 		.fst_err_0_inp(fst_err_0_inp),
-		.fst_err_0_dat(fst_err_0_dat),
+		.fst_err_0_dat(fst_err_0_dat)
 	);
 	
+	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
+	
 	// Instantiate Debounce Filter
-	debounce sw1_inst(
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	sw1_inst(
 		.i_Clk(i_clk),
 		.i_Switch(i_Switch_1),
 		.o_Switch(w_Switch_1)

@@ -11,17 +11,21 @@ module pakout
 	FSZ=`NS_PACKOUT_FSZ, 
 	ASZ=`NS_ADDRESS_SIZE, 
 	DSZ=`NS_DATA_SIZE, 
-	RSZ=`NS_REDUN_SIZE,
+	RSZ=`NS_REDUN_SIZE
 )(
 	input wire i_clk,
 	input wire reset,
 	output wire ready,
 	
-	`NS_DECLARE_PAKOUT_CHNL(snd0)
-	`NS_DECLARE_IN_CHNL(rcv0)
+	`NS_DECLARE_PAKOUT_CHNL(snd0),
+	`NS_DECLARE_IN_CHNL(rcv0),
 	
 	`NS_DECLARE_DBG_CHNL(dbg)
 );
+	localparam TOT_PKS = ((`NS_FULL_MSG_SZ / PSZ) + 1);
+	localparam FIFO_IDX_WIDTH = ((($clog2(FSZ)-1) >= 0)?($clog2(FSZ)-1):(0));
+	localparam PACKETS_IDX_WIDTH = ((($clog2(TOT_PKS)-1) >= 0)?($clog2(TOT_PKS)-1):(0));
+	
 	`NS_DECLARE_REG_DBG(rg_dbg)
 	
 	reg [0:0] rg_rdy = `NS_OFF;
@@ -77,7 +81,9 @@ module pakout
 			case(dbg_case) 
 			8'h20: begin
 				//rg_dbg_disp0 = rgo0_pakio[PSZ-1:4];
-				rg_dbg_disp1 = rgo0_pakio; 
+				rg_dbg_disp1[PSZ-1:0] <= rgo0_pakio; 
+			end
+			default: begin
 			end
 			endcase
 		end
