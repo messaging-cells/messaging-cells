@@ -39,6 +39,15 @@ module io_1to2
 	
 	`NS_DECLARE_DBG_CHNL(dbg)
 );
+
+	parameter RCV_REQ_CKS = `NS_REQ_CKS;
+	parameter SND_ACK_CKS = `NS_ACK_CKS;
+	
+	`NS_DEBOUNCER_ACK(src0_clk, o0)
+	`NS_DEBOUNCER_REQ(snk0_clk, i0)
+	`NS_DEBOUNCER_REQ(snk1_clk, i1)
+	
+
 	`NS_DECLARE_REG_DBG(rg_dbg)
 	reg [RSZ-1:0] err_mg_redun = 0;
 

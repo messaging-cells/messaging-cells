@@ -172,9 +172,9 @@ module test_top
 		
 		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_PAKIO_CHNL(snd0, lnk_0),
+		`NS_INSTA_SND_PAKIO_CHNL(snd0, lnk_0),
 		// in0
-		`NS_INSTA_CHNL(rcv0, lnk_1),
+		`NS_INSTA_RCV_CHNL(rcv0, lnk_1),
 		
 		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
 	);
@@ -186,10 +186,10 @@ module test_top
 		.snk_clk(clk1),
 		
 		// SRC0
-		`NS_INSTA_CHNL(o0, lnk_1),
+		`NS_INSTA_SND_CHNL(o0, lnk_1),
 		
 		// SNK0
-		`NS_INSTA_PAKIO_CHNL(i0, lnk_0),
+		`NS_INSTA_RCV_PAKIO_CHNL(i0, lnk_0),
 
 		`NS_INSTA_DBG_CHNL(dbg, dbg1, i_clk)
 		

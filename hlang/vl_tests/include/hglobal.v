@@ -27,6 +27,9 @@
 `define NS_PACKOUT_FSZ 4  // 1, 2 or 4 ***ONLY***
 `define NS_PACKIN_FSZ 4  // 1, 2 or 4 ***ONLY***
 
+`define NS_REQ_CKS 1
+`define NS_ACK_CKS 1
+
 `define NS_GT_OP 1
 `define NS_GTE_OP 2
 `define NS_LT_OP 3
@@ -143,13 +146,33 @@
 `define NS_DECLARE_OUT_CHNL(nam) \
 	`NS_DECLARE_OUT_MSG(nam), \
 	output wire nam``_req, \
-	input wire nam``_ack
+	input wire nam``_ack_dirty
 
 
 `define NS_DECLARE_IN_CHNL(nam) \
 	`NS_DECLARE_IN_MSG(nam), \
-	input wire nam``_req, \
+	input wire nam``_req_dirty, \
 	output wire nam``_ack
+
+
+`define NS_DEBOUNCER_REQ(clk, nam) \
+	wire nam``_req; \
+	debouncer #(.TOT_CKS(RCV_REQ_CKS)) \
+	it_``nam``_req( \
+		.i_Clk(clk), \
+		.i_Switch(nam``_req_dirty), \
+		.o_Switch(nam``_req) \
+	);
+
+
+`define NS_DEBOUNCER_ACK(clk, nam) \
+	wire nam``_ack; \
+	debouncer #(.TOT_CKS(SND_ACK_CKS)) \
+	it_``nam``_ack( \
+		.i_Clk(clk), \
+		.i_Switch(nam``_ack_dirty), \
+		.o_Switch(nam``_ack) \
+	);
 
 
 `define NS_DECLARE_LINK(lnk) \
@@ -160,13 +183,23 @@
 	wire lnk``_req; \
 	wire lnk``_ack; 
 
-	
-`define NS_INSTA_CHNL(chn, lnk) \
+
+`define NS_INSTA_MSG_CHNL(chn, lnk) \
 	.chn``_src(lnk``_src), \
 	.chn``_dst(lnk``_dst), \
 	.chn``_dat(lnk``_dat), \
-	.chn``_red(lnk``_red), \
+	.chn``_red(lnk``_red)
+
+
+`define NS_INSTA_SND_CHNL(chn, lnk) \
+	`NS_INSTA_MSG_CHNL(chn, lnk), \
 	.chn``_req(lnk``_req), \
+	.chn``_ack_dirty(lnk``_ack)
+
+
+`define NS_INSTA_RCV_CHNL(chn, lnk) \
+	`NS_INSTA_MSG_CHNL(chn, lnk), \
+	.chn``_req_dirty(lnk``_req), \
 	.chn``_ack(lnk``_ack)
 
 	
@@ -319,12 +352,12 @@
 `define NS_DECLARE_PAKOUT_CHNL(nam) \
 	output wire [PSZ-1:0] nam``_pakio, \
 	output wire nam``_req, \
-	input wire nam``_ack
+	input wire nam``_ack_dirty
 
 
 `define NS_DECLARE_PAKIN_CHNL(nam) \
 	input wire [PSZ-1:0] nam``_pakio, \
-	input wire nam``_req, \
+	input wire nam``_req_dirty, \
 	output wire nam``_ack
 
 
@@ -334,10 +367,16 @@
 	wire lnk``_ack; 
 
 
-`define NS_INSTA_PAKIO_CHNL(chn, lnk) \
+`define NS_INSTA_RCV_PAKIO_CHNL(chn, lnk) \
+	.chn``_pakio(lnk``_pakio), \
+	.chn``_req_dirty(lnk``_req), \
+	.chn``_ack(lnk``_ack)
+
+
+`define NS_INSTA_SND_PAKIO_CHNL(chn, lnk) \
 	.chn``_pakio(lnk``_pakio), \
 	.chn``_req(lnk``_req), \
-	.chn``_ack(lnk``_ack)
+	.chn``_ack_dirty(lnk``_ack)
 
 
 `define NS_PACKETS_INIT(pks, busy_init) \

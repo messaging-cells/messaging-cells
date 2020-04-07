@@ -143,11 +143,11 @@ module test_top
 		
 		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_CHNL(snd0, lnk_0),
+		`NS_INSTA_SND_CHNL(snd0, lnk_0),
 		// in0
-		`NS_INSTA_CHNL(rcv0, lnk_1),
+		`NS_INSTA_RCV_CHNL(rcv0, lnk_1),
 		// in1
-		`NS_INSTA_CHNL(rcv1, lnk_2)
+		`NS_INSTA_RCV_CHNL(rcv1, lnk_2)
 	);
 
 	io_2to1 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
@@ -160,13 +160,13 @@ module test_top
 		// 0,1,2 fails
 		
 		// SRC0
-		`NS_INSTA_CHNL(o0, lnk_1),
+		`NS_INSTA_SND_CHNL(o0, lnk_1),
 		.o0_err(err_0),
 		// SRC1
-		`NS_INSTA_CHNL(o1, lnk_2),
+		`NS_INSTA_SND_CHNL(o1, lnk_2),
 		.o1_err(err_1),
 		// SNK0
-		`NS_INSTA_CHNL(i0, lnk_0),
+		`NS_INSTA_RCV_CHNL(i0, lnk_0),
 		.i0_ck_dat(lnk_0_ck_dat),
 		.i0_err(err_2),
 

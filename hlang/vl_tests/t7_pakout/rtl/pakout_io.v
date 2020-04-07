@@ -36,6 +36,12 @@ module pakout_io
 
 	`NS_DECLARE_DBG_CHNL(dbg)
 );
+	parameter RCV_REQ_CKS = `NS_REQ_CKS;
+	parameter SND_ACK_CKS = `NS_ACK_CKS;
+	
+	`NS_DEBOUNCER_ACK(i_clk, o0)
+	`NS_DEBOUNCER_REQ(i_clk, i0)
+
 	localparam TOT_PKS = ((`NS_FULL_MSG_SZ / PSZ) + 1);
 	localparam FIFO_IDX_WIDTH = ((($clog2(FSZ)-1) >= 0)?($clog2(FSZ)-1):(0));
 	localparam PACKETS_IDX_WIDTH = ((($clog2(TOT_PKS)-1) >= 0)?($clog2(TOT_PKS)-1):(0));

@@ -25,6 +25,14 @@ module nd_1to2
 	`NS_DECLARE_IN_CHNL(rcv0)
 	
 );
+
+	parameter RCV_REQ_CKS = `NS_REQ_CKS;
+	parameter SND_ACK_CKS = `NS_ACK_CKS;
+	
+	`NS_DEBOUNCER_ACK(i_clk, snd0)
+	`NS_DEBOUNCER_ACK(i_clk, snd1)
+	`NS_DEBOUNCER_REQ(i_clk, rcv0)
+	
 	localparam FIFO_IDX_WIDTH = ((($clog2(FSZ)-1) >= 0)?($clog2(FSZ)-1):(0));
  
 	reg [0:0] rg_rdy = `NS_OFF;

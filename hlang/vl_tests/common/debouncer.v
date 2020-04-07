@@ -7,7 +7,7 @@ module debouncer
 	output o_Switch
 );
  
-	parameter TOT_CKS = 250000;
+	parameter TOT_CKS = 1;  //old val 250000
 
 	reg [$clog2(TOT_CKS):0] r_Count = 0;
 	reg r_State = 1'b0;

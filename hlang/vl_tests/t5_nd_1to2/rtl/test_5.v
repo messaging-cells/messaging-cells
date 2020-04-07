@@ -196,28 +196,28 @@ module test_top
 		
 		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_CHNL(snd0, lnk_0),
+		`NS_INSTA_SND_CHNL(snd0, lnk_0),
 		// out1
-		`NS_INSTA_CHNL(snd1, lnk_1),
+		`NS_INSTA_SND_CHNL(snd1, lnk_1),
 		// in
-		`NS_INSTA_CHNL(rcv0, lnk_2)
+		`NS_INSTA_RCV_CHNL(rcv0, lnk_2)
 	);
 
 	io_1to2 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR), .OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	io_t3 (
-		.src0_clk(i_clk),
-		.snk0_clk(i_clk),
-		.snk1_clk(i_clk),
+		.src0_clk(clk_2),
+		.snk0_clk(clk_0),
+		.snk1_clk(clk_0),
 		//i_clk, clk_0, clk_1
 		// clk 0, 1, 1 fails
 		// clk 0, 2, 2 fails
 		
 		// SRC
-		`NS_INSTA_CHNL(o0, lnk_2),
+		`NS_INSTA_SND_CHNL(o0, lnk_2),
 		// SNK0
-		`NS_INSTA_CHNL(i0, lnk_0),
+		`NS_INSTA_RCV_CHNL(i0, lnk_0),
 		// SNK1
-		`NS_INSTA_CHNL(i1, lnk_1),
+		`NS_INSTA_RCV_CHNL(i1, lnk_1),
 		
 		`NS_INSTA_DBG_CHNL(dbg, dbg1, i_clk)
 	);
