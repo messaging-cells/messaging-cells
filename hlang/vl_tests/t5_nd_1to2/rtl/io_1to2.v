@@ -191,36 +191,24 @@ module io_1to2
 					//else
 					if((inp0_back_dat <= 14) && ((inp0_back_dat + 1) != inp0_dat)) begin
 						inp0_err <= `NS_ON;
-						//err0_case <= 6;
-						
-						//err0_case <= inp0_back_dat[3:0];
-						//err1_case <= inp0_dat[3:0];
-						
-						rg_dbg_disp0 <= inp0_back_dat[3:0];
-						rg_dbg_disp1 <= inp0_dat[3:0];
-						
-						//rg_dbg_disp0 <= inp0_dst[5:4];
-						//rg_dbg_disp1 <= inp0_dst[3:0];
-						
-						//err0_case <= inp0_back_dat[3:0];
-						//err1_case <= inp0_dat[3:0];
+						//rg_dbg_disp0 <= inp0_back_dat[3:0];
+						//rg_dbg_disp1 <= inp0_dat[3:0];
 					end 
 					else 
 					begin 
 						inp0_back_dat <= inp0_dat;
-						//inp0_back_dst <= inp0_dst;
 					end
 				end
 			end
 			if(inp0_done_cks) begin
+				rg_dbg_disp0 <= inp0_dat[3:0];
+				
 				has_inp0 <= `NS_OFF;
 				inp0_has_redun <= `NS_OFF;
 				inp0_done_cks <= `NS_OFF;
 				
 				inp0_ack <= `NS_ON;
 			end
-			//rg_dbg_disp0 <= err0_case;
-			//rg_dbg_disp1 <= err1_case;
 		end
 		else
 		if((! i0_req) && inp0_ack) begin
@@ -267,13 +255,6 @@ module io_1to2
 					//else
 					if((inp1_back_dat <= 14) && ((inp1_back_dat + 1) != inp1_dat)) begin
 						inp1_err <= `NS_ON;
-						//err1_case <= 6;
-						
-						//rg_dbg_disp0 <= inp1_back_dat[3:0];
-						//rg_dbg_disp1 <= inp1_dat[3:0];
-						
-						//rg_dbg_disp0 <= inp1_dst[5:4];
-						//rg_dbg_disp1 <= inp1_dst[3:0];
 					end 
 					else 
 					begin
@@ -282,6 +263,8 @@ module io_1to2
 				end
 			end
 			if(inp1_done_cks) begin
+				rg_dbg_disp1 <= inp1_dat[3:0];
+				
 				has_inp1 <= `NS_OFF;
 				inp1_has_redun <= `NS_OFF;
 				inp1_done_cks <= `NS_OFF;
@@ -302,8 +285,6 @@ module io_1to2
 		case(dbg_case)
 			8'h30 :
 			begin
-				rg_dbg_disp0 <= 0;
-				rg_dbg_disp1 <= err_mg_case;
 			end
 		endcase
 	end

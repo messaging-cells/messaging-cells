@@ -8,6 +8,96 @@
 `define NS_TEST_MAX_ADDR 55
 `define NS_TEST_REF_ADDR 23
 
+
+`define NS_DECLARE_CLK(nam, idx, lim) \
+	reg [1:0] clk_idx_``nam = idx; \
+	reg [CLK_WDH-1:0] lim_clk_``nam = lim; \
+	reg [CLK_WDH-1:0] cnt_clk_``nam = 1; \
+	reg clk_``nam = 0;
+
+
+`define NS_INC_CLK(nam, base_clk) \
+	always @(posedge base_clk) \
+	begin \
+		if((cnt_clk_``nam == 0) || (cnt_clk_``nam == lim_clk_``nam)) begin \
+			cnt_clk_``nam <= 1; \
+			`ns_bit_toggle(clk_``nam); \
+		end \
+		else  begin \
+			cnt_clk_``nam <= (cnt_clk_``nam << 1); \
+		end \
+	end
+
+
+
+`define NS_INC_IDX_IN_ARR(idxs_arr, max_idx, ii, func) \
+	if(idxs_arr[ii] == max_idx) begin \
+		idxs_arr[ii] <= 0; \
+		func \
+	end \
+	else \
+	begin \
+		idxs_arr[ii] <= idxs_arr[ii] + 1; \
+	end
+
+
+`define NS_INIT_ARR_IDXS(idxs_arr) \
+		idxs_arr[0] <= 0; \
+		idxs_arr[1] <= 0; \
+		idxs_arr[2] <= 0; \
+		idxs_arr[3] <= 0; 
+
+
+`define NS_INC_ARR3(idxs_arr, max_idx) \
+	if(idxs_arr[3] == max_idx) begin \
+		`NS_INIT_ARR_IDXS(idxs_arr) \
+	end \
+	else \
+	begin \
+		idxs_arr[3] <= idxs_arr[3] + 1; \
+	end
+
+
+`define NS_INC_ARR2(idxs_arr, max_idx) \
+	if(idxs_arr[2] == max_idx) begin \
+		idxs_arr[2] <= 0; \
+		`NS_INC_ARR3(idxs_arr, max_idx) \
+	end \
+	else \
+	begin \
+		idxs_arr[2] <= idxs_arr[2] + 1; \
+	end
+
+
+`define NS_INC_ARR1(idxs_arr, max_idx) \
+	if(idxs_arr[1] == max_idx) begin \
+		idxs_arr[1] <= 0; \
+		`NS_INC_ARR2(idxs_arr, max_idx) \
+	end \
+	else \
+	begin \
+		idxs_arr[1] <= idxs_arr[1] + 1; \
+	end
+
+
+`define NS_INC_ARR0(idxs_arr, max_idx) \
+	if(idxs_arr[0] == max_idx) begin \
+		idxs_arr[0] <= 0; \
+		`NS_INC_ARR1(idxs_arr, max_idx) \
+	end \
+	else \
+	begin \
+		idxs_arr[0] <= idxs_arr[0] + 1; \
+	end
+
+
+`define NS_INC_ARR(idxs_arr, max_idx) `NS_INC_ARR0(idxs_arr, max_idx)
+
+
+`define NS_SET_LIM_CLK(nam, lims_arr, idxs_arr) lim_clk_``nam <= lims_arr[idxs_arr[clk_idx_``nam]];
+
+
+
 module test_top 
 #(parameter ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
 (
@@ -79,24 +169,38 @@ module test_top
 		.i_Switch(i_Switch_4),
 		.o_Switch(w_Switch_4)
 	);
+	
+	localparam CLK_WDH = 17;
+	localparam CLK_IDX_WDH = 2;
 
-	reg [2:0] cnt_clk0 = 0;
-	reg [3:0] cnt_clk1 = 0;
-	reg [5:0] cnt_clk2 = 0;
-	reg [7:0] cnt_clk3 = 0;
-	//reg [11:0] cnt_clk4 = 0;  //Uncomment to make it work !
-	//reg [1:0] QUIT_ERROR = 0;  // 1, 2 ,7 fails
+	reg [CLK_WDH-1:0] lim_clks_arr [6:0];  // 2, 3, 5, 7, 11, 13, 17
+	reg [CLK_IDX_WDH:0] lims_idxs [3:0];
+
+	reg clk_lims_inited = 0;
 	
-	reg clk_0 = `NS_OFF;
-	reg clk_1 = `NS_OFF;
-	reg clk_2 = `NS_OFF;
-	reg clk_3 = `NS_OFF;
-	//reg clk_4 = `NS_OFF;
+	`NS_DECLARE_CLK(kl0, 0, 2)
+	`NS_DECLARE_CLK(kl1, 1, 3)
+	`NS_DECLARE_CLK(kl2, 2, 5)
+	`NS_DECLARE_CLK(kl3, 3, 7)
+
+	`NS_INC_CLK(kl0, i_clk)
+	`NS_INC_CLK(kl1, i_clk)
+	`NS_INC_CLK(kl2, i_clk)
+	`NS_INC_CLK(kl3, i_clk)
 	
-	reg clk0 = `NS_OFF;
-	reg clk1 = `NS_OFF;
-	reg clk2 = `NS_OFF;
-	reg clk3 = `NS_OFF;
+	always @(posedge i_clk)
+	begin
+		if(! clk_lims_inited) begin
+			clk_lims_inited <= 1;
+			lim_clks_arr[0] <= 17'b00000000000000010;
+			lim_clks_arr[1] <= 17'b00000000000000100;
+			lim_clks_arr[2] <= 17'b00000000000010000;
+			lim_clks_arr[3] <= 17'b00000000001000000;
+			lim_clks_arr[4] <= 17'b00000010000000000;
+			lim_clks_arr[5] <= 17'b00001000000000000;
+			lim_clks_arr[6] <= 17'b10000000000000000;
+		end
+	end
 	
 	reg [3:0] io_leds = 0;
 	reg [3:0] io_disp0 = `NS_NUM_TEST;
@@ -139,57 +243,11 @@ module test_top
 	wire w_Segment2_E;
 	wire w_Segment2_F;
 	wire w_Segment2_G;
-
-	always @(posedge i_clk)
-	begin
-		// clk_0
-		if(cnt_clk0 == 0) begin
-			cnt_clk0 <= 1;
-			//clk_0 = ~clk_0;
-			`ns_bit_toggle(clk_0);
-		end
-		else  begin
-			cnt_clk0 <= (cnt_clk0 << 1);
-		end
-		// clk_1
-		if(cnt_clk1 == 0) begin
-			cnt_clk1 <= 1;
-			`ns_bit_toggle(clk_1);
-		end
-		else  begin
-			cnt_clk1 <= (cnt_clk1 << 1);
-		end
-		// clk_2
-		if(cnt_clk2 == 0) begin
-			cnt_clk2 <= 1;
-			`ns_bit_toggle(clk_2);
-		end
-		else  begin
-			cnt_clk2 <= (cnt_clk2 << 1);
-		end
-		// clk_3
-		if(cnt_clk3 == 0) begin
-			cnt_clk3 <= 1;
-			//clk_3 = ~clk_3;
-			`ns_bit_toggle(clk_3);
-		end
-		else  begin
-			cnt_clk3 <= (cnt_clk3 << 1);
-		end
-		// clk_4
-		/*if(cnt_clk4 == 0) begin
-			cnt_clk4 <= 1;
-			`ns_bit_toggle(clk_4);
-		end
-		else  begin
-			cnt_clk4 <= (cnt_clk4 << 1);
-		end*/
-	end
 	
 	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	gt1to2 (
 		.i_clk(i_clk),
-		// i_clk clk_0
+		// i_clk clk_kl3
 		
 		.reset(the_reset),
 		.ready(the_all_ready),
@@ -205,9 +263,9 @@ module test_top
 
 	io_1to2 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR), .OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	io_t3 (
-		.src0_clk(clk_2),
-		.snk0_clk(clk_0),
-		.snk1_clk(clk_0),
+		.src0_clk(clk_kl0),
+		.snk0_clk(clk_kl1),
+		.snk1_clk(clk_kl2),
 		//i_clk, clk_0, clk_1
 		// clk 0, 1, 1 fails
 		// clk 0, 2, 2 fails
@@ -222,15 +280,6 @@ module test_top
 		`NS_INSTA_DBG_CHNL(dbg, dbg1, i_clk)
 	);
 
-	/*
-	always @(posedge i_clk)
-	begin
-		//`NS_MOV_REG_DBG(io, dbg1)
-		io_disp0 <= dbg1_disp0;
-		io_disp1 <= dbg1_disp1;
-	end
-	*/
-	
 	wire sw1_ON = ((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF));
 	wire sw1_OFF = ((w_Switch_1 == `NS_OFF) && (r_Switch_1 == `NS_ON));
 	always @(posedge i_clk)
@@ -239,15 +288,19 @@ module test_top
 		
 		if(sw1_ON)
 		begin
-			`ns_bit_toggle(clk2);
-		end
-		else 
-		if(sw1_OFF)
-		begin
-			`ns_bit_toggle(clk2);
+			if(clk_lims_inited) begin
+				`NS_INC_ARR(lims_idxs, 6)
+				`NS_SET_LIM_CLK(kl0, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_CLK(kl1, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_CLK(kl2, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_CLK(kl3, lim_clks_arr, lims_idxs)
+			end
 		end
 	end
 
+	/*
+	`NS_DECLARE_REG_DBG(rg_dbg)
+	
 	wire sw2_ON = ((w_Switch_2 == `NS_ON) && (r_Switch_2 == `NS_OFF));
 	wire sw2_OFF = ((w_Switch_2 == `NS_OFF) && (r_Switch_2 == `NS_ON));
 	always @(posedge i_clk)
@@ -256,81 +309,16 @@ module test_top
 		
 		if(sw2_ON)
 		begin
-			`ns_bit_toggle(clk3);
-		end
-		if(sw2_OFF)
-		begin
-			`ns_bit_toggle(clk3);
+			rg_dbg_disp0 <= dbg1_disp0;
+			rg_dbg_disp1 <= dbg1_disp1;
 		end
 	end
 
-	wire sw3_ON = ((w_Switch_3 == `NS_ON) && (r_Switch_3 == `NS_OFF));
-	wire sw3_OFF = ((w_Switch_3 == `NS_OFF) && (r_Switch_3 == `NS_ON));
 	
-	wire sw4_ON = ((w_Switch_4 == `NS_ON) && (r_Switch_4 == `NS_OFF));
-	wire sw4_OFF = ((w_Switch_4 == `NS_OFF) && (r_Switch_4 == `NS_ON));
-	
-	reg selecting = `NS_OFF;
-	reg was_both_on = `NS_OFF;
-	reg updating = `NS_OFF;
-	
-	parameter MAX_CASES_IDX = 15;
-	
-	always @(posedge i_clk)
-	begin
-		r_Switch_3 <= w_Switch_3;
-		r_Switch_4 <= w_Switch_4;
-		
-		if(sw3_OFF && ! r_Switch_4)
-		begin
-			if(was_both_on) begin
-				was_both_on <= `NS_OFF;
-			end else begin
-				selecting <= `NS_ON;
-				`NS_INC_IDX(dbg_case_hi, MAX_CASES_IDX);
-			end
-		end
-		else
-		if(sw4_OFF && ! r_Switch_3)
-		begin
-			if(was_both_on) begin
-				was_both_on <= `NS_OFF;
-			end else begin
-				selecting <= `NS_ON;
-				`NS_INC_IDX(dbg_case_lo, MAX_CASES_IDX);
-			end
-		end
-		else 
-		if((sw3_OFF && r_Switch_4) || (sw4_OFF && r_Switch_3) || (sw3_OFF && sw4_OFF))
-		begin
-			was_both_on <= `NS_ON;
-			selecting <= `NS_OFF;
-			updating = `NS_ON;
-		end
-		
-		if(selecting)
-		begin
-			io_leds <= 0;
-			io_disp0 <= dbg_case_hi;
-			io_disp1 <= dbg_case_lo;
-		end
-		if(updating)
-		begin
-			updating <= `NS_OFF;
-			if((io_leds == 0) && (io_disp0 == dbg_case_hi) && (io_disp1 == dbg_case_lo))
-			begin
-				//`NS_MOV_REG_DBG(io, dbg0)
-				`NS_MOV_REG_DBG(io, dbg1)
-			end else begin
-				selecting <= `NS_ON;
-			end
-		end
-	end
-
 	bin_to_disp Id0(
 	.i_Clk(i_clk),
-	//.i_Binary_Num(io_disp0),
-	.i_Binary_Num(dbg1_disp0),
+	.i_Binary_Num(rg_dbg_disp0),
+	//.i_Binary_Num(dbg1_disp0),
 	.o_Segment_A(w_Segment1_A),
 	.o_Segment_B(w_Segment1_B),
 	.o_Segment_C(w_Segment1_C),
@@ -340,11 +328,10 @@ module test_top
 	.o_Segment_G(w_Segment1_G)
 	);
 	
-	// Instantiate Binary to 7-Segment Converter
 	bin_to_disp Id1(
 	.i_Clk(i_clk),
-	//.i_Binary_Num(io_disp1),
-	.i_Binary_Num(dbg1_disp1),
+	.i_Binary_Num(rg_dbg_disp1),
+	//.i_Binary_Num(dbg1_disp1),
 	.o_Segment_A(w_Segment2_A),
 	.o_Segment_B(w_Segment2_B),
 	.o_Segment_C(w_Segment2_C),
@@ -369,16 +356,26 @@ module test_top
 	assign o_Segment2_E = ~w_Segment2_E;
 	assign o_Segment2_F = ~w_Segment2_F;
 	assign o_Segment2_G = ~w_Segment2_G;
-
-	/*
-	wire [3:0] tl = 4'b1100;
-
-	assign o_LED_1 = tl[0:0];
-	assign o_LED_2 = tl[1:1];
-	assign o_LED_3 = tl[2:2];
-	assign o_LED_4 = tl[3:3];
 	*/
-
+	
+	
+	assign o_Segment1_A = ~(lims_idxs[0][0]);
+	assign o_Segment1_B = ~(lims_idxs[0][1]);
+	assign o_Segment1_C = ~(lims_idxs[0][2]);
+	assign o_Segment1_D = ~(lims_idxs[1][0]);
+	assign o_Segment1_E = ~(lims_idxs[1][1]);
+	assign o_Segment1_F = ~(lims_idxs[1][2]);
+	assign o_Segment1_G = 1;
+	
+	assign o_Segment2_A = ~(lims_idxs[2][0]);
+	assign o_Segment2_B = ~(lims_idxs[2][1]);
+	assign o_Segment2_C = ~(lims_idxs[2][2]);
+	assign o_Segment2_D = ~(lims_idxs[3][0]);
+	assign o_Segment2_E = ~(lims_idxs[3][1]);
+	assign o_Segment2_F = ~(lims_idxs[3][2]);
+	assign o_Segment2_G = 1;
+	
+	
 	assign o_LED_1 = dbg1_leds[0:0];
 	assign o_LED_2 = dbg1_leds[1:1];
 	assign o_LED_3 = dbg1_leds[2:2];

@@ -245,17 +245,17 @@
 
 
 `define NS_SEQ_SET(seq, chn) \
-	seq``[`NS_MG_SRC_SECTION] <= chn``_src; \
-	seq``[`NS_MG_DST_SECTION] <= chn``_dst; \
-	seq``[`NS_MG_DAT_SECTION] <= chn``_dat; \
-	seq``[`NS_MG_RED_SECTION] <= chn``_red;
+	seq[`NS_MG_SRC_SECTION] <= chn``_src; \
+	seq[`NS_MG_DST_SECTION] <= chn``_dst; \
+	seq[`NS_MG_DAT_SECTION] <= chn``_dat; \
+	seq[`NS_MG_RED_SECTION] <= chn``_red;
 
 
 `define NS_SEQ_GET(seq, chn) \
-	chn``_src <= seq``[`NS_MG_SRC_SECTION]; \
-	chn``_dst <= seq``[`NS_MG_DST_SECTION]; \
-	chn``_dat <= seq``[`NS_MG_DAT_SECTION]; \
-	chn``_red <= seq``[`NS_MG_RED_SECTION]; 
+	chn``_src <= seq[`NS_MG_SRC_SECTION]; \
+	chn``_dst <= seq[`NS_MG_DST_SECTION]; \
+	chn``_dat <= seq[`NS_MG_DAT_SECTION]; \
+	chn``_red <= seq[`NS_MG_RED_SECTION]; 
 
 
 //`define NS_FIFO_SET_IDX(chn, fif, idx) `NS_SEQ_SET(fif``_data[idx], chn)
@@ -400,7 +400,7 @@
 `define NS_MG_SEL_PAK(ii) ii*PSZ +: PSZ
 
 `define NS_MOV_FIFO_IDX_TO_PAKS(pks, fif, idx) \
-	for(pks``ii = 0; pks``ii < TOT_PKS-1; pks``ii = pks``ii+1) begin \
+	for(pks``ii = 0; pks``ii < TOT_PKS-1; pks``ii = pks``ii + 1) begin \
 		pks``_packets[pks``ii] <= fif``_data[idx][`NS_MG_SEL_PAK(pks``ii)]; \
 	end \
 	if((`NS_FULL_MSG_SZ % PSZ) > 0) begin \
@@ -411,7 +411,7 @@
 
 
 `define NS_MOV_PAKS_TO_FIFO_IDX(pks, fif, idx) \
-	for(pks``ii = 0; pks``ii < TOT_PKS-1; pks``ii = pks``ii+1) begin \
+	for(pks``ii = 0; pks``ii < TOT_PKS-1; pks``ii = pks``ii + 1) begin \
 		fif``_data[idx][`NS_MG_SEL_PAK(pks``ii)] <= pks``_packets[pks``ii]; \
 	end \
 	if((`NS_FULL_MSG_SZ % PSZ) > 0) begin \
