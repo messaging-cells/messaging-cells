@@ -9,93 +9,6 @@
 `define NS_TEST_REF_ADDR 23
 
 
-`define NS_DECLARE_CLK(nam, idx, lim) \
-	reg [1:0] clk_idx_``nam = idx; \
-	reg [CLK_WDH-1:0] lim_clk_``nam = lim; \
-	reg [CLK_WDH-1:0] cnt_clk_``nam = 1; \
-	reg clk_``nam = 0;
-
-
-`define NS_INC_CLK(nam, base_clk) \
-	always @(posedge base_clk) \
-	begin \
-		if((cnt_clk_``nam == 0) || (cnt_clk_``nam == lim_clk_``nam)) begin \
-			cnt_clk_``nam <= 1; \
-			`ns_bit_toggle(clk_``nam); \
-		end \
-		else  begin \
-			cnt_clk_``nam <= (cnt_clk_``nam << 1); \
-		end \
-	end
-
-
-
-`define NS_INC_IDX_IN_ARR(idxs_arr, max_idx, ii, func) \
-	if(idxs_arr[ii] == max_idx) begin \
-		idxs_arr[ii] <= 0; \
-		func \
-	end \
-	else \
-	begin \
-		idxs_arr[ii] <= idxs_arr[ii] + 1; \
-	end
-
-
-`define NS_INIT_ARR_IDXS(idxs_arr) \
-		idxs_arr[0] <= 0; \
-		idxs_arr[1] <= 0; \
-		idxs_arr[2] <= 0; \
-		idxs_arr[3] <= 0; 
-
-
-`define NS_INC_ARR3(idxs_arr, max_idx) \
-	if(idxs_arr[3] == max_idx) begin \
-		`NS_INIT_ARR_IDXS(idxs_arr) \
-	end \
-	else \
-	begin \
-		idxs_arr[3] <= idxs_arr[3] + 1; \
-	end
-
-
-`define NS_INC_ARR2(idxs_arr, max_idx) \
-	if(idxs_arr[2] == max_idx) begin \
-		idxs_arr[2] <= 0; \
-		`NS_INC_ARR3(idxs_arr, max_idx) \
-	end \
-	else \
-	begin \
-		idxs_arr[2] <= idxs_arr[2] + 1; \
-	end
-
-
-`define NS_INC_ARR1(idxs_arr, max_idx) \
-	if(idxs_arr[1] == max_idx) begin \
-		idxs_arr[1] <= 0; \
-		`NS_INC_ARR2(idxs_arr, max_idx) \
-	end \
-	else \
-	begin \
-		idxs_arr[1] <= idxs_arr[1] + 1; \
-	end
-
-
-`define NS_INC_ARR0(idxs_arr, max_idx) \
-	if(idxs_arr[0] == max_idx) begin \
-		idxs_arr[0] <= 0; \
-		`NS_INC_ARR1(idxs_arr, max_idx) \
-	end \
-	else \
-	begin \
-		idxs_arr[0] <= idxs_arr[0] + 1; \
-	end
-
-
-`define NS_INC_ARR(idxs_arr, max_idx) `NS_INC_ARR0(idxs_arr, max_idx)
-
-
-`define NS_SET_LIM_CLK(nam, lims_arr, idxs_arr) lim_clk_``nam <= lims_arr[idxs_arr[clk_idx_``nam]];
-
 
 
 module test_top 
@@ -178,15 +91,18 @@ module test_top
 
 	reg clk_lims_inited = 0;
 	
-	`NS_DECLARE_CLK(kl0, 0, 2)
-	`NS_DECLARE_CLK(kl1, 1, 3)
-	`NS_DECLARE_CLK(kl2, 2, 5)
-	`NS_DECLARE_CLK(kl3, 3, 7)
+	`NS_DECLARE_DBG_CLK(kl0, 0, 2)
+	`NS_DECLARE_DBG_CLK(kl1, 1, 3)
+	`NS_DECLARE_DBG_CLK(kl2, 2, 5)
+	`NS_DECLARE_DBG_CLK(kl3, 3, 7)
 
-	`NS_INC_CLK(kl0, i_clk)
-	`NS_INC_CLK(kl1, i_clk)
-	`NS_INC_CLK(kl2, i_clk)
-	`NS_INC_CLK(kl3, i_clk)
+	always @(posedge i_clk)
+	begin
+		`NS_INC_DBG_CLK(kl0, i_clk)
+		`NS_INC_DBG_CLK(kl1, i_clk)
+		`NS_INC_DBG_CLK(kl2, i_clk)
+		`NS_INC_DBG_CLK(kl3, i_clk)
+	end
 	
 	always @(posedge i_clk)
 	begin
@@ -246,7 +162,7 @@ module test_top
 	
 	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	gt1to2 (
-		.i_clk(i_clk),
+		.i_clk(clk_kl3),
 		// i_clk clk_kl3
 		
 		.reset(the_reset),
@@ -280,6 +196,7 @@ module test_top
 		`NS_INSTA_DBG_CHNL(dbg, dbg1, i_clk)
 	);
 
+	/*
 	wire sw1_ON = ((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF));
 	wire sw1_OFF = ((w_Switch_1 == `NS_OFF) && (r_Switch_1 == `NS_ON));
 	always @(posedge i_clk)
@@ -289,12 +206,30 @@ module test_top
 		if(sw1_ON)
 		begin
 			if(clk_lims_inited) begin
-				`NS_INC_ARR(lims_idxs, 6)
-				`NS_SET_LIM_CLK(kl0, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_CLK(kl1, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_CLK(kl2, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_CLK(kl3, lim_clks_arr, lims_idxs)
+				`NS_INC_DBG_IDXS_ARR(lims_idxs, 6)
+				`NS_SET_LIM_DBG_CLK(kl0, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl1, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl2, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl3, lim_clks_arr, lims_idxs)
 			end
+		end
+	end
+	*/
+
+	localparam TOT_TM_LIMS = 250000; 
+	reg [$clog2(TOT_TM_LIMS):0] cnt_inc_lims = 0;
+	always @(posedge i_clk)
+	begin
+		if(cnt_inc_lims == TOT_TM_LIMS) begin
+			cnt_inc_lims <= 1;
+			`NS_INC_DBG_IDXS_ARR(lims_idxs, 6)
+			`NS_SET_LIM_DBG_CLK(kl0, lim_clks_arr, lims_idxs)
+			`NS_SET_LIM_DBG_CLK(kl1, lim_clks_arr, lims_idxs)
+			`NS_SET_LIM_DBG_CLK(kl2, lim_clks_arr, lims_idxs)
+			`NS_SET_LIM_DBG_CLK(kl3, lim_clks_arr, lims_idxs)
+		end
+		else  begin
+			cnt_inc_lims <= cnt_inc_lims + 1;
 		end
 	end
 

@@ -30,6 +30,9 @@
 `define NS_REQ_CKS 1
 `define NS_ACK_CKS 1
 
+`define NS_2to1_REQ_CKS 1
+`define NS_2to1_ACK_CKS 1
+
 `define NS_GT_OP 1
 `define NS_GTE_OP 2
 `define NS_LT_OP 3
@@ -53,6 +56,84 @@
 `define NS_RANGE_CMP_OP(is_dbl, op1, pm1, pm2, op2, pm3, pm4) ( \
 	(is_dbl == `NS_TRUE)?(`NS_CMP_OP(op1, pm1, pm2) && `NS_CMP_OP(op2, pm3, pm4)):(`NS_CMP_OP(op1, pm1, pm2)) )
 	
+
+// DBG CLOCKS
+// ----------------------------------------------------------------------------
+
+`define NS_DECLARE_DBG_CLK(nam, idx, lim) \
+	reg [1:0] clk_idx_``nam = idx; \
+	reg [CLK_WDH-1:0] lim_clk_``nam = lim; \
+	reg [CLK_WDH-1:0] cnt_clk_``nam = 1; \
+	reg clk_``nam = 0;
+
+
+`define NS_INC_DBG_CLK(nam, base_clk) \
+	if((cnt_clk_``nam == 0) || (cnt_clk_``nam == lim_clk_``nam)) begin \
+		cnt_clk_``nam <= 1; \
+		`ns_bit_toggle(clk_``nam); \
+	end \
+	else  begin \
+		cnt_clk_``nam <= (cnt_clk_``nam << 1); \
+	end 
+
+
+`define NS_INIT_DBG_ARR_IDXS(idxs_arr) \
+		idxs_arr[0] <= 0; \
+		idxs_arr[1] <= 0; \
+		idxs_arr[2] <= 0; \
+		idxs_arr[3] <= 0; 
+
+
+`define NS_INC_DBG_ARR3(idxs_arr, max_idx) \
+	if(idxs_arr[3] == max_idx) begin \
+		`NS_INIT_DBG_ARR_IDXS(idxs_arr) \
+	end \
+	else \
+	begin \
+		idxs_arr[3] <= idxs_arr[3] + 1; \
+	end
+
+
+`define NS_INC_DBG_ARR2(idxs_arr, max_idx) \
+	if(idxs_arr[2] == max_idx) begin \
+		idxs_arr[2] <= 0; \
+		`NS_INC_DBG_ARR3(idxs_arr, max_idx) \
+	end \
+	else \
+	begin \
+		idxs_arr[2] <= idxs_arr[2] + 1; \
+	end
+
+
+`define NS_INC_DBG_ARR1(idxs_arr, max_idx) \
+	if(idxs_arr[1] == max_idx) begin \
+		idxs_arr[1] <= 0; \
+		`NS_INC_DBG_ARR2(idxs_arr, max_idx) \
+	end \
+	else \
+	begin \
+		idxs_arr[1] <= idxs_arr[1] + 1; \
+	end
+
+
+`define NS_INC_DBG_ARR0(idxs_arr, max_idx) \
+	if(idxs_arr[0] == max_idx) begin \
+		idxs_arr[0] <= 0; \
+		`NS_INC_DBG_ARR1(idxs_arr, max_idx) \
+	end \
+	else \
+	begin \
+		idxs_arr[0] <= idxs_arr[0] + 1; \
+	end
+
+
+`define NS_INC_DBG_IDXS_ARR(idxs_arr, max_idx) `NS_INC_DBG_ARR0(idxs_arr, max_idx)
+
+
+`define NS_SET_LIM_DBG_CLK(nam, lims_arr, idxs_arr) lim_clk_``nam <= lims_arr[idxs_arr[clk_idx_``nam]];
+
+// DBG CHANNELS
+// ----------------------------------------------------------------------------
 
 `define NS_DECLARE_DBG_CHNL(dbg) \
 	input wire dbg``_clk, \
@@ -96,6 +177,10 @@
 	assign ou``_leds = mg``_leds; \
 	assign ou``_disp0 = mg``_disp0; \
 	assign ou``_disp1 = mg``_disp1; 
+
+
+// MESSAGES
+// ----------------------------------------------------------------------------
 
 
 `define NS_FULL_MSG_SZ  (ASZ + ASZ + DSZ + RSZ)
@@ -142,6 +227,9 @@
 `define NS_REG_MSG_RED_EQ(mg, eq_src, eq_dst, eq_dat, eq_red) ((mg``_src == eq_src) && \
 	(mg``_dst == eq_dst) && (mg``_dat == eq_dat) && (mg``_red == eq_red))
 
+
+// CHANNELS
+// ----------------------------------------------------------------------------
 
 `define NS_DECLARE_OUT_CHNL(nam) \
 	`NS_DECLARE_OUT_MSG(nam), \
@@ -209,6 +297,9 @@
 	mg``_dat <= 0; \
 	mg``_red <= 0; \
 
+
+// FIFOS
+// ----------------------------------------------------------------------------
 
 `define NS_DECLARE_FIFO(fif) \
 	integer fif``ii = 0; \
@@ -335,6 +426,9 @@
 		end \
 	end
 
+
+// PACKETS
+// ----------------------------------------------------------------------------
 
 `define NS_DECLARE_REG_PACKETS(pks) \
 	integer pks``ii = 0; \

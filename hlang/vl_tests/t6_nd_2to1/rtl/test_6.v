@@ -14,6 +14,8 @@ module test_top
 	input  i_clk,      // Main Clock (25 MHz)
 	input  i_Switch_1, 
 	input  i_Switch_2, 
+	input  i_Switch_3, 
+	input  i_Switch_4, 
 	
 	output o_Segment1_A,
 	output o_Segment1_B,
@@ -41,16 +43,83 @@ module test_top
 	
 	wire w_Switch_1;
 	reg  r_Switch_1 = `NS_OFF;
+	wire w_Switch_2;
+	reg  r_Switch_2 = `NS_OFF;
+	wire w_Switch_3;
+	reg  r_Switch_3 = `NS_OFF;
+	wire w_Switch_4;
+	reg  r_Switch_4 = `NS_OFF;
 
-	reg [2:0] cnt_clk0 = 0;
-	reg [3:0] cnt_clk1 = 0;
-	reg [5:0] cnt_clk2 = 0;
-	reg [7:0] cnt_clk3 = 0;
+
+	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
 	
-	reg clk_0 = `NS_OFF;
-	reg clk_1 = `NS_OFF;
-	reg clk_2 = `NS_OFF;
-	reg clk_3 = `NS_OFF;
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but1_fixed (
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_1),
+		.o_Switch(w_Switch_1)
+	);
+	
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but2_fixed(
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_2),
+		.o_Switch(w_Switch_2)
+	);
+	
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but3_fixed(
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_3),
+		.o_Switch(w_Switch_3)
+	);
+	
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
+	but4_fixed(
+		.i_Clk(i_clk),
+		.i_Switch(i_Switch_4),
+		.o_Switch(w_Switch_4)
+	);
+	
+	localparam CLK_WDH = 17;
+	localparam CLK_IDX_WDH = 2;
+
+	reg [CLK_WDH-1:0] lim_clks_arr [6:0];  // 2, 3, 5, 7, 11, 13, 17
+	reg [CLK_IDX_WDH:0] lims_idxs [3:0];
+
+	reg lims_idxs_inited = 0;
+	reg clk_lims_inited = 0;
+	
+	`NS_DECLARE_DBG_CLK(kl0, 0, 17'b00000000000000010) // 2
+	`NS_DECLARE_DBG_CLK(kl1, 1, 2) // 3
+	`NS_DECLARE_DBG_CLK(kl2, 2, 2) // 5
+	`NS_DECLARE_DBG_CLK(kl3, 3, 2) // 7
+
+	reg [3:0] changing_clks = 0;
+	
+	always @(posedge i_clk)
+	begin
+		if(changing_clks == 0) begin
+			`NS_INC_DBG_CLK(kl0, i_clk)
+			`NS_INC_DBG_CLK(kl1, i_clk)
+			`NS_INC_DBG_CLK(kl2, i_clk)
+			`NS_INC_DBG_CLK(kl3, i_clk)
+		end
+	end
+	
+	always @(posedge i_clk)
+	begin
+		if(! clk_lims_inited) begin
+			clk_lims_inited <= 1;
+			lim_clks_arr[0] <= 17'b00000000000000010; // 2
+			lim_clks_arr[1] <= 17'b00000000000000100; // 3
+			lim_clks_arr[2] <= 17'b00000000000010000; // 5
+			lim_clks_arr[3] <= 17'b00000000001000000; // 7
+			lim_clks_arr[4] <= 17'b00000010000000000; // 11
+			lim_clks_arr[5] <= 17'b00001000000000000; // 13
+			lim_clks_arr[6] <= 17'b10000000000000000; // 17
+		end
+	end
 	
 	reg [DSZ-1:0] disp_i_data = `NS_NUM_TEST;
 	reg [DSZ-1:0] disp_o_data = `NS_NUM_TEST;
@@ -60,6 +129,7 @@ module test_top
 	reg r_LED_3 = `NS_OFF;
 	reg r_LED_4 = `NS_OFF;
   
+	/*
 	wire err_0;
 	wire err_1;
 	wire err_2;
@@ -68,14 +138,15 @@ module test_top
 	wire [DSZ-1:0] fst_err_0_dat;
 	wire [DSZ-1:0] fst_err_1_inp;
 	wire [DSZ-1:0] fst_err_1_dat;
+	*/
+	
+	`NS_DECLARE_DBG_LINK(dbg0)
 	
 	// LNK_0
 	`NS_DECLARE_LINK(lnk_0)
-	wire [DSZ-1:0] lnk_0_ck_dat;
 	
 	// LNK_1_
 	`NS_DECLARE_LINK(lnk_1)
-	wire [DSZ-1:0] lnk_1_ck_dat;
   
 	// LNK_2
 	`NS_DECLARE_LINK(lnk_2)
@@ -97,46 +168,10 @@ module test_top
 	wire w_Segment2_F;
 	wire w_Segment2_G;
 
-	always @(posedge i_clk)
-	begin
-		// clk_0
-		if(cnt_clk0 == 0) begin
-			cnt_clk0 <= 1;
-			`ns_bit_toggle(clk_0);
-		end
-		else  begin
-			cnt_clk0 <= (cnt_clk0 << 1);
-		end
-		// clk_1
-		if(cnt_clk1 == 0) begin
-			cnt_clk1 <= 1;
-			`ns_bit_toggle(clk_1);
-		end
-		else  begin
-			cnt_clk1 <= (cnt_clk1 << 1);
-		end
-		// clk_2
-		if(cnt_clk2 == 0) begin
-			cnt_clk2 <= 1;
-			`ns_bit_toggle(clk_2);
-		end
-		else  begin
-			cnt_clk2 <= (cnt_clk2 << 1);
-		end
-		// clk_3
-		if(cnt_clk3 == 0) begin
-			cnt_clk3 <= 1;
-			`ns_bit_toggle(clk_3);
-		end
-		else  begin
-			cnt_clk3 <= (cnt_clk3 << 1);
-		end
-	end
-	
 	nd_2to1 
 	gt1to2 (
 		.i_clk(i_clk),
-		//i_clk, clk_0, clk_1
+		//i_clk, clk_kl3
 		
 		.reset(the_reset),
 		.ready(the_all_ready),
@@ -152,31 +187,95 @@ module test_top
 
 	io_2to1 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
 	io_t6 (
-		.src0_clk(i_clk),
-		.src1_clk(i_clk),
-		.snk0_clk(i_clk),
+		.src0_clk(clk_kl0),
+		.src1_clk(clk_kl1),
+		.snk0_clk(clk_kl2),
 		//i_clk, clk_0, clk_1
 		// 1,1,0 fails
 		// 0,1,2 fails
 		
 		// SRC0
 		`NS_INSTA_SND_CHNL(o0, lnk_1),
-		.o0_err(err_0),
 		// SRC1
 		`NS_INSTA_SND_CHNL(o1, lnk_2),
-		.o1_err(err_1),
 		// SNK0
 		`NS_INSTA_RCV_CHNL(i0, lnk_0),
-		.i0_ck_dat(lnk_0_ck_dat),
-		.i0_err(err_2),
 
-		.fst_err_0_inp(fst_err_0_inp),
-		.fst_err_0_dat(fst_err_0_dat)
+		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
 	);
 	
+	localparam TOT_TM_LIMS = 250000; 
+	reg [$clog2(TOT_TM_LIMS):0] cnt_inc_lims = 0;
+	always @(posedge i_clk)
+	begin
+		if(cnt_inc_lims == TOT_TM_LIMS) begin
+			cnt_inc_lims <= 1;
+			`NS_INC_DBG_IDXS_ARR(lims_idxs, 6)
+			`NS_SET_LIM_DBG_CLK(kl0, lim_clks_arr, lims_idxs)
+			`NS_SET_LIM_DBG_CLK(kl1, lim_clks_arr, lims_idxs)
+			`NS_SET_LIM_DBG_CLK(kl2, lim_clks_arr, lims_idxs)
+			`NS_SET_LIM_DBG_CLK(kl3, lim_clks_arr, lims_idxs)
+		end
+		else  begin
+			cnt_inc_lims <= cnt_inc_lims + 1;
+		end
+	end
+
+	/*
+	wire sw1_ON = ((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF));
+	wire sw1_OFF = ((w_Switch_1 == `NS_OFF) && (r_Switch_1 == `NS_ON));
+	always @(posedge i_clk)
+	begin
+		r_Switch_1 <= w_Switch_1;
+		
+		if(sw1_ON)
+		begin
+			if(changing_clks == 0) begin
+				changing_clks <= 1;
+			end
+		end
+		
+		if(changing_clks == 1) begin
+			changing_clks <= 2;
+			if(clk_lims_inited) begin
+				`NS_INC_DBG_IDXS_ARR(lims_idxs, 6)
+				`NS_SET_LIM_DBG_CLK(kl0, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl1, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl2, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl3, lim_clks_arr, lims_idxs)
+			end
+		end
+		if(changing_clks == 2) begin
+			changing_clks <= 0;
+		end
+	end
+	*/
+	
+	wire sw2_ON = ((w_Switch_2 == `NS_ON) && (r_Switch_2 == `NS_OFF));
+	wire sw2_OFF = ((w_Switch_2 == `NS_OFF) && (r_Switch_2 == `NS_ON));
+	always @(posedge i_clk)
+	begin
+		r_Switch_2 <= w_Switch_2;
+		
+		if(sw2_ON)
+		begin
+			
+			/*if(clk_lims_inited) begin
+				lims_idxs[0] <= 2;
+				lims_idxs[1] <= 0;
+				lims_idxs[2] <= 0;
+				lims_idxs[3] <= 0;
+				`NS_SET_LIM_DBG_CLK(kl0, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl1, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl2, lim_clks_arr, lims_idxs)
+				`NS_SET_LIM_DBG_CLK(kl3, lim_clks_arr, lims_idxs)
+			end*/
+		end
+	end
+	
+	/*
 	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
 	
-	// Instantiate Debounce Filter
 	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
 	sw1_inst(
 		.i_Clk(i_clk),
@@ -184,7 +283,6 @@ module test_top
 		.o_Switch(w_Switch_1)
 	);
 	
-	// Purpose: When Switch is pressed, update display i_data and o_data
 	always @(posedge i_clk)
 	begin
 		r_Switch_1 <= w_Switch_1;
@@ -213,7 +311,6 @@ module test_top
 	.o_Segment_G(w_Segment1_G)
 	);
 	
-	// Instantiate Binary to 7-Segment Converter
 	bin_to_disp disp2(
 	.i_Clk(i_clk),
 	.i_Binary_Num(disp_o_data),
@@ -241,10 +338,27 @@ module test_top
 	assign o_Segment2_E = ~w_Segment2_E;
 	assign o_Segment2_F = ~w_Segment2_F;
 	assign o_Segment2_G = ~w_Segment2_G;
-
-	assign o_LED_1 = err_0;
-	assign o_LED_2 = err_1;
-	assign o_LED_3 = err_2;
-	assign o_LED_4 = r_LED_4;
-
+	*/
+	
+	assign o_Segment1_A = ~(lims_idxs[0][0]);
+	assign o_Segment1_B = ~(lims_idxs[0][1]);
+	assign o_Segment1_C = ~(lims_idxs[0][2]);
+	assign o_Segment1_D = ~(lims_idxs[1][0]);
+	assign o_Segment1_E = ~(lims_idxs[1][1]);
+	assign o_Segment1_F = ~(lims_idxs[1][2]);
+	assign o_Segment1_G = 1;
+	
+	assign o_Segment2_A = ~(lims_idxs[2][0]);
+	assign o_Segment2_B = ~(lims_idxs[2][1]);
+	assign o_Segment2_C = ~(lims_idxs[2][2]);
+	assign o_Segment2_D = ~(lims_idxs[3][0]);
+	assign o_Segment2_E = ~(lims_idxs[3][1]);
+	assign o_Segment2_F = ~(lims_idxs[3][2]);
+	assign o_Segment2_G = 1;
+	
+	assign o_LED_1 = dbg0_leds[0:0];
+	assign o_LED_2 = dbg0_leds[1:1];
+	assign o_LED_3 = dbg0_leds[2:2];
+	assign o_LED_4 = dbg0_leds[3:3];
+	
 endmodule
