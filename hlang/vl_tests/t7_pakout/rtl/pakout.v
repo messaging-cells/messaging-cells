@@ -18,9 +18,7 @@ module pakout
 	output wire ready,
 	
 	`NS_DECLARE_PAKOUT_CHNL(snd0),
-	`NS_DECLARE_IN_CHNL(rcv0),
-	
-	`NS_DECLARE_DBG_CHNL(dbg)
+	`NS_DECLARE_IN_CHNL(rcv0)
 );
 	parameter RCV_REQ_CKS = `NS_REQ_CKS;
 	parameter SND_ACK_CKS = `NS_ACK_CKS;
@@ -31,8 +29,6 @@ module pakout
 	localparam TOT_PKS = ((`NS_FULL_MSG_SZ / PSZ) + 1);
 	localparam FIFO_IDX_WIDTH = ((($clog2(FSZ)-1) >= 0)?($clog2(FSZ)-1):(0));
 	localparam PACKETS_IDX_WIDTH = ((($clog2(TOT_PKS)-1) >= 0)?($clog2(TOT_PKS)-1):(0));
-	
-	`NS_DECLARE_REG_DBG(rg_dbg)
 	
 	reg [0:0] rg_rdy = `NS_OFF;
 	
@@ -63,6 +59,8 @@ module pakout
 			rgi0_ack <= `NS_OFF;
 			
 			`NS_FIFO_INIT(bf0);
+			
+			added_hd <= `NS_OFF;
 		end
 		if(! reset && rg_rdy) begin
 			if(! added_hd) begin
@@ -80,26 +78,6 @@ module pakout
 		end
 	end
 
-	
-	always @(posedge dbg_clk)
-	begin
-		if(rgo0_pkio_busy && dbg_doit) begin
-			case(dbg_case) 
-			8'h20: begin
-				//rg_dbg_disp0 = rgo0_pakio[PSZ-1:4];
-				rg_dbg_disp1[PSZ-1:0] <= rgo0_pakio; 
-			end
-			default: begin
-			end
-			endcase
-		end
-		rg_dbg_leds[0:0] <= 0;
-		rg_dbg_leds[1:1] <= 0;
-		rg_dbg_leds[2:2] <= 0;
-		rg_dbg_leds[3:3] <= rgo0_pkio_busy;
-	end
-	
-	
 	assign ready = rg_rdy;
 	
 	//out1
@@ -109,7 +87,5 @@ module pakout
 	//inp0
 	assign rcv0_ack = rgi0_ack;
 
-	`NS_ASSIGN_OUT_DBG(dbg, rg_dbg)
-	
 endmodule
 
