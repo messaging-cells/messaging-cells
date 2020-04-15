@@ -17,6 +17,7 @@ module io_2to1
 	input wire src0_clk,
 	input wire src1_clk,
 	input wire snk0_clk,
+	input wire reset,
 	
 	// SRC_0
 	`NS_DECLARE_OUT_CHNL(o0),

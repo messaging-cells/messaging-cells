@@ -179,6 +179,18 @@
 	assign ou``_disp1 = mg``_disp1; 
 
 
+`define NS_DEBOUNCER_DBG_BUT(clk, nam) \
+	wire rdy_but_``nam; \
+	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK)) \
+	it_but_``nam ( \
+		.i_Clk(clk), \
+		.reset(reset), \
+		.ready(rdy_but_``nam), \
+		.bouncing(i_Switch_``nam), \
+		.steady(w_Switch_``nam) \
+	);
+
+
 // MESSAGES
 // ----------------------------------------------------------------------------
 
@@ -244,22 +256,28 @@
 
 
 `define NS_DEBOUNCER_REQ(clk, nam) \
+	wire nam``_rdy; \
 	wire nam``_req; \
 	debouncer #(.TOT_CKS(RCV_REQ_CKS)) \
 	it_``nam``_req( \
 		.i_Clk(clk), \
-		.i_Switch(nam``_req_dirty), \
-		.o_Switch(nam``_req) \
+		.reset(reset), \
+		.ready(nam``_rdy), \
+		.bouncing(nam``_req_dirty), \
+		.steady(nam``_req) \
 	);
 
 
 `define NS_DEBOUNCER_ACK(clk, nam) \
+	wire nam``_rdy; \
 	wire nam``_ack; \
 	debouncer #(.TOT_CKS(SND_ACK_CKS)) \
 	it_``nam``_ack( \
 		.i_Clk(clk), \
-		.i_Switch(nam``_ack_dirty), \
-		.o_Switch(nam``_ack) \
+		.reset(reset), \
+		.ready(nam``_rdy), \
+		.bouncing(nam``_ack_dirty), \
+		.steady(nam``_ack) \
 	);
 
 

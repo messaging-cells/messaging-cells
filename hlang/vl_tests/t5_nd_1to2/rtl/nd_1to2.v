@@ -101,7 +101,7 @@ module nd_1to2
 		end
 	end
 
-	assign ready = rg_rdy;
+	assign ready = rg_rdy && snd0_rdy && snd1_rdy && rcv0_rdy;
 	
 	//out1
 	`NS_ASSIGN_OUT_MSG(snd0, rgo0)

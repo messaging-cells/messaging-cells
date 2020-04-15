@@ -5,7 +5,7 @@
 `default_nettype	none
 
 
-module pakout
+module pakin
 #(parameter 
 	PSZ=`NS_PACKET_SIZE, 
 	FSZ=`NS_PACKOUT_FSZ, 
@@ -78,7 +78,7 @@ module pakout
 		end
 	end
 
-	assign ready = rg_rdy && snd0_rdy && rcv0_rdy;
+	assign ready = rg_rdy;
 	
 	//out1
 	assign snd0_pakio = rgo0_pakio;

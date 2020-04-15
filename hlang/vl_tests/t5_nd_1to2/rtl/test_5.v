@@ -41,8 +41,8 @@ module test_top
 	output o_LED_4
 	);
 
-	reg [0:0] the_reset = 0;
-	wire the_all_ready;
+	reg [0:0] reset = 0;
+	wire ready;
 	
 	wire w_Switch_1;
 	reg  r_Switch_1 = `NS_OFF;
@@ -55,33 +55,10 @@ module test_top
 
 	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
 	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	but1_fixed (
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_1),
-		.o_Switch(w_Switch_1)
-	);
-	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	but2_fixed(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_2),
-		.o_Switch(w_Switch_2)
-	);
-	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	but3_fixed(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_3),
-		.o_Switch(w_Switch_3)
-	);
-	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	but4_fixed(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_4),
-		.o_Switch(w_Switch_4)
-	);
+	`NS_DEBOUNCER_DBG_BUT(i_clk, 1)
+	`NS_DEBOUNCER_DBG_BUT(i_clk, 2)
+	`NS_DEBOUNCER_DBG_BUT(i_clk, 3)
+	`NS_DEBOUNCER_DBG_BUT(i_clk, 4)
 	
 	localparam CLK_WDH = 17;
 	localparam CLK_IDX_WDH = 2;
@@ -165,8 +142,8 @@ module test_top
 		.i_clk(clk_kl3),
 		// i_clk clk_kl3
 		
-		.reset(the_reset),
-		.ready(the_all_ready),
+		.reset(reset),
+		.ready(ready),
 		
 		//.i_clk(i_clk),
 		// out0
@@ -182,6 +159,7 @@ module test_top
 		.src0_clk(clk_kl0),
 		.snk0_clk(clk_kl1),
 		.snk1_clk(clk_kl2),
+		.reset(reset),
 		//i_clk, clk_0, clk_1
 		// clk 0, 1, 1 fails
 		// clk 0, 2, 2 fails

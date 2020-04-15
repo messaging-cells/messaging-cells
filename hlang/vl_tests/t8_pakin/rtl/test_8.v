@@ -3,15 +3,22 @@
 
 `default_nettype	none
 
-`define NS_NUM_TEST 6
-`define NS_TEST_MIN_ADDR 0
-`define NS_TEST_MAX_ADDR 55
+`define NS_NUM_TEST 8
+`define NS_TEST_MIN_ADDR 1
+`define NS_TEST_MAX_ADDR 14
 `define NS_TEST_REF_ADDR 23
 
+`define NS_NUM_DBG_CASES 12
+
+
 module test_top 
-#(parameter ASZ=`NS_ADDRESS_SIZE, DSZ=`NS_DATA_SIZE, RSZ=`NS_REDUN_SIZE)
-(
-	input  i_clk,      // Main Clock (25 MHz)
+#(parameter 
+	PSZ=`NS_PACKET_SIZE, 
+	ASZ=`NS_ADDRESS_SIZE, 
+	DSZ=`NS_DATA_SIZE, 
+	RSZ=`NS_REDUN_SIZE
+)(
+	input  i_clk,      
 	input  i_Switch_1, 
 	input  i_Switch_2, 
 	input  i_Switch_3, 
@@ -50,7 +57,6 @@ module test_top
 	wire w_Switch_4;
 	reg  r_Switch_4 = `NS_OFF;
 
-
 	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
 	
 	`NS_DEBOUNCER_DBG_BUT(i_clk, 1)
@@ -58,6 +64,22 @@ module test_top
 	`NS_DEBOUNCER_DBG_BUT(i_clk, 3)
 	`NS_DEBOUNCER_DBG_BUT(i_clk, 4)
 	
+	wire w_Segment1_A;
+	wire w_Segment1_B;
+	wire w_Segment1_C;
+	wire w_Segment1_D;
+	wire w_Segment1_E;
+	wire w_Segment1_F;
+	wire w_Segment1_G;
+	
+	wire w_Segment2_A;
+	wire w_Segment2_B;
+	wire w_Segment2_C;
+	wire w_Segment2_D;
+	wire w_Segment2_E;
+	wire w_Segment2_F;
+	wire w_Segment2_G;
+
 	localparam CLK_WDH = 17;
 	localparam CLK_IDX_WDH = 2;
 
@@ -98,90 +120,49 @@ module test_top
 		end
 	end
 	
-	reg [DSZ-1:0] disp_i_data = `NS_NUM_TEST;
-	reg [DSZ-1:0] disp_o_data = `NS_NUM_TEST;
-	
-	//reg r_LED_1 = `NS_OFF;
-	reg r_LED_2 = `NS_OFF;
-	reg r_LED_3 = `NS_OFF;
-	reg r_LED_4 = `NS_OFF;
-  
-	/*
-	wire err_0;
-	wire err_1;
-	wire err_2;
-
-	wire [DSZ-1:0] fst_err_0_inp;
-	wire [DSZ-1:0] fst_err_0_dat;
-	wire [DSZ-1:0] fst_err_1_inp;
-	wire [DSZ-1:0] fst_err_1_dat;
-	*/
-	
 	`NS_DECLARE_DBG_LINK(dbg0)
 	
+	assign dbg0_case = 0;
+	assign dbg0_doit = 0;
+	
 	// LNK_0
-	`NS_DECLARE_LINK(lnk_0)
+	`NS_DECLARE_PAKIO_LINK(lnk_0)
 	
 	// LNK_1_
 	`NS_DECLARE_LINK(lnk_1)
   
 	// LNK_2
 	`NS_DECLARE_LINK(lnk_2)
-	//wire [DSZ-1:0] lnk_2_ck_dat;
 
-	wire w_Segment1_A;
-	wire w_Segment1_B;
-	wire w_Segment1_C;
-	wire w_Segment1_D;
-	wire w_Segment1_E;
-	wire w_Segment1_F;
-	wire w_Segment1_G;
-	
-	wire w_Segment2_A;
-	wire w_Segment2_B;
-	wire w_Segment2_C;
-	wire w_Segment2_D;
-	wire w_Segment2_E;
-	wire w_Segment2_F;
-	wire w_Segment2_G;
-
-	nd_2to1 
-	gt1to2 (
-		.i_clk(i_clk),
-		//i_clk, clk_kl3
+	pakin 
+	gt_01 (
+		.i_clk(clk_kl2),
 		
 		.reset(reset),
 		.ready(ready),
 		
-		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_SND_CHNL(snd0, lnk_0),
+		`NS_INSTA_SND_PAKIO_CHNL(snd0, lnk_0),
 		// in0
-		`NS_INSTA_RCV_CHNL(rcv0, lnk_1),
-		// in1
-		`NS_INSTA_RCV_CHNL(rcv1, lnk_2)
+		`NS_INSTA_RCV_CHNL(rcv0, lnk_1)
 	);
 
-	io_2to1 #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
-	io_t6 (
-		.src0_clk(clk_kl0),
-		.src1_clk(clk_kl1),
-		.snk0_clk(clk_kl2),
+	pakin_io #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
+	gt_02 (
+		.src_clk(clk_kl0),
+		.snk_clk(clk_kl1),
 		.reset(reset),
-		//i_clk, clk_0, clk_1
-		// 1,1,0 fails
-		// 0,1,2 fails
 		
 		// SRC0
 		`NS_INSTA_SND_CHNL(o0, lnk_1),
-		// SRC1
-		`NS_INSTA_SND_CHNL(o1, lnk_2),
+		
 		// SNK0
-		`NS_INSTA_RCV_CHNL(i0, lnk_0),
+		`NS_INSTA_RCV_PAKIO_CHNL(i0, lnk_0),
 
 		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
+		
 	);
-	
+
 	localparam TOT_TM_LIMS = 250000; 
 	reg [$clog2(TOT_TM_LIMS):0] cnt_inc_lims = 0;
 	always @(posedge i_clk)
@@ -200,34 +181,7 @@ module test_top
 	end
 
 	/*
-	wire sw1_ON = ((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF));
-	wire sw1_OFF = ((w_Switch_1 == `NS_OFF) && (r_Switch_1 == `NS_ON));
-	always @(posedge i_clk)
-	begin
-		r_Switch_1 <= w_Switch_1;
-		
-		if(sw1_ON)
-		begin
-			if(changing_clks == 0) begin
-				changing_clks <= 1;
-			end
-		end
-		
-		if(changing_clks == 1) begin
-			changing_clks <= 2;
-			if(clk_lims_inited) begin
-				`NS_INC_DBG_IDXS_ARR(lims_idxs, 6)
-				`NS_SET_LIM_DBG_CLK(kl0, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_DBG_CLK(kl1, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_DBG_CLK(kl2, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_DBG_CLK(kl3, lim_clks_arr, lims_idxs)
-			end
-		end
-		if(changing_clks == 2) begin
-			changing_clks <= 0;
-		end
-	end
-	*/
+	`NS_DECLARE_REG_DBG(dd1)
 	
 	wire sw2_ON = ((w_Switch_2 == `NS_ON) && (r_Switch_2 == `NS_OFF));
 	wire sw2_OFF = ((w_Switch_2 == `NS_OFF) && (r_Switch_2 == `NS_ON));
@@ -237,49 +191,15 @@ module test_top
 		
 		if(sw2_ON)
 		begin
-			
-			/*if(clk_lims_inited) begin
-				lims_idxs[0] <= 2;
-				lims_idxs[1] <= 0;
-				lims_idxs[2] <= 0;
-				lims_idxs[3] <= 0;
-				`NS_SET_LIM_DBG_CLK(kl0, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_DBG_CLK(kl1, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_DBG_CLK(kl2, lim_clks_arr, lims_idxs)
-				`NS_SET_LIM_DBG_CLK(kl3, lim_clks_arr, lims_idxs)
-			end*/
+			dd1_disp0 <= dbg0_disp0;
+			dd1_disp1 <= dbg0_disp1;
 		end
 	end
-	
-	/*
-	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
-	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	sw1_inst(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_1),
-		.o_Switch(w_Switch_1)
-	);
-	
-	always @(posedge i_clk)
-	begin
-		r_Switch_1 <= w_Switch_1;
-		
-		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
-		begin
-			if(err_0 || err_1 || err_2) begin
-				disp_i_data <= fst_err_0_inp;
-				disp_o_data <= fst_err_0_dat;
-			end else begin
-				disp_i_data <= lnk_0_dat;
-				disp_o_data <= lnk_0_ck_dat;
-			end
-		end		
-	end
 
-	bin_to_disp disp_1(
+	
+	bin_to_disp disp_0(
 	.i_Clk(i_clk),
-	.i_Binary_Num(disp_i_data),
+	.i_Binary_Num(dd1_disp0),
 	.o_Segment_A(w_Segment1_A),
 	.o_Segment_B(w_Segment1_B),
 	.o_Segment_C(w_Segment1_C),
@@ -289,9 +209,9 @@ module test_top
 	.o_Segment_G(w_Segment1_G)
 	);
 	
-	bin_to_disp disp2(
+	bin_to_disp disp1(
 	.i_Clk(i_clk),
-	.i_Binary_Num(disp_o_data),
+	.i_Binary_Num(dd1_disp1),
 	.o_Segment_A(w_Segment2_A),
 	.o_Segment_B(w_Segment2_B),
 	.o_Segment_C(w_Segment2_C),
@@ -317,7 +237,7 @@ module test_top
 	assign o_Segment2_F = ~w_Segment2_F;
 	assign o_Segment2_G = ~w_Segment2_G;
 	*/
-	
+
 	assign o_Segment1_A = ~(lims_idxs[0][0]);
 	assign o_Segment1_B = ~(lims_idxs[0][1]);
 	assign o_Segment1_C = ~(lims_idxs[0][2]);
@@ -338,5 +258,5 @@ module test_top
 	assign o_LED_2 = dbg0_leds[1:1];
 	assign o_LED_3 = dbg0_leds[2:2];
 	assign o_LED_4 = dbg0_leds[3:3];
-	
+
 endmodule

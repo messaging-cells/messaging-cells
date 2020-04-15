@@ -45,8 +45,8 @@ module test_top
 	output o_LED_4
 	);
 
-	reg [0:0] the_reset = 0;
-	wire the_all_ready;
+	reg [0:0] reset = 0;
+	wire ready;
 	
 	wire w_Switch_1;
 	reg  r_Switch_1 = `NS_OFF;
@@ -59,33 +59,10 @@ module test_top
 
 	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
 	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	but1_fixed(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_1),
-		.o_Switch(w_Switch_1)
-	);
-	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	but2_fixed(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_2),
-		.o_Switch(w_Switch_2)
-	);
-	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	but3_fixed(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_3),
-		.o_Switch(w_Switch_3)
-	);
-	
-	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK))
-	but4_fixed(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_4),
-		.o_Switch(w_Switch_4)
-	);
+	`NS_DEBOUNCER_DBG_BUT(i_clk, 1)
+	`NS_DEBOUNCER_DBG_BUT(i_clk, 2)
+	`NS_DEBOUNCER_DBG_BUT(i_clk, 3)
+	`NS_DEBOUNCER_DBG_BUT(i_clk, 4)
 	
 	wire w_Segment1_A;
 	wire w_Segment1_B;
@@ -161,8 +138,8 @@ module test_top
 	gt_01 (
 		.i_clk(clk_kl2),
 		
-		.reset(the_reset),
-		.ready(the_all_ready),
+		.reset(reset),
+		.ready(ready),
 		
 		// out0
 		`NS_INSTA_SND_PAKIO_CHNL(snd0, lnk_0),
@@ -174,6 +151,7 @@ module test_top
 	gt_02 (
 		.src_clk(clk_kl0),
 		.snk_clk(clk_kl1),
+		.reset(reset),
 		
 		// SRC0
 		`NS_INSTA_SND_CHNL(o0, lnk_1),

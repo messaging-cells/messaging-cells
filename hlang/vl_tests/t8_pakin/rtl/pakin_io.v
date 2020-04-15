@@ -15,7 +15,7 @@
 
 `define NS_DBG_MAX_SRC_CASE 4
 
-module pakout_io
+module pakin_io
 #(parameter 
 	MIN_ADDR=1, 
 	MAX_ADDR=1, 
