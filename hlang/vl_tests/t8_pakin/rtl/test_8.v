@@ -126,10 +126,10 @@ module test_top
 	assign dbg0_doit = 0;
 	
 	// LNK_0
-	`NS_DECLARE_PAKIO_LINK(lnk_0)
+	`NS_DECLARE_LINK(lnk_0)
 	
 	// LNK_1_
-	`NS_DECLARE_LINK(lnk_1)
+	`NS_DECLARE_PAKIO_LINK(lnk_1)
   
 	// LNK_2
 	`NS_DECLARE_LINK(lnk_2)
@@ -142,9 +142,9 @@ module test_top
 		.ready(ready),
 		
 		// out0
-		`NS_INSTA_SND_PAKIO_CHNL(snd0, lnk_0),
+		`NS_INSTA_SND_CHNL(snd0, lnk_0),
 		// in0
-		`NS_INSTA_RCV_CHNL(rcv0, lnk_1)
+		`NS_INSTA_RCV_PAKIO_CHNL(rcv0, lnk_1)
 	);
 
 	pakin_io #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
@@ -154,10 +154,10 @@ module test_top
 		.reset(reset),
 		
 		// SRC0
-		`NS_INSTA_SND_CHNL(o0, lnk_1),
+		`NS_INSTA_SND_PAKIO_CHNL(o0, lnk_1),
 		
 		// SNK0
-		`NS_INSTA_RCV_PAKIO_CHNL(i0, lnk_0),
+		`NS_INSTA_RCV_CHNL(i0, lnk_0),
 
 		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
 		

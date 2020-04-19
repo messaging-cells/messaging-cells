@@ -70,7 +70,6 @@ module io_1to2
 	reg [0:0] ro0_err = `NS_OFF;
 	
 	// SNK_0 regs
- 	reg [3:0] err0_case = 0;
 	reg [0:0] has_inp0 = `NS_OFF;
 	reg [0:0] inp0_has_redun = `NS_OFF;
 	reg [0:0] inp0_done_cks = `NS_OFF;

@@ -30,9 +30,6 @@
 `define NS_REQ_CKS 1
 `define NS_ACK_CKS 1
 
-`define NS_2to1_REQ_CKS 1
-`define NS_2to1_ACK_CKS 1
-
 `define NS_GT_OP 1
 `define NS_GTE_OP 2
 `define NS_LT_OP 3
@@ -540,7 +537,9 @@
 	end 
 
 
-`define NS_PACKOUT_TRY_INC(pks, the_out_ack, the_req) \
+`define NS_PACKOUT_TRY_INC(pks, fif, the_out_ack, the_req) \
+	`NS_FIFO_TO_PAKS_TRY_INC_TAIL(fif, pks) \
+	else \
 	if(pks``_busy) begin \
 		if(! pks``_pkio_busy) begin \
 			pks``_pkio_busy <= `NS_ON; \

@@ -16,24 +16,23 @@ module io_fifo
 )(
 	input wire src_clk,
 	input wire snk_clk,
+	input wire reset,
 	
 	// SRC_0
-	`NS_DECLARE_OUT_CHNL(o0)
+	`NS_DECLARE_OUT_CHNL(o0),
 	
 	// SNK_0
-	`NS_DECLARE_IN_CHNL(i0)
+	`NS_DECLARE_IN_CHNL(i0),
 
 	`NS_DECLARE_DBG_CHNL(dbg)
 	
-	/*
-	output wire err_0,
-	output wire err_1, 
-	
-	output wire [DSZ-1:0] i0_ck_dat,
-	output wire [DSZ-1:0] fst_err0_inp,
-	output wire [DSZ-1:0] fst_err0_dat,
-	*/
 );
+	parameter RCV_REQ_CKS = `NS_REQ_CKS;
+	parameter SND_ACK_CKS = `NS_ACK_CKS;
+	
+	`NS_DEBOUNCER_ACK(src_clk, o0)
+	`NS_DEBOUNCER_REQ(snk_clk, i0)
+
 	`NS_DECLARE_REG_DBG(rg_dbg)
  
 	reg [3:0] cnt_0 = 0;
@@ -75,9 +74,9 @@ module io_fifo
 			if(ro0_dat > 15) begin
 				ro0_err <= `NS_ON;
 			end
-			if(ro0_dat < 0) begin
+			/*if(ro0_dat < 0) begin
 				ro0_err <= `NS_ON;
-			end
+			end*/
 			ro0_dat[3:0] <= cnt_0;
 			cnt_0 <= cnt_0 + 1;
 		end
@@ -104,9 +103,9 @@ module io_fifo
 				if(i0_dat > 15) begin
 					rg_dbg_leds[2:2] <= `NS_ON;
 				end
-				if(i0_dat < 0) begin
+				/*if(i0_dat < 0) begin
 					rg_dbg_leds[2:2] <= `NS_ON;
-				end
+				end*/
 			end
 			if(! rg_dbg_leds[0:0] && (i0_src == 0)) begin
 				if(i0_red != i0_redun) begin

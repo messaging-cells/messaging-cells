@@ -154,21 +154,22 @@ module test_top
 		
 		//.i_clk(i_clk),
 		// out0
-		`NS_INSTA_CHNL(snd0, lnk_0)
+		`NS_INSTA_SND_CHNL(snd0, lnk_0),
 		// in0
-		`NS_INSTA_CHNL(rcv0, lnk_1)
+		`NS_INSTA_RCV_CHNL(rcv0, lnk_1)
 	);
 
 	io_fifo #(.MIN_ADDR(`NS_TEST_MIN_ADDR), .MAX_ADDR(`NS_TEST_MAX_ADDR))
 	io_t0 (
 		.src_clk(clk_2),
 		.snk_clk(clk_2),
+		.reset(the_reset),
 		//i_clk, clk_0, clk_1
 		
 		// SRC0
-		`NS_INSTA_CHNL(o0, lnk_1)
+		`NS_INSTA_SND_CHNL(o0, lnk_1),
 		// SNK0
-		`NS_INSTA_CHNL(i0, lnk_0)
+		`NS_INSTA_RCV_CHNL(i0, lnk_0),
 
 		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
 	);

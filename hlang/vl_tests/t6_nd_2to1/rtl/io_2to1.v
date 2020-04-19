@@ -31,8 +31,8 @@ module io_2to1
 	`NS_DECLARE_DBG_CHNL(dbg)
 );
 
-	parameter RCV_REQ_CKS = `NS_2to1_REQ_CKS;
-	parameter SND_ACK_CKS = `NS_2to1_ACK_CKS;
+	parameter RCV_REQ_CKS = `NS_REQ_CKS;
+	parameter SND_ACK_CKS = `NS_ACK_CKS;
 	
 	`NS_DEBOUNCER_ACK(src0_clk, o0)
 	`NS_DEBOUNCER_ACK(src1_clk, o1)

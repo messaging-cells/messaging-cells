@@ -20,8 +20,8 @@ module nd_2to1
 	`NS_DECLARE_IN_CHNL(rcv1)
 	
 );
-	parameter RCV_REQ_CKS = `NS_2to1_REQ_CKS;
-	parameter SND_ACK_CKS = `NS_2to1_ACK_CKS;
+	parameter RCV_REQ_CKS = `NS_REQ_CKS;
+	parameter SND_ACK_CKS = `NS_ACK_CKS;
 	
 	`NS_DEBOUNCER_ACK(i_clk, snd0)
 	`NS_DEBOUNCER_REQ(i_clk, rcv0)

@@ -11,22 +11,22 @@ module debouncer
  
 	parameter TOT_CKS = 1;  //old val 250000
 
-	reg [0:0] rg_rdy = 0;
+	reg [0:0] rg_dbn_rdy = 0;
 	reg [$clog2(TOT_CKS):0] cnt_cks = 0;
 	reg rg_stdy = 1'b0;
  
 	always @(posedge i_Clk)
 	begin
 		if(reset) begin
-			rg_rdy <= 0;
+			rg_dbn_rdy <= 0;
 		end
-		if(! reset && ! rg_rdy) begin
-			rg_rdy <= 1;
+		if(! reset && ! rg_dbn_rdy) begin
+			rg_dbn_rdy <= 1;
 			
 			cnt_cks <= 0;
 			rg_stdy <= 1'b0;
 		end
-		if(! reset && rg_rdy) begin
+		if(! reset && rg_dbn_rdy) begin
 			// Switch input is different than internal switch value, so an input is
 			// changing.  Increase the counter until it is stable for enough time.  
 			if (bouncing !== rg_stdy && cnt_cks < TOT_CKS) begin
@@ -46,7 +46,7 @@ module debouncer
 		end
 	end
  
-	assign ready = rg_rdy;
+	assign ready = rg_dbn_rdy;
 	// Assign internal register to output (debounced!)
 	assign steady = rg_stdy;
  
