@@ -3,207 +3,6 @@
 
 using namespace std;
 
-void 
-gh_verilog_write_module_lognet_2to1_node(FILE* ff){
-	fprintf(ff, R"base(
-
-`include "hglobal.v"
-
-`default_nettype	none
-
-module lognet_2to1_node
-#(parameter ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
-(
-	input wire i_clk,
-	
-	// out
-	output wire [ASZ-1:0] snd0_dst,
-	output wire [DSZ-1:0] snd0_dat,
-	output wire snd0_req,
-	input wire snd0_ack,
-	
-	// in_0
-	input wire [ASZ-1:0] rcv0_dst,
-	input wire [DSZ-1:0] rcv0_dat,
-	input wire rcv0_req,
-	output wire rcv0_ack,
-	
-	// in_1
-	input wire [ASZ-1:0] rcv1_dst,
-	input wire [DSZ-1:0] rcv1_dat,
-	input wire rcv1_req,
-	output wire rcv1_ack
-	
-);
- 
-	// out regs
-	reg [ASZ-1:0] r_addr = 0;
-	reg [DSZ-1:0] r_dat = 0;
-	reg [0:0] r_req = `OFF;
-
-	// in_0 regs
-	reg [0:0] r_0_ack = `OFF;
-	
-	// in_1 regs
-	reg [0:0] r_1_ack = `OFF;
-	
-	reg [0:0] choose_0 = `TRUE;
-	
-	wire in0_rq = (rcv0_req && ! r_0_ack);
-	wire in1_rq = (rcv1_req && ! r_1_ack);
-	
-	//out
-	always @(posedge i_clk)
-	begin
-		if((! r_req) && (! snd0_ack)) begin
-			if(in0_rq && in1_rq) begin
-				if(choose_0) begin
-					choose_0 <= `FALSE;
-					`COPY_MSG(rcv0_dst, rcv0_dat, r_addr, r_dat)
-					r_req <= `ON;
-					r_0_ack <= `ON;
-				end else begin
-					choose_0 <= `TRUE;
-					`COPY_MSG(rcv1_dst, rcv1_dat, r_addr, r_dat)
-					r_req <= `ON;
-					r_1_ack <= `ON;
-				end
-			end
-			if(in0_rq && ! in1_rq) begin
-				`COPY_MSG(rcv0_dst, rcv0_dat, r_addr, r_dat)
-				r_req <= `ON;
-				r_0_ack <= `ON;
-			end
-			if(! in0_rq && in1_rq) begin
-				`COPY_MSG(rcv1_dst, rcv1_dat, r_addr, r_dat)
-				r_req <= `ON;
-				r_1_ack <= `ON;
-			end
-		end 
-		
-		if((! rcv0_req) && r_0_ack) begin
-			r_0_ack <= `OFF;
-		end
-		if((! rcv1_req) && r_1_ack) begin
-			r_1_ack <= `OFF;
-		end
-		if(r_req && snd0_ack) begin
-			r_req <= `OFF;
-		end
-	end
-		
-	//out
-	assign snd0_dst = r_addr;
-	assign snd0_dat = r_dat;
-	assign snd0_req = r_req;
-
-	//in_0
-	assign rcv0_ack = r_0_ack;
-	
-	//in_1
-	assign rcv1_ack = r_1_ack;
-	
-endmodule
-		
-)base");
-}
-
-void 
-gh_verilog_write_module_lognet_1to2_node(FILE* ff){
-	fprintf(ff, R"base(
-
-`include "hglobal.v"
-
-`default_nettype	none
-
-module lognet_1to2_node
-#(parameter 
-	OPER_1=`GT_OP, REF_VAL_1=0, IS_RANGE=`FALSE, 
-	OPER_2=`GT_OP, REF_VAL_2=0, ASZ=`ADDRESS_SIZE, DSZ=`DATA_SIZE)
-(
-	input wire i_clk,	// Main Clock (25 MHz)
-	
-	// out0
-	output wire [ASZ-1:0] snd0_dst,
-	output wire [DSZ-1:0] snd0_dat,
-	output wire snd0_req,
-	input wire snd0_ack,
-	
-	// out1
-	output wire [ASZ-1:0] snd1_dst,
-	output wire [DSZ-1:0] snd1_dat,
-	output wire snd1_req,
-	input wire snd1_ack,
-	
-	// in
-	input wire [ASZ-1:0] rcv0_dst,
-	input wire [DSZ-1:0] rcv0_dat,
-	input wire rcv0_req,
-	output wire rcv0_ack
-	
-);
- 
-	// out0 regs
-	reg [ASZ-1:0] r_0_addr = 0;
-	reg [DSZ-1:0] r_0_dat = 0;
-	reg [0:0] r_0_req = `OFF;
-
-	// out1 regs
-	reg [ASZ-1:0] r_1_addr = 0;
-	reg [DSZ-1:0] r_1_dat = 0;
-	reg [0:0] r_1_req = `OFF;
-
-	// in0 regs
-	reg [0:0] r_ack = `OFF;
-	
-	always @(posedge i_clk)
-	begin
-		if(rcv0_req && (! r_ack)) begin
-			if(`RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, rcv0_dst, OPER_2, REF_VAL_2, rcv0_dst)) begin
-				if(! r_0_req && ! snd0_ack) begin
-					`COPY_MSG(rcv0_dst, rcv0_dat, r_0_addr, r_0_dat)
-					r_0_req <= `ON;
-					r_ack <= `ON;
-				end 
-			end else begin
-				if(! r_1_req && ! snd1_ack) begin
-					`COPY_MSG(rcv0_dst, rcv0_dat, r_1_addr, r_1_dat)
-					r_1_req <= `ON;
-					r_ack <= `ON;
-				end 
-			end
-		end
-		
-		if((! rcv0_req) && r_ack) begin
-			r_ack <= `OFF;
-		end
-		if(r_0_req && snd0_ack) begin
-			r_0_req <= `OFF;
-		end
-		if(r_1_req && snd1_ack) begin
-			r_1_req <= `OFF;
-		end
-	end
-	
-	//out1
-	assign snd0_dst = r_0_addr;
-	assign snd0_dat = r_0_dat;
-	assign snd0_req = r_0_req;
-
-	//out2
-	assign snd1_dst = r_1_addr;
-	assign snd1_dat = r_1_dat;
-	assign snd1_req = r_1_req;
-
-	//inp
-	assign rcv0_ack = r_ack;
-	
-endmodule
-
-)base");
-	
-}
-
 gh_string_t
 hnode::get_verilog_send_node_interface_name(hnode** ppout){
 	GH_CK(ppout != gh_null);
@@ -244,14 +43,7 @@ hnode::get_verilog_receive_node_interface_name(hnode** ppin){
 
 void
 gh_print_verilog_send_interface(FILE* ff, gh_string_t itf_nm, bool with_final_comma){
-	verilog_interface itf;
-	itf.init_verilog_interface(itf_nm);
-	
-	fprintf(ff, "\t output wire [ASZ-1:0] %s,\n", itf.src.c_str());
-	fprintf(ff, "\t output wire [ASZ-1:0] %s,\n", itf.dst.c_str());
-	fprintf(ff, "\t output wire [DSZ-1:0] %s,\n", itf.dat.c_str());
-	fprintf(ff, "\t output wire %s,\n", itf.req.c_str());
-	fprintf(ff, "\t input wire %s", itf.ack.c_str());
+	fprintf(ff, "\t `NS_DECLARE_OUT_CHNL(%s)", itf_nm.c_str());
 	if(with_final_comma){
 		fprintf(ff, ",");
 	}
@@ -260,14 +52,7 @@ gh_print_verilog_send_interface(FILE* ff, gh_string_t itf_nm, bool with_final_co
 
 void
 gh_print_verilog_receive_interface(FILE* ff, gh_string_t itf_nm, bool with_final_comma){
-	verilog_interface itf;
-	itf.init_verilog_interface(itf_nm);
-	
-	fprintf(ff, "\t input wire [ASZ-1:0] %s,\n", itf.src.c_str());
-	fprintf(ff, "\t input wire [ASZ-1:0] %s,\n", itf.dst.c_str());
-	fprintf(ff, "\t input wire [DSZ-1:0] %s,\n", itf.dat.c_str());
-	fprintf(ff, "\t input wire %s,\n", itf.req.c_str());
-	fprintf(ff, "\t output wire %s", itf.ack.c_str());
+	fprintf(ff, "\t `NS_DECLARE_IN_CHNL(%s)", itf_nm.c_str());
 	if(with_final_comma){
 		fprintf(ff, ",");
 	}
@@ -283,14 +68,7 @@ gh_print_verilog_declare_link_interface(FILE* ff, gh_string_t itf_nm){
 	}
 	all_itf.insert(itf_nm);
 	
-	verilog_interface itf;
-	itf.init_verilog_interface(itf_nm);
-
-	fprintf(ff, "\t wire [ASZ-1:0] %s,\n", itf.src.c_str());
-	fprintf(ff, "\t wire [ASZ-1:0] %s,\n", itf.dst.c_str());
-	fprintf(ff, "\t wire [DSZ-1:0] %s,\n", itf.dat.c_str());
-	fprintf(ff, "\t wire %s,\n", itf.req.c_str());
-	fprintf(ff, "\t wire %s,\n", itf.ack.c_str());
+	fprintf(ff, "\t `NS_DECLARE_LINK(%s)", itf_nm.c_str());
 }
 
 void
@@ -302,34 +80,26 @@ gh_print_verilog_assign_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t it
 	}
 	all_itf.insert(itf_nm_2);
 	
-	verilog_interface itf_1;
-	itf_1.init_verilog_interface(itf_nm_1);
-
-	verilog_interface itf_2;
-	itf_2.init_verilog_interface(itf_nm_2);
-	
-	fprintf(ff, "\t assign %s = %s;\n", itf_1.src.c_str(), itf_2.src.c_str());
-	fprintf(ff, "\t assign %s = %s;\n", itf_1.dst.c_str(), itf_2.dst.c_str());
-	fprintf(ff, "\t assign %s = %s;\n", itf_1.dat.c_str(), itf_2.dat.c_str());
-	fprintf(ff, "\t assign %s = %s;\n", itf_1.req.c_str(), itf_2.req.c_str());
-	fprintf(ff, "\t assign %s = %s;\n", itf_1.ack.c_str(), itf_2.ack.c_str());
+	fprintf(ff, "\t `NS_ASSIGN_OUT_MSG(%s, %s)", itf_nm_1.c_str(), itf_nm_2.c_str());
 	
 	fprintf(ff, "\n");
 }
 
 void
-gh_print_verilog_instance_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma){
-	verilog_interface itf_1;
-	itf_1.init_verilog_interface(itf_nm_1);
-
-	verilog_interface itf_2;
-	itf_2.init_verilog_interface(itf_nm_2);
+gh_print_verilog_instance_send_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma){
+	fprintf(ff, "\t `NS_INSTA_SND_CHNL(%s, %s)", itf_nm_1.c_str(), itf_nm_2.c_str());
 	
-	fprintf(ff, "\t .%s(%s),\n", itf_1.src.c_str(), itf_2.src.c_str());
-	fprintf(ff, "\t .%s(%s),\n", itf_1.dst.c_str(), itf_2.dst.c_str());
-	fprintf(ff, "\t .%s(%s),\n", itf_1.dat.c_str(), itf_2.dat.c_str());
-	fprintf(ff, "\t .%s(%s),\n", itf_1.req.c_str(), itf_2.req.c_str());
-	fprintf(ff, "\t .%s(%s)", itf_1.ack.c_str(), itf_2.ack.c_str());
+	if(with_final_comma){
+		fprintf(ff, ",");
+	}
+	fprintf(ff, "\n");
+	fprintf(ff, "\n");
+}
+
+void
+gh_print_verilog_instance_receive_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma){
+	fprintf(ff, "\t `NS_INSTA_RCV_CHNL(%s, %s)", itf_nm_1.c_str(), itf_nm_2.c_str());
+	
 	if(with_final_comma){
 		fprintf(ff, ",");
 	}
@@ -349,9 +119,9 @@ hnode_2to1::print_verilog_2to1_instance(FILE* ff){
 
 	fprintf(ff, "lognet_2to1_node \n gt2to1 (\n\t .i_clk(i_clk), \n");
 	
-	gh_print_verilog_instance_interface(ff, gh_vl_snd0, o0_itf_nm);
-	gh_print_verilog_instance_interface(ff, gh_vl_rcv0, i0_itf_nm);
-	gh_print_verilog_instance_interface(ff, gh_vl_rcv1, i1_itf_nm, false);
+	gh_print_verilog_instance_send_interface(ff, gh_vl_snd0, o0_itf_nm);
+	gh_print_verilog_instance_receive_interface(ff, gh_vl_rcv0, i0_itf_nm);
+	gh_print_verilog_instance_receive_interface(ff, gh_vl_rcv1, i1_itf_nm, false);
 	
 	fprintf(ff, "); \n\n");
 	
@@ -362,17 +132,17 @@ edge::get_verilog_oper(){
 	gh_string_t op = "INVALID_OPER";
 	if(is_gt()){
 		if(is_eq()){
-			op = "GTE_OP";
+			op = "`GTE_OP";
 			return op;
 		}
-		op = "GT_OP";
+		op = "`GT_OP";
 		return op;
 	}
 	if(is_eq()){
-		op = "LTE_OP";
+		op = "`LTE_OP";
 		return op;
 	}
-	op = "LT_OP";
+	op = "`LT_OP";
 	return op;
 }
 
@@ -403,10 +173,10 @@ hnode_1to2::get_verilog_ref_val_1(){
 gh_string_t
 hnode_1to2::get_verilog_is_range(){
 	bool is_itv = get_flag(gh_is_interval);
-	gh_string_t is_rng = "FALSE";
+	gh_string_t is_rng = "`FALSE";
 	bool has_udf = selector.lft.is_undef() || selector.rgt.is_undef();
 	if(is_itv && ! has_udf){
-		is_rng = "TRUE";
+		is_rng = "`TRUE";
 	}
 	return is_rng;
 }
@@ -438,7 +208,7 @@ hnode_1to2::print_verilog_1to2_instance(FILE* ff){
 	gh_string_t val2 = get_verilog_ref_val_2();
 	
 	fprintf(ff, R"base(
-	lognet_1to2_node #(.OPER_1(`%s), .REF_VAL_1(%s), .IS_RANGE(`%s), .OPER_2(`%s), .REF_VAL_2(%s))
+	lognet_1to2_node #(.OPER_1(%s), .REF_VAL_1(%s), .IS_RANGE(%s), .OPER_2(%s), .REF_VAL_2(%s))
 	gt1to2 (
 		.i_clk(i_clk),
 )base", 
@@ -449,9 +219,9 @@ hnode_1to2::print_verilog_1to2_instance(FILE* ff){
 	val2.c_str()
 	);
 	
-	gh_print_verilog_instance_interface(ff, gh_vl_snd0, o0_itf_nm);
-	gh_print_verilog_instance_interface(ff, gh_vl_snd1, o1_itf_nm);
-	gh_print_verilog_instance_interface(ff, gh_vl_rcv0, i0_itf_nm, false);
+	gh_print_verilog_instance_send_interface(ff, gh_vl_snd0, o0_itf_nm);
+	gh_print_verilog_instance_send_interface(ff, gh_vl_snd1, o1_itf_nm);
+	gh_print_verilog_instance_receive_interface(ff, gh_vl_rcv0, i0_itf_nm, false);
 	
 	fprintf(ff, "); \n\n");
 	

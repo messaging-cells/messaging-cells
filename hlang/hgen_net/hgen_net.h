@@ -322,28 +322,6 @@ void gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_
 
 void gh_run_m_to_n(long mm, long nn, bool has_zr);
 
-
-class verilog_interface {
-public:
-	gh_string_t nam;
-	
-	gh_string_t src;
-	gh_string_t dst;
-	gh_string_t dat;
-	gh_string_t req;
-	gh_string_t ack;
-
-	void init_verilog_interface(gh_string_t itf_nm){
-		nam = itf_nm;
-		gh_string_t pfx = nam + gh_vl_sep;
-		gh_string_t src = pfx + gh_vl_src;
-		gh_string_t dst = pfx + gh_vl_dst;
-		gh_string_t dat = pfx + gh_vl_dat;
-		gh_string_t req = pfx + gh_vl_req;
-		gh_string_t ack = pfx + gh_vl_ack;
-	}
-};
-
 typedef std::set<gh_string_t> gh_str_set_t;
 
 class hgen_globals {
@@ -810,7 +788,8 @@ public:
 
 void gh_print_verilog_declare_link_interface(FILE* ff, gh_string_t itf_nm);
 void gh_print_verilog_assign_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2);
-void gh_print_verilog_instance_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma = true);
+void gh_print_verilog_instance_send_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma = true);
+void gh_print_verilog_instance_receive_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma = true);
 
 class hnode_1to1 : public hnode {
 public:
