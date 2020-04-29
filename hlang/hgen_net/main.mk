@@ -17,7 +17,7 @@ HG_BASE_DIR := .
 # -------------------------------------------------------------------------------------------
 
 
-TARGET := gennet.elf
+TARGET := hgen_lognet
 
 TGT_LDFLAGS := -rdynamic -pthread
 
@@ -31,6 +31,7 @@ SRC_INCDIRS := ${HG_BASE_DIR}/gh_util
 SOURCES := \
 	${HG_BASE_DIR}/gh_util/tak_mak.cpp \
 	${HG_BASE_DIR}/gh_util/gh_dbg_util.cpp \
+	${HG_BASE_DIR}/hgen_main.cpp \
 	${HG_BASE_DIR}/hgen_net.cpp \
 	${HG_BASE_DIR}/simu_hnet.cpp \
 	${HG_BASE_DIR}/vlg_hnet.cpp \

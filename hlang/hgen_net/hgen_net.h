@@ -24,6 +24,7 @@
 
 #define GH_INVALID_IDX -1
 #define GH_INVALID_ADDR -1
+#define GH_INVALID_COMPLETE_IDX -100
 
 #define GH_BASE_TWO 2
 
@@ -324,11 +325,81 @@ void gh_run_m_to_n(long mm, long nn, bool has_zr);
 
 typedef std::set<gh_string_t> gh_str_set_t;
 
+class runner_get_binnet_m_to_n {
+public:
+	long 	dag_mm = 0;
+	long 	dag_nn = 0;
+	bool	has_zr = false;
+	
+	int run_test(int argc, char** argv);
+	bool get_args(int argc, char** argv);
+	void print_help();
+};
+
+class runner_init_slices {
+public:
+	long 	slices_sz = 0;
+	long 	slices_idx = 0;
+	bool	has_zr = false;
+	gh_route_side_t	slices_sd = gh_left_side;
+	
+	bool	has_sub_slices = false;
+	long 	sub_slices_sz = 0;
+	long 	sub_slices_idx = 0;
+	bool	sub_has_zr = false;
+	gh_route_side_t	sub_slices_sd = gh_left_side;
+	
+	int run_test(int argc, char** argv);
+	bool get_args(int argc, char** argv);
+	void print_help(int hpl_case);
+};
+
+class runner_init_lognet_box {
+public:
+	int 	tot_args = 0;
+	long 	pw_base = GH_BASE_TWO;
+	long 	tot_targets = 0;
+	gh_prt_mode_t	print_op = gh_full_prt;
+	gh_addr_t src_addr = GH_INVALID_ADDR;
+	gh_addr_t dst_addr = GH_INVALID_ADDR;
+	
+	
+	int run_test(int argc, char** argv);
+	bool get_args(int argc, char** argv);
+	virtual void print_help();
+	
+	bool base_get_args(int argc, char** argv, int num_pm);
+	hlognet_box* create_lognet();
+};
+
+class runner_check_path : public runner_init_lognet_box {
+public:
+	int run_test(int argc, char** argv);
+	bool get_args(int argc, char** argv);
+	virtual void print_help();
+};
+
+class runner_check_all_paths_from : public runner_init_lognet_box {
+public:
+	int run_test(int argc, char** argv);
+	bool get_args(int argc, char** argv);
+	virtual void print_help();
+};
+
+class runner_check_all_to_all_paths : public runner_init_lognet_box {
+public:
+	int run_test(int argc, char** argv);
+	bool get_args(int argc, char** argv);
+	virtual void print_help();
+};
+
 class hgen_globals {
 public:
 	long DBG_LV = 0;
 	gh_nk_lnk_mod_t CK_LINK_MODE = gh_soft_ck_mod;
 
+	int args_compl_idx = GH_INVALID_COMPLETE_IDX;
+	
 	long idx_test_simu = 0;
 	
 	pthread_data_vec_t all_thread_data_simu;
@@ -356,6 +427,13 @@ public:
 
 	bool dbg_prt_choo_simu = false;
 
+	runner_get_binnet_m_to_n 		rnr_get_binnet_m_to_n;
+	runner_init_slices				rnr_init_slices;
+	runner_init_lognet_box			rnr_init_lognet_box;
+	runner_check_path				rnr_check_path;
+	runner_check_all_paths_from		rnr_check_all_paths_from;
+	runner_check_all_to_all_paths	rnr_check_all_to_all_paths;
+	
 	bool 		dbg_run_m2n = false;
 	long 		dbg_dag_mm = 0;
 	long 		dbg_dag_nn = 0;
@@ -1385,7 +1463,7 @@ public:
 
 	bool 	ck_lognet_path(gh_addr_t src, gh_addr_t dst, bool dbg_prt);
 	bool 	ck_lognet_all_paths_from(gh_addr_t src_addr, bool dbg_prt);
-	bool 	ck_lognet_all_paths(bool dbg_prt);
+	bool 	ck_lognet_all_to_all_paths(bool dbg_prt);
 	
 	htarget_box* get_target_box(long idx, slice_vec& out_addr);
 
@@ -1399,11 +1477,23 @@ public:
 	void 	print_targets(FILE* ff, gh_prt_mode_t md);
 	
 };
+
+bool gh_str_is_prefix(const std::string& the_str, const std::string& pfx);
+bool gh_args_get_candidates(const gh_str_set_t& map, const std::string& search_for, gh_str_set_t& all_cand);
+void gh_args_print_candidates(const gh_str_set_t& all_cand);
+void gh_args_print(int argc, char *argv[]);
+void gh_dec_args(int& argc, char**& argv, int num_dec = 1);
+char** gh_args_get_tail(char *argv[]);
+bool gh_args_is_complete_command(int argc, char *argv[]);
+int gh_args_get_complete_index();
+bool gh_args_select_one_of(int argc, char *argv[], gh_str_set_t choices, std::string& sel);
+
 	
 void* run_node_simu(void* pm);
 
 int test_get_target(int argc, char *argv[]);
 int test_hlognet(int argc, char *argv[]);
+int test_hlogne2(int argc, char *argv[]);
 
 #endif // GEN_HNET_H
 

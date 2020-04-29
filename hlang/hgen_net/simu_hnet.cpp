@@ -179,22 +179,6 @@ test_copy_arr(int argc, char *argv[]){
 	return 0;
 }
 
-int
-main(int argc, char *argv[]){
-	int resp = 0;
-	//resp = test_copy_arr(argc, argv);
-	//resp = test_m_to_n(argc, argv);
-	//resp = test_bases(argc, argv);
-	//resp = test_log(argc, argv);
-	//resp = test_mod(argc, argv);
-	//resp = test_num_io(argc, argv);
-	//resp = test_get_target(argc, argv);
-	resp = test_hlognet(argc, argv);
-	
-	printf("ENDING_TESTS______________________\n");
-	return resp;
-}
-
 void*
 run_node_simu(void* pm){
 	hnode* the_nd = (hnode*)pm;
@@ -602,7 +586,7 @@ test_hlognet(int argc, char *argv[]){
 	} else 
 	if(GH_GLOBALS.dbg_ck_all_path_simu){
 		fprintf(stdout, "=========== RUNNING_ALL_PATHS ===================\n");
-		bx->ck_lognet_all_paths(true);
+		bx->ck_lognet_all_to_all_paths(true);
 		fprintf(stdout, "=========== RUNNED_ALL_PATHS ===================\n");
 	} else 
 	if(GH_GLOBALS.do_run_simu){
@@ -1507,7 +1491,7 @@ hlognet_box::ck_lognet_all_paths_from(gh_addr_t src_addr, bool dbg_prt){
 }
 
 bool
-hlognet_box::ck_lognet_all_paths(bool dbg_prt){
+hlognet_box::ck_lognet_all_to_all_paths(bool dbg_prt){
 	if(dbg_prt){
 		fprintf(stdout, "==============================\n");
 		fprintf(stdout, "CHECKING_ALL_PATHS\n");
@@ -1659,4 +1643,440 @@ hnode_2to1::run_2to1_buff_simu(){
 	}
 }
 
+void
+runner_get_binnet_m_to_n::print_help(){
+	fprintf(stdout, "<m_number> <n_number> [-zr]");
+	fprintf(stdout, "\n");
+}
 
+bool
+runner_get_binnet_m_to_n::get_args(int argc, char *argv[]){
+	bool is_cmpl = gh_args_is_complete_command(argc, argv);
+	int last_arg = argc;
+	if(is_cmpl){
+		last_arg--;
+	}
+	if(argc < 2){
+		if(! is_cmpl){
+			fprintf(stdout, "args must have the form:\n\t");
+		}
+		print_help();
+		return false;
+	}
+	
+	dag_mm = atol(argv[0]);
+	dag_nn = atol(argv[1]);
+	
+	long first_pm = 2;
+	
+	for(long ii = first_pm; ii < last_arg; ii++){
+		std::string the_arg = argv[ii];
+		if(the_arg == "-zr"){
+			has_zr = true;
+		}
+	}
+	
+	return true;
+}
+
+int
+runner_get_binnet_m_to_n::run_test(int argc, char *argv[]){
+	GH_CK(argc > 0);
+	GH_CK(((gh_string_t) argv[0]) == "get_binnet_m_to_n");
+	
+	gh_dec_args(argc, argv);
+	
+	bool go_on = get_args(argc, argv);
+	
+	if(! go_on){
+		return 0;
+	}
+	
+	fprintf(stdout, "dag_mm = %ld, dag_nn = %ld, has_zr=%d \n", dag_mm, dag_nn, has_zr);
+	
+	gh_run_m_to_n(dag_mm, dag_nn, has_zr);
+	return 0;
+}
+
+void
+runner_init_slices::print_help(int hpl_case){
+	const char* str1 = "<slices_sz> <slices_idx> [-zr] [-rgt]";
+	const char* str2 = "-sub_slices <sub_slices_sz> <sub_slices_idx>";
+	const char* str3 = "[-sub_rgt] [-sub_zr]";
+
+	if(hpl_case == 1){
+		fprintf(stdout, "%s\n", str1);
+	}
+	if(hpl_case == 2){
+		fprintf(stdout, "%s\n", str2);
+	}
+	if(hpl_case == 3){
+		fprintf(stdout, "%s [%s %s]\n", str1, str2, str3);
+	}
+	if(hpl_case == 4){
+		fprintf(stdout, "%s\n", str3);
+	}
+}
+
+bool
+runner_init_slices::get_args(int argc, char *argv[]){
+	bool is_cmpl = gh_args_is_complete_command(argc, argv);
+	int last_arg = argc;
+	if(is_cmpl){
+		last_arg--;
+	}
+	if(last_arg < 2){
+		if(! is_cmpl){
+			fprintf(stdout, "args must have the form:\n\t");
+			print_help(3);
+		} else {
+			print_help(1);
+		}
+		return false;
+	}
+	
+	slices_sz = atol(argv[0]);
+	slices_idx = atol(argv[1]);
+
+	long first_pm = 2;
+	
+	for(long ii = first_pm; ii < last_arg; ii++){
+		std::string the_arg = argv[ii];
+		if(the_arg == "-zr"){
+			has_zr = true;
+		} else if(the_arg == "-rgt"){
+			slices_sd = gh_right_side;
+		} else if(the_arg == "-sub_zr"){
+			sub_has_zr = true;
+		} else if(the_arg == "-sub_rgt"){
+			sub_slices_sd = gh_right_side;
+		} else if((the_arg == "-sub_slices") && ((ii + 2) < last_arg)){
+			has_sub_slices = true;
+			sub_slices_sz = atol(argv[ii + 1]);
+			sub_slices_idx = atol(argv[ii + 2]);
+			
+			ii += 2;
+		}
+	}
+	
+	if(is_cmpl){
+		int cmpl_idx = GH_GLOBALS.args_compl_idx;
+		if(! has_sub_slices){
+			if(cmpl_idx == 1){
+				fprintf(stdout, "%ld ", slices_idx);
+			}
+			print_help(2);
+		} else {
+			if(cmpl_idx == 4){
+				fprintf(stdout, "%ld ", sub_slices_idx);
+			}
+			print_help(4);
+		}
+		return false;
+	}
+	
+	return true;
+}
+
+int
+runner_init_slices::run_test(int argc, char *argv[]){
+	GH_CK(argc > 0);
+	GH_CK(((gh_string_t) argv[0]) == "init_slices");
+	
+	gh_dec_args(argc, argv);
+	
+	bool go_on = get_args(argc, argv);
+	
+	if(! go_on){
+		return 0;
+	}
+	
+	fprintf(stdout, "slices_sz = %ld, slices_idx = %ld, has_zr=%d, %s \n", slices_sz, slices_idx, has_zr, gh_dbg_get_side_str(slices_sd));
+	
+	addr_vec_t all_rel_pos;
+	
+	all_rel_pos.resize(0);
+	slice_vec sub_slices;
+	gh_init_rel_pos(all_rel_pos, slices_sz, GH_BASE_TWO, slices_sd, has_zr);
+	sub_slices.init_slice_vec_with(slices_idx, all_rel_pos);
+	sub_slices.print_slice_vec(stdout);
+	sub_slices.print_all_intervals(stdout);
+	
+
+	if(has_sub_slices){
+		fprintf(stdout, "\n\nSUB_SLICES__________________________________________ \n");
+		fprintf(stdout, "sub_slices_sz = %ld, sub_slices_idx = %ld, sub_has_zr=%d, %s \n", 
+				sub_slices_sz, sub_slices_idx, sub_has_zr, gh_dbg_get_side_str(sub_slices_sd));
+		
+		all_rel_pos.resize(0);
+		slice_vec sub_2_slices;
+		gh_init_rel_pos(all_rel_pos, sub_slices_sz, GH_BASE_TWO, sub_slices_sd, sub_has_zr);
+		sub_2_slices.init_sub_slices_with(sub_slices_idx, sub_slices, all_rel_pos);
+		sub_2_slices.print_slice_vec(stdout);
+		sub_2_slices.print_all_intervals(stdout);
+	}
+	
+	return 0;
+}
+
+void
+runner_init_lognet_box::print_help(){
+	fprintf(stdout, "<tot_targets> [-pb <pw_base>] [-pt_prt] \n");
+}
+
+bool
+runner_init_lognet_box::get_args(int argc, char *argv[]){
+	return base_get_args(argc, argv, 0);
+}
+
+bool
+runner_init_lognet_box::base_get_args(int argc, char *argv[], int num_pm){
+	bool is_cmpl = gh_args_is_complete_command(argc, argv);
+	int cmpl_idx = GH_GLOBALS.args_compl_idx;
+	int last_arg = argc;
+	if(is_cmpl){
+		last_arg--;
+	}
+	if(last_arg < 1){
+		if(! is_cmpl){
+			fprintf(stdout, "args must have the form:\n\t");
+		}
+		runner_init_lognet_box::print_help();
+		return false;
+	}
+	
+	int n_args = 0;
+	
+	tot_targets = atol(argv[0]);
+	n_args += 1;
+	
+	long first_pm = 1;
+	
+	for(long ii = first_pm; ii < last_arg; ii++){
+		std::string the_arg = argv[ii];
+		if(the_arg == "-pt_prt"){
+			print_op = gh_full_pt_prt;
+			n_args += 1;
+		} else if((the_arg == "-pb") && ((ii + 1) < last_arg)){
+			pw_base = atol(argv[ii + 1]);
+			ii += 1;
+			n_args += 2;
+		} else if((the_arg == "-src") && ((ii + 1) < last_arg)){
+			src_addr = atol(argv[ii + 1]);
+			ii += 1;
+			num_pm--;
+			n_args += 2;
+		} else if((the_arg == "-dst") && ((ii + 1) < last_arg)){
+			dst_addr = atol(argv[ii + 1]);
+			ii += 1;
+			num_pm--;
+			n_args += 2;
+		}
+	}
+	
+	if(num_pm != 0){
+		if(is_cmpl && (cmpl_idx == (last_arg - 1))){
+			fprintf(stdout, "%s ", argv[cmpl_idx]);
+		}
+		print_help();
+		return false;
+	}
+
+	tot_args = n_args;
+	
+	return true;
+}
+
+int
+runner_init_lognet_box::run_test(int argc, char *argv[]){
+	GH_CK(argc > 0);
+	GH_CK(((gh_string_t) argv[0]) == "init_lognet_box");
+	
+	gh_dec_args(argc, argv);
+	
+	bool go_on = get_args(argc, argv);
+	
+	if(! go_on){
+		return 0;
+	}
+	
+	hlognet_box* bx = create_lognet();
+	
+	fprintf(stdout, "=========== THE_LOGNET_BOX ===================\n");
+	bx->print_box(stdout, print_op);
+
+	delete bx;
+	return 0;
+}
+
+hlognet_box*
+runner_init_lognet_box::create_lognet(){
+	fprintf(stdout, "tot_targets = %ld, pw_base = %ld \n", tot_targets, pw_base);
+
+	hlognet_box* bx = new hlognet_box(pw_base);
+	bx->init_length(tot_targets);
+	fprintf(stdout, "max_lgnet_height=%ld \n", bx->height + 1);
+	fprintf(stdout, "===========\n");
+	
+	slice_vec out_addr;
+	bx->init_lognet_box(tot_targets, out_addr);
+	
+	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
+	GH_GLOBALS.all_tgt_simu = &(bx->all_targets);
+	
+	return bx;
+}
+
+void
+runner_check_path::print_help(){
+	fprintf(stdout, "-src <src_addr> -dst <dst_addr> \n");
+}
+
+bool
+runner_check_path::get_args(int argc, char *argv[]){
+	return base_get_args(argc, argv, 2);
+}
+
+int
+runner_check_path::run_test(int argc, char *argv[]){
+	GH_CK(argc > 0);
+	GH_CK(((gh_string_t) argv[0]) == "check_path");
+	
+	gh_dec_args(argc, argv);
+	
+	bool go_on = get_args(argc, argv);
+	
+	if(! go_on){
+		return 0;
+	}
+	
+	
+	fprintf(stdout, "src_addr = %ld, dst_addr = %ld \n", src_addr, dst_addr);
+	
+	hlognet_box* bx = create_lognet();
+	
+	bx->ck_lognet_path(src_addr, dst_addr, true);
+	
+	delete bx;
+	return 0;
+}
+
+void
+runner_check_all_paths_from::print_help(){
+	fprintf(stdout, "-src <src_addr> \n");
+}
+bool
+runner_check_all_paths_from::get_args(int argc, char *argv[]){
+	return base_get_args(argc, argv, 1);
+}
+int
+runner_check_all_paths_from::run_test(int argc, char *argv[]){
+	GH_CK(argc > 0);
+	GH_CK(((gh_string_t) argv[0]) == "check_all_paths_from");
+	
+	gh_dec_args(argc, argv);
+	
+	bool go_on = get_args(argc, argv);
+	
+	if(! go_on){
+		return 0;
+	}
+	
+	
+	fprintf(stdout, "src_addr = %ld \n", src_addr);
+	
+	hlognet_box* bx = create_lognet();
+	
+	bx->ck_lognet_all_paths_from(src_addr, true);
+	
+	delete bx;
+	return 0;
+}
+
+void
+runner_check_all_to_all_paths::print_help(){
+	fprintf(stdout, "\n");
+}
+bool
+runner_check_all_to_all_paths::get_args(int argc, char *argv[]){
+	return base_get_args(argc, argv, 0);
+}
+int
+runner_check_all_to_all_paths::run_test(int argc, char *argv[]){
+	GH_CK(argc > 0);
+	GH_CK(((gh_string_t) argv[0]) == "check_all_to_all_paths");
+	
+	gh_dec_args(argc, argv);
+	
+	bool go_on = get_args(argc, argv);
+	
+	if(! go_on){
+		return 0;
+	}
+	
+	hlognet_box* bx = create_lognet();
+	
+	bx->ck_lognet_all_to_all_paths(true);
+	
+	delete bx;
+	return 0;
+}
+
+int test_hlogne2(int argc, char *argv[]){
+	int resp = -1;
+	//resp = test_copy_arr(argc, argv);
+	//resp = test_m_to_n(argc, argv);
+	//resp = test_bases(argc, argv);
+	//resp = test_log(argc, argv);
+	//resp = test_mod(argc, argv);
+	//resp = test_num_io(argc, argv);
+	//resp = test_get_target(argc, argv);
+			
+	gh_str_set_t lv2_commds;
+	lv2_commds.insert("get_binnet_m_to_n");
+	lv2_commds.insert("init_slices");
+	lv2_commds.insert("init_lognet_box");
+	lv2_commds.insert("threads_simu");
+	lv2_commds.insert("check_path");
+	lv2_commds.insert("check_all_paths_from");
+	lv2_commds.insert("check_all_to_all_paths");
+	
+	std::string cho2;
+	bool ok1 = gh_args_select_one_of(argc, argv, lv2_commds, cho2);
+	if(! ok1){
+		return -1;
+	}
+
+	bool done = false;
+	if(! done && (cho2 == "get_binnet_m_to_n")){
+		resp = GH_GLOBALS.rnr_get_binnet_m_to_n.run_test(argc, argv);
+		done = true;
+	}
+	if(! done && (cho2 == "init_slices")){
+		resp = GH_GLOBALS.rnr_init_slices.run_test(argc, argv);
+		done = true;
+	}
+	if(! done && (cho2 == "init_lognet_box")){
+		resp = GH_GLOBALS.rnr_init_lognet_box.run_test(argc, argv);
+		done = true;
+	}
+	if(! done && (cho2 == "threads_simu")){
+	}
+	if(! done && (cho2 == "check_path")){
+		resp = GH_GLOBALS.rnr_check_path.run_test(argc, argv);
+		done = true;
+	}
+	if(! done && (cho2 == "check_all_paths_from")){
+		resp = GH_GLOBALS.rnr_check_all_paths_from.run_test(argc, argv);
+		done = true;
+	}
+	if(! done && (cho2 == "check_all_to_all_paths")){
+		resp = GH_GLOBALS.rnr_check_all_to_all_paths.run_test(argc, argv);
+		done = true;
+	}
+	
+	if(! gh_args_is_complete_command(argc, argv)){
+		fprintf(stdout, "ENDING_TESTS______________________\n");
+	}
+	return resp;
+}
