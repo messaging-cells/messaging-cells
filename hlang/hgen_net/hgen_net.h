@@ -333,8 +333,8 @@ public:
 	long 	dag_nn = 0;
 	bool	has_zr = false;
 	
-	int run_test(int argc, char** argv);
-	bool get_args(int argc, char** argv);
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
 	void print_help();
 };
 
@@ -351,8 +351,8 @@ public:
 	bool	sub_has_zr = false;
 	gh_route_side_t	sub_slices_sd = gh_left_side;
 	
-	int run_test(int argc, char** argv);
-	bool get_args(int argc, char** argv);
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
 	void print_help(int hpl_case);
 };
 
@@ -366,39 +366,39 @@ public:
 	gh_addr_t dst_addr = GH_INVALID_ADDR;
 	
 	
-	int run_test(int argc, char** argv);
-	bool get_args(int argc, char** argv);
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
 	virtual void print_help();
 	
-	bool base_get_args(int argc, char** argv, int num_pm);
+	bool base_get_args(gh_str_list_t& lt_args, gh_string_t cllr, int num_pm);
 	hlognet_box* create_lognet();
 };
 
 class runner_threads_simu : public runner_init_lognet_box {
 public:
-	int run_test(int argc, char** argv);
-	bool get_args(int argc, char** argv);
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
 	virtual void print_help();
 };
 
 class runner_check_path : public runner_init_lognet_box {
 public:
-	int run_test(int argc, char** argv);
-	bool get_args(int argc, char** argv);
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
 	virtual void print_help();
 };
 
 class runner_check_all_paths_from : public runner_init_lognet_box {
 public:
-	int run_test(int argc, char** argv);
-	bool get_args(int argc, char** argv);
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
 	virtual void print_help();
 };
 
 class runner_check_all_to_all_paths : public runner_init_lognet_box {
 public:
-	int run_test(int argc, char** argv);
-	bool get_args(int argc, char** argv);
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
 	virtual void print_help();
 };
 
@@ -1495,19 +1495,20 @@ bool gh_str_is_prefix(const std::string& the_str, const std::string& pfx);
 void gh_args_get_list(gh_str_list_t& lt_args, int argc, char *argv[]);
 bool gh_args_get_candidates(const gh_str_set_t& map, const std::string& search_for, gh_str_set_t& all_cand);
 void gh_args_print_candidates(const gh_str_set_t& all_cand);
-void gh_args_print(int argc, char *argv[]);
-void gh_dec_args(int& argc, char**& argv, int num_dec = 1);
+void gh_args_print(gh_str_list_t& lt_args);
+void gh_dec_args(gh_str_list_t& lt_args, int num_dec = 1);
+void gh_args_print_last_complete(gh_str_list_t& lt_args);
 char** gh_args_get_tail(char *argv[]);
-bool gh_args_is_complete_command(int argc, char *argv[]);
+bool gh_args_is_complete_command(gh_str_list_t& lt_args);
 int gh_args_get_complete_index();
-bool gh_args_select_one_of(int argc, char *argv[], gh_str_set_t& choices, std::string& sel);
+bool gh_args_select_one_of(gh_str_list_t& lt_args, gh_str_set_t& choices, std::string& sel);
 
 	
 void* run_node_simu(void* pm);
 
 int test_get_target(int argc, char *argv[]);
 int test_hlognet(int argc, char *argv[]);
-int test_hlogne2(int argc, char *argv[]);
+int test_hlogne2(gh_str_list_t& lt_args);
 
 #endif // GEN_HNET_H
 
