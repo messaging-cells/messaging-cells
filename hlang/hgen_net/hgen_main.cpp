@@ -11,6 +11,14 @@ bool gh_str_is_prefix(const std::string& the_str, const std::string& pfx){
 	return (the_str.compare(0, pfx.size(), pfx) == 0);
 }
 
+void gh_args_get_list(gh_str_list_t& lt_args, int argc, char *argv[]){
+	lt_args.resize(0);
+	for(int aa = 0; aa < argc; aa++){
+		gh_string_t pm = argv[aa];
+		lt_args.push_back(pm);
+	}
+}
+
 bool gh_args_get_candidates(const gh_str_set_t& map, const std::string& search_for, gh_str_set_t& all_cand){
 	bool found_it = false;
 	for(std::set<std::string>::iterator ii = map.lower_bound(search_for); ((ii != map.end()) && gh_str_is_prefix(*ii, search_for)); ii++){
@@ -26,7 +34,7 @@ bool gh_args_get_candidates(const gh_str_set_t& map, const std::string& search_f
 void gh_args_print_candidates(const gh_str_set_t& all_cand){
 	for(auto ii = all_cand.begin(); ii != all_cand.end(); ii++){
 		std::string cand = *ii;
-		fprintf(stdout, "%s\n", cand.c_str());
+		fprintf(GH_GLOBALS.args_compl_output, "%s\n", cand.c_str());
 	}
 }
 
@@ -68,7 +76,7 @@ int gh_args_get_complete_index(){
 }
 
 bool
-gh_args_select_one_of(int argc, char *argv[], gh_str_set_t choices, std::string& sel){
+gh_args_select_one_of(int argc, char *argv[], gh_str_set_t& choices, std::string& sel){
 	int cmpl_idx = GH_GLOBALS.args_compl_idx;
 	bool is_cmpl = gh_args_is_complete_command(argc, argv);
 	
@@ -77,7 +85,7 @@ gh_args_select_one_of(int argc, char *argv[], gh_str_set_t choices, std::string&
 	}
 	if(argc < 1){
 		if(! is_cmpl){
-			fprintf(stdout, "First parameter must be one of these: \n");
+			fprintf(stdout, "Next parameter must be one of these: \n");
 		}
 		gh_args_print_candidates(choices);
 		return false;
@@ -108,7 +116,14 @@ main(int argc, char *argv[]){
 	lv1_commds.insert("test");
 	lv1_commds.insert("generate");
 	
-	GH_GLOBALS.args_compl_idx = gh_args_get_complete_index();
+	bool is_cmpl = gh_args_is_complete_command(argc, argv);
+	if(is_cmpl){
+		GH_GLOBALS.args_compl_idx = gh_args_get_complete_index();
+		GH_GLOBALS.args_compl_output = fopen(GH_GLOBALS.args_output_name, "w");
+		if(GH_GLOBALS.args_compl_output == NULL){
+			GH_GLOBALS.args_compl_output = stdout;
+		}
+	}
 	
 	gh_dec_args(argc, argv);
 	std::string cho1;
@@ -126,7 +141,6 @@ main(int argc, char *argv[]){
 		
 	return resp;
 }
-
 
 
 /*

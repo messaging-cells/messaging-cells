@@ -10,6 +10,7 @@
 #include <math.h>
 #include <assert.h>
 
+#include <list>
 #include <set>
 #include <vector>
 #include <iterator>
@@ -324,6 +325,7 @@ void gh_init_rel_pos(addr_vec_t& all_rel_pos, long sz, long pw_b, gh_route_side_
 void gh_run_m_to_n(long mm, long nn, bool has_zr);
 
 typedef std::set<gh_string_t> gh_str_set_t;
+typedef std::list<gh_string_t> gh_str_list_t;
 
 class runner_get_binnet_m_to_n {
 public:
@@ -372,6 +374,13 @@ public:
 	hlognet_box* create_lognet();
 };
 
+class runner_threads_simu : public runner_init_lognet_box {
+public:
+	int run_test(int argc, char** argv);
+	bool get_args(int argc, char** argv);
+	virtual void print_help();
+};
+
 class runner_check_path : public runner_init_lognet_box {
 public:
 	int run_test(int argc, char** argv);
@@ -398,7 +407,9 @@ public:
 	long DBG_LV = 0;
 	gh_nk_lnk_mod_t CK_LINK_MODE = gh_soft_ck_mod;
 
+	const char* args_output_name = "hgen_lognet_outocomplete_options.txt";
 	int args_compl_idx = GH_INVALID_COMPLETE_IDX;
+	FILE*	args_compl_output = stdout;
 	
 	long idx_test_simu = 0;
 	
@@ -430,6 +441,7 @@ public:
 	runner_get_binnet_m_to_n 		rnr_get_binnet_m_to_n;
 	runner_init_slices				rnr_init_slices;
 	runner_init_lognet_box			rnr_init_lognet_box;
+	runner_threads_simu				rnr_threads_simu;
 	runner_check_path				rnr_check_path;
 	runner_check_all_paths_from		rnr_check_all_paths_from;
 	runner_check_all_to_all_paths	rnr_check_all_to_all_paths;
@@ -1479,6 +1491,8 @@ public:
 };
 
 bool gh_str_is_prefix(const std::string& the_str, const std::string& pfx);
+
+void gh_args_get_list(gh_str_list_t& lt_args, int argc, char *argv[]);
 bool gh_args_get_candidates(const gh_str_set_t& map, const std::string& search_for, gh_str_set_t& all_cand);
 void gh_args_print_candidates(const gh_str_set_t& all_cand);
 void gh_args_print(int argc, char *argv[]);
@@ -1486,7 +1500,7 @@ void gh_dec_args(int& argc, char**& argv, int num_dec = 1);
 char** gh_args_get_tail(char *argv[]);
 bool gh_args_is_complete_command(int argc, char *argv[]);
 int gh_args_get_complete_index();
-bool gh_args_select_one_of(int argc, char *argv[], gh_str_set_t choices, std::string& sel);
+bool gh_args_select_one_of(int argc, char *argv[], gh_str_set_t& choices, std::string& sel);
 
 	
 void* run_node_simu(void* pm);

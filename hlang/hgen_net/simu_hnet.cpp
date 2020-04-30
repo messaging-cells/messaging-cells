@@ -1645,8 +1645,9 @@ hnode_2to1::run_2to1_buff_simu(){
 
 void
 runner_get_binnet_m_to_n::print_help(){
-	fprintf(stdout, "<m_number> <n_number> [-zr]");
-	fprintf(stdout, "\n");
+	FILE* of = GH_GLOBALS.args_compl_output;
+	fprintf(of, "<m_number> <n_number> [-zr]");
+	fprintf(of, "\n");
 }
 
 bool
@@ -1658,7 +1659,7 @@ runner_get_binnet_m_to_n::get_args(int argc, char *argv[]){
 	}
 	if(argc < 2){
 		if(! is_cmpl){
-			fprintf(stdout, "args must have the form:\n\t");
+			fprintf(stdout, "following args must have the form:\n\t");
 		}
 		print_help();
 		return false;
@@ -1700,26 +1701,28 @@ runner_get_binnet_m_to_n::run_test(int argc, char *argv[]){
 
 void
 runner_init_slices::print_help(int hpl_case){
+	FILE* of = GH_GLOBALS.args_compl_output;
 	const char* str1 = "<slices_sz> <slices_idx> [-zr] [-rgt]";
 	const char* str2 = "-sub_slices <sub_slices_sz> <sub_slices_idx>";
 	const char* str3 = "[-sub_rgt] [-sub_zr]";
 
 	if(hpl_case == 1){
-		fprintf(stdout, "%s\n", str1);
+		fprintf(of, "%s\n", str1);
 	}
 	if(hpl_case == 2){
-		fprintf(stdout, "%s\n", str2);
+		fprintf(of, "%s\n", str2);
 	}
 	if(hpl_case == 3){
-		fprintf(stdout, "%s [%s %s]\n", str1, str2, str3);
+		fprintf(of, "%s [%s %s]\n", str1, str2, str3);
 	}
 	if(hpl_case == 4){
-		fprintf(stdout, "%s\n", str3);
+		fprintf(of, "%s\n", str3);
 	}
 }
 
 bool
 runner_init_slices::get_args(int argc, char *argv[]){
+	FILE* of = GH_GLOBALS.args_compl_output;
 	bool is_cmpl = gh_args_is_complete_command(argc, argv);
 	int last_arg = argc;
 	if(is_cmpl){
@@ -1727,7 +1730,7 @@ runner_init_slices::get_args(int argc, char *argv[]){
 	}
 	if(last_arg < 2){
 		if(! is_cmpl){
-			fprintf(stdout, "args must have the form:\n\t");
+			fprintf(stdout, "following args must have the form:\n\t");
 			print_help(3);
 		} else {
 			print_help(1);
@@ -1763,12 +1766,12 @@ runner_init_slices::get_args(int argc, char *argv[]){
 		int cmpl_idx = GH_GLOBALS.args_compl_idx;
 		if(! has_sub_slices){
 			if(cmpl_idx == 1){
-				fprintf(stdout, "%ld ", slices_idx);
+				fprintf(of, "%ld ", slices_idx);
 			}
 			print_help(2);
 		} else {
 			if(cmpl_idx == 4){
-				fprintf(stdout, "%ld ", sub_slices_idx);
+				fprintf(of, "%ld ", sub_slices_idx);
 			}
 			print_help(4);
 		}
@@ -1821,7 +1824,8 @@ runner_init_slices::run_test(int argc, char *argv[]){
 
 void
 runner_init_lognet_box::print_help(){
-	fprintf(stdout, "<tot_targets> [-pb <pw_base>] [-pt_prt] \n");
+	FILE* of = GH_GLOBALS.args_compl_output;
+	fprintf(of, "<tot_targets> [-pb <pw_base>] [-pt_prt] \n");
 }
 
 bool
@@ -1831,6 +1835,7 @@ runner_init_lognet_box::get_args(int argc, char *argv[]){
 
 bool
 runner_init_lognet_box::base_get_args(int argc, char *argv[], int num_pm){
+	FILE* of = GH_GLOBALS.args_compl_output;
 	bool is_cmpl = gh_args_is_complete_command(argc, argv);
 	int cmpl_idx = GH_GLOBALS.args_compl_idx;
 	int last_arg = argc;
@@ -1839,7 +1844,7 @@ runner_init_lognet_box::base_get_args(int argc, char *argv[], int num_pm){
 	}
 	if(last_arg < 1){
 		if(! is_cmpl){
-			fprintf(stdout, "args must have the form:\n\t");
+			fprintf(stdout, "following args must have the form:\n\t");
 		}
 		runner_init_lognet_box::print_help();
 		return false;
@@ -1876,7 +1881,7 @@ runner_init_lognet_box::base_get_args(int argc, char *argv[], int num_pm){
 	
 	if(num_pm != 0){
 		if(is_cmpl && (cmpl_idx == (last_arg - 1))){
-			fprintf(stdout, "%s ", argv[cmpl_idx]);
+			fprintf(of, "%s ", argv[cmpl_idx]);
 		}
 		print_help();
 		return false;
@@ -1929,7 +1934,8 @@ runner_init_lognet_box::create_lognet(){
 
 void
 runner_check_path::print_help(){
-	fprintf(stdout, "-src <src_addr> -dst <dst_addr> \n");
+	FILE* of = GH_GLOBALS.args_compl_output;
+	fprintf(of, "-src <src_addr> -dst <dst_addr> \n");
 }
 
 bool
@@ -1963,7 +1969,8 @@ runner_check_path::run_test(int argc, char *argv[]){
 
 void
 runner_check_all_paths_from::print_help(){
-	fprintf(stdout, "-src <src_addr> \n");
+	FILE* of = GH_GLOBALS.args_compl_output;
+	fprintf(of, "-src <src_addr> \n");
 }
 bool
 runner_check_all_paths_from::get_args(int argc, char *argv[]){
@@ -1995,7 +2002,8 @@ runner_check_all_paths_from::run_test(int argc, char *argv[]){
 
 void
 runner_check_all_to_all_paths::print_help(){
-	fprintf(stdout, "\n");
+	FILE* of = GH_GLOBALS.args_compl_output;
+	fprintf(of, "\n");
 }
 bool
 runner_check_all_to_all_paths::get_args(int argc, char *argv[]){
@@ -2005,6 +2013,46 @@ int
 runner_check_all_to_all_paths::run_test(int argc, char *argv[]){
 	GH_CK(argc > 0);
 	GH_CK(((gh_string_t) argv[0]) == "check_all_to_all_paths");
+	
+	gh_dec_args(argc, argv);
+	
+	bool go_on = get_args(argc, argv);
+	
+	if(! go_on){
+		return 0;
+	}
+	
+	hlognet_box* bx = create_lognet();
+	
+	bx->ck_lognet_all_to_all_paths(true);
+	
+	delete bx;
+	return 0;
+}
+
+void
+runner_threads_simu::print_help(){
+	FILE* of = GH_GLOBALS.args_compl_output;
+	fprintf(of, "\n");
+}
+bool
+runner_threads_simu::get_args(int argc, char *argv[]){
+	bool ok1 = base_get_args(argc, argv, 0);
+	if(! ok1){
+		return false;
+	}
+	/*
+	FILE* of = GH_GLOBALS.args_compl_output;
+	bool is_cmpl = gh_args_is_complete_command(argc, argv);
+	int cmpl_idx = GH_GLOBALS.args_compl_idx;
+	int last_arg = argc - tot_args;
+	*/
+	return true;
+}
+int
+runner_threads_simu::run_test(int argc, char *argv[]){
+	GH_CK(argc > 0);
+	GH_CK(((gh_string_t) argv[0]) == "threads_simu");
 	
 	gh_dec_args(argc, argv);
 	
@@ -2061,6 +2109,8 @@ int test_hlogne2(int argc, char *argv[]){
 		done = true;
 	}
 	if(! done && (cho2 == "threads_simu")){
+		resp = GH_GLOBALS.rnr_threads_simu.run_test(argc, argv);
+		done = true;
 	}
 	if(! done && (cho2 == "check_path")){
 		resp = GH_GLOBALS.rnr_check_path.run_test(argc, argv);
