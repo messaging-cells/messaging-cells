@@ -34,7 +34,7 @@ bool gh_args_get_candidates(const gh_str_set_t& map, const std::string& search_f
 void gh_args_print_candidates(const gh_str_set_t& all_cand){
 	for(auto ii = all_cand.begin(); ii != all_cand.end(); ii++){
 		std::string cand = *ii;
-		fprintf(GH_GLOBALS.args_compl_output, "%s\n", cand.c_str());
+		fprintf(GH_GLOBALS.compl_sys.args_compl_output, "%s\n", cand.c_str());
 	}
 }
 
@@ -45,32 +45,12 @@ void gh_args_print(gh_str_list_t& lt_args){
 	for(auto it = lt_args.begin(); it != lt_args.end(); it++, aa++){
 		fprintf(stdout, "arg %i = %s \n", aa, (*it).c_str());
 	}
-	if(GH_GLOBALS.args_compl_idx != GH_INVALID_COMPLETE_IDX){
-		fprintf(stdout, "compl_idx = %i \n", GH_GLOBALS.args_compl_idx);
-	}
 	fprintf(stdout, "\n");
 }
 
 void gh_dec_args(gh_str_list_t& lt_args, int num_dec){
 	for(; num_dec > 0; num_dec--){
-		GH_GLOBALS.args_compl_idx--;
 		lt_args.pop_front();
-	}
-}
-
-void gh_args_print_last_complete(gh_str_list_t& lt_args){
-	//gh_args_print(lt_args);
-	FILE* of = GH_GLOBALS.args_compl_output;
-	bool is_cmpl = gh_args_is_complete_command(lt_args);
-	if(is_cmpl){
-		int cmpl_idx = GH_GLOBALS.args_compl_idx;
-		if((cmpl_idx >= 0) && (cmpl_idx == (int)(lt_args.size() - 2))){
-			auto it = lt_args.rbegin();
-			if(it == lt_args.rend()){ return; }
-			it++;
-			if(it == lt_args.rend()){ return; }
-			fprintf(of, "%s ", (*it).c_str());
-		}
 	}
 }
 
@@ -89,14 +69,51 @@ int gh_args_get_complete_index(){
 	return idx;
 }
 
+void
+autocomplete_sys::init_autocomplete_sys(gh_str_list_t& lt_args, int argc, char *argv[]){
+	gh_args_get_list(lt_args, argc, argv);
+	
+	args_orig_argc = argc;
+	args_orig_argv = argv;
+	args_orig_has_compl = gh_args_is_complete_command(lt_args);
+	
+	bool is_cmpl = args_orig_has_compl;
+	if(! is_cmpl){
+		return;
+	}
+	
+	args_orig_compl_idx = gh_args_get_complete_index();
+	args_compl_output = fopen(args_output_name, "w");
+	if(args_compl_output == NULL){
+		args_compl_output = stdout;
+	}
+	
+	int cmpl_idx = args_orig_compl_idx;
+	if((cmpl_idx >= 0) && (cmpl_idx < argc) && (cmpl_idx >= (argc - 2))){
+		args_orig_cmpl_idx_arg = argv[cmpl_idx];
+	}
+}
+
+void
+autocomplete_sys::print_last_complete_arg(){
+	bool is_cmpl = args_orig_has_compl;
+	if(! is_cmpl){
+		return;
+	}
+	if(args_orig_cmpl_idx_arg == ""){
+		return;
+	}
+	if(args_orig_cmpl_idx_arg == "++"){
+		return;
+	}
+	FILE* of = args_compl_output;
+	fprintf(of, "%s ", args_orig_cmpl_idx_arg.c_str());
+}
+
 bool
 gh_args_select_one_of(gh_str_list_t& lt_args, gh_str_set_t& choices, std::string& sel){
-	int cmpl_idx = GH_GLOBALS.args_compl_idx;
-	bool is_cmpl = gh_args_is_complete_command(lt_args);
+	bool is_cmpl = GH_GLOBALS.compl_sys.args_orig_has_compl;
 	
-	if(! is_cmpl && (cmpl_idx == GH_INVALID_COMPLETE_IDX)){
-		fprintf(stdout, "WARNING. autocomplete is NOT installed. Run \n\t source hgen_complete.sh \nto get it installed.\n");
-	}
 	long sz = (long)lt_args.size();
 	if(sz < 1){
 		if(! is_cmpl){
@@ -128,20 +145,11 @@ int
 main(int argc, char *argv[]){
 
 	gh_str_list_t lt_args;
-	gh_args_get_list(lt_args, argc, argv);
-		
+	GH_GLOBALS.compl_sys.init_autocomplete_sys(lt_args, argc, argv);
+	
 	gh_str_set_t lv1_commds;
 	lv1_commds.insert("test");
 	lv1_commds.insert("generate");
-	
-	bool is_cmpl = gh_args_is_complete_command(lt_args);
-	if(is_cmpl){
-		GH_GLOBALS.args_compl_idx = gh_args_get_complete_index();
-		GH_GLOBALS.args_compl_output = fopen(GH_GLOBALS.args_output_name, "w");
-		if(GH_GLOBALS.args_compl_output == NULL){
-			GH_GLOBALS.args_compl_output = stdout;
-		}
-	}
 	
 	gh_dec_args(lt_args);
 	std::string cho1;

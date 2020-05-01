@@ -402,15 +402,28 @@ public:
 	virtual void print_help();
 };
 
+class autocomplete_sys {
+public:
+	const char* args_output_name = "autocomplete_choices.txt";
+	FILE*	args_compl_output = stdout;
+	
+	bool			args_orig_has_compl = false;
+	int 			args_orig_argc = -1;
+	char**			args_orig_argv = gh_null;
+	int 			args_orig_compl_idx = GH_INVALID_COMPLETE_IDX;
+	gh_string_t 	args_orig_cmpl_idx_arg = "";
+	
+	void init_autocomplete_sys(gh_str_list_t& lt_args, int argc, char** argv);
+	void print_last_complete_arg();
+};
+
 class hgen_globals {
 public:
 	long DBG_LV = 0;
 	gh_nk_lnk_mod_t CK_LINK_MODE = gh_soft_ck_mod;
-
-	const char* args_output_name = "hgen_lognet_outocomplete_options.txt";
-	int args_compl_idx = GH_INVALID_COMPLETE_IDX;
-	FILE*	args_compl_output = stdout;
 	
+	autocomplete_sys compl_sys;
+
 	long idx_test_simu = 0;
 	
 	pthread_data_vec_t all_thread_data_simu;
@@ -1497,7 +1510,6 @@ bool gh_args_get_candidates(const gh_str_set_t& map, const std::string& search_f
 void gh_args_print_candidates(const gh_str_set_t& all_cand);
 void gh_args_print(gh_str_list_t& lt_args);
 void gh_dec_args(gh_str_list_t& lt_args, int num_dec = 1);
-void gh_args_print_last_complete(gh_str_list_t& lt_args);
 char** gh_args_get_tail(char *argv[]);
 bool gh_args_is_complete_command(gh_str_list_t& lt_args);
 int gh_args_get_complete_index();

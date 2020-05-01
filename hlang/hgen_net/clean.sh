@@ -8,7 +8,7 @@ echo "Cleaning" $(basename $SCRIPT_DIR)
 cd $SCRIPT_DIR
 rm -rf gh_build
 rm -f hgen_lognet
-rm -f hgen_lognet_outocomplete_options.txt
+rm -f autocomplete_choices.txt
 cd $CURR_DIR
 
 
