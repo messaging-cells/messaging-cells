@@ -27,85 +27,6 @@ struct thd_data {
 	bool end_it = false;
 };
 
-int
-test_bases(int argc, char *argv[]){
-	if(argc < 2){
-		printf("%s (0 | 1)\n", argv[0]);
-		return 1;
-	}
-	
-	long mm = atol(argv[1]);
-
-	hroute_box* bx = new hroute_box(GH_BASE_TWO);
-	GH_MARK_USED(bx);
-	switch(mm){
-		case 0: 
-			bx->init_as_2to3_route_box(GH_NULL_OUT_ADDR, gh_null);
-			break;
-		case 1: 
-			bx->init_as_3to2_route_box(GH_NULL_OUT_ADDR, gh_null);
-			break;
-		default: 
-			bx->init_as_2to2_route_box(GH_NULL_OUT_ADDR, gh_null);
-			break;
-	}
-	
-	bx->print_box(stdout, gh_full_prt);
-	delete bx;
-	
-	return 0;
-}
-
-int
-test_log(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <base> <num>\n", argv[0]);
-		return 1;
-	}
-	
-	long bb = atol(argv[1]);
-	long nn = atol(argv[2]);
-	
-	double lbb = log2(bb);
-	long lg = (long)(log2(nn)/lbb);
-	fprintf(stdout, "LOG(%ld, %ld) = %ld\n", bb, nn, lg);
-	return 0;
-	
-}
-
-int
-test_mod(int argc, char *argv[]){
-	if(argc < 3){
-		printf("%s <n1> <n2>\n", argv[0]);
-		return 1;
-	}
-	
-	long n1 = atol(argv[1]);
-	long n2 = atol(argv[2]);
-	long n3 = (n1 % n2);
-	
-	fprintf(stdout, "%ld mod %ld = %ld\n", n1, n2, n3);
-	return 0;
-}
-
-int
-test_num_io(int argc, char *argv[]){
-	if(argc < 4){
-		printf("%s <base> <length> <idx>\n", argv[0]);
-		return 1;
-	}
-	
-	long bb = atol(argv[1]);
-	long ll = atol(argv[2]);
-	long idx = atol(argv[3]);
-	long nin = 0;
-	long nout = 0;
-	
-	gh_calc_num_io(bb, ll, idx, nin, nout);
-	fprintf(stdout, "base=%ld length=%ld idx=%ld num_in=%ld num_out=%ld\n", bb, ll, idx, nin, nout);
-	return 0;
-}
-
 void 
 gh_dbg_calc_idx_and_sz(long num_in, long num_out, long bs, long& tg_idx, long& tgs_sz){
 	GH_CK(bs > 1);
@@ -492,119 +413,7 @@ hlognet_box::run_hlognet_simu(){
 	wait_all_threads_ended_simu();
 }
 
-void gh_dbg_init_context(slice_vec& ctx_addrs);
 void gh_dbg_post_test_prints(hlognet_box* bx);
-
-int
-test_hlognet(int argc, char *argv[]){
-	
-	bool go_on = GH_GLOBALS.get_args(argc, argv);
-	
-	if(! go_on){
-		return 0;
-	}
-	
-	if(GH_GLOBALS.dbg_run_m2n){
-		gh_run_m_to_n(GH_GLOBALS.dbg_dag_mm, GH_GLOBALS.dbg_dag_nn, GH_GLOBALS.dbg_has_zr);
-		return 0;
-	}
-	
-	if(GH_GLOBALS.dbg_run_ini_slices){
-		addr_vec_t all_rel_pos;
-		
-		all_rel_pos.resize(0);
-		slice_vec sub_slices;
-		gh_init_rel_pos(all_rel_pos, GH_GLOBALS.dbg_slices_sz, GH_BASE_TWO, GH_GLOBALS.dbg_slices_sd, GH_GLOBALS.dbg_has_zr);
-		sub_slices.init_slice_vec_with(GH_GLOBALS.dbg_slices_idx, all_rel_pos);
-		sub_slices.print_slice_vec(stdout);
-		sub_slices.print_all_intervals(stdout);
-
-		all_rel_pos.resize(0);
-		slice_vec sub_2_slices;
-		gh_init_rel_pos(all_rel_pos, 3, GH_BASE_TWO, gh_right_side, false);
-		sub_2_slices.init_sub_slices_with(4, sub_slices, all_rel_pos);
-		sub_2_slices.print_slice_vec(stdout);
-		sub_2_slices.print_all_intervals(stdout);
-		return 0;
-	}
-	
-	bool add_ctx = GH_GLOBALS.add_ctx_simu;
-	
-	slice_vec out_addr;
-	if(add_ctx){
-		gh_dbg_init_context(out_addr);
-		if(! out_addr.empty()){
-			out_addr.print_slice_vec(stdout, "CONTEXT=");
-			GH_GLOBALS.num_target_simu = (long)out_addr.size();
-		}
-	}
-	
-	long bb = GH_GLOBALS.base_simu;
-	long ntg = GH_GLOBALS.num_target_simu;
-	long ctx_idx = GH_GLOBALS.context_idx_simu;
-	
-	const char* add_str = (add_ctx)?("ADD"):("");
-
-	fprintf(stdout, "test_hlognet base=%ld #ntg=%ld TEST=%ld ctx=%ld %s \n", 
-			bb, ntg, GH_GLOBALS.idx_test_simu, ctx_idx, add_str);
-	
-	hlognet_box* bx = new hlognet_box(bb);
-	bx->init_length(ntg);
-	fprintf(stdout, "max_lgnet_height=%ld \n", bx->height + 1);
-	fprintf(stdout, "===========\n");
-	
-	bx->init_lognet_box(ntg, out_addr);
-	
-	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
-
-	fprintf(stdout, "=========== CALC_RANGES ===================\n");
-	
-	GH_GLOBALS.all_tgt_simu = &(bx->all_targets);
-	
-	gh_dbg_init_simu();
-
-	if(GH_GLOBALS.dbg_box_prt){
-		if(GH_GLOBALS.pointer_prt_simu){ 
-			fprintf(stdout, "=========== PRINTING_NET_WITH_POINTERS ===================\n");
-			bx->print_box(stdout, gh_full_pt_prt);
-		} else {
-			fprintf(stdout, "=========== PRETTY_PRINTING ===================\n");
-			bx->print_box(stdout, gh_full_prt);
-		}
-	}
-
-	
-	if(GH_GLOBALS.dbg_ck_path_simu){
-		fprintf(stdout, "=========== RUNNING_PATH ===================\n");
-		bx->ck_lognet_path(GH_GLOBALS.dbg_src_addr_simu, GH_GLOBALS.dbg_dst_addr_simu, true);
-		fprintf(stdout, "=========== RUNNED_PATH ===================\n");
-	} else 
-	if(GH_GLOBALS.dbg_ck_all_path_from_simu){
-		fprintf(stdout, "=========== RUNNING_ALL_PATHS_FROM ===================\n");
-		bx->ck_lognet_all_paths_from(GH_GLOBALS.dbg_src_addr_simu, true);
-		fprintf(stdout, "=========== RUNNED_ALL_PATHS_FROM ===================\n");
-	} else 
-	if(GH_GLOBALS.dbg_ck_all_path_simu){
-		fprintf(stdout, "=========== RUNNING_ALL_PATHS ===================\n");
-		bx->ck_lognet_all_to_all_paths(true);
-		fprintf(stdout, "=========== RUNNED_ALL_PATHS ===================\n");
-	} else 
-	if(GH_GLOBALS.do_run_simu){
-		const char* bfd_str = "";
-		if(GH_GLOBALS.buffed_nodes_simu){
-			bfd_str = "BUFFER";
-		}
-		fprintf(stdout, "=========== RUNNING_%s_SIMU ===================\n", bfd_str);
-		bx->run_hlognet_simu();
-		fprintf(stdout, "=========== RUNNED_%s_SIMU ===================\n", bfd_str);
-	}
-	
-	gh_dbg_post_test_prints(bx);
-
-	delete bx;
-		
-	return 0;
-}
 
 void
 hnode_target::run_target_simu(){
@@ -685,19 +494,6 @@ hnode_target::run_target_simu(){
 
 void
 hmessage::copy_mg_to(hmessage& mg, hnode* dbg_src_nod, hnode* dbg_dst_nod){
-	GH_DBG_CODE(
-		if(		(dbg_src_nod != gh_null) && (dbg_dst_nod != gh_null) && 
-				(GH_GLOBALS.dbg_src_idx_simu == mg_sra) && (GH_GLOBALS.dbg_src_addr_simu == mg_src)	)
-		{ 
-			fprintf(stdout, "dbg ");
-			print_message(stdout);
-			fprintf(stdout, " (%p) -> (%p) ----\n", dbg_src_nod, dbg_dst_nod);
-			//dbg_dst_nod->print_node(stdout, gh_full_pt_prt);
-			//fprintf(stdout, " ");
-			//fprintf(stdout, "\n-----------------\n");
-			fflush(stdout);
-		}
-	);
 	mg.mg_val = mg_val;
 	mg.mg_sra = mg_sra;
 	mg.mg_src = mg_src;
@@ -812,9 +608,6 @@ hnode_target::dbg_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
 		case 4:
 			test4_choose_msg_src_dst_simu(src, dst);
 			break;
-		case 5:
-			test5_choose_msg_src_dst_simu(src, dst);
-			break;
 	}
 }
 
@@ -843,9 +636,6 @@ gh_dbg_init_simu(){
 			return;
 		case 4:
 			gh_dbg_init_test4_simu();
-			return;
-		case 5:
-			gh_dbg_init_test5_simu();
 			return;
 	}
 	GH_CK(false);
@@ -956,12 +746,6 @@ gh_dbg_init_test3_simu(){
 	hnode_target* tgt = all_tgt[lst_tg];
 	GH_CK(tgt != gh_null);
 	tgt->is_source_simu = true;
-	
-	/*for(long ii = 0; ii < tot_tg; ii++){
-		hnode_target* tgt = all_tgt[ii];
-		GH_CK(tgt != gh_null);
-		tgt->is_source_simu = true;
-	}*/
 }
 
 // TEST4
@@ -986,46 +770,6 @@ gh_dbg_init_test4_simu(){
 		GH_CK(tgt != gh_null);
 		tgt->is_source_simu = true;
 	}
-}
-
-// TEST5
-
-void
-hnode_target::test5_choose_msg_src_dst_simu(gh_addr_t& src, gh_addr_t& dst){
-	src = GH_GLOBALS.dbg_src_addr_simu;
-	dst = GH_GLOBALS.dbg_dst_addr_simu;
-	
-	GH_CK(src != GH_INVALID_ADDR);
-	GH_CK(dst != GH_INVALID_ADDR);
-}
-
-void
-gh_dbg_init_test5_simu(){
-	GH_CK(GH_GLOBALS.all_tgt_simu != gh_null);
-	ptarget_vec_t& all_tgt = *GH_GLOBALS.all_tgt_simu;
-	
-	if(GH_GLOBALS.dbg_src_addr_simu == GH_INVALID_ADDR){
-		fprintf(stdout, "\n\n\n\n\n\n\n\nMUST use -src option for test 5 to work !!!! \n\n\n\n\n\n\n\n");
-		GH_GLOBALS.do_run_simu = false;
-		return;
-	}
-	if(GH_GLOBALS.dbg_dst_addr_simu == GH_INVALID_ADDR){
-		fprintf(stdout, "\n\n\n\n\n\n\n\nMUST use -dst option for test 5 to work !!!! \n\n\n\n\n\n\n\n");
-		GH_GLOBALS.do_run_simu = false;
-		return;
-	}
-
-	long idx = GH_GLOBALS.dbg_src_idx_simu;	// SOURCE ONE_PAIR
-	
-	long tot_tg = (long)all_tgt.size();
-	GH_CK(tot_tg > 0);
-	GH_CK(idx < tot_tg);
-	
-	GH_GLOBALS.tot_src_msg_simu = 1;
-
-	hnode_target* tgt = all_tgt[idx];
-	GH_CK(tgt != gh_null);
-	tgt->is_source_simu = true;
 }
 
 // END_TESTS
@@ -1117,128 +861,6 @@ hnode_target::inc_st_simu(){
 	return false;
 }
 
-void
-hgen_globals::print_help(const char* prg){
-	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-no_prt] [-prt_tgt] [-t <test_id>] [-ctx <context_id>] ", prg);
-	fprintf(stdout, "[-dbg_prt] {[-n <dbg_nod_adr>]}* [-idx <src_idx>] [-src <src_addr>] [-dst <dst_addr>] ");
-	fprintf(stdout, "[-disp <ptr_adr_disp>] [-m2n] [-ini_slices] [-zr] [-rgt] [-ck_pth] [-ck_all_pth_from] [-ck_all_pth] ");
-	fprintf(stdout, "[-bf_sz <nod_buff_sz>] [-no_buff]");
-	fprintf(stdout, "\n");
-}
-
-bool
-hgen_globals::get_args(int argc, char** argv){
-	
-	const char* prg_nm = argv[0];
-	
-	if(argc < 3){
-		print_help(prg_nm);
-		return false;
-	}
-	
-	base_simu = atol(argv[1]);
-	num_target_simu = atol(argv[2]);
-	
-	long first_pm = 3;
-	
-	idx_test_simu = 0;
-	context_idx_simu = 0;
-	
-	bool prt_help = false;
-	
-	for(long ii = first_pm; ii < argc; ii++){
-		std::string the_arg = argv[ii];
-		if(the_arg == "-h"){
-			prt_help = true;
-		} else if(the_arg == "-pp"){
-			pointer_prt_simu = true;
-		} else if(the_arg == "-no_run"){
-			do_run_simu = false;
-		} else if(the_arg == "-no_buff"){
-			buffed_nodes_simu = false;
-		} else if(the_arg == "-no_prt"){
-			dbg_box_prt = false;
-		} else if(the_arg == "-prt_tgt"){
-			prt_tgt_info = true;
-		} else if(the_arg == "-dbg_prt"){
-			dbg_prt_gen_info = true;
-		} else if(the_arg == "-cho"){
-			dbg_prt_choo_simu = true;
-		} else if(the_arg == "-zr"){
-			dbg_has_zr = true;
-		} else if(the_arg == "-rgt"){
-			dbg_slices_sd = gh_right_side;
-		} else if(the_arg == "-ck_pth"){
-			dbg_ck_path_simu = true;
-		} else if(the_arg == "-ck_all_pth_from"){
-			dbg_ck_all_path_from_simu = true;
-		} else if(the_arg == "-ck_all_pth"){
-			dbg_ck_all_path_simu = true;
-		} else if(the_arg == "-m2n"){
-			dbg_run_m2n = true;
-			dbg_dag_mm = base_simu;
-			dbg_dag_nn = num_target_simu;
-		} else if(the_arg == "-ini_slices"){
-			dbg_run_ini_slices = true;
-			dbg_slices_sz = base_simu;
-			dbg_slices_idx = num_target_simu;
-		} else if((the_arg == "-t") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			idx_test_simu = atol(argv[kk_idx]);
-		} else if((the_arg == "-ctx") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			add_ctx_simu = true;
-			context_idx_simu = atol(argv[kk_idx]);
-		} else if((the_arg == "-n") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			gh_addr_t adr = atol(argv[kk_idx]);
-			dbg_nodes_prt_simu.push_back(adr);			
-		} else if((the_arg == "-disp") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			dbg_prt_disp_all_addr_simu = atol(argv[kk_idx]);
-		} else if((the_arg == "-idx") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			dbg_src_idx_simu = atol(argv[kk_idx]);
-		} else if((the_arg == "-src") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			dbg_src_addr_simu = atol(argv[kk_idx]);
-		} else if((the_arg == "-dst") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			dbg_dst_addr_simu = atol(argv[kk_idx]);
-		} else if((the_arg == "-bf_sz") && ((ii + 1) < argc)){
-			int kk_idx = ii + 1;
-			ii++;
-
-			node_buff_sz_simu = atol(argv[kk_idx]);
-		} else {
-			fprintf(stdout, "Unknown option %s \n", the_arg.c_str());
-			
-			prt_help = true;
-		}
-	}
-	
-	if(prt_help){
-		print_help(prg_nm);
-		return false;
-	}
-
-	return true;
-}
-
 gh_addr_t
 hnode::get_diff_simu(){
 	GH_CK(get_flag(gh_is_interval));
@@ -1291,19 +913,6 @@ test_m_to_n(int argc, char *argv[]){
 	gh_run_m_to_n(mm, nn, has_zr);
 
 	return 0;
-}
-
-void
-gh_dbg_init_context(slice_vec& ctx_addrs){
-	long ctx_idx = GH_GLOBALS.context_idx_simu;
-	if(ctx_idx == 1){
-		//ctx_addrs.sls_orig = gh_inc_slc;
-		//ctx_addrs.sls_all = {8, 7, 6, 4, 0};
-	}
-	if(ctx_idx == 2){
-		//ctx_addrs.sls_orig = gh_dec_slc;
-		//ctx_addrs.sls_all = {8, 7, 6, 4, 0};
-	}
 }
 
 gh_addr_t
@@ -2009,6 +1618,16 @@ runner_check_all_to_all_paths::run_test(gh_str_list_t& lt_args){
 	return 0;
 }
 
+/*
+void
+hgen_globals::print_help(const char* prg){
+	fprintf(stdout, "%s <base> <#target> [-pp] [-cho] [-no_run] [-no_prt] [-prt_tgt] [-t <test_id>] [-ctx <context_id>] ", prg);
+	fprintf(stdout, "[-dbg_prt] {[-n <dbg_nod_adr>]}* [-idx <src_idx>] [-src <src_addr>] [-dst <dst_addr>] ");
+	fprintf(stdout, "[-disp <ptr_adr_disp>] [-m2n] [-ini_slices] [-zr] [-rgt] [-ck_pth] [-ck_all_pth_from] [-ck_all_pth] ");
+	fprintf(stdout, "[-bf_sz <nod_buff_sz>] [-no_buff]");
+	fprintf(stdout, "\n");
+}*/
+
 void
 runner_threads_simu::print_help(){
 	GH_GLOBALS.compl_sys.print_last_complete_arg();
@@ -2017,14 +1636,51 @@ runner_threads_simu::print_help(){
 }
 bool
 runner_threads_simu::get_args(gh_str_list_t& lt_args){
+	// -pt_prt -pb -src -dst
 	bool ok1 = base_get_args(lt_args, "threads_simu", 0);
 	if(! ok1){
 		return false;
 	}
-	
-	//FILE* of = GH_GLOBALS.compl_sys.args_compl_output;
-	//bool is_cmpl = GH_GLOBALS.compl_sys.args_orig_has_compl;
-	//int last_arg = argc - tot_args;
+
+	GH_GLOBALS.idx_test_simu = 0;
+
+	gh_string_t the_arg;
+	bool did_some = true;
+	while(did_some && ! lt_args.empty()){
+		did_some = false;
+		the_arg = lt_args.front();
+		if(the_arg == "-no_buff"){
+			gh_dec_args(lt_args); did_some = true;
+			GH_GLOBALS.buffed_nodes_simu = false;
+		} else if(the_arg == "-dbg_prt"){
+			gh_dec_args(lt_args); did_some = true;
+			GH_GLOBALS.dbg_prt_gen_info = true;
+		} else if(the_arg == "-cho"){
+			gh_dec_args(lt_args); did_some = true;
+			GH_GLOBALS.dbg_prt_choo_simu = true;
+		} else if((the_arg == "-t") && (lt_args.size() > 1)){
+			gh_dec_args(lt_args); did_some = true;
+
+			the_arg = lt_args.front(); gh_dec_args(lt_args);
+			GH_GLOBALS.idx_test_simu = atol(the_arg.c_str());
+		} else if((the_arg == "-nod") && (lt_args.size() > 1)){
+			gh_dec_args(lt_args); did_some = true;
+			
+			the_arg = lt_args.front(); gh_dec_args(lt_args);
+			gh_addr_t adr = atol(the_arg.c_str());
+			GH_GLOBALS.dbg_nodes_prt_simu.push_back(adr);
+		} else if((the_arg == "-disp") && (lt_args.size() > 1)){
+			gh_dec_args(lt_args); did_some = true;
+
+			the_arg = lt_args.front(); gh_dec_args(lt_args);
+			GH_GLOBALS.dbg_prt_disp_all_addr_simu = atol(the_arg.c_str());
+		} else if((the_arg == "-bf_sz") && (lt_args.size() > 1)){
+			gh_dec_args(lt_args); did_some = true;
+
+			the_arg = lt_args.front(); gh_dec_args(lt_args);
+			GH_GLOBALS.node_buff_sz_simu = atol(the_arg.c_str());
+		}
+	}
 	
 	return true;
 }
@@ -2038,8 +1694,20 @@ runner_threads_simu::run_test(gh_str_list_t& lt_args){
 	if(is_cmpl){ return -1; }
 	
 	hlognet_box* bx = create_lognet();
+
+	gh_dbg_init_simu();
+
+	const char* bfd_str = "";
+	if(GH_GLOBALS.buffed_nodes_simu){
+		bfd_str = "BUFFERED";
+	}
 	
-	bx->ck_lognet_all_to_all_paths(true);
+	long num_test = GH_GLOBALS.idx_test_simu;
+	fprintf(stdout, "=========== STARTING_SIMU_TEST_%ld_%s_SIMU ===================\n", num_test, bfd_str);
+	bx->run_hlognet_simu();
+	fprintf(stdout, "=========== FINISHED_SIMU_TEST_%ld_%s_SIMU ===================\n", num_test, bfd_str);
+	
+	gh_dbg_post_test_prints(bx);
 	
 	delete bx;
 	return 0;

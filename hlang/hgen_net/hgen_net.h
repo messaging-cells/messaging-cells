@@ -374,13 +374,6 @@ public:
 	hlognet_box* create_lognet();
 };
 
-class runner_threads_simu : public runner_init_lognet_box {
-public:
-	int run_test(gh_str_list_t& lt_args);
-	bool get_args(gh_str_list_t& lt_args);
-	virtual void print_help();
-};
-
 class runner_check_path : public runner_init_lognet_box {
 public:
 	int run_test(gh_str_list_t& lt_args);
@@ -396,6 +389,13 @@ public:
 };
 
 class runner_check_all_to_all_paths : public runner_init_lognet_box {
+public:
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
+	virtual void print_help();
+};
+
+class runner_threads_simu : public runner_init_lognet_box {
 public:
 	int run_test(gh_str_list_t& lt_args);
 	bool get_args(gh_str_list_t& lt_args);
@@ -423,33 +423,7 @@ public:
 	gh_nk_lnk_mod_t CK_LINK_MODE = gh_soft_ck_mod;
 	
 	autocomplete_sys compl_sys;
-
-	long idx_test_simu = 0;
-	
-	pthread_data_vec_t all_thread_data_simu;
-	ptarget_vec_t* all_tgt_simu = gh_null;
-	long tot_tgt_simu = 0;
-	long tot_src_msg_simu = 0;
-	bool all_thread_inited_simu = false;
-	
 	gh_str_set_t all_verilog_declared_interfaces;
-	
-	const char* dbg_LI_quarter = "LI";
-	const char* dbg_LO_quarter = "LO";
-	const char* dbg_RI_quarter = "RI";
-	const char* dbg_RO_quarter = "RO";
-
-	const char* dbg_curr_tgt_quarter = gh_null;
-
-	bool	dbg_ck_path_simu = false;
-	bool	dbg_ck_all_path_from_simu = false;
-	bool	dbg_ck_all_path_simu = false;
-	
-	gh_addr_t dbg_src_idx_simu = 0;
-	gh_addr_t dbg_src_addr_simu = GH_INVALID_ADDR;
-	gh_addr_t dbg_dst_addr_simu = GH_INVALID_ADDR;
-
-	bool dbg_prt_choo_simu = false;
 
 	runner_get_binnet_m_to_n 		rnr_get_binnet_m_to_n;
 	runner_init_slices				rnr_init_slices;
@@ -459,42 +433,32 @@ public:
 	runner_check_all_paths_from		rnr_check_all_paths_from;
 	runner_check_all_to_all_paths	rnr_check_all_to_all_paths;
 	
-	bool 		dbg_run_m2n = false;
-	long 		dbg_dag_mm = 0;
-	long 		dbg_dag_nn = 0;
+	const char* dbg_LI_quarter = "LI";
+	const char* dbg_LO_quarter = "LO";
+	const char* dbg_RI_quarter = "RI";
+	const char* dbg_RO_quarter = "RO";
+
+	const char* dbg_curr_tgt_quarter = gh_null;
+
+	// USED IN runner_threads_simu:
+	pthread_data_vec_t 		all_thread_data_simu;
+	ptarget_vec_t* 			all_tgt_simu = gh_null;
+	long 					tot_src_msg_simu = 0;
+	bool 					all_thread_inited_simu = false;
 	
-	bool		dbg_has_zr = false;
-
-	bool 		dbg_run_ini_slices = false;
-	long 		dbg_slices_sz = 0;
-	long 		dbg_slices_idx = 0;
-	gh_route_side_t	dbg_slices_sd = gh_left_side;
-
-	bool 		dbg_box_prt = true;
 	bool		dbg_prt_gen_info = false;
-	
-	bool 		prt_tgt_info = false;
-	bool 		do_run_simu = true;
-	bool 		pointer_prt_simu = false;
-	bool 		add_ctx_simu = false;
 	bool 		buffed_nodes_simu = true;
-	long 		context_idx_simu = 0;
-	long 		base_simu = 2;
-	gh_addr_t	num_target_simu = 3;
-	
+	bool 		dbg_prt_choo_simu = false;
+	long 		idx_test_simu = 0;
+	addr_vec_t 	dbg_nodes_prt_simu;
+	long 		dbg_prt_disp_all_addr_simu = 0;
 	long 		node_buff_sz_simu = 3;
-
-	addr_vec_t dbg_nodes_prt_simu;
-	long dbg_prt_disp_all_addr_simu = 0;
 	
 	hgen_globals(){}
 	
 	virtual ~hgen_globals(){
 	}
 	
-	bool get_args(int argc, char** argv);
-	
-	void print_help(const char* prg);
 };
 
 extern hgen_globals GH_GLOBALS;
