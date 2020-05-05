@@ -402,6 +402,17 @@ public:
 	virtual void print_help();
 };
 
+class runner_print_verilog_target_box {
+public:
+	long 	pw_base = GH_BASE_TWO;
+	long 	num_in = 0;
+	long 	num_out = 0;
+	
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
+	void print_help();
+};
+
 class autocomplete_sys {
 public:
 	const char* args_output_name = "autocomplete_choices.txt";
@@ -432,6 +443,8 @@ public:
 	runner_check_path				rnr_check_path;
 	runner_check_all_paths_from		rnr_check_all_paths_from;
 	runner_check_all_to_all_paths	rnr_check_all_to_all_paths;
+	
+	runner_print_verilog_target_box	rnr_print_verilog_target_box;
 	
 	const char* dbg_LI_quarter = "LI";
 	const char* dbg_LO_quarter = "LO";
@@ -680,6 +693,14 @@ get_verilog_io_name(long num, gh_route_side_t sd, gh_io_kind_t iok){
 	return ss;
 }
 
+#define gh_call_get_ppio(get_ppio_fn) \
+	hnode** ppio = get_ppio_fn(); \
+	if(ppio == gh_null){ return gh_null; } \
+	return *ppio; \
+
+// end_macro
+
+
 inline bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
 inline bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
 inline bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
@@ -744,10 +765,15 @@ public:
 	virtual bool 	get_req0(){ GH_CK("get_req0" && false); return false; }
 	virtual bool 	get_req1(){ GH_CK("get_req1" && false); return false; }
 	
-	virtual hnode* 	get_in0(){ return gh_null; }
-	virtual hnode* 	get_in1(){ return gh_null; }
-	virtual hnode* 	get_out0(){ return gh_null; }
-	virtual hnode* 	get_out1(){ return gh_null; }
+	virtual hnode** 	get_pt_in0(){ return gh_null; }
+	virtual hnode** 	get_pt_in1(){ return gh_null; }
+	virtual hnode** 	get_pt_out0(){ return gh_null; }
+	virtual hnode** 	get_pt_out1(){ return gh_null; }
+
+	hnode* 	get_in0(){ gh_call_get_ppio(get_pt_in0); }
+	hnode* 	get_in1(){ gh_call_get_ppio(get_pt_in1); }
+	hnode* 	get_out0(){ gh_call_get_ppio(get_pt_out0); }
+	hnode* 	get_out1(){ gh_call_get_ppio(get_pt_out1); }
 
 	virtual hnode** set_in0(hnode* nd){ return gh_null; }
 	virtual hnode** set_in1(hnode* nd){ return gh_null; }
@@ -887,8 +913,8 @@ public:
 	virtual bool 	get_ack0(){ return ack0; }
 	virtual bool 	get_req0(){ return req0; }
 	
-	virtual hnode* 	get_in0(){ return in0; }
-	virtual hnode* 	get_out0(){ return out0; }
+	virtual hnode** 	get_pt_in0(){ return &in0; }
+	virtual hnode** 	get_pt_out0(){ return &out0; }
 
 	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
 	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
@@ -1099,9 +1125,9 @@ public:
 	virtual bool 	get_req0(){ return req0; }
 	virtual bool 	get_req1(){ return req1; }
 	
-	virtual hnode* 	get_in0(){ return in0; }
-	virtual hnode* 	get_out0(){ return out0; }
-	virtual hnode* 	get_out1(){ return out1; }
+	virtual hnode** 	get_pt_in0(){ return &in0; }
+	virtual hnode** 	get_pt_out0(){ return &out0; }
+	virtual hnode** 	get_pt_out1(){ return &out1; }
 	
 	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
 	virtual hnode** set_out0(hnode* nd){ out0 = nd; return &out0; }
@@ -1182,9 +1208,9 @@ public:
 	virtual bool 	get_ack1(){ return ack1; }
 	virtual bool 	get_req0(){ return req0; }
 	
-	virtual hnode* 	get_in0(){ return in0; }
-	virtual hnode* 	get_in1(){ return in1; }
-	virtual hnode* 	get_out0(){ return out0; }
+	virtual hnode** 	get_pt_in0(){ return &in0; }
+	virtual hnode** 	get_pt_in1(){ return &in1; }
+	virtual hnode** 	get_pt_out0(){ return &out0; }
 	
 	virtual hnode** set_in0(hnode* nd){ in0 = nd; return &in0; }
 	virtual hnode** set_in1(hnode* nd){ in1 = nd; return &in1; }
@@ -1467,6 +1493,9 @@ public:
 	
 };
 
+void gh_dbg_calc_idx_and_sz(long num_in, long num_out, long bs, long& tg_idx, long& tgs_sz);
+
+
 bool gh_str_is_prefix(const std::string& the_str, const std::string& pfx);
 
 void gh_args_get_list(gh_str_list_t& lt_args, int argc, char *argv[]);
@@ -1485,6 +1514,7 @@ void* run_node_simu(void* pm);
 int test_get_target(int argc, char *argv[]);
 int test_hlognet(int argc, char *argv[]);
 int test_hlogne2(gh_str_list_t& lt_args);
+int test_verilog(gh_str_list_t& lt_args);
 
 #endif // GEN_HNET_H
 

@@ -8,13 +8,13 @@ hnode::get_verilog_send_node_interface_name(hnode** ppout){
 	GH_CK(ppout != gh_null);
 	GH_CK(*ppout != gh_null);
 	if(*ppout == this){
-		hnode* nd = get_out0();
-		if(&nd == ppout){
+		hnode** pnd = get_pt_out0();
+		if(pnd == ppout){
 			gh_string_t o_str = get_verilog_id() + gh_vl_out0;
 			return o_str;
 		} 
-		nd = get_out1();
-		GH_CK(&nd == ppout);
+		pnd = get_pt_out1();
+		GH_CK(pnd == ppout);
 		gh_string_t o_str = get_verilog_id() + gh_vl_out1;
 		return o_str;
 	}
@@ -27,13 +27,13 @@ hnode::get_verilog_receive_node_interface_name(hnode** ppin){
 	GH_CK(ppin != gh_null);
 	GH_CK(*ppin!= gh_null);
 	if(*ppin == this){
-		hnode* nd = get_in0();
-		if(&nd == ppin){
+		hnode** pnd = get_pt_in0();
+		if(pnd == ppin){
 			gh_string_t o_str = gh_vl_in0 + get_verilog_id();
 			return o_str;
 		} 
-		nd = get_in1();
-		GH_CK(&nd == ppin);
+		pnd = get_pt_in1();
+		GH_CK(pnd == ppin);
 		gh_string_t o_str = gh_vl_in1 + get_verilog_id();
 		return o_str;
 	}
@@ -360,7 +360,120 @@ endmodule
 
 )base");
 	
-	
 }
 
+void
+runner_print_verilog_target_box::print_help(){
+	GH_GLOBALS.compl_sys.print_last_complete_arg();
+	FILE* of = GH_GLOBALS.compl_sys.args_compl_output;
+	fprintf(of, "<num_in> <num_out> [-pb <pw_base>] \n");
+}
+bool
+
+runner_print_verilog_target_box::get_args(gh_str_list_t& lt_args){
+	GH_CK(! lt_args.empty());
+	GH_CK(lt_args.front() == "print_verilog_target_box");
+	
+	bool is_cmpl = GH_GLOBALS.compl_sys.args_orig_has_compl;
+	int tot_params = lt_args.size();
+	tot_params--;
+	if(is_cmpl){
+		tot_params--;
+	}
+	if(tot_params < 2){
+		if(! is_cmpl){
+			fprintf(stdout, "following args must have the form:\n\t");
+		}
+		print_help();
+		return false;
+	}
+	
+	gh_dec_args(lt_args);
+	
+	gh_string_t the_arg = lt_args.front(); gh_dec_args(lt_args);
+	num_in = atol(the_arg.c_str());
+	
+	the_arg = lt_args.front(); gh_dec_args(lt_args);
+	num_out = atol(the_arg.c_str());
+	
+	bool did_some = true;
+	while(did_some && ! lt_args.empty()){
+		did_some = false;
+		the_arg = lt_args.front();
+		if((the_arg == "-pb") && (lt_args.size() > 1)){
+			gh_dec_args(lt_args); did_some = true;
+
+			the_arg = lt_args.front(); gh_dec_args(lt_args);
+			pw_base = atol(the_arg.c_str());
+		}
+	}
+	
+	return true;
+}
+
+int
+runner_print_verilog_target_box::run_test(gh_str_list_t& lt_args){
+	bool go_on = get_args(lt_args);
+	if(! go_on){
+		return -1;
+	}
+	bool is_cmpl = GH_GLOBALS.compl_sys.args_orig_has_compl;
+	if(is_cmpl){ return -1; }
+	
+	long bb = pw_base;
+	long nin = num_in;
+	long nout = num_out;
+	fprintf(stdout, "// test_get_target base=%ld #in=%ld #out=%ld\n", bb, nin, nout);
+
+	htarget_box* bx = new htarget_box(bb);
+	
+	long tg_idx = 0;
+	long tgs_sz = 0;
+	gh_dbg_calc_idx_and_sz(nin, nout, bb, tg_idx, tgs_sz);
+	
+	slice_vec all_addr;
+	bx->init_target_box(tg_idx, nin, nout, all_addr, tgs_sz);
+
+	fprintf(stdout, "// ===========\n");
+	
+	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
+
+	bx->print_box(stdout, gh_full_prt);
+	
+	fprintf(stdout, "// ===========\n");
+	fprintf(stdout, "// ===========\n");
+	fprintf(stdout, "// ===========\n");
+	
+	bx->print_verilog_module_lognet_target_box(stdout);
+	
+	delete bx;
+	return 0;
+}
+
+
+
+int test_verilog(gh_str_list_t& lt_args){
+	bool is_cmpl = GH_GLOBALS.compl_sys.args_orig_has_compl;
+	int resp = -1;
+			
+	gh_str_set_t lv_commds;
+	
+	lv_commds.insert("print_verilog_target_box");
+	
+	std::string cho;
+	bool ok1 = gh_args_select_one_of(lt_args, lv_commds, cho);
+	if(! ok1){
+		return -1;
+	}
+
+	bool done = false;
+	if(! done && (cho == "print_verilog_target_box")){
+		resp = GH_GLOBALS.rnr_print_verilog_target_box.run_test(lt_args);
+		done = true;
+	}
+	if(! is_cmpl){
+		fprintf(stdout, "ENDING_VERILOG_TESTS______________________\n");
+	}
+	return resp;
+}
 

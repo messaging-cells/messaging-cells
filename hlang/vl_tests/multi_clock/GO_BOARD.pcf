@@ -31,3 +31,13 @@ set_io o_LED_2 57
 set_io o_LED_3 59
 set_io o_LED_4 60
 
+## PMOD Signals
+set_io io_PMOD_1 65
+set_io io_PMOD_2 64
+set_io io_PMOD_3 63
+set_io io_PMOD_4 62
+set_io io_PMOD_7 78
+set_io io_PMOD_8 79
+set_io io_PMOD_9 80
+set_io io_PMOD_10 81
+

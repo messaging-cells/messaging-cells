@@ -161,64 +161,16 @@ main(int argc, char *argv[]){
 	
 	int resp = 0;
 	gh_dec_args(lt_args);
-	if(cho1 == "test"){
+	bool done = false;
+	if(! done && (cho1 == "test")){
 		resp = test_hlogne2(lt_args);
+		done = true;
+	}
+	if(! done && (cho1 == "generate")){
+		resp = test_verilog(lt_args);
+		done = true;
 	}
 		
 	return resp;
 }
-
-
-/*
-
------------------------------------------
-
-#/usr/bin/env bash
-
-_hgen_lognet_completions()
-{
-	hgen_lognet ++
-	#  COMPREPLY+=("now")
-}
-
-complete -F _hgen_lognet_completions hgen_lognet
-
------------------------------------------
-
-
-GET_ENVIROMENT VARIABLE:
-if(const char* env_p = std::getenv("COMP_LINE"))
-     std::cout << "Your PATH is: " << env_p << '\n';
-
----------------------------------------
-
-COMP_WORDS: an array of all the words typed after the name of the program the compspec belongs to
-
-COMP_CWORD: an index of the COMP_WORDS array pointing to the word the current cursor is at - in other words, the index of the word the cursor was when the tab key was pressed
-
-COMP_LINE: the current command line
-
-COMPREPLY is an array variable used to store the completions - the completion mechanism uses this variable to display its contents as completions
-
-#include <map>
-#include <regex>
-using namespace std;
-
-int main()
-{
-    string env = "[key1,val1][key2,val2]"; //getenv("varname");
-
-    regex rx("\\[([^,]+),([^\\]]+)\\]");
-    map<string, string> res;
-
-    for(regex_iterator<string::iterator> it(env.begin(), env.end(), rx), end; it != end; it++)
-        res[(*it)[1]] = (*it)[2];
-
-    for(auto it : res) 
-        cout << it.first << " = " << it.second << endl;
-
-    return 0;
-}
-
-*/
 
