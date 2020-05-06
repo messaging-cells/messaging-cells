@@ -1134,7 +1134,8 @@ htarget_box::init_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice_vec& 
 	join_box_outputs(1, rgt, 0, spl_rgt, lft_ht, rgt_out, GH_QRT(GH_RO));
 	
 	target = new hnode_target();
-	target->bx_idx = tgt_idx;	
+	target->bx_idx = tgt_idx;
+	target->addr = tgt_idx;
 	
 	target->in0 = tg_in;
 	tg_in->out0 = target;
@@ -1388,6 +1389,7 @@ htarget_box::init_basic_target_box(long tgt_idx, long lft_ht, long rgt_ht, slice
 	
 	target = new hnode_target();
 	target->bx_idx = tgt_idx;
+	target->addr = tgt_idx;
 	
 	if((lft_ht == 0) || (rgt_ht == 0)){
 		GH_CK((lft_ht != 0) || (rgt_ht != 0));

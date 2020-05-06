@@ -4,21 +4,40 @@
 using namespace std;
 
 gh_string_t
+hnode::get_verilog_id(){
+	gh_string_t o_str = "gh_invalid_verilog_id";
+	if(is_1to1()){
+		hnode_1to1* th_nd = (hnode_1to1*)this;
+		gh_1t1_kind_t k1t1 = th_nd->get_1t1_kind();
+		GH_CK(k1t1 == gh_target_1t1);
+		
+		hnode_target* tg = (hnode_target*)th_nd;
+		o_str = gh_vl_tgt + gh_long_to_string(tg->bx_idx);
+	} else {
+		o_str = gh_vl_nod + gh_long_to_string(addr);
+	}
+	return o_str;
+}
+
+gh_string_t
 hnode::get_verilog_send_node_interface_name(hnode** ppout){
 	GH_CK(ppout != gh_null);
 	GH_CK(*ppout != gh_null);
+	gh_string_t nd_id = get_verilog_id();
 	if(*ppout == this){
 		hnode** pnd = get_pt_out0();
 		if(pnd == ppout){
-			gh_string_t o_str = get_verilog_id() + gh_vl_out0;
+			gh_string_t o_str = nd_id + gh_vl_out0;
 			return o_str;
 		} 
 		pnd = get_pt_out1();
 		GH_CK(pnd == ppout);
-		gh_string_t o_str = get_verilog_id() + gh_vl_out1;
+		gh_string_t o_str = nd_id + gh_vl_out1;
 		return o_str;
 	}
-	gh_string_t o_str = get_verilog_id() + gh_vl_sep + (*ppout)->get_verilog_id();
+	//GH_CK((nd_id == dbg_get__in0_verilog_id()) || (nd_id == dbg_get__in1_verilog_id()));
+	
+	gh_string_t o_str = nd_id + gh_vl_sep + (*ppout)->get_verilog_id();
 	return o_str;
 }
 
@@ -26,24 +45,28 @@ gh_string_t
 hnode::get_verilog_receive_node_interface_name(hnode** ppin){
 	GH_CK(ppin != gh_null);
 	GH_CK(*ppin!= gh_null);
+	gh_string_t nd_id = get_verilog_id();
 	if(*ppin == this){
 		hnode** pnd = get_pt_in0();
 		if(pnd == ppin){
-			gh_string_t o_str = gh_vl_in0 + get_verilog_id();
+			gh_string_t o_str = gh_vl_in0 + nd_id;
 			return o_str;
 		} 
 		pnd = get_pt_in1();
 		GH_CK(pnd == ppin);
-		gh_string_t o_str = gh_vl_in1 + get_verilog_id();
+		gh_string_t o_str = gh_vl_in1 + nd_id;
 		return o_str;
 	}
-	gh_string_t o_str = (*ppin)->get_verilog_id() + gh_vl_sep + get_verilog_id();
+	//GH_CK((nd_id == dbg_get__out0_verilog_id()) || (nd_id == dbg_get__out1_verilog_id()));
+	
+	gh_string_t o_str = (*ppin)->get_verilog_id() + gh_vl_sep + nd_id;
 	return o_str;
 }
 
 void
 gh_print_verilog_send_interface(FILE* ff, gh_string_t itf_nm, bool with_final_comma){
-	fprintf(ff, "\t `NS_DECLARE_OUT_CHNL(%s)", itf_nm.c_str());
+	fprintf(ff, "\t");
+	fprintf(ff, "`NS_DECLARE_OUT_CHNL(%s)", itf_nm.c_str());
 	if(with_final_comma){
 		fprintf(ff, ",");
 	}
@@ -52,78 +75,92 @@ gh_print_verilog_send_interface(FILE* ff, gh_string_t itf_nm, bool with_final_co
 
 void
 gh_print_verilog_receive_interface(FILE* ff, gh_string_t itf_nm, bool with_final_comma){
-	fprintf(ff, "\t `NS_DECLARE_IN_CHNL(%s)", itf_nm.c_str());
+	fprintf(ff, "\t");
+	fprintf(ff, "`NS_DECLARE_IN_CHNL(%s)", itf_nm.c_str());
 	if(with_final_comma){
 		fprintf(ff, ",");
 	}
 	fprintf(ff, "\n");
 }
 
+void 
+gh_print_tabs(FILE* ff, long num_tabs){
+	for(long aa = 0; aa < num_tabs; aa++){
+		fprintf(ff, "\t");
+	}
+}
+
 void
-gh_print_verilog_declare_link_interface(FILE* ff, gh_string_t itf_nm){
-	gh_str_set_t all_itf = GH_GLOBALS.all_verilog_declared_interfaces;
+gh_print_verilog_declare_link_interface(FILE* ff, long num_tabs, gh_string_t itf_nm){
+	gh_str_set_t& all_itf = GH_GLOBALS.all_verilog_declared_interfaces;
 	auto it = all_itf.find(itf_nm);
-	if(it == all_itf.end()){
+	if(it != all_itf.end()){
+		GH_CK(*it == itf_nm);
 		return;
 	}
 	all_itf.insert(itf_nm);
 	
-	fprintf(ff, "\t `NS_DECLARE_LINK(%s)", itf_nm.c_str());
+	gh_print_tabs(ff, num_tabs);
+	fprintf(ff, "`NS_DECLARE_LINK(%s)\n", itf_nm.c_str());
 }
 
 void
-gh_print_verilog_assign_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2){
-	gh_str_set_t all_itf = GH_GLOBALS.all_verilog_declared_interfaces;
-	auto it = all_itf.find(itf_nm_2);
-	if(it == all_itf.end()){
+gh_print_verilog_assign_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2){
+	gh_str_set_t& all_itf = GH_GLOBALS.all_verilog_assigned_interfaces;
+	auto it = all_itf.find(itf_nm_1);
+	if(it != all_itf.end()){
+		GH_CK(*it == itf_nm_1);
 		return;
 	}
-	all_itf.insert(itf_nm_2);
+	all_itf.insert(itf_nm_1);
 	
-	fprintf(ff, "\t `NS_ASSIGN_OUT_MSG(%s, %s)", itf_nm_1.c_str(), itf_nm_2.c_str());
-	
-	fprintf(ff, "\n");
+	gh_print_tabs(ff, num_tabs);
+	fprintf(ff, "`NS_ASSIGN_OUT_MSG(%s, %s)\n", itf_nm_1.c_str(), itf_nm_2.c_str());
 }
 
 void
-gh_print_verilog_instance_send_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma){
-	fprintf(ff, "\t `NS_INSTA_SND_CHNL(%s, %s)", itf_nm_1.c_str(), itf_nm_2.c_str());
+gh_print_verilog_instance_send_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma){
+	gh_print_tabs(ff, num_tabs);
+	fprintf(ff, "`NS_INSTA_SND_CHNL(%s, %s)", itf_nm_1.c_str(), itf_nm_2.c_str());
 	
 	if(with_final_comma){
 		fprintf(ff, ",");
 	}
 	fprintf(ff, "\n");
-	fprintf(ff, "\n");
 }
 
 void
-gh_print_verilog_instance_receive_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma){
-	fprintf(ff, "\t `NS_INSTA_RCV_CHNL(%s, %s)", itf_nm_1.c_str(), itf_nm_2.c_str());
+gh_print_verilog_instance_receive_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma){
+	gh_print_tabs(ff, num_tabs);
+	fprintf(ff, "`NS_INSTA_RCV_CHNL(%s, %s)", itf_nm_1.c_str(), itf_nm_2.c_str());
 	
 	if(with_final_comma){
 		fprintf(ff, ",");
 	}
 	fprintf(ff, "\n");
-	fprintf(ff, "\n");
 }
 
 void
-hnode_2to1::print_verilog_2to1_instance(FILE* ff){
+hnode_2to1::print_verilog_2to1_instance(FILE* ff, long idx){
 	gh_string_t i0_itf_nm = get_verilog_receive_node_interface_name(&in0);
 	gh_string_t i1_itf_nm = get_verilog_receive_node_interface_name(&in1);
 	gh_string_t o0_itf_nm = get_verilog_send_node_interface_name(&out0);
 	
-	gh_print_verilog_declare_link_interface(ff, i0_itf_nm);
-	gh_print_verilog_declare_link_interface(ff, i1_itf_nm);
-	gh_print_verilog_declare_link_interface(ff, o0_itf_nm);
+	gh_print_verilog_declare_link_interface(ff, 1, i0_itf_nm);
+	gh_print_verilog_declare_link_interface(ff, 1, i1_itf_nm);
+	gh_print_verilog_declare_link_interface(ff, 1, o0_itf_nm);
 
-	fprintf(ff, "lognet_2to1_node \n gt2to1 (\n\t .i_clk(i_clk), \n");
+	fprintf(ff, R"base(
+	nd_2to1
+	it_nd_2to1_%ld (
+		.i_clk(i_clk),
+)base", idx);
 	
-	gh_print_verilog_instance_send_interface(ff, gh_vl_snd0, o0_itf_nm);
-	gh_print_verilog_instance_receive_interface(ff, gh_vl_rcv0, i0_itf_nm);
-	gh_print_verilog_instance_receive_interface(ff, gh_vl_rcv1, i1_itf_nm, false);
+	gh_print_verilog_instance_send_interface(ff, 2, gh_vl_snd0, o0_itf_nm);
+	gh_print_verilog_instance_receive_interface(ff, 2, gh_vl_rcv0, i0_itf_nm);
+	gh_print_verilog_instance_receive_interface(ff, 2, gh_vl_rcv1, i1_itf_nm, false);
 	
-	fprintf(ff, "); \n\n");
+	fprintf(ff, "\t); \n\n");
 	
 }
 
@@ -148,8 +185,7 @@ edge::get_verilog_oper(){
 
 gh_string_t
 edge::get_verilog_ref_val(){
-	gh_string_t val = "" + slc_edge;
-	return val;
+	return gh_long_to_string(slc_edge);
 }
 
 gh_string_t
@@ -192,14 +228,14 @@ hnode_1to2::get_verilog_ref_val_2(){
 }
 
 void
-hnode_1to2::print_verilog_1to2_instance(FILE* ff){
+hnode_1to2::print_verilog_1to2_instance(FILE* ff, long idx){
 	gh_string_t i0_itf_nm = get_verilog_receive_node_interface_name(&in0);
 	gh_string_t o0_itf_nm = get_verilog_send_node_interface_name(&out0);
 	gh_string_t o1_itf_nm = get_verilog_send_node_interface_name(&out1);
 	
-	gh_print_verilog_declare_link_interface(ff, i0_itf_nm);
-	gh_print_verilog_declare_link_interface(ff, o0_itf_nm);
-	gh_print_verilog_declare_link_interface(ff, o1_itf_nm);
+	gh_print_verilog_declare_link_interface(ff, 1, i0_itf_nm);
+	gh_print_verilog_declare_link_interface(ff, 1, o0_itf_nm);
+	gh_print_verilog_declare_link_interface(ff, 1, o1_itf_nm);
 	
 	gh_string_t op1 = get_verilog_oper_1();
 	gh_string_t val1 = get_verilog_ref_val_1();
@@ -208,22 +244,23 @@ hnode_1to2::print_verilog_1to2_instance(FILE* ff){
 	gh_string_t val2 = get_verilog_ref_val_2();
 	
 	fprintf(ff, R"base(
-	lognet_1to2_node #(.OPER_1(%s), .REF_VAL_1(%s), .IS_RANGE(%s), .OPER_2(%s), .REF_VAL_2(%s))
-	gt1to2 (
+	nd_1to2 #(.OPER_1(%s), .REF_VAL_1(%s), .IS_RANGE(%s), .OPER_2(%s), .REF_VAL_2(%s))
+	it_nd_1to2_%ld (
 		.i_clk(i_clk),
 )base", 
 	op1.c_str(),
 	val1.c_str(),
 	is_rng.c_str(),
 	op2.c_str(),
-	val2.c_str()
+	val2.c_str(),
+	idx
 	);
 	
-	gh_print_verilog_instance_send_interface(ff, gh_vl_snd0, o0_itf_nm);
-	gh_print_verilog_instance_send_interface(ff, gh_vl_snd1, o1_itf_nm);
-	gh_print_verilog_instance_receive_interface(ff, gh_vl_rcv0, i0_itf_nm, false);
+	gh_print_verilog_instance_send_interface(ff, 2, gh_vl_snd0, o0_itf_nm);
+	gh_print_verilog_instance_send_interface(ff, 2, gh_vl_snd1, o1_itf_nm);
+	gh_print_verilog_instance_receive_interface(ff, 2, gh_vl_rcv0, i0_itf_nm, false);
 	
-	fprintf(ff, "); \n\n");
+	fprintf(ff, "\t); \n\n");
 	
 }
 
@@ -243,15 +280,16 @@ gh_print_verilog_assigns_for_ios(FILE* ff, ppnode_vec_t& all_io, gh_route_side_t
 				GH_CK(iok == gh_out_kind);
 				itf_nm = pi->get_verilog_send_node_interface_name(ppi);
 			}
-			gh_print_verilog_declare_link_interface(ff, itf_nm);
+			gh_print_verilog_declare_link_interface(ff, 1, itf_nm);
 			
 			gh_string_t io_nm = get_verilog_io_name(ii, sd, iok);
 			
-			gh_print_verilog_assign_interface(ff, io_nm, itf_nm);
-			
-			fprintf(ff, "\n");
-		} 
+			gh_print_verilog_assign_interface(ff, 1, io_nm, itf_nm);
+		} else {
+			fprintf(ff, "// NULL io %ld \n", ii);
+		}
 	}
+	fprintf(ff, "\n\n");
 	fflush(ff);
 }
 
@@ -275,13 +313,14 @@ gh_print_verilog_code_for_nodes(FILE* ff, pnode_vec_t& all_nd){
 	for(long ii = 0; ii < (long)all_nd.size(); ii++){
 		hnode* the_nd = all_nd[ii];
 		GH_CK(the_nd != gh_null);
+		fprintf(ff, "\t// node: (%p)\n", (void*)the_nd);
 		if(the_nd->is_1to2()){
 			hnode_1to2* nd = (hnode_1to2*)the_nd;
-			nd->print_verilog_1to2_instance(ff);
+			nd->print_verilog_1to2_instance(ff, ii);
 		} else {
 			GH_CK(the_nd->is_2to1());
 			hnode_2to1* nd = (hnode_2to1*)the_nd;
-			nd->print_verilog_2to1_instance(ff);
+			nd->print_verilog_2to1_instance(ff, ii);
 		}
 	}
 }
@@ -289,7 +328,7 @@ gh_print_verilog_code_for_nodes(FILE* ff, pnode_vec_t& all_nd){
 gh_string_t
 htarget_box::get_verilog_module_name(){
 	GH_CK(target != gh_null);
-	gh_string_t ss = gh_vl_tg_mod + long_to_string(target->bx_idx);
+	gh_string_t ss = gh_vl_tg_mod + gh_long_to_string(target->bx_idx);
 	return ss;
 }
 
@@ -297,7 +336,7 @@ gh_string_t
 htarget_box::get_verilog_target_param_name(gh_io_kind_t iok){
 	gh_string_t iok_nm = get_verilog_io_kind(iok);
 	GH_CK(target != gh_null);
-	gh_string_t ss = gh_vl_tgt + iok_nm + long_to_string(target->bx_idx);
+	gh_string_t ss = gh_vl_tgt + iok_nm + gh_long_to_string(target->bx_idx);
 	return ss;
 }
 
@@ -317,8 +356,8 @@ htarget_box::print_verilog_target_assign(FILE* ff){
 	gh_string_t tg_in_itf_nm = target->get_verilog_receive_node_interface_name(&(target->in0));
 	gh_string_t tg_out_itf_nm = target->get_verilog_send_node_interface_name(&(target->out0));
 	
-	gh_print_verilog_assign_interface(ff, itf_in_nm, tg_in_itf_nm);
-	gh_print_verilog_assign_interface(ff, itf_out_nm, tg_out_itf_nm);
+	gh_print_verilog_assign_interface(ff, 1, itf_in_nm, tg_in_itf_nm);
+	gh_print_verilog_assign_interface(ff, 1, itf_out_nm, tg_out_itf_nm);
 }
 
 void
@@ -434,15 +473,14 @@ runner_print_verilog_target_box::run_test(gh_str_list_t& lt_args){
 	slice_vec all_addr;
 	bx->init_target_box(tg_idx, nin, nout, all_addr, tgs_sz);
 
-	fprintf(stdout, "// ===========\n");
-	
 	GH_GLOBALS.CK_LINK_MODE = gh_valid_self_ck_mod;
 
+	fprintf(stdout, "/*\n");
+	fprintf(stdout, "---------------------------------------------\n");
 	bx->print_box(stdout, gh_full_prt);
+	fprintf(stdout, "---------------------------------------------\n");
+	fprintf(stdout, "*/\n");
 	
-	fprintf(stdout, "// ===========\n");
-	fprintf(stdout, "// ===========\n");
-	fprintf(stdout, "// ===========\n");
 	
 	bx->print_verilog_module_lognet_target_box(stdout);
 	
@@ -453,7 +491,7 @@ runner_print_verilog_target_box::run_test(gh_str_list_t& lt_args){
 
 
 int test_verilog(gh_str_list_t& lt_args){
-	bool is_cmpl = GH_GLOBALS.compl_sys.args_orig_has_compl;
+	//bool is_cmpl = GH_GLOBALS.compl_sys.args_orig_has_compl;
 	int resp = -1;
 			
 	gh_str_set_t lv_commds;
@@ -471,9 +509,7 @@ int test_verilog(gh_str_list_t& lt_args){
 		resp = GH_GLOBALS.rnr_print_verilog_target_box.run_test(lt_args);
 		done = true;
 	}
-	if(! is_cmpl){
-		fprintf(stdout, "ENDING_VERILOG_TESTS______________________\n");
-	}
+	
 	return resp;
 }
 

@@ -31,11 +31,16 @@ bool gh_args_get_candidates(const gh_str_set_t& map, const std::string& search_f
 	return found_it;
 }
 
-void gh_args_print_candidates(const gh_str_set_t& all_cand){
-	for(auto ii = all_cand.begin(); ii != all_cand.end(); ii++){
-		std::string cand = *ii;
-		fprintf(GH_GLOBALS.compl_sys.args_compl_output, "%s\n", cand.c_str());
+void gh_print_str_set(FILE* ff, const gh_str_set_t& the_set){
+	// DO_NOT print anything else or 'gh_args_print_candidates' will make outocomplete fail
+	for(auto ii = the_set.begin(); ii != the_set.end(); ii++){
+		std::string elem = *ii;
+		fprintf(ff, "%s\n", elem.c_str());
 	}
+}
+
+void gh_args_print_candidates(const gh_str_set_t& all_cand){
+	gh_print_str_set(GH_GLOBALS.compl_sys.args_compl_output, all_cand);
 }
 
 void gh_args_print(gh_str_list_t& lt_args){

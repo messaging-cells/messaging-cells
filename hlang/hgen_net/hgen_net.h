@@ -57,10 +57,10 @@ typedef const char* gh_c_str_t;
 #define gh_vl_nod "nd_"
 #define gh_vl_tg_mod "target_module_"
 
-#define gh_vl_snd0 "snd0_" // must match 1to2 and 2to1 modules interfaces
-#define gh_vl_snd1 "snd1_" // must match 1to2 and 2to1 modules interfaces
-#define gh_vl_rcv0 "rcv0_" // must match 1to2 and 2to1 modules interfaces
-#define gh_vl_rcv1 "rcv1_" // must match 1to2 and 2to1 modules interfaces
+#define gh_vl_snd0 "snd0" // must match 1to2 and 2to1 modules interfaces
+#define gh_vl_snd1 "snd1" // must match 1to2 and 2to1 modules interfaces
+#define gh_vl_rcv0 "rcv0" // must match 1to2 and 2to1 modules interfaces
+#define gh_vl_rcv1 "rcv1" // must match 1to2 and 2to1 modules interfaces
 
 //======================================================================
 // bitarray
@@ -435,6 +435,7 @@ public:
 	
 	autocomplete_sys compl_sys;
 	gh_str_set_t all_verilog_declared_interfaces;
+	gh_str_set_t all_verilog_assigned_interfaces;
 
 	runner_get_binnet_m_to_n 		rnr_get_binnet_m_to_n;
 	runner_init_slices				rnr_init_slices;
@@ -661,11 +662,7 @@ public:
 	
 };
 
-inline gh_string_t 
-long_to_string(long num){
-	gh_string_t ss = "" + num;
-	return ss;
-}
+#define gh_long_to_string(num) std::to_string(num)
 
 inline gh_string_t 
 get_verilog_side(gh_route_side_t sd){
@@ -689,7 +686,7 @@ inline gh_string_t
 get_verilog_io_name(long num, gh_route_side_t sd, gh_io_kind_t iok){
 	gh_string_t iok_nm = get_verilog_io_kind(iok);
 	gh_string_t sd_nm = get_verilog_side(sd);
-	gh_string_t ss = iok_nm + gh_vl_sep + sd_nm + long_to_string(num);
+	gh_string_t ss = iok_nm + gh_vl_sep + sd_nm + gh_long_to_string(num);
 	return ss;
 }
 
@@ -697,6 +694,13 @@ get_verilog_io_name(long num, gh_route_side_t sd, gh_io_kind_t iok){
 	hnode** ppio = get_ppio_fn(); \
 	if(ppio == gh_null){ return gh_null; } \
 	return *ppio; \
+
+// end_macro
+
+#define gh_get_io_verilog_id(io_fn) \
+	hnode* nd = io_fn(); \
+	if(nd == gh_null){ return "gh_invalid_verilog_id"; } \
+	return nd->get_verilog_id(); \
 
 // end_macro
 
@@ -864,25 +868,25 @@ public:
 	
 	void create_thread_simu(long idx);
 
-	gh_string_t get_verilog_id(){
-		gh_string_t o_str = "gh_invalid_verilog_id";
-		if(is_1to1()){
-			o_str = gh_vl_tgt + addr;
-		} else {
-			o_str = gh_vl_nod + addr;
-		}
-		return o_str;
-	}
+	gh_string_t get_verilog_id();
 
+	gh_string_t dbg_get__in0_verilog_id(){ gh_get_io_verilog_id(get_in0); }
+	gh_string_t dbg_get__in1_verilog_id(){ gh_get_io_verilog_id(get_in1); }
+	gh_string_t dbg_get__out0_verilog_id(){ gh_get_io_verilog_id(get_out0); }
+	gh_string_t dbg_get__out1_verilog_id(){ gh_get_io_verilog_id(get_out1); }
+	
 	gh_string_t get_verilog_send_node_interface_name(hnode** ppout);
 	gh_string_t get_verilog_receive_node_interface_name(hnode** ppin);
 	
 };
 
-void gh_print_verilog_declare_link_interface(FILE* ff, gh_string_t itf_nm);
-void gh_print_verilog_assign_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2);
-void gh_print_verilog_instance_send_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma = true);
-void gh_print_verilog_instance_receive_interface(FILE* ff, gh_string_t itf_nm_1, gh_string_t itf_nm_2, bool with_final_comma = true);
+void gh_print_tabs(FILE* ff, long num_tabs);
+void gh_print_verilog_declare_link_interface(FILE* ff, long num_tabs, gh_string_t itf_nm);
+void gh_print_verilog_assign_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2);
+void gh_print_verilog_instance_send_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, 
+											  bool with_final_comma = true);
+void gh_print_verilog_instance_receive_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, 
+												 bool with_final_comma = true);
 
 class hnode_1to1 : public hnode {
 public:
@@ -1167,7 +1171,7 @@ public:
 	gh_string_t get_verilog_oper_2();
 	gh_string_t get_verilog_ref_val_2();
 	
-	void print_verilog_1to2_instance(FILE* ff);
+	void print_verilog_1to2_instance(FILE* ff, long idx);
 };
 
 class hnode_2to1 : public hnode {
@@ -1243,7 +1247,7 @@ public:
 	void run_2to1_simu();
 	void run_2to1_buff_simu();
 
-	void print_verilog_2to1_instance(FILE* ff);
+	void print_verilog_2to1_instance(FILE* ff, long idx);
 	
 };
 
@@ -1496,6 +1500,7 @@ public:
 void gh_dbg_calc_idx_and_sz(long num_in, long num_out, long bs, long& tg_idx, long& tgs_sz);
 
 
+void gh_print_str_set(FILE* ff, const gh_str_set_t& the_set);
 bool gh_str_is_prefix(const std::string& the_str, const std::string& pfx);
 
 void gh_args_get_list(gh_str_list_t& lt_args, int argc, char *argv[]);
