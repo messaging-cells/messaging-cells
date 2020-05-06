@@ -176,13 +176,11 @@
 	assign ou``_disp1 = mg``_disp1; 
 
 
-`define NS_DEBOUNCER_DBG_BUT(clk, nam) \
+`define NS_DEBOUNCER_DBG_BUT(chn0, nam) \
 	wire rdy_but_``nam; \
 	debouncer #(.TOT_CKS(TOT_DEBOUNCE_CLICK)) \
 	it_but_``nam ( \
-		.i_Clk(clk), \
-		.reset(reset), \
-		.ready(rdy_but_``nam), \
+		`NS_INSTA_GLB_CHNL_VALS(gch, chn0``_clk, chn0``_reset, rdy_but_``nam), \
 		.bouncing(i_Switch_``nam), \
 		.steady(w_Switch_``nam) \
 	);
@@ -240,6 +238,30 @@
 // CHANNELS
 // ----------------------------------------------------------------------------
 
+`define NS_DECLARE_GLB_CHNL(nam) \
+	input wire nam``_clk, \
+	input wire nam``_reset, \
+	output wire nam``_ready
+
+
+`define NS_DECLARE_GLB_LINK(lnk) \
+	wire lnk``_clk; \
+	wire lnk``_reset; \
+	wire lnk``_ready;
+
+
+`define NS_INSTA_GLB_CHNL(chn0, chn1) \
+	.chn0``_clk(chn1``_clk), \
+	.chn0``_reset(chn1``_reset), \
+	.chn0``_ready(chn1``_ready)
+
+
+`define NS_INSTA_GLB_CHNL_VALS(chn0, clk, rst, rdy) \
+	.chn0``_clk(clk), \
+	.chn0``_reset(rst), \
+	.chn0``_ready(rdy)
+
+
 `define NS_DECLARE_OUT_CHNL(nam) \
 	`NS_DECLARE_OUT_MSG(nam), \
 	output wire nam``_req, \
@@ -252,27 +274,23 @@
 	output wire nam``_ack
 
 
-`define NS_DEBOUNCER_REQ(clk, nam) \
+`define NS_DEBOUNCER_REQ(clk, rst, nam) \
 	wire nam``_rdy; \
 	wire nam``_req; \
 	debouncer #(.TOT_CKS(RCV_REQ_CKS)) \
 	it_``nam``_req( \
-		.i_Clk(clk), \
-		.reset(reset), \
-		.ready(nam``_rdy), \
+		`NS_INSTA_GLB_CHNL_VALS(gch, clk, rst, nam``_rdy), \
 		.bouncing(nam``_req_dirty), \
 		.steady(nam``_req) \
 	);
 
 
-`define NS_DEBOUNCER_ACK(clk, nam) \
+`define NS_DEBOUNCER_ACK(clk, rst, nam) \
 	wire nam``_rdy; \
 	wire nam``_ack; \
 	debouncer #(.TOT_CKS(SND_ACK_CKS)) \
 	it_``nam``_ack( \
-		.i_Clk(clk), \
-		.reset(reset), \
-		.ready(nam``_rdy), \
+		`NS_INSTA_GLB_CHNL_VALS(gch, clk, rst, nam``_rdy), \
 		.bouncing(nam``_ack_dirty), \
 		.steady(nam``_ack) \
 	);

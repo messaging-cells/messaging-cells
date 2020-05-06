@@ -55,10 +55,14 @@ module test_top
 
 	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
 	
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 1)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 2)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 3)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 4)
+	`NS_DECLARE_GLB_LINK(gch0)
+	assign gch0_clk = i_clk;
+	assign gch0_reset = reset;
+	
+	`NS_DEBOUNCER_DBG_BUT(gch0, 1)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 2)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 3)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 4)
 	
 	localparam CLK_WDH = 17;
 	localparam CLK_IDX_WDH = 2;
@@ -139,11 +143,8 @@ module test_top
 	
 	nd_1to2 #(.OPER_1(`NS_GT_OP), .REF_VAL_1(`NS_TEST_REF_ADDR))
 	gt1to2 (
-		.i_clk(clk_kl3),
+		`NS_INSTA_GLB_CHNL_VALS(gch, clk_kl3, reset, ready),
 		// i_clk clk_kl3
-		
-		.reset(reset),
-		.ready(ready),
 		
 		//.i_clk(i_clk),
 		// out0

@@ -146,11 +146,7 @@ module test_top
 	
 	nd_fifo
 	gtfifo (
-		.i_clk(clk_4),
-		//i_clk, clk_0, clk_1
-		
-		.reset(the_reset),
-		.ready(the_all_ready),
+		`NS_INSTA_GLB_CHNL_VALS(gch, clk_4, the_reset, the_all_ready),
 		
 		//.i_clk(i_clk),
 		// out0

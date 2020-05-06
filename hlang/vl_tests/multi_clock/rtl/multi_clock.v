@@ -64,10 +64,14 @@ module test_top
 	reg [0:0] reset = 0;
 	wire ready;
 	
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 1)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 2)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 3)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 4)
+	`NS_DECLARE_GLB_LINK(gch0)
+	assign gch0_clk = i_clk;
+	assign gch0_reset = reset;
+	
+	`NS_DEBOUNCER_DBG_BUT(gch0, 1)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 2)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 3)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 4)
 	
 	wire w_Segment1_A;
 	wire w_Segment1_B;

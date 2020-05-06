@@ -11,10 +11,7 @@ module nd_fifo
 	DSZ=`NS_DATA_SIZE, 
 	RSZ=`NS_REDUN_SIZE)
 (
-	input wire i_clk,
-	input wire reset,
-	output wire ready,
-	
+	`NS_DECLARE_GLB_CHNL(gch),
 	`NS_DECLARE_OUT_CHNL(snd0),
 	`NS_DECLARE_IN_CHNL(rcv0)
 	
@@ -22,8 +19,8 @@ module nd_fifo
 	parameter RCV_REQ_CKS = `NS_REQ_CKS;
 	parameter SND_ACK_CKS = `NS_ACK_CKS;
 	
-	`NS_DEBOUNCER_ACK(i_clk, snd0)
-	`NS_DEBOUNCER_REQ(i_clk, rcv0)
+	`NS_DEBOUNCER_ACK(gch_clk, gch_reset, snd0)
+	`NS_DEBOUNCER_REQ(gch_clk, gch_reset, rcv0)
  
 	localparam FIFO_IDX_WIDTH = ((($clog2(FSZ)-1) >= 0)?($clog2(FSZ)-1):(0));
 	
@@ -42,12 +39,12 @@ module nd_fifo
 	
 	reg [0:0] added_hd = `NS_OFF;
 	
-	always @(posedge i_clk)
+	always @(posedge gch_clk)
 	begin
-		if(reset) begin
+		if(gch_reset) begin
 			rg_rdy <= `NS_OFF;
 		end
-		if(! reset && ! rg_rdy) begin
+		if(! gch_reset && ! rg_rdy) begin
 			rg_rdy <= `NS_ON;
 			
 			`NS_REG_MSG_INIT(rgo0)
@@ -59,7 +56,7 @@ module nd_fifo
 			
 			added_hd <= `NS_OFF;
 		end
-		if(! reset && rg_rdy) begin
+		if(! gch_reset && rg_rdy) begin
 			if(rcv0_req && (! rgi0_ack)) begin
 				`NS_FIFO_TRY_ADD_HEAD(bf0, rcv0, added_hd)
 			end
@@ -73,7 +70,7 @@ module nd_fifo
 		end
 	end
 
-	assign ready = rg_rdy;
+	assign gch_ready = rg_rdy;
 	
 	//out1
 	`NS_ASSIGN_OUT_MSG(snd0, rgo0)

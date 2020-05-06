@@ -6769,7 +6769,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -6940,7 +6940,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -6961,7 +6961,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -6982,7 +6982,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -7003,7 +7003,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -7024,7 +7024,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -7045,7 +7045,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -7067,7 +7067,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7089,7 +7089,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7111,7 +7111,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7133,7 +7133,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7155,7 +7155,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7177,7 +7177,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7199,7 +7199,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7221,7 +7221,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:93|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:97|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7269,7 +7269,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -7294,7 +7294,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -7319,7 +7319,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -7344,7 +7344,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -7369,7 +7369,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -7394,7 +7394,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -7419,7 +7419,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -7443,7 +7443,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:152|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:156|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7490,7 +7490,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:152|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:156|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7537,7 +7537,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:152|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:156|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7584,7 +7584,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:152|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:156|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7631,7 +7631,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:152|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:156|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7678,7 +7678,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:152|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:156|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7725,7 +7725,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:152|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:156|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7797,7 +7797,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:140|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:144|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7844,7 +7844,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:140|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:144|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7891,7 +7891,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:140|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:144|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7938,7 +7938,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:140|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:144|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -7985,7 +7985,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:140|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:144|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -8032,7 +8032,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:140|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:144|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -8079,7 +8079,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:140|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:144|bin_to_disp.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -8200,7 +8200,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8221,7 +8221,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8242,7 +8242,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8263,7 +8263,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8309,7 +8309,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8355,7 +8355,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8401,7 +8401,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8447,7 +8447,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8493,7 +8493,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8539,7 +8539,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8610,7 +8610,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8656,7 +8656,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8702,7 +8702,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8748,7 +8748,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8794,7 +8794,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8840,7 +8840,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8886,7 +8886,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -8957,7 +8957,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9165,8 +9165,8 @@
             "O": "output"
           },
           "connections": {
-            "I0": [ 112 ],
-            "I1": [ 109 ],
+            "I0": [ 109 ],
+            "I1": [ 112 ],
             "I2": [ 123 ],
             "I3": [ 115 ],
             "O": [ 154 ]
@@ -9278,7 +9278,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9299,7 +9299,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9320,7 +9320,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9341,7 +9341,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9387,7 +9387,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9433,7 +9433,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9479,7 +9479,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9525,7 +9525,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9571,7 +9571,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9617,7 +9617,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9688,7 +9688,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9734,7 +9734,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9780,7 +9780,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9826,7 +9826,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9872,7 +9872,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9918,7 +9918,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -9964,7 +9964,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10035,7 +10035,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10243,9 +10243,9 @@
             "O": "output"
           },
           "connections": {
-            "I0": [ 175 ],
-            "I1": [ 178 ],
-            "I2": [ 184 ],
+            "I0": [ 184 ],
+            "I1": [ 175 ],
+            "I2": [ 178 ],
             "I3": [ 181 ],
             "O": [ 220 ]
           }
@@ -10356,7 +10356,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10377,7 +10377,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10398,7 +10398,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10419,7 +10419,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10465,7 +10465,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10511,7 +10511,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10557,7 +10557,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10603,7 +10603,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10649,7 +10649,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10695,7 +10695,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10766,7 +10766,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10812,7 +10812,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10858,7 +10858,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10904,7 +10904,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10950,7 +10950,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -10996,7 +10996,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11042,7 +11042,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11113,7 +11113,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11232,7 +11232,7 @@
           "hide_name": 0,
           "type": "SB_LUT4",
           "parameters": {
-            "LUT_INIT": "0000000000000001"
+            "LUT_INIT": "0000000000000010"
           },
           "attributes": {
             "module_not_derived": 1,
@@ -11246,8 +11246,8 @@
             "O": "output"
           },
           "connections": {
-            "I0": [ 262 ],
-            "I1": [ 271 ],
+            "I0": [ 268 ],
+            "I1": [ 262 ],
             "I2": [ 274 ],
             "I3": [ 277 ],
             "O": [ 283 ]
@@ -11271,10 +11271,10 @@
             "O": "output"
           },
           "connections": {
-            "I0": [ 244 ],
-            "I1": [ 250 ],
-            "I2": [ 281 ],
-            "I3": [ 256 ],
+            "I0": [ 250 ],
+            "I1": [ 244 ],
+            "I2": [ 278 ],
+            "I3": [ 281 ],
             "O": [ 284 ]
           }
         },
@@ -11332,7 +11332,7 @@
           "hide_name": 0,
           "type": "SB_LUT4",
           "parameters": {
-            "LUT_INIT": "0000000000001000"
+            "LUT_INIT": "0000000000000010"
           },
           "attributes": {
             "module_not_derived": 1,
@@ -11347,9 +11347,9 @@
           },
           "connections": {
             "I0": [ 259 ],
-            "I1": [ 268 ],
+            "I1": [ 256 ],
             "I2": [ 265 ],
-            "I3": [ 278 ],
+            "I3": [ 271 ],
             "O": [ 287 ]
           }
         },
@@ -11409,7 +11409,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11430,7 +11430,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11451,7 +11451,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11472,7 +11472,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11493,7 +11493,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11514,7 +11514,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11535,7 +11535,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11556,7 +11556,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11577,7 +11577,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11598,7 +11598,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11619,7 +11619,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11640,7 +11640,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11661,7 +11661,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11682,7 +11682,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11703,7 +11703,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11724,7 +11724,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11745,7 +11745,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -11767,7 +11767,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -11789,7 +11789,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -11811,7 +11811,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -11859,7 +11859,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -11883,7 +11883,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -11931,7 +11931,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -11955,7 +11955,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12003,7 +12003,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12027,7 +12027,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12075,7 +12075,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12099,7 +12099,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12147,7 +12147,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12171,7 +12171,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12219,7 +12219,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12243,7 +12243,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12291,7 +12291,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12315,7 +12315,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12363,7 +12363,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12387,7 +12387,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12460,7 +12460,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12484,7 +12484,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12532,7 +12532,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12556,7 +12556,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12604,7 +12604,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12628,7 +12628,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12676,7 +12676,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12700,7 +12700,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12748,7 +12748,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12772,7 +12772,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12820,7 +12820,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12844,7 +12844,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12892,7 +12892,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12916,7 +12916,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -12964,7 +12964,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -12988,7 +12988,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13036,7 +13036,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -13061,7 +13061,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -13085,7 +13085,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13130,7 +13130,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:67|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:71|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13149,7 +13149,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13170,7 +13170,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13191,7 +13191,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13212,7 +13212,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13233,7 +13233,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13254,7 +13254,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13275,7 +13275,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13296,7 +13296,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13317,7 +13317,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13338,7 +13338,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13359,7 +13359,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13380,7 +13380,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13401,7 +13401,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13422,7 +13422,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13443,7 +13443,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13464,7 +13464,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13485,7 +13485,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -13507,7 +13507,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13529,7 +13529,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13551,7 +13551,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13599,7 +13599,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -13623,7 +13623,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13671,7 +13671,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -13695,7 +13695,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13743,7 +13743,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -13767,7 +13767,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13815,7 +13815,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -13839,7 +13839,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13887,7 +13887,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -13911,7 +13911,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -13959,7 +13959,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -13983,7 +13983,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14031,7 +14031,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14055,7 +14055,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14103,7 +14103,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14127,7 +14127,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14200,7 +14200,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14224,7 +14224,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14272,7 +14272,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14296,7 +14296,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14344,7 +14344,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14368,7 +14368,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14416,7 +14416,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14440,7 +14440,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14488,7 +14488,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14512,7 +14512,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14560,7 +14560,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14584,7 +14584,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14632,7 +14632,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14656,7 +14656,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14704,7 +14704,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14728,7 +14728,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14776,7 +14776,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14801,7 +14801,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -14825,7 +14825,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:68|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:72|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -14844,7 +14844,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -14865,7 +14865,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -14886,7 +14886,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -14907,7 +14907,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -14928,7 +14928,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -14949,7 +14949,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -14970,7 +14970,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -14991,7 +14991,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15012,7 +15012,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15033,7 +15033,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15054,7 +15054,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15075,7 +15075,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15096,7 +15096,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15117,7 +15117,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15138,7 +15138,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15159,7 +15159,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15180,7 +15180,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -15202,7 +15202,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15224,7 +15224,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15246,7 +15246,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15294,7 +15294,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15318,7 +15318,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15366,7 +15366,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15390,7 +15390,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15438,7 +15438,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15462,7 +15462,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15510,7 +15510,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15534,7 +15534,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15582,7 +15582,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15606,7 +15606,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15654,7 +15654,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15678,7 +15678,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15726,7 +15726,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15750,7 +15750,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15798,7 +15798,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15822,7 +15822,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15895,7 +15895,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15919,7 +15919,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -15967,7 +15967,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -15991,7 +15991,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -16039,7 +16039,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -16063,7 +16063,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -16111,7 +16111,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -16135,7 +16135,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -16183,7 +16183,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -16207,7 +16207,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -16255,7 +16255,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -16279,7 +16279,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -16327,7 +16327,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -16351,7 +16351,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -16399,7 +16399,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -16423,7 +16423,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -16471,7 +16471,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -16496,7 +16496,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -16520,7 +16520,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:69|debouncer.v:18|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:73|debouncer.v:19|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -16540,7 +16540,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -16562,7 +16562,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -16584,7 +16584,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -16606,7 +16606,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -16628,7 +16628,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -16650,7 +16650,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -16672,7 +16672,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -17069,7 +17069,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -17115,7 +17115,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17138,7 +17138,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17159,7 +17159,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17180,7 +17180,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17201,7 +17201,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17222,7 +17222,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17243,7 +17243,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17264,7 +17264,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17285,7 +17285,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17306,7 +17306,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17327,7 +17327,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17348,7 +17348,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17369,7 +17369,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17442,7 +17442,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17467,7 +17467,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17517,7 +17517,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17542,7 +17542,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17592,7 +17592,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17617,7 +17617,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17667,7 +17667,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17692,7 +17692,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17742,7 +17742,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17767,7 +17767,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17792,7 +17792,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17817,7 +17817,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:47|/usr/local/bin/../share/yosys/ice40/cells_map.v:56"
           },
           "port_directions": {
             "I0": "input",
@@ -17841,7 +17841,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -17910,7 +17910,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:126|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:130|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17931,7 +17931,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:126|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:130|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17952,7 +17952,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:126|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:130|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17973,7 +17973,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:126|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:130|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -17994,7 +17994,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -18015,7 +18015,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -18036,7 +18036,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -18082,7 +18082,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -18128,7 +18128,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -18174,7 +18174,7 @@
           "parameters": {
           },
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:47"
           },
           "port_directions": {
             "CI": "input",
@@ -18296,7 +18296,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -18318,7 +18318,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:2"
           },
           "port_directions": {
             "C": "input",
@@ -18363,7 +18363,7 @@
           },
           "attributes": {
             "module_not_derived": 1,
-            "src": "multi_clock.v:117|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
+            "src": "multi_clock.v:121|/usr/local/bin/../share/yosys/ice40/cells_map.v:8"
           },
           "port_directions": {
             "C": "input",
@@ -18409,14 +18409,14 @@
           "hide_name": 0,
           "bits": [ 25 ],
           "attributes": {
-            "src": "multi_clock.v:89"
+            "src": "multi_clock.v:93"
           }
         },
         "clk_nam_SB_DFFE_Q_D": {
           "hide_name": 0,
           "bits": [ 23 ],
           "attributes": {
-            "src": "multi_clock.v:93"
+            "src": "multi_clock.v:97"
           }
         },
         "clk_nam_SB_DFFE_Q_E": {
@@ -18453,7 +18453,7 @@
           "hide_name": 0,
           "bits": [ 38, 32, 36, 43, 44, 39, 34, 30 ],
           "attributes": {
-            "src": "multi_clock.v:90"
+            "src": "multi_clock.v:94"
           }
         },
         "cnt_clk_nam_SB_DFFSR_Q_7_D": {
@@ -18472,119 +18472,119 @@
           "hide_name": 0,
           "bits": [ "0", 38, 46, 51, 50, 49, 47, 48 ],
           "attributes": {
-            "src": "multi_clock.v:100|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:104|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
         "disp1.i_Binary_Num": {
           "hide_name": 0,
           "bits": [ 457, 33, 37, 42 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:6"
+            "src": "multi_clock.v:156|bin_to_disp.v:6"
           }
         },
         "disp1.i_Clk": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:5"
+            "src": "multi_clock.v:156|bin_to_disp.v:5"
           }
         },
         "disp1.o_Segment_A": {
           "hide_name": 0,
           "bits": [ 61 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:7"
+            "src": "multi_clock.v:156|bin_to_disp.v:7"
           }
         },
         "disp1.o_Segment_A_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 60 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:156|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp1.o_Segment_B": {
           "hide_name": 0,
           "bits": [ 64 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:8"
+            "src": "multi_clock.v:156|bin_to_disp.v:8"
           }
         },
         "disp1.o_Segment_B_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 63 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:156|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp1.o_Segment_C": {
           "hide_name": 0,
           "bits": [ 66 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:9"
+            "src": "multi_clock.v:156|bin_to_disp.v:9"
           }
         },
         "disp1.o_Segment_C_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 65 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:156|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp1.o_Segment_D": {
           "hide_name": 0,
           "bits": [ 68 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:10"
+            "src": "multi_clock.v:156|bin_to_disp.v:10"
           }
         },
         "disp1.o_Segment_D_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 67 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:156|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp1.o_Segment_E": {
           "hide_name": 0,
           "bits": [ 70 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:11"
+            "src": "multi_clock.v:156|bin_to_disp.v:11"
           }
         },
         "disp1.o_Segment_E_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 69 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:156|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp1.o_Segment_F": {
           "hide_name": 0,
           "bits": [ 72 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:12"
+            "src": "multi_clock.v:156|bin_to_disp.v:12"
           }
         },
         "disp1.o_Segment_F_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 71 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:156|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp1.o_Segment_G": {
           "hide_name": 0,
           "bits": [ 74 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:13"
+            "src": "multi_clock.v:156|bin_to_disp.v:13"
           }
         },
         "disp1.o_Segment_G_SB_DFFSR_Q_D": {
           "hide_name": 0,
           "bits": [ 73 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:156|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp1.o_Segment_G_SB_DFFSR_Q_R": {
@@ -18597,119 +18597,119 @@
           "hide_name": 0,
           "bits": [ 74, 72, 70, 68, 66, 64, 61 ],
           "attributes": {
-            "src": "multi_clock.v:152|bin_to_disp.v:16"
+            "src": "multi_clock.v:156|bin_to_disp.v:16"
           }
         },
         "disp_0.i_Binary_Num": {
           "hide_name": 0,
           "bits": [ 45, 40, 35, 31 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:6"
+            "src": "multi_clock.v:144|bin_to_disp.v:6"
           }
         },
         "disp_0.i_Clk": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:5"
+            "src": "multi_clock.v:144|bin_to_disp.v:5"
           }
         },
         "disp_0.o_Segment_A": {
           "hide_name": 0,
           "bits": [ 76 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:7"
+            "src": "multi_clock.v:144|bin_to_disp.v:7"
           }
         },
         "disp_0.o_Segment_A_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 75 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:144|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp_0.o_Segment_B": {
           "hide_name": 0,
           "bits": [ 79 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:8"
+            "src": "multi_clock.v:144|bin_to_disp.v:8"
           }
         },
         "disp_0.o_Segment_B_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 78 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:144|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp_0.o_Segment_C": {
           "hide_name": 0,
           "bits": [ 81 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:9"
+            "src": "multi_clock.v:144|bin_to_disp.v:9"
           }
         },
         "disp_0.o_Segment_C_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 80 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:144|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp_0.o_Segment_D": {
           "hide_name": 0,
           "bits": [ 83 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:10"
+            "src": "multi_clock.v:144|bin_to_disp.v:10"
           }
         },
         "disp_0.o_Segment_D_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 82 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:144|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp_0.o_Segment_E": {
           "hide_name": 0,
           "bits": [ 85 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:11"
+            "src": "multi_clock.v:144|bin_to_disp.v:11"
           }
         },
         "disp_0.o_Segment_E_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 84 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:144|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp_0.o_Segment_F": {
           "hide_name": 0,
           "bits": [ 87 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:12"
+            "src": "multi_clock.v:144|bin_to_disp.v:12"
           }
         },
         "disp_0.o_Segment_F_SB_DFFSS_Q_D": {
           "hide_name": 0,
           "bits": [ 86 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:144|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp_0.o_Segment_G": {
           "hide_name": 0,
           "bits": [ 89 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:13"
+            "src": "multi_clock.v:144|bin_to_disp.v:13"
           }
         },
         "disp_0.o_Segment_G_SB_DFFSR_Q_D": {
           "hide_name": 0,
           "bits": [ 88 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
+            "src": "multi_clock.v:144|bin_to_disp.v:20|bin_to_disp.v:36|/usr/local/bin/../share/yosys/techmap.v:441"
           }
         },
         "disp_0.o_Segment_G_SB_DFFSR_Q_R": {
@@ -18722,7 +18722,21 @@
           "hide_name": 0,
           "bits": [ 89, 87, 85, 83, 81, 79, 76 ],
           "attributes": {
-            "src": "multi_clock.v:140|bin_to_disp.v:16"
+            "src": "multi_clock.v:144|bin_to_disp.v:16"
+          }
+        },
+        "gch0_clk": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "multi_clock.v:67"
+          }
+        },
+        "gch0_reset": {
+          "hide_name": 0,
+          "bits": [ "0" ],
+          "attributes": {
+            "src": "multi_clock.v:67"
           }
         },
         "i_Switch_1": {
@@ -18742,140 +18756,140 @@
           "hide_name": 0,
           "bits": [ "1", 143, 140, 137, 134, 131, 128, 125, 101, 98, 99, 119, 116, 113, 110, 107, 103, 104, 96 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_10_I1": {
           "hide_name": 0,
           "bits": [ 105 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_11_I1": {
           "hide_name": 0,
           "bits": [ 108 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_12_I1": {
           "hide_name": 0,
           "bits": [ 111 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_13_I1": {
           "hide_name": 0,
           "bits": [ 114 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_14_I1": {
           "hide_name": 0,
           "bits": [ 117 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_15_I1": {
           "hide_name": 0,
           "bits": [ 120 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_16_I1": {
           "hide_name": 0,
           "bits": [ 122 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_1_I1": {
           "hide_name": 0,
           "bits": [ 102 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_2_I1": {
           "hide_name": 0,
           "bits": [ 126 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_3_I1": {
           "hide_name": 0,
           "bits": [ 129 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_4_I1": {
           "hide_name": 0,
           "bits": [ 132 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_5_I1": {
           "hide_name": 0,
           "bits": [ 135 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_6_I1": {
           "hide_name": 0,
           "bits": [ 138 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_7_I1": {
           "hide_name": 0,
           "bits": [ 141 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8_CI": {
           "hide_name": 0,
           "bits": [ 143 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8_I1": {
           "hide_name": 0,
           "bits": [ 144 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_9_I1": {
           "hide_name": 0,
           "bits": [ 147 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_I1": {
           "hide_name": 0,
           "bits": [ 100 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_I1_SB_CARRY_CO_I1": {
           "hide_name": 0,
           "bits": [ 97 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:71|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_1_SB_LUT4_I2_1_O": {
@@ -18943,140 +18957,140 @@
           "hide_name": 0,
           "bits": [ "1", 209, 206, 203, 200, 197, 194, 191, 167, 164, 165, 185, 182, 179, 176, 173, 169, 170, 162 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_10_I1": {
           "hide_name": 0,
           "bits": [ 171 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_11_I1": {
           "hide_name": 0,
           "bits": [ 174 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_12_I1": {
           "hide_name": 0,
           "bits": [ 177 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_13_I1": {
           "hide_name": 0,
           "bits": [ 180 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_14_I1": {
           "hide_name": 0,
           "bits": [ 183 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_15_I1": {
           "hide_name": 0,
           "bits": [ 186 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_16_I1": {
           "hide_name": 0,
           "bits": [ 188 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_1_I1": {
           "hide_name": 0,
           "bits": [ 168 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_2_I1": {
           "hide_name": 0,
           "bits": [ 192 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_3_I1": {
           "hide_name": 0,
           "bits": [ 195 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_4_I1": {
           "hide_name": 0,
           "bits": [ 198 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_5_I1": {
           "hide_name": 0,
           "bits": [ 201 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_6_I1": {
           "hide_name": 0,
           "bits": [ 204 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_7_I1": {
           "hide_name": 0,
           "bits": [ 207 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8_CI": {
           "hide_name": 0,
           "bits": [ 209 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8_I1": {
           "hide_name": 0,
           "bits": [ 210 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_9_I1": {
           "hide_name": 0,
           "bits": [ 213 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_I1": {
           "hide_name": 0,
           "bits": [ 166 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_I1": {
           "hide_name": 0,
           "bits": [ 163 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:72|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_2_SB_LUT4_I2_1_O": {
@@ -19144,140 +19158,140 @@
           "hide_name": 0,
           "bits": [ "1", 275, 272, 269, 266, 263, 260, 257, 233, 230, 231, 251, 248, 245, 242, 239, 235, 236, 228 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_10_I1": {
           "hide_name": 0,
           "bits": [ 237 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_11_I1": {
           "hide_name": 0,
           "bits": [ 240 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_12_I1": {
           "hide_name": 0,
           "bits": [ 243 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_13_I1": {
           "hide_name": 0,
           "bits": [ 246 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_14_I1": {
           "hide_name": 0,
           "bits": [ 249 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_15_I1": {
           "hide_name": 0,
           "bits": [ 252 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_16_I1": {
           "hide_name": 0,
           "bits": [ 254 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_1_I1": {
           "hide_name": 0,
           "bits": [ 234 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_2_I1": {
           "hide_name": 0,
           "bits": [ 258 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_3_I1": {
           "hide_name": 0,
           "bits": [ 261 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_4_I1": {
           "hide_name": 0,
           "bits": [ 264 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_5_I1": {
           "hide_name": 0,
           "bits": [ 267 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_6_I1": {
           "hide_name": 0,
           "bits": [ 270 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_7_I1": {
           "hide_name": 0,
           "bits": [ 273 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8_CI": {
           "hide_name": 0,
           "bits": [ 275 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8_I1": {
           "hide_name": 0,
           "bits": [ 276 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_9_I1": {
           "hide_name": 0,
           "bits": [ 279 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_I1": {
           "hide_name": 0,
           "bits": [ 232 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_I1_SB_CARRY_CO_I1": {
           "hide_name": 0,
           "bits": [ 229 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:32|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:73|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "i_Switch_3_SB_LUT4_I2_1_O": {
@@ -19402,14 +19416,14 @@
           "hide_name": 0,
           "bits": [ 3 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:8"
+            "src": "multi_clock.v:71|debouncer.v:9"
           }
         },
         "it_but_1.cnt_cks": {
           "hide_name": 0,
           "bits": [ 145, 146, 142, 139, 136, 133, 130, 127, 124, 149, 123, 121, 118, 115, 112, 109, 106, 148, 150 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:15"
+            "src": "multi_clock.v:71|debouncer.v:16"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_10_D": {
@@ -19422,7 +19436,7 @@
           "hide_name": 0,
           "bits": [ 310 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_11_D": {
@@ -19435,7 +19449,7 @@
           "hide_name": 0,
           "bits": [ 312 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_12_D": {
@@ -19448,7 +19462,7 @@
           "hide_name": 0,
           "bits": [ 314 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_13_D": {
@@ -19461,7 +19475,7 @@
           "hide_name": 0,
           "bits": [ 316 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_14_D": {
@@ -19474,7 +19488,7 @@
           "hide_name": 0,
           "bits": [ 318 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_15_D": {
@@ -19487,7 +19501,7 @@
           "hide_name": 0,
           "bits": [ 320 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_16_D": {
@@ -19500,7 +19514,7 @@
           "hide_name": 0,
           "bits": [ 322 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_17_D": {
@@ -19513,7 +19527,7 @@
           "hide_name": 0,
           "bits": [ 324 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_18_D": {
@@ -19532,7 +19546,7 @@
           "hide_name": 0,
           "bits": [ 326 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_2_D": {
@@ -19545,7 +19559,7 @@
           "hide_name": 0,
           "bits": [ 328 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_3_D": {
@@ -19558,7 +19572,7 @@
           "hide_name": 0,
           "bits": [ 330 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_4_D": {
@@ -19571,7 +19585,7 @@
           "hide_name": 0,
           "bits": [ 332 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_5_D": {
@@ -19584,7 +19598,7 @@
           "hide_name": 0,
           "bits": [ 334 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_6_D": {
@@ -19597,7 +19611,7 @@
           "hide_name": 0,
           "bits": [ 336 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_7_D": {
@@ -19610,7 +19624,7 @@
           "hide_name": 0,
           "bits": [ 338 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_8_D": {
@@ -19623,7 +19637,7 @@
           "hide_name": 0,
           "bits": [ 340 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_9_D": {
@@ -19636,7 +19650,7 @@
           "hide_name": 0,
           "bits": [ 342 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33"
+            "src": "multi_clock.v:71|debouncer.v:34"
           }
         },
         "it_but_1.cnt_cks_SB_DFFSR_Q_D": {
@@ -19649,35 +19663,35 @@
           "hide_name": 0,
           "bits": [ "0", 145, 289, 303, 302, 301, 300, 299, 292, 290, 291, 298, 297, 296, 295, 293, 294, 304, 305 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:71|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
-        "it_but_1.i_Clk": {
+        "it_but_1.gch_clk": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:5"
+            "src": "multi_clock.v:71|debouncer.v:8"
           }
         },
-        "it_but_1.ready": {
+        "it_but_1.gch_ready": {
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:7"
+            "src": "multi_clock.v:71|debouncer.v:8"
           }
         },
-        "it_but_1.reset": {
+        "it_but_1.gch_reset": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:6"
+            "src": "multi_clock.v:71|debouncer.v:8"
           }
         },
         "it_but_1.rg_dbn_rdy": {
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:14"
+            "src": "multi_clock.v:71|debouncer.v:15"
           }
         },
         "it_but_1.rg_dbn_rdy_SB_LUT4_I3_O": {
@@ -19690,35 +19704,35 @@
           "hide_name": 0,
           "bits": [ 92 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:16"
+            "src": "multi_clock.v:71|debouncer.v:17"
           }
         },
         "it_but_1.rg_stdy_SB_DFF_Q_D": {
           "hide_name": 0,
           "bits": [ 93 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:18"
+            "src": "multi_clock.v:71|debouncer.v:19"
           }
         },
         "it_but_1.steady": {
           "hide_name": 0,
           "bits": [ 92 ],
           "attributes": {
-            "src": "multi_clock.v:67|debouncer.v:9"
+            "src": "multi_clock.v:71|debouncer.v:10"
           }
         },
         "it_but_2.bouncing": {
           "hide_name": 0,
           "bits": [ 4 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:8"
+            "src": "multi_clock.v:72|debouncer.v:9"
           }
         },
         "it_but_2.cnt_cks": {
           "hide_name": 0,
           "bits": [ 211, 212, 208, 205, 202, 199, 196, 193, 190, 215, 189, 187, 184, 181, 178, 175, 172, 214, 216 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:15"
+            "src": "multi_clock.v:72|debouncer.v:16"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_10_D": {
@@ -19731,7 +19745,7 @@
           "hide_name": 0,
           "bits": [ 363 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_11_D": {
@@ -19744,7 +19758,7 @@
           "hide_name": 0,
           "bits": [ 365 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_12_D": {
@@ -19757,7 +19771,7 @@
           "hide_name": 0,
           "bits": [ 367 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_13_D": {
@@ -19770,7 +19784,7 @@
           "hide_name": 0,
           "bits": [ 369 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_14_D": {
@@ -19783,7 +19797,7 @@
           "hide_name": 0,
           "bits": [ 371 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_15_D": {
@@ -19796,7 +19810,7 @@
           "hide_name": 0,
           "bits": [ 373 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_16_D": {
@@ -19809,7 +19823,7 @@
           "hide_name": 0,
           "bits": [ 375 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_17_D": {
@@ -19822,7 +19836,7 @@
           "hide_name": 0,
           "bits": [ 377 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_18_D": {
@@ -19841,7 +19855,7 @@
           "hide_name": 0,
           "bits": [ 379 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_2_D": {
@@ -19854,7 +19868,7 @@
           "hide_name": 0,
           "bits": [ 381 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_3_D": {
@@ -19867,7 +19881,7 @@
           "hide_name": 0,
           "bits": [ 383 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_4_D": {
@@ -19880,7 +19894,7 @@
           "hide_name": 0,
           "bits": [ 385 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_5_D": {
@@ -19893,7 +19907,7 @@
           "hide_name": 0,
           "bits": [ 387 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_6_D": {
@@ -19906,7 +19920,7 @@
           "hide_name": 0,
           "bits": [ 389 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_7_D": {
@@ -19919,7 +19933,7 @@
           "hide_name": 0,
           "bits": [ 391 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_8_D": {
@@ -19932,7 +19946,7 @@
           "hide_name": 0,
           "bits": [ 393 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_9_D": {
@@ -19945,7 +19959,7 @@
           "hide_name": 0,
           "bits": [ 395 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33"
+            "src": "multi_clock.v:72|debouncer.v:34"
           }
         },
         "it_but_2.cnt_cks_SB_DFFSR_Q_D": {
@@ -19958,70 +19972,70 @@
           "hide_name": 0,
           "bits": [ "0", 211, 343, 357, 356, 355, 354, 353, 346, 344, 345, 352, 351, 350, 349, 347, 348, 358, 359 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:72|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
-        "it_but_2.i_Clk": {
+        "it_but_2.gch_clk": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:5"
+            "src": "multi_clock.v:72|debouncer.v:8"
           }
         },
-        "it_but_2.ready": {
+        "it_but_2.gch_ready": {
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:7"
+            "src": "multi_clock.v:72|debouncer.v:8"
           }
         },
-        "it_but_2.reset": {
+        "it_but_2.gch_reset": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:6"
+            "src": "multi_clock.v:72|debouncer.v:8"
           }
         },
         "it_but_2.rg_dbn_rdy": {
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:14"
+            "src": "multi_clock.v:72|debouncer.v:15"
           }
         },
         "it_but_2.rg_stdy": {
           "hide_name": 0,
           "bits": [ 158 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:16"
+            "src": "multi_clock.v:72|debouncer.v:17"
           }
         },
         "it_but_2.rg_stdy_SB_DFF_Q_D": {
           "hide_name": 0,
           "bits": [ 159 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:18"
+            "src": "multi_clock.v:72|debouncer.v:19"
           }
         },
         "it_but_2.steady": {
           "hide_name": 0,
           "bits": [ 158 ],
           "attributes": {
-            "src": "multi_clock.v:68|debouncer.v:9"
+            "src": "multi_clock.v:72|debouncer.v:10"
           }
         },
         "it_but_3.bouncing": {
           "hide_name": 0,
           "bits": [ 5 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:8"
+            "src": "multi_clock.v:73|debouncer.v:9"
           }
         },
         "it_but_3.cnt_cks": {
           "hide_name": 0,
           "bits": [ 277, 278, 274, 271, 268, 265, 262, 259, 256, 281, 255, 253, 250, 247, 244, 241, 238, 280, 282 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:15"
+            "src": "multi_clock.v:73|debouncer.v:16"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_10_D": {
@@ -20034,7 +20048,7 @@
           "hide_name": 0,
           "bits": [ 416 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_11_D": {
@@ -20047,7 +20061,7 @@
           "hide_name": 0,
           "bits": [ 418 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_12_D": {
@@ -20060,7 +20074,7 @@
           "hide_name": 0,
           "bits": [ 420 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_13_D": {
@@ -20073,7 +20087,7 @@
           "hide_name": 0,
           "bits": [ 422 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_14_D": {
@@ -20086,7 +20100,7 @@
           "hide_name": 0,
           "bits": [ 424 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_15_D": {
@@ -20099,7 +20113,7 @@
           "hide_name": 0,
           "bits": [ 426 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_16_D": {
@@ -20112,7 +20126,7 @@
           "hide_name": 0,
           "bits": [ 428 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_17_D": {
@@ -20125,7 +20139,7 @@
           "hide_name": 0,
           "bits": [ 430 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_18_D": {
@@ -20144,7 +20158,7 @@
           "hide_name": 0,
           "bits": [ 432 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_2_D": {
@@ -20157,7 +20171,7 @@
           "hide_name": 0,
           "bits": [ 434 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_3_D": {
@@ -20170,7 +20184,7 @@
           "hide_name": 0,
           "bits": [ 436 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_4_D": {
@@ -20183,7 +20197,7 @@
           "hide_name": 0,
           "bits": [ 438 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_5_D": {
@@ -20196,7 +20210,7 @@
           "hide_name": 0,
           "bits": [ 440 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_6_D": {
@@ -20209,7 +20223,7 @@
           "hide_name": 0,
           "bits": [ 442 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_7_D": {
@@ -20222,7 +20236,7 @@
           "hide_name": 0,
           "bits": [ 444 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_8_D": {
@@ -20235,7 +20249,7 @@
           "hide_name": 0,
           "bits": [ 446 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_9_D": {
@@ -20248,7 +20262,7 @@
           "hide_name": 0,
           "bits": [ 448 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33"
+            "src": "multi_clock.v:73|debouncer.v:34"
           }
         },
         "it_but_3.cnt_cks_SB_DFFSR_Q_D": {
@@ -20261,63 +20275,63 @@
           "hide_name": 0,
           "bits": [ "0", 277, 396, 410, 409, 408, 407, 406, 399, 397, 398, 405, 404, 403, 402, 400, 401, 411, 412 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:33|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:73|debouncer.v:34|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
-        "it_but_3.i_Clk": {
+        "it_but_3.gch_clk": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:5"
+            "src": "multi_clock.v:73|debouncer.v:8"
           }
         },
-        "it_but_3.ready": {
+        "it_but_3.gch_ready": {
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:7"
+            "src": "multi_clock.v:73|debouncer.v:8"
           }
         },
-        "it_but_3.reset": {
+        "it_but_3.gch_reset": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:6"
+            "src": "multi_clock.v:73|debouncer.v:8"
           }
         },
         "it_but_3.rg_dbn_rdy": {
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:14"
+            "src": "multi_clock.v:73|debouncer.v:15"
           }
         },
         "it_but_3.rg_stdy": {
           "hide_name": 0,
           "bits": [ 224 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:16"
+            "src": "multi_clock.v:73|debouncer.v:17"
           }
         },
         "it_but_3.rg_stdy_SB_DFF_Q_D": {
           "hide_name": 0,
           "bits": [ 225 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:18"
+            "src": "multi_clock.v:73|debouncer.v:19"
           }
         },
         "it_but_3.steady": {
           "hide_name": 0,
           "bits": [ 224 ],
           "attributes": {
-            "src": "multi_clock.v:69|debouncer.v:9"
+            "src": "multi_clock.v:73|debouncer.v:10"
           }
         },
         "it_but_4.bouncing": {
           "hide_name": 0,
           "bits": [ 6 ],
           "attributes": {
-            "src": "multi_clock.v:70|debouncer.v:8",
+            "src": "multi_clock.v:74|debouncer.v:9",
             "unused_bits": "0 "
           }
         },
@@ -20325,56 +20339,56 @@
           "hide_name": 0,
           "bits": [ "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ],
           "attributes": {
-            "src": "multi_clock.v:70|debouncer.v:15"
+            "src": "multi_clock.v:74|debouncer.v:16"
           }
         },
-        "it_but_4.i_Clk": {
+        "it_but_4.gch_clk": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "multi_clock.v:70|debouncer.v:5"
+            "src": "multi_clock.v:74|debouncer.v:8"
           }
         },
-        "it_but_4.ready": {
+        "it_but_4.gch_ready": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:70|debouncer.v:7"
+            "src": "multi_clock.v:74|debouncer.v:8"
           }
         },
-        "it_but_4.reset": {
+        "it_but_4.gch_reset": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:70|debouncer.v:6"
+            "src": "multi_clock.v:74|debouncer.v:8"
           }
         },
         "it_but_4.rg_dbn_rdy": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:70|debouncer.v:14"
+            "src": "multi_clock.v:74|debouncer.v:15"
           }
         },
         "it_but_4.rg_stdy": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:70|debouncer.v:16"
+            "src": "multi_clock.v:74|debouncer.v:17"
           }
         },
         "it_but_4.steady": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:70|debouncer.v:9"
+            "src": "multi_clock.v:74|debouncer.v:10"
           }
         },
         "lim_clk_nam": {
           "hide_name": 0,
           "bits": [ 457, 33, 37, 42, 45, 40, 35, 31 ],
           "attributes": {
-            "src": "multi_clock.v:91"
+            "src": "multi_clock.v:95"
           }
         },
         "o_LED_1": {
@@ -20520,14 +20534,14 @@
           "hide_name": 0,
           "bits": [ "1", 457, 466, 465, 464, 463, 462, 460 ],
           "attributes": {
-            "src": "multi_clock.v:132|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:136|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
         "r_Switch_1_SB_LUT4_I3_O_SB_LUT4_I0_I3": {
           "hide_name": 0,
           "bits": [ "0", 457, 471, 470, 469, 468, 467, 461 ],
           "attributes": {
-            "src": "multi_clock.v:127|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
         "r_Switch_1_SB_LUT4_I3_O_SB_LUT4_I1_1_I2": {
@@ -20606,7 +20620,7 @@
           "hide_name": 0,
           "bits": [ 41, 456, 455, 454, 453, 452, 451, 449 ],
           "attributes": {
-            "src": "multi_clock.v:117"
+            "src": "multi_clock.v:121"
           }
         },
         "r_Switch_2": {
@@ -20620,7 +20634,7 @@
           "hide_name": 0,
           "bits": [ 485 ],
           "attributes": {
-            "src": "multi_clock.v:106"
+            "src": "multi_clock.v:110"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I1": {
@@ -20633,7 +20647,7 @@
           "hide_name": 0,
           "bits": [ "1", 42, 490, 489, 488 ],
           "attributes": {
-            "src": "multi_clock.v:126|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:130|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I3": {
@@ -20646,56 +20660,56 @@
           "hide_name": 0,
           "bits": [ "1", "1", 501, 499, 497, 495, 493, 491 ],
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:43"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I3_SB_CARRY_CO_CI_SB_CARRY_CO_1_I1": {
           "hide_name": 0,
           "bits": [ 496 ],
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I3_SB_CARRY_CO_CI_SB_CARRY_CO_2_I1": {
           "hide_name": 0,
           "bits": [ 498 ],
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I3_SB_CARRY_CO_CI_SB_CARRY_CO_3_I1": {
           "hide_name": 0,
           "bits": [ 500 ],
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I3_SB_CARRY_CO_CI_SB_CARRY_CO_4_CI": {
           "hide_name": 0,
           "bits": [ 501 ],
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I3_SB_CARRY_CO_CI_SB_CARRY_CO_4_I1": {
           "hide_name": 0,
           "bits": [ 502 ],
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I3_SB_CARRY_CO_CI_SB_CARRY_CO_I1": {
           "hide_name": 0,
           "bits": [ 494 ],
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_I3_SB_CARRY_CO_I1": {
           "hide_name": 0,
           "bits": [ 492 ],
           "attributes": {
-            "src": "multi_clock.v:131|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
+            "src": "multi_clock.v:135|/usr/local/bin/../share/yosys/ice40/arith_map.v:42"
           }
         },
         "r_Switch_2_SB_LUT4_I3_O_SB_LUT4_I2_O": {
@@ -20722,28 +20736,28 @@
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:67"
+            "src": "multi_clock.v:71"
           }
         },
         "rdy_but_2": {
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:68"
+            "src": "multi_clock.v:72"
           }
         },
         "rdy_but_3": {
           "hide_name": 0,
           "bits": [ 90 ],
           "attributes": {
-            "src": "multi_clock.v:69"
+            "src": "multi_clock.v:73"
           }
         },
         "rdy_but_4": {
           "hide_name": 0,
           "bits": [ "0" ],
           "attributes": {
-            "src": "multi_clock.v:70"
+            "src": "multi_clock.v:74"
           }
         },
         "reset": {
@@ -20757,14 +20771,14 @@
           "hide_name": 0,
           "bits": [ 21 ],
           "attributes": {
-            "src": "multi_clock.v:115"
+            "src": "multi_clock.v:119"
           }
         },
         "show_clock_SB_DFFE_Q_D": {
           "hide_name": 0,
           "bits": [ 505 ],
           "attributes": {
-            "src": "multi_clock.v:117"
+            "src": "multi_clock.v:121"
           }
         },
         "show_clock_SB_DFFE_Q_E": {
@@ -20777,98 +20791,98 @@
           "hide_name": 0,
           "bits": [ 76 ],
           "attributes": {
-            "src": "multi_clock.v:72"
+            "src": "multi_clock.v:76"
           }
         },
         "w_Segment1_B": {
           "hide_name": 0,
           "bits": [ 79 ],
           "attributes": {
-            "src": "multi_clock.v:73"
+            "src": "multi_clock.v:77"
           }
         },
         "w_Segment1_C": {
           "hide_name": 0,
           "bits": [ 81 ],
           "attributes": {
-            "src": "multi_clock.v:74"
+            "src": "multi_clock.v:78"
           }
         },
         "w_Segment1_D": {
           "hide_name": 0,
           "bits": [ 83 ],
           "attributes": {
-            "src": "multi_clock.v:75"
+            "src": "multi_clock.v:79"
           }
         },
         "w_Segment1_E": {
           "hide_name": 0,
           "bits": [ 85 ],
           "attributes": {
-            "src": "multi_clock.v:76"
+            "src": "multi_clock.v:80"
           }
         },
         "w_Segment1_F": {
           "hide_name": 0,
           "bits": [ 87 ],
           "attributes": {
-            "src": "multi_clock.v:77"
+            "src": "multi_clock.v:81"
           }
         },
         "w_Segment1_G": {
           "hide_name": 0,
           "bits": [ 89 ],
           "attributes": {
-            "src": "multi_clock.v:78"
+            "src": "multi_clock.v:82"
           }
         },
         "w_Segment2_A": {
           "hide_name": 0,
           "bits": [ 61 ],
           "attributes": {
-            "src": "multi_clock.v:80"
+            "src": "multi_clock.v:84"
           }
         },
         "w_Segment2_B": {
           "hide_name": 0,
           "bits": [ 64 ],
           "attributes": {
-            "src": "multi_clock.v:81"
+            "src": "multi_clock.v:85"
           }
         },
         "w_Segment2_C": {
           "hide_name": 0,
           "bits": [ 66 ],
           "attributes": {
-            "src": "multi_clock.v:82"
+            "src": "multi_clock.v:86"
           }
         },
         "w_Segment2_D": {
           "hide_name": 0,
           "bits": [ 68 ],
           "attributes": {
-            "src": "multi_clock.v:83"
+            "src": "multi_clock.v:87"
           }
         },
         "w_Segment2_E": {
           "hide_name": 0,
           "bits": [ 70 ],
           "attributes": {
-            "src": "multi_clock.v:84"
+            "src": "multi_clock.v:88"
           }
         },
         "w_Segment2_F": {
           "hide_name": 0,
           "bits": [ 72 ],
           "attributes": {
-            "src": "multi_clock.v:85"
+            "src": "multi_clock.v:89"
           }
         },
         "w_Segment2_G": {
           "hide_name": 0,
           "bits": [ 74 ],
           "attributes": {
-            "src": "multi_clock.v:86"
+            "src": "multi_clock.v:90"
           }
         },
         "w_Switch_1": {

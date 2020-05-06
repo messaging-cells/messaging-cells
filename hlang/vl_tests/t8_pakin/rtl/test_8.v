@@ -59,10 +59,14 @@ module test_top
 
 	localparam TOT_DEBOUNCE_CLICK = 250000;  // 10 ms at 25 MHz
 	
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 1)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 2)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 3)
-	`NS_DEBOUNCER_DBG_BUT(i_clk, 4)
+	`NS_DECLARE_GLB_LINK(gch0)
+	assign gch0_clk = i_clk;
+	assign gch0_reset = reset;
+	
+	`NS_DEBOUNCER_DBG_BUT(gch0, 1)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 2)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 3)
+	`NS_DEBOUNCER_DBG_BUT(gch0, 4)
 	
 	wire w_Segment1_A;
 	wire w_Segment1_B;
@@ -136,10 +140,7 @@ module test_top
 
 	pakin 
 	gt_01 (
-		.i_clk(clk_kl2),
-		
-		.reset(reset),
-		.ready(ready),
+		`NS_INSTA_GLB_CHNL_VALS(gch, clk_kl2, reset, ready),
 		
 		// out0
 		`NS_INSTA_SND_CHNL(snd0, lnk_0),

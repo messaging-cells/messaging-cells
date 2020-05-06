@@ -34,9 +34,9 @@ module io_2to1
 	parameter RCV_REQ_CKS = `NS_REQ_CKS;
 	parameter SND_ACK_CKS = `NS_ACK_CKS;
 	
-	`NS_DEBOUNCER_ACK(src0_clk, o0)
-	`NS_DEBOUNCER_ACK(src1_clk, o1)
-	`NS_DEBOUNCER_REQ(snk0_clk, i0)
+	`NS_DEBOUNCER_ACK(src0_clk, reset, o0)
+	`NS_DEBOUNCER_ACK(src1_clk, reset, o1)
+	`NS_DEBOUNCER_REQ(snk0_clk, reset, i0)
  
 	`NS_DECLARE_REG_DBG(rg_dbg)
 

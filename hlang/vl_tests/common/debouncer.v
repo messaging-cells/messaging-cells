@@ -1,10 +1,11 @@
 
+`include "hglobal.v"
+
 `default_nettype	none
 
 module debouncer 
-(	input i_Clk,
-	input wire reset,
-	output wire ready,
+(	
+	`NS_DECLARE_GLB_CHNL(gch),
 	input bouncing,
 	output steady
 );
@@ -15,18 +16,18 @@ module debouncer
 	reg [$clog2(TOT_CKS):0] cnt_cks = 0;
 	reg rg_stdy = 1'b0;
  
-	always @(posedge i_Clk)
+	always @(posedge gch_clk)
 	begin
-		if(reset) begin
+		if(gch_reset) begin
 			rg_dbn_rdy <= 0;
 		end
-		if(! reset && ! rg_dbn_rdy) begin
+		if(! gch_reset && ! rg_dbn_rdy) begin
 			rg_dbn_rdy <= 1;
 			
 			cnt_cks <= 0;
 			rg_stdy <= 1'b0;
 		end
-		if(! reset && rg_dbn_rdy) begin
+		if(! gch_reset && rg_dbn_rdy) begin
 			// Switch input is different than internal switch value, so an input is
 			// changing.  Increase the counter until it is stable for enough time.  
 			if (bouncing !== rg_stdy && cnt_cks < TOT_CKS) begin
@@ -46,7 +47,7 @@ module debouncer
 		end
 	end
  
-	assign ready = rg_dbn_rdy;
+	assign gch_ready = rg_dbn_rdy;
 	// Assign internal register to output (debounced!)
 	assign steady = rg_stdy;
  

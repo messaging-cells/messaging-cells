@@ -30,8 +30,8 @@ module io_fifo
 	parameter RCV_REQ_CKS = `NS_REQ_CKS;
 	parameter SND_ACK_CKS = `NS_ACK_CKS;
 	
-	`NS_DEBOUNCER_ACK(src_clk, o0)
-	`NS_DEBOUNCER_REQ(snk_clk, i0)
+	`NS_DEBOUNCER_ACK(src_clk, reset, o0)
+	`NS_DEBOUNCER_REQ(snk_clk, reset, i0)
 
 	`NS_DECLARE_REG_DBG(rg_dbg)
  
