@@ -214,11 +214,11 @@
 	output wire [RSZ-1:0] mg``_red
 
 
-`define NS_ASSIGN_OUT_MSG(ou, mg) \
+`define NS_ASSIGN_MSG(ou, mg) \
 	assign ou``_src = mg``_src; \
 	assign ou``_dst = mg``_dst; \
 	assign ou``_dat = mg``_dat; \
-	assign ou``_red = mg``_red; \
+	assign ou``_red = mg``_red;
 
 
 `define NS_MOV_REG_MSG(mg_dst, mg_src) \
@@ -272,6 +272,12 @@
 	`NS_DECLARE_IN_MSG(nam), \
 	input wire nam``_req_dirty, \
 	output wire nam``_ack
+
+
+`define NS_ASSIGN_OUT_CHNL_FROM_IN_CHNL(ou, in) \
+	`NS_ASSIGN_MSG(ou, in), \
+	assign ou``_req = in``_req_dirty; \
+	assign ou``_ack_dirty = in``_ack;
 
 
 `define NS_DEBOUNCER_REQ(clk, rst, nam) \
@@ -492,6 +498,12 @@
 	wire [PSZ-1:0] lnk``_pakio; \
 	wire lnk``_req; \
 	wire lnk``_ack; 
+
+
+`define NS_ASSIGN_PAKOUT_FROM_PAKIN(ou, in) \
+	assign ou``_pakio = in``_pakio; \
+	assign ou``_req = in``_req_dirty; \
+	assign ou``_ack_dirty = in``_ack;
 
 
 `define NS_INSTA_RCV_PAKIO_CHNL(chn, lnk) \

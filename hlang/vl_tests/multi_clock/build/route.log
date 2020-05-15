@@ -1,6 +1,6 @@
 Info: Importing module test_top
 Info: Rule checker, verifying imported design
-Info: Checksum: 0x0f3d4b0c
+Info: Checksum: 0x3d6e7770
 
 Info: constrained 'i_clk' to bel 'X0/Y8/io1'
 Info: constrained 'i_Switch_1' to bel 'X13/Y4/io1'
@@ -37,27 +37,27 @@ Info: constrained 'io_PMOD_10' to bel 'X10/Y17/io1'
 Info: Packing constants..
 Info: Packing IOs..
 Info: Packing LUT-FFs..
-Info:      179 LCs used as LUT4 only
-Info:       91 LCs used as LUT4 and DFF
+Info:      275 LCs used as LUT4 only
+Info:      121 LCs used as LUT4 and DFF
 Info: Packing non-LUT FFs..
 Info:        5 LCs used as DFF only
 Info: Packing carries..
-Info:       69 LCs used as CARRY only
+Info:       79 LCs used as CARRY only
 Info: Packing RAMs..
 Info: Placing PLLs..
 Info: Packing special functions..
 Info: Promoting globals..
-Info: promoting i_clk$SB_IO_IN (fanout 96)
-Info: promoting it_but_1.rg_dbn_rdy_SB_LUT4_I3_O [reset] (fanout 57)
+Info: promoting i_clk$SB_IO_IN (fanout 126)
+Info: promoting it_but_1.rg_dbn_rdy_SB_LUT4_I3_O [reset] (fanout 76)
 Info: Constraining chains...
-Info:       16 LCs used to legalise carry chains.
-Info: Checksum: 0x0c8837a0
+Info:       17 LCs used to legalise carry chains.
+Info: Checksum: 0xd14b7599
 
 Info: Annotating ports with timing budgets for target frequency 12.00 MHz
-Info: Checksum: 0xc482563d
+Info: Checksum: 0xdc98460d
 
 Info: Device utilisation:
-Info: 	         ICESTORM_LC:   362/ 1280    28%
+Info: 	         ICESTORM_LC:   499/ 1280    38%
 Info: 	        ICESTORM_RAM:     0/   16     0%
 Info: 	               SB_IO:    31/  112    27%
 Info: 	               SB_GB:     2/    8    25%
@@ -65,195 +65,197 @@ Info: 	        ICESTORM_PLL:     0/    1     0%
 Info: 	         SB_WARMBOOT:     0/    1     0%
 
 Info: Placed 31 cells based on constraints.
-Info: Creating initial analytic placement for 220 cells, random placement wirelen = 3660.
-Info:     at initial placer iter 0, wirelen = 374
-Info:     at initial placer iter 1, wirelen = 348
-Info:     at initial placer iter 2, wirelen = 347
-Info:     at initial placer iter 3, wirelen = 343
+Info: Creating initial analytic placement for 318 cells, random placement wirelen = 5168.
+Info:     at initial placer iter 0, wirelen = 462
+Info:     at initial placer iter 1, wirelen = 448
+Info:     at initial placer iter 2, wirelen = 429
+Info:     at initial placer iter 3, wirelen = 435
 Info: Running main analytical placer.
-Info:     at iteration #1, type ALL: wirelen solved = 344, spread = 1004, legal = 1076; time = 0.01s
-Info:     at iteration #2, type ALL: wirelen solved = 360, spread = 1006, legal = 1174; time = 0.02s
-Info:     at iteration #3, type ALL: wirelen solved = 352, spread = 836, legal = 950; time = 0.02s
-Info:     at iteration #4, type ALL: wirelen solved = 372, spread = 799, legal = 902; time = 0.02s
-Info:     at iteration #5, type ALL: wirelen solved = 365, spread = 790, legal = 881; time = 0.02s
-Info:     at iteration #6, type ALL: wirelen solved = 405, spread = 802, legal = 884; time = 0.02s
-Info:     at iteration #7, type ALL: wirelen solved = 385, spread = 809, legal = 923; time = 0.02s
-Info:     at iteration #8, type ALL: wirelen solved = 430, spread = 779, legal = 926; time = 0.02s
-Info:     at iteration #9, type ALL: wirelen solved = 422, spread = 823, legal = 956; time = 0.02s
-Info:     at iteration #10, type ALL: wirelen solved = 391, spread = 792, legal = 888; time = 0.02s
-Info: HeAP Placer Time: 0.21s
-Info:   of which solving equations: 0.16s
-Info:   of which spreading cells: 0.01s
+Info:     at iteration #1, type ALL: wirelen solved = 442, spread = 1883, legal = 1930; time = 0.02s
+Info:     at iteration #2, type ALL: wirelen solved = 442, spread = 1352, legal = 1544; time = 0.03s
+Info:     at iteration #3, type ALL: wirelen solved = 463, spread = 1570, legal = 1700; time = 0.03s
+Info:     at iteration #4, type ALL: wirelen solved = 496, spread = 1250, legal = 1428; time = 0.03s
+Info:     at iteration #5, type ALL: wirelen solved = 522, spread = 1298, legal = 1383; time = 0.03s
+Info:     at iteration #6, type ALL: wirelen solved = 488, spread = 1190, legal = 1332; time = 0.03s
+Info:     at iteration #7, type ALL: wirelen solved = 467, spread = 1243, legal = 1420; time = 0.03s
+Info:     at iteration #8, type ALL: wirelen solved = 528, spread = 1322, legal = 1523; time = 0.03s
+Info:     at iteration #9, type ALL: wirelen solved = 486, spread = 1301, legal = 1474; time = 0.03s
+Info:     at iteration #10, type ALL: wirelen solved = 556, spread = 1397, legal = 1664; time = 0.03s
+Info:     at iteration #11, type ALL: wirelen solved = 529, spread = 1394, legal = 1838; time = 0.03s
+Info: HeAP Placer Time: 0.41s
+Info:   of which solving equations: 0.30s
+Info:   of which spreading cells: 0.02s
 Info:   of which strict legalisation: 0.01s
 
 Info: Running simulated annealing placer for refinement.
-Info:   at iteration #1: temp = 0.000000, timing cost = 73, wirelen = 881
-Info:   at iteration #5: temp = 0.000000, timing cost = 47, wirelen = 691
-Info:   at iteration #10: temp = 0.000000, timing cost = 44, wirelen = 635
-Info:   at iteration #15: temp = 0.000000, timing cost = 54, wirelen = 608
-Info:   at iteration #16: temp = 0.000000, timing cost = 42, wirelen = 618 
-Info: SA placement time 0.25s
+Info:   at iteration #1: temp = 0.000000, timing cost = 82, wirelen = 1332
+Info:   at iteration #5: temp = 0.000000, timing cost = 90, wirelen = 1092
+Info:   at iteration #10: temp = 0.000000, timing cost = 65, wirelen = 997
+Info:   at iteration #15: temp = 0.000000, timing cost = 67, wirelen = 975
+Info:   at iteration #16: temp = 0.000000, timing cost = 65, wirelen = 968 
+Info: SA placement time 0.43s
 
-Info: Max frequency for clock 'i_clk$SB_IO_IN_$glb_clk': 124.38 MHz (PASS at 12.00 MHz)
+Info: Max frequency for clock 'i_clk$SB_IO_IN_$glb_clk': 114.52 MHz (PASS at 12.00 MHz)
 
-Info: Max delay <async>                         -> posedge i_clk$SB_IO_IN_$glb_clk: 3.05 ns
-Info: Max delay posedge i_clk$SB_IO_IN_$glb_clk -> <async>                        : 3.13 ns
+Info: Max delay <async>                         -> posedge i_clk$SB_IO_IN_$glb_clk: 4.28 ns
+Info: Max delay posedge i_clk$SB_IO_IN_$glb_clk -> <async>                        : 2.79 ns
 
 Info: Slack histogram:
 Info:  legend: * represents 1 endpoint(s)
 Info:          + represents [1,1) endpoint(s)
-Info: [ 75293,  75622) |********************************************************* 
-Info: [ 75622,  75951) | 
-Info: [ 75951,  76280) | 
-Info: [ 76280,  76609) | 
-Info: [ 76609,  76938) | 
-Info: [ 76938,  77267) |***** 
-Info: [ 77267,  77596) |******* 
-Info: [ 77596,  77925) |************************************** 
-Info: [ 77925,  78254) |******* 
-Info: [ 78254,  78583) |*********************************** 
-Info: [ 78583,  78912) |********************************************** 
-Info: [ 78912,  79241) |*************************************** 
-Info: [ 79241,  79570) |******************* 
-Info: [ 79570,  79899) |*********** 
-Info: [ 79899,  80228) |***** 
-Info: [ 80228,  80557) |************************************************* 
-Info: [ 80557,  80886) |********************************* 
-Info: [ 80886,  81215) |******************************************** 
-Info: [ 81215,  81544) |******************** 
-Info: [ 81544,  81873) |******************************** 
-Info: Checksum: 0xf6197984
+Info: [ 74601,  74965) |**+
+Info: [ 74965,  75329) |***********************+
+Info: [ 75329,  75693) |********+
+Info: [ 75693,  76057) |*********+
+Info: [ 76057,  76421) | 
+Info: [ 76421,  76785) | 
+Info: [ 76785,  77149) |**+
+Info: [ 77149,  77513) |*****+
+Info: [ 77513,  77877) |**************+
+Info: [ 77877,  78241) |************************************************************ 
+Info: [ 78241,  78605) |****************+
+Info: [ 78605,  78969) |********************************+
+Info: [ 78969,  79333) |***************************************+
+Info: [ 79333,  79697) |******************+
+Info: [ 79697,  80061) |********************************************************+
+Info: [ 80061,  80425) |***************************+
+Info: [ 80425,  80789) |*****************+
+Info: [ 80789,  81153) |**************+
+Info: [ 81153,  81517) |*********+
+Info: [ 81517,  81881) |**************+
+Info: Checksum: 0xc60d8f26
 
 Info: Routing..
 Info: Setting up routing queue.
-Info: Routing 957 arcs.
+Info: Routing 1431 arcs.
 Info:            |   (re-)routed arcs  |   delta    | remaining
 Info:    IterCnt |  w/ripup   wo/ripup |  w/r  wo/r |      arcs
-Info:        996 |       30        966 |   30   966 |         0
+Info:       1000 |       15        984 |   15   984 |       452
+Info:       1523 |       67       1456 |   52   472 |         0
 Info: Routing complete.
-Info: Route time 0.15s
-Info: Checksum: 0xbafa38b5
+Info: Route time 0.36s
+Info: Checksum: 0x419e7d22
 
 Info: Critical path report for clock 'i_clk$SB_IO_IN_$glb_clk' (posedge -> posedge):
 Info: curr total
 Info:  0.5  0.5  Source it_but_2.cnt_cks_SB_DFFSR_Q_18_D_SB_LUT4_O_LC.O
-Info:  0.6  1.1    Net it_but_2.cnt_cks[0] budget 0.000000 ns (6,4) -> (5,4)
+Info:  0.6  1.1    Net it_but_2.cnt_cks[0] budget 0.000000 ns (6,6) -> (5,6)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8_CI_SB_LUT4_O_LC.I3
 Info:  0.3  1.4  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8_CI_SB_LUT4_O_LC.O
-Info:  0.6  2.0    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[1] budget 0.000000 ns (5,4) -> (4,4)
-Info:                Sink $nextpnr_ICESTORM_LC_10.I1
-Info:  0.3  2.3  Source $nextpnr_ICESTORM_LC_10.COUT
-Info:  0.0  2.3    Net $nextpnr_ICESTORM_LC_10$O budget 0.000000 ns (4,4) -> (4,4)
+Info:  0.6  2.0    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[1] budget 0.000000 ns (5,6) -> (4,7)
+Info:                Sink $nextpnr_ICESTORM_LC_11.I1
+Info:  0.3  2.3  Source $nextpnr_ICESTORM_LC_11.COUT
+Info:  0.0  2.3    Net $nextpnr_ICESTORM_LC_11$O budget 0.000000 ns (4,7) -> (4,7)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8$CARRY.CIN
 Info:  0.1  2.4  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_8$CARRY.COUT
-Info:  0.0  2.4    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[2] budget 0.000000 ns (4,4) -> (4,4)
+Info:  0.0  2.4    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[2] budget 0.000000 ns (4,7) -> (4,7)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_7$CARRY.CIN
 Info:  0.1  2.5  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_7$CARRY.COUT
-Info:  0.0  2.5    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[3] budget 0.000000 ns (4,4) -> (4,4)
+Info:  0.0  2.5    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[3] budget 0.000000 ns (4,7) -> (4,7)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_6$CARRY.CIN
 Info:  0.1  2.7  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_6$CARRY.COUT
-Info:  0.0  2.7    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[4] budget 0.000000 ns (4,4) -> (4,4)
+Info:  0.0  2.7    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[4] budget 0.000000 ns (4,7) -> (4,7)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_5$CARRY.CIN
 Info:  0.1  2.8  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_5$CARRY.COUT
-Info:  0.0  2.8    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[5] budget 0.000000 ns (4,4) -> (4,4)
+Info:  0.0  2.8    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[5] budget 0.000000 ns (4,7) -> (4,7)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_4$CARRY.CIN
 Info:  0.1  2.9  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_4$CARRY.COUT
-Info:  0.0  2.9    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[6] budget 0.000000 ns (4,4) -> (4,4)
+Info:  0.0  2.9    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[6] budget 0.000000 ns (4,7) -> (4,7)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_3$CARRY.CIN
 Info:  0.1  3.0  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_3$CARRY.COUT
-Info:  0.0  3.0    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[7] budget 0.000000 ns (4,4) -> (4,4)
+Info:  0.0  3.0    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[7] budget 0.000000 ns (4,7) -> (4,7)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_2$CARRY.CIN
 Info:  0.1  3.2  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_2$CARRY.COUT
-Info:  0.2  3.4    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[8] budget 0.190000 ns (4,4) -> (4,5)
+Info:  0.2  3.4    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[8] budget 0.190000 ns (4,7) -> (4,8)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_1$CARRY.CIN
 Info:  0.1  3.5  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_1$CARRY.COUT
-Info:  0.0  3.5    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[9] budget 0.000000 ns (4,5) -> (4,5)
+Info:  0.0  3.5    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[9] budget 0.000000 ns (4,8) -> (4,8)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO$CARRY.CIN
 Info:  0.1  3.6  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO$CARRY.COUT
-Info:  0.0  3.6    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[10] budget 0.000000 ns (4,5) -> (4,5)
+Info:  0.0  3.6    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[10] budget 0.000000 ns (4,8) -> (4,8)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_16$CARRY.CIN
 Info:  0.1  3.7  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_16$CARRY.COUT
-Info:  0.0  3.7    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[11] budget 0.000000 ns (4,5) -> (4,5)
+Info:  0.0  3.7    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[11] budget 0.000000 ns (4,8) -> (4,8)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_15$CARRY.CIN
 Info:  0.1  3.9  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_15$CARRY.COUT
-Info:  0.0  3.9    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[12] budget 0.000000 ns (4,5) -> (4,5)
+Info:  0.0  3.9    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[12] budget 0.000000 ns (4,8) -> (4,8)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_14$CARRY.CIN
 Info:  0.1  4.0  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_14$CARRY.COUT
-Info:  0.0  4.0    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[13] budget 0.000000 ns (4,5) -> (4,5)
+Info:  0.0  4.0    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[13] budget 0.000000 ns (4,8) -> (4,8)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_13$CARRY.CIN
 Info:  0.1  4.1  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_13$CARRY.COUT
-Info:  0.0  4.1    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[14] budget 0.000000 ns (4,5) -> (4,5)
+Info:  0.0  4.1    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[14] budget 0.000000 ns (4,8) -> (4,8)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_12$CARRY.CIN
 Info:  0.1  4.2  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_12$CARRY.COUT
-Info:  0.0  4.2    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[15] budget 0.000000 ns (4,5) -> (4,5)
+Info:  0.0  4.2    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[15] budget 0.000000 ns (4,8) -> (4,8)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_11$CARRY.CIN
 Info:  0.1  4.4  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_11$CARRY.COUT
-Info:  0.2  4.6    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[16] budget 0.190000 ns (4,5) -> (4,6)
+Info:  0.2  4.6    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[16] budget 0.190000 ns (4,8) -> (4,9)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_10$CARRY.CIN
 Info:  0.1  4.7  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_10$CARRY.COUT
-Info:  0.0  4.7    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[17] budget 0.000000 ns (4,6) -> (4,6)
+Info:  0.0  4.7    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[17] budget 0.000000 ns (4,9) -> (4,9)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_9$CARRY.CIN
 Info:  0.1  4.8  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI_SB_CARRY_CO_9$CARRY.COUT
-Info:  0.0  4.8    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[18] budget 0.000000 ns (4,6) -> (4,6)
+Info:  0.0  4.8    Net i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO_CI[18] budget 0.000000 ns (4,9) -> (4,9)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO$CARRY.CIN
 Info:  0.1  4.9  Source i_Switch_2_SB_LUT4_I2_1_I1_SB_CARRY_CO$CARRY.COUT
-Info:  0.3  5.2    Net $nextpnr_ICESTORM_LC_11$I3 budget 0.260000 ns (4,6) -> (4,6)
-Info:                Sink $nextpnr_ICESTORM_LC_11.I3
-Info:  0.3  5.5  Source $nextpnr_ICESTORM_LC_11.O
-Info:  1.3  6.8    Net i_Switch_2_SB_LUT4_I2_1_I1 budget 37.924000 ns (4,6) -> (5,4)
+Info:  0.3  5.2    Net $nextpnr_ICESTORM_LC_12$I3 budget 0.260000 ns (4,9) -> (4,9)
+Info:                Sink $nextpnr_ICESTORM_LC_12.I3
+Info:  0.3  5.5  Source $nextpnr_ICESTORM_LC_12.O
+Info:  1.3  6.8    Net i_Switch_2_SB_LUT4_I2_1_I1 budget 37.676998 ns (4,9) -> (6,7)
 Info:                Sink i_Switch_2_SB_LUT4_I2_1_LC.I1
 Info:  0.4  7.2  Source i_Switch_2_SB_LUT4_I2_1_LC.O
-Info:  0.6  7.8    Net i_Switch_2_SB_LUT4_I2_1_O budget 37.618999 ns (5,4) -> (6,4)
+Info:  1.0  8.2    Net i_Switch_2_SB_LUT4_I2_1_O budget 37.678001 ns (6,7) -> (5,9)
 Info:                Sink it_but_2.cnt_cks_SB_DFFSR_Q_D_SB_LUT4_O_LC.I0
-Info:  0.5  8.3  Setup it_but_2.cnt_cks_SB_DFFSR_Q_D_SB_LUT4_O_LC.I0
-Info: 4.6 ns logic, 3.7 ns routing
+Info:  0.5  8.6  Setup it_but_2.cnt_cks_SB_DFFSR_Q_D_SB_LUT4_O_LC.I0
+Info: 4.6 ns logic, 4.1 ns routing
 
 Info: Critical path report for cross-domain path '<async>' -> 'posedge i_clk$SB_IO_IN_$glb_clk':
 Info: curr total
-Info:  0.0  0.0  Source i_Switch_2$sb_io.D_IN_0
-Info:  1.6  1.6    Net i_Switch_2$SB_IO_IN budget 41.109001 ns (13,3) -> (5,4)
-Info:                Sink i_Switch_2_SB_LUT4_I2_1_LC.I2
-Info:  0.4  2.0  Source i_Switch_2_SB_LUT4_I2_1_LC.O
-Info:  0.6  2.6    Net i_Switch_2_SB_LUT4_I2_1_O budget 37.618999 ns (5,4) -> (6,4)
-Info:                Sink it_but_2.cnt_cks_SB_DFFSR_Q_D_SB_LUT4_O_LC.I0
-Info:  0.5  3.0  Setup it_but_2.cnt_cks_SB_DFFSR_Q_D_SB_LUT4_O_LC.I0
-Info: 0.8 ns logic, 2.2 ns routing
+Info:  0.0  0.0  Source i_Switch_1$sb_io.D_IN_0
+Info:  2.2  2.2    Net i_Switch_1$SB_IO_IN budget 41.243999 ns (13,4) -> (1,9)
+Info:                Sink i_Switch_1_SB_LUT4_I2_LC.I2
+Info:  0.4  2.6  Source i_Switch_1_SB_LUT4_I2_LC.O
+Info:  1.0  3.6    Net i_Switch_1_SB_LUT4_I2_O budget 37.508999 ns (1,9) -> (2,6)
+Info:                Sink it_but_1.cnt_cks_SB_DFFSR_Q_18_D_SB_LUT4_O_LC.I0
+Info:  0.5  4.0  Setup it_but_1.cnt_cks_SB_DFFSR_Q_18_D_SB_LUT4_O_LC.I0
+Info: 0.8 ns logic, 3.2 ns routing
 
 Info: Critical path report for cross-domain path 'posedge i_clk$SB_IO_IN_$glb_clk' -> '<async>':
 Info: curr total
-Info:  0.5  0.5  Source show_clock_SB_LUT4_I3_LC.O
-Info:  1.6  2.1    Net o_LED_1$SB_IO_OUT budget 41.208000 ns (6,9) -> (12,10)
-Info:                Sink io_PMOD_1_SB_LUT4_O_LC.I2
-Info:  0.4  2.5  Source io_PMOD_1_SB_LUT4_O_LC.O
-Info:  0.6  3.1    Net io_PMOD_1$SB_IO_OUT budget 40.655998 ns (12,10) -> (13,11)
-Info:                Sink io_PMOD_1$sb_io.D_OUT_0
-Info: 0.9 ns logic, 2.2 ns routing
+Info:  0.5  0.5  Source disp1.o_Segment_F_SB_DFFSS_Q_D_SB_LUT4_O_LC.O
+Info:  0.6  1.1    Net w_Segment2_F budget 40.893002 ns (1,15) -> (1,15)
+Info:                Sink o_Segment2_F_SB_LUT4_O_LC.I3
+Info:  0.3  1.4  Source o_Segment2_F_SB_LUT4_O_LC.O
+Info:  1.3  2.8    Net o_Segment2_F$SB_IO_OUT budget 40.859001 ns (1,15) -> (0,12)
+Info:                Sink o_Segment2_F$sb_io.D_OUT_0
+Info: 0.9 ns logic, 1.9 ns routing
 
-Info: Max frequency for clock 'i_clk$SB_IO_IN_$glb_clk': 121.17 MHz (PASS at 12.00 MHz)
+Info: Max frequency for clock 'i_clk$SB_IO_IN_$glb_clk': 115.96 MHz (PASS at 12.00 MHz)
 
-Info: Max delay <async>                         -> posedge i_clk$SB_IO_IN_$glb_clk: 3.03 ns
-Info: Max delay posedge i_clk$SB_IO_IN_$glb_clk -> <async>                        : 3.10 ns
+Info: Max delay <async>                         -> posedge i_clk$SB_IO_IN_$glb_clk: 4.04 ns
+Info: Max delay posedge i_clk$SB_IO_IN_$glb_clk -> <async>                        : 2.77 ns
 
 Info: Slack histogram:
-Info:  legend: * represents 1 endpoint(s)
-Info:          + represents [1,1) endpoint(s)
-Info: [ 75080,  75420) |*****************************+
-Info: [ 75420,  75760) |*************+
-Info: [ 75760,  76100) | 
-Info: [ 76100,  76440) | 
-Info: [ 76440,  76780) | 
-Info: [ 76780,  77120) | 
-Info: [ 77120,  77460) |*****+
-Info: [ 77460,  77800) |****** 
-Info: [ 77800,  78140) |********************+
-Info: [ 78140,  78480) |******************+
-Info: [ 78480,  78820) |**************************+
-Info: [ 78820,  79160) |****************** 
-Info: [ 79160,  79500) |*********+
-Info: [ 79500,  79840) |************ 
-Info: [ 79840,  80180) |****+
-Info: [ 80180,  80520) |************************************************************ 
-Info: [ 80520,  80860) |************************************+
-Info: [ 80860,  81200) |********************+
-Info: [ 81200,  81540) |****************************** 
-Info: [ 81540,  81880) |************************+
+Info:  legend: * represents 2 endpoint(s)
+Info:          + represents [1,2) endpoint(s)
+Info: [ 74709,  75068) |+
+Info: [ 75068,  75427) |**********+
+Info: [ 75427,  75786) |*************+
+Info: [ 75786,  76145) |******+
+Info: [ 76145,  76504) | 
+Info: [ 76504,  76863) |+
+Info: [ 76863,  77222) |*****+
+Info: [ 77222,  77581) |*****+
+Info: [ 77581,  77940) |****+
+Info: [ 77940,  78299) |***********************+
+Info: [ 78299,  78658) |***********+
+Info: [ 78658,  79017) |*************+
+Info: [ 79017,  79376) |************************************************************ 
+Info: [ 79376,  79735) |************************************+
+Info: [ 79735,  80094) |*************************+
+Info: [ 80094,  80453) |***********+
+Info: [ 80453,  80812) |*****+
+Info: [ 80812,  81171) |***************+
+Info: [ 81171,  81530) |********+
+Info: [ 81530,  81889) |**********+

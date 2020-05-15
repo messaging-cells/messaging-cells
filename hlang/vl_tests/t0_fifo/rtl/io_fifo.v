@@ -146,7 +146,7 @@ module io_fifo
 	end
 	
 	//SRC_0
-	`NS_ASSIGN_OUT_MSG(o0, ro0)
+	`NS_ASSIGN_MSG(o0, ro0)
 	assign o0_req = ro0_req;
 
 	//SNK_0

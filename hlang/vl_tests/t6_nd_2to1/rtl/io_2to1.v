@@ -220,11 +220,11 @@ module io_2to1
 	end
 	
 	//SRC_0
-	`NS_ASSIGN_OUT_MSG(o0, ro0)
+	`NS_ASSIGN_MSG(o0, ro0)
 	assign o0_req = ro0_req;
 
 	//SRC_1
-	`NS_ASSIGN_OUT_MSG(o1, ro1)
+	`NS_ASSIGN_MSG(o1, ro1)
 	assign o1_req = ro1_req;
 
 	//SNK_0

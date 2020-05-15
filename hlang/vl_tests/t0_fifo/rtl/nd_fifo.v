@@ -73,7 +73,7 @@ module nd_fifo
 	assign gch_ready = rg_rdy;
 	
 	//out1
-	`NS_ASSIGN_OUT_MSG(snd0, rgo0)
+	`NS_ASSIGN_MSG(snd0, rgo0)
 	assign snd0_req = rgo0_req;
 
 	//inp0

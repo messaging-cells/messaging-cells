@@ -407,6 +407,11 @@ public:
 	long 	pw_base = GH_BASE_TWO;
 	long 	num_in = 0;
 	long 	num_out = 0;
+	gh_string_t out_file_name = "";
+	
+	long 	num_direct_channels = 0;
+	long 	num_direct_packets = 0;
+	gh_string_t wrapper_file_name = "";
 	
 	int run_test(gh_str_list_t& lt_args);
 	bool get_args(gh_str_list_t& lt_args);
@@ -1358,8 +1363,10 @@ public:
 	
 };
 
-void gh_print_verilog_send_interface(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
-void gh_print_verilog_receive_interface(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_declare_out_channel(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_declare_in_channel(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_declare_pakout(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_declare_pakin(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
 
 hnode_box*
 gh_get_binnet_sm_to_bm(long num_in, long num_out, const char* dbg_qrt, gh_dbg_call_t dbg_case);
@@ -1449,6 +1456,8 @@ public:
 	void 	print_verilog_target_param(FILE* ff);
 	void 	print_verilog_target_assign(FILE* ff);
 	void 	print_verilog_module_lognet_target_box(FILE* ff);
+	void 	print_verilog_instance_lognet_target_box_for_wrapper(FILE* ff);
+	void 	print_verilog_module_lognet_target_wrapper_box(FILE* ff, long num_direct_chns, long num_direct_paks);
 };
 
 void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_out);

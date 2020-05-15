@@ -102,7 +102,7 @@ module nd_2to1
 	assign gch_ready = rg_rdy && snd0_rdy && rcv0_rdy && rcv1_rdy;
 	
 	//out1
-	`NS_ASSIGN_OUT_MSG(snd0, rgo0)
+	`NS_ASSIGN_MSG(snd0, rgo0)
 	assign snd0_req = rgo0_req;
 
 	//inp0
