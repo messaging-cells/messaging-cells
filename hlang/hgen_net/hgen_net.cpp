@@ -461,17 +461,16 @@ hnode::ck_link(hnode* lnk, gh_io_kind_t kk){
 	return is_nd;
 }
 
-void gh_init_all_addr(pnode_vec_t& all_nd, long fst){
+void
+hnode_box::init_all_addr(){
+	long fst = 0;
+	pnode_vec_t& all_nd = all_nodes;
+	
 	for(long ii = 0; ii < (long)all_nd.size(); ii++){
 		if(all_nd[ii] != gh_null){
 			all_nd[ii]->addr = fst + ii;
 		}
 	}
-}
-	
-void
-hnode_box::init_all_addr(){
-	gh_init_all_addr(all_nodes, 0);
 }
 
 hnode_1to2*

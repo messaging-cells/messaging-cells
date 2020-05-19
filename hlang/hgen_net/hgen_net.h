@@ -55,7 +55,14 @@ typedef const char* gh_c_str_t;
 #define gh_vl_out1 "_out1"
 #define gh_vl_tgt "tg_"
 #define gh_vl_nod "nd_"
-#define gh_vl_tg_mod "target_module_"
+#define gh_vl_tg_rtr_mod "target_router_"
+#define gh_vl_tg_wrp_mod "target_wrapper_"
+#define gh_vl_tg_cor_mod "target_core_"
+#define gh_vl_tgts_lnk "lnk_"
+#define gh_vl_tgts_lnk_sep "_"
+
+#define gh_vl_file_sep "/"
+#define gh_vl_file_ext ".v"
 
 #define gh_vl_snd0 "snd0" // must match 1to2 and 2to1 modules interfaces
 #define gh_vl_snd1 "snd1" // must match 1to2 and 2to1 modules interfaces
@@ -418,6 +425,17 @@ public:
 	void print_help();
 };
 
+class runner_print_verilog_network {
+public:
+	long 	pw_base = GH_BASE_TWO;
+	long 	tot_targets = 1;
+	gh_string_t dir_name = "";
+	
+	int run_test(gh_str_list_t& lt_args);
+	bool get_args(gh_str_list_t& lt_args);
+	void print_help();
+};
+
 class autocomplete_sys {
 public:
 	const char* args_output_name = "autocomplete_choices.txt";
@@ -451,6 +469,7 @@ public:
 	runner_check_all_to_all_paths	rnr_check_all_to_all_paths;
 	
 	runner_print_verilog_target_box	rnr_print_verilog_target_box;
+	runner_print_verilog_network	rnr_print_verilog_network;
 	
 	const char* dbg_LI_quarter = "LI";
 	const char* dbg_LO_quarter = "LO";
@@ -1277,7 +1296,6 @@ void gh_connect_outputs_to_inputs(ppnode_vec_t& out, ppnode_vec_t& in);
 bool gh_move_io(gh_io_kind_t kk, ppnode_vec_t& src, ppnode_vec_t& dst);
 void gh_copy_nodes(pnode_vec_t& src, pnode_vec_t& dst, bool clr_src);
 void gh_move_nodes(pnode_vec_t& src, pnode_vec_t& dst);
-void gh_init_all_addr(pnode_vec_t& all_nd, long fst);
 
 class hnode_box {
 public:
@@ -1450,14 +1468,27 @@ public:
 	virtual
 	void 	print_box(FILE* ff, gh_prt_mode_t md);
 	
-	gh_string_t get_verilog_module_name();
+	bool 	can_verilog_module_have_wrapper(){
+		bool can_wrp = (lft_in.size() == lft_out.size());
+		GH_CK(! can_wrp || (rgt_in.size() == rgt_out.size()));
+		GH_CK(! can_wrp || (rgt_in.size() == lft_in.size()));
+		return can_wrp;
+	}
+	
+	gh_string_t get_verilog_router_module_name();
+	gh_string_t get_verilog_wrapper_module_name();
+	gh_string_t get_verilog_core_module_name();
 	gh_string_t get_verilog_target_param_name(gh_io_kind_t iok);
 
 	void 	print_verilog_target_param(FILE* ff);
 	void 	print_verilog_target_assign(FILE* ff);
-	void 	print_verilog_module_lognet_target_box(FILE* ff);
-	void 	print_verilog_instance_lognet_target_box_for_wrapper(FILE* ff);
-	void 	print_verilog_module_lognet_target_wrapper_box(FILE* ff, long num_direct_chns, long num_direct_paks);
+	
+	void 	print_verilog_module_core(FILE* ff);
+	void 	print_verilog_instance_core(FILE* ff);
+	void 	print_verilog_module_router(FILE* ff);
+	void 	print_verilog_instance_router(FILE* ff);
+	void 	print_verilog_module_wrapper(FILE* ff, long num_direct_chns, long num_direct_paks);
+	void 	print_verilog_instance_wrapper(FILE* ff, long tot_io);
 };
 
 void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_out);
@@ -1504,8 +1535,10 @@ public:
 
 	void 	print_targets(FILE* ff, gh_prt_mode_t md);
 	
+	void 	print_verilog_full_net(gh_string_t& dir_name, long num_elems);
 };
 
+gh_string_t gh_get_verilog_targets_link(long tg1, long tg2, gh_route_side_t sd, long num_lnk);
 void gh_dbg_calc_idx_and_sz(long num_in, long num_out, long bs, long& tg_idx, long& tgs_sz);
 
 
