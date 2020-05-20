@@ -1,7 +1,4 @@
 
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "hgen_net.h"
 
@@ -544,7 +541,8 @@ gh_string_t
 htarget_box::get_verilog_target_param_name(gh_io_kind_t iok){
 	gh_string_t iok_nm = get_verilog_io_kind(iok);
 	GH_CK(target != gh_null);
-	gh_string_t ss = gh_vl_tgt + iok_nm + gh_long_to_string(target->bx_idx);
+	//gh_string_t ss = gh_vl_tgt + iok_nm + gh_long_to_string(target->bx_idx);
+	gh_string_t ss = gh_vl_tgt + iok_nm;
 	return ss;
 }
 
@@ -557,15 +555,15 @@ htarget_box::print_verilog_target_param(FILE* ff){
 }
 
 void
-htarget_box::print_verilog_target_assign(FILE* ff){
-	gh_string_t itf_in_nm = get_verilog_target_param_name(gh_in_kind);
-	gh_string_t itf_out_nm = get_verilog_target_param_name(gh_out_kind);
+htarget_box::print_verilog_router_target_assign(FILE* ff){
+	gh_string_t rcv_nm = get_verilog_target_param_name(gh_in_kind);
+	gh_string_t snd_nm = get_verilog_target_param_name(gh_out_kind);
 	GH_CK(target != gh_null);
-	gh_string_t tg_in_itf_nm = target->get_verilog_receive_node_interface_name(&(target->in0));
-	gh_string_t tg_out_itf_nm = target->get_verilog_send_node_interface_name(&(target->out0));
+	gh_string_t nd_tg_itf_nm = target->get_verilog_receive_node_interface_name(&(target->in0));
+	gh_string_t tg_nd_itf_nm = target->get_verilog_send_node_interface_name(&(target->out0));
 	
-	gh_print_verilog_assign_interface(ff, 1, itf_in_nm, tg_in_itf_nm);
-	gh_print_verilog_assign_interface(ff, 1, itf_out_nm, tg_out_itf_nm);
+	gh_print_verilog_assign_interface(ff, 1, snd_nm, nd_tg_itf_nm);
+	gh_print_verilog_assign_interface(ff, 1, tg_nd_itf_nm, rcv_nm);
 }
 
 void
@@ -654,7 +652,7 @@ module %s
 	
 	gh_print_verilog_code_for_nodes(ff, all_nodes);
 	
-	print_verilog_target_assign(ff);
+	print_verilog_router_target_assign(ff);
 	
 	fprintf(ff, R"base(
 
@@ -742,13 +740,21 @@ gh_print_verilog_instance_params_for_ios(FILE* ff, long tot_io, gh_route_side_t 
 	fflush(ff);
 }
 
+gh_string_t 
+gh_get_core_link_name(long num){
+	gh_string_t nm = gh_vl_tg_core_lnk + gh_long_to_string(num);
+	return nm;
+}
+
 void
 htarget_box::print_verilog_instance_core(FILE* ff){
+	gh_string_t core_rcv = gh_get_core_link_name(0);
+	gh_string_t core_snd = gh_get_core_link_name(1);
 	gh_string_t itf_in_nm = get_verilog_target_param_name(gh_in_kind);
 	gh_string_t itf_out_nm = get_verilog_target_param_name(gh_out_kind);
 	
-	gh_print_verilog_declare_link_interface(ff, 1, itf_in_nm);
-	gh_print_verilog_declare_link_interface(ff, 1, itf_out_nm);
+	gh_print_verilog_declare_link_interface(ff, 1, core_rcv);
+	gh_print_verilog_declare_link_interface(ff, 1, core_snd);
 		
 	fprintf(ff, R"base(
 	%s #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
@@ -756,15 +762,16 @@ htarget_box::print_verilog_instance_core(FILE* ff){
 		`NS_INSTA_GLB_CHNL(gch, gch),
 )base", get_verilog_core_module_name().c_str());
 		
-	gh_print_verilog_instance_receive_interface(ff, 2, itf_in_nm.c_str(), itf_in_nm.c_str(), true);
-	gh_print_verilog_instance_send_interface(ff, 2, itf_out_nm.c_str(), itf_out_nm.c_str(), false);
+	gh_print_verilog_instance_receive_interface(ff, 2, itf_in_nm.c_str(), core_rcv.c_str(), true);
+	gh_print_verilog_instance_send_interface(ff, 2, itf_out_nm.c_str(), core_snd.c_str(), false);
 	fprintf(ff, "\t); \n\n");
 	
 }
 
 void
 htarget_box::print_verilog_instance_router(FILE* ff){
-	
+	gh_string_t core_rcv = gh_get_core_link_name(0);
+	gh_string_t core_snd = gh_get_core_link_name(1);
 	gh_string_t itf_in_nm = get_verilog_target_param_name(gh_in_kind);
 	gh_string_t itf_out_nm = get_verilog_target_param_name(gh_out_kind);
 	
@@ -779,8 +786,8 @@ htarget_box::print_verilog_instance_router(FILE* ff){
 	gh_print_verilog_instance_params_for_ios(ff, (long)rgt_in.size(), gh_right_side, gh_in_kind);
 	gh_print_verilog_instance_params_for_ios(ff, (long)rgt_out.size(), gh_right_side, gh_out_kind);
 	
-	gh_print_verilog_instance_receive_interface(ff, 2, itf_in_nm.c_str(), itf_in_nm.c_str(), true);
-	gh_print_verilog_instance_send_interface(ff, 2, itf_out_nm.c_str(), itf_out_nm.c_str(), false);
+	gh_print_verilog_instance_receive_interface(ff, 2, itf_in_nm.c_str(), core_snd.c_str(), true);
+	gh_print_verilog_instance_send_interface(ff, 2, itf_out_nm.c_str(), core_rcv.c_str(), false);
 	
 	fprintf(ff, "\t); \n\n");
 }
@@ -845,20 +852,6 @@ endmodule
 
 )base");
 	
-}
-
-bool
-gh_make_dir(gh_string_t the_pth, mode_t mod){
-	int resp = mkdir(the_pth.c_str(), mod);
-	return (resp == 0);
-}
-
-bool
-gh_file_exists(gh_string_t th_pth){
-	const char* fname = th_pth.c_str();
-	
-	bool ff_exists = (access(fname, F_OK) != -1);
-	return ff_exists;
 }
 
 gh_string_t 
@@ -928,6 +921,23 @@ htarget_box::print_verilog_instance_wrapper(FILE* ff, long tot_io){
 }
 
 void
+hlognet_box::copy_verilog_foundation_files(gh_string_t& dir_name){
+	gh_string_t fnd_dir = dir_name + gh_path_sep + vl_sub_fnd_dir;
+	GH_CK_PRT(gh_file_exists(fnd_dir), "DIRECTORY %s NOT FOUND. THIS MEANS A BAD INSTALLATION OF THE PROGRAM.", fnd_dir.c_str());
+	gh_string_t exe_dir = gh_path_get_directory(gh_get_executable_path(), false);
+	gh_string_t orig_fnd_dir = exe_dir + gh_path_sep + vl_exe_fnd_dir;
+	GH_CK_PRT(gh_file_exists(orig_fnd_dir), "DIRECTORY %s NOT FOUND. THIS MEANS A BAD INSTALLATION OF THE PROGRAM.", orig_fnd_dir.c_str());
+	
+	for(long aa = 0; aa < (long)(vl_all_fnd_files.size()); aa++){
+		gh_string_t ff_nam = vl_all_fnd_files[aa];
+		gh_string_t src_path = orig_fnd_dir + gh_path_sep + ff_nam;
+		GH_CK_PRT(gh_file_exists(src_path), "FILE %s NOT FOUND. THIS MEANS A BAD INSTALLATION OF THE PROGRAM.", src_path.c_str());
+		gh_string_t dst_path = fnd_dir + gh_path_sep + ff_nam;
+		gh_copy_file(src_path, dst_path, vl_cp_file_buff);
+	}
+}
+
+void
 hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 
 	if(dir_name == ""){
@@ -937,10 +947,21 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 	
 	if(! gh_file_exists(dir_name)){
 		fprintf(stderr, "Cannot find directory %s. Creating dir %s. \n", dir_name.c_str(), dir_name.c_str());
-		gh_make_dir(dir_name, 0700);
+		gh_path_create(dir_name);
 	}
 	
-	gh_string_t net_nam = dir_name + gh_vl_file_sep + dir_name + "_net" + gh_vl_file_ext;
+	gh_string_t rtl_dir = dir_name + gh_path_sep + vl_sub_rtl_dir;
+	gh_string_t net_dir = dir_name + gh_path_sep + vl_sub_net_dir;
+	gh_string_t tgt_dir = dir_name + gh_path_sep + vl_sub_tgt_dir;
+	gh_string_t fnd_dir = dir_name + gh_path_sep + vl_sub_fnd_dir;
+
+	gh_path_create(net_dir);
+	gh_path_create(tgt_dir);
+	gh_path_create(fnd_dir);
+	
+	GH_CK(gh_file_exists(rtl_dir));
+	
+	gh_string_t net_nam = rtl_dir + gh_path_sep + dir_name + "_net" + gh_vl_file_ext;
 	
 	FILE* ff = fopen(net_nam.c_str(), "w");
 	if(ff == NULL){
@@ -963,7 +984,7 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 		
 		bool can_wrp = bx->can_verilog_module_have_wrapper();
 		
-		gh_string_t base_tg_nam = dir_name + gh_vl_file_sep + bx->get_verilog_router_module_name();
+		gh_string_t base_tg_nam = net_dir + gh_path_sep + bx->get_verilog_router_module_name();
 		gh_string_t tg_nam = base_tg_nam + gh_vl_file_ext;
 		FILE* tg_rtr_ff = fopen(tg_nam.c_str(), "w");
 		if(tg_rtr_ff == NULL){
@@ -971,7 +992,7 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 			return;
 		}
 		
-		gh_string_t base_tg_cor_nam = dir_name + gh_vl_file_sep + bx->get_verilog_core_module_name();
+		gh_string_t base_tg_cor_nam = tgt_dir + gh_path_sep + bx->get_verilog_core_module_name();
 		gh_string_t tg_cor_nam = base_tg_cor_nam + gh_vl_file_ext;
 		FILE* tg_cor_ff = fopen(tg_cor_nam.c_str(), "w");
 		if(tg_cor_ff == NULL){
@@ -979,7 +1000,7 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 			return;
 		}
 		
-		gh_string_t base_tg_wrp_nam = dir_name + gh_vl_file_sep + bx->get_verilog_wrapper_module_name();
+		gh_string_t base_tg_wrp_nam = net_dir + gh_path_sep + bx->get_verilog_wrapper_module_name();
 		gh_string_t tg_wrp_nam = base_tg_wrp_nam + gh_vl_file_ext;
 		FILE* tg_wrp_ff = fopen(tg_wrp_nam.c_str(), "w");
 		if(tg_wrp_ff == NULL){
@@ -1012,13 +1033,14 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 		
 	}
 	
+	copy_verilog_foundation_files(dir_name);
 }
 
 void
 runner_print_verilog_network::print_help(){
 	GH_GLOBALS.compl_sys.print_last_complete_arg();
 	FILE* of = GH_GLOBALS.compl_sys.args_compl_output;
-	fprintf(of, "-d <dir_name> <tot_targets> [-pb <pw_base>] \n");
+	fprintf(of, "<dir_name> <tot_targets> [-pb <pw_base>] \n");
 }
 bool
 

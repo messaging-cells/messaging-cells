@@ -147,7 +147,7 @@ gh_args_select_one_of(gh_str_list_t& lt_args, gh_str_set_t& choices, std::string
 }
 
 int
-main(int argc, char *argv[]){
+hgen_net_main(int argc, char *argv[]){
 
 	gh_str_list_t lt_args;
 	GH_GLOBALS.compl_sys.init_autocomplete_sys(lt_args, argc, argv);
@@ -179,3 +179,25 @@ main(int argc, char *argv[]){
 	return resp;
 }
 
+int mini_test_copy_file(int argc, char *argv[]){
+	fprintf(stdout, "mini_test copy_file\n");
+	if(argc < 3){
+		fprintf(stdout, "%s <src> <dst>\n", argv[0]);
+		return -1;
+	}
+	
+	gh_string_t src = argv[1];
+	gh_string_t dst = argv[2];
+	gh_buffer_t buff;
+	
+	gh_copy_file(src, dst, buff);
+	
+	fprintf(stdout, "FINISHED mini_test copy_file\n");
+	return 0;
+}
+
+int
+main(int argc, char *argv[]){
+	//return mini_test_copy_file(argc, argv);
+	return hgen_net_main(argc, argv);
+}

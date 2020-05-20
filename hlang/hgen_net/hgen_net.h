@@ -10,6 +10,7 @@
 #include <math.h>
 #include <assert.h>
 
+#include <array>
 #include <list>
 #include <set>
 #include <vector>
@@ -17,11 +18,11 @@
 #include <sstream>
 
 #include "gh_dbg_util.h"
+#include "gh_file_utils.h"
 
 //using namespace std;
 
 #define gh_vector_t std::vector 
-#define gh_string_t std::string
 
 #define GH_INVALID_IDX -1
 #define GH_INVALID_ADDR -1
@@ -60,8 +61,8 @@ typedef const char* gh_c_str_t;
 #define gh_vl_tg_cor_mod "target_core_"
 #define gh_vl_tgts_lnk "lnk_"
 #define gh_vl_tgts_lnk_sep "_"
+#define gh_vl_tg_core_lnk "tg_cor_lnk_"
 
-#define gh_vl_file_sep "/"
 #define gh_vl_file_ext ".v"
 
 #define gh_vl_snd0 "snd0" // must match 1to2 and 2to1 modules interfaces
@@ -1481,7 +1482,7 @@ public:
 	gh_string_t get_verilog_target_param_name(gh_io_kind_t iok);
 
 	void 	print_verilog_target_param(FILE* ff);
-	void 	print_verilog_target_assign(FILE* ff);
+	void 	print_verilog_router_target_assign(FILE* ff);
 	
 	void 	print_verilog_module_core(FILE* ff);
 	void 	print_verilog_instance_core(FILE* ff);
@@ -1495,6 +1496,26 @@ void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_o
 
 class hlognet_box : public hnode_box {
 public:
+	gh_buffer_t vl_cp_file_buff;
+	gh_string_t vl_exe_fnd_dir = gh_string_t("vlg_fnd");
+	gh_string_t vl_sub_rtl_dir = (gh_string_t("rtl"));
+	gh_string_t vl_sub_net_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("hnet"));
+	gh_string_t vl_sub_tgt_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("targets"));
+	gh_string_t vl_sub_fnd_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("foundation"));
+
+	std::array<gh_string_t, 10> vl_all_fnd_files = { 
+		"calc_redun.v",
+		"debouncer.v",
+		"hglobal.v",
+		"hnull_sink.v",
+		"hnull_source.v",
+		"nd_1to2.v",
+		"nd_2to1.v",
+		"pakin.v",
+		"pakout.v",
+		"tree_nand.v"
+	};
+	
 	long tot_targets;
 	long height;
 	ptarget_vec_t all_targets;
@@ -1535,6 +1556,7 @@ public:
 
 	void 	print_targets(FILE* ff, gh_prt_mode_t md);
 	
+	void 	copy_verilog_foundation_files(gh_string_t& dir_name);
 	void 	print_verilog_full_net(gh_string_t& dir_name, long num_elems);
 };
 
@@ -1555,13 +1577,15 @@ bool gh_args_is_complete_command(gh_str_list_t& lt_args);
 int gh_args_get_complete_index();
 bool gh_args_select_one_of(gh_str_list_t& lt_args, gh_str_set_t& choices, std::string& sel);
 
-	
+
+void gh_copy_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff);
+
 void* run_node_simu(void* pm);
 
-int test_get_target(int argc, char *argv[]);
-int test_hlognet(int argc, char *argv[]);
 int test_hlogne2(gh_str_list_t& lt_args);
 int test_verilog(gh_str_list_t& lt_args);
+
+int mini_test_copy_file(int argc, char *argv[]);
 
 #endif // GEN_HNET_H
 
