@@ -27,6 +27,7 @@
 #define GH_INVALID_IDX -1
 #define GH_INVALID_ADDR -1
 #define GH_INVALID_COMPLETE_IDX -100
+#define GH_INVALID_LNK_NUM -1
 
 #define GH_BASE_TWO 2
 
@@ -56,10 +57,10 @@ typedef const char* gh_c_str_t;
 #define gh_vl_out1 "_out1"
 #define gh_vl_tgt "tg_"
 #define gh_vl_nod "nd_"
-#define gh_vl_tg_rtr_mod "target_router_"
-#define gh_vl_tg_wrp_mod "target_wrapper_"
-#define gh_vl_tg_cor_mod "target_core_"
-#define gh_vl_tgts_lnk "lnk_"
+#define gh_vl_tg_router "_router"
+#define gh_vl_tg_wrapper "_wrapper"
+#define gh_vl_tg_core "_core"
+#define gh_vl_tgts_lnk "_out_lnk_"
 #define gh_vl_tgts_lnk_sep "_"
 #define gh_vl_tg_core_lnk "tg_cor_lnk_"
 
@@ -458,8 +459,6 @@ public:
 	gh_nk_lnk_mod_t CK_LINK_MODE = gh_soft_ck_mod;
 	
 	autocomplete_sys compl_sys;
-	gh_str_set_t all_verilog_declared_interfaces;
-	gh_str_set_t all_verilog_assigned_interfaces;
 
 	runner_get_binnet_m_to_n 		rnr_get_binnet_m_to_n;
 	runner_init_slices				rnr_init_slices;
@@ -730,6 +729,14 @@ get_verilog_io_name(long num, gh_route_side_t sd, gh_io_kind_t iok){
 // end_macro
 
 
+class verilog_file {
+public:
+	FILE* fl = NULL;
+	gh_str_set_t declared_interfaces;
+	gh_str_set_t assigned_interfaces;
+};
+
+
 inline bool gh_is_1to1(gh_hnode_kind_t kk){ return (kk == gh_1_to_1_nod); }
 inline bool gh_is_1to2(gh_hnode_kind_t kk){ return (kk == gh_1_to_2_nod); }
 inline bool gh_is_2to1(gh_hnode_kind_t kk){ return (kk == gh_2_to_1_nod); }
@@ -906,11 +913,11 @@ public:
 };
 
 void gh_print_tabs(FILE* ff, long num_tabs);
-void gh_print_verilog_declare_link_interface(FILE* ff, long num_tabs, gh_string_t itf_nm);
-void gh_print_verilog_assign_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2);
-void gh_print_verilog_instance_send_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, 
+void gh_print_verilog_declare_link_interface(verilog_file& ff, long num_tabs, gh_string_t itf_nm);
+void gh_print_verilog_assign_interface(verilog_file& ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2);
+void gh_print_verilog_instance_send_interface(verilog_file& ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, 
 											  bool with_final_comma = true);
-void gh_print_verilog_instance_receive_interface(FILE* ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, 
+void gh_print_verilog_instance_receive_interface(verilog_file& ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, 
 												 bool with_final_comma = true);
 
 class hnode_1to1 : public hnode {
@@ -1196,7 +1203,7 @@ public:
 	gh_string_t get_verilog_oper_2();
 	gh_string_t get_verilog_ref_val_2();
 	
-	void print_verilog_1to2_instance(FILE* ff, long idx);
+	void print_verilog_1to2_instance(verilog_file& ff, long idx);
 };
 
 class hnode_2to1 : public hnode {
@@ -1272,12 +1279,9 @@ public:
 	void run_2to1_simu();
 	void run_2to1_buff_simu();
 
-	void print_verilog_2to1_instance(FILE* ff, long idx);
+	void print_verilog_2to1_instance(verilog_file& ff, long idx);
 	
 };
-
-void gh_verilog_write_module_lognet_1to2_node(FILE* ff);
-void gh_verilog_write_module_lognet_2to1_node(FILE* ff);
 
 long 	gh_get_first_null_idx(ppnode_vec_t& vec);
 bool 	gh_is_free_io(hnode** io);
@@ -1382,10 +1386,10 @@ public:
 	
 };
 
-void gh_print_verilog_declare_out_channel(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
-void gh_print_verilog_declare_in_channel(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
-void gh_print_verilog_declare_pakout(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
-void gh_print_verilog_declare_pakin(FILE* ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_declare_out_channel(verilog_file& ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_declare_in_channel(verilog_file& ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_declare_pakout(verilog_file& ff, gh_string_t itf_nm, bool with_final_comma = true);
+void gh_print_verilog_declare_pakin(verilog_file& ff, gh_string_t itf_nm, bool with_final_comma = true);
 
 hnode_box*
 gh_get_binnet_sm_to_bm(long num_in, long num_out, const char* dbg_qrt, gh_dbg_call_t dbg_case);
@@ -1426,13 +1430,17 @@ void
 gh_init_quarter(ppnode_vec_t qrt, gh_addr_t tg_addr, char* qrt_nm);
 
 void
-gh_print_verilog_assigns_for_ios(FILE* ff, ppnode_vec_t& all_io, gh_route_side_t sd, gh_io_kind_t iot);
+gh_print_verilog_assigns_for_ios(verilog_file& ff, ppnode_vec_t& all_io, gh_route_side_t sd, gh_io_kind_t iot);
 
 void
-gh_print_verilog_params_for_ios(FILE* ff, ppnode_vec_t& all_io, gh_route_side_t sd, gh_io_kind_t iot);
+gh_print_verilog_code_for_nodes(verilog_file& ff, pnode_vec_t& all_nd);
 
-void
-gh_print_verilog_code_for_nodes(FILE* ff, pnode_vec_t& all_nd);
+enum gh_verilog_print_op_t {
+	gh_vl_declare_param_op,
+	gh_vl_declare_link_op,
+	gh_vl_instance_net_op,
+	gh_vl_instance_wrapper_op
+};
 
 class htarget_box : public hnode_box {
 public:
@@ -1480,16 +1488,35 @@ public:
 	gh_string_t get_verilog_wrapper_module_name();
 	gh_string_t get_verilog_core_module_name();
 	gh_string_t get_verilog_target_param_name(gh_io_kind_t iok);
+	gh_string_t get_verilog_target_link_name(long lnk, gh_route_side_t sd, gh_io_kind_t iok);
 
-	void 	print_verilog_target_param(FILE* ff);
-	void 	print_verilog_router_target_assign(FILE* ff);
+	void 	print_verilog_target_param(verilog_file& ff);
+	void 	print_verilog_router_target_assign(verilog_file& ff);
 	
-	void 	print_verilog_module_core(FILE* ff);
-	void 	print_verilog_instance_core(FILE* ff);
-	void 	print_verilog_module_router(FILE* ff);
-	void 	print_verilog_instance_router(FILE* ff);
-	void 	print_verilog_module_wrapper(FILE* ff, long num_direct_chns, long num_direct_paks);
-	void 	print_verilog_instance_wrapper(FILE* ff, long tot_io);
+	void 	print_verilog_module_core(verilog_file& ff);
+	void 	print_verilog_instance_core(verilog_file& ff);
+	void 	print_verilog_module_router(verilog_file& ff);
+	void 	print_verilog_instance_router(verilog_file& ff);
+	void 	print_verilog_module_wrapper(verilog_file& ff, long num_direct_chns, long num_direct_paks);
+	void 	print_verilog_instance_wrapper(verilog_file& ff, long num_direct_chns, long num_direct_paks);
+	
+	void 	print_verilog_all_params(verilog_file& vff, gh_verilog_print_op_t op, 
+									 long num_direct_chns, long num_direct_paks, bool with_final_comma);
+	
+	void 	print_verilog_instance_io_net(verilog_file& vff, gh_string_t io_nm, long lnk_idx, 
+										  gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma);
+	void 	print_verilog_declare_io_link_net(verilog_file& vff, long lnk_idx, gh_route_side_t sd, gh_io_kind_t iok);
+	void 	print_verilog_declare_pakio_link_net(verilog_file& vff, long lnk_idx, gh_route_side_t sd, gh_io_kind_t iok);
+	
+	void 	print_verilog_instance_io_wrapper(verilog_file& vff, gh_string_t io_nm, gh_io_kind_t iok, bool with_final_comma);
+	
+	void	print_verilog_params_for_ios(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_io, 
+										 gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma);
+	void	print_verilog_params_for_direct_packets(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_core_ios, 
+										   long num_direct_ios, gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma);
+	void	print_verilog_params_for_direct_channels(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_core_ios, 
+											long num_direct_ios, gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma);
+
 };
 
 void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_out);
