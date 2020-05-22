@@ -65,6 +65,9 @@ typedef const char* gh_c_str_t;
 #define gh_vl_tg_core_lnk "tg_cor_lnk_"
 
 #define gh_vl_file_ext ".v"
+#define gh_ivl_comm_file_nm "ivl_commands.ivl"
+#define gh_vrt_comm_file_nm "vtr_commands.vtr"
+#define gh_yos_comm_file_nm "yos_commands.tcl"
 
 #define gh_vl_snd0 "snd0" // must match 1to2 and 2to1 modules interfaces
 #define gh_vl_snd1 "snd1" // must match 1to2 and 2to1 modules interfaces
@@ -1510,11 +1513,11 @@ public:
 	
 	void 	print_verilog_instance_io_wrapper(verilog_file& vff, gh_string_t io_nm, gh_io_kind_t iok, bool with_final_comma);
 	
-	void	print_verilog_params_for_ios(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_io, 
+	void	print_verilog_params_for_ios(verilog_file& vff, gh_verilog_print_op_t op, long tot_io, 
 										 gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma);
-	void	print_verilog_params_for_direct_packets(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_core_ios, 
+	void	print_verilog_params_for_direct_packets(verilog_file& vff, gh_verilog_print_op_t op, long tot_core_ios, 
 										   long num_direct_ios, gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma);
-	void	print_verilog_params_for_direct_channels(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_core_ios, 
+	void	print_verilog_params_for_direct_channels(verilog_file& vff, gh_verilog_print_op_t op, long tot_core_ios, 
 											long num_direct_ios, gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma);
 
 };
@@ -1529,6 +1532,10 @@ public:
 	gh_string_t vl_sub_net_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("hnet"));
 	gh_string_t vl_sub_tgt_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("targets"));
 	gh_string_t vl_sub_fnd_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("foundation"));
+	
+	FILE* ivl_comm_fl = NULL;
+	FILE* vtr_comm_fl = NULL;
+	FILE* yos_comm_fl = NULL;
 
 	std::array<gh_string_t, 10> vl_all_fnd_files = { 
 		"calc_redun.v",
@@ -1584,6 +1591,17 @@ public:
 	void 	print_targets(FILE* ff, gh_prt_mode_t md);
 	
 	void 	copy_verilog_foundation_files(gh_string_t& dir_name);
+
+	void	print_verilog_file_name_to_iverilog_file(FILE* ff, gh_string_t nm);
+	void	print_verilog_file_name_to_verilator_file(FILE* ff, gh_string_t nm);
+	void	print_verilog_file_name_to_yosys_file(FILE* ff, gh_string_t nm);
+	
+	void	print_verilog_file_name_to_command_files(gh_string_t nm){
+		print_verilog_file_name_to_iverilog_file(ivl_comm_fl, nm);
+		print_verilog_file_name_to_verilator_file(vtr_comm_fl, nm);
+		print_verilog_file_name_to_yosys_file(yos_comm_fl, nm);
+	}
+	
 	void 	print_verilog_full_net(gh_string_t& dir_name, long num_elems);
 };
 

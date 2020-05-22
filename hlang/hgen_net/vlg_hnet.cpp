@@ -552,13 +552,12 @@ htarget_box::print_verilog_instance_io_wrapper(verilog_file& vff, gh_string_t io
 }
 
 void
-htarget_box::print_verilog_params_for_ios(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_io, 
+htarget_box::print_verilog_params_for_ios(verilog_file& vff, gh_verilog_print_op_t op, long tot_io, 
 										  gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma)
 {
 	FILE* ff = vff.fl;
 	fflush(ff);
 	
-	long lnk_idx = from_lnk;
 	for(long ii = 0; ii < tot_io; ii++){
 		gh_string_t io_nm = get_verilog_io_name(ii, sd, iok);
 		bool with_comma = (with_final_comma || (ii < (tot_io - 1)));
@@ -577,18 +576,17 @@ htarget_box::print_verilog_params_for_ios(verilog_file& vff, gh_verilog_print_op
 			GH_CK(op == gh_vl_instance_wrapper_op);
 			print_verilog_instance_io_wrapper(vff, io_nm, iok, with_comma);
 		}
-		lnk_idx++;
 	}
 	fflush(ff);
 }
 
 void
 gh_print_verilog_code_for_nodes(verilog_file& vff, pnode_vec_t& all_nd){
-	FILE* ff = vff.fl;
+	//FILE* ff = vff.fl;
 	for(long ii = 0; ii < (long)all_nd.size(); ii++){
 		hnode* the_nd = all_nd[ii];
 		GH_CK(the_nd != gh_null);
-		fprintf(ff, "\t// node: (%p)\n", (void*)the_nd);
+		//fprintf(ff, "\t// node: (%p)\n", (void*)the_nd);
 		if(the_nd->is_1to2()){
 			hnode_1to2* nd = (hnode_1to2*)the_nd;
 			nd->print_verilog_1to2_instance(vff, ii);
@@ -765,13 +763,12 @@ endmodule
 }
 
 void
-htarget_box::print_verilog_params_for_direct_channels(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_core_ios, 
+htarget_box::print_verilog_params_for_direct_channels(verilog_file& vff, gh_verilog_print_op_t op, long tot_core_ios, 
 											long num_direct_ios, gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma)
 {
 	FILE* ff = vff.fl;
 	fflush(ff);
 	
-	long lnk_idx = from_lnk;
 	for(long ii = 0; ii < num_direct_ios; ii++){
 		long id_io = tot_core_ios + ii;
 		gh_string_t io_nm = get_verilog_io_name(id_io, sd, iok);
@@ -789,19 +786,17 @@ htarget_box::print_verilog_params_for_direct_channels(verilog_file& vff, gh_veri
 			GH_CK(op == gh_vl_instance_net_op);
 			print_verilog_instance_io_net(vff, io_nm, id_io, sd, iok, with_comma);
 		}
-		lnk_idx++;
 	}
 	fflush(ff);
 }
 
 void
-htarget_box::print_verilog_params_for_direct_packets(verilog_file& vff, gh_verilog_print_op_t op, long from_lnk, long tot_core_ios, 
+htarget_box::print_verilog_params_for_direct_packets(verilog_file& vff, gh_verilog_print_op_t op, long tot_core_ios, 
 										   long num_direct_ios, gh_route_side_t sd, gh_io_kind_t iok, bool with_final_comma)
 {
 	FILE* ff = vff.fl;
 	fflush(ff);
 	
-	long lnk_idx = from_lnk;
 	for(long ii = 0; ii < num_direct_ios; ii++){
 		long id_io = tot_core_ios + ii;
 		gh_string_t io_nm = get_verilog_io_name(id_io, sd, iok);
@@ -819,7 +814,6 @@ htarget_box::print_verilog_params_for_direct_packets(verilog_file& vff, gh_veril
 			GH_CK(op == gh_vl_instance_net_op);
 			print_verilog_instance_io_net(vff, io_nm, id_io, sd, iok, with_comma);
 		}
-		lnk_idx++;
 	}
 	fflush(ff);
 }
@@ -855,23 +849,6 @@ gh_print_verilog_assigns_for_direct_ios(verilog_file& vff, long tot_core_ios, lo
 	fprintf(ff, "\n\n");
 	fflush(ff);
 }
-
-/*
-void
-gh_print_verilog_instance_params_for_ios(verilog_file& vff, long tot_io, gh_route_side_t sd, gh_io_kind_t iok){
-	FILE* ff = vff.fl;
-	fflush(ff);
-	for(long ii = 0; ii < tot_io; ii++){
-		gh_string_t io_nm = get_verilog_io_name(ii, sd, iok);
-		if(iok == gh_in_kind){
-			gh_print_verilog_instance_receive_interface(vff, 2, io_nm.c_str(), io_nm.c_str(), true);
-		} else {
-			gh_print_verilog_instance_send_interface(vff, 2, io_nm.c_str(), io_nm.c_str(), true);
-		}
-	}
-	fflush(ff);
-}
-*/
 
 gh_string_t 
 gh_get_core_link_name(long num){
@@ -929,76 +906,49 @@ htarget_box::print_verilog_all_params(verilog_file& vff, gh_verilog_print_op_t o
 									  long num_direct_chns, long num_direct_paks, bool with_final_comma)
 {
 	FILE* ff = vff.fl;
-	bool can_have_direct = can_verilog_module_have_wrapper();
-	bool has_direct = can_have_direct && ((num_direct_chns > 0) || (num_direct_paks > 0));
+	bool has_direct = can_verilog_module_have_wrapper() && ((num_direct_chns > 0) || (num_direct_paks > 0));
+	bool prt_lst_comma = (with_final_comma || has_direct);
+	
+	long lft_in_sz = (long)lft_in.size();
+	long lft_out_sz = (long)lft_out.size();
+	long rgt_in_sz = (long)rgt_in.size();
+	long rgt_out_sz = (long)rgt_out.size();
+	
+	bool end_aft_1 = ((lft_out_sz + rgt_in_sz + rgt_out_sz) == 0);
+	bool end_aft_2 = ((rgt_in_sz + rgt_out_sz) == 0);
+	bool end_aft_3 = (rgt_out_sz == 0);
 
-	//fprintf(ff, "\n\n");
-	fprintf(ff, "\t\t// ALL_ROUTER_CHNLS\n");
-	
-	long from_lnk = 0;
-	long tot_pm = 0;
-	
-	from_lnk = 0; 
-	tot_pm = (long)lft_in.size();
-	print_verilog_params_for_ios(vff, op, from_lnk, tot_pm, gh_left_side, gh_in_kind, true);
-	from_lnk += tot_pm;
-	
-	tot_pm = (long)lft_out.size();
-	print_verilog_params_for_ios(vff, op, from_lnk, tot_pm, gh_left_side, gh_out_kind, true);
-	from_lnk += tot_pm;
-	
-	tot_pm = (long)rgt_in.size();
-	print_verilog_params_for_ios(vff, op, from_lnk, tot_pm, gh_right_side, gh_in_kind, true);
-	from_lnk += tot_pm;
-	
-	tot_pm = (long)rgt_out.size();
-	print_verilog_params_for_ios(vff, op, from_lnk, tot_pm, gh_right_side, gh_out_kind, (with_final_comma || has_direct));
-	from_lnk += tot_pm;
+	fprintf(ff, "\t\t// ALL_ROUTER_CHNLS wfc=%d hd=%d\n", with_final_comma, has_direct);
+	print_verilog_params_for_ios(vff, op, lft_in_sz, gh_left_side, gh_in_kind, (! end_aft_1 || prt_lst_comma));
+	print_verilog_params_for_ios(vff, op, lft_out_sz, gh_left_side, gh_out_kind, (! end_aft_2 || prt_lst_comma));
+	print_verilog_params_for_ios(vff, op, rgt_in_sz, gh_right_side, gh_in_kind, (! end_aft_3 || prt_lst_comma));
+	print_verilog_params_for_ios(vff, op, rgt_out_sz, gh_right_side, gh_out_kind, prt_lst_comma);
 	
 	if(has_direct){
 		GH_CK(rgt_in.size() == rgt_out.size());
 		GH_CK(rgt_in.size() == lft_in.size());
-		long from_pm = tot_pm;
+		long from_pm = lft_in_sz;
 		
 		bool has_paks = (num_direct_paks > 0);
 		
 		if(num_direct_chns > 0){
 			bool with_lst_comma = (has_paks || with_final_comma);
 			
-			//fprintf(ff, "\n\n");
 			fprintf(ff, "\t\t// ALL_DIRECT_CHNLS\n");
-			
-			print_verilog_params_for_direct_channels(vff, op, from_lnk, from_pm, num_direct_chns, gh_left_side, gh_in_kind, true);
-			from_lnk += num_direct_chns;
-			
-			print_verilog_params_for_direct_channels(vff, op, from_lnk, from_pm, num_direct_chns, gh_left_side, gh_out_kind, true);
-			from_lnk += num_direct_chns;
-			
-			print_verilog_params_for_direct_channels(vff, op, from_lnk, from_pm, num_direct_chns, gh_right_side, gh_in_kind, true);
-			from_lnk += num_direct_chns;
-			
-			print_verilog_params_for_direct_channels(vff, op, from_lnk, from_pm, num_direct_chns, gh_right_side, gh_out_kind, with_lst_comma);
-			from_lnk += num_direct_chns;
+			print_verilog_params_for_direct_channels(vff, op, from_pm, num_direct_chns, gh_left_side, gh_in_kind, true);
+			print_verilog_params_for_direct_channels(vff, op, from_pm, num_direct_chns, gh_left_side, gh_out_kind, true);
+			print_verilog_params_for_direct_channels(vff, op, from_pm, num_direct_chns, gh_right_side, gh_in_kind, true);
+			print_verilog_params_for_direct_channels(vff, op, from_pm, num_direct_chns, gh_right_side, gh_out_kind, with_lst_comma);
 		}
 		
 		if(has_paks){
-
-			from_pm = tot_pm + num_direct_chns;
+			from_pm += num_direct_chns;
 			
-			//fprintf(ff, "\n\n");
 			fprintf(ff, "\t\t// ALL_DIRECT_PACKS\n");
-			
-			print_verilog_params_for_direct_packets(vff, op, from_lnk, from_pm, num_direct_paks, gh_left_side, gh_in_kind, true);
-			from_lnk += num_direct_paks;
-			
-			print_verilog_params_for_direct_packets(vff, op, from_lnk, from_pm, num_direct_paks, gh_left_side, gh_out_kind, true);
-			from_lnk += num_direct_paks;
-			
-			print_verilog_params_for_direct_packets(vff, op, from_lnk, from_pm, num_direct_paks, gh_right_side, gh_in_kind, true);
-			from_lnk += num_direct_paks;
-			
-			print_verilog_params_for_direct_packets(vff, op, from_lnk, from_pm, num_direct_paks, gh_right_side, gh_out_kind, with_final_comma);
-			from_lnk += num_direct_paks;
+			print_verilog_params_for_direct_packets(vff, op, from_pm, num_direct_paks, gh_left_side, gh_in_kind, true);
+			print_verilog_params_for_direct_packets(vff, op, from_pm, num_direct_paks, gh_left_side, gh_out_kind, true);
+			print_verilog_params_for_direct_packets(vff, op, from_pm, num_direct_paks, gh_right_side, gh_in_kind, true);
+			print_verilog_params_for_direct_packets(vff, op, from_pm, num_direct_paks, gh_right_side, gh_out_kind, with_final_comma);
 		}
 	}
 
@@ -1071,24 +1021,6 @@ gh_print_verilog_declare_all_link_target_wrapper_param(verilog_file& vff, long t
 	fflush(ff);
 }
 
-/*
-void
-gh_print_verilog_instance_target_wrapper_param(verilog_file& vff, long tot_io, long tg1, long tg2, gh_route_side_t sd, gh_io_kind_t iok){
-	FILE* ff = vff.fl;
-	fflush(ff);
-	for(long ii = 0; ii < tot_io; ii++){
-		gh_string_t lnk_nm = gh_get_verilog_targets_link(tg1, tg2, sd, ii);
-		gh_string_t io_nm = get_verilog_io_name(ii, sd, iok);
-		if(iok == gh_in_kind){
-			gh_print_verilog_instance_receive_interface(vff, 2, io_nm.c_str(), lnk_nm.c_str(), true);
-		} else {
-			gh_print_verilog_instance_send_interface(vff, 2, io_nm.c_str(), lnk_nm.c_str(), true);
-		}
-	}
-	fflush(ff);
-}
-*/
-
 void
 htarget_box::print_verilog_instance_wrapper(verilog_file& vff, long num_direct_chns, long num_direct_paks){
 	FILE* ff = vff.fl;
@@ -1121,7 +1053,24 @@ hlognet_box::copy_verilog_foundation_files(gh_string_t& dir_name){
 		GH_CK_PRT(gh_file_exists(src_path), "FILE %s NOT FOUND. THIS MEANS A BAD INSTALLATION OF THE PROGRAM.", src_path.c_str());
 		gh_string_t dst_path = fnd_dir + gh_path_sep + ff_nam;
 		gh_copy_file(src_path, dst_path, vl_cp_file_buff);
+		
+		print_verilog_file_name_to_command_files(vl_sub_fnd_dir + gh_path_sep + ff_nam);
 	}
+}
+
+void
+hlognet_box::print_verilog_file_name_to_iverilog_file(FILE* ff, gh_string_t nm){
+	fprintf(ff, "%s\n", nm.c_str());
+}
+
+void
+hlognet_box::print_verilog_file_name_to_verilator_file(FILE* ff, gh_string_t nm){
+	fprintf(ff, "%s\n", nm.c_str());
+}
+
+void
+hlognet_box::print_verilog_file_name_to_yosys_file(FILE* ff, gh_string_t nm){
+	fprintf(ff, "%s\n", nm.c_str());
 }
 
 void
@@ -1148,16 +1097,41 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 	
 	GH_CK(gh_file_exists(rtl_dir));
 	
-	gh_string_t net_nam = dir_name + "_net";
-	gh_string_t net_ff_nam = rtl_dir + gh_path_sep + net_nam + gh_vl_file_ext;
+	gh_string_t ivl_cmm_ff_nam = dir_name + gh_path_sep + gh_ivl_comm_file_nm;
+	gh_string_t vtr_cmm_ff_nam = dir_name + gh_path_sep + gh_vrt_comm_file_nm;
+	gh_string_t yos_cmm_ff_nam = dir_name + gh_path_sep + gh_yos_comm_file_nm;
+
+	ivl_comm_fl = fopen(ivl_cmm_ff_nam.c_str(), "w");
+	if(ivl_comm_fl == NULL){
+		fprintf(stderr, "Cannot open file %s for writing !!\n", ivl_cmm_ff_nam.c_str());
+		return;
+	}
 	
-	FILE* ff = fopen(net_ff_nam.c_str(), "w");
+	vtr_comm_fl = fopen(vtr_cmm_ff_nam.c_str(), "w");
+	if(vtr_comm_fl == NULL){
+		fprintf(stderr, "Cannot open file %s for writing !!\n", vtr_cmm_ff_nam.c_str());
+		return;
+	}
+	
+	yos_comm_fl = fopen(yos_cmm_ff_nam.c_str(), "w");
+	if(yos_comm_fl == NULL){
+		fprintf(stderr, "Cannot open file %s for writing !!\n", yos_cmm_ff_nam.c_str());
+		return;
+	}
+	
+	gh_string_t net_nam = dir_name + "_net";
+	gh_string_t net_ff_nm = net_nam + gh_vl_file_ext;
+	gh_string_t net_path = rtl_dir + gh_path_sep + net_ff_nm;
+	
+	FILE* ff = fopen(net_path.c_str(), "w");
 	if(ff == NULL){
-		fprintf(stderr, "Cannot open file %s for writing !!\n", net_ff_nam.c_str());
+		fprintf(stderr, "Cannot open file %s for writing !!\n", net_path.c_str());
 		return;
 	}
 	verilog_file vff;
 	vff.fl = ff;
+
+	print_verilog_file_name_to_command_files(vl_sub_rtl_dir + gh_path_sep + net_ff_nm);
 	
 	slice_vec tgt_addrs;
 
@@ -1190,29 +1164,32 @@ module %s
 		
 		bool can_wrp = bx->can_verilog_module_have_wrapper();
 		
-		gh_string_t base_tg_nam = net_dir + gh_path_sep + bx->get_verilog_router_module_name();
-		gh_string_t tg_nam = base_tg_nam + gh_vl_file_ext;
-		FILE* tg_rtr_ff = fopen(tg_nam.c_str(), "w");
+		gh_string_t tg_ff_nam = bx->get_verilog_router_module_name() + gh_vl_file_ext;
+		gh_string_t tg_path = net_dir + gh_path_sep + tg_ff_nam;
+		FILE* tg_rtr_ff = fopen(tg_path.c_str(), "w");
 		if(tg_rtr_ff == NULL){
-			fprintf(stderr, "Cannot open file %s for writing !!\n", tg_nam.c_str());
+			fprintf(stderr, "Cannot open file %s for writing !!\n", tg_path.c_str());
 			return;
 		}
+		print_verilog_file_name_to_command_files(vl_sub_net_dir + gh_path_sep + tg_ff_nam);
 		
-		gh_string_t base_tg_cor_nam = tgt_dir + gh_path_sep + bx->get_verilog_core_module_name();
-		gh_string_t tg_cor_nam = base_tg_cor_nam + gh_vl_file_ext;
-		FILE* tg_cor_ff = fopen(tg_cor_nam.c_str(), "w");
+		gh_string_t cor_ff_nam = bx->get_verilog_core_module_name() + gh_vl_file_ext;
+		gh_string_t tg_cor_path = tgt_dir + gh_path_sep + cor_ff_nam;
+		FILE* tg_cor_ff = fopen(tg_cor_path.c_str(), "w");
 		if(tg_cor_ff == NULL){
-			fprintf(stderr, "Cannot open file %s for writing !!\n", tg_cor_nam.c_str());
+			fprintf(stderr, "Cannot open file %s for writing !!\n", tg_cor_path.c_str());
 			return;
 		}
+		print_verilog_file_name_to_command_files(vl_sub_tgt_dir + gh_path_sep + cor_ff_nam);
 		
-		gh_string_t base_tg_wrp_nam = net_dir + gh_path_sep + bx->get_verilog_wrapper_module_name();
-		gh_string_t tg_wrp_nam = base_tg_wrp_nam + gh_vl_file_ext;
-		FILE* tg_wrp_ff = fopen(tg_wrp_nam.c_str(), "w");
+		gh_string_t wrp_ff_nam = bx->get_verilog_wrapper_module_name() + gh_vl_file_ext;
+		gh_string_t tg_wrp_path = net_dir + gh_path_sep + wrp_ff_nam;
+		FILE* tg_wrp_ff = fopen(tg_wrp_path.c_str(), "w");
 		if(tg_wrp_ff == NULL){
-			fprintf(stderr, "Cannot open file %s for writing !!\n", tg_wrp_nam.c_str());
+			fprintf(stderr, "Cannot open file %s for writing !!\n", tg_wrp_path.c_str());
 			return;
 		}
+		print_verilog_file_name_to_command_files(vl_sub_net_dir + gh_path_sep + wrp_ff_nam);
 		
 		long tot_lft_out = (long)(bx->lft_out.size());
 		if(aa == 0){
@@ -1237,13 +1214,6 @@ module %s
 		bx->print_verilog_module_core(tg_cor_vff);
 		bx->print_verilog_module_router(tg_rtr_vff);
 		bx->print_verilog_module_wrapper(tg_wrp_vff, num_direct_channels, num_direct_packets);
-		
-		/*
-		if(aa < (num_elems - 1)){
-			gh_print_verilog_declare_all_link_target_wrapper_param(vff, tot_channels, aa, aa + 1, gh_left_side);
-			gh_print_verilog_declare_all_link_target_wrapper_param(vff, tot_channels, aa, aa + 1, gh_right_side);
-			
-		}*/
 		
 		bx->print_verilog_instance_wrapper(vff, num_direct_channels, num_direct_packets);
 		
