@@ -46,8 +46,8 @@ module nd_2to1
 	
 	reg [0:0] choose_0 = `NS_FALSE;
 	
-	wire in0_rq = (rcv0_req && (! rgi0_ack));
-	wire in1_rq = (rcv1_req && (! rgi1_ack));
+	wire in0_rq = (rcv0_ckd_req && (! rgi0_ack));
+	wire in1_rq = (rcv1_ckd_req && (! rgi1_ack));
 
 	always @(posedge gch_clk)
 	begin
@@ -88,12 +88,12 @@ module nd_2to1
 			end
 			`NS_FIFO_ACK_ADDED_HEAD(bf0, rgi1_ack, rgi1_added_hd)
 
-			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
+			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ckd_ack, rgo0_req, rgo0_busy);
 			
-			if((! rcv0_req) && rgi0_ack) begin
+			if((! rcv0_ckd_req) && rgi0_ack) begin
 				rgi0_ack <= `NS_OFF;
 			end
-			if((! rcv1_req) && rgi1_ack) begin
+			if((! rcv1_ckd_req) && rgi1_ack) begin
 				rgi1_ack <= `NS_OFF;
 			end
 		end

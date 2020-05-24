@@ -77,7 +77,7 @@ module nd_1to2
 			`NS_FIFO_INIT(bf1)
 		end
 		if(! gch_reset && rg_rdy) begin
-			if(rcv0_req && (! rgi0_ack)) begin
+			if(rcv0_ckd_req && (! rgi0_ack)) begin
 				if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, rcv0_dst, OPER_2, REF_VAL_2, rcv0_dst)) begin
 					`NS_FIFO_TRY_ADD_HEAD(bf0, rcv0, rgo0_added_hd);
 				end else begin
@@ -87,10 +87,10 @@ module nd_1to2
 			`NS_FIFO_ACK_ADDED_HEAD(bf0, rgi0_ack, rgo0_added_hd)
 			`NS_FIFO_ACK_ADDED_HEAD(bf1, rgi0_ack, rgo1_added_hd)
 			
-			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
-			`NS_FIFO_TRY_SET_OUT(bf1, rgo1, snd1_ack, rgo1_req, rgo1_busy);
+			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ckd_ack, rgo0_req, rgo0_busy);
+			`NS_FIFO_TRY_SET_OUT(bf1, rgo1, snd1_ckd_ack, rgo1_req, rgo1_busy);
 			
-			if((! rcv0_req) && rgi0_ack) begin
+			if((! rcv0_ckd_req) && rgi0_ack) begin
 				rgi0_ack <= `NS_OFF;
 			end
 		end

@@ -265,40 +265,40 @@
 `define NS_DECLARE_OUT_CHNL(nam) \
 	`NS_DECLARE_OUT_MSG(nam), \
 	output wire nam``_req, \
-	input wire nam``_ack_dirty
+	input wire nam``_tmp_ak
 
 
 `define NS_DECLARE_IN_CHNL(nam) \
 	`NS_DECLARE_IN_MSG(nam), \
-	input wire nam``_req_dirty, \
+	input wire nam``_tmp_rq, \
 	output wire nam``_ack
 
 
-`define NS_ASSIGN_OUT_CHNL_FROM_IN_CHNL(ou, in) \
-	`NS_ASSIGN_MSG(ou, in), \
-	assign ou``_req = in``_req_dirty; \
-	assign ou``_ack_dirty = in``_ack;
+`define NS_ASSIGN_OUT_CHNL_FROM_IN_CHNL(ou_ch, in_ch) \
+	`NS_ASSIGN_MSG(ou_ch, in_ch), \
+	assign ou_ch``_req = in_ch``_tmp_rq; \
+	assign ou_ch``_tmp_ak = in_ch``_ack;
 
 
 `define NS_DEBOUNCER_REQ(clk, rst, nam) \
 	wire nam``_rdy; \
-	wire nam``_req; \
+	wire nam``_ckd_req; \
 	debouncer #(.TOT_CKS(RCV_REQ_CKS)) \
-	it_``nam``_req( \
+	it_check_``nam``_req( \
 		`NS_INSTA_GLB_CHNL_VALS(gch, clk, rst, nam``_rdy), \
-		.bouncing(nam``_req_dirty), \
-		.steady(nam``_req) \
+		.bouncing(nam``_tmp_rq), \
+		.steady(nam``_ckd_req) \
 	);
 
 
 `define NS_DEBOUNCER_ACK(clk, rst, nam) \
 	wire nam``_rdy; \
-	wire nam``_ack; \
+	wire nam``_ckd_ack; \
 	debouncer #(.TOT_CKS(SND_ACK_CKS)) \
-	it_``nam``_ack( \
+	it_check_``nam``_ack( \
 		`NS_INSTA_GLB_CHNL_VALS(gch, clk, rst, nam``_rdy), \
-		.bouncing(nam``_ack_dirty), \
-		.steady(nam``_ack) \
+		.bouncing(nam``_tmp_ak), \
+		.steady(nam``_ckd_ack) \
 	);
 
 
@@ -321,12 +321,12 @@
 `define NS_INSTA_SND_CHNL(chn, lnk) \
 	`NS_INSTA_MSG_CHNL(chn, lnk), \
 	.chn``_req(lnk``_req), \
-	.chn``_ack_dirty(lnk``_ack)
+	.chn``_tmp_ak(lnk``_ack)
 
 
 `define NS_INSTA_RCV_CHNL(chn, lnk) \
 	`NS_INSTA_MSG_CHNL(chn, lnk), \
-	.chn``_req_dirty(lnk``_req), \
+	.chn``_tmp_rq(lnk``_req), \
 	.chn``_ack(lnk``_ack)
 
 	
@@ -485,12 +485,12 @@
 `define NS_DECLARE_PAKOUT_CHNL(nam) \
 	output wire [PSZ-1:0] nam``_pakio, \
 	output wire nam``_req, \
-	input wire nam``_ack_dirty
+	input wire nam``_tmp_ak
 
 
 `define NS_DECLARE_PAKIN_CHNL(nam) \
 	input wire [PSZ-1:0] nam``_pakio, \
-	input wire nam``_req_dirty, \
+	input wire nam``_tmp_rq, \
 	output wire nam``_ack
 
 
@@ -500,22 +500,22 @@
 	wire lnk``_ack; 
 
 
-`define NS_ASSIGN_PAKOUT_FROM_PAKIN(ou, in) \
-	assign ou``_pakio = in``_pakio; \
-	assign ou``_req = in``_req_dirty; \
-	assign ou``_ack_dirty = in``_ack;
+`define NS_ASSIGN_PAKOUT_FROM_PAKIN(ou_ch, in_ch) \
+	assign ou_ch``_pakio = in_ch``_pakio; \
+	assign ou_ch``_req = in_ch``_tmp_rq; \
+	assign ou_ch``_tmp_ak = in_ch``_ack;
 
 
 `define NS_INSTA_RCV_PAKIO_CHNL(chn, lnk) \
 	.chn``_pakio(lnk``_pakio), \
-	.chn``_req_dirty(lnk``_req), \
+	.chn``_tmp_rq(lnk``_req), \
 	.chn``_ack(lnk``_ack)
 
 
 `define NS_INSTA_SND_PAKIO_CHNL(chn, lnk) \
 	.chn``_pakio(lnk``_pakio), \
 	.chn``_req(lnk``_req), \
-	.chn``_ack_dirty(lnk``_ack)
+	.chn``_tmp_ak(lnk``_ack)
 
 
 `define NS_PACKETS_INIT(pks, busy_init) \
@@ -595,13 +595,13 @@
 
 `define NS_PACKIN_TRY_INC(pks, pk_in, fif, the_ack) \
 	if(pks``_busy) begin \
-		if(pk_in``_req && (! the_ack)) begin \
+		if(pk_in``_ckd_req && (! the_ack)) begin \
 			pks``_packets[pks``_pks_idx] <= pk_in``_pakio; \
 			`NS_INC_IDX(pks``_pks_idx, TOT_PKS); \
 			the_ack <= `NS_ON; \
 		end \
 		else \
-		if((! pk_in``_req) && the_ack) begin \
+		if((! pk_in``_ckd_req) && the_ack) begin \
 			if(pks``_pks_idx == 0) begin \
 				pks``_busy <= `NS_OFF; \
 			end \

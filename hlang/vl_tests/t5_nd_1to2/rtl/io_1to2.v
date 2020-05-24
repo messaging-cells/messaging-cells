@@ -112,7 +112,7 @@ module io_1to2
 	//SRC
 	always @(posedge src0_clk)
 	begin
-		if((! ro0_req) && (! o0_ack)) begin
+		if((! ro0_req) && (! o0_ckd_ack)) begin
 			if(! ro0_has_dst) begin
 				ro0_has_dst <= `NS_ON;
 				ro0_dst <= `NS_DBG_NXT_ADDR(ro0_dst);
@@ -144,7 +144,7 @@ module io_1to2
 				ro0_req <= `NS_ON;
 			end
 		end
-		if(ro0_req && o0_ack) begin
+		if(ro0_req && o0_ckd_ack) begin
 			ro0_has_dst <= `NS_OFF;
 			ro0_has_dat <= `NS_OFF;
 			ro0_has_red <= `NS_OFF;
@@ -155,7 +155,7 @@ module io_1to2
 	//SNK_0
 	always @(posedge snk0_clk)
 	begin
-		if(i0_req && (! inp0_ack)) begin
+		if(i0_ckd_req && (! inp0_ack)) begin
 			if(! has_inp0) begin
 				has_inp0 <= `NS_ON;
 				`NS_MOV_REG_MSG(inp0, i0)
@@ -211,7 +211,7 @@ module io_1to2
 			end
 		end
 		else
-		if((! i0_req) && inp0_ack) begin
+		if((! i0_ckd_req) && inp0_ack) begin
 			inp0_ack <= `NS_OFF;
 		end
 	end
@@ -219,7 +219,7 @@ module io_1to2
 	//SNK_1
 	always @(posedge snk1_clk)
 	begin
-		if(i1_req && (! inp1_ack)) begin
+		if(i1_ckd_req && (! inp1_ack)) begin
 			if(! has_inp1) begin
 				has_inp1 <= `NS_ON;
 				`NS_MOV_REG_MSG(inp1, i1)
@@ -273,7 +273,7 @@ module io_1to2
 			end
 		end
 		else
-		if((! i1_req) && inp1_ack) begin
+		if((! i1_ckd_req) && inp1_ack) begin
 			inp1_ack <= `NS_OFF;
 		end
 	end

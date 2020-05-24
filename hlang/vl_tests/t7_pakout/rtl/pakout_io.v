@@ -92,7 +92,7 @@ module pakout_io
 	//SRC_0
 	always @(posedge src_clk)
 	begin
-		if((! ro0_req) && (! o0_ack)) begin
+		if((! ro0_req) && (! o0_ckd_ack)) begin
 			if(! ro0_has_dst) begin
 				ro0_has_dst <= `NS_ON;
 				ro0_dst <= `NS_DBG_NXT_ADDR(ro0_dst);
@@ -113,7 +113,7 @@ module pakout_io
 				ro0_req <= `NS_ON;
 			end
 		end
-		if(ro0_req && o0_ack) begin
+		if(ro0_req && o0_ckd_ack) begin
 			ro0_has_dst <= `NS_OFF;
 			ro0_has_dat <= `NS_OFF;
 			ro0_has_red <= `NS_OFF;

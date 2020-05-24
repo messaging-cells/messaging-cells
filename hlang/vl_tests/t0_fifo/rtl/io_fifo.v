@@ -81,11 +81,11 @@ module io_fifo
 			cnt_0 <= cnt_0 + 1;
 		end
 		if(ro0_busy) begin
-			if((! ro0_req) && (! o0_ack)) begin
+			if((! ro0_req) && (! o0_ckd_ack)) begin
 				ro0_red <= ro0_redun;
 				ro0_req <= `NS_ON;
 			end 
-			if(ro0_req && o0_ack) begin
+			if(ro0_req && o0_ckd_ack) begin
 				ro0_dst <= `NS_DBG_NXT_ADDR(ro0_dst);
 				
 				ro0_busy <= `NS_OFF;
@@ -98,7 +98,7 @@ module io_fifo
 	always @(posedge snk_clk)
 	begin
 		//rg_dbg_leds[3:3] <= 1;
-		if(! ri0_cks_done && i0_req && (! ri0_ack)) begin
+		if(! ri0_cks_done && i0_ckd_req && (! ri0_ack)) begin
 			if(! rg_dbg_leds[2:2]) begin
 				if(i0_dat > 15) begin
 					rg_dbg_leds[2:2] <= `NS_ON;
@@ -136,11 +136,11 @@ module io_fifo
 			ri0_cks_done <= `NS_ON;
 			ri0_ck_dat <= i0_dat;
 		end
-		if(ri0_cks_done && i0_req && (! ri0_ack)) begin
+		if(ri0_cks_done && i0_ckd_req && (! ri0_ack)) begin
 			ri0_cks_done <= `NS_OFF;
 			ri0_ack <= `NS_ON;
 		end
-		if((! i0_req) && ri0_ack) begin
+		if((! i0_ckd_req) && ri0_ack) begin
 			ri0_ack <= `NS_OFF;
 		end
 	end

@@ -138,14 +138,14 @@ module pakin_io
 				ro0_has_red <= `NS_OFF;
 				added_hd <= `NS_OFF;
 			end
-			`NS_PACKOUT_TRY_INC(rgo0, bf0, o0_ack, rgo0_req)
+			`NS_PACKOUT_TRY_INC(rgo0, bf0, o0_ckd_ack, rgo0_req)
 		end
 	end
 		
 	//SNK_0
 	always @(posedge snk_clk)
 	begin
-		if(i0_req && (! inp0_ack)) begin
+		if(i0_ckd_req && (! inp0_ack)) begin
 			if(! has_inp0) begin
 				has_inp0 <= `NS_ON;
 				`NS_MOV_REG_MSG(inp0, i0)
@@ -192,7 +192,7 @@ module pakin_io
 			end
 		end
 		else
-		if((! i0_req) && inp0_ack) begin
+		if((! i0_ckd_req) && inp0_ack) begin
 			inp0_ack <= `NS_OFF;
 		end
 	end

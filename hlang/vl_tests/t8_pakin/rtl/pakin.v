@@ -61,7 +61,7 @@ module pakin
 		if(! gch_reset && rg_rdy) begin
 			`NS_PACKIN_TRY_INC(rgi0, rcv0, bf0, rgi0_ack)
 			
-			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ack, rgo0_req, rgo0_busy);
+			`NS_FIFO_TRY_SET_OUT(bf0, rgo0, snd0_ckd_ack, rgo0_req, rgo0_busy);
 		end
 	end
 
