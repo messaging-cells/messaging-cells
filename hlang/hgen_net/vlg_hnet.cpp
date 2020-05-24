@@ -382,17 +382,17 @@ edge::get_verilog_oper(){
 	gh_string_t op = "INVALID_OPER";
 	if(is_gt()){
 		if(is_eq()){
-			op = "`GTE_OP";
+			op = "`NS_GTE_OP";
 			return op;
 		}
-		op = "`GT_OP";
+		op = "`NS_GT_OP";
 		return op;
 	}
 	if(is_eq()){
-		op = "`LTE_OP";
+		op = "`NS_LTE_OP";
 		return op;
 	}
-	op = "`LT_OP";
+	op = "`NS_LT_OP";
 	return op;
 }
 
@@ -422,10 +422,10 @@ hnode_1to2::get_verilog_ref_val_1(){
 gh_string_t
 hnode_1to2::get_verilog_is_range(){
 	bool is_itv = get_flag(gh_is_interval);
-	gh_string_t is_rng = "`FALSE";
+	gh_string_t is_rng = "`NS_FALSE";
 	bool has_udf = selector.lft.is_undef() || selector.rgt.is_undef();
 	if(is_itv && ! has_udf){
-		is_rng = "`TRUE";
+		is_rng = "`NS_TRUE";
 	}
 	return is_rng;
 }
@@ -695,6 +695,8 @@ module %s
 	`NS_DECLARE_IN_CHNL(%s),
 	`NS_DECLARE_OUT_CHNL(%s)
 );
+	`NS_DECLARE_LINK(lnk_in)
+	`NS_DECLARE_LINK(lnk_out)
 	
 	hnull_source #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_null_core_src (
@@ -1070,7 +1072,22 @@ hlognet_box::print_verilog_file_name_to_verilator_file(FILE* ff, gh_string_t nm)
 
 void
 hlognet_box::print_verilog_file_name_to_yosys_file(FILE* ff, gh_string_t nm){
-	fprintf(ff, "%s\n", nm.c_str());
+	gh_string_t dir = "..";
+	if(vl_net_file_nm == nm){
+		dir = ".";
+	} 
+	fprintf(ff, "read_verilog -I./rtl/foundation %s\n", nm.c_str());
+}
+
+void
+hlognet_box::print_verilog_header_to_yosys_file(FILE* ff){
+	fprintf(ff, "yosys -import\n");
+	
+}
+
+void
+hlognet_box::print_verilog_footer_to_yosys_file(FILE* ff, gh_string_t nm){
+	fprintf(ff, "synth_ice40 -top %s -json ./$::env(BUILD_DIR)/%s.json;\n", nm.c_str(), nm.c_str());
 }
 
 void
@@ -1122,6 +1139,7 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 	gh_string_t net_nam = dir_name + "_net";
 	gh_string_t net_ff_nm = net_nam + gh_vl_file_ext;
 	gh_string_t net_path = rtl_dir + gh_path_sep + net_ff_nm;
+
 	
 	FILE* ff = fopen(net_path.c_str(), "w");
 	if(ff == NULL){
@@ -1131,7 +1149,10 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 	verilog_file vff;
 	vff.fl = ff;
 
-	print_verilog_file_name_to_command_files(vl_sub_rtl_dir + gh_path_sep + net_ff_nm);
+	print_verilog_header_to_yosys_file(yos_comm_fl);
+	
+	vl_net_file_nm = vl_sub_rtl_dir + gh_path_sep + net_ff_nm;
+	print_verilog_file_name_to_command_files(vl_net_file_nm);
 	
 	slice_vec tgt_addrs;
 
@@ -1221,6 +1242,7 @@ module %s
 	
 	copy_verilog_foundation_files(dir_name);
 
+	print_verilog_footer_to_yosys_file(yos_comm_fl, net_nam);
 
 	fprintf(ff, R"base(
 

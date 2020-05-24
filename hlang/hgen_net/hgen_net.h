@@ -1533,6 +1533,8 @@ public:
 	gh_string_t vl_sub_tgt_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("targets"));
 	gh_string_t vl_sub_fnd_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("foundation"));
 	
+	gh_string_t vl_net_file_nm;
+	
 	FILE* ivl_comm_fl = NULL;
 	FILE* vtr_comm_fl = NULL;
 	FILE* yos_comm_fl = NULL;
@@ -1595,6 +1597,9 @@ public:
 	void	print_verilog_file_name_to_iverilog_file(FILE* ff, gh_string_t nm);
 	void	print_verilog_file_name_to_verilator_file(FILE* ff, gh_string_t nm);
 	void	print_verilog_file_name_to_yosys_file(FILE* ff, gh_string_t nm);
+
+	void	print_verilog_header_to_yosys_file(FILE* ff);
+	void	print_verilog_footer_to_yosys_file(FILE* ff, gh_string_t nm);
 	
 	void	print_verilog_file_name_to_command_files(gh_string_t nm){
 		print_verilog_file_name_to_iverilog_file(ivl_comm_fl, nm);
