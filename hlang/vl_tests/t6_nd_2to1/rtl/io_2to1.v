@@ -221,14 +221,14 @@ module io_2to1
 	
 	//SRC_0
 	`NS_ASSIGN_MSG(o0, ro0)
-	assign o0_req = ro0_req;
+	assign o0_req_out = ro0_req;
 
 	//SRC_1
 	`NS_ASSIGN_MSG(o1, ro1)
-	assign o1_req = ro1_req;
+	assign o1_req_out = ro1_req;
 
 	//SNK_0
-	assign i0_ack = inp0_ack;
+	assign i0_ack_out = inp0_ack;
 	
 	
 	assign dbg_leds[0:0] = r_0_err;

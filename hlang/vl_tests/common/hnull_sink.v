@@ -46,7 +46,7 @@ module hnull_sink
 	assign gch_ready = rg_rdy && rcv0_rdy;
 	
 	//inp0
-	assign rcv0_ack = rgi0_ack;
+	assign rcv0_ack_out = rgi0_ack;
 	
 endmodule
 

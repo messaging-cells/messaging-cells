@@ -103,13 +103,13 @@ module nd_2to1
 	
 	//out1
 	`NS_ASSIGN_MSG(snd0, rgo0)
-	assign snd0_req = rgo0_req;
+	assign snd0_req_out = rgo0_req;
 
 	//inp0
-	assign rcv0_ack = rgi0_ack;
+	assign rcv0_ack_out = rgi0_ack;
 	
 	//inp1
-	assign rcv1_ack = rgi1_ack;
+	assign rcv1_ack_out = rgi1_ack;
 	
 endmodule
 

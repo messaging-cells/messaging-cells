@@ -199,10 +199,10 @@ module pakin_io
 
 	//SRC_0
 	assign o0_pakio = rgo0_pakio;
-	assign o0_req = rgo0_req;
+	assign o0_req_out = rgo0_req;
 
 	//SNK_0
-	assign i0_ack = inp0_ack;
+	assign i0_ack_out = inp0_ack;
 
 	assign dbg_leds[0:0] = inp0_err_0;
 	assign dbg_leds[1:1] = inp0_err_1;

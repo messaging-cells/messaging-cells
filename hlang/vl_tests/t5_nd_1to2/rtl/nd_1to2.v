@@ -100,14 +100,14 @@ module nd_1to2
 	
 	//out1
 	`NS_ASSIGN_MSG(snd0, rgo0)
-	assign snd0_req = rgo0_req;
+	assign snd0_req_out = rgo0_req;
 
 	//out2
 	`NS_ASSIGN_MSG(snd1, rgo1)
-	assign snd1_req = rgo1_req;
+	assign snd1_req_out = rgo1_req;
 
 	//inp0
-	assign rcv0_ack = rgi0_ack;
+	assign rcv0_ack_out = rgi0_ack;
 	
 endmodule
 

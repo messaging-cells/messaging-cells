@@ -190,10 +190,10 @@ module pakout_io
 
 	//SRC_0
 	`NS_ASSIGN_MSG(o0, ro0)
-	assign o0_req = ro0_req;
+	assign o0_req_out = ro0_req;
 
 	//SNK_0
-	assign i0_ack = rgi0_ack;
+	assign i0_ack_out = rgi0_ack;
 
 	assign dbg_leds[0:0] = inp0_err_0;
 	assign dbg_leds[1:1] = inp0_err_1;

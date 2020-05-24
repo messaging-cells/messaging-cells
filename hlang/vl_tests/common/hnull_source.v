@@ -39,7 +39,7 @@ module hnull_source
 	
 	//out1
 	`NS_ASSIGN_MSG(snd0, rgo0)
-	assign snd0_req = rgo0_req;
+	assign snd0_req_out = rgo0_req;
 
 endmodule
 

@@ -147,10 +147,10 @@ module io_fifo
 	
 	//SRC_0
 	`NS_ASSIGN_MSG(o0, ro0)
-	assign o0_req = ro0_req;
+	assign o0_req_out = ro0_req;
 
 	//SNK_0
-	assign i0_ack = ri0_ack;
+	assign i0_ack_out = ri0_ack;
 
 	`NS_ASSIGN_OUT_DBG(dbg, rg_dbg)
 	
