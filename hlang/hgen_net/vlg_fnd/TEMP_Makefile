@@ -1,8 +1,8 @@
 
 
-PRJ_NM = test_5
+PRJ_NM = net1_net
 
-TOP_MOD = test_5
+TOP_MOD = net1_net
 
 
 BUILD_DIR = build
@@ -18,12 +18,27 @@ VERILATOR_EXE = verilator
 RTL_DIR = rtl
 
 RTL_FILES = \
-	${RTL_DIR}/bin_to_disp.v \
-	${RTL_DIR}/debouncer.v \
-	${RTL_DIR}/hglobal.v \
-	${RTL_DIR}/nd_1to2.v \
-	${RTL_DIR}/io_1to2.v \
-	${RTL_DIR}/${PRJ_NM}.v \
+	rtl/net1_net.v \
+	rtl/hnet/tg_0_router.v \
+	rtl/targets/tg_0_core.v \
+	rtl/hnet/tg_0_wrapper.v \
+	rtl/hnet/tg_1_router.v \
+	rtl/targets/tg_1_core.v \
+	rtl/hnet/tg_1_wrapper.v \
+	rtl/hnet/tg_2_router.v \
+	rtl/targets/tg_2_core.v \
+	rtl/hnet/tg_2_wrapper.v \
+	rtl/foundation/calc_redun.v \
+	rtl/foundation/debouncer.v \
+	rtl/foundation/hglobal.v \
+	rtl/foundation/hnull_sink.v \
+	rtl/foundation/hnull_source.v \
+	rtl/foundation/nd_1to2.v \
+	rtl/foundation/nd_2to1.v \
+	rtl/foundation/pakin.v \
+	rtl/foundation/pakout.v \
+	rtl/foundation/tree_nand.v \
+
 
 
 export BUILD_DIR
@@ -43,7 +58,7 @@ ${PRJ_PREFIX}.asc : ${PRJ_PREFIX}.json
 
 ${PRJ_PREFIX}.json : ${RTL_FILES}
 	mkdir -p ${BUILD_DIR}; rm ${BUILD_DIR}/yos_synth.log; rm ${PRJ_PREFIX}.json; rm ${PRJ_PREFIX}.blif; \
-	${YOSYS_EXE} -q yos_commands.tcl -l ../${BUILD_DIR}/yos_synth.log
+	${YOSYS_EXE} -q yos_commands.tcl -l ./${BUILD_DIR}/yos_synth.log
 
 .PHONY: lint
 lint :	

@@ -275,7 +275,7 @@
 
 
 `define NS_ASSIGN_OUT_CHNL_FROM_IN_CHNL(ou_ch, in_ch) \
-	`NS_ASSIGN_MSG(ou_ch, in_ch), \
+	`NS_ASSIGN_MSG(ou_ch, in_ch) \
 	assign ou_ch``_req_out = in_ch``_req_in; \
 	assign ou_ch``_ack_in = in_ch``_ack_out;
 
@@ -329,12 +329,36 @@
 	.chn``_req_in(lnk``_req), \
 	.chn``_ack_out(lnk``_ack)
 
-	
+
+`define NS_INSTA_SND_CHNL_FROM_CHNL(chn, ch_ou) \
+	`NS_INSTA_MSG_CHNL(chn, ch_ou), \
+	.chn``_req_out(ch_ou``_req_out), \
+	.chn``_ack_in(ch_ou``_ack_in)
+
+
+`define NS_INSTA_RCV_CHNL_FROM_CHNL(chn, ch_in) \
+	`NS_INSTA_MSG_CHNL(chn, ch_in), \
+	.chn``_req_in(ch_in``_req_in), \
+	.chn``_ack_out(ch_in``_ack_out)
+
+
 `define NS_REG_MSG_INIT(mg) \
 	mg``_src <= 0; \
 	mg``_dst <= 0; \
 	mg``_dat <= 0; \
 	mg``_red <= 0; \
+
+
+`define NS_ASSIGN_LINK_FROM_IN_CHNL(lnk, in_ch) \
+	`NS_ASSIGN_MSG(lnk, in_ch) \
+	assign lnk``_req = in_ch``_req_in; \
+	assign lnk``_ack = in_ch``_ack_out;
+
+
+`define NS_ASSIGN_OUT_CHNL_FROM_LINK(ou_ch, lnk) \
+	`NS_ASSIGN_MSG(ou_ch, lnk) \
+	assign ou_ch``_req_out = lnk``_req; \
+	assign ou_ch``_ack_in = lnk``_ack;
 
 
 // FIFOS

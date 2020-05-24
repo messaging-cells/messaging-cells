@@ -34,10 +34,10 @@ module hnull_sink
 			rgi0_ack <= `NS_OFF;
 		end
 		if(! gch_reset && rg_rdy) begin
-			if(rcv0_req && (! rgi0_ack)) begin
+			if(rcv0_ckd_req && (! rgi0_ack)) begin
 				rgi0_ack <= `NS_ON;
 			end
-			if((! rcv0_req) && rgi0_ack) begin
+			if((! rcv0_ckd_req) && rgi0_ack) begin
 				rgi0_ack <= `NS_OFF;
 			end
 		end
@@ -46,7 +46,7 @@ module hnull_sink
 	assign gch_ready = rg_rdy && rcv0_rdy;
 	
 	//inp0
-	assign rcv0_ack = rgi0_ack;
+	assign rcv0_ack_out = rgi0_ack;
 	
 endmodule
 

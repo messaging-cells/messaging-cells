@@ -1,0 +1,1 @@
+../../common/hnull_sink.v

@@ -60,16 +60,16 @@ module pakout
 			added_hd <= `NS_OFF;
 		end
 		if(! gch_reset && rg_rdy) begin
-			if(rcv0_req && (! rgi0_ack)) begin
+			if(rcv0_ckd_req && (! rgi0_ack)) begin
 				`NS_FIFO_TRY_ADD_HEAD(bf0, rcv0, added_hd);
 			end
 			`NS_FIFO_ACK_ADDED_HEAD(bf0, rgi0_ack, added_hd)
 			
-			if((! rcv0_req) && rgi0_ack) begin
+			if((! rcv0_ckd_req) && rgi0_ack) begin
 				rgi0_ack <= `NS_OFF;
 			end
 
-			`NS_PACKOUT_TRY_INC(rgo0, bf0, snd0_ack, rgo0_req)
+			`NS_PACKOUT_TRY_INC(rgo0, bf0, snd0_ckd_ack, rgo0_req)
 		end
 	end
 
@@ -77,10 +77,10 @@ module pakout
 	
 	//out1
 	assign snd0_pakio = rgo0_pakio;
-	assign snd0_req = rgo0_req;
+	assign snd0_req_out = rgo0_req;
 
 	//inp0
-	assign rcv0_ack = rgi0_ack;
+	assign rcv0_ack_out = rgi0_ack;
 
 endmodule
 

@@ -171,6 +171,28 @@ module test_top
 	);
 	
 	/*
+	`NS_DECLARE_LINK(null_lnk)
+
+	wire sum = 0;
+	
+	wire rdy1;
+	hnull_source #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
+	it_null_core_src (
+		`NS_INSTA_GLB_CHNL_VALS(gch, i_clk, the_reset, rdy1),
+		`NS_INSTA_SND_CHNL(snd0, null_lnk)
+	);
+	assign sum = sum & rdy1;
+ 
+	wire rdy2;
+	hnull_sink #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
+	it_null_core_snk (
+		`NS_INSTA_GLB_CHNL_VALS(gch, i_clk, the_reset, rdy2),
+		`NS_INSTA_RCV_CHNL(rcv0, null_lnk)
+	);
+	assign sum = sum & rdy2;
+	*/
+	
+	/*
 	// Instantiate Debounce Filter
 	debounce sw1_inst(
 		.i_Clk(i_clk),

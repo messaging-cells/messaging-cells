@@ -737,6 +737,8 @@ public:
 	FILE* fl = NULL;
 	gh_str_set_t declared_interfaces;
 	gh_str_set_t assigned_interfaces;
+	gh_str_set_t assigned_out_channels;
+	long tot_rdy = 0;
 };
 
 
@@ -917,7 +919,6 @@ public:
 
 void gh_print_tabs(FILE* ff, long num_tabs);
 void gh_print_verilog_declare_link_interface(verilog_file& ff, long num_tabs, gh_string_t itf_nm);
-void gh_print_verilog_assign_interface(verilog_file& ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2);
 void gh_print_verilog_instance_send_interface(verilog_file& ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, 
 											  bool with_final_comma = true);
 void gh_print_verilog_instance_receive_interface(verilog_file& ff, long num_tabs, gh_string_t itf_nm_1, gh_string_t itf_nm_2, 
@@ -1532,6 +1533,10 @@ public:
 	gh_string_t vl_sub_net_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("hnet"));
 	gh_string_t vl_sub_tgt_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("targets"));
 	gh_string_t vl_sub_fnd_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("foundation"));
+	
+	gh_string_t vl_make_src_file_nm = gh_string_t("TEMP_Makefile");
+	gh_string_t vl_make_dst_file_nm = gh_string_t("Makefile");
+	gh_string_t vl_pcf_file_nm = gh_string_t("GO_BOARD.pcf");
 	
 	gh_string_t vl_net_file_nm;
 	
