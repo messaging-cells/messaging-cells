@@ -22,7 +22,7 @@ module debouncer
 			rg_dbn_rdy <= 0;
 		end
 		if(! gch_reset && ! rg_dbn_rdy) begin
-			rg_dbn_rdy <= 1;
+			rg_dbn_rdy <= ! rg_dbn_rdy;
 			
 			cnt_cks <= 0;
 			rg_stdy <= 1'b0;

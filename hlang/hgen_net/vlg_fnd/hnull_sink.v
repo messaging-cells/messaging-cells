@@ -29,7 +29,7 @@ module hnull_sink
 			rg_rdy <= `NS_OFF;
 		end
 		if(! gch_reset && ! rg_rdy) begin
-			rg_rdy <= `NS_ON;
+			rg_rdy <= ! rg_rdy;
 			
 			rgi0_ack <= `NS_OFF;
 		end

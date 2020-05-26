@@ -739,6 +739,10 @@ public:
 	gh_str_set_t assigned_interfaces;
 	gh_str_set_t assigned_out_channels;
 	long tot_rdy = 0;
+	gh_vector_t<long> pending_rdy;
+	
+	void print_verilog_inc_ready_and();
+	void print_verilog_ready_final_and(gh_string_t rdy_nm);
 };
 
 
@@ -1427,17 +1431,10 @@ public:
 	}
 };
 	
-void
-gh_print_io(FILE* ff, gh_prt_mode_t md, ppnode_vec_t& all_io);
-
-void
-gh_init_quarter(ppnode_vec_t qrt, gh_addr_t tg_addr, char* qrt_nm);
-
-void
-gh_print_verilog_assigns_for_ios(verilog_file& ff, ppnode_vec_t& all_io, gh_route_side_t sd, gh_io_kind_t iot);
-
-void
-gh_print_verilog_code_for_nodes(verilog_file& ff, pnode_vec_t& all_nd);
+void gh_print_io(FILE* ff, gh_prt_mode_t md, ppnode_vec_t& all_io);
+void gh_init_quarter(ppnode_vec_t qrt, gh_addr_t tg_addr, char* qrt_nm);
+void gh_print_verilog_assigns_for_ios(verilog_file& ff, ppnode_vec_t& all_io, gh_route_side_t sd, gh_io_kind_t iot);
+void gh_print_verilog_code_for_nodes(verilog_file& ff, pnode_vec_t& all_nd);
 
 enum gh_verilog_print_op_t {
 	gh_vl_declare_param_op,
@@ -1537,8 +1534,7 @@ public:
 	gh_string_t vl_make_src_file_nm = gh_string_t("TEMP_Makefile");
 	gh_string_t vl_make_dst_file_nm = gh_string_t("Makefile");
 	gh_string_t vl_pcf_file_nm = gh_string_t("GO_BOARD.pcf");
-	
-	gh_string_t vl_net_file_nm;
+	gh_string_t vl_clean_file_nm = gh_string_t("clean.sh");
 	
 	FILE* ivl_comm_fl = NULL;
 	FILE* vtr_comm_fl = NULL;
@@ -1597,7 +1593,7 @@ public:
 
 	void 	print_targets(FILE* ff, gh_prt_mode_t md);
 	
-	void 	copy_verilog_foundation_files(gh_string_t& dir_name);
+	void 	copy_verilog_foundation_files(gh_string_t& dir_name, gh_string_t& net_nam);
 
 	void	print_verilog_file_name_to_iverilog_file(FILE* ff, gh_string_t nm);
 	void	print_verilog_file_name_to_verilator_file(FILE* ff, gh_string_t nm);
@@ -1618,7 +1614,6 @@ public:
 gh_string_t gh_get_verilog_targets_link(long tg1, long tg2, gh_route_side_t sd, long num_lnk);
 void gh_dbg_calc_idx_and_sz(long num_in, long num_out, long bs, long& tg_idx, long& tgs_sz);
 
-
 void gh_print_str_set(FILE* ff, const gh_str_set_t& the_set);
 bool gh_str_is_prefix(const std::string& the_str, const std::string& pfx);
 
@@ -1631,9 +1626,6 @@ char** gh_args_get_tail(char *argv[]);
 bool gh_args_is_complete_command(gh_str_list_t& lt_args);
 int gh_args_get_complete_index();
 bool gh_args_select_one_of(gh_str_list_t& lt_args, gh_str_set_t& choices, std::string& sel);
-
-
-void gh_copy_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff);
 
 void* run_node_simu(void* pm);
 

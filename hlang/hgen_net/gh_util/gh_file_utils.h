@@ -62,7 +62,8 @@ typedef std::array<int8_t, 10000> gh_buffer_t;
 
 bool gh_make_dir(gh_string_t the_pth, mode_t mod);
 bool gh_file_exists(gh_string_t th_pth);
-void gh_copy_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff);
+void gh_copy_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff, const char* mod = "w");
+void gh_append_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff);
 bool gh_path_create(gh_string_t n_pth);
 gh_string_t gh_get_executable_path();
 gh_string_t gh_path_get_directory(gh_string_t the_pth, bool add_last_dir_sep);

@@ -56,12 +56,12 @@ gh_file_exists(gh_string_t th_pth){
 }
 
 void
-gh_copy_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff)
+gh_copy_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff, const char* mod)
 {
 	long sz_dat = (long)buff.size();
 	void* dat = (void*)buff.data();
 	FILE*	src_ff = fopen(src.c_str(), "r");
-	FILE*	dst_ff = fopen(dst.c_str(), "w");
+	FILE*	dst_ff = fopen(dst.c_str(), mod);
 
 	while(! feof(src_ff)) {
 		size_t num_rd = fread(dat, 1, sz_dat, src_ff);
@@ -71,6 +71,12 @@ gh_copy_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff)
 	}
 	fclose(src_ff);
 	fclose(dst_ff);
+}
+
+void
+gh_append_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff)
+{
+	gh_copy_file(src, dst, buff, "a");
 }
 
 bool

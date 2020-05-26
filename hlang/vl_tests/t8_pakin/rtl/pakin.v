@@ -47,7 +47,7 @@ module pakin
 			rg_rdy <= `NS_OFF;
 		end
 		if(! gch_reset && ! rg_rdy) begin
-			rg_rdy <= `NS_ON;
+			rg_rdy <= ! rg_rdy;
 			
 			`NS_REG_MSG_INIT(rgo0)
 			rgo0_req <= `NS_OFF;

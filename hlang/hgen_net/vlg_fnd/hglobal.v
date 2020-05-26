@@ -51,7 +51,10 @@
 
 
 `define NS_RANGE_CMP_OP(is_dbl, op1, pm1, pm2, op2, pm3, pm4) ( \
-	(is_dbl == `NS_TRUE)?(`NS_CMP_OP(op1, pm1, pm2) && `NS_CMP_OP(op2, pm3, pm4)):(`NS_CMP_OP(op1, pm1, pm2)) )
+	/* verilator lint_off UNSIGNED */ \
+	(is_dbl == `NS_TRUE)?(`NS_CMP_OP(op1, pm1, pm2) && `NS_CMP_OP(op2, pm3, pm4)):(`NS_CMP_OP(op1, pm1, pm2)) \
+	/* verilator lint_on UNSIGNED */ \
+	)
 	
 
 // DBG CLOCKS
@@ -277,7 +280,7 @@
 `define NS_ASSIGN_OUT_CHNL_FROM_IN_CHNL(ou_ch, in_ch) \
 	`NS_ASSIGN_MSG(ou_ch, in_ch) \
 	assign ou_ch``_req_out = in_ch``_req_in; \
-	assign ou_ch``_ack_in = in_ch``_ack_out;
+	assign in_ch``_ack_out = ou_ch``_ack_in;
 
 
 `define NS_DEBOUNCER_REQ(clk, rst, nam) \
@@ -352,13 +355,13 @@
 `define NS_ASSIGN_LINK_FROM_IN_CHNL(lnk, in_ch) \
 	`NS_ASSIGN_MSG(lnk, in_ch) \
 	assign lnk``_req = in_ch``_req_in; \
-	assign lnk``_ack = in_ch``_ack_out;
+	assign in_ch``_ack_out = lnk``_ack;
 
 
 `define NS_ASSIGN_OUT_CHNL_FROM_LINK(ou_ch, lnk) \
 	`NS_ASSIGN_MSG(ou_ch, lnk) \
 	assign ou_ch``_req_out = lnk``_req; \
-	assign ou_ch``_ack_in = lnk``_ack;
+	assign lnk``_ack = ou_ch``_ack_in;
 
 
 // FIFOS

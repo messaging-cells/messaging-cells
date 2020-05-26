@@ -196,8 +196,29 @@ int mini_test_copy_file(int argc, char *argv[]){
 	return 0;
 }
 
+int mini_test_inc_rdy(int argc, char *argv[]){
+	fprintf(stdout, "mini_test_inc_rdy\n");
+	if(argc < 2){
+		fprintf(stdout, "%s <max_rdy>\n", argv[0]);
+		return -1;
+	}
+	
+	long max_rdy = atol(argv[1]);
+	verilog_file vff;
+	vff.fl = stdout;
+	for(long aa = 0; aa < max_rdy; aa++){
+		vff.print_verilog_inc_ready_and();
+	}
+	gh_string_t nm = "final_rdy";
+	vff.print_verilog_ready_final_and(nm);
+	
+	fprintf(stdout, "FINISHED mini_test_inc_rdy\n");
+	return 0;
+}
+
 int
 main(int argc, char *argv[]){
 	//return mini_test_copy_file(argc, argv);
+	//return mini_test_inc_rdy(argc, argv);
 	return hgen_net_main(argc, argv);
 }

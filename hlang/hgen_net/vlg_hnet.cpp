@@ -406,13 +406,12 @@ hnode_2to1::print_verilog_2to1_instance(verilog_file& vff, long idx){
 	gh_print_verilog_declare_link_interface(vff, 1, i1_itf_nm);
 	gh_print_verilog_declare_link_interface(vff, 1, o0_itf_nm);
 
-	vff.tot_rdy++;
+	vff.print_verilog_inc_ready_and();
 	fprintf(ff, R"base(
-	wire rdy%ld;
 	nd_2to1 #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_nd_2to1_%ld (
-		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld),
-)base", vff.tot_rdy, idx, vff.tot_rdy);
+		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld_lv0),
+)base", idx, vff.tot_rdy);
 	
 	gh_print_verilog_instance_send_interface(vff, 2, gh_vl_snd0, o0_itf_nm);
 	gh_print_verilog_instance_receive_interface(vff, 2, gh_vl_rcv0, i0_itf_nm);
@@ -502,14 +501,12 @@ hnode_1to2::print_verilog_1to2_instance(verilog_file& vff, long idx){
 	gh_string_t op2 = get_verilog_oper_2();
 	gh_string_t val2 = get_verilog_ref_val_2();
 	
-	vff.tot_rdy++;
+	vff.print_verilog_inc_ready_and();
 	fprintf(ff, R"base(
-	wire rdy%ld;
 	nd_1to2 #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ), .OPER_1(%s), .REF_VAL_1(%s), .IS_RANGE(%s), .OPER_2(%s), .REF_VAL_2(%s))
 	it_nd_1to2_%ld (
-		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld),
+		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld_lv0),
 )base", 
-	vff.tot_rdy, 
 	op1.c_str(),
 	val1.c_str(),
 	is_rng.c_str(),
@@ -721,11 +718,6 @@ htarget_box::print_verilog_module_core(verilog_file& vff){
 	gh_string_t itf_in_nm = get_verilog_target_param_name(gh_in_kind);
 	gh_string_t itf_out_nm = get_verilog_target_param_name(gh_out_kind);
 	
-	vff.tot_rdy++;
-	long rdyA = vff.tot_rdy;
-	vff.tot_rdy++;
-	long rdyB = vff.tot_rdy;
-	
 	fprintf(ff, R"base(
 /*
 	THIS IS A NULL CORE FOR THIS TARGET.
@@ -749,19 +741,21 @@ module %s
 	`NS_DECLARE_IN_CHNL(%s),
 	`NS_DECLARE_OUT_CHNL(%s)
 );
-	wire rdy%ld;
+	wire rdy1;
 	hnull_source #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_null_core_src (
-		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld),
+		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy1),
 		`NS_INSTA_SND_CHNL_FROM_CHNL(snd0, %s)
 	);
  
-	wire rdy%ld;
+	wire rdy2;
 	hnull_sink #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_null_core_snk (
-		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld),
+		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy2),
 		`NS_INSTA_RCV_CHNL_FROM_CHNL(rcv0, %s)
 	);
+	
+	assign gch_ready = rdy1 && rdy2;
  
 endmodule
 
@@ -769,11 +763,7 @@ endmodule
 	get_verilog_core_module_name().c_str(), 
 	itf_in_nm.c_str(), 
 	itf_out_nm.c_str(),
-	rdyA,
-	rdyA,
 	itf_out_nm.c_str(),
-	rdyB,
-	rdyB,
 	itf_in_nm.c_str() 
 );
 	
@@ -811,6 +801,8 @@ module %s
 	gh_print_verilog_code_for_nodes(vff, all_nodes);
 	
 	print_verilog_router_target_assign(vff);
+	
+	vff.print_verilog_ready_final_and("gch_ready");
 	
 	fprintf(ff, R"base(
 
@@ -926,13 +918,12 @@ htarget_box::print_verilog_instance_core(verilog_file& vff){
 	gh_print_verilog_declare_link_interface(vff, 1, core_rcv);
 	gh_print_verilog_declare_link_interface(vff, 1, core_snd);
 		
-	vff.tot_rdy++;
+	vff.print_verilog_inc_ready_and();
 	fprintf(ff, R"base(
-	wire rdy%ld;
 	%s #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_core (
-		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld),
-)base", vff.tot_rdy, get_verilog_core_module_name().c_str(), vff.tot_rdy);
+		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld_lv0),
+)base", get_verilog_core_module_name().c_str(), vff.tot_rdy);
 		
 	gh_print_verilog_instance_receive_interface(vff, 2, itf_in_nm.c_str(), core_rcv.c_str(), true);
 	gh_print_verilog_instance_send_interface(vff, 2, itf_out_nm.c_str(), core_snd.c_str(), false);
@@ -948,13 +939,12 @@ htarget_box::print_verilog_instance_router(verilog_file& vff){
 	gh_string_t itf_in_nm = get_verilog_target_param_name(gh_in_kind);
 	gh_string_t itf_out_nm = get_verilog_target_param_name(gh_out_kind);
 	
-	vff.tot_rdy++;
+	vff.print_verilog_inc_ready_and();
 	fprintf(ff, R"base(
-	wire rdy%ld;
 	%s #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_router (
-		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld),
-)base", vff.tot_rdy, get_verilog_router_module_name().c_str(), vff.tot_rdy);
+		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld_lv0),
+)base", get_verilog_router_module_name().c_str(), vff.tot_rdy);
 	
 	print_verilog_all_params(vff, gh_vl_instance_wrapper_op, 0, 0, true);
 	
@@ -1049,6 +1039,8 @@ module %s
 	print_verilog_instance_core(vff);
 	print_verilog_instance_router(vff);
 	
+	vff.print_verilog_ready_final_and("gch_ready");
+	
 	fprintf(ff, R"base(
 
  
@@ -1091,13 +1083,12 @@ htarget_box::print_verilog_instance_wrapper(verilog_file& vff, long num_direct_c
 	
 	print_verilog_all_params(vff, gh_vl_declare_link_op, num_direct_chns, num_direct_paks, false);
 	
-	vff.tot_rdy++;
+	vff.print_verilog_inc_ready_and();
 	fprintf(ff, R"base(
-	wire rdy%ld;
 	%s #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_%s (
-		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld),
-)base", vff.tot_rdy, wrp_nm.c_str(), wrp_nm.c_str(), vff.tot_rdy);
+		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld_lv0),
+)base", wrp_nm.c_str(), wrp_nm.c_str(), vff.tot_rdy);
 	
 	print_verilog_all_params(vff, gh_vl_instance_net_op, num_direct_chns, num_direct_paks, false);
 
@@ -1105,7 +1096,7 @@ htarget_box::print_verilog_instance_wrapper(verilog_file& vff, long num_direct_c
 }
 
 void
-hlognet_box::copy_verilog_foundation_files(gh_string_t& dir_name){
+hlognet_box::copy_verilog_foundation_files(gh_string_t& dir_name, gh_string_t& net_nam){
 	gh_string_t fnd_dir = dir_name + gh_path_sep + vl_sub_fnd_dir;
 	GH_CK_PRT(gh_file_exists(fnd_dir), "DIRECTORY %s NOT FOUND. THIS MEANS A BAD INSTALLATION OF THE PROGRAM.", fnd_dir.c_str());
 	gh_string_t exe_dir = gh_path_get_directory(gh_get_executable_path(), false);
@@ -1123,14 +1114,28 @@ hlognet_box::copy_verilog_foundation_files(gh_string_t& dir_name){
 	}
 	
 	
-	gh_string_t src_mk = orig_fnd_dir + gh_path_sep + vl_make_src_file_nm;
 	gh_string_t dst_mk = dir_name + gh_path_sep + vl_make_dst_file_nm;
-	gh_copy_file(src_mk, dst_mk, vl_cp_file_buff);
+	
+	FILE* mkff = fopen(dst_mk.c_str(), "w");
+	if(mkff == NULL){
+		fprintf(stderr, "Cannot open file %s for writing !!\n", dst_mk.c_str());
+		return;
+	}
+	fprintf(mkff, "\n\n\n");
+	fprintf(mkff, "PRJ_NM = %s\n", net_nam.c_str());
+	fprintf(mkff, "TOP_MOD = %s\n", net_nam.c_str());
+	fclose(mkff);
+	
+	gh_string_t src_mk = orig_fnd_dir + gh_path_sep + vl_make_src_file_nm;
+	gh_append_file(src_mk, dst_mk, vl_cp_file_buff);
 	
 	gh_string_t src_pcf = orig_fnd_dir + gh_path_sep + vl_pcf_file_nm;
 	gh_string_t dst_pcf = dir_name + gh_path_sep + vl_pcf_file_nm;
 	gh_copy_file(src_pcf, dst_pcf, vl_cp_file_buff);
 	
+	gh_string_t src_cl = orig_fnd_dir + gh_path_sep + vl_clean_file_nm;
+	gh_string_t dst_cl = dir_name + gh_path_sep + vl_clean_file_nm;
+	gh_copy_file(src_cl, dst_cl, vl_cp_file_buff);
 }
 
 void
@@ -1145,10 +1150,6 @@ hlognet_box::print_verilog_file_name_to_verilator_file(FILE* ff, gh_string_t nm)
 
 void
 hlognet_box::print_verilog_file_name_to_yosys_file(FILE* ff, gh_string_t nm){
-	gh_string_t dir = "..";
-	if(vl_net_file_nm == nm){
-		dir = ".";
-	} 
 	fprintf(ff, "read_verilog -I./rtl/foundation %s\n", nm.c_str());
 }
 
@@ -1224,8 +1225,8 @@ hlognet_box::print_verilog_full_net(gh_string_t& dir_name, long num_elems){
 
 	print_verilog_header_to_yosys_file(yos_comm_fl);
 	
-	vl_net_file_nm = vl_sub_rtl_dir + gh_path_sep + net_ff_nm;
-	print_verilog_file_name_to_command_files(vl_net_file_nm);
+	gh_string_t net_file_nm = vl_sub_rtl_dir + gh_path_sep + net_ff_nm;
+	print_verilog_file_name_to_command_files(net_file_nm);
 	
 	slice_vec tgt_addrs;
 
@@ -1333,9 +1334,11 @@ module %s_impl
 		
 	}
 	
-	copy_verilog_foundation_files(dir_name);
+	copy_verilog_foundation_files(dir_name, net_nam);
 
 	print_verilog_footer_to_yosys_file(yos_comm_fl, net_nam);
+	
+	vff.print_verilog_ready_final_and("gch_ready");
 
 	fprintf(ff, R"base(
 
@@ -1416,3 +1419,58 @@ runner_print_verilog_network::run_test(gh_str_list_t& lt_args){
 	return 0;
 }
 
+void
+verilog_file::print_verilog_inc_ready_and(){
+	FILE* ff = fl;
+	gh_vector_t<long>& pend = pending_rdy;
+	
+	tot_rdy++;
+	fprintf(ff, "\twire rdy%ld_lv0; \n", tot_rdy);
+	
+	long pend_sz = (long)pend.size();
+	long aa = 0;
+	for(aa = 0; aa < pend_sz; aa++){
+		long vv = pend[aa];
+		if(vv != 0){
+			pend[aa] = 0;
+			fprintf(ff, "\twire rdy%ld_lv%ld; \n", tot_rdy, aa + 1);
+			fprintf(ff, "\tassign rdy%ld_lv%ld = rdy%ld_lv%ld && rdy%ld_lv%ld; \n", 
+					tot_rdy, aa + 1,
+					vv, aa,
+					tot_rdy, aa
+   				);
+		} else {
+			pend[aa] = tot_rdy;
+			break;
+		}
+	}
+	if(aa == pend_sz){
+		pend.push_back(tot_rdy);
+	}
+}
+
+void
+verilog_file::print_verilog_ready_final_and(gh_string_t rdy_nm){
+	FILE* ff = fl;
+	gh_vector_t<long>& pend = pending_rdy;
+
+	fprintf(ff, "\n\n");
+	fprintf(ff, "\t// FINAL_READY (%s) \n\n", rdy_nm.c_str());
+
+	fprintf(ff, "\tassign %s = ", rdy_nm.c_str());
+	
+	long pend_sz = (long)pend.size();
+	long aa = 0;
+	long num_prt = 0;
+	for(aa = 0; aa < pend_sz; aa++){
+		long vv = pend[aa];
+		if(vv != 0){
+			pend[aa] = 0;
+			if(num_prt > 0){ fprintf(ff, " && "); }
+			fprintf(ff, "rdy%ld_lv%ld", vv, aa);
+			num_prt++;
+		}
+	}
+	
+	fprintf(ff, ";\n");
+}
