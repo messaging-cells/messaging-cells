@@ -5,6 +5,8 @@
 
 `define NS_NUM_TEST 12
 
+`define NS_SEL_HALFBYTE(ii) ii*4 +: 4
+
 module test_top 
 #(parameter 
 	PSZ=`NS_PACKET_SIZE, 
@@ -90,11 +92,12 @@ module test_top
 	wire w_Segment2_F;
 	wire w_Segment2_G;
 
+	localparam TOT_BITS_CNTR = 64;
 
 	reg [0:0] mul_clock = 0;
-	reg [7:0] tik_count = 0;
-	reg [7:0] lim_tiks_up = 8'h22;
-	reg [7:0] lim_tiks_down = 8'hCC;
+	reg [TOT_BITS_CNTR - 1:0] tik_count = 0;
+	reg [TOT_BITS_CNTR - 1:0] lim_tiks_up = 64'h00_00_00_00_00_00_00_FF;
+	reg [TOT_BITS_CNTR - 1:0] lim_tiks_down = 64'h00_00_00_00_00_00_07_FF;
 	
 	always @(posedge i_clk)
 	begin
@@ -128,10 +131,14 @@ module test_top
 	wire sw4_ON = ((w_Switch_4 == `NS_ON) && (r_Switch_4 == `NS_OFF));
 	wire sw4_OFF = ((w_Switch_4 == `NS_OFF) && (r_Switch_4 == `NS_ON));
 	
-	reg [0:0] times_two = 0;
+	reg [0:0] changing = 0;
 	reg [0:0] cicles_up = 0;
+	
+	reg [3:0] up_byte_to_disp = 0;
+	reg [3:0] down_byte_to_disp = 0;
 
-	wire [7:0] disp_lim = (cicles_up)?(lim_tiks_up):(lim_tiks_down);
+	wire [3:0] byte_to_disp = (cicles_up)?(up_byte_to_disp):(down_byte_to_disp);
+	wire [3:0] byte_val_to_disp = (cicles_up)?(lim_tiks_up[`NS_SEL_HALFBYTE(byte_to_disp)]):(lim_tiks_down[`NS_SEL_HALFBYTE(byte_to_disp)]);
 	
 	always @(posedge i_clk)
 	begin
@@ -145,59 +152,59 @@ module test_top
 		
 		if(sw1_ON)
 		begin
-			if(times_two) begin
+			if(! changing) begin
 				if(cicles_up) begin
-					lim_tiks_up <= (lim_tiks_up << 1);
+					up_byte_to_disp <= up_byte_to_disp + 1;
 				end
 				else
 				begin
-					lim_tiks_down <= (lim_tiks_down << 1);
+					down_byte_to_disp <= down_byte_to_disp + 1;
 				end
 			end
 			else
 			begin
 				if(cicles_up) begin
-					lim_tiks_up <= (lim_tiks_up + 1);
+					lim_tiks_up[`NS_SEL_HALFBYTE(up_byte_to_disp)] <= lim_tiks_up[`NS_SEL_HALFBYTE(up_byte_to_disp)] + 1;
 				end
 				else
 				begin
-					lim_tiks_down <= (lim_tiks_down + 1);
+					lim_tiks_down[`NS_SEL_HALFBYTE(down_byte_to_disp)] <= lim_tiks_down[`NS_SEL_HALFBYTE(down_byte_to_disp)] + 1;
 				end
 			end
 		end
 		else 
 		if(sw2_ON) begin
-			if(times_two) begin
+			if(! changing) begin
 				if(cicles_up) begin
-					lim_tiks_up <= (lim_tiks_up >> 1);
+					up_byte_to_disp <= up_byte_to_disp - 1;
 				end
 				else
 				begin
-					lim_tiks_down <= (lim_tiks_down >> 1);
+					down_byte_to_disp <= down_byte_to_disp - 1;
 				end
 			end
 			else
 			begin
 				if(cicles_up) begin
-					lim_tiks_up <= (lim_tiks_up - 1);
+					lim_tiks_up[`NS_SEL_HALFBYTE(up_byte_to_disp)] <= lim_tiks_up[`NS_SEL_HALFBYTE(up_byte_to_disp)] - 1;
 				end
 				else
 				begin
-					lim_tiks_down <= (lim_tiks_down - 1);
+					lim_tiks_down[`NS_SEL_HALFBYTE(down_byte_to_disp)] <= lim_tiks_down[`NS_SEL_HALFBYTE(down_byte_to_disp)] - 1;
 				end
 			end
 		end
 		else if(sw3_ON) begin
-			`ns_bit_toggle(times_two);
+			`ns_bit_toggle(cicles_up);
 		end
 		else if(sw4_ON) begin
-			`ns_bit_toggle(cicles_up);
+			`ns_bit_toggle(changing);
 		end
 	end
 
 	bin_to_disp disp_0(
 	.i_Clk(i_clk),
-	.i_Binary_Num(disp_lim[7:4]),
+	.i_Binary_Num(byte_to_disp),
 	.o_Segment_A(w_Segment1_A),
 	.o_Segment_B(w_Segment1_B),
 	.o_Segment_C(w_Segment1_C),
@@ -209,7 +216,7 @@ module test_top
 	
 	bin_to_disp disp1(
 	.i_Clk(i_clk),
-	.i_Binary_Num(disp_lim[3:0]),
+	.i_Binary_Num(byte_val_to_disp),
 	.o_Segment_A(w_Segment2_A),
 	.o_Segment_B(w_Segment2_B),
 	.o_Segment_C(w_Segment2_C),
@@ -235,8 +242,8 @@ module test_top
 	assign o_Segment2_F = ~w_Segment2_F;
 	assign o_Segment2_G = ~w_Segment2_G;
 	
-	assign o_LED_1 = times_two;	 // (*2 inc) VS (+1 inc)
-	assign o_LED_2 = cicles_up;	 // (#tiks up) VS (#tiks down)
+	assign o_LED_1 = cicles_up;	 // showing (#tiks up) VS showing (#tiks down)
+	assign o_LED_2 = changing;	 // changing current 'byte_val_to_disp' VS changing 'byte_to_disp'
 	assign o_LED_3 = 0;
 	assign o_LED_4 = 0;
 

@@ -1,0 +1,241 @@
+Info: Importing module test_top
+Info: Rule checker, verifying imported design
+Info: Checksum: 0x779487d8
+
+Info: constrained 'i_clk' to bel 'X0/Y8/io1'
+Info: constrained 'i_Switch_1' to bel 'X13/Y4/io1'
+Info: constrained 'i_Switch_2' to bel 'X13/Y3/io1'
+Info: constrained 'i_Switch_3' to bel 'X13/Y6/io0'
+Info: constrained 'i_Switch_4' to bel 'X13/Y4/io0'
+Info: constrained 'o_Segment1_A' to bel 'X0/Y13/io1'
+Info: constrained 'o_Segment1_B' to bel 'X0/Y13/io0'
+Info: constrained 'o_Segment1_C' to bel 'X5/Y17/io1'
+Info: constrained 'o_Segment1_D' to bel 'X6/Y17/io0'
+Info: constrained 'o_Segment1_E' to bel 'X6/Y17/io1'
+Info: constrained 'o_Segment1_F' to bel 'X0/Y14/io1'
+Info: constrained 'o_Segment1_G' to bel 'X0/Y14/io0'
+Info: constrained 'o_Segment2_A' to bel 'X1/Y17/io1'
+Info: constrained 'o_Segment2_B' to bel 'X2/Y17/io1'
+Info: constrained 'o_Segment2_C' to bel 'X3/Y17/io1'
+Info: constrained 'o_Segment2_D' to bel 'X4/Y17/io1'
+Info: constrained 'o_Segment2_E' to bel 'X5/Y17/io0'
+Info: constrained 'o_Segment2_F' to bel 'X0/Y12/io0'
+Info: constrained 'o_Segment2_G' to bel 'X4/Y17/io0'
+Info: constrained 'o_LED_1' to bel 'X13/Y6/io1'
+Info: constrained 'o_LED_2' to bel 'X13/Y7/io0'
+Info: constrained 'o_LED_3' to bel 'X13/Y7/io1'
+Info: constrained 'o_LED_4' to bel 'X13/Y8/io0'
+Info: constrained 'io_PMOD_1' to bel 'X13/Y11/io1'
+Info: constrained 'io_PMOD_2' to bel 'X13/Y11/io0'
+Info: constrained 'io_PMOD_3' to bel 'X13/Y9/io0'
+Info: constrained 'io_PMOD_4' to bel 'X13/Y8/io1'
+Info: constrained 'io_PMOD_7' to bel 'X12/Y17/io1'
+Info: constrained 'io_PMOD_8' to bel 'X12/Y17/io0'
+Info: constrained 'io_PMOD_9' to bel 'X11/Y17/io1'
+Info: constrained 'io_PMOD_10' to bel 'X10/Y17/io1'
+
+Info: Packing constants..
+Info: Packing IOs..
+Info: Packing LUT-FFs..
+Info:      521 LCs used as LUT4 only
+Info:      169 LCs used as LUT4 and DFF
+Info: Packing non-LUT FFs..
+Info:      136 LCs used as DFF only
+Info: Packing carries..
+Info:       82 LCs used as CARRY only
+Info: Packing RAMs..
+Info: Placing PLLs..
+Info: Packing special functions..
+Info: Promoting globals..
+Info: promoting i_clk$SB_IO_IN (fanout 305)
+Info: promoting it_but_1.rg_dbn_rdy_SB_LUT4_I3_O [reset] (fanout 19)
+Info: promoting it_but_2.rg_dbn_rdy_SB_LUT4_I3_O [reset] (fanout 19)
+Info: promoting it_but_3.rg_dbn_rdy_SB_LUT4_I3_O [reset] (fanout 19)
+Info: promoting it_but_4.rg_dbn_rdy_SB_LUT4_I3_O [reset] (fanout 19)
+Info: Constraining chains...
+Info:       21 LCs used to legalise carry chains.
+Info: Checksum: 0xa1cb739d
+
+Info: Annotating ports with timing budgets for target frequency 12.00 MHz
+Info: Checksum: 0x09c49985
+
+Info: Device utilisation:
+Info: 	         ICESTORM_LC:   931/ 1280    72%
+Info: 	        ICESTORM_RAM:     0/   16     0%
+Info: 	               SB_IO:    31/  112    27%
+Info: 	               SB_GB:     5/    8    62%
+Info: 	        ICESTORM_PLL:     0/    1     0%
+Info: 	         SB_WARMBOOT:     0/    1     0%
+
+Info: Placed 31 cells based on constraints.
+Info: Creating initial analytic placement for 701 cells, random placement wirelen = 10485.
+Info:     at initial placer iter 0, wirelen = 811
+Info:     at initial placer iter 1, wirelen = 812
+Info:     at initial placer iter 2, wirelen = 799
+Info:     at initial placer iter 3, wirelen = 832
+Info: Running main analytical placer.
+Info:     at iteration #1, type ALL: wirelen solved = 779, spread = 4468, legal = 5400; time = 0.05s
+Info:     at iteration #2, type ALL: wirelen solved = 861, spread = 4216, legal = 5005; time = 0.05s
+Info:     at iteration #3, type ALL: wirelen solved = 876, spread = 4193, legal = 4999; time = 0.05s
+Info:     at iteration #4, type ALL: wirelen solved = 869, spread = 4150, legal = 4859; time = 0.05s
+Info:     at iteration #5, type ALL: wirelen solved = 997, spread = 3896, legal = 4857; time = 0.06s
+Info:     at iteration #6, type ALL: wirelen solved = 1012, spread = 4039, legal = 4597; time = 0.06s
+Info:     at iteration #7, type ALL: wirelen solved = 1024, spread = 4038, legal = 4290; time = 0.04s
+Info:     at iteration #8, type ALL: wirelen solved = 1183, spread = 3917, legal = 4573; time = 0.05s
+Info:     at iteration #9, type ALL: wirelen solved = 1205, spread = 3709, legal = 4423; time = 0.04s
+Info:     at iteration #10, type ALL: wirelen solved = 1202, spread = 3511, legal = 4219; time = 0.04s
+Info:     at iteration #11, type ALL: wirelen solved = 1369, spread = 3464, legal = 4046; time = 0.05s
+Info:     at iteration #12, type ALL: wirelen solved = 1262, spread = 3604, legal = 4240; time = 0.05s
+Info:     at iteration #13, type ALL: wirelen solved = 1449, spread = 3531, legal = 3974; time = 0.04s
+Info:     at iteration #14, type ALL: wirelen solved = 1459, spread = 3461, legal = 3986; time = 0.04s
+Info:     at iteration #15, type ALL: wirelen solved = 1451, spread = 3418, legal = 4048; time = 0.04s
+Info:     at iteration #16, type ALL: wirelen solved = 1556, spread = 3501, legal = 4048; time = 0.06s
+Info:     at iteration #17, type ALL: wirelen solved = 1588, spread = 3670, legal = 4121; time = 0.04s
+Info:     at iteration #18, type ALL: wirelen solved = 1602, spread = 3543, legal = 4140; time = 0.04s
+Info: HeAP Placer Time: 1.19s
+Info:   of which solving equations: 0.61s
+Info:   of which spreading cells: 0.08s
+Info:   of which strict legalisation: 0.23s
+
+Info: Running simulated annealing placer for refinement.
+Info:   at iteration #1: temp = 0.000000, timing cost = 233, wirelen = 3974
+Info:   at iteration #5: temp = 0.000000, timing cost = 270, wirelen = 3321
+Info:   at iteration #10: temp = 0.000000, timing cost = 264, wirelen = 3043
+Info:   at iteration #15: temp = 0.000000, timing cost = 265, wirelen = 2954
+Info:   at iteration #20: temp = 0.000000, timing cost = 235, wirelen = 2881
+Info:   at iteration #24: temp = 0.000000, timing cost = 214, wirelen = 2842 
+Info: SA placement time 1.53s
+
+Info: Max frequency for clock 'i_clk$SB_IO_IN_$glb_clk': 78.14 MHz (PASS at 12.00 MHz)
+
+Info: Max delay <async>                         -> posedge i_clk$SB_IO_IN_$glb_clk: 3.56 ns
+Info: Max delay posedge i_clk$SB_IO_IN_$glb_clk -> <async>                        : 3.48 ns
+
+Info: Slack histogram:
+Info:  legend: * represents 2 endpoint(s)
+Info:          + represents [1,2) endpoint(s)
+Info: [ 70535,  71119) |*****+
+Info: [ 71119,  71703) |************+
+Info: [ 71703,  72287) |************+
+Info: [ 72287,  72871) |****************+
+Info: [ 72871,  73455) |***************************+
+Info: [ 73455,  74039) |***************+
+Info: [ 74039,  74623) |*****************************************************+
+Info: [ 74623,  75207) |**********************************+
+Info: [ 75207,  75791) |*****************************+
+Info: [ 75791,  76375) |**************************+
+Info: [ 76375,  76959) |*********************+
+Info: [ 76959,  77543) |******+
+Info: [ 77543,  78127) |**********************+
+Info: [ 78127,  78711) |*********************+
+Info: [ 78711,  79295) |********************+
+Info: [ 79295,  79879) |****************************+
+Info: [ 79879,  80463) |***************+
+Info: [ 80463,  81047) |************************************************************ 
+Info: [ 81047,  81631) |*********************+
+Info: [ 81631,  82215) |*************************************************+
+Info: Checksum: 0x404d526f
+
+Info: Routing..
+Info: Setting up routing queue.
+Info: Routing 2832 arcs.
+Info:            |   (re-)routed arcs  |   delta    | remaining
+Info:    IterCnt |  w/ripup   wo/ripup |  w/r  wo/r |      arcs
+Info:       1000 |       23        976 |   23   976 |      1857
+Info:       2000 |      159       1840 |  136   864 |      1006
+Info:       3000 |      424       2575 |  265   735 |       325
+Info:       3364 |      458       2906 |   34   331 |         0
+Info: Routing complete.
+Info: Route time 0.99s
+Info: Checksum: 0xe5c3e583
+
+Info: Critical path report for clock 'i_clk$SB_IO_IN_$glb_clk' (posedge -> posedge):
+Info: curr total
+Info:  0.5  0.5  Source up_byte_to_disp_SB_DFFE_Q_D_SB_LUT4_O_1_LC.O
+Info:  1.3  1.8    Net up_byte_to_disp[3] budget 7.871000 ns (5,7) -> (7,5)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_LC.I0
+Info:  0.4  2.3  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_LC.O
+Info:  0.6  2.8    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0_SB_LUT4_O_I1_SB_LUT4_O_I1 budget 7.474000 ns (7,5) -> (6,4)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0_SB_LUT4_O_I1_SB_LUT4_O_LC.I1
+Info:  0.4  3.2  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0_SB_LUT4_O_I1_SB_LUT4_O_LC.O
+Info:  0.6  3.8    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0_SB_LUT4_O_I1 budget 7.474000 ns (6,4) -> (5,5)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0_SB_LUT4_O_LC.I1
+Info:  0.4  4.2  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0_SB_LUT4_O_LC.O
+Info:  0.6  4.8    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_I0 budget 7.474000 ns (5,5) -> (5,5)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_LC.I0
+Info:  0.4  5.3  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O_SB_LUT4_O_LC.O
+Info:  1.3  6.5    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O[0] budget 7.743000 ns (5,5) -> (2,2)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I2_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I0_SB_DFFE_Q_D_SB_LUT4_O_LC.I3
+Info:  0.3  6.9  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I2_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I0_SB_DFFE_Q_D_SB_LUT4_O_LC.O
+Info:  0.6  7.4    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I3[1] budget 7.743000 ns (2,2) -> (1,3)
+Info:                Sink $nextpnr_ICESTORM_LC_7.I1
+Info:  0.3  7.7  Source $nextpnr_ICESTORM_LC_7.COUT
+Info:  0.0  7.7    Net $nextpnr_ICESTORM_LC_7$O budget 0.000000 ns (1,3) -> (1,3)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I2_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I0_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_LC.CIN
+Info:  0.1  7.8  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I2_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I0_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_LC.COUT
+Info:  0.0  7.8    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I3[2] budget 0.000000 ns (1,3) -> (1,3)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_LC.CIN
+Info:  0.1  8.0  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_LC.COUT
+Info:  0.3  8.2    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I3[3] budget 0.260000 ns (1,3) -> (1,3)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_LC.I3
+Info:  0.3  8.5  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2_SB_LUT4_O_LC.O
+Info:  0.6  9.1    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_I2 budget 9.027000 ns (1,3) -> (2,3)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_LC.I2
+Info:  0.4  9.5  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_O_LC.O
+Info:  1.3 10.8    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D budget 8.957000 ns (2,3) -> (4,5)
+Info:                Sink mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_LC.I3
+Info:  0.3 11.1  Source mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_LC.O
+Info:  1.3 12.4    Net mul_clock_SB_DFF_Q_D_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I3_SB_DFFE_Q_D_SB_LUT4_I3_O[11] budget 9.114000 ns (4,5) -> (1,7)
+Info:                Sink lim_tiks_up_SB_DFFE_Q_36_DFFLC.I0
+Info:  0.5 12.9  Setup lim_tiks_up_SB_DFFE_Q_36_DFFLC.I0
+Info: 4.5 ns logic, 8.4 ns routing
+
+Info: Critical path report for cross-domain path '<async>' -> 'posedge i_clk$SB_IO_IN_$glb_clk':
+Info: curr total
+Info:  0.0  0.0  Source i_Switch_4$sb_io.D_IN_0
+Info:  1.3  1.3    Net i_Switch_4$SB_IO_IN budget 40.921001 ns (13,4) -> (9,6)
+Info:                Sink i_Switch_4_SB_LUT4_I1_LC.I1
+Info:  0.4  1.7  Source i_Switch_4_SB_LUT4_I1_LC.O
+Info:  1.3  2.9    Net i_Switch_4_SB_LUT4_I1_O budget 15.333000 ns (9,6) -> (11,7)
+Info:                Sink it_but_4.cnt_cks_SB_DFFSR_Q_10_D_SB_LUT4_O_LC.I0
+Info:  0.5  3.4  Setup it_but_4.cnt_cks_SB_DFFSR_Q_10_D_SB_LUT4_O_LC.I0
+Info: 0.9 ns logic, 2.5 ns routing
+
+Info: Critical path report for cross-domain path 'posedge i_clk$SB_IO_IN_$glb_clk' -> '<async>':
+Info: curr total
+Info:  0.5  0.5  Source disp1.o_Segment_D_SB_DFFSS_Q_D_SB_LUT4_O_LC.O
+Info:  1.6  2.1    Net w_Segment2_D budget 40.723999 ns (11,15) -> (6,16)
+Info:                Sink o_Segment2_D_SB_LUT4_O_LC.I3
+Info:  0.3  2.4  Source o_Segment2_D_SB_LUT4_O_LC.O
+Info:  1.3  3.7    Net o_Segment2_D$SB_IO_OUT budget 40.596001 ns (6,16) -> (4,17)
+Info:                Sink o_Segment2_D$sb_io.D_OUT_0
+Info: 0.9 ns logic, 2.9 ns routing
+
+Info: Max frequency for clock 'i_clk$SB_IO_IN_$glb_clk': 77.60 MHz (PASS at 12.00 MHz)
+
+Info: Max delay <async>                         -> posedge i_clk$SB_IO_IN_$glb_clk: 3.41 ns
+Info: Max delay posedge i_clk$SB_IO_IN_$glb_clk -> <async>                        : 3.72 ns
+
+Info: Slack histogram:
+Info:  legend: * represents 2 endpoint(s)
+Info:          + represents [1,2) endpoint(s)
+Info: [ 70446,  71034) |*******+
+Info: [ 71034,  71622) |********+
+Info: [ 71622,  72210) |******************+
+Info: [ 72210,  72798) |********+
+Info: [ 72798,  73386) |******+
+Info: [ 73386,  73974) |*****************+
+Info: [ 73974,  74562) |****************************************+
+Info: [ 74562,  75150) |************************************************************ 
+Info: [ 75150,  75738) |*****************************+
+Info: [ 75738,  76326) |*************+
+Info: [ 76326,  76914) |*****+
+Info: [ 76914,  77502) |*****+
+Info: [ 77502,  78090) |**+
+Info: [ 78090,  78678) |*******+
+Info: [ 78678,  79266) |****************+
+Info: [ 79266,  79854) |*********************************+
+Info: [ 79854,  80442) |************************************+
+Info: [ 80442,  81030) |**************************** 
+Info: [ 81030,  81618) |********************************** 
+Info: [ 81618,  82206) |***************************************+

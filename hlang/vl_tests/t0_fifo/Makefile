@@ -18,6 +18,8 @@ CHECK_DIR = ck_formal
 RTL_FILES = \
 	${RTL_DIR}/bin_to_disp.v \
 	${RTL_DIR}/debouncer.v \
+	${RTL_DIR}/calc_redun.v \
+	${RTL_DIR}/tree_nand.v \
 	${RTL_DIR}/hglobal.v \
 	${RTL_DIR}/nd_fifo.v \
 	${RTL_DIR}/io_fifo.v \

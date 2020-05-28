@@ -647,21 +647,21 @@ gh_print_verilog_code_for_nodes(verilog_file& vff, pnode_vec_t& all_nd){
 gh_string_t
 htarget_box::get_verilog_router_module_name(){
 	GH_CK(target != gh_null);
-	gh_string_t ss = gh_vl_tgt + gh_long_to_string(target->bx_idx) + gh_vl_tg_router;
+	gh_string_t ss = gh_vl_tgt + gh_long_to_string(get_index()) + gh_vl_tg_router;
 	return ss;
 }
 
 gh_string_t
 htarget_box::get_verilog_wrapper_module_name(){
 	GH_CK(target != gh_null);
-	gh_string_t ss =  gh_vl_tgt + gh_long_to_string(target->bx_idx) + gh_vl_tg_wrapper;
+	gh_string_t ss =  gh_vl_tgt + gh_long_to_string(get_index()) + gh_vl_tg_wrapper;
 	return ss;
 }
 
 gh_string_t
 htarget_box::get_verilog_core_module_name(){
 	GH_CK(target != gh_null);
-	gh_string_t ss =  gh_vl_tgt + gh_long_to_string(target->bx_idx) + gh_vl_tg_core;
+	gh_string_t ss =  gh_vl_tgt + gh_long_to_string(get_index()) + gh_vl_tg_core;
 	return ss;
 }
 
@@ -669,14 +669,14 @@ gh_string_t
 htarget_box::get_verilog_target_param_name(gh_io_kind_t iok){
 	gh_string_t iok_nm = get_verilog_io_kind(iok);
 	GH_CK(target != gh_null);
-	//gh_string_t ss = gh_vl_tgt + iok_nm + gh_long_to_string(target->bx_idx);
+	//gh_string_t ss = gh_vl_tgt + iok_nm + gh_long_to_string(get_index());
 	gh_string_t ss = gh_vl_tgt + iok_nm;
 	return ss;
 }
 
 gh_string_t
 htarget_box::get_verilog_target_link_name(long lnk, gh_route_side_t sd, gh_io_kind_t iok){
-	long tg = target->bx_idx;
+	long tg = get_index();
 	
 	bool is_lft_in = ((sd == gh_left_side) && (iok == gh_in_kind));
 	bool is_rgt_out = ((sd == gh_right_side) && (iok == gh_out_kind));
@@ -741,6 +741,8 @@ module %s
 	`NS_DECLARE_IN_CHNL(%s),
 	`NS_DECLARE_OUT_CHNL(%s)
 );
+	localparam MY_LOCAL_ADDR = %ld;
+	
 	wire rdy1;
 	hnull_source #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_null_core_src (
@@ -763,6 +765,7 @@ endmodule
 	get_verilog_core_module_name().c_str(), 
 	itf_in_nm.c_str(), 
 	itf_out_nm.c_str(),
+	get_index(),
 	itf_out_nm.c_str(),
 	itf_in_nm.c_str() 
 );

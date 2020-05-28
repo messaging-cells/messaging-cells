@@ -1461,6 +1461,11 @@ public:
 		del_htarget_box();
 	}
 	
+	long 	get_index(){
+		GH_CK(target != gh_null);
+		return target->bx_idx;
+	}
+	
 	void 	del_htarget_box();
 
 	void 	join_box_outputs(long fst_idx1, hnode_box* bx1, long fst_idx2, hnode_box* bx2, 

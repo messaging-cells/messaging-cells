@@ -238,8 +238,36 @@
 	(mg``_dst == eq_dst) && (mg``_dat == eq_dat) && (mg``_red == eq_red))
 
 
+// ERRORS
+// ----------------------------------------------------------------------------
+
+`define NS_DECLARE_REG_ERR(nam) \
+	`NS_DECLARE_REG_MSG(nam) \
+	reg nam``_error = 0;
+
+
+`define NS_SET_REG_ERR(ou, mg) \
+	if(! nam``_error) begin \
+		`NS_MOV_REG_MSG(ou, mg) \
+		nam``_error <= ! nam``_error; \
+	end
+
+
+	
+`define NS_ASSIGN_ERR(ou, mg) \
+	assign ou``_my_addr = MY_LOCAL_ADDR; \
+	`NS_ASSIGN_MSG(ou, mg) \
+	assign ou``_error = mg``_error;
+
+	
 // CHANNELS
 // ----------------------------------------------------------------------------
+
+`define NS_DECLARE_ERR_CHNL(nam) \
+	output wire [ASZ-1:0] nam``_my_addr, \
+	`NS_DECLARE_OUT_MSG(nam), \
+	output wire nam``_error
+
 
 `define NS_DECLARE_GLB_CHNL(nam) \
 	input wire nam``_clk, \

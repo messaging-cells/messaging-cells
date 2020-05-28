@@ -1,6 +1,6 @@
 
 
-PRJ_NM = multi_clock
+PRJ_NM = pulses
 
 BUILD_DIR = build
 PRJ_PREFIX = ${BUILD_DIR}/${PRJ_NM}

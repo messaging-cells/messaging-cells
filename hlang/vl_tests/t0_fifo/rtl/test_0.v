@@ -65,17 +65,6 @@ module test_top
 	reg r_LED_3 = `NS_OFF;
 	reg r_LED_4 = `NS_OFF;
 
-	/*
-	wire err_0;
-	wire err_1;
-	wire err_2;
-
-	wire [DSZ-1:0] fst_err_0_inp;
-	wire [DSZ-1:0] fst_err_0_dat;
-	wire [DSZ-1:0] fst_err_1_inp;
-	wire [DSZ-1:0] fst_err_1_dat;
-	*/
-	
 	// LNK_0
 	`NS_DECLARE_LINK(lnk_0)
 	wire [DSZ-1:0] lnk_0_ck_dat;
@@ -170,47 +159,6 @@ module test_top
 		`NS_INSTA_DBG_CHNL(dbg, dbg0, i_clk)
 	);
 	
-	/*
-	`NS_DECLARE_LINK(null_lnk)
-
-	wire sum = 0;
-	
-	wire rdy1;
-	hnull_source #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
-	it_null_core_src (
-		`NS_INSTA_GLB_CHNL_VALS(gch, i_clk, the_reset, rdy1),
-		`NS_INSTA_SND_CHNL(snd0, null_lnk)
-	);
-	assign sum = sum & rdy1;
- 
-	wire rdy2;
-	hnull_sink #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
-	it_null_core_snk (
-		`NS_INSTA_GLB_CHNL_VALS(gch, i_clk, the_reset, rdy2),
-		`NS_INSTA_RCV_CHNL(rcv0, null_lnk)
-	);
-	assign sum = sum & rdy2;
-	*/
-	
-	/*
-	// Instantiate Debounce Filter
-	debounce sw1_inst(
-		.i_Clk(i_clk),
-		.i_Switch(i_Switch_1),
-		.o_Switch(w_Switch_1)
-	);
-	
-	// Purpose: When Switch is pressed, update display i_data and o_data
-	always @(posedge i_clk)
-	begin
-		r_Switch_1 <= w_Switch_1;
-		
-		if((w_Switch_1 == `NS_ON) && (r_Switch_1 == `NS_OFF))
-		begin
-		end
-	end
-	*/
-
 	bin_to_disp disp_1(
 	.i_Clk(i_clk),
 	.i_Binary_Num((dbg0_leds != 0)?(dbg0_disp0):(`NS_NUM_TEST)),
