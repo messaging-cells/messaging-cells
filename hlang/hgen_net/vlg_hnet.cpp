@@ -739,7 +739,8 @@ module %s
 )(
 	`NS_DECLARE_GLB_CHNL(gch),
 	`NS_DECLARE_IN_CHNL(%s),
-	`NS_DECLARE_OUT_CHNL(%s)
+	`NS_DECLARE_OUT_CHNL(%s),
+	`NS_DECLARE_DBG_ERR_CHNL(err0)
 );
 	localparam MY_LOCAL_ADDR = %ld;
 	
@@ -751,10 +752,11 @@ module %s
 	);
  
 	wire rdy2;
-	hnull_sink #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
+	hnull_sink #(.MY_LOCAL_ADDR(MY_LOCAL_ADDR), .ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_null_core_snk (
 		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy2),
-		`NS_INSTA_RCV_CHNL_FROM_CHNL(rcv0, %s)
+		`NS_INSTA_RCV_CHNL_FROM_CHNL(rcv0, %s),
+		`NS_INSTA_DBG_ERR_CHNL(err0, err0)
 	);
 	
 	assign gch_ready = rdy1 && rdy2;
@@ -926,6 +928,7 @@ htarget_box::print_verilog_instance_core(verilog_file& vff){
 	%s #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_core (
 		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld_lv0),
+		`NS_INSTA_DBG_ERR_CHNL(err0, err0),
 )base", get_verilog_core_module_name().c_str(), vff.tot_rdy);
 		
 	gh_print_verilog_instance_receive_interface(vff, 2, itf_in_nm.c_str(), core_rcv.c_str(), true);
@@ -1026,6 +1029,7 @@ module %s
 	RSZ=`NS_REDUN_SIZE
 )(
 	`NS_DECLARE_GLB_CHNL(gch),
+	`NS_DECLARE_DBG_ERR_CHNL(err0),
 )base", get_verilog_wrapper_module_name().c_str());
 	
 	print_verilog_all_params(vff, gh_vl_declare_param_op, num_direct_chns, num_direct_paks, false);
@@ -1087,11 +1091,14 @@ htarget_box::print_verilog_instance_wrapper(verilog_file& vff, long num_direct_c
 	print_verilog_all_params(vff, gh_vl_declare_link_op, num_direct_chns, num_direct_paks, false);
 	
 	vff.print_verilog_inc_ready_and();
+	vff.print_verilog_inc_error_selec();
+	
 	fprintf(ff, R"base(
 	%s #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ))
 	it_%s (
 		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy%ld_lv0),
-)base", wrp_nm.c_str(), wrp_nm.c_str(), vff.tot_rdy);
+		`NS_INSTA_DBG_ERR_CHNL(err0, err%ld_lv0),
+)base", wrp_nm.c_str(), wrp_nm.c_str(), vff.tot_rdy, vff.tot_err);
 	
 	print_verilog_all_params(vff, gh_vl_instance_net_op, num_direct_chns, num_direct_paks, false);
 
@@ -1342,6 +1349,7 @@ module %s_impl
 	print_verilog_footer_to_yosys_file(yos_comm_fl, net_nam);
 	
 	vff.print_verilog_ready_final_and("gch_ready");
+	vff.print_verilog_error_final_selec("final_err");
 
 	fprintf(ff, R"base(
 
@@ -1477,3 +1485,79 @@ verilog_file::print_verilog_ready_final_and(gh_string_t rdy_nm){
 	
 	fprintf(ff, ";\n");
 }
+
+void
+verilog_file::print_verilog_inc_error_selec(){
+	FILE* ff = fl;
+	gh_vector_t<long>& pend = pending_err;
+	
+	tot_err++;
+	fprintf(ff, "\t`NS_DECLARE_DBG_ERR_LINK(err%ld_lv0) \n", tot_err);
+	
+	long pend_sz = (long)pend.size();
+	long aa = 0;
+	for(aa = 0; aa < pend_sz; aa++){
+		long vv = pend[aa];
+		if(vv != 0){
+			pend[aa] = 0;
+			fprintf(ff, "\t`NS_DECLARE_DBG_ERR_LINK(err%ld_lv%ld) \n", tot_err, aa + 1);
+			fprintf(ff, "\t`NS_ASSIGN_ONE_DBG_ERR(err%ld_lv%ld, err%ld_lv%ld, err%ld_lv%ld) \n", 
+					tot_err, aa + 1,
+					vv, aa,
+					tot_err, aa
+   				);
+		} else {
+			pend[aa] = tot_err;
+			break;
+		}
+	}
+	if(aa == pend_sz){
+		pend.push_back(tot_err);
+	}
+}
+
+void
+verilog_file::print_verilog_error_final_selec(gh_string_t err_nm){
+	FILE* ff = fl;
+	gh_vector_t<long>& pend = pending_err;
+
+	fprintf(ff, "\n\n");
+	fprintf(ff, "\t// FINAL_ERROR_ASSIGNS \n\n");
+
+	long pend_sz = (long)pend.size();
+	long aa = 0;
+	long prv_prt = -1;
+	gh_string_t prv_err = "";
+	for(aa = 0; aa < pend_sz; aa++){
+		long vv = pend[aa];
+		if(vv != 0){
+			pend[aa] = 0;
+			gh_string_t curr_err = err_nm + gh_long_to_string(aa);
+			if(prv_prt >= 0){ 
+				fprintf(ff, "\t`NS_DECLARE_DBG_ERR_LINK(%s) \n", curr_err.c_str());
+				fprintf(ff, "\t`NS_ASSIGN_ONE_DBG_ERR(%s, %s, err%ld_lv%ld) \n", 
+						curr_err.c_str(),
+						prv_err.c_str(),
+						vv, aa
+					);
+				prv_err = curr_err;
+			} else {
+				prv_err = "err" + gh_long_to_string(vv) + "_lv" + gh_long_to_string(aa);
+			}
+			prv_prt = aa;
+		}
+	}
+	
+	if(prv_prt >= 0){
+		fprintf(ff, "\t// FINAL_ERROR (%s) \n\n", err_nm.c_str());
+		
+		fprintf(ff, "\t`NS_DECLARE_DBG_ERR_LINK(%s) \n", err_nm.c_str());
+		fprintf(ff, "\t`NS_ASSIGN_DBG_ERR(%s, %s, %s_my_addr) \n", 
+				err_nm.c_str(),
+				prv_err.c_str(),
+				prv_err.c_str()
+			);
+	}
+	
+}
+

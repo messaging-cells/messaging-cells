@@ -195,6 +195,12 @@
 
 `define NS_FULL_MSG_SZ  (ASZ + ASZ + DSZ + RSZ)
 
+`define NS_DECLARE_LINK_MSG(lnk) \
+	wire [ASZ-1:0] lnk``_src; \
+	wire [ASZ-1:0] lnk``_dst; \
+	wire [DSZ-1:0] lnk``_dat; \
+	wire [RSZ-1:0] lnk``_red;
+
 
 `define NS_DECLARE_REG_MSG(mg) \
 	reg [ASZ-1:0] mg``_src = 0; \
@@ -238,36 +244,8 @@
 	(mg``_dst == eq_dst) && (mg``_dat == eq_dat) && (mg``_red == eq_red))
 
 
-// ERRORS
-// ----------------------------------------------------------------------------
-
-`define NS_DECLARE_REG_ERR(nam) \
-	`NS_DECLARE_REG_MSG(nam) \
-	reg nam``_error = 0;
-
-
-`define NS_SET_REG_ERR(ou, mg) \
-	if(! nam``_error) begin \
-		`NS_MOV_REG_MSG(ou, mg) \
-		nam``_error <= ! nam``_error; \
-	end
-
-
-	
-`define NS_ASSIGN_ERR(ou, mg) \
-	assign ou``_my_addr = MY_LOCAL_ADDR; \
-	`NS_ASSIGN_MSG(ou, mg) \
-	assign ou``_error = mg``_error;
-
-	
 // CHANNELS
 // ----------------------------------------------------------------------------
-
-`define NS_DECLARE_ERR_CHNL(nam) \
-	output wire [ASZ-1:0] nam``_my_addr, \
-	`NS_DECLARE_OUT_MSG(nam), \
-	output wire nam``_error
-
 
 `define NS_DECLARE_GLB_CHNL(nam) \
 	input wire nam``_clk, \
@@ -334,10 +312,7 @@
 
 
 `define NS_DECLARE_LINK(lnk) \
-	wire [ASZ-1:0] lnk``_src; \
-	wire [ASZ-1:0] lnk``_dst; \
-	wire [DSZ-1:0] lnk``_dat; \
-	wire [RSZ-1:0] lnk``_red; \
+	`NS_DECLARE_LINK_MSG(lnk) \
 	wire lnk``_req; \
 	wire lnk``_ack; 
 
@@ -392,6 +367,91 @@
 	assign lnk``_ack = ou_ch``_ack_in;
 
 
+// ERRORS
+// ----------------------------------------------------------------------------
+
+// DBG_ERR
+
+`define NS_DECLARE_DBG_ERR_CHNL(nam) \
+	output wire [ASZ-1:0] nam``_my_addr, \
+	`NS_DECLARE_OUT_MSG(nam), \
+	output wire nam``_error
+
+
+`define NS_DECLARE_DBG_ERR_LINK(nam) \
+	wire [ASZ-1:0] nam``_my_addr; \
+	`NS_DECLARE_LINK_MSG(nam) \
+	wire nam``_error;
+
+
+`define NS_INSTA_DBG_ERR_CHNL(chn0, chn1) \
+	.chn0``_my_addr(chn1``_my_addr), \
+	`NS_INSTA_MSG_CHNL(chn0, chn1), \
+	.chn0``_error(chn1``_error)
+
+
+`define NS_DECLARE_REG_DBG_ERR(nam) \
+	`NS_DECLARE_REG_MSG(nam) \
+	reg nam``_error = 0;
+
+
+`define NS_SET_REG_DBG_ERR(ou, mg) \
+	if(! ou``_error) begin \
+		`NS_MOV_REG_MSG(ou, mg) \
+		ou``_error <= ! ou``_error; \
+	end
+
+
+`define NS_ASSIGN_DBG_ERR(ou, mg, err_addr) \
+	assign ou``_my_addr = err_addr; \
+	`NS_ASSIGN_MSG(ou, mg) \
+	assign ou``_error = mg``_error;
+
+
+`define NS_SELEC_ERR(err0, err1, val) ((err0``_error)?(err0``val):(err1``val))
+	
+`define NS_ASSIGN_ONE_DBG_ERR(ou, err0, err1) \
+	assign ou``_my_addr = `NS_SELEC_ERR(err0, err1, _my_addr); \
+	assign ou``_src = `NS_SELEC_ERR(err0, err1, _src); \
+	assign ou``_dst = `NS_SELEC_ERR(err0, err1, _dst); \
+	assign ou``_dat = `NS_SELEC_ERR(err0, err1, _dat); \
+	assign ou``_red = `NS_SELEC_ERR(err0, err1, _red); \
+	assign ou``_error = `NS_SELEC_ERR(err0, err1, _error);
+
+
+// ERR
+
+`define NS_DECLARE_ERR_CHNL(nam) \
+	output wire nam``_error
+
+
+`define NS_DECLARE_ERR_LINK(nam) \
+	wire nam``_error;
+
+
+`define NS_INSTA_ERR_CHNL(chn0, chn1) \
+	.chn0``_error(chn1``_error)
+
+
+`define NS_DECLARE_REG_ERR(nam) \
+	reg nam``_error = 0;
+
+
+`define NS_SET_REG_ERR(ou, mg) \
+	if(! nam``_error) begin \
+		nam``_error <= ! nam``_error; \
+	end
+
+
+`define NS_ASSIGN_ERR(ou, mg) \
+	assign ou``_error = mg``_error;
+
+
+`define NS_ASSIGN_ONE_ERR(ou, err0, err1) \
+	assign ou``_error = `NS_SELEC_ERR(err0, err1, _error);
+
+
+	
 // FIFOS
 // ----------------------------------------------------------------------------
 

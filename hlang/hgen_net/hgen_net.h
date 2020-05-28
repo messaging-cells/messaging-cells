@@ -63,6 +63,7 @@ typedef const char* gh_c_str_t;
 #define gh_vl_tgts_lnk "_out_lnk_"
 #define gh_vl_tgts_lnk_sep "_"
 #define gh_vl_tg_core_lnk "tg_cor_lnk_"
+#define gh_vl_err_tg "err_tg_"
 
 #define gh_vl_file_ext ".v"
 #define gh_ivl_comm_file_nm "ivl_commands.ivl"
@@ -740,9 +741,15 @@ public:
 	gh_str_set_t assigned_out_channels;
 	long tot_rdy = 0;
 	gh_vector_t<long> pending_rdy;
+	long tot_err = 0;
+	gh_vector_t<long> pending_err;
 	
 	void print_verilog_inc_ready_and();
 	void print_verilog_ready_final_and(gh_string_t rdy_nm);
+
+	void print_verilog_inc_error_selec();
+	void print_verilog_error_final_selec(gh_string_t err_nm);
+	
 };
 
 
