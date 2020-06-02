@@ -35,6 +35,8 @@ module hnull_sink
 			rg_rdy <= ! rg_rdy;
 			
 			rgi0_ack <= `NS_OFF;
+			
+			`NS_REG_DBG_ERR_INIT(rg_err)
 		end
 		if(! gch_reset && rg_rdy) begin
 			if(rcv0_ckd_req && (! rgi0_ack)) begin

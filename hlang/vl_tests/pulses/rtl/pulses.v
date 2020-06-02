@@ -97,7 +97,7 @@ module test_top
 	reg [0:0] mul_clock = 0;
 	reg [TOT_BITS_CNTR - 1:0] tik_count = 0;
 	reg [TOT_BITS_CNTR - 1:0] lim_tiks_up = 64'h00_00_00_00_00_00_00_FF;
-	reg [TOT_BITS_CNTR - 1:0] lim_tiks_down = 64'h00_00_00_00_00_00_07_FF;
+	reg [TOT_BITS_CNTR - 1:0] lim_tiks_down = 64'h00_00_00_00_00_00_00_FF;
 	
 	always @(posedge i_clk)
 	begin

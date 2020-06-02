@@ -1561,3 +1561,17 @@ verilog_file::print_verilog_error_final_selec(gh_string_t err_nm){
 	
 }
 
+void
+lognet_print_config::calc_addr_size(){
+	double l2 = log2((double)tot_elems);
+	num_bits_address = (long)l2;
+}
+
+void
+lognet_print_config::calc_redun_size(){
+	calc_addr_size();
+	//(ASZ + ASZ + DSZ + RSZ)
+	long base = (num_bits_address * 2) + num_bits_data;
+	num_bits_redundant = (redundant_percentage * base / 100);
+}
+

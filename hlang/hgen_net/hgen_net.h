@@ -29,6 +29,16 @@
 #define GH_INVALID_COMPLETE_IDX -100
 #define GH_INVALID_LNK_NUM -1
 
+#define GH_DEFAULT_LOGNET_NUM_BITS_DATA 3
+#define GH_DEFAULT_LOGNET_NUM_BITS_PACKET 2
+#define GH_DEFAULT_LOGNET_REDUNDANT_PERCENTAGE 2
+
+#define GH_DEFAULT_LOGNET_VL_1to2_FIFO_SIZE 1
+#define GH_DEFAULT_LOGNET_VL_2to1_FIFO_SIZE 2
+#define GH_DEFAULT_LOGNET_VL_PACKOUT_FIFO_SIZE 4
+#define GH_DEFAULT_LOGNET_VL_PACKIN_FIFO_SIZE 4
+
+
 #define GH_BASE_TWO 2
 
 #define GH_MAX_OUTS 64
@@ -431,11 +441,30 @@ public:
 	void print_help();
 };
 
+class lognet_print_config {
+public:
+	long tot_elems = 1;
+	long num_bits_data = GH_DEFAULT_LOGNET_NUM_BITS_DATA;
+	long num_bits_address = 0;
+	long num_bits_packet = GH_DEFAULT_LOGNET_NUM_BITS_PACKET;
+	long num_bits_redundant = 0;
+	long redundant_percentage = GH_DEFAULT_LOGNET_REDUNDANT_PERCENTAGE;
+	
+	long vl_1to2_fifo_sz = GH_DEFAULT_LOGNET_VL_1to2_FIFO_SIZE;
+	long vl_2to1_fifo_sz = GH_DEFAULT_LOGNET_VL_2to1_FIFO_SIZE;
+	long vl_packout_fifo_sz = GH_DEFAULT_LOGNET_VL_PACKOUT_FIFO_SIZE;
+	long vl_packin_fifo_sz = GH_DEFAULT_LOGNET_VL_PACKIN_FIFO_SIZE;
+	
+	void calc_addr_size();
+	void calc_redun_size();
+};
+
 class runner_print_verilog_network {
 public:
 	long 	pw_base = GH_BASE_TWO;
 	long 	tot_targets = 1;
 	gh_string_t dir_name = "";
+	lognet_print_config prt_conf;
 	
 	int run_test(gh_str_list_t& lt_args);
 	bool get_args(gh_str_list_t& lt_args);
@@ -1569,6 +1598,8 @@ public:
 	long height;
 	ptarget_vec_t all_targets;
 	
+	lognet_print_config prt_conf;
+
 	hlognet_box(long pnt_base) {
 		pw_base = pnt_base;
 

@@ -395,6 +395,11 @@
 	reg nam``_error = 0;
 
 
+`define NS_REG_DBG_ERR_INIT(nam) \
+	`NS_REG_MSG_INIT(nam) \
+	nam``_error <= 0;
+
+
 `define NS_SET_REG_DBG_ERR(ou, mg) \
 	if(! ou``_error) begin \
 		`NS_MOV_REG_MSG(ou, mg) \
