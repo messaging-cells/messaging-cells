@@ -31,7 +31,7 @@
 
 #define GH_DEFAULT_LOGNET_NUM_BITS_DATA 3
 #define GH_DEFAULT_LOGNET_NUM_BITS_PACKET 2
-#define GH_DEFAULT_LOGNET_REDUNDANT_PERCENTAGE 2
+#define GH_DEFAULT_LOGNET_REDUNDANT_PERCENTAGE 10
 
 #define GH_DEFAULT_LOGNET_VL_1to2_FIFO_SIZE 1
 #define GH_DEFAULT_LOGNET_VL_2to1_FIFO_SIZE 2
@@ -349,6 +349,8 @@ void gh_run_m_to_n(long mm, long nn, bool has_zr);
 
 typedef std::set<gh_string_t> gh_str_set_t;
 typedef std::list<gh_string_t> gh_str_list_t;
+typedef std::pair<gh_addr_t, gh_addr_t> gh_addr_pair_t;
+typedef std::set<gh_addr_pair_t> gh_src_dst_set_t;
 
 class runner_get_binnet_m_to_n {
 public:
@@ -441,9 +443,37 @@ public:
 	void print_help();
 };
 
-class lognet_print_config {
+class runner_print_verilog_network {
 public:
-	long tot_elems = 1;
+	
+	gh_buffer_t vl_cp_file_buff;
+	gh_string_t vl_exe_fnd_dir = gh_string_t("vlg_fnd");
+	gh_string_t vl_sub_rtl_dir = (gh_string_t("rtl"));
+	gh_string_t vl_sub_net_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("hnet"));
+	gh_string_t vl_sub_tgt_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("targets"));
+	gh_string_t vl_sub_fnd_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("foundation"));
+	
+	gh_string_t vl_make_src_file_nm = gh_string_t("TEMP_Makefile");
+	gh_string_t vl_make_dst_file_nm = gh_string_t("Makefile");
+	gh_string_t vl_pcf_file_nm = gh_string_t("GO_BOARD.pcf");
+	gh_string_t vl_clean_file_nm = gh_string_t("clean.sh");
+	gh_string_t vl_config_file_nm = gh_string_t("hconfig.v");
+	
+	std::array<gh_string_t, 12> vl_all_fnd_files = { 
+		"calc_redun.v",
+		"debouncer.v",
+		"hglobal.v",
+		"hnull_sink.v",
+		"hnull_source.v",
+		"hprb_sink.v",
+		"hprb_source.v",
+		"nd_1to2.v",
+		"nd_2to1.v",
+		"pakin.v",
+		"pakout.v",
+		"tree_nand.v"
+	};
+	
 	long num_bits_data = GH_DEFAULT_LOGNET_NUM_BITS_DATA;
 	long num_bits_address = 0;
 	long num_bits_packet = GH_DEFAULT_LOGNET_NUM_BITS_PACKET;
@@ -454,21 +484,33 @@ public:
 	long vl_2to1_fifo_sz = GH_DEFAULT_LOGNET_VL_2to1_FIFO_SIZE;
 	long vl_packout_fifo_sz = GH_DEFAULT_LOGNET_VL_PACKOUT_FIFO_SIZE;
 	long vl_packin_fifo_sz = GH_DEFAULT_LOGNET_VL_PACKIN_FIFO_SIZE;
-	
-	void calc_addr_size();
-	void calc_redun_size();
-};
 
-class runner_print_verilog_network {
-public:
+	long err_kind = 2;
+	
+	FILE* ivl_comm_fl = NULL;
+	FILE* vtr_comm_fl = NULL;
+	FILE* yos_comm_fl = NULL;
+	
 	long 	pw_base = GH_BASE_TWO;
 	long 	tot_targets = 1;
 	gh_string_t dir_name = "";
-	lognet_print_config prt_conf;
+	
+	gh_src_dst_set_t all_probes;
 	
 	int run_test(gh_str_list_t& lt_args);
 	bool get_args(gh_str_list_t& lt_args);
 	void print_help();
+	
+	void init_addr_size();
+	void init_redun_size();
+	
+	gh_addr_t fix_addr(gh_addr_t adr){
+		if(adr < 0){ adr = 0; }
+		if(adr >= tot_targets){ adr = (tot_targets - 1); }
+		return adr;
+	}
+	
+	void print_all_probes();
 };
 
 class autocomplete_sys {
@@ -1565,41 +1607,10 @@ void 	gh_calc_num_io(long base, long length, long idx, long& num_in, long& num_o
 
 class hlognet_box : public hnode_box {
 public:
-	gh_buffer_t vl_cp_file_buff;
-	gh_string_t vl_exe_fnd_dir = gh_string_t("vlg_fnd");
-	gh_string_t vl_sub_rtl_dir = (gh_string_t("rtl"));
-	gh_string_t vl_sub_net_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("hnet"));
-	gh_string_t vl_sub_tgt_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("targets"));
-	gh_string_t vl_sub_fnd_dir = (gh_string_t("rtl")) + (gh_string_t(gh_path_sep)) + (gh_string_t("foundation"));
-	
-	gh_string_t vl_make_src_file_nm = gh_string_t("TEMP_Makefile");
-	gh_string_t vl_make_dst_file_nm = gh_string_t("Makefile");
-	gh_string_t vl_pcf_file_nm = gh_string_t("GO_BOARD.pcf");
-	gh_string_t vl_clean_file_nm = gh_string_t("clean.sh");
-	
-	FILE* ivl_comm_fl = NULL;
-	FILE* vtr_comm_fl = NULL;
-	FILE* yos_comm_fl = NULL;
-
-	std::array<gh_string_t, 10> vl_all_fnd_files = { 
-		"calc_redun.v",
-		"debouncer.v",
-		"hglobal.v",
-		"hnull_sink.v",
-		"hnull_source.v",
-		"nd_1to2.v",
-		"nd_2to1.v",
-		"pakin.v",
-		"pakout.v",
-		"tree_nand.v"
-	};
-	
 	long tot_targets;
 	long height;
 	ptarget_vec_t all_targets;
 	
-	lognet_print_config prt_conf;
-
 	hlognet_box(long pnt_base) {
 		pw_base = pnt_base;
 
@@ -1611,6 +1622,7 @@ public:
 		release_nodes();
 		release_targets();
 	}
+	
 	void 	release_targets();
 	
 	void 	init_all_target_addr();
@@ -1635,8 +1647,8 @@ public:
 	void 	run_hlognet_simu();
 
 	void 	print_targets(FILE* ff, gh_prt_mode_t md);
-	
-	void 	copy_verilog_foundation_files(gh_string_t& dir_name, gh_string_t& net_nam);
+
+	void 	copy_verilog_foundation_files(gh_string_t& net_nam, runner_print_verilog_network& cfg);
 
 	void	print_verilog_file_name_to_iverilog_file(FILE* ff, gh_string_t nm);
 	void	print_verilog_file_name_to_verilator_file(FILE* ff, gh_string_t nm);
@@ -1645,13 +1657,14 @@ public:
 	void	print_verilog_header_to_yosys_file(FILE* ff);
 	void	print_verilog_footer_to_yosys_file(FILE* ff, gh_string_t nm);
 	
-	void	print_verilog_file_name_to_command_files(gh_string_t nm){
-		print_verilog_file_name_to_iverilog_file(ivl_comm_fl, nm);
-		print_verilog_file_name_to_verilator_file(vtr_comm_fl, nm);
-		print_verilog_file_name_to_yosys_file(yos_comm_fl, nm);
+	void	print_verilog_file_name_to_command_files(gh_string_t nm, runner_print_verilog_network& cfg){
+		print_verilog_file_name_to_iverilog_file(cfg.ivl_comm_fl, nm);
+		print_verilog_file_name_to_verilator_file(cfg.vtr_comm_fl, nm);
+		print_verilog_file_name_to_yosys_file(cfg.yos_comm_fl, nm);
 	}
 	
-	void 	print_verilog_full_net(gh_string_t& dir_name, long num_elems);
+	void	print_verilog_config_file(runner_print_verilog_network& cfg);
+	void 	print_verilog_full_net(runner_print_verilog_network& cfg);
 };
 
 gh_string_t gh_get_verilog_targets_link(long tg1, long tg2, gh_route_side_t sd, long num_lnk);

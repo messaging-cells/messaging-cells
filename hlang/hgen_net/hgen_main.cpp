@@ -216,9 +216,28 @@ int mini_test_inc_rdy(int argc, char *argv[]){
 	return 0;
 }
 
+
+int mini_test_calc_addr_bits(int argc, char *argv[]){
+	fprintf(stdout, "mini_test_calc_addr_bits\n");
+	if(argc < 2){
+		fprintf(stdout, "%s <tot_targets>\n", argv[0]);
+		return -1;
+	}
+	
+	long tot_targets = atol(argv[1]);
+	
+	double l2 = ceil(log2((double)tot_targets));
+	fprintf(stdout, "log2=%lf \n", l2);
+	
+	long num_bits_address = (long)l2;
+	fprintf(stdout, "num_bits_address=%ld \n", num_bits_address);
+	return 0;
+}
+
 int
 main(int argc, char *argv[]){
 	//return mini_test_copy_file(argc, argv);
 	//return mini_test_inc_rdy(argc, argv);
+	//return mini_test_calc_addr_bits(argc, argv);
 	return hgen_net_main(argc, argv);
 }

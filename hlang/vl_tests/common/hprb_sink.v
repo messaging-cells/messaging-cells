@@ -3,6 +3,9 @@
 
 `default_nettype	none
 
+`define NS_MAX_DATA_VAL MAX_DATA_VAL[DSZ-1:0]
+
+
 module hprg_sink
 #(parameter 
 	MY_LOCAL_ADDR=0, 
@@ -12,11 +15,8 @@ module hprg_sink
 	RSZ=`NS_REDUN_SIZE
 )(
 	`NS_DECLARE_GLB_CHNL(gch),
-	
-	// SNK_0
 	`NS_DECLARE_IN_CHNL(rcv0),
-	
-	`NS_DECLARE_DBG_ERR_CHNL(err0)
+	`NS_DECLARE_ERR_CHNL(err0)
 );
 
 	parameter RCV_REQ_CKS = `NS_REQ_CKS;
@@ -35,15 +35,17 @@ module hprg_sink
 	calc_redun #(.ASZ(ASZ), .DSZ(DSZ), .RSZ(RSZ)) 
 		md_calc_red0 (inp0_src, inp0_dst, inp0_dat, inp0_calc_redun);
 	
+
+	parameter MAX_DATA_VAL = $rtoi($pow(2, DSZ) - 1);
 	
 	reg [0:0] inp0_ack = `NS_OFF;
-	reg [DSZ-1:0] inp0_back_dat = 15;
+	reg [DSZ-1:0] inp0_back_dat = `NS_MAX_DATA_VAL;
 	reg [0:0] inp0_err = `NS_OFF;
 	
-	`NS_DECLARE_REG_DBG_ERR(inp0_err)  // inp0_err_error
+	`NS_DECLARE_ERR_REG(inp0_err)  // inp0_err_error
 	
 	//SNK_0
-	always @(posedge snk0_clk)
+	always @(posedge gch_clk)
 	begin
 		if(gch_reset) begin
 			rg_rdy <= `NS_OFF;
@@ -51,16 +53,16 @@ module hprg_sink
 		if(! gch_reset && ! rg_rdy) begin
 			rg_rdy <= ! rg_rdy;
 			
-			has_inp0 = `NS_OFF;
-			inp0_has_redun = `NS_OFF;
-			inp0_done_cks = `NS_OFF;
+			has_inp0 <= `NS_OFF;
+			inp0_has_redun <= `NS_OFF;
+			inp0_done_cks <= `NS_OFF;
 			`NS_REG_MSG_INIT(inp0)
-			inp0_redun = 0;
+			inp0_redun <= 0;
 			
-			inp0_ack = `NS_OFF;
-			inp0_back_dat = 15;
+			inp0_ack <= `NS_OFF;
+			inp0_back_dat <= `NS_MAX_DATA_VAL;
 			
-			`NS_REG_DBG_ERR_INIT(inp0_err)
+			`NS_INIT_ERR_REG(inp0_err)
 
 		end
 		if(! gch_reset && rg_rdy) begin
@@ -93,7 +95,7 @@ module hprg_sink
 							`NS_MOV_REG_MSG(inp0_err, inp0)
 						end
 						//else
-						if((inp0_back_dat <= 14) && ((inp0_back_dat + 1) != inp0_dat)) begin
+						if((inp0_back_dat <= (`NS_MAX_DATA_VAL - 1)) && ((inp0_back_dat + 1) != inp0_dat)) begin
 							inp0_err_error <= `NS_ON;
 							`NS_MOV_REG_MSG(inp0_err, inp0)
 						end 
@@ -123,6 +125,6 @@ module hprg_sink
 	//SNK_0
 	assign rcv0_ack_out = inp0_ack;
 	
-	`NS_ASSIGN_DBG_ERR(err0, inp0_err, MY_LOCAL_ADDR)
+	`NS_ASSIGN_ERR_CHNL(err0, inp0_err, MY_LOCAL_ADDR)
 	
 endmodule

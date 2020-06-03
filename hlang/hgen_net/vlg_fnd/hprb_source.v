@@ -12,8 +12,7 @@ module hprb_source
 	RSZ=`NS_REDUN_SIZE
 )(
 	`NS_DECLARE_GLB_CHNL(gch),
-	// SRC
-	`NS_DECLARE_OUT_CHNL(snd0),
+	`NS_DECLARE_OUT_CHNL(snd0)
 );
 
 	parameter SND_ACK_CKS = `NS_ACK_CKS;
@@ -22,7 +21,7 @@ module hprb_source
 
 	reg [0:0] rg_rdy = `NS_OFF;
 
-	reg [3:0] cnt_0 = 0;
+	reg [DSZ-1:0] cnt_0 = 0;
 
 	// SRC regs
 	reg [0:0] ro0_has_dst = `NS_OFF;	
@@ -42,7 +41,7 @@ module hprb_source
 		r1 (ro0_src, ro0_dst, ro0_dat, ro0_redun);
 	
 	//SRC
-	always @(posedge src0_clk)
+	always @(posedge gch_clk)
 	begin
 		if(gch_reset) begin
 			rg_rdy <= `NS_OFF;
@@ -74,7 +73,7 @@ module hprb_source
 				if(! ro0_has_dat) begin
 					ro0_has_dat <= `NS_ON;
 
-					ro0_dat[3:0] <= cnt_0;
+					ro0_dat <= cnt_0;
 					cnt_0 <= cnt_0 + 1;
 				end
 				else

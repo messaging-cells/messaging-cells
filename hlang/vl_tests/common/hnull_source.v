@@ -12,7 +12,6 @@ module hnull_source
 (
 	`NS_DECLARE_GLB_CHNL(gch),
 	`NS_DECLARE_OUT_CHNL(snd0)
-	
 );
 	reg [0:0] rg_rdy = `NS_OFF;
 	

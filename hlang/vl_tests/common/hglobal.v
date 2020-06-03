@@ -1,4 +1,6 @@
 
+
+
 `ifndef HGLOBAL_V_FILE
 `define HGLOBAL_V_FILE 1
 //--------------------------------------------
@@ -16,19 +18,7 @@
 `define ns_f_2HZ 6250000
 `define ns_f_1HZ 12500000
 
-`define NS_ADDRESS_SIZE 6
-`define NS_DATA_SIZE 4
-`define NS_REDUN_SIZE 4 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
-
-`define NS_PACKET_SIZE 3 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
-
-`define NS_1to2_FSZ 1
-`define NS_2to1_FSZ 2
-`define NS_PACKOUT_FSZ 4  // 1, 2 or 4 ***ONLY***
-`define NS_PACKIN_FSZ 4  // 1, 2 or 4 ***ONLY***
-
-`define NS_REQ_CKS 1
-`define NS_ACK_CKS 1
+`include "hconfig.v"
 
 `define NS_GT_OP 1
 `define NS_GTE_OP 2
@@ -370,52 +360,88 @@
 // ERRORS
 // ----------------------------------------------------------------------------
 
-// DBG_ERR
+`define NS_SELEC_ERR(err0, err1, val) ((err0``_error)?(err0``val):(err1``val))
+	
+// ERR_T1
 
-`define NS_DECLARE_DBG_ERR_CHNL(nam) \
+`define NS_DECLARE_ERR_T1_CHNL(nam) \
+	output wire nam``_error
+
+
+`define NS_DECLARE_ERR_T1_LINK(nam) \
+	wire nam``_error;
+
+
+`define NS_INSTA_ERR_T1_CHNL(chn0, chn1) \
+	.chn0``_error(chn1``_error)
+
+
+`define NS_DECLARE_ERR_T1_REG(nam) \
+	reg nam``_error = 0;
+
+
+`define NS_INIT_ERR_T1_REG(nam) \
+	reg nam``_error <= 0;
+
+
+`define NS_SET_ERR_T1_REG(ou, mg) \
+	if(! nam``_error) begin \
+		nam``_error <= ! nam``_error; \
+	end
+
+
+`define NS_ASSIGN_ERR_T1_CHNL(ou, mg, err_addr) \
+	assign ou``_error = mg``_error;
+
+
+`define NS_SELECT_ONE_ERR_T1_LINK(ou, err0, err1) \
+	assign ou``_error = `NS_SELEC_ERR(err0, err1, _error);
+
+
+// ERR_T2
+
+`define NS_DECLARE_ERR_T2_CHNL(nam) \
 	output wire [ASZ-1:0] nam``_my_addr, \
 	`NS_DECLARE_OUT_MSG(nam), \
 	output wire nam``_error
 
 
-`define NS_DECLARE_DBG_ERR_LINK(nam) \
+`define NS_DECLARE_ERR_T2_LINK(nam) \
 	wire [ASZ-1:0] nam``_my_addr; \
 	`NS_DECLARE_LINK_MSG(nam) \
 	wire nam``_error;
 
 
-`define NS_INSTA_DBG_ERR_CHNL(chn0, chn1) \
+`define NS_INSTA_ERR_T2_CHNL(chn0, chn1) \
 	.chn0``_my_addr(chn1``_my_addr), \
 	`NS_INSTA_MSG_CHNL(chn0, chn1), \
 	.chn0``_error(chn1``_error)
 
 
-`define NS_DECLARE_REG_DBG_ERR(nam) \
+`define NS_DECLARE_ERR_T2_REG(nam) \
 	`NS_DECLARE_REG_MSG(nam) \
 	reg nam``_error = 0;
 
 
-`define NS_REG_DBG_ERR_INIT(nam) \
+`define NS_INIT_ERR_T2_REG(nam) \
 	`NS_REG_MSG_INIT(nam) \
 	nam``_error <= 0;
 
 
-`define NS_SET_REG_DBG_ERR(ou, mg) \
+`define NS_SET_ERR_T2_REG(ou, mg) \
 	if(! ou``_error) begin \
 		`NS_MOV_REG_MSG(ou, mg) \
 		ou``_error <= ! ou``_error; \
 	end
 
 
-`define NS_ASSIGN_DBG_ERR(ou, mg, err_addr) \
+`define NS_ASSIGN_ERR_T2_CHNL(ou, mg, err_addr) \
 	assign ou``_my_addr = err_addr; \
 	`NS_ASSIGN_MSG(ou, mg) \
 	assign ou``_error = mg``_error;
 
 
-`define NS_SELEC_ERR(err0, err1, val) ((err0``_error)?(err0``val):(err1``val))
-	
-`define NS_ASSIGN_ONE_DBG_ERR(ou, err0, err1) \
+`define NS_SELECT_ONE_ERR_T2_LINK(ou, err0, err1) \
 	assign ou``_my_addr = `NS_SELEC_ERR(err0, err1, _my_addr); \
 	assign ou``_src = `NS_SELEC_ERR(err0, err1, _src); \
 	assign ou``_dst = `NS_SELEC_ERR(err0, err1, _dst); \
@@ -424,39 +450,6 @@
 	assign ou``_error = `NS_SELEC_ERR(err0, err1, _error);
 
 
-// ERR
-
-`define NS_DECLARE_ERR_CHNL(nam) \
-	output wire nam``_error
-
-
-`define NS_DECLARE_ERR_LINK(nam) \
-	wire nam``_error;
-
-
-`define NS_INSTA_ERR_CHNL(chn0, chn1) \
-	.chn0``_error(chn1``_error)
-
-
-`define NS_DECLARE_REG_ERR(nam) \
-	reg nam``_error = 0;
-
-
-`define NS_SET_REG_ERR(ou, mg) \
-	if(! nam``_error) begin \
-		nam``_error <= ! nam``_error; \
-	end
-
-
-`define NS_ASSIGN_ERR(ou, mg) \
-	assign ou``_error = mg``_error;
-
-
-`define NS_ASSIGN_ONE_ERR(ou, err0, err1) \
-	assign ou``_error = `NS_SELEC_ERR(err0, err1, _error);
-
-
-	
 // FIFOS
 // ----------------------------------------------------------------------------
 
@@ -743,3 +736,5 @@
 
 //--------------------------------------------
 `endif // HGLOBAL_V_FILE
+
+

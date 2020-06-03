@@ -12,7 +12,7 @@ module hnull_sink
 )(
 	`NS_DECLARE_GLB_CHNL(gch),
 	`NS_DECLARE_IN_CHNL(rcv0),
-	`NS_DECLARE_DBG_ERR_CHNL(err0)
+	`NS_DECLARE_ERR_CHNL(err0)
 );
 
 	parameter RCV_REQ_CKS = `NS_REQ_CKS;
@@ -24,7 +24,7 @@ module hnull_sink
 	// inp regs
 	reg [0:0] rgi0_ack = `NS_OFF;
 	
-	`NS_DECLARE_REG_DBG_ERR(rg_err)
+	`NS_DECLARE_ERR_REG(rg_err)
 
 	always @(posedge gch_clk)
 	begin
@@ -36,12 +36,12 @@ module hnull_sink
 			
 			rgi0_ack <= `NS_OFF;
 			
-			`NS_REG_DBG_ERR_INIT(rg_err)
+			`NS_INIT_ERR_REG(rg_err)
 		end
 		if(! gch_reset && rg_rdy) begin
 			if(rcv0_ckd_req && (! rgi0_ack)) begin
 				if(rcv0_dst != MY_LOCAL_ADDR) begin
-					`NS_SET_REG_DBG_ERR(rg_err, rcv0)
+					`NS_SET_ERR_REG(rg_err, rcv0)
 				end
 				else begin
 					rgi0_ack <= `NS_ON;
@@ -58,7 +58,7 @@ module hnull_sink
 	//inp0
 	assign rcv0_ack_out = rgi0_ack;
 	
-	`NS_ASSIGN_DBG_ERR(err0, rg_err, MY_LOCAL_ADDR)
+	`NS_ASSIGN_ERR_CHNL(err0, rg_err, MY_LOCAL_ADDR)
 	
 endmodule
 
