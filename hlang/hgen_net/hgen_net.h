@@ -12,6 +12,7 @@
 
 #include <array>
 #include <list>
+#include <map>
 #include <set>
 #include <vector>
 #include <iterator>
@@ -349,8 +350,7 @@ void gh_run_m_to_n(long mm, long nn, bool has_zr);
 
 typedef std::set<gh_string_t> gh_str_set_t;
 typedef std::list<gh_string_t> gh_str_list_t;
-typedef std::pair<gh_addr_t, gh_addr_t> gh_addr_pair_t;
-typedef std::set<gh_addr_pair_t> gh_src_dst_set_t;
+typedef std::map<gh_addr_t, gh_addr_t> gh_addr_map_t;
 
 class runner_get_binnet_m_to_n {
 public:
@@ -495,7 +495,8 @@ public:
 	long 	tot_targets = 1;
 	gh_string_t dir_name = "";
 	
-	gh_src_dst_set_t all_probes;
+	gh_addr_map_t all_src_probes;
+	gh_addr_map_t all_dst_probes;
 	
 	int run_test(gh_str_list_t& lt_args);
 	bool get_args(gh_str_list_t& lt_args);
@@ -505,8 +506,15 @@ public:
 	void init_redun_size();
 	
 	gh_addr_t fix_addr(gh_addr_t adr){
-		if(adr < 0){ adr = 0; }
-		if(adr >= tot_targets){ adr = (tot_targets - 1); }
+		if(adr < 0){ 
+			fprintf(stderr, "Fixing addr %ld below 0 to 0\n", adr);
+			adr = 0; 
+		}
+		gh_addr_t max = (tot_targets - 1);
+		if(adr > max){ 
+			fprintf(stderr, "Fixing addr %ld above %ld to %ld\n", adr, max, max);
+			adr = max;
+		}
 		return adr;
 	}
 	
@@ -1577,7 +1585,7 @@ public:
 	void 	print_verilog_target_param(verilog_file& ff);
 	void 	print_verilog_router_target_assign(verilog_file& ff);
 	
-	void 	print_verilog_module_core(verilog_file& ff);
+	void 	print_verilog_module_core(verilog_file& ff, runner_print_verilog_network& cfg);
 	void 	print_verilog_instance_core(verilog_file& ff);
 	void 	print_verilog_module_router(verilog_file& ff);
 	void 	print_verilog_instance_router(verilog_file& ff);

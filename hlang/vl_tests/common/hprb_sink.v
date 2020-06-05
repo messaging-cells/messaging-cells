@@ -6,7 +6,7 @@
 `define NS_MAX_DATA_VAL MAX_DATA_VAL[DSZ-1:0]
 
 
-module hprg_sink
+module hprb_sink
 #(parameter 
 	MY_LOCAL_ADDR=0, 
 	PRB_SRC_ADDR=0, 

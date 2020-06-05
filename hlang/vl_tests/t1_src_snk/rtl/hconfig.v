@@ -1,14 +1,15 @@
 
+
 `ifndef HCONFIG_V_FILE
 `define HCONFIG_V_FILE 1
 //--------------------------------------------
 
 
 `define NS_ADDRESS_SIZE 6
-`define NS_DATA_SIZE 4
-`define NS_REDUN_SIZE 4 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
+`define NS_DATA_SIZE 3
+`define NS_REDUN_SIZE 3 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
 
-`define NS_PACKET_SIZE 3 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
+`define NS_PACKET_SIZE 2 // MUST BE LESS THAN the full message size ((NS_ADDRESS_SIZE * 2) + NS_DATA_SIZE) 
 
 `define NS_1to2_FSZ 1
 `define NS_2to1_FSZ 2
@@ -30,5 +31,4 @@
 
 //--------------------------------------------
 `endif // HCONFIG_V_FILE
-
 

@@ -6,6 +6,7 @@
 module hnull_sink
 #(parameter 
 	MY_LOCAL_ADDR=0, 
+	PRB_SRC_ADDR=0, 
 	ASZ=`NS_ADDRESS_SIZE, 
 	DSZ=`NS_DATA_SIZE, 
 	RSZ=`NS_REDUN_SIZE

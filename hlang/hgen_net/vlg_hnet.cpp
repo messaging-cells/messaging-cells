@@ -712,10 +712,28 @@ htarget_box::print_verilog_router_target_assign(verilog_file& vff){
 }
 
 void
-htarget_box::print_verilog_module_core(verilog_file& vff){
+htarget_box::print_verilog_module_core(verilog_file& vff, runner_print_verilog_network& cfg){
 	FILE* ff = vff.fl;
 	gh_string_t itf_in_nm = get_verilog_target_param_name(gh_in_kind);
 	gh_string_t itf_out_nm = get_verilog_target_param_name(gh_out_kind);
+	
+	long loc_addr = get_index();
+	long src_addr = 0;
+	long dst_addr = 0;
+	
+	gh_string_t src_nd = "hnull";
+	gh_string_t dst_nd = "hnull";
+	
+	auto its = cfg.all_src_probes.find(loc_addr);
+	if(its != cfg.all_src_probes.end()){
+		src_nd = "hprb";
+		dst_addr = its->second;
+	}
+	auto itd = cfg.all_dst_probes.find(loc_addr);
+	if(itd != cfg.all_dst_probes.end()){
+		dst_nd = "hprb";
+		src_addr = itd->second;
+	}
 	
 	fprintf(ff, R"base(
 /*
@@ -744,14 +762,15 @@ module %s
 	localparam MY_LOCAL_ADDR = %ld;
 	
 	wire rdy1;
-	hnull_source it_null_core_src (
+	%s_source #(.MY_LOCAL_ADDR(MY_LOCAL_ADDR), .PRB_DST_ADDR(%ld))
+	it_core_src (
 		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy1),
 		`NS_INSTA_SND_CHNL_FROM_CHNL(snd0, %s)
 	);
  
 	wire rdy2;
-	hnull_sink #(.MY_LOCAL_ADDR(MY_LOCAL_ADDR))
-	it_null_core_snk (
+	%s_sink #(.MY_LOCAL_ADDR(MY_LOCAL_ADDR), .PRB_SRC_ADDR(%ld))
+	it_core_snk (
 		`NS_INSTA_GLB_CHNL_VALS(gch, gch_clk, gch_reset, rdy2),
 		`NS_INSTA_RCV_CHNL_FROM_CHNL(rcv0, %s),
 		`NS_INSTA_ERR_CHNL(err0, err0)
@@ -766,7 +785,11 @@ endmodule
 	itf_in_nm.c_str(), 
 	itf_out_nm.c_str(),
 	get_index(),
+	src_nd.c_str(),
+	dst_addr,
 	itf_out_nm.c_str(),
+	dst_nd.c_str(),
+	src_addr,
 	itf_in_nm.c_str() 
 );
 	
@@ -1263,15 +1286,35 @@ module %s
 	DSZ=`NS_DATA_SIZE, 
 	RSZ=`NS_REDUN_SIZE
 )(
-	input wire i_Clk
+	input wire i_Clk,
+	output o_LED_1,
+	output o_LED_2,
+	output o_LED_3,
+	output o_LED_4
 );
 	wire gch_clk = i_Clk;
-	wire gch_reset = 0;
-	wire gch_ready;
+	reg reset = 0;
+	wire ready;
+	
+	`NS_DECLARE_ERR_LINK(oerr) 
 	
 	%s_impl it_%s_impl(
-		`NS_INSTA_GLB_CHNL(gch, gch)
+		`NS_INSTA_GLB_CHNL_VALS(gch, i_Clk, reset, ready),
+		`NS_INSTA_ERR_CHNL(gerr, oerr)
 	);
+	
+	`NS_DECLARE_DBG_LINK(dbg1)
+	
+	assign dbg1_leds[0:0] = oerr_error;
+	assign dbg1_leds[1:1] = 0;
+	assign dbg1_leds[2:2] = 0;
+	assign dbg1_leds[3:3] = 0;
+	
+	assign o_LED_1 = dbg1_leds[0:0];
+	assign o_LED_2 = dbg1_leds[1:1];
+	assign o_LED_3 = dbg1_leds[2:2];
+	assign o_LED_4 = dbg1_leds[3:3];
+
 	
 endmodule
 
@@ -1281,7 +1324,8 @@ module %s_impl
 	DSZ=`NS_DATA_SIZE, 
 	RSZ=`NS_REDUN_SIZE
 )(
-	`NS_DECLARE_GLB_CHNL(gch)
+	`NS_DECLARE_GLB_CHNL(gch),
+	`NS_DECLARE_ERR_CHNL(gerr)
 )base", top_mod_nm, top_mod_nm, top_mod_nm, top_mod_nm);
 
 	fprintf(ff, ");\n");
@@ -1338,7 +1382,7 @@ module %s_impl
 		verilog_file tg_wrp_vff;
 		tg_wrp_vff.fl = tg_wrp_ff;
 		
-		bx->print_verilog_module_core(tg_cor_vff);
+		bx->print_verilog_module_core(tg_cor_vff, cfg);
 		bx->print_verilog_module_router(tg_rtr_vff);
 		bx->print_verilog_module_wrapper(tg_wrp_vff, num_direct_channels, num_direct_packets);
 		
@@ -1351,7 +1395,7 @@ module %s_impl
 	print_verilog_footer_to_yosys_file(cfg.yos_comm_fl, net_nam);
 	
 	vff.print_verilog_ready_final_and("gch_ready");
-	vff.print_verilog_error_final_selec("final_err");
+	vff.print_verilog_error_final_selec("gerr");
 
 	fprintf(ff, R"base(
 
@@ -1412,12 +1456,27 @@ runner_print_verilog_network::get_args(gh_str_list_t& lt_args){
 			the_arg = lt_args.front(); gh_dec_args(lt_args);
 			gh_addr_t src = fix_addr(atol(the_arg.c_str()));
 			
-			
 			the_arg = lt_args.front(); gh_dec_args(lt_args);
 			gh_addr_t dst = fix_addr(atol(the_arg.c_str()));
-			
-			gh_addr_pair_t sdp(src, dst);
-			all_probes.insert(sdp);
+
+			auto its = all_src_probes.find(src);
+			auto itd = all_dst_probes.find(dst);
+			bool src_free = (its == all_src_probes.end());
+			bool dst_free = (itd == all_dst_probes.end()); 
+			if(src_free && dst_free){
+				all_src_probes[src] = dst;
+				all_dst_probes[dst] = src;
+			} else {
+				gh_string_t serr = "";
+				gh_string_t derr = "";
+				if(! src_free){
+					serr = "(repeated)";
+				}
+				if(! dst_free){
+					derr = "(repeated)";
+				}
+				fprintf(stderr, "Ignoring -t %ld%s %ld%s \n", src, serr.c_str(), dst, derr.c_str());
+			}
 		}
 	}
 	
@@ -1566,7 +1625,7 @@ verilog_file::print_verilog_error_final_selec(gh_string_t err_nm){
 	if(prv_prt >= 0){
 		fprintf(ff, "\t// FINAL_ERROR (%s) \n\n", err_nm.c_str());
 		
-		fprintf(ff, "\t`NS_DECLARE_ERR_LINK(%s) \n", err_nm.c_str());
+		//fprintf(ff, "\t`NS_DECLARE_ERR_LINK(%s) \n", err_nm.c_str());
 		fprintf(ff, "\t`NS_ASSIGN_ERR_CHNL(%s, %s, %s_my_addr) \n", 
 				err_nm.c_str(),
 				prv_err.c_str(),
@@ -1667,11 +1726,19 @@ hlognet_box::print_verilog_config_file(runner_print_verilog_network& cfg){
 
 void
 runner_print_verilog_network::print_all_probes(){
-	gh_src_dst_set_t& ss = all_probes;
-    //auto it = ss.find(pf);
-	fprintf(stdout, "ALL PROBES ========================\n");
-	for(auto it2 = ss.begin(); it2 != ss.end(); it2++){
-		fprintf(stdout, "%ld, %ld \n", it2->first, it2->second);
+	gh_addr_map_t& ss = all_src_probes;
+    auto its = ss.begin();
+	fprintf(stdout, "ALL_SRC_PROBES ========================\n");
+	for(its = ss.begin(); its != ss.end(); its++){
+		fprintf(stdout, "%ld, %ld \n", its->first, its->second);
 	}
+	
+	gh_addr_map_t& dd = all_dst_probes;
+    auto itd = dd.begin();
+	fprintf(stdout, "ALL DST_PROBES ========================\n");
+	for(itd = dd.begin(); itd != dd.end(); itd++){
+		fprintf(stdout, "%ld, %ld \n", itd->first, itd->second);
+	}
+	
 }
 

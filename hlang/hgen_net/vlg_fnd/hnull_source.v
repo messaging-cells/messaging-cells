@@ -6,6 +6,8 @@
 
 module hnull_source
 #(parameter 
+	MY_LOCAL_ADDR=0, 
+	PRB_DST_ADDR=0, 
 	ASZ=`NS_ADDRESS_SIZE, 
 	DSZ=`NS_DATA_SIZE, 
 	RSZ=`NS_REDUN_SIZE)
