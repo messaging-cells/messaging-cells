@@ -13,6 +13,8 @@ ICEPROG_EXE = iceprog
 ICAVERILOG_EXE = iverilog
 VERILATOR_EXE = verilator
 
+ICE40_DIR = `yosys-config --datdir`/ice40
+
 RTL_DIR = rtl
 
 RTL_FILES = \
@@ -20,6 +22,13 @@ RTL_FILES = \
 	rtl/hnet/*.v \
 	rtl/targets/*.v \
 	rtl/foundation/*.v \
+
+
+
+SIMU_FILES = \
+	${RTL_DIR}/tb_json_simu.v \
+	${PRJ_PREFIX}_ivl_sim.v \
+	${ICE40_DIR}/cells_sim.v \
 
 
 
@@ -70,4 +79,17 @@ ${PRJ_PREFIX}.ivl : ${RTL_FILES}
 	mkdir -p ${BUILD_DIR}; rm ${PRJ_PREFIX}.ivl; \
 	${ICAVERILOG_EXE} -I${RTL_DIR}/foundation -Wall -g2005 -E -s ${TOP_MOD} -f ivl_commands.ivl -o ./${PRJ_PREFIX}.ivl
 
+
+.PHONY: ivl_simu
+ivl_simu: ${PRJ_PREFIX}_ivl_simu.vvp
+	@echo "Finished building "${PRJ_PREFIX}_ivl_simu.vvp
+
+${PRJ_PREFIX}_ivl_simu.vvp : ${PRJ_PREFIX}_ivl_sim.v 
+	mkdir -p ${BUILD_DIR}; rm ${PRJ_PREFIX}_ivl_simu.vvp; \
+	${ICAVERILOG_EXE} -I${RTL_DIR}/foundation -o ${PRJ_PREFIX}_ivl_simu.vvp ${SIMU_FILES}
+
+${PRJ_PREFIX}_ivl_sim.v : ${PRJ_PREFIX}.json 
+	mkdir -p ${BUILD_DIR}; rm ${PRJ_PREFIX}_ivl_sim.v; cd ${BUILD_DIR}; \
+	${YOSYS_EXE} -p 'write_verilog -norename '${PRJ_NM}_ivl_sim.v ${PRJ_NM}.json
+	
 

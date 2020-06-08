@@ -1,0 +1,28 @@
+
+
+`timescale 1ns/1ps
+
+`include "hconfig.v"
+
+module testbench;
+
+	reg clk;
+	always #40 clk = (clk === 1'b0);
+
+	wire [3:0] led;
+
+	initial begin
+		$printtimescale;
+		$dumpfile("testbench.vcd");
+		$dumpvars(0, testbench);
+
+		repeat (6) begin
+			repeat (5000) @(posedge clk);
+			$display("+5000 cycles LED=%b", led);
+		end
+		$finish;
+	end
+	`TOP_MODULE_NAME top_i(.i_Clk(clk), .o_LED_1(led[0]), .o_LED_2(led[1]), .o_LED_3(led[2]), .o_LED_4(led[3]));
+
+endmodule
+

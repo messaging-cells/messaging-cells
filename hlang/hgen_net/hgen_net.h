@@ -274,10 +274,10 @@ public:
 	
 	bool in_edge(gh_addr_t addr);
 
-	gh_string_t get_print_str();
+	gh_string_t get_in_edge_str(bool simple = false);
 	
 	void print_edge(FILE* ff){
-		fprintf(ff, "%s", get_print_str().c_str());
+		fprintf(ff, "%s", get_in_edge_str(true).c_str());
 		fflush(ff);
 	}
 	
@@ -300,7 +300,7 @@ public:
 	edge lft;
 	edge rgt;
 	
-	gh_string_t get_print_str();
+	gh_string_t get_in_interval_str();
 	
 	long dbg_get_num_test_in();
 	gh_addr_t dbg_get_min_in();
@@ -309,7 +309,7 @@ public:
 	bool in_interval(gh_addr_t addr);
 	
 	void print_interval(FILE* ff){
-		fprintf(ff, "%s", get_print_str().c_str());
+		fprintf(ff, "%s", get_in_interval_str().c_str());
 		fflush(ff);
 	}
 };
@@ -455,6 +455,8 @@ public:
 	
 	gh_string_t vl_make_src_file_nm = gh_string_t("TEMP_Makefile");
 	gh_string_t vl_make_dst_file_nm = gh_string_t("Makefile");
+	gh_string_t vl_testbench_src_file_nm = gh_string_t("TEMPL_tb_json_simu");
+	gh_string_t vl_testbench_dst_file_nm = gh_string_t("tb_json_simu.v");	
 	gh_string_t vl_pcf_file_nm = gh_string_t("GO_BOARD.pcf");
 	gh_string_t vl_clean_file_nm = gh_string_t("clean.sh");
 	gh_string_t vl_config_file_nm = gh_string_t("hconfig.v");
@@ -1671,8 +1673,9 @@ public:
 		print_verilog_file_name_to_yosys_file(cfg.yos_comm_fl, nm);
 	}
 	
-	void	print_verilog_config_file(runner_print_verilog_network& cfg);
+	void	print_verilog_config_file(gh_string_t& top_mod_nm, runner_print_verilog_network& cfg);
 	void 	print_verilog_full_net(runner_print_verilog_network& cfg);
+	void 	print_verilog_top_module(FILE* ff, const char* top_mod_nm, runner_print_verilog_network& cfg);
 };
 
 gh_string_t gh_get_verilog_targets_link(long tg1, long tg2, gh_route_side_t sd, long num_lnk);

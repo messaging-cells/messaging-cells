@@ -111,39 +111,49 @@ hnode::print_selector_info(FILE* ff){
 }
 
 gh_string_t
-edge::get_print_str(){
+edge::get_in_edge_str(bool simple){
 	if(is_undef()){
 		gh_string_t uu = "udf";
 		return uu;
 	}
 	std::ostringstream tmp_ss;
 	
+	const char* addr_str = "addr ";
 	const char* eq_str = (is_eq())?("="):("");
 	const char* cmp_str = (is_gt())?(">"):("<");
-	const char* out_str = (is_out())?("_"):("");
-	tmp_ss << cmp_str << eq_str << slc_edge << out_str;
+	//const char* out_str = (is_out())?("_"):("");
 	
+	if(simple){
+		tmp_ss << cmp_str << eq_str << slc_edge;
+	} else {
+		tmp_ss << "(";
+		tmp_ss << addr_str << cmp_str << eq_str << " " << slc_edge;
+		tmp_ss << ")";
+	}
 	return tmp_ss.str();
 }
 
 gh_string_t
-interval::get_print_str(){
+interval::get_in_interval_str(){
 	std::ostringstream tmp_ss;
-	tmp_ss << "[";
-	tmp_ss << lft.get_print_str();
-	tmp_ss << ", ";
-	tmp_ss << rgt.get_print_str();
-	tmp_ss << "]";
+	tmp_ss << "(";
+	tmp_ss << lft.get_in_edge_str();
+	tmp_ss << " && ";
+	tmp_ss << rgt.get_in_edge_str();
+	tmp_ss << ")";
 	return tmp_ss.str();
 }
 
 gh_string_t
 hnode::get_selector_str(){
+	gh_string_t pfx = "if";
+	gh_string_t sfx = "{sel_o0;}";
 	bool is_itv = get_flag(gh_is_interval);
-	if(is_itv){
-		return selector.get_print_str();
+	if(! is_itv){
+		GH_CK(! selector.lft.is_undef());
+		return pfx + selector.lft.get_in_edge_str() + sfx;
 	}
-	return selector.lft.get_print_str();
+	return pfx + selector.get_in_interval_str() + sfx;
 }
 	
 const char*

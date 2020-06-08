@@ -60,8 +60,18 @@ gh_copy_file(gh_string_t src, gh_string_t dst, gh_buffer_t& buff, const char* mo
 {
 	long sz_dat = (long)buff.size();
 	void* dat = (void*)buff.data();
+	
 	FILE*	src_ff = fopen(src.c_str(), "r");
+	if(src_ff == NULL){
+		fprintf(stderr, "Cannot open file %s for reading !!\n", src.c_str());
+		return;
+	}
+
 	FILE*	dst_ff = fopen(dst.c_str(), mod);
+	if(dst_ff == NULL){
+		fprintf(stderr, "Cannot open file %s for writing !!\n", dst.c_str());
+		return;
+	}
 
 	while(! feof(src_ff)) {
 		size_t num_rd = fread(dat, 1, sz_dat, src_ff);

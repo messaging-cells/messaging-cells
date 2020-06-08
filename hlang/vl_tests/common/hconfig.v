@@ -3,6 +3,7 @@
 `define HCONFIG_V_FILE 1
 //--------------------------------------------
 
+`define TOP_MODULE_NAME should_be_the_top_module_name
 
 `define NS_ADDRESS_SIZE 6
 `define NS_DATA_SIZE 4

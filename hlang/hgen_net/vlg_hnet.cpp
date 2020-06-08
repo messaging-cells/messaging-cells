@@ -1132,6 +1132,8 @@ hlognet_box::copy_verilog_foundation_files(gh_string_t& net_nam, runner_print_ve
 	gh_string_t exe_dir = gh_path_get_directory(gh_get_executable_path(), false);
 	gh_string_t orig_fnd_dir = exe_dir + gh_path_sep + cfg.vl_exe_fnd_dir;
 	GH_CK_PRT(gh_file_exists(orig_fnd_dir), "DIRECTORY %s NOT FOUND. THIS MEANS A BAD INSTALLATION OF THE PROGRAM.", orig_fnd_dir.c_str());
+	gh_string_t rtl_dir = dir_name + gh_path_sep + cfg.vl_sub_rtl_dir;
+	GH_CK_PRT(gh_file_exists(rtl_dir), "DIRECTORY %s NOT FOUND. THIS MEANS A BAD INSTALLATION OF THE PROGRAM.", rtl_dir.c_str());
 	
 	for(long aa = 0; aa < (long)(cfg.vl_all_fnd_files.size()); aa++){
 		gh_string_t ff_nam = cfg.vl_all_fnd_files[aa];
@@ -1166,6 +1168,10 @@ hlognet_box::copy_verilog_foundation_files(gh_string_t& net_nam, runner_print_ve
 	gh_string_t src_cl = orig_fnd_dir + gh_path_sep + cfg.vl_clean_file_nm;
 	gh_string_t dst_cl = dir_name + gh_path_sep + cfg.vl_clean_file_nm;
 	gh_copy_file(src_cl, dst_cl, cfg.vl_cp_file_buff);
+	
+	gh_string_t src_tb = orig_fnd_dir + gh_path_sep + cfg.vl_testbench_src_file_nm;
+	gh_string_t dst_tb = rtl_dir + gh_path_sep + cfg.vl_testbench_dst_file_nm;
+	gh_copy_file(src_tb, dst_tb, cfg.vl_cp_file_buff);
 }
 
 void
@@ -1222,8 +1228,6 @@ hlognet_box::print_verilog_full_net(runner_print_verilog_network& cfg){
 	
 	GH_CK(gh_file_exists(rtl_dir));
 	
-	print_verilog_config_file(cfg);
-	
 	gh_string_t ivl_cmm_ff_nam = dir_name + gh_path_sep + gh_ivl_comm_file_nm;
 	gh_string_t vtr_cmm_ff_nam = dir_name + gh_path_sep + gh_vrt_comm_file_nm;
 	gh_string_t yos_cmm_ff_nam = dir_name + gh_path_sep + gh_yos_comm_file_nm;
@@ -1250,6 +1254,7 @@ hlognet_box::print_verilog_full_net(runner_print_verilog_network& cfg){
 	gh_string_t net_ff_nm = net_nam + gh_vl_file_ext;
 	gh_string_t net_path = rtl_dir + gh_path_sep + net_ff_nm;
 
+	print_verilog_config_file(net_nam, cfg);
 	
 	FILE* ff = fopen(net_path.c_str(), "w");
 	if(ff == NULL){
@@ -1274,50 +1279,17 @@ hlognet_box::print_verilog_full_net(runner_print_verilog_network& cfg){
 	long num_direct_channels = -1;
 	long num_direct_packets = 0;
 
-	const char* top_mod_nm = net_nam.c_str();
 	fprintf(ff, R"base(
 `include "hglobal.v"
 
 `default_nettype	none
 
-module %s
-#(parameter 
-	ASZ=`NS_ADDRESS_SIZE, 
-	DSZ=`NS_DATA_SIZE, 
-	RSZ=`NS_REDUN_SIZE
-)(
-	input wire i_Clk,
-	output o_LED_1,
-	output o_LED_2,
-	output o_LED_3,
-	output o_LED_4
-);
-	wire gch_clk = i_Clk;
-	reg reset = 0;
-	wire ready;
+)base");
 	
-	`NS_DECLARE_ERR_LINK(oerr) 
-	
-	%s_impl it_%s_impl(
-		`NS_INSTA_GLB_CHNL_VALS(gch, i_Clk, reset, ready),
-		`NS_INSTA_ERR_CHNL(gerr, oerr)
-	);
-	
-	`NS_DECLARE_DBG_LINK(dbg1)
-	
-	assign dbg1_leds[0:0] = oerr_error;
-	assign dbg1_leds[1:1] = 0;
-	assign dbg1_leds[2:2] = 0;
-	assign dbg1_leds[3:3] = 0;
-	
-	assign o_LED_1 = dbg1_leds[0:0];
-	assign o_LED_2 = dbg1_leds[1:1];
-	assign o_LED_3 = dbg1_leds[2:2];
-	assign o_LED_4 = dbg1_leds[3:3];
+	const char* top_mod_nm = net_nam.c_str();
+	print_verilog_top_module(ff, top_mod_nm, cfg);
 
-	
-endmodule
-
+	fprintf(ff, R"base(
 module %s_impl
 #(parameter 
 	ASZ=`NS_ADDRESS_SIZE, 
@@ -1326,7 +1298,7 @@ module %s_impl
 )(
 	`NS_DECLARE_GLB_CHNL(gch),
 	`NS_DECLARE_ERR_CHNL(gerr)
-)base", top_mod_nm, top_mod_nm, top_mod_nm, top_mod_nm);
+)base", top_mod_nm);
 
 	fprintf(ff, ");\n");
 	
@@ -1653,7 +1625,7 @@ runner_print_verilog_network::init_redun_size(){
 }
 
 void
-hlognet_box::print_verilog_config_file(runner_print_verilog_network& cfg){
+hlognet_box::print_verilog_config_file(gh_string_t& top_mod_nm, runner_print_verilog_network& cfg){
 	gh_string_t fnd_dir = cfg.dir_name + gh_path_sep + cfg.vl_sub_fnd_dir;
 	GH_CK_PRT(gh_file_exists(fnd_dir), "DIRECTORY %s NOT FOUND. THIS MEANS A BAD INSTALLATION OF THE PROGRAM.", fnd_dir.c_str());
 	
@@ -1674,6 +1646,7 @@ hlognet_box::print_verilog_config_file(runner_print_verilog_network& cfg){
 `define HCONFIG_V_FILE 1
 //--------------------------------------------
 
+`define TOP_MODULE_NAME %s
 
 `define NS_ADDRESS_SIZE %ld
 `define NS_DATA_SIZE %ld
@@ -1703,6 +1676,7 @@ hlognet_box::print_verilog_config_file(runner_print_verilog_network& cfg){
 `endif // HCONFIG_V_FILE
 
 )base",
+		top_mod_nm.c_str(),
 		cfg.num_bits_address,
 		cfg.num_bits_data,
 		cfg.num_bits_redundant,
@@ -1742,3 +1716,49 @@ runner_print_verilog_network::print_all_probes(){
 	
 }
 
+void
+hlognet_box::print_verilog_top_module(FILE* ff, const char* top_mod_nm, runner_print_verilog_network& cfg){
+	
+	fprintf(ff, R"base(
+
+module %s
+#(parameter 
+	ASZ=`NS_ADDRESS_SIZE, 
+	DSZ=`NS_DATA_SIZE, 
+	RSZ=`NS_REDUN_SIZE
+)(
+	input wire i_Clk,
+	output o_LED_1,
+	output o_LED_2,
+	output o_LED_3,
+	output o_LED_4
+);
+	wire gch_clk = i_Clk;
+	reg reset = 0;
+	wire ready;
+	
+	`NS_DECLARE_ERR_LINK(oerr) 
+	
+	%s_impl it_%s_impl(
+		`NS_INSTA_GLB_CHNL_VALS(gch, i_Clk, reset, ready),
+		`NS_INSTA_ERR_CHNL(gerr, oerr)
+	);
+	
+	`NS_DECLARE_DBG_LINK(dbg1)
+	
+	assign dbg1_leds[0:0] = oerr_error;
+	assign dbg1_leds[1:1] = 0;
+	assign dbg1_leds[2:2] = 0;
+	assign dbg1_leds[3:3] = 0;
+	
+	assign o_LED_1 = dbg1_leds[0:0];
+	assign o_LED_2 = dbg1_leds[1:1];
+	assign o_LED_3 = dbg1_leds[2:2];
+	assign o_LED_4 = dbg1_leds[3:3];
+
+	
+endmodule
+
+)base", top_mod_nm, top_mod_nm, top_mod_nm);
+
+}

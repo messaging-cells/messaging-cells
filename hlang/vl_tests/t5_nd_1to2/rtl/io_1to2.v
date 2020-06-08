@@ -127,7 +127,7 @@ module io_1to2
 				if(ro0_dat < 0) begin
 					ro0_err <= `NS_ON;
 				end*/
-				if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, ro0_dst, OPER_2, REF_VAL_2, ro0_dst)) begin
+				if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, ro0_dst, REF_VAL_1, OPER_2, ro0_dst, REF_VAL_2)) begin
 					ro0_dat[3:0] <= cnt_0;
 					cnt_0 <= cnt_0 + 1;
 				end else begin
@@ -169,7 +169,7 @@ module io_1to2
 			if(! inp0_done_cks) begin
 				inp0_done_cks <= `NS_ON;
 				if(! inp0_err) begin
-					if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, inp0_dst, OPER_2, REF_VAL_2, inp0_dst)) begin
+					if(! `NS_RANGE_CMP_OP(IS_RANGE, OPER_1, inp0_dst, REF_VAL_1, OPER_2, inp0_dst, REF_VAL_2)) begin
 						inp0_err <= `NS_ON;
 					end 
 					else
@@ -233,7 +233,7 @@ module io_1to2
 			if(! inp1_done_cks) begin
 				inp1_done_cks <= `NS_ON;
 				if(! inp1_err) begin
-					if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, inp1_dst, OPER_2, REF_VAL_2, inp1_dst)) begin
+					if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, inp1_dst, REF_VAL_1, OPER_2, inp1_dst, REF_VAL_2)) begin
 						inp1_err <= `NS_ON;
 					end
 					else

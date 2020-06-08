@@ -78,7 +78,7 @@ module nd_1to2
 		end
 		if(! gch_reset && rg_rdy) begin
 			if(rcv0_ckd_req && (! rgi0_ack)) begin
-				if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, REF_VAL_1, rcv0_dst, OPER_2, REF_VAL_2, rcv0_dst)) begin
+				if(`NS_RANGE_CMP_OP(IS_RANGE, OPER_1, rcv0_dst, REF_VAL_1, OPER_2, rcv0_dst, REF_VAL_2)) begin
 					`NS_FIFO_TRY_ADD_HEAD(bf0, rcv0, rgo0_added_hd);
 				end else begin
 					`NS_FIFO_TRY_ADD_HEAD(bf1, rcv0, rgo1_added_hd);
