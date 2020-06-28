@@ -1,0 +1,22 @@
+
+define SET_CROSS_COMPILE
+ifeq "${CROSS_COMPILE+xxx}" ""
+	ifeq "$(findstring arm,$(shell uname -p))" "arm"
+		CROSS_COMPILE=
+	else
+		CROSS_COMPILE=arm-linux-gnueabihf-
+	endif	
+endif	
+endef
+
+$(eval $(SET_CROSS_COMPILE))
+
+
+define POST_OPERS
+	printf "====================================\nFinished building "$(TARGET)"\n\n\n" 
+	cd $(TARGET_DIR)/${HTESTS_BIN_DIR}/hphilo; ./hl_philo.elf
+	$(MAKE) ${TARGET_DIR}/${HTESTS_BIN_DIR}/hphilo/mc_philo_ptd.elf
+	printf "====================================\nFinished hl_philo.elf \n\n\n" 
+endef
+
+TGT_POSTMAKE := ${POST_OPERS}

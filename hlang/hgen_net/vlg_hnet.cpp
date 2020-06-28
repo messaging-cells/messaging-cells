@@ -1511,6 +1511,10 @@ verilog_file::print_verilog_ready_final_and(gh_string_t rdy_nm){
 	FILE* ff = fl;
 	gh_vector_t<long>& pend = pending_rdy;
 
+	if(tot_rdy == 0){
+		return;
+	}
+	
 	fprintf(ff, "\n\n");
 	fprintf(ff, "\t// FINAL_READY (%s) \n\n", rdy_nm.c_str());
 
@@ -1567,6 +1571,10 @@ verilog_file::print_verilog_error_final_selec(gh_string_t err_nm){
 	FILE* ff = fl;
 	gh_vector_t<long>& pend = pending_err;
 
+	if(tot_err == 0){
+		return;
+	}
+	
 	fprintf(ff, "\n\n");
 	fprintf(ff, "\t// FINAL_ERROR_ASSIGNS \n\n");
 

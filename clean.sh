@@ -10,5 +10,6 @@ mc_maker/clean.sh
 src/tests/clean.sh
 ben-jose-embryo/bj_maker/clean.sh
 hlang/clean.sh
+vpp_lang/clean.sh
 cd $CURR_DIR
 
