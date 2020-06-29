@@ -89,6 +89,7 @@ MC_STD_INCDIRS := ../../../cells ../../../cells/manageru ${MC_ETOOLS}/host/inclu
 
 #	./tak_mak_test/test_tak_mak.mk \
 #	./logs_test/logs_test.mk \
+#	./hello_world/hello_world.mk \
 #	./eph_dev_driver_bug/eph_dev_driver_bug.mk \
 #	./dlmalloc_test/test_dlmalloc_ptd.mk \
 #	./dlmalloc_test/test_dlmalloc_znq.mk \
@@ -102,6 +103,7 @@ MC_STD_INCDIRS := ../../../cells ../../../cells/manageru ${MC_ETOOLS}/host/inclu
 #	./sequence/sequence.mk \
 #	./sequence/sequence_2.mk \
 #	./sequence/sequence_3.mk \
+#	./eating_philo/philo_eph.mk \
 #	./send_manageru_msg/send_manageru_msg_ptd.mk \
 #	./send_msg/send_msg_eph.mk \
 #	./send_msg/send_msg_ptd.mk \
@@ -110,22 +112,16 @@ MC_STD_INCDIRS := ../../../cells ../../../cells/manageru ${MC_ETOOLS}/host/inclu
 #	./send_manageru_msg/send_manageru_msg_znq.mk \
 #	./ptd_tests/hola_jose.mk \
 #	./modules/modules.mk \
+#	./sort_net/sort_net_plla.mk \
 
 SUBMAKEFILES := \
 	./nil_manageru/no_nil_manageru.mk \
 	./nil_manageru/nil_manageru.mk \
-	./logs_test/logs_test.mk \
-	./hello_world/hello_world.mk \
-	./send_msg/send_msg_eph.mk \
 	./send_msg/send_msg_ptd.mk \
 	./eating_philo/philo_ptd.mk \
-	./eating_philo/philo_eph.mk \
 	./send_manageru_msg/send_manageru_msg_ptd.mk \
-	./send_manageru_msg/send_manageru_msg_eph.mk \
-	./send_manageru_msg/send_manageru_msg_znq.mk \
-	./modules/modules.mk \
 	./sort_net/sort_net_ptd.mk \
-	./sort_net/sort_net_plla.mk \
+
 
 
 

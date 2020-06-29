@@ -1,10 +1,6 @@
 
 CNFS_DIR := ../../../../../../tests-ben-jose/cnfs
 
-BJ_MC_DIR_INCLUDES := ../../mc_maker/mc_install/mc_include
-BJ_MC_DIR_INCLUDES := $(call CANONICAL_PATH,${BJ_MC_DIR_INCLUDES})
-# $(warning "BJ_MC_DIR_INCLUDES is "${BJ_MC_DIR_INCLUDES})
-
 BUILD_DIR := ./bj_tmp_build
 TARGET_DIR := ./bj_install
 
@@ -17,6 +13,12 @@ CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-c
 MC_STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
 MC_CURR_DIR := $(shell pwd)
+
+BJ_INCLUDE_DIR := ${MC_CURR_DIR}/bj_include
+BJ_MC_DIR_INCLUDES := ${BJ_INCLUDE_DIR}/cells ${BJ_INCLUDE_DIR}/manageru
+# BJ_MC_DIR_INCLUDES := ../../mc_maker/mc_install/mc_include
+# BJ_MC_DIR_INCLUDES := $(call CANONICAL_PATH,${BJ_MC_DIR_INCLUDES})
+# $(warning "BJ_MC_DIR_INCLUDES is "${BJ_MC_DIR_INCLUDES})
 
 SRC_BJ_DIR := ${MC_CURR_DIR}/..
 
@@ -42,8 +44,7 @@ BJ_MANAGERU_INCLUDES := \
 
 #SUBMAKEFILES := 
 
-SUBMAKEFILES := ./bj_pthreads/bj_pthreads.mk \
-	./bj_parallella/bj_parallella.mk \
+SUBMAKEFILES := ./bj_pthreads/bj_pthreads.mk 
 
 
 	

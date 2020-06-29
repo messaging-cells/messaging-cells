@@ -18,9 +18,12 @@ CXXFLAGS_1 := -Wall -std=c++17 -nostdlib -fno-exceptions -fno-unwind-tables
 CXXFLAGS_2 := -fno-rtti -fno-default-inline -fno-threadsafe-statics -fno-elide-constructors
 STD_EPH_CXXFLAGS := ${CXXFLAGS_1} ${CXXFLAGS_2}
 
+
+#	parallella/mc_plla_all_libs.mk \
+
+
 SUBMAKEFILES := \
 	pthreads/mc_ptd_all_libs.mk \
-	parallella/mc_plla_all_libs.mk \
 
 
 default: all
