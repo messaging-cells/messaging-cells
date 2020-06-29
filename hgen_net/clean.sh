@@ -6,6 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "Cleaning" $(basename $SCRIPT_DIR)
 
 cd $SCRIPT_DIR
+vl_tests/clean.sh
 rm -rf gh_build
 rm -f hgen_lognet
 rm -f autocomplete_choices.txt

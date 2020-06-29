@@ -34,7 +34,7 @@ SRC_CXXFLAGS := ${CXX_BASE_FLAGS} ${VL_DBG_FLAG} -pthread
 SRC_INCDIRS := ${VL_BASE_DIR}
 
 SOURCES := \
-	${VL_BASE_DIR}/test_lexis.c \
+	${VL_BASE_DIR}/test_lexis.cpp \
 
 
 # -------------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ SOURCES := \
 .PHONY: First_Rule
 First_Rule : all
 
-${VL_BASE_DIR}/test_lexis.c : ${VL_BASE_DIR}/peg_output.c
+${VL_BASE_DIR}/test_lexis.cpp : ${VL_BASE_DIR}/peg_output.c
 
 
 ${VL_BASE_DIR}/peg_output.c : peg_clone/peg_clone ${VL_BASE_DIR}/vpp.peg
