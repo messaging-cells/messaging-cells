@@ -3,10 +3,18 @@ VPP_Lexis	<- Spacing Token* EndOfFile
 
 Token		<- Operator / Number / Identifier / RawString
 
-RawString	<- "'" < (!"'" . )* > "'" Spacing
+RawString	<- OpenRaw (!CloseRaw . )*  CloseRaw Spacing
+			
+#CloseRaw	<- "|'"
+
+CloseRaw	<- "|" < (!"'" Letter+ )* > "'" 
+			&{ is_close_raw(yytext) } 
 			{
-				fprintf(stdout, "Got RawString '%s'\n", yytext);
+				fprintf(stdout, "Got CloseRaw '%s'\n", yytext);
 			}
+			
+OpenRaw		<- "'" < (!"|" Letter+ )* > "|"
+			&{ set_open_raw(yytext) } 
 
 Operator	<- < Symbol+ > Spacing
 			{
