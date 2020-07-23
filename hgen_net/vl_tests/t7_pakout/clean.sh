@@ -7,8 +7,10 @@ echo "Cleaning" $(basename $SCRIPT_DIR)
 
 cd $SCRIPT_DIR
 rm -rf build
-rm rtl/*.json
-rm rtl/*.svg
+if [ -f rtl/calc_redun.json ]; then
+	rm -rf rtl/calc_redun.json
+	rm -rf rtl/calc_redun.svg
+fi
 cd $CURR_DIR
 
 
